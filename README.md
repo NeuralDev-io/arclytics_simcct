@@ -1,6 +1,6 @@
 # Arclytics SimCCT API
 
-<p align="center">
+<p align="center"/>
 	This is the CSIT321 Arclytics SimCCT Django REST back-end API source code repository.<br><br>
     Arclytics SimCCT API (pronounced <i>ark-lit-icks</i>) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool. <br><br>
 	The API provides mathematical algorithms for computing both the Li (98) and Kirkaldo (83) methods for Phase Transformation simulations.<br><br>

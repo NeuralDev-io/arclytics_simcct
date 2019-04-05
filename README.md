@@ -2,13 +2,16 @@
 
 This is the CSIT321 Arclytics SimCCT Django REST back-end API source code repository.
 
-Arclytics SimCCT API (pronounced *ark-lit-icks*) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool. <br><br>
-The API provides mathematical algorithms for computing both the Li (98) and Kirkaldo (83) methods for Phase Transformation simulations.<br><br>
+Arclytics SimCCT API (pronounced *ark-lit-icks*) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool.
+
+The API provides mathematical algorithms for computing both the Li (98) and Kirkaldo (83) methods for Phase Transformation simulations.
+
+
 [**Play with the tool »**]()  
-<br>
+
 
 [Website](https://uow.neuraldev.io) · [API Documentation](https://bitbucket.org/neuraldev/arclytics_simcct_api/wiki/Home) · [LICENSE](https://bitbucket.org/neuraldev/arclytics_simcct_api/src/master/LICENSE)
-<br><br>
+
 
 
 ## Table of contents
@@ -127,12 +130,12 @@ You can view the full details of the license at [LICENSE.md](<https://bitbucket.
 
 ## Authors
 
-* Andrew (Dinh) Che \<codeninja55\> (andrew at neuraldev dot io)
-* Dinol Shretha \<username\> (email)
-* David Matthews \<username\> (email)
-* Duong (Dalton) le \<username\> (email)
-* Arvy Salazar \<username\> (email)
-* Matthew Greentree \<username\> (email)
+* Andrew (Dinh) Che <@codeninja55\> (andrew at neuraldev dot io)
+* Dinol Shretha <username\> (email)
+* David Matthews <username\> (email)
+* Duong (Dalton) Le <username\> (email)
+* Arvy Salazar <username\> (email)
+* Matthew Greentree <username\> (email)
 
 You can view the awesome contributions each member has made [here](<https://bitbucket.org/neuraldev/arclytics_simcct_api/addon/bitbucket-graphs/graphs-repo-page#!graph=contributors&uuid=edfeb8b1-d219-47a9-a81c-9c3ccced56f8&type=c&group=weeks>).
 
@@ -141,9 +144,9 @@ You can view the awesome contributions each member has made [here](<https://bitb
 We thank the following organisations, departments, and individuals for their kind and immense support with this project:
 
 * Australian Nuclear Science and Technology Organisation (ANSTO)
-    * Dr. Ondrej Muransky \<omz@ansto.gov.au\>
-    * Dr. Philip Bendeich \<pbx@ansto.gov.au\>
-    * Dr. Luiz Bortolan \<luizb@ansto.gov.au\>
+    * Dr. Ondrej Muransky <omz@ansto.gov.au\>
+    * Dr. Philip Bendeich <pbx@ansto.gov.au\>
+    * Dr. Luiz Bortolan <luizb@ansto.gov.au\>
 * University of Wollongong, Faculty of Engineering and Information Sciences, School of Computing and Information Technology
     * Dr. Lei Ye <lei@uow.edu.au\> 
     * Dr. Fenghui Ren <fren@uow.edu.au\>

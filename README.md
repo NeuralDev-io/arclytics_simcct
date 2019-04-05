@@ -7,10 +7,10 @@
     <a href=""><strong>Play with the tool »</strong><a/><br><br>
     <a href="https://uow.neuraldev.io">Website<a/>
     ·
-    <a href="https://bitbucket.org/neuraldev/arclytics_simcct_api/wiki/Home">API Documentation<a/>
+    <a href="https://bitbucket.org/neuraldev/arclytics_simcct_api/wiki/Home"/>API Documentation<a/>
     ·
-    <a href="https://bitbucket.org/neuraldev/arclytics_simcct_api/src/master/LICENSE">LICENSE<a/>
-<p/>
+    <a href="https://bitbucket.org/neuraldev/arclytics_simcct_api/src/master/LICENSE"/>LICENSE<a/>
+</p/>
 
 
 ## Table of contents

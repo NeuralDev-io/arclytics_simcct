@@ -4,13 +4,13 @@
 	This is the CSIT321 Arclytics SimCCT Django REST back-end API source code repository.<br><br>
     Arclytics SimCCT API (pronounced <i>ark-lit-icks</i>) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool. <br><br>
 	The API provides mathematical algorithms for computing both the Li (98) and Kirkaldo (83) methods for Phase Transformation simulations.<br><br>
-    <a href=""><strong>Play with the tool »</strong><a><br><br>
-    <a href="https://uow.neuraldev.io">Website<a>
+    <a href=""><strong>Play with the tool »</strong><a/><br><br>
+    <a href="https://uow.neuraldev.io">Website<a/>
     ·
-    <a href="https://bitbucket.org/neuraldev/arclytics_simcct_api/wiki/Home">API Documentation<a>
+    <a href="https://bitbucket.org/neuraldev/arclytics_simcct_api/wiki/Home">API Documentation<a/>
     ·
-    <a href="https://bitbucket.org/neuraldev/arclytics_simcct_api/src/master/LICENSE">LICENSE<a>
-<p>
+    <a href="https://bitbucket.org/neuraldev/arclytics_simcct_api/src/master/LICENSE">LICENSE<a/>
+<p/>
 
 
 ## Table of contents

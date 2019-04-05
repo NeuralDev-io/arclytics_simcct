@@ -2,10 +2,10 @@
 
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_simcct_api
-# serializers.py
-# 
-# Attributions: 
-# [1] 
+# urls.py
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 
 __author__ = 'Andrew Che <@codeninja55>'
@@ -18,24 +18,22 @@ __email__ = 'andrew@neuraldev.io'
 __status__ = '{dev_status}'
 __date__ = '2019.04.06'
 
-"""serializers.py: 
+"""urls.py: 
 
 {Description}
 """
 
-from django.contrib.auth.models import User, Group
-from rest_framework import serializers
+from django.urls import include, path
+from rest_framework import routers
+from api import views
 
+router = routers.DefaultRouter()
+router.register(r'users', views.UserViewSet)
+router.register(r'groups', views.GroupViewSet)
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = User
-        fields = ('url', 'username', 'email', 'groups')
-
-
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Group
-        fields = ('url', 'name')
-
-
+# Wire up our API using automatic URL routing.
+# Additionally, we include login URLs for the browsable API.
+urlpatterns = [
+    path('', include(router.urls)),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+]

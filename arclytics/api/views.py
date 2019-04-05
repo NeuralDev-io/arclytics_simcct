@@ -2,7 +2,7 @@
 
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_simcct_api
-# serializers.py
+# views.py
 # 
 # Attributions: 
 # [1] 
@@ -18,24 +18,27 @@ __email__ = 'andrew@neuraldev.io'
 __status__ = '{dev_status}'
 __date__ = '2019.04.06'
 
-"""serializers.py: 
+"""views.py: 
 
 {Description}
 """
 
 from django.contrib.auth.models import User, Group
-from rest_framework import serializers
+from rest_framework import viewsets
+from api.serializers import UserSerializer, GroupSerializer
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = User
-        fields = ('url', 'username', 'email', 'groups')
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows users to be viewed or edited.
+    """
+    queryset = User.objects.all().order_by('-date_joined')
+    serializer_class = UserSerializer
 
 
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Group
-        fields = ('url', 'name')
-
-
+class GroupViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows groups to be viewed or edited.
+    """
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer

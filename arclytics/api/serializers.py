@@ -5,7 +5,7 @@
 # serializers.py
 # 
 # Attributions: 
-# [1] 
+# [1] https://www.django-rest-framework.org/tutorial/quickstart/
 # ----------------------------------------------------------------------------------------------------------------------
 
 __author__ = 'Andrew Che <@codeninja55>'

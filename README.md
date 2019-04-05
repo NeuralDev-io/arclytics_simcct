@@ -1,18 +1,16 @@
-
-
-<h1 align="center">Arclytics SimCCT API</h1>
+# Arclytics SimCCT API
 
 <p align="center">
-	This is the CSIT321 Arclytics SimCCT Django REST back-end API source code repository.<br /><br />
-    Arclytics SimCCT API (pronounced <i>ark-lit-icks</i>) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool. <br /><br />
-	The API provides mathematical algorithms for computing both the Li (98) and Kirkaldo (83) methods for Phase Transformation simulations.<br /><br />
-    <a href=""><strong>Play with the tool »</strong></a><br><br />
+	This is the CSIT321 Arclytics SimCCT Django REST back-end API source code repository.<br><br>
+    Arclytics SimCCT API (pronounced <i>ark-lit-icks</i>) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool. <br><br>
+	The API provides mathematical algorithms for computing both the Li (98) and Kirkaldo (83) methods for Phase Transformation simulations.<br><br>
+    <a href=""><strong>Play with the tool »</strong></a><br><br>
     <a href="https://uow.neuraldev.io">Website</a>
     ·
     <a href="https://bitbucket.org/neuraldev/arclytics_simcct_api/wiki/Home">API Documentation</a>
     ·
     <a href="https://bitbucket.org/neuraldev/arclytics_simcct_api/src/master/LICENSE">LICENSE</a>
-
+</p>
 
 
 ## Table of contents
@@ -99,7 +97,8 @@ To ensure testing, you will need to connect the following database to the Django
 To run the Django server:
 
 ```bash
-(arclytics_api) $ python manage.py runserver
+(arclytics_api) $ cd arclytics
+(arclytics_api) $ python manage.py runserver 8000
 ```
 
 *NOTE TO SELF: You must figure out some way to provide instructions on how to create a user to allow access to the web application.*
@@ -143,17 +142,17 @@ You can view the awesome contributions each member has made [here](<https://bitb
 
 We thank the following organisations, departments, and individuals for their kind and immense support with this project:
 
-- Australian Nuclear Science and Technology Organisation (ANSTO)
-  - Dr. Ondrej Muransky \<omz@ansto.gov.au\>
-  - Dr. Philip Bendeich \<pbx@ansto.gov.au\>
-  - Dr. Luiz Bortolan \<luizb@ansto.gov.au\>
-- University of Wollongong, Faculty of Engineering and Information Sciences, School of Computing and Information Technology
-  - Dr. Lei Ye \<lei@uow.edu.au\> 
-  - Dr. Fenghui Ren \<fren@uow.edu.au\>
-- University of Wollongong, South Western Sydney campus
-  - Dr. Chris Magee
-  - Jason Aquilina
-  - Student Support Division
+* Australian Nuclear Science and Technology Organisation (ANSTO)
+    * Dr. Ondrej Muransky \<omz@ansto.gov.au\>
+    * Dr. Philip Bendeich \<pbx@ansto.gov.au\>
+    * Dr. Luiz Bortolan \<luizb@ansto.gov.au\>
+* University of Wollongong, Faculty of Engineering and Information Sciences, School of Computing and Information Technology
+    * Dr. Lei Ye <lei@uow.edu.au\> 
+    * Dr. Fenghui Ren <fren@uow.edu.au\>
+* University of Wollongong, South Western Sydney campus
+    * Dr. Chris Magee
+    * Jason Aquilina
+    * Student Support Division
 
 We also thank the open source community for making available awesome packages and libraries for our ease of development and deployment. The following are used under the hood of Arclytics SimCCT API:
 

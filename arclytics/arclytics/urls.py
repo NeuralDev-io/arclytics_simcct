@@ -5,11 +5,11 @@
 # urls.py
 #
 # Attributions:
-# [1]
+# [1] https://www.django-rest-framework.org/tutorial/quickstart/
 # ----------------------------------------------------------------------------------------------------------------------
 
 __author__ = 'Andrew Che <@codeninja55>'
-__copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
+__copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
 __license__ = '{license}'
 __version__ = '{mayor}.{minor}.{rel}'

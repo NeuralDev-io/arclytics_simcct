@@ -33,5 +33,6 @@ dependencies:
   - wheel=0.33.1=py37_0
   - xz=5.2.4=h14c3975_4
   - zlib=1.2.11=h7b6447c_3
+  - sqlparse=0.2.4
 prefix: /home/codeninja/anaconda3/envs/arclytics_api
 

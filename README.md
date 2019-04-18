@@ -1,12 +1,29 @@
 # Arclytics SimCCT API
 
-This is the CSIT321 Arclytics SimCCT Django REST back-end API source code repository. 
+This is the CSIT321 Arclytics SimCCT Django REST back-end API source code repository.
 
-Arclytics SimCCT API (pronounced *ark-lit-icks*) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool. 
+Arclytics SimCCT API (pronounced *ark-lit-icks*) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool.
 
 The API provides mathematical algorithms for computing both the Li (98) and Kirkaldo (83) methods for Phase Transformation simulations.
 
-The API documentation can be found at the following [docs](https://bitbucket.org/neuraldev/arclytics_simcct_api/wiki/Home).
+
+[**Play with the tool »**]()  
+
+
+[Website](https://uow.neuraldev.io) · [API Documentation](https://bitbucket.org/neuraldev/arclytics_simcct_api/wiki/Home) · [LICENSE](https://bitbucket.org/neuraldev/arclytics_simcct_api/src/master/LICENSE)
+
+
+
+## Table of contents
+
+* Getting started
+* Prerequisites
+* Tests and Examples
+* Deployment
+* Versioning
+* License
+* Authors
+* Acknowledgements
 
 ## Getting Started
 
@@ -14,12 +31,12 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Under the hood, Arclytics SimCCT uses the following dependencies.
+Under the hood, Arclytics SimCCT API uses the following dependencies.
 
 ### Virtual Environment
 
 To ensure the testing environment works as expected, you will need to have installed [Anaconda](https://www.anaconda.com/)
-version 4.6.9. 
+version `4.6.9`. 
 
 To clone the environment, you will need the following packages:
 
@@ -56,7 +73,7 @@ $ source activate arclytics_api
 
 #### Installing from Environment YAML
 
-You could also install from the provided `environment_unix.yml` (Linux/MacOS) or `environment_win.yml` (Windows) file.
+You could also install from the provided `environment-dev_unix.yml` (Linux/MacOS) or `environment-dev_win.yml` (Windows) file.
 
 ##### Linux/MacOS
 
@@ -74,25 +91,26 @@ $ conda env create -f environment_unix.yml
 
 To ensure testing, you will need to connect the following database to the Django back-end.
 
-TBC
+* TBC
 
 ### Running the server
 
 To run the Django server:
 
 ```bash
-(arclytics_api) $ python manage.py runserver
+(arclytics_api) $ cd arclytics
+(arclytics_api) $ python manage.py runserver 8000
 ```
 
 *NOTE TO SELF: You must figure out some way to provide instructions on how to create a user to allow access to the web application.*
 
 ## Tests and Examples
 
-TBC
+* TBC
 
 ## Deployment
 
-TBC
+* TBC
 
 ### Built with
 
@@ -100,8 +118,9 @@ TBC
 
 ## Versioning
 
-Internally, we use [SemVer](https://semver.org/) for our versioning standard. For the versions available, please see
-the tags from [release](https://bitbucket.org/neuraldev/arclytics_simcct_api/branches/?branchtype=release) branches in this repository. 
+Internally, we use [Semantic Versioning guidelines](https://semver.org/) for our versioning standard. Sometimes we can make a mess of it, but we adhere to those rules whenever possible. 
+
+For the versions available, please see the tags from [release](https://bitbucket.org/neuraldev/arclytics_simcct_api/branches/?branchtype=release) branch directory in this repository. 
 
 ## License
 
@@ -111,11 +130,12 @@ You can view the full details of the license at [LICENSE.md](<https://bitbucket.
 
 ## Authors
 
-* Andrew (Dinh) Che \<codeninja55\> (andrew at neuraldev dot io)
-* Dinol Shretha \<username\> (email)
-* David Matthews \<username\> (email)
-* Duong (Dalton) le \<username\> (email)
-* Dinol Shretha \<username\> (email)
+* Andrew (Dinh) Che <@codeninja55\> (andrew at neuraldev dot io)
+* Dinol Shretha <username\> (email)
+* David Matthews <username\> (email)
+* Duong (Dalton) Le <username\> (email)
+* Arvy Salazar <username\> (email)
+* Matthew Greentree <username\> (email)
 
 You can view the awesome contributions each member has made [here](<https://bitbucket.org/neuraldev/arclytics_simcct_api/addon/bitbucket-graphs/graphs-repo-page#!graph=contributors&uuid=edfeb8b1-d219-47a9-a81c-9c3ccced56f8&type=c&group=weeks>).
 
@@ -123,17 +143,17 @@ You can view the awesome contributions each member has made [here](<https://bitb
 
 We thank the following organisations, departments, and individuals for their kind and immense support with this project:
 
-- Australian Nuclear Science and Technology Organisation (ANSTO)
-  - Dr. Ondrej Muransky \<omz@ansto.gov.au\>
-  - Dr. Philip Bendeich \<pbx@ansto.gov.au\>
-  - Dr. Luiz Bortolan \<luizb@ansto.gov.au\>
-- University of Wollongong, Faculty of Engineering and Information Sciences, School of Computing and Information Technology
-  - Dr. Lei Ye \<lei@uow.edu.au\> 
-  - Dr. Fenghui Ren \<fren@uow.edu.au\>
-- University of Wollongong, South Western Sydney campus
-  - Dr. Chris Magee
-  - Jason Aquilina
-  - Student Support Division
+* Australian Nuclear Science and Technology Organisation (ANSTO)
+    * Dr. Ondrej Muransky <omz@ansto.gov.au\>
+    * Dr. Philip Bendeich <pbx@ansto.gov.au\>
+    * Dr. Luiz Bortolan <luizb@ansto.gov.au\>
+* University of Wollongong, Faculty of Engineering and Information Sciences, School of Computing and Information Technology
+    * Dr. Lei Ye <lei@uow.edu.au\> 
+    * Dr. Fenghui Ren <fren@uow.edu.au\>
+* University of Wollongong, South Western Sydney campus
+    * Dr. Chris Magee
+    * Jason Aquilina
+    * Student Support Division
 
 We also thank the open source community for making available awesome packages and libraries for our ease of development and deployment. The following are used under the hood of Arclytics SimCCT API:
 

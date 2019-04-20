@@ -181,6 +181,19 @@ GRANT ALL PRIVILEGES ON DATABASE arclytics TO neuraldev;
 
 
 
+You could run those steps manually above, or you can be a ninja and do this instead:
+
+Ensure you are in the main `arclytics_sim_api` directory.
+
+```powershell
+> docker cp postgres\init-user-db.sql Arclytics_Sim:/docker-entrypoint-initdb.d/init-user-db.sql
+> docker exec -u postgres Arclytics_Sim psql postgres postgres -f docker-entrypoint-initdb.d/init-user-db.sql
+```
+
+That should create everything for you without you ever having to connect to the psql shell (unless you screw up and have to go in there to delete it ofcourse). 
+
+
+
 **5)** If necessary, change the Django settings file to use the running Postgres Docker container instance.
 
 This is what you will see in the default `settings.py`.

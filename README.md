@@ -89,9 +89,75 @@ $ conda env create -f environment_unix.yml
 
 ### Database
 
-To ensure testing, you will need to connect the following database to the Django back-end.
+To get the database running, install docker from [here](https://www.docker.com/get-started).
+For docker GUI please download kitematic from [here](https://docs.docker.com/toolbox/toolbox_install_windows/) for windows.
 
-* TBC
+Once the installation is complete. Download docker Postgres container from [here](https://hub.docker.com/_/postgres).
+
+Or run this command in terminal:
+
+``docker pull postgres`` 
+
+1 Create a Postgres docker container 
+```bash
+docker run --name Arclytics_SimCCT -e POSTGRES_PASSWORD=ENDGAME -d postgres
+```
+2 Connect and run some queries
+```bash
+docker exec -it Arclytics_SimCCT psql -U postgres
+```
+
+
+3 Create User and grant all the privilege
+```bash
+CREATE USER Arclytics;
+CREATE DATABASE Arclytics;
+GRANT ALL PRIVILEGES ON DATABASE Arclytics TO Arclytics;
+ALTER USER Arclytics WITH PASSWORD 'ARCC';
+```
+
+4 Configure Django to Postgres
+
+	In settings.py file from Arclytics(Django)\
+	It looks like this:
+	
+	
+```bash
+DATABASES = {
+    		'default': {
+       			 'ENGINE': 'django.db.backends.sqlite3',
+       			 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    			   }
+		    }	
+```
+
+
+	Change settings.py as follows:
+```bash
+	DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'Arclytics',                      
+        'USER': 'Arclytics',
+        'PASSWORD': 'ARCC',
+        'HOST': '',
+        'PORT': '5432',
+    }
+}
+```
+
+Note: the Docker Psql runs on port 5432.
+
+Some handy docker commands:
+```
+docker ps: list all the running docker containers
+docker start(name optional): Starts one or more stopped containers
+docker stop(name optional): Stops one or container
+docker rm(name optional): Removes one or more containers.
+docker run: Run a docker container based on an image
+```
+P.S. If you want to learn more about docker click [here](https://docs.docker.com/get-started/).
+
 
 ### Running the server
 

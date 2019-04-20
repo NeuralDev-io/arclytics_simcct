@@ -110,9 +110,9 @@ WSGI_APPLICATION = 'arclytics.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Arclytics',
-        'USER': 'Arclytics',
-        'PASSWORD': 'ARCC',
+        'NAME': 'arclytics',
+        'USER': 'neuraldev',
+        'PASSWORD': 'THANOS',
         'HOST': '',
         'PORT': '5432',
     }

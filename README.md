@@ -89,74 +89,172 @@ $ conda env create -f environment_unix.yml
 
 ### Database
 
-To get the database running, install docker from [here](https://www.docker.com/get-started).
-For docker GUI please download kitematic from [here](https://docs.docker.com/toolbox/toolbox_install_windows/) for windows.
+You will need the following versions:
 
-Once the installation is complete. Download docker Postgres container from [here](https://hub.docker.com/_/postgres).
-
-Or run this command in terminal:
-
-``docker pull postgres`` 
-
-1 Create a Postgres docker container 
-```bash
-docker run --name Arclytics_SimCCT -e POSTGRES_PASSWORD=ENDGAME -d postgres
 ```
-2 Connect and run some queries
-```bash
-docker exec -it Arclytics_SimCCT psql -U postgres
+docker=18.09.2
+postgres=10.7
+psycopg2=2.7.6.1
 ```
 
 
-3 Create User and grant all the privilege
-```bash
-CREATE USER Arclytics;
-CREATE DATABASE Arclytics;
-GRANT ALL PRIVILEGES ON DATABASE Arclytics TO Arclytics;
-ALTER USER Arclytics WITH PASSWORD 'ARCC';
+
+To get the database running, install docker from [here](https://www.docker.com/get-started). From here, select **Download for Windows** or **Download for Mac**. It will ask you to login or create an account before you can download. Once you have create an account, please select **Get Docker Desktop for Windows (stable)**. During installation, **DO NOT** select the option for Windows containers. 
+
+Optionally, you can download and use the Docker GUI by downloading Kitematic from [here](https://docs.docker.com/toolbox/toolbox_install_windows/) for Windows.
+
+Once the installation is complete. Download docker Postgres Imagesfrom [here](https://hub.docker.com/_/postgres). You can do it using this command in Command Prompt or PowerShell (Windows) or Terminal (macOS and Linux).
+
+**Windows**
+
+```powershell
+> docker pull postgres:10.7
 ```
 
-4 Configure Django to Postgres
 
-	In settings.py file from Arclytics(Django)\
-	It looks like this:
-	
-	
+
+**1)** Test that you have pulled the correct Docker version and Postgres image:
+
+```powershell
+> docker -v 
+Docker version 18.09.2, build 6247962
+
+> docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+postgres            10.7                200d7af0a4e1        3 weeks ago         230MB
+```
+
+
+
+**2)** Create a Postgres Docker container:
+
+```powershell
+> docker run -p 5432:5432 --name Arclytics_Sim -e POSTGRES_PASSWORD=ENDGAME -d postgres:10.7
+```
+Where:
+
+* `-p 5432:5432` connects the exposed Docker port 5432 to your local port 5432
+* `--name` is the name of the container you have created.
+* `-e POSTGRES_PASSWORD=ENDGAME` sets the environment variable for superuser password for PostgreSQL.
+* `-d postgres:10.7`  the Docker image 
+
+
+
+To test if the container is running properly:
+
+```powershell
+> docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS               NAMES
+2afdef182d29        postgres:10.7       "docker-entrypoint.s…"   10 seconds ago      Up 9 seconds        5432/tcp            Arclytics_Sim
+```
+
+
+
+**3)** Connect to the running container and run some queries using the psql shell:
+
+```bash
+> docker exec -it Arclytics_Sim psql -U postgres
+```
+
+
+
+**4)** Create the Database and User. Additionally grant all the privileges for that database to the user. 
+
+Run all these commands sequentially.
+
+```bash
+CREATE USER neuraldev;
+CREATE DATABASE arclytics;
+GRANT ALL PRIVILEGES ON DATABASE arclytics TO neuraldev;
+ALTER USER Arclytics WITH PASSWORD 'THANOS';
+```
+
+
+
+**5)** If necessary, change the Django settings file to use the running Postgres Docker container instance.
+
+This is what you will see in the default `settings.py`.
+
 ```bash
 DATABASES = {
-    		'default': {
-       			 'ENGINE': 'django.db.backends.sqlite3',
-       			 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    			   }
-		    }	
+	'default': {
+    	'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+     }
+}	
 ```
 
+Change `settings.py` as follows:
 
-	Change settings.py as follows:
 ```bash
-	DATABASES = {
+DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Arclytics',                      
-        'USER': 'Arclytics',
-        'PASSWORD': 'ARCC',
+        'NAME': 'arclytics',                      
+        'USER': 'neuraldev',
+        'PASSWORD': 'THANOS',
         'HOST': '',
         'PORT': '5432',
     }
 }
 ```
 
-Note: the Docker Psql runs on port 5432.
+Note: the Docker PSQL runs on port 5432.
+
+
+
+#### Docker (Short) Cheatsheet
 
 Some handy docker commands:
+
+**Starting a container**
+
+```powershell
+> docker start <container name>
 ```
-docker ps: list all the running docker containers
-docker start(name optional): Starts one or more stopped containers
-docker stop(name optional): Stops one or container
-docker rm(name optional): Removes one or more containers.
-docker run: Run a docker container based on an image
+**Stopping a container**
+
+```powershell
+> docker stop <container name>
 ```
-P.S. If you want to learn more about docker click [here](https://docs.docker.com/get-started/).
+
+**Listing all running containers**
+
+```powershell
+> docker ps -a
+```
+
+**Listing all containers**
+
+```powershell
+> docker container ls -a
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                     PORTS               NAMES
+2afdef182d29        postgres:10.7       "docker-entrypoint.s…"   12 minutes ago      Exited (0) 4 minutes ago                       Arclytics_Sim
+```
+
+**Deleting a container**
+
+```powershell
+> docker stop Arclytics_Sim
+Arclytics_Sim
+
+> docker container ls -a
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                     PORTS               NAMES
+2afdef182d29        postgres:10.7       "docker-entrypoint.s…"   12 minutes ago      Exited (0) 4 minutes ago                       Arclytics_Sim
+
+> docker container rm Arclytics_Sim
+```
+
+*NOTE:* You cannot have two containers of the same name so if you are updating a container, you will need to delete it first before you can create a new one.
+
+
+
+P.S. If you want to learn more about Docker click [here](https://docs.docker.com/get-started/).
+
+**IMPORTANT!!!** You must start the Docker container with this command every time you run Django.
+
+`> docker start Arclytics_Sim`
+
 
 
 ### Running the server

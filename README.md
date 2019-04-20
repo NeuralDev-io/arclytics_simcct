@@ -81,18 +81,20 @@ $ source activate arclytics_api
 
 #### Installing from Environment YAML
 
+**IMPORTANT!!!!** DO NOT USER this option for now. 
+
 You could also install from the provided `environment-dev_unix.yml` (Linux/MacOS) or `environment-dev_win.yml` (Windows) file.
 
 ##### Linux
 
 ```bash
-$ conda env create -f environment_unix.yml
+$ conda env create -f environment-dev_unix.yml
 ```
 
 ##### Windows
 
 ```bash
-> conda env create -f environment_win.yml
+> conda env create -f environment-dev_win.yml
 ```
 
 ### Database
@@ -111,7 +113,7 @@ To get the database running, install docker from [here](https://www.docker.com/g
 
 Optionally, you can download and use the Docker GUI by downloading Kitematic from [here](https://docs.docker.com/toolbox/toolbox_install_windows/) for Windows.
 
-Once the installation is complete. Download docker Postgres Imagesfrom [here](https://hub.docker.com/_/postgres). You can do it using this command in Command Prompt or PowerShell (Windows) or Terminal (macOS and Linux).
+The Docker Postgres documentation can be found [here](https://hub.docker.com/_/postgres). You can download the images from this Docker hub by using the following command in Command Prompt or PowerShell (Windows) or Terminal (macOS and Linux).
 
 **Windows**
 
@@ -152,8 +154,8 @@ To test if the container is running properly:
 
 ```powershell
 > docker ps
-CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS               NAMES
-2afdef182d29        postgres:10.7       "docker-entrypoint.s…"   10 seconds ago      Up 9 seconds        5432/tcp            Arclytics_Sim
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
+d021daf7f1af        postgres:10.7       "docker-entrypoint.s…"   16 minutes ago      Up 16 minutes       0.0.0.0:5432->5432/tcp   Arclytics_Sim
 ```
 
 
@@ -174,7 +176,7 @@ Run all these commands sequentially.
 CREATE USER neuraldev;
 CREATE DATABASE arclytics;
 GRANT ALL PRIVILEGES ON DATABASE arclytics TO neuraldev;
-ALTER USER Arclytics WITH PASSWORD 'THANOS';
+ALTER USER arclytics WITH PASSWORD 'THANOS';
 ```
 
 

@@ -113,7 +113,7 @@ DATABASES = {
         'NAME': 'arclytics',
         'USER': 'neuraldev',
         'PASSWORD': 'THANOS',
-        'HOST': '',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }

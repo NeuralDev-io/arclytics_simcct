@@ -36,7 +36,13 @@ Under the hood, Arclytics SimCCT API uses the following dependencies.
 ### Virtual Environment
 
 To ensure the testing environment works as expected, you will need to have installed [Anaconda](https://www.anaconda.com/)
-version `4.6.9`. 
+version `4.6.12`. 
+
+
+
+*NOTE: Installation instructions for Anaconda to come*.
+
+
 
 To clone the environment, you will need the following packages:
 
@@ -55,6 +61,7 @@ dependencies:
   - python=3.7.2
   - setuptools=40.8.0
   - sqlite=3.27.2
+  - psycopg2=2.7.6.1
 ```
 
 #### Installing
@@ -64,9 +71,10 @@ To install the development environment, the following steps will be required. It
 ```bash
 $ conda create -n arclytics_api \ 
 	python=3.7.2 \
-	conda-forge::django=2.2 \
+	conda-forge::django=2.1.7 \
 	conda-forge::djangorestframework=3.9.2 \
 	numpy=1.16.2 \
+	psycopg2=2.7.6.1 \
 	-c anaconda
 $ source activate arclytics_api
 ```
@@ -75,7 +83,7 @@ $ source activate arclytics_api
 
 You could also install from the provided `environment-dev_unix.yml` (Linux/MacOS) or `environment-dev_win.yml` (Windows) file.
 
-##### Linux/MacOS
+##### Linux
 
 ```bash
 $ conda env create -f environment_unix.yml
@@ -268,6 +276,8 @@ To run the Django server:
 
 *NOTE TO SELF: You must figure out some way to provide instructions on how to create a user to allow access to the web application.*
 
+
+
 ## Tests and Examples
 
 * TBC
@@ -295,7 +305,7 @@ You can view the full details of the license at [LICENSE.md](<https://bitbucket.
 ## Authors
 
 * Andrew (Dinh) Che <@codeninja55\> (andrew at neuraldev dot io)
-* Dinol Shretha <username\> (email)
+* Dinol Shretha <@dinolsth\> (email)
 * David Matthews <username\> (email)
 * Duong (Dalton) Le <username\> (email)
 * Arvy Salazar <username\> (email)

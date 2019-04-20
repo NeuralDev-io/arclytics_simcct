@@ -174,9 +174,9 @@ Run all these commands sequentially.
 
 ```bash
 CREATE USER neuraldev;
+ALTER USER neuraldev WITH PASSWORD 'THANOS';
 CREATE DATABASE arclytics;
 GRANT ALL PRIVILEGES ON DATABASE arclytics TO neuraldev;
-ALTER USER arclytics WITH PASSWORD 'THANOS';
 ```
 
 

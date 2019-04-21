@@ -1,8 +1,8 @@
-# Arclytics SimCCT API
+# Arclytics Sim API
 
-This is the CSIT321 Arclytics SimCCT Django REST back-end API source code repository.
+This is the CSIT321 Arclytics Sim Django REST back-end API source code repository.
 
-Arclytics SimCCT API (pronounced *ark-lit-icks*) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool.
+Arclytics Sim API (pronounced *ark-lit-icks*) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool.
 
 The API provides mathematical algorithms for computing both the Li (98) and Kirkaldo (83) methods for Phase Transformation simulations.
 
@@ -16,10 +16,12 @@ The API provides mathematical algorithms for computing both the Li (98) and Kirk
 
 ## Table of contents
 
-* Getting started
-* Prerequisites
-* Tests and Examples
-* Deployment
+* [Getting started](#Getting Started)
+  * [Prerequisites](#Prerequisites)
+  * [Virtual Environment](#Virtual Environment)
+  * [Database](#Database)
+* [Tests and Examples](#Tests and Examples)
+* [Deployment](#Deployment)
 * Versioning
 * License
 * Authors
@@ -31,18 +33,30 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Under the hood, Arclytics SimCCT API uses the following dependencies.
+Under the hood, Arclytics Sim API uses the [Anaconda](https://www.anaconda.com/) virtual environment and [Docker](https://www.docker.com/) container for our [PostgreSQL](https://hub.docker.com/_/postgres) database. 
+
+To ensure this works properly, you will need the following versions as a minimum:
+
+```
+conda>=4.6.12
+docker>=18.9.5
+```
+
+#### Installing Anaconda
+
+For Windows, Linux or macOS, you can download the installer for Anaconda [here](https://www.anaconda.com/distribution/#download-section).
+
+Once installed, if you are using Linux/macOS, open the terminal to create a virtual environment. If you are using Windows, you can open the Anaconda Prompt.
+
+![Windows Anaconda Prompt](./docs/assets/anaconda-prompt-1.png)
+
+To get the database running, install Docker from [here](https://www.docker.com/get-started). From here, select **Download for Windows** or **Download for Mac**. It will ask you to login or create an account before you can download. Once you have create an account, please select **Get Docker Desktop for Windows (stable)**. During installation, **DO NOT** select the option for Windows containers. 
+
+Optionally, you can download and use the Docker GUI by downloading Kitematic from [here](https://docs.docker.com/toolbox/toolbox_install_windows/) for Windows.
+
+![Windows Command Prompt](./docs/assets/cmd-prompt-1.png)
 
 ### Virtual Environment
-
-To ensure the testing environment works as expected, you will need to have installed [Anaconda](https://www.anaconda.com/)
-version `4.6.12`. 
-
-
-
-*NOTE: Installation instructions for Anaconda to come*.
-
-
 
 To clone the environment, you will need the following packages:
 
@@ -53,37 +67,36 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
-  - django=2.2
+  - django=2.1.7
   - djangorestframework=3.9.2
   - numpy=1.16.2
-  - numpy-base=1.16.2
-  - pip=19.0.3
-  - python=3.7.2
-  - setuptools=40.8.0
-  - sqlite=3.27.2
   - psycopg2=2.7.6.1
+  - python=3.7.2
 ```
 
-#### Installing
+#### Creating new Env
 
-To install the development environment, the following steps will be required. It is assumed a Linux operating system such as Ubuntu 18.04 will be used for this. Additional installation steps for Windows will be described to be included at a later date. 
+To install the development environment, the following steps will be required. 
+
+**Linux/macOS**
 
 ```bash
-$ conda create -n arclytics_api \ 
-	python=3.7.2 \
-	conda-forge::django=2.1.7 \
-	conda-forge::djangorestframework=3.9.2 \
-	numpy=1.16.2 \
-	psycopg2=2.7.6.1 \
-	-c anaconda
+$ conda create --name arclytics_api	python=3.7.2 conda-forge::django=2.1.7 conda-forge::djangorestframework=3.9.2 numpy=1.16.2 psycopg2=2.7.6.1	-c anaconda
 $ source activate arclytics_api
 ```
 
+**Windows**
+
+```powershell
+> conda create --name arclytics_api	python=3.7.2 conda-forge::django=2.1.7 conda-forge::djangorestframework=3.9.2 numpy=1.16.2 psycopg2=2.7.6.1	-c anaconda
+$ source activate arclytics_api
+```
+
+
+
 #### Installing from Environment YAML
 
-**IMPORTANT!!!!** DO NOT USER this option for now. 
-
-You could also install from the provided `environment-dev_unix.yml` (Linux/MacOS) or `environment-dev_win.yml` (Windows) file.
+You could also install from the provided `environment-dev_unix.yml` (Linux), `environment-dev_mac.yml` (macOS) or `environment-dev_win.yml` (Windows) file.
 
 ##### Linux
 
@@ -98,20 +111,6 @@ $ conda env create -f environment-dev_unix.yml
 ```
 
 ### Database
-
-You will need the following versions:
-
-```
-docker=18.09.2
-postgres=10.7
-psycopg2=2.7.6.1
-```
-
-
-
-To get the database running, install docker from [here](https://www.docker.com/get-started). From here, select **Download for Windows** or **Download for Mac**. It will ask you to login or create an account before you can download. Once you have create an account, please select **Get Docker Desktop for Windows (stable)**. During installation, **DO NOT** select the option for Windows containers. 
-
-Optionally, you can download and use the Docker GUI by downloading Kitematic from [here](https://docs.docker.com/toolbox/toolbox_install_windows/) for Windows.
 
 The Docker Postgres documentation can be found [here](https://hub.docker.com/_/postgres). You can download the images from this Docker hub by using the following command in Command Prompt or PowerShell (Windows) or Terminal (macOS and Linux).
 
@@ -273,6 +272,8 @@ CONTAINER ID        IMAGE               COMMAND                  CREATED        
 
 
 P.S. If you want to learn more about Docker click [here](https://docs.docker.com/get-started/).
+
+
 
 **IMPORTANT!!!** You must start the Docker container with this command every time you run Django.
 

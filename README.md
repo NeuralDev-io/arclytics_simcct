@@ -198,7 +198,7 @@ This will connect to the database `-d arclytics` with the user `-U neuraldev`. A
 to the default `postgres` database with the superuser account `-U postgres`.  
 
 ```powershell
-> docker exec -it Arclytics_Sim psql -U postgres
+> docker exec -it arclytics_db psql -U postgres
 ```
 
 Some common PostgreSQL commands can be found in [POSTGRES_BASICS.md](./docs/POSTGRES_BASICS.md).
@@ -238,13 +238,13 @@ DATABASES = {
         'NAME': 'arclytics',                      
         'USER': 'neuraldev',
         'PASSWORD': 'THANOS',
-        'HOST': 'locahost',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
 ```
 
-Note: the Docker PSQL runs on port 5432.
+*Note:* the Docker PSQL runs on port 5432.
 
 
 

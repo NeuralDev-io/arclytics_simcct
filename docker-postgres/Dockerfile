@@ -57,6 +57,7 @@ RUN set -eux; \
 	rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /docker-entrypoint-initdb.d
+ADD ./init/init-user-db.sh /docker-entrypoint-initdb.d/
 
 RUN set -ex; \
 # pub   4096R/ACCC4CF8 2011-10-13 [expires: 2019-07-02]
@@ -167,7 +168,7 @@ ENV PGDATA /var/lib/postgresql/data
 RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA" # this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
 VOLUME /var/lib/postgresql/data
 
-COPY docker-entrypoint.sh /usr/local/bin/
+COPY ./docker-entrypoint.sh /usr/local/bin/
 RUN ln -s usr/local/bin/docker-entrypoint.sh / # backwards compat
 ENTRYPOINT ["docker-entrypoint.sh"]
 

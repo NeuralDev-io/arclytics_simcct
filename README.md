@@ -9,7 +9,6 @@ The API provides mathematical algorithms for computing both the Li (98) and Kirk
 
 [**Play with the tool »**]()  
 
-
 [Website](https://uow.neuraldev.io) · [API Documentation](https://bitbucket.org/neuraldev/arclytics_simcct_api/wiki/Home) · [LICENSE](https://bitbucket.org/neuraldev/arclytics_simcct_api/src/master/LICENSE)
 
 
@@ -22,14 +21,18 @@ The API provides mathematical algorithms for computing both the Li (98) and Kirk
   * [Database](#Database)
 * [Tests and Examples](#Tests and Examples)
 * [Deployment](#Deployment)
-* Versioning
-* License
-* Authors
-* Acknowledgements
+* [Versioning](#Versioning)
+* [License](#License)
+* [Authors](#Authors)
+* [Acknowledgements](#Acknowledgements)
+
+
 
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+
+
 
 ### Prerequisites
 
@@ -41,6 +44,8 @@ To ensure this works properly, you will need the following versions as a minimum
 conda>=4.6.12
 docker>=18.9.5
 ```
+
+
 
 #### Installing Anaconda
 
@@ -55,6 +60,8 @@ To get the database running, install Docker from [here](https://www.docker.com/g
 Optionally, you can download and use the Docker GUI by downloading Kitematic from [here](https://docs.docker.com/toolbox/toolbox_install_windows/) for Windows.
 
 ![Windows Command Prompt](./docs/assets/cmd-prompt-1.png)
+
+
 
 ### Virtual Environment
 
@@ -74,6 +81,8 @@ dependencies:
   - python=3.7.2
 ```
 
+
+
 #### Creating new Env
 
 To install the development environment, the following steps will be required. 
@@ -81,38 +90,42 @@ To install the development environment, the following steps will be required.
 **Linux/macOS**
 
 ```bash
-$ conda create --name arclytics_api	python=3.7.2 conda-forge::django=2.1.7 conda-forge::djangorestframework=3.9.2 numpy=1.16.2 psycopg2=2.7.6.1	-c anaconda
+$ conda create --name arclytics_api	python=3.7.2 django=2.1.7 conda-forge::djangorestframework=3.9.2 numpy=1.16.2 psycopg2=2.7.6.1	-c anaconda
 $ source activate arclytics_api
 ```
 
 **Windows**
 
 ```powershell
-> conda create --name arclytics_api	python=3.7.2 conda-forge::django=2.1.7 conda-forge::djangorestframework=3.9.2 numpy=1.16.2 psycopg2=2.7.6.1	-c anaconda
-$ source activate arclytics_api
+> conda create --name arclytics_api	python=3.7.2 django=2.1.7 conda-forge::djangorestframework=3.9.2 numpy=1.16.2 psycopg2=2.7.6.1	-c anaconda
+> activate arclytics_api
 ```
 
 
 
-#### Installing from Environment YAML
+#### (Optional) Installing from Environment YAML
 
-You could also install from the provided `environment-dev_unix.yml` (Linux), `environment-dev_mac.yml` (macOS) or `environment-dev_win.yml` (Windows) file.
+You could also install from the provided `environment-dev.yml`.
 
 ##### Linux
 
 ```bash
-$ conda env create -f environment-dev_unix.yml
+$ conda env create -f environment-dev.yml
+$ source activate arclytics_api
 ```
 
 ##### Windows
 
 ```bash
-> conda env create -f environment-dev_win.yml
+> conda env create -f environment-dev.yml
+> activate arclytics_api
 ```
+
+
 
 ### Database
 
-The Docker Postgres documentation can be found [here](https://hub.docker.com/_/postgres). You can download the images from this Docker hub by using the following command in Command Prompt or PowerShell (Windows) or Terminal (macOS and Linux).
+The Docker Postgres documentation can be found [here](https://hub.docker.com/_/postgres). You can download the images from this Docker hub by using the following command in Command Prompt or PowerShell (Windows) or Terminal (macOS and Linux). The examples below will be shown in Windows but will be the same for macOS and Linux.
 
 **Windows**
 
@@ -269,19 +282,19 @@ CONTAINER ID        IMAGE               COMMAND                  CREATED        
 
 *NOTE:* You cannot have two containers of the same name so if you are updating a container, you will need to delete it first before you can create a new one.
 
-
-
 P.S. If you want to learn more about Docker click [here](https://docs.docker.com/get-started/).
 
 
 
+### Running the server
+
 **IMPORTANT!!!** You must start the Docker container with this command every time you run Django.
 
-`> docker start Arclytics_Sim`
+```bash
+$ docker start Arclytics_Sim
+```
 
 
-
-### Running the server
 
 To run the Django server:
 
@@ -321,11 +334,11 @@ You can view the full details of the license at [LICENSE.md](<https://bitbucket.
 ## Authors
 
 * Andrew (Dinh) Che <@codeninja55\> (andrew at neuraldev dot io)
-* Dinol Shretha <@dinolsth\> (email)
-* David Matthews <username\> (email)
-* Duong (Dalton) Le <username\> (email)
-* Arvy Salazar <username\> (email)
-* Matthew Greentree <username\> (email)
+* Matthew Greentree <@matthewjgreentree\> (matthew at neuraldev dot io)
+* Duong (Dalton) Le <@daltonle_\> (dalton at neuraldev dot io)
+* Arvy Salazar <@R-V\> (arvy at neuraldev dot io)
+* Dinol Shretha <@dinolsth\> (dinolshrestha at gmail dot com)
+* David Matthews <@tree1004\> (davidmatthews1004 at gmail dot com)
 
 You can view the awesome contributions each member has made [here](<https://bitbucket.org/neuraldev/arclytics_simcct_api/addon/bitbucket-graphs/graphs-repo-page#!graph=contributors&uuid=edfeb8b1-d219-47a9-a81c-9c3ccced56f8&type=c&group=weeks>).
 
@@ -350,4 +363,4 @@ We also thank the open source community for making available awesome packages an
 * [Django](https://www.djangoproject.com/) - a high-level Python Web framework that encourages rapid development and clean, pragmatic design.
 * [Django REST Framework](https://www.django-rest-framework.org/) - a powerful and flexible toolkit for building Web APIs. 
 * [NumPy](http://www.numpy.org/) - the fundamental package for scientific computing with Python.
-* PostgreSQL - \<short sentence description\>
+* [PostgreSQL](https://www.postgresql.org/) - a powerful, open-source object-relational database system.

@@ -1,15 +1,15 @@
-# Arclytics Sim API
+# Arclytics Sim
 
-This is the CSIT321 Arclytics Sim Django REST back-end API source code repository.
+This is the CSIT321 Arclytics Sim Flask RESTful API server and React client source code repository.
 
-Arclytics Sim API (pronounced *ark-lit-icks*) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool.
+Arclytics Sim (pronounced *ark-lit-icks*) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool.
 
-The API provides mathematical algorithms for computing both the Li (98) and Kirkaldo (83) methods for Phase Transformation simulations.
+The API provides mathematical algorithms for computing both the Li (98) and Kirkaldi (83) methods for Phase Transformation simulations. The React client will provide the user interface and user interaction for the web browser. Additional Flask microservices as the project progresses.
 
 
 [**Play with the tool »**]()  
 
-[Website](https://uow.neuraldev.io) · [API Documentation](https://bitbucket.org/neuraldev/arclytics_sim_api/wiki/Home) · [LICENSE](https://bitbucket.org/neuraldev/arclytics_sim_api/src/master/LICENSE)
+[Website](https://uow.neuraldev.io) · [API Documentation](https://bitbucket.org/neuraldev/arclytics_sim/wiki/Home) · [LICENSE](https://bitbucket.org/neuraldev/arclytics_sim/src/master/LICENSE)
 
 
 
@@ -36,13 +36,35 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Under the hood, Arclytics Sim API uses the [Anaconda](https://www.anaconda.com/) virtual environment and [Docker](https://www.docker.com/) container for our [PostgreSQL](https://hub.docker.com/_/postgres) database. 
+Under the hood, Arclytics Sim uses the  virtual environment and  container for our [PostgreSQL](https://hub.docker.com/_/postgres) database. 
 
-To ensure this works properly, you will need the following versions as a minimum:
+Under the hood, Arclytics Sim will use the following technologies and tools:
+
+* [Anaconda](https://www.anaconda.com/)
+* [Docker](https://www.docker.com/)
+* [Docker-Compose](https://docs.docker.com/compose/overview/)
+* [Docker-Machine](https://docs.docker.com/machine/overview/)
+* [Kubernetes](https://kubernetes.io/docs/home/)
+* [Flask](http://flask.pocoo.org/)
+* [NodeJS](https://nodejs.org/en/)
+* npm
+* React
+* Plotly
+* [Swagger](https://swagger.io/docs/)
+
+To ensure this works properly, you will need the following versions as a minimum (TBA):
 
 ```
-conda>=4.6.12
-docker>=18.9.5
+conda >= 4.6.12
+docker >= 18.09.6
+docker-compose >= 1.24.0
+flask >= 
+Flask-RESTful >= 
+MongoDB >= 4.0.10
+nodejs >= 11.11.0
+Flask-Testing
+gunicorn
+nginx
 ```
 
 
@@ -68,7 +90,7 @@ Optionally, you can download and use the Docker GUI by downloading Kitematic fro
 To clone the environment, you will need the following packages:
 
 ```
-name: arclytics_api
+name: arclytics
 channels:
   - anaconda
   - conda-forge
@@ -90,15 +112,15 @@ To install the development environment, the following steps will be required.
 **Linux/macOS**
 
 ```bash
-$ conda create --name arclytics_api python=3.7.2 django=2.1.7 conda-forge::djangorestframework=3.9.2 numpy=1.16.2 psycopg2=2.7.6.1 -c anaconda
-$ source activate arclytics_api
+$ conda create --name arclytics python=3.7 flask -c anaconda
+$ source activate arclytics
 ```
 
 **Windows**
 
 ```powershell
-> conda create --name arclytics_api python=3.7.2 django=2.1.7 conda-forge::djangorestframework=3.9.2 numpy=1.16.2 psycopg2=2.7.6.1 -c anaconda
-> activate arclytics_api
+> conda create --name arclytics python=3.7 flask -c anaconda
+> activate arclytics
 ```
 
 
@@ -110,7 +132,7 @@ You could also install from the provided `environment-dev.yml`.
 
 ```
 $ conda env create -f environment-dev.yml
-$ source activate arclytics_api
+$ source activate arclytics
 ```
 
 
@@ -167,7 +189,7 @@ CONTAINER ID        IMAGE                             COMMAND                  C
 981cbe28648b        codeninja55/arc-postgres:latest   "docker-entrypoint.s…"   29 seconds ago      Up 28 seconds       0.0.0.0:5432->5432/tcp   arclytics_db
 ```
 
-This container has been created with an init script that can be found in `arclytics_sim_api/docker-postgres/init/init-user-db.sh`
+This container has been created with an init script that can be found in `arclytics_sim/docker-postgres/init/init-user-db.sh`
 
 ```bash
 #!/bin/bash
@@ -206,7 +228,7 @@ Some common PostgreSQL commands can be found in [POSTGRES_BASICS.md](./docs/POST
 
 If you ever need to run the init script again, you can do so with the following commands.
 
-Ensure you are in the main `arclytics_sim_api` directory.
+Ensure you are in the main `arclytics_sim` directory.
 
 ```powershell
 > docker cp docker-postgres\init-user-db.sql Arclytics_Sim:/docker-entrypoint-initdb.d/init-user-db.sql
@@ -308,16 +330,16 @@ $ docker start arclytics_db
 To run the Django server:
 
 ```bash
-(arclytics_api) $ cd arclytics
-(arclytics_api) $ python manage.py runserver 8000
+(arclytics) $ cd arclytics
+(arclytics) $ python manage.py runserver 8000
 ```
 
 If running the server for the first time, please ensure you migrate the database and create a superuser by doing:
 ```bash
-(arclytics_api) $ cd arclytics
-(arclytics_api) $ python manage.py migrate
-(arclytics_api) $ python create_superuser.py
-(arclytics_api) $ python manage.py runserver 8000
+(arclytics) $ cd arclytics
+(arclytics) $ python manage.py migrate
+(arclytics) $ python create_superuser.py
+(arclytics) $ python manage.py runserver 8000
 ```
 
 
@@ -344,7 +366,7 @@ If running the server for the first time, please ensure you migrate the database
 
 Internally, we use [Semantic Versioning guidelines](https://semver.org/) for our versioning standard. Sometimes we can make a mess of it, but we adhere to those rules whenever possible. 
 
-For the versions available, please see the tags from [release](https://bitbucket.org/neuraldev/arclytics_sim_api/branches/?branchtype=release) branch directory in this repository. 
+For the versions available, please see the tags from [release](https://bitbucket.org/neuraldev/arclytics_sim/branches/?branchtype=release) branch directory in this repository. 
 
 
 
@@ -352,7 +374,7 @@ For the versions available, please see the tags from [release](https://bitbucket
 
 To be determined.
 
-You can view the full details of the license at [LICENSE.md](<https://bitbucket.org/neuraldev/arclytics_sim_api/src/master/README.md>). 
+You can view the full details of the license at [LICENSE.md](<https://bitbucket.org/neuraldev/arclytics_sim/src/master/README.md>). 
 
 
 
@@ -365,7 +387,7 @@ You can view the full details of the license at [LICENSE.md](<https://bitbucket.
 * Dinol Shretha <@dinolsth\> (dinolshrestha at gmail dot com)
 * David Matthews <@tree1004\> (davidmatthews1004 at gmail dot com)
 
-You can view the awesome contributions each member has made [here](<https://bitbucket.org/neuraldev/arclytics_sim_api/addon/bitbucket-graphs/graphs-repo-page#!graph=contributors&uuid=edfeb8b1-d219-47a9-a81c-9c3ccced56f8&type=c&group=weeks>).
+You can view the awesome contributions each member has made [here](<https://bitbucket.org/neuraldev/arclytics_sim/addon/bitbucket-graphs/graphs-repo-page#!graph=contributors&uuid=edfeb8b1-d219-47a9-a81c-9c3ccced56f8&type=c&group=weeks>).
 
 
 
@@ -385,9 +407,7 @@ We thank the following organisations, departments, and individuals for their kin
     * Jason Aquilina
     * Student Support Division
 
-We also thank the open source community for making available awesome packages and libraries for our ease of development and deployment. The following are used under the hood of Arclytics Sim API:
+We also thank the open source community for making available awesome packages and libraries for our ease of development and deployment. The following are used under the hood of Arclytics Sim:
 
-* [Django](https://www.djangoproject.com/) - a high-level Python Web framework that encourages rapid development and clean, pragmatic design.
-* [Django REST Framework](https://www.django-rest-framework.org/) - a powerful and flexible toolkit for building Web APIs. 
 * [NumPy](http://www.numpy.org/) - the fundamental package for scientific computing with Python.
 * [PostgreSQL](https://www.postgresql.org/) - a powerful, open-source object-relational database system.

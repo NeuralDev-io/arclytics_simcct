@@ -1,0 +1,46 @@
+
+version: '3.7'
+
+services:
+
+  server:
+    build:
+      context: ./services/server
+      dockerfile: Dockerfile
+    volumes:
+      - './services/server:/usr/src/app'
+    ports:
+      - 8000:8000
+    expose:
+      - 8000
+    environment:
+      - FLAS_APP=api/app.py
+      - FLASK_ENV=development
+      - APP_SETTINGS=api.config.DevelopmentConfig
+#      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=postgres
+#    depends_on:
+#      - mongo
+
+  mongo:
+    build:
+      context: ./services/db
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 27017:27017
+    expose:
+      - 8081
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME: mongo_user
+      - MONGO_INITDB_ROOT_PASSWORD: mongo_secret
+
+
+#  client:
+#    build:
+#      context: ./services/client
+#      dockerfile: Dockerfile
+#    ports:
+#      - 8080:8080
+#    depends_on:
+#      - server

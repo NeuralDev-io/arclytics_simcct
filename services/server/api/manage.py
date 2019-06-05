@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 # ----------------------------------------------------------------------------------------------------------------------
-# arclytics_simcct_api
-# serializers.py
+# arclytics_sim
+# manage.py
 # 
 # Attributions: 
-# [1] https://www.django-rest-framework.org/tutorial/quickstart/
+# [1] 
 # ----------------------------------------------------------------------------------------------------------------------
 
 __author__ = 'Andrew Che <@codeninja55>'
@@ -16,26 +16,19 @@ __version__ = '{mayor}.{minor}.{rel}'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = '{dev_status}'
-__date__ = '2019.04.06'
+__date__ = '2019.06.04'
 
-"""serializers.py: 
+"""manage.py: 
 
-{Description}
+This script is to our CLI script tool to manage the application.
 """
 
-from django.contrib.auth.models import User, Group
-from rest_framework import serializers
+from flask.cli import FlaskGroup
+
+from api import app
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = User
-        fields = ('url', 'username', 'email', 'groups')
+cli = FlaskGroup(create_app=app)
 
-
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Group
-        fields = ('url', 'name')
-
-
+if __name__ == '__main__':
+    cli()

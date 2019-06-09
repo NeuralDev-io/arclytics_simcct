@@ -30,8 +30,6 @@ from flask_restful import Resource, Api
 from flask_pymongo import PyMongo
 from pprint import pprint
 
-from api.helpers import *
-
 # instantiate the application
 app = Flask(__name__)
 

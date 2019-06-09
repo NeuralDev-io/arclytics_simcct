@@ -18,7 +18,7 @@ services:
       - FLASK_APP=api/app.py
       - FLASK_ENV=development
       - APP_SETTINGS=api.config.DevelopmentConfig
-      - MONGO_URI=mongodb://mongodb:27017/arc
+      - MONGODB_URI=mongodb://mongodb:27017/arc
     depends_on:
       - mongodb
     links:

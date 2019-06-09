@@ -26,11 +26,13 @@ __name__ = 'Arclytics_API'
 
 import os
 import json
+import sys
 import datetime
+from dotenv import load_dotenv
 from bson.objectid import ObjectId
 from flask import Flask
 from flask_restful import Api
-from flask_pymongo import PyMongo
+from flask_mongoengine import MongoEngine
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 
@@ -45,6 +47,12 @@ class JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
+# First, add the project to PATH. Adjust as needed.
+PROJECT_PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../'))
+sys.path.append(PROJECT_PATH)
+dotenv_path = os.path.join(PROJECT_PATH, '.env')
+load_dotenv(dotenv_path)
+
 # instantiate the application
 app = Flask(__name__)
 
@@ -54,14 +62,18 @@ api = Api(app=app)
 # setup the configuration
 app_settings = os.getenv('APP_SETTINGS')
 app.config.from_object(app_settings)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 # Mongo interface
-app.config['MONGO_URI'] = os.getenv('MONGO_URI')
-mongo = PyMongo(app)
-user_db = mongo.db.users
+app.config['MONGODB_DB'] = 'arc'
+docker = True if os.getenv('DOCKER') == 'true' else False
+app.config['MONGODB_HOST'] = os.getenv('MONGODB_URI')
+# app.config['MONGODB_USERNAME'] = os.getenv('MONGODB_USER')
+# app.config['MONGODB_PASSWORD'] = os.getenv('MONGODB_PASSWORD')
+mongo = MongoEngine(app)
 
 # setup some config variables for flask_jwt_extended
-app.config['JWT_SECRET_KEY'] = os.getenv('SECRET')
+app.config['JWT_SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
 
 # Setup a Bcrypt object to encrypt passwords

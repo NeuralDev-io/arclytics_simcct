@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-import views, models, resources
 
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
@@ -31,7 +31,8 @@ class BaseConfig:
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
-    pass
+    TESTING = True
+    MONGO_URI = 'mongodb://localhost:27017/'
 
 
 class TestingConfig(BaseConfig):

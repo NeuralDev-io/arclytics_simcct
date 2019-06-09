@@ -25,10 +25,10 @@ This is the entrypoint to our Python Flask API server.
 __name__ = 'Arclytics_API'
 
 import os
-import bcrypt
 from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from flask_pymongo import PyMongo
+from pprint import pprint
 
 from api.helpers import *
 
@@ -37,15 +37,20 @@ app = Flask(__name__)
 
 # API interface
 api = Api(app=app)
-# Mongo interface
-app.config['MONGO_URI'] = os.environ.get('MONGO_URI')
-mongo = PyMongo(app)
 
-users = mongo.db.users
 
 # setup the configuration
 app_settings = os.getenv('APP_SETTINGS')
 app.config.from_object(app_settings)
+# pprint(app.config)
+
+# Mongo interface
+mongo = PyMongo(app)
+
+
+@app.route('/')
+def index():
+    return jsonify({'message': 'Hello World!'})
 
 
 class PingTest(Resource):
@@ -54,24 +59,6 @@ class PingTest(Resource):
             'status': 'success',
             'message': 'pong'
         }
-
-
-class UserRegister(Resource):
-    pass
-    # def post(self):
-    #     # get data from request body
-    #     data = request.get_json()
-    #
-    #     username = data['username']
-    #     password = data['password']
-    #
-    #     # check if the user exists
-    #     if user_exist(username):
-    #         return jsonify({
-    #             'status': 301,
-    #             'msg': 'Invalid username'
-    #         })
-
 
 
 api.add_resource(PingTest, '/arc/ping')

@@ -1,12 +1,7 @@
 # base image
-FROM python:3.7.3-alpine
+FROM python:3.7.3
 
 LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
-
-# install dependencies
-RUN apk update && \
-    apk add --virtual build-deps gcc python-dev musl-dev && \
-    apk add netcat-openbsd
 
 # set working directory
 RUN mkdir -p /usr/src/app
@@ -14,7 +9,8 @@ WORKDIR /usr/src/app
 
 # add and install requirements
 COPY ./requirements.txt /usr/src/app/requirements.txt
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 # add docker-entrypoint.sh
 COPY ./docker-entrypoint.sh /usr/src/app/docker-entrypoint.sh

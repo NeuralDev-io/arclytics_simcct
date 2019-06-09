@@ -32,7 +32,7 @@ class BaseConfig:
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
     TESTING = True
-    MONGO_URI = 'mongodb://localhost:27017/'
+    # MONGO_URI = 'mongodb://localhost:27017/users'
 
 
 class TestingConfig(BaseConfig):

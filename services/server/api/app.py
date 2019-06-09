@@ -25,10 +25,25 @@ This is the entrypoint to our Python Flask API server.
 __name__ = 'Arclytics_API'
 
 import os
-from flask import Flask, jsonify
-from flask_restful import Resource, Api
+import json
+import datetime
+from bson.objectid import ObjectId
+from flask import Flask
+from flask_restful import Api
 from flask_pymongo import PyMongo
-from pprint import pprint
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager
+
+
+class JSONEncoder(json.JSONEncoder):
+    """Extend json-encoder class to properly convert dates and object ids."""
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        if isinstance(o, datetime.datetime):
+            return str(o)
+        return json.JSONEncoder.default(self, o)
+
 
 # instantiate the application
 app = Flask(__name__)
@@ -36,27 +51,26 @@ app = Flask(__name__)
 # API interface
 api = Api(app=app)
 
-
 # setup the configuration
 app_settings = os.getenv('APP_SETTINGS')
 app.config.from_object(app_settings)
-# pprint(app.config)
 
 # Mongo interface
+app.config['MONGO_URI'] = os.getenv('MONGO_URI')
 mongo = PyMongo(app)
+user_db = mongo.db.users
 
+# setup some config variables for flask_jwt_extended
+app.config['JWT_SECRET_KEY'] = os.getenv('SECRET')
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
 
-@app.route('/')
-def index():
-    return jsonify({'message': 'Hello World!'})
+# Setup a Bcrypt object to encrypt passwords
+flask_bcrypt = Bcrypt(app)
 
+# Setup the JWT manager
+jwt = JWTManager(app)
 
-class PingTest(Resource):
-    def get(self):
-        return {
-            'status': 'success',
-            'message': 'pong'
-        }
+# use the modified encoder class to handle ObjectId & datetime object while jsonifying the response.
+app.json_encoder = JSONEncoder
 
-
-api.add_resource(PingTest, '/arc/ping')
+from api.views import *

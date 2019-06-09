@@ -21,9 +21,20 @@ __date__ = '2019.06.09'
 The controller and routes for the Arclytics Sim API.
 """
 
+import json
 from flask import request, jsonify
 from flask_restful import Resource
-from api.app import app, api, mongo
+from api.app import app, api, mongo, flask_bcrypt, jwt, JSONEncoder
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    jwt_required,
+    jwt_refresh_token_required,
+    get_jwt_identity
+)
+from api.schemas import validate_user
+
+# TODO: Add a logger
 
 # TODO: Testing index entry
 @app.route('/')
@@ -31,40 +42,76 @@ def index():
     return jsonify({'message': 'Hello World!'}), 200
 
 
-@app.route('/users', methods=['GET', 'POST', 'DELETE', 'PATCH'])
+@jwt.unauthorized_loader
+def unauthorized_response(callback):
+    return jsonify({
+        'ok': False,
+        'message': 'Not authorized.'
+    }), 401
+
+
+@app.route('/auth', methods=['POST'])
+def auth_user():
+    """Authorisation login endpoint."""
+    data = validate_user(request.get_json())
+    if data['ok']:
+        data = data['data']
+        user = mongo.db.users.find_one({'email': data['email']})
+        if user and flask_bcrypt.check_password_hash(user['password'], data['password']):
+            del user['password']
+            access_token = create_access_token(identity=data)
+            refresh_token = create_refresh_token(identity=data)
+            user['token'] = access_token
+            user['refresh'] = refresh_token
+            encoded_user = JSONEncoder().encode(user)
+            return jsonify({'ok': True, 'data': encoded_user}), 200
+        else:
+            return jsonify({'ok': False, 'message': 'Invalid username or password.'}), 401
+    else:
+        return jsonify({'ok': False, 'message': 'Bad request parameters: {}'.format(data['message'])}), 400
+
+
+@app.route('/register', methods=['POST'])
+def register():
+    """Register user endpoint."""
+    validated_data = validate_user(request.get_json())
+
+    # TODO: validate if existing user
+    if validated_data['ok']:
+        data = validated_data['data']
+        data['password'] = flask_bcrypt.generate_password_hash(validated_data['password'])
+        mongo.db.users.insert_one(data)
+        return jsonify({'ok': True, 'message': 'User created successfully!'}), 200
+    else:
+        return jsonify({'ok': False, 'message': 'Bad request parameters: {}'.format(validated_data['message'])}), 400
+
+
+@app.route('/refresh', methods=['POST'])
+@jwt_refresh_token_required
+def refresh():
+    """Refresh token endpoint."""
+    current_user = get_jwt_identity()
+    res = {
+        'token': create_refresh_token(identity=current_user)
+    }
+    return jsonify({'ok': True, 'data': res})
+
+
+@app.route('/users', methods=['GET', 'DELETE', 'PATCH'])
+@jwt_required
 def user():
+    """User endpoints."""
     if request.method == 'GET':
         query = request.args
         data = mongo.db.users.find_one(query)
-        return jsonify(data), 200
+        return jsonify({'ok': True, 'data': data}), 200
 
-    data = request.get_json()
-
-    if request.method == 'POST':
-        if data.get('name', None) is not None and data.get('email', None) is not None:
-            mongo.db.users.insert_one(data)
-            return jsonify({'ok': True, 'message': 'User created successfully!'}), 200
-        else:
-            return jsonify({'ok': False, 'message': 'Bad request parameters'}), 400
-
+    data = request.json()
     if request.method == 'DELETE':
-        if data.get('email', None) is not None:
-            db_response = mongo.db.users.delete_one({'email': data['email']})
-            if db_response.deleted_count == 1:
-                response = {'ok': True, 'message': 'record deleted'}
-            else:
-                response = {'ok': True, 'message': 'no record found'}
-            return jsonify(response), 200
-        else:
-            return jsonify({'ok': False, 'message': 'Bad request parameters!'}), 400
+        pass
 
     if request.method == 'PATCH':
-        if data.get('query', {}) != {}:
-            mongo.db.users.update_one(
-                data['query'], {'$set': data.get('payload', {})})
-            return jsonify({'ok': True, 'message': 'record updated'}), 200
-        else:
-            return jsonify({'ok': False, 'message': 'Bad request parameters!'}), 400
+        pass
 
 
 # TODO: Testing using flask_restful api resources

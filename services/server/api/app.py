@@ -32,9 +32,10 @@ from dotenv import load_dotenv
 from bson.objectid import ObjectId
 from flask import Flask
 from flask_restful import Api
-from flask_mongoengine import MongoEngine
+from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
+from simplejson import raw_json
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -42,6 +43,8 @@ class JSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):
             return str(o)
+        if isinstance(o, set):
+            return list(o)
         if isinstance(o, datetime.datetime):
             return str(o)
         return json.JSONEncoder.default(self, o)
@@ -65,12 +68,10 @@ app.config.from_object(app_settings)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 # Mongo interface
-app.config['MONGODB_DB'] = 'arc'
-docker = True if os.getenv('DOCKER') == 'true' else False
-app.config['MONGODB_HOST'] = os.getenv('MONGODB_URI')
+app.config['MONGO_URI'] = os.getenv('MONGO_URI')
 # app.config['MONGODB_USERNAME'] = os.getenv('MONGODB_USER')
 # app.config['MONGODB_PASSWORD'] = os.getenv('MONGODB_PASSWORD')
-mongo = MongoEngine(app)
+mongo = PyMongo(app)
 
 # setup some config variables for flask_jwt_extended
 app.config['JWT_SECRET_KEY'] = os.getenv('SECRET_KEY')

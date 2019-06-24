@@ -1,10 +1,10 @@
 {
-  "general": {
-    "debug": true
-  },
-  "logging": {
-    "debug": true,
-    "stdout": true,
-    "profiler": false
-  }
+    "general": {
+        "debug": true
+    },
+    "logging": {
+        "debug": true,
+        "stdout": true,
+        "profiler": false
+    }
 }

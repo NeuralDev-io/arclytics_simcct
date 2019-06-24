@@ -25,7 +25,10 @@ __date__ = '2019.06.24'
 import os
 
 from logger.arc_logger import AppLogger
+from simulation.simulation import *
 
 if __name__ == '__main__':
     logger = AppLogger(__name__)
     logger.info('Simulation Start - Alpha version')
+    sim = Simulation()
+    print(sim)

@@ -10,4 +10,3 @@ Flask-JWT-Extended==3.18.2
 Flask-Bcrypt==0.7.1
 jsonschema==3.0.1
 python-dotenv==0.10.3
-simplejson==3.16.0

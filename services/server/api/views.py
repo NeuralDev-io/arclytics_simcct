@@ -21,10 +21,9 @@ __date__ = '2019.06.09'
 The controller and routes for the Arclytics Sim API.
 """
 
-import json
 from flask import request, jsonify
 from flask_restful import Resource
-from api.app import app, api, mongo, flask_bcrypt, jwt, JSONEncoder
+from api.app import app, api, mongo, flask_bcrypt, jwt
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -46,7 +45,7 @@ def index():
 def unauthorized_response(callback):
     return jsonify({
         'ok': False,
-        'message': 'Not authorized.'
+        'message': 'No Authorisation Header.'
     }), 401
 
 
@@ -63,8 +62,7 @@ def auth_user():
             refresh_token = create_refresh_token(identity=data)
             user['token'] = access_token
             user['refresh'] = refresh_token
-            encoded_user = JSONEncoder().encode(user)
-            return jsonify({'ok': True, 'data': encoded_user}), 200
+            return jsonify({'ok': True, 'data': user}), 200
         else:
             return jsonify({'ok': False, 'message': 'Invalid username or password.'}), 401
     else:
@@ -74,16 +72,16 @@ def auth_user():
 @app.route('/register', methods=['POST'])
 def register():
     """Register user endpoint."""
-    validated_data = validate_user(request.get_json())
+    data = validate_user(request.get_json())
 
     # TODO: validate if existing user
-    if validated_data['ok']:
-        data = validated_data['data']
-        data['password'] = flask_bcrypt.generate_password_hash(validated_data['password'])
+    if data['ok']:
+        data = data['data']
+        data['password'] = flask_bcrypt.generate_password_hash(data['password'])
         mongo.db.users.insert_one(data)
         return jsonify({'ok': True, 'message': 'User created successfully!'}), 200
     else:
-        return jsonify({'ok': False, 'message': 'Bad request parameters: {}'.format(validated_data['message'])}), 400
+        return jsonify({'ok': False, 'message': 'Bad request parameters: {}'.format(data['message'])}), 400
 
 
 @app.route('/refresh', methods=['POST'])
@@ -103,7 +101,8 @@ def user():
     """User endpoints."""
     if request.method == 'GET':
         query = request.args
-        data = mongo.db.users.find_one(query)
+        data = mongo.db.users.find_one(query, {"_id": 0})
+        print(data)
         return jsonify({'ok': True, 'data': data}), 200
 
     data = request.json()

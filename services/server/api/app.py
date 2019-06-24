@@ -35,7 +35,6 @@ from flask_restful import Api
 from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
-from simplejson import raw_json
 
 
 class JSONEncoder(json.JSONEncoder):

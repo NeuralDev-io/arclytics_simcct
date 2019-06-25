@@ -31,4 +31,4 @@ if __name__ == '__main__':
     logger = AppLogger(__name__)
     logger.info('Simulation Start - Alpha version')
     sim = Simulation()
-    print(sim)
+    # print(sim)

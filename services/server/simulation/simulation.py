@@ -32,6 +32,7 @@ import numpy as np
 from prettytable import PrettyTable
 
 from logger.arc_logger import AppLogger
+from ae3_utilities import ae3_single_carbon
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
 DEFAULT_CONFIGS = Path(BASE_DIR) / 'configs' / 'sim_configs.json'
@@ -55,10 +56,12 @@ class Simulation(object):
     or the Cooling Curve Transformation. It also has methods to calculate some of these arguments automatically based
     on the Li '98 or Kirkaldy '83 equations as aggregated by Dr. Bendeich.
     """
+
     def __init__(self, method=Method.Li98, alloy=Alloy.Parent, configs=DEFAULT_CONFIGS):
         self.method = method
         self.alloy = alloy
 
+        # TODO: This is obviously not the optimum way to store the variables but quick and dirty enough to do testing
         config = None
         with open(configs) as config_f:
             config = json.load(config_f, parse_float=np.float32)
@@ -77,6 +80,8 @@ class Simulation(object):
         self.ms_undercool = config['transformation_temp_limits']['ms_undercool']
         self.bs_temp = config['transformation_temp_limits']['bs_temp']
         self.auto_austenite_calc = config['austenite_limits']['auto_calculate']
+        # TODO: Need to check if Ae available or can be calculated
+        self.ae_check = False
         self.ae1 = config['austenite_limits']['ae1_value']
         self.ae3 = config['austenite_limits']['ae3_value']
 
@@ -87,8 +92,8 @@ class Simulation(object):
 
         if self.auto_ms_bs_calc:
             self.auto_ms_bs()
-
-        # TODO: Need to check if Ae available or can be calculated
+        if self.auto_austenite_calc:
+            self.auto_ae1_ae3()
 
     def get_compositions(self, config: dict) -> None:
         """
@@ -105,12 +110,12 @@ class Simulation(object):
         c_weld = config['composition']['weld']
         c_mix = config['composition']['mix']
 
-        self.comp_parent = np.zeros(len(c_parent), dtype={'names': ['name', 'symbol', 'weight'],
-                                                          'formats': [(np.str_, 10), (np.str_, 4), np.float32]})
-        self.comp_weld = np.zeros(len(c_weld), dtype={'names': ['name', 'symbol', 'weight'],
-                                                      'formats': [(np.str_, 10), (np.str_, 4), np.float32]})
-        self.comp_mix = np.zeros(len(c_mix), dtype={'names': ['name', 'symbol', 'weight'],
-                                                    'formats': [(np.str_, 10), (np.str_, 4), np.float32]})
+        self.comp_parent = np.zeros(len(c_parent),
+                                    dtype=[('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
+        self.comp_weld = np.zeros(len(c_weld),
+                                  dtype=[('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
+        self.comp_mix = np.zeros(len(c_mix),
+                                 dtype=[('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
 
         # iterate over all 3 lists at once and store them in the np.ndarray
         for i, (e_p, e_w, e_m) in enumerate(zip(c_parent, c_weld, c_mix)):
@@ -123,7 +128,7 @@ class Simulation(object):
         self.bs_temp = self.get_bs()
         self.ms_temp = self.get_ms()
 
-    def get_bs(self) -> np.float:
+    def get_bs(self) -> float:
         """Do the calculation based on Li98 or Kirkaldy 83 method and return the MS temperature."""
         # ensure we are getting the value and not the list by using index 0
         C = self.comp_parent[self.comp_parent['name'] == 'carbon']['weight'][0]
@@ -141,7 +146,7 @@ class Simulation(object):
             return 656 - (58 * C) - (35 * Mn) - (15 * Ni) - (34 * Cr) - (41 * Mo)
         return -1
 
-    def get_ms(self) -> np.float:
+    def get_ms(self) -> float:
         """Do the calculation based on Li98 or Kirkaldy83 method and return the MS temperature."""
         # ensure we are getting the value and not the list by using index 0
         C = self.comp_parent[self.comp_parent['name'] == 'carbon']['weight'][0]
@@ -161,6 +166,46 @@ class Simulation(object):
             return 561 - (474 * C) - (33.0 * Mn) - (17.0 * Ni) - (17.0 * Cr) - (21.0 * Mo)
 
         return -1
+
+    def auto_ae1_ae3(self) -> None:
+        # validate the Austenite values have been generated and it will not crash the application
+        self.ae_check = True
+        self.ae1, self.ae3 = self.calc_ae1_ae3()
+
+    def calc_ae1_ae3(self) -> (np.float, np.float):
+        c = self.comp_parent[self.comp_parent['name'] == 'carbon']['weight'][0]
+        ni = self.comp_parent[self.comp_parent['name'] == 'nickel']['weight'][0]
+        si = self.comp_parent[self.comp_parent['name'] == 'silicon']['weight'][0]
+        wx = self.comp_parent[self.comp_parent['name'] == 'tungsten']['weight'][0]
+        mn = self.comp_parent[self.comp_parent['name'] == 'manganese']['weight'][0]
+        cr = self.comp_parent[self.comp_parent['name'] == 'chromium']['weight'][0]
+        asx = self.comp_parent[self.comp_parent['name'] == 'arsenic']['weight'][0]
+        mo = self.comp_parent[self.comp_parent['name'] == 'molybdenum']['weight'][0]
+        vx = self.comp_parent[self.comp_parent['name'] == 'vanadium']['weight'][0]
+        cu = self.comp_parent[self.comp_parent['name'] == 'copper']['weight'][0]
+        px = self.comp_parent[self.comp_parent['name'] == 'phosphorous']['weight'][0]
+        al = self.comp_parent[self.comp_parent['name'] == 'aluminium']['weight'][0]
+        ti = self.comp_parent[self.comp_parent['name'] == 'titanium']['weight'][0]
+        # Do the calculations
+        # 1. Equations of Andrews (1965)
+        ae1 = (723.0 - (16.9 * ni) + (29.1 * si) + (6.38 * wx) - (10.7 * mn) + (16.9 * cr) + (290 * asx)) / 3.0
+        ae3 = (910.0 - (203 * np.sqrt(c)) + (44.7 * si) - (15.2 * ni) + (31.5 * mo) + (104.0 * vx) + (13.1 * wx) -
+               (30 * mn) + (11.0 * cr) + (20.0 * cu) - (700.0 * px) - (400.0 * al) - (120.0 * asx) - (400.0 * ti)) / 3.0
+
+        # 2. Equations of Eldis (in Barralis, 1982): 1/3 due to averaging
+        ae1 = ae1 + (712.0 - (17.8 * mn) - (19.1 * ni) + (20.1 * si) + (11.9 * cr) + (9.8 * mo)) / 3.
+        ae3 = ae3 + (871.0 - (254.4 * np.sqrt(c)) - (14.2 * ni) + (51.7 * si)) / 3.0
+
+        # 3. Equations of Grange (1961): 1/3 due to averaging, convert from F to C
+        # (-32*(5/9))
+        ae1 = ae1 + (1333.0 - (25.0 * mn) + (40.0 * si) + (42.0 * cr) - (26.0 * ni) - 32.0) * 5.0 / (3.0 * 9.0)
+        ae3 = ae3 + (1570.0 - (323.0 * c) - (25.0 * mn) + (80.0 * si) - (3.0 * cr) - (32.0 * ni) -
+                     32.0) * 5.0 / (3.0 * 9.0)
+
+        # find the Ae3 temperature at the alloy Carbon content Using Ortho-equilibrium method
+        ae3 = ae3_single_carbon(ae3, self.comp_parent.copy(), c)
+
+        return ae1, ae3 - 273
 
     def __str__(self):
         parent_t = PrettyTable(self.comp_parent.dtype.names)

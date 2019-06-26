@@ -30,7 +30,7 @@ from simulation.utilities import *
 class TestAe3(unittest.TestCase):
     def setUp(self) -> None:
         self.sim_inst = Simulation(debug=True)
-
+100.1000
     # def test_print(self):
     #     print(self.sim_inst)
 
@@ -44,7 +44,10 @@ class TestAe3(unittest.TestCase):
         self.assertAlmostEqual(self.sim_inst.ae1, 700.9020, 4)
 
     def test_ae3(self):
-        self.assertAlmostEqual(self.sim_inst.ae3, 845.8379, 4)
+        self.assertAlmostEqual(self.sim_inst.ae3, 845.83796118, 4)
+
+    # def test_xfe(self):
+    #     self.assertAlmostEqual(self.sim_inst.xfe, 0.946210, 4)
 
 
 if __name__ == '__main__':

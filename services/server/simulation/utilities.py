@@ -15,6 +15,7 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.06.25'
+__package__ = 'simulation'
 
 """utilities.py: 
 

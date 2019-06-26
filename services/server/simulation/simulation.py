@@ -16,13 +16,13 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.06.24'
+__package__ = 'simulation'
 
 """simulation.py: 
 
 {Description}
 """
 
-import os
 import json
 import enum
 from pathlib import Path
@@ -32,10 +32,11 @@ import numpy as np
 from prettytable import PrettyTable
 
 from logger.arc_logger import AppLogger
-from ae3_utilities import ae3_single_carbon
+from simulation.ae3_utilities import ae3_single_carbon
+from configs.settings import BASE_DIR, APP_CONFIGS
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
 DEFAULT_CONFIGS = Path(BASE_DIR) / 'configs' / 'sim_configs.json'
+DEBUG = APP_CONFIGS['general']['debug']
 logger = AppLogger(__name__)
 
 
@@ -57,13 +58,29 @@ class Simulation(object):
     on the Li '98 or Kirkaldy '83 equations as aggregated by Dr. Bendeich.
     """
 
-    def __init__(self, method=Method.Li98, alloy=Alloy.Parent, configs=DEFAULT_CONFIGS):
+    def __init__(self, method=Method.Li98, alloy=Alloy.Parent, configs='', debug=False):
         self.method = method
         self.alloy = alloy
 
-        # TODO: This is obviously not the optimum way to store the variables but quick and dirty enough to do testing
         config = None
-        with open(configs) as config_f:
+        if debug:
+            config = self._get_default_test_configs()
+        else:
+            # TODO: Add the instance variables passed to instantiation
+            pass
+
+        self.comp_parent = None
+        self.comp_weld = None
+        self.comp_mix = None
+        self.get_compositions(config)
+
+        if self.auto_ms_bs_calc:
+            self.auto_ms_bs()
+        if self.auto_austenite_calc:
+            self.auto_ae1_ae3()
+
+    def _get_default_test_configs(self) -> dict:
+        with open(DEFAULT_CONFIGS) as config_f:
             config = json.load(config_f, parse_float=np.float32)
             self.method = Method.Li98 if config['method']['li98'] else Method.Kirkaldy83
 
@@ -85,15 +102,7 @@ class Simulation(object):
         self.ae1 = config['austenite_limits']['ae1_value']
         self.ae3 = config['austenite_limits']['ae3_value']
 
-        self.comp_parent = None
-        self.comp_weld = None
-        self.comp_mix = None
-        self.get_compositions(config)
-
-        if self.auto_ms_bs_calc:
-            self.auto_ms_bs()
-        if self.auto_austenite_calc:
-            self.auto_ae1_ae3()
+        return config
 
     def get_compositions(self, config: dict) -> None:
         """
@@ -203,7 +212,7 @@ class Simulation(object):
                      32.0) * 5.0 / (3.0 * 9.0)
 
         # find the Ae3 temperature at the alloy Carbon content Using Ortho-equilibrium method
-        ae3 = ae3_single_carbon(ae3, self.comp_parent.copy(), c)
+        # ae3 = ae3_single_carbon(self.comp_parent.copy(), c)
 
         return ae1, ae3 - 273
 

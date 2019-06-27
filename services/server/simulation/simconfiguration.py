@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
-# simulation.py
+# simconfiguration.py
 # 
 # Attributions: 
 # [1] 
@@ -18,7 +18,7 @@ __status__ = 'development'
 __date__ = '2019.06.24'
 __package__ = 'simulation'
 
-"""simulation.py: 
+"""simconfiguration.py: 
 
 {Description}
 """
@@ -51,9 +51,9 @@ class Alloy(enum.Enum):
     Mix = 3
 
 
-class Simulation(object):
+class SimConfiguration(object):
     """
-    The Simulation instance stores all the required arguments needed to simulate the Time-Temperature Transformation
+    The SimConfiguration instance stores all the required arguments needed to simulate the Time-Temperature Transformation
     or the Cooling Curve Transformation. It also has methods to calculate some of these arguments automatically based
     on the Li '98 or Kirkaldy '83 equations as aggregated by Dr. Bendeich.
     """

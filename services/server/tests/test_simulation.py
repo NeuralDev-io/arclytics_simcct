@@ -23,14 +23,14 @@ __date__ = '2019.06.26'
 
 import unittest
 
-from simulation.simulation import Simulation
+from simulation.simconfiguration import SimConfiguration
 from simulation.utilities import *
 
 
 class TestAe3(unittest.TestCase):
     def setUp(self) -> None:
-        self.sim_inst = Simulation(debug=True)
-100.1000
+        self.sim_inst = SimConfiguration(debug=True)
+
     # def test_print(self):
     #     print(self.sim_inst)
 

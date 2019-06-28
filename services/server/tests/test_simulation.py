@@ -22,6 +22,7 @@ __date__ = '2019.06.26'
 """
 
 import unittest
+from pprint import pprint
 import numpy as np
 from simulation.simconfiguration import SimConfiguration
 from simulation.ae3_utilities import *
@@ -52,7 +53,9 @@ class TestAe3(unittest.TestCase):
         x_vect = np.zeros(wt.shape[0], dtype=np.float64)
         yy_vect = np.zeros(wt.shape[0], dtype=np.float64)
         wt, x_vect, y = convert_wt_2_mol(wt, x_vect, yy_vect)
-        logger.debug("wt: {}, \n\nx_vect: {}, \n\ny: {}".format(wt, x_vect, y))
+        logger.debug("wt:")
+        logger.pprint(wt)
+        logger.debug("x_vect:\n {}, \n\ny:\n {}".format(x_vect, y))
 
     # def test_ae3(self):
     #     self.assertAlmostEqual(self.sim_inst.ae3, 845.83796118, 4)

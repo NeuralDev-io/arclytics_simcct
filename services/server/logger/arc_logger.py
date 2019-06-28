@@ -52,6 +52,7 @@ import logging
 import warnings
 import json
 from enum import Enum
+from pprint import pprint, pformat
 from os import path, makedirs, access, W_OK, getcwd
 from pathlib import Path
 
@@ -339,7 +340,7 @@ class AppLogger(object):
         """
         self.logger.warning(msg, *args, **kwargs)
 
-    def error(self, msg: str, *args, **kwargs):
+    def error(self, msg: str, stack_info=True, *args, **kwargs):
         """
         Log 'message'.format(*args) with severity ERROR.
 
@@ -348,9 +349,10 @@ class AppLogger(object):
             logger.info("Houston, we have a %s", "major problem", exc_info=1)
 
         Args:
+            stack_info: whether to print the stack trace. Default is true.
             msg: the message to log
         """
-        self.logger.error(msg, *args, **kwargs)
+        self.logger.error(msg, stack_info=stack_info, *args, **kwargs)
 
     def critical(self, msg: str, *args, **kwargs):
         """
@@ -393,6 +395,18 @@ class AppLogger(object):
         if self.logger.isEnabledFor(logging.getLevelName("DEBUG")):
             self._log(20, str(msg), *args, exc_info=False, **kwargs)
 
+    def pprint(self, msg: any, *args, **kwargs):
+        """
+        Convenience method for logging an at INFO level with pretty print (pprint) formatting.
+
+        Args:
+            msg: the message to log.
+        """
+        # self.info(msg=pformat(msg, indent=1))
+        pmsg = pformat(msg, indent=2)
+        out = '\n{}'.format(pmsg)
+        self._log(level=20, msg=out, pretty=True, *args, **kwargs)
+
     def _log(self, level: int, msg: str, *args, **kwargs):
         """
         Generalised log method to log 'msg'.format(*args) with the integer severity 'level'
@@ -403,7 +417,14 @@ class AppLogger(object):
             *args:
             **kwargs:
         """
-        self.logger.log(level, msg, *args, **kwargs)
+        pretty = False
+        for k, v in kwargs.items():
+            if k == 'pretty':
+                pretty = True
+                self.logger.log(level, msg)
+
+        if not pretty:
+            self.logger.log(level, msg, *args, **kwargs)
 
 
 def check_logpath(log_path, debug_mode=False):

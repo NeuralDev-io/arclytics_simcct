@@ -22,9 +22,9 @@ __date__ = '2019.06.26'
 """
 
 import unittest
-
+import numpy as np
 from simulation.simconfiguration import SimConfiguration
-from simulation.utilities import *
+from simulation.ae3_utilities import *
 
 
 class TestAe3(unittest.TestCase):
@@ -43,8 +43,19 @@ class TestAe3(unittest.TestCase):
     def test_ae1(self):
         self.assertAlmostEqual(self.sim_inst.ae1, 700.9020, 4)
 
-    def test_ae3(self):
-        self.assertAlmostEqual(self.sim_inst.ae3, 845.83796118, 4)
+    def test_con_wt_2_mol(self):
+        wt = self.sim_inst.comp_parent.copy()
+        wt['weight'][wt['name'] == 'carbon'] = 0.0
+        wt['weight'][wt['name'] == 'iron'] = 0.0
+        self.assertAlmostEqual(wt['weight'][wt['name'] == 'carbon'], 0.0, 6)
+        self.assertAlmostEqual(wt['weight'][wt['name'] == 'iron'], 0.0, 6)
+        x_vect = np.zeros(wt.shape[0], dtype=np.float64)
+        yy_vect = np.zeros(wt.shape[0], dtype=np.float64)
+        wt, x_vect, y = convert_wt_2_mol(wt, x_vect, yy_vect)
+        logger.debug("wt: {}, \n\nx_vect: {}, \n\ny: {}".format(wt, x_vect, y))
+
+    # def test_ae3(self):
+    #     self.assertAlmostEqual(self.sim_inst.ae3, 845.83796118, 4)
 
     # def test_xfe(self):
     #     self.assertAlmostEqual(self.sim_inst.xfe, 0.946210, 4)

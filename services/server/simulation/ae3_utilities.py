@@ -40,7 +40,7 @@ R = np.float64(1.9858)
 def ae3_single_carbon(wt_comp: np.ndarray, wt_c: float) -> float:
     # Only passing in the original wt% alloys (note: C and Fe will be overwritten below for each iteration of
     # the main loop)
-    t0 = 0.0
+    t0 = np.float64(0.0)
     # TODO: Not really sure why we need AI but whatever
     ai_vect = np.zeros(20, dtype=np.float64)
 
@@ -49,16 +49,20 @@ def ae3_single_carbon(wt_comp: np.ndarray, wt_c: float) -> float:
     # Reset wt% Fe (Iron) in array to zero (this will be updated below within the main loop)
     wt_comp['weight'][wt_comp['name'] == 'iron'] = 0.0
 
-    return ae3_set_carbon(t0, ai_vect, wt_comp, wt_c)
+    # This should actually update t0, ai_vect and the return value to parent is ae3
+    # TODO: Check why ai_vect and t0 need to be updated
+
+    ae3, t0, ai_vect = ae3_set_carbon(t0, ai_vect, wt_comp, wt_c)
+    return ae3
 
 
-def ae3_set_carbon(t0: float, ai_vect: np.array, wt: np.ndarray, c: float) -> float:
+def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray, c: float) -> float:
     """
     Calculate Ae3 for fixed value of carbon (C).
     Args:
         t0:
         ai_vect:
-        wt:
+        wt_mat:
         c:
 
     Returns:
@@ -77,19 +81,20 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt: np.ndarray, c: float) -> fl
 
     # add the wt%s to find the total (without C and Fe which update with
     # each increment in the loop)
-    wt_pc = np.sum(wt['weight'])
+    wt_pc = np.sum(wt_mat['weight'])
 
     # add the current Carbon wt% to the total for this iteration
     wt_pc = wt_pc + c
-    wt['weight'][wt['name'] == 'iron'] = 100 - wt_pc  # wt% Fe by difference
-    wt['weight'][wt['name'] == 'carbon'] = c
+    wt_mat['weight'][wt_mat['name'] == 'iron'] = 100 - wt_pc  # wt% Fe by difference
+    wt_mat['weight'][wt_mat['name'] == 'carbon'] = c
 
     # Now convert to mole fraction for updated composition with this iteration
-    x_vect = np.zeros(wt.shape[0], dtype=np.float64)  # mole fractions of all elements
-    yy_vect = np.zeros(wt.shape[0], dtype=np.float64)  # mole fractions of Fe (not used)
+    x_vect = np.zeros(wt_mat.shape[0], dtype=np.float64)  # mole fractions of all elements
+    yy_vect = np.zeros(wt_mat.shape[0], dtype=np.float64)  # mole fractions of Fe (not used)
 
     # TODO: Check that the _yy_vect is redundant and not used
-    wt, x_vect, _y = convert_wt_2_mol(wt, x_vect, yy_vect)
+    # NOTE: Check the output here with test_con_wt_2_mol()
+    wt_mat, x_vect, y = convert_wt_2_mol(wt_mat, x_vect, yy_vect)
 
     fe_af = x_vect[-1]  # moles Fe
     c_af = x_vect[0]  # moles C

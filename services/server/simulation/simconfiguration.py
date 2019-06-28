@@ -29,7 +29,7 @@ from pathlib import Path
 from typing import *
 
 import numpy as np
-from prettytable import PrettyTable
+from prettytable import PrettyTable, MSWORD_FRIENDLY
 
 from logger.arc_logger import AppLogger
 from simulation.ae3_utilities import ae3_single_carbon
@@ -58,16 +58,23 @@ class SimConfiguration(object):
     on the Li '98 or Kirkaldy '83 equations as aggregated by Dr. Bendeich.
     """
 
-    def __init__(self, method=Method.Li98, alloy=Alloy.Parent, configs='', debug=False):
+    def __init__(self, method=Method.Li98, alloy=Alloy.Parent, configs=None, debug=False, *args, **kwargs):
         self.method = method
         self.alloy = alloy
 
-        config = None
+        config = {}
         if debug:
             config = self._get_default_test_configs()
         else:
             # TODO: Add the instance variables passed to instantiation
-            pass
+            self.ms_temp = None
+            self.bs_temp = None
+
+            self.ae1 = 0
+            self.ae3 = 0
+
+            if self.ae1 > 0 and self.ae3 > 0:
+                self.ae_check = True
 
         self.comp_parent = None
         self.comp_weld = None
@@ -79,9 +86,13 @@ class SimConfiguration(object):
         if self.auto_austenite_calc:
             self.auto_ae1_ae3()
 
+        if self.ae_check:
+            # TODO: make sure simulation checks this
+            pass
+
     def _get_default_test_configs(self) -> dict:
         with open(DEFAULT_CONFIGS) as config_f:
-            config = json.load(config_f, parse_float=np.float32)
+            config = json.load(config_f, parse_float=np.float64)
             self.method = Method.Li98 if config['method']['li98'] else Method.Kirkaldy83
 
         self.nuc_start = config['transformation_definitions']['nucleation_start']
@@ -120,17 +131,17 @@ class SimConfiguration(object):
         c_mix = config['composition']['mix']
 
         self.comp_parent = np.zeros(len(c_parent),
-                                    dtype=[('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
+                                    dtype=[('idx', np.int), ('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
         self.comp_weld = np.zeros(len(c_weld),
-                                  dtype=[('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
+                                  dtype=[('idx', np.int), ('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
         self.comp_mix = np.zeros(len(c_mix),
-                                 dtype=[('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
+                                 dtype=[('idx', np.int), ('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
 
         # iterate over all 3 lists at once and store them in the np.ndarray
         for i, (e_p, e_w, e_m) in enumerate(zip(c_parent, c_weld, c_mix)):
-            self.comp_parent[i] = (e_p['name'], e_p['symbol'], e_p['value'])
-            self.comp_weld[i] = (e_w['name'], e_w['symbol'], e_w['value'])
-            self.comp_mix[i] = (e_m['name'], e_m['symbol'], e_m['value'])
+            self.comp_parent[i] = (i, e_p['name'], e_p['symbol'], e_p['value'])
+            self.comp_weld[i] = (i, e_w['name'], e_w['symbol'], e_w['value'])
+            self.comp_mix[i] = (i, e_m['name'], e_m['symbol'], e_m['value'])
 
     def auto_ms_bs(self) -> None:
         """We simply store the class variables bs_temp and ms_temp by doing the calculations."""
@@ -218,13 +229,23 @@ class SimConfiguration(object):
 
         return ae1, ae3 - 273
 
+    @staticmethod
+    def _pretty_str_tables(comp: np.ndarray) -> PrettyTable:
+        table = PrettyTable(comp.dtype.names)
+        table.float_format['weight'] = '.3'
+        for row in comp:
+            table.add_row(row)
+        # table.set_style(MSWORD_FRIENDLY)
+        table.align['name'] = 'l'
+        table.align['symbol'] = 'l'
+        table.align['weight'] = 'r'
+
+        return table
+
     def __str__(self):
-        parent_t = PrettyTable(self.comp_parent.dtype.names)
-        for row in self.comp_parent:
-            parent_t.add_row(row)
-        parent_t.align['name'] = 'l'
-        parent_t.align['symbol'] = 'l'
-        parent_t.align['weight'] = 'r'
+        parent_t = self._pretty_str_tables(self.comp_parent)
+        weld_t = self._pretty_str_tables(self.comp_weld)
+        mix_t = self._pretty_str_tables(self.comp_mix)
 
         return """
 {:9}{}
@@ -249,6 +270,10 @@ Austenite Limits:
 Alloy Composition:
 Parent: 
 {}
+Weld:
+{}
+Mix:
+{}
         """.format(
             'Method:', self.method.name, 'Alloy:', self.alloy.name,
             'Nucleation Start:', self.nuc_start, 'Nucleation End:', self.nuc_finish,
@@ -257,5 +282,5 @@ Parent:
             'MS Temperature:', self.ms_temp, 'MS Undercool: ', self.ms_undercool,
             'BS Temperature: ', self.bs_temp,
             'Ae1:', self.ae1, 'Ae3:', self.ae3,
-            parent_t
+            parent_t, weld_t, mix_t
         )

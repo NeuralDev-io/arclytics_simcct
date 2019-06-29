@@ -30,47 +30,50 @@ import math
 
 class Simulation(object):
     # ======= TEMPORARY VARIABLES ======= #
-    p_comp = {
-        'C': 0.044,
-        'P': 0.0,
-        'Mn': 1.730,
-        'Si': 0.220,
-        'Ni': 0.000,
-        'Cr': 0.000,
-        'Mo': 0.260,
-        'Al': 0.0,
-        'Cu': 0.0,
-        'As': 0.0,
-        'Ti': 0.0,
-        'Co': 0.000,
-        'V': 0.0,
-        'W': 0.0,
-        'S': 0.0,
-        'N': 0.0,
-        'Nb': 0.0,
-        'B': 0.0,
-        'Fe': 0.0
-    }
 
-    MS = 464
-    BS = 563
-
-    METHOD = "Kirk83"
-    # Li98 and Kirk83
-    START_PERCENT = 1 / 100
-    FINISH_PERCENT = 99.9 / 100
-
-    XFE = 0.946210268948655
-    XBR = 1.0
-
-    G = 8.0
-
-    AE1 = 701
-    AE3 = 845.8379611854
     # ======= TEMPORARY VARIABLES ======= #
 
-    def __init__(self, sim_configurations):
-        self.sim_configurations = sim_configurations
+    def __init__(self, sim_configurations, debug=False):
+        if debug:
+            self.sim_configurations = sim_configurations
+            # TODO not sure how to get parent compositions from sim_configurations
+        else:
+            self.p_comp = {
+                'C': 0.044,
+                'P': 0.0,
+                'Mn': 1.730,
+                'Si': 0.220,
+                'Ni': 0.000,
+                'Cr': 0.000,
+                'Mo': 0.260,
+                'Al': 0.0,
+                'Cu': 0.0,
+                'As': 0.0,
+                'Ti': 0.0,
+                'Co': 0.000,
+                'V': 0.0,
+                'W': 0.0,
+                'S': 0.0,
+                'N': 0.0,
+                'Nb': 0.0,
+                'B': 0.0,
+                'Fe': 0.0
+            }
+
+            self.MS = 464
+            self.BS = 563
+
+            self.METHOD = "Kirk83" # Li98 and Kirk83
+            self.START_PERCENT = 1 / 100
+            self.FINISH_PERCENT = 99.9 / 100
+
+            self.XFE = 0.946210268948655
+            self.XBR = 1.0
+
+            self.G = 8.0
+
+            self.AE1 = 701
+            self.AE3 = 845.8379611854
 
     def ttt(self):
         # FIXME I have removed X and Xpct are not used. Ask if it can be removed.

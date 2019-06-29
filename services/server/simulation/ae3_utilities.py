@@ -40,8 +40,8 @@ R = np.float64(1.9858)
 def ae3_single_carbon(wt_comp: np.ndarray, wt_c: float) -> float:
     # Only passing in the original wt% alloys (note: C and Fe will be overwritten below for each iteration of
     # the main loop)
+    # TODO: Check that this is redundant and can be declared in the child routine
     t0 = np.float64(0.0)
-    # TODO: Not really sure why we need AI but whatever
     ai_vect = np.zeros(20, dtype=np.float64)
 
     # Reset wt% carbon in array to zero (this will be updated below within the main loop to match C)
@@ -49,14 +49,12 @@ def ae3_single_carbon(wt_comp: np.ndarray, wt_c: float) -> float:
     # Reset wt% Fe (Iron) in array to zero (this will be updated below within the main loop)
     wt_comp['weight'][wt_comp['name'] == 'iron'] = 0.0
 
-    # This should actually update t0, ai_vect and the return value to parent is ae3
-    # TODO: Check why ai_vect and t0 need to be updated
-
-    ae3, t0, ai_vect = ae3_set_carbon(t0, ai_vect, wt_comp, wt_c)
+    # This should actually update ai_vect and the return value to parent is ae3
+    ae3, t0 = ae3_set_carbon(t0, ai_vect, wt_comp, wt_c)
     return ae3
 
 
-def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray, c: float) -> float:
+def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray, c: float) -> (float, float, np.ndarray):
     """
     Calculate Ae3 for fixed value of carbon (C).
     Args:
@@ -69,19 +67,11 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray, c: float) -
 
     """
 
-    tzero = t0
-    g = np.float64(0.0)
-    gc = np.float64(0.0)
-    temp = np.float64(0.0)
-    h = np.float64(0.0)
-    cf = np.float64(0.0)
-    delta_t = np.float64(0.0)
-    tt = np.float64(0.0)
-    z = np.float64(0.0)
+    temp = np.float64(0.0)  # this ensures its type is float64
 
-    # add the wt%s to find the total (without C and Fe which update with
-    # each increment in the loop)
-    wt_pc = np.sum(wt_mat['weight'])
+    # add the wt%s to find the total (without C and Fe which update with each increment in the loop)
+    # this is only for everything except carbon and iron but we already set that to 0.0 previously
+    wt_pc = np.sum(wt_mat['weight'], dtype=np.float64).astype(np.float64)
 
     # add the current Carbon wt% to the total for this iteration
     wt_pc = wt_pc + c
@@ -89,25 +79,24 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray, c: float) -
     wt_mat['weight'][wt_mat['name'] == 'carbon'] = c
 
     # Now convert to mole fraction for updated composition with this iteration
-    x_vect = np.zeros(wt_mat.shape[0], dtype=np.float64)  # mole fractions of all elements
-    yy_vect = np.zeros(wt_mat.shape[0], dtype=np.float64)  # mole fractions of Fe (not used)
+    # TODO:
+    #  - Check that the _yy_vect is redundant and not used
+    #  - Returning wt_mat also seems pretty redundant as it is not changed
+    # x_vect: mole fractions of all elements, with C as always index=0 and Fe as always index=-1
+    # y: # mole fractions of Fe (not used)
+    x_vect, y_vect = convert_wt_2_mol(wt_mat)
 
-    # TODO: Check that the _yy_vect is redundant and not used
-    # NOTE: Check the output here with test_con_wt_2_mol()
-    wt_mat, x_vect, y = convert_wt_2_mol(wt_mat, x_vect, yy_vect)
-
-    fe_af = x_vect[-1]  # moles Fe
+    fe_af = x_vect[-1]  # moles Fe - NOTE: Iron is always the last element, -1
     c_af = x_vect[0]  # moles C
 
     # Add all the other element moles
-    add = np.sum(x_vect[1:-1])
+    other_e_sum_af = np.sum(x_vect[1:-1], dtype=np.float64).astype(np.float64)
 
     # Total of all moles added
-    # _total_af = _fe_af + _c_af + _add
-    total_af = np.sum(x_vect)
+    total_af = fe_af + c_af + other_e_sum_af
 
     # Fraction of carbon moles to all moles (mole fraction C).
-    cf = c_af / total_af
+    c_f = np.float64(c_af / total_af)
 
     # Mole fraction of each element (excluding Carbon and Iron)
     x_vect[1:-1] = x_vect[1:-1] / total_af
@@ -115,12 +104,17 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray, c: float) -
     tzero = tzero2(c)  # Using wt% C
     temp = tzero  # starting point for evaluation
 
-    h1 = -15325.0
+    # TODO: This can be declared dynamically
     a_vect = np.zeros(20, dtype=np.float64)
-
     z = np.float64(1.0)  # Initialise before next while loop, just to get it going
     # Counter to determine and exit if non convergence occurs
     ctr = 0
+
+    # initialise some other variables
+    g_c = np.float64(0.0)
+    g = np.float64(0.0)
+    h = np.float64(0.0)
+    tt = np.float64(0.0)
 
     while z > 0.5:
         # G: Gibbs free energy change for ferrite/austenite transformation for iron (cal/mol). no alloying elements
@@ -130,22 +124,21 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray, c: float) -
         else:
             logger.error("Negative temperature determined for Ae3.")
 
-        gc = -15323 + 7.686 * temp
+        g_c = np.float64(-15323 + 7.686 * temp)
 
         # =910 C (this is the limit for pure Iron transition)
         if temp > 1183:
             # Valid up to 1360K
             # H is the DeltaH (Enthalpy) ferrite-austenite transformation for Iron (Cal/mol)
             # G is Delta0G0 (Gibbs free energy) ferrite-austenite transformation for Iron (Cal/mol)
-            h = 2549.0 - 2.746 * temp + 0.0006503 * math.pow(temp, 2)
-            g = 2476.0 - 5.03 * temp + 0.003363 * math.pow(temp, 2) - 0.000000744 * math.pow(temp, 3)
+            h = np.float64(2549.0 - 2.746 * temp + 0.0006503 * math.pow(temp, 2))
+            g = np.float64(2476.0 - 5.03 * temp + 0.003363 * math.pow(temp, 2) - 0.000000744 * math.pow(temp, 3))
         else:
             # Linear fit 'Delta H' fit of DeltaH (Table V) values (ferrite-austenite transformation for Iron).
             # Kaufman et.al. "Refractory Materials" vol.4, 19, 1970
             h, temp = dh_fit(temp)
 
         _sum = np.float64(0.0)
-        delta_t = np.float64(0.0)
 
         # ETA2 (Li thesis data) references array defined elements for ferrite (alpha) interaction coefficients
         # with carbon in accordance with SimCCT
@@ -156,8 +149,8 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray, c: float) -
         # UPDATE E to CALL DGI22(E)
         e_mat = dgi22()
 
-        p, gi = None, None
-        e_aust1i, e_aust11 = None, None  # UP's
+        p, gi = np.float64(0.0), np.float64(0.0)
+        e_aust1i, e_aust11 = None, None    # UP's
         e_alpha1i, e_alpha11 = None, None  # DOWN's
 
         # Loop ID's below (M) reset for SimCCT array definitions
@@ -168,7 +161,7 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray, c: float) -
         # We are only renumbering for consistency with the SimCCT program to avoid confusion
 
         # we do 14 loop. runs through each alloying element (1-Mn to 17-P + 2 spares 18 & 19)
-        for m in range(1, x_vect.shape[0]):
+        for m in range(1, x_vect.shape[0] - 1):
             if x_vect[m] == 0:
                 a_vect[m] = 0.0
                 ai_vect[m] = 1.0
@@ -177,37 +170,43 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray, c: float) -
 
                 # Interaction coefficients for all alloying elements (each in turn with M) with carbon for
                 # Gamma (austenite) phase .p.150 Li thesis (2nd column)
-                p = b_mat[m, 4] + b_mat[m, 5] / temp  # TODO: seems unused
-                e_aust1i = b_mat[m, 4] + b_mat[m, 5] / temp
-                e_aust11 = 8910 / temp  # Bhadeshia code
+                p = np.float64(b_mat[m, 4] + b_mat[m, 5] / temp)  # TODO: seems unused
+                e_aust1i = np.float64(b_mat[m, 4] + b_mat[m, 5] / temp)
+                e_aust11 = np.float64(8910 / temp)  # Bhadeshia code
 
                 if m == 1:
                     # Data from Gilmour et.al., met. trans., 1972
-                    gi = 6.118 * temp - 7808.0  # special set for Mn
+                    gi = np.float64(6.118 * temp - 7808.0)  # special set for Mn
                 else:
                     # TODO: Check which base VB does log in.
-                    gi = e_mat[m, 1] + (e_mat[m, 2] + e_mat[m, 3] * temp + e_mat[m, 4] * math.log(temp)) * temp
+                    gi = np.float64(e_mat[m, 1] + (e_mat[m, 2] + e_mat[m, 3] * temp + e_mat[m, 4] *
+                                                   math.log(temp)) * temp)
 
-                    # CALCULATION For SOLUTE PARTITION interaction COEFFICIENT
-                    # H: 'Delta H' (enthalpy difference) values for BCC to FCC transformation in Iron. table V
-                    #    (2nd last column) by Kaufman "Refractory Materials" vol.4, 19, 1970
-                    # H1: enthalpy change (Delta H) for carbon corresponding to the change in free energy (Delta G1)
+                # CALCULATION For SOLUTE PARTITION interaction COEFFICIENT
+                # H: 'Delta H' (enthalpy difference) values for BCC to FCC transformation in Iron. table V
+                #    (2nd last column) by Kaufman "Refractory Materials" vol.4, 19, 1970
+                # H1: enthalpy change (Delta H) for carbon corresponding to the change in free energy (Delta G1)
 
-                    # Origin of H1 value in Kirkaldy, Baganis 1978 ([15] =-64,111 J/mol needs conversion to
-                    # cal/mol as used here)!
-                    h1 = np.float64(-15310.0)
+                # Origin of H1 value in Kirkaldy, Baganis 1978 ([15] =-64,111 J/mol needs conversion to
+                # cal/mol as used here)!
+                H1 = np.float64(-15310.0)
 
-                    # Using Li data
-                    e_alpha1i = b_mat[m, 1] + b_mat[m, 2] / temp
-                    e_alpha11 = 4.786 + 5066 / temp
+                # Using Li data
+                e_alpha1i = np.float64(b_mat[m, 1] + b_mat[m, 2] / temp)
+                e_alpha11 = np.float64(4.786 + 5066 / temp)
 
-                    ai_vect[m] = ai_eqn3(tzero, gi, gc, g, h1, h, e_aust1i, e_aust11, e_alpha1i, e_alpha11, cf, cf)
+                # Update the value at ai_vect[m]
+                ai_vect[m] = ai_eqn3(
+                    t0=tzero, dg_n=gi, dg_c=g_c, dg_fe=g, dh_c=H1, dh_fe=h,
+                    eta1n_up=e_aust1i, eta11_up=e_aust11, eta1n_down=e_alpha1i, eta11_down=e_alpha11,
+                    x1_up=c_f, x1_down=c_f
+                )
 
-                    # Internal sum for all alloy elements according to eqn (3)
-                    _sum = _sum + x_vect[m] + ai_vect[m]
+                # Internal sum for all alloy elements according to eqn (3)
+                _sum = _sum + x_vect[m] * ai_vect[m]
 
         # Puts together all the terms to solve eqn (3) in "Sugden and Bhadeshia, 1989, Mat Sci Tech, Vol.5 p.978"
-        delta_t = _sum * R * math.pow(tzero, 2)
+        delta_t = np.float64(_sum * R * math.pow(tzero, 2))
         temp = tzero + delta_t
         z = tt - temp
         z = abs(z)
@@ -218,69 +217,64 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray, c: float) -
             break
 
         tt = temp
-
         ctr = ctr + 1
         # Minimising Z
-    return temp  # Set return value for current Carbon
-
-# ==================================================================================================== #
-# TODO: Test up to this point
-# ==================================================================================================== #
+    return temp, tzero  # Set return value for current Carbon
 
 
-def convert_wt_2_mol(wt: np.ndarray, c: np.array, y: np.array) -> (np.ndarray, np.array, np.array):
-    """
-    Finds the mole fractions of each element
+def convert_wt_2_mol(wt: np.ndarray) -> (np.ndarray, np.array):
+    """Finds the mole fractions of each element.
+
     Args:
         wt: weight % of each element in alloy composition
-        c: mole fractions of each element with respect to the complete alloy composition (all elements).
-        y: mole fraction of each element in relation to Fe only
 
     Returns:
-    Tuple of each array updated.
+        c: mole fractions of each element with respect to the complete alloy composition (all elements).
+        y: mole fraction of each element in relation to Fe only
     """
-
-    d_mat = np.zeros(wt.shape[0], dtype=np.float64)
+    c_vect = np.zeros(wt.shape[0], dtype=np.float64)
+    y_vect = np.zeros(wt.shape[0], dtype=np.float64)
+    d_vect = np.zeros(wt.shape[0], dtype=np.float64)
 
     # Convert wt% to moles as if 100grams total
 
     # add all the wt% to find total wt% alloying elements
     # note: ensure last one with index -1 is Iron, Fe
-    d_mat[-1] = np.sum(wt['weight'][wt['name'] != 'iron'])
-    d_mat[-1] = 100.0 - d_mat[-1]  # find wt% Fe by difference
-    d_mat[-1] = d_mat[-1] / 55.84  # Fe, calculate moles Fe if 100 g of alloy
+    # TODO: Why 1 to 11 only?
+    d_vect[-1] = np.sum(wt['weight'][1:11]).astype(np.float64).item()
+    d_vect[-1] = 100.0 - d_vect[-1]  # find wt% Fe by difference
+    d_vect[-1] = d_vect[-1] / 55.84  # Fe, calculate moles Fe if 100 g of alloy
 
     # TODO: What happens if we have more elements, how do we know what fractions?
-    d_mat[0] = wt['weight'][wt['symbol'] == 'Cx'][0] / 12.0115  # Carbon
-    d_mat[1] = wt['weight'][wt['symbol'] == 'Mn'][0] / 54.94  # Manganese
-    d_mat[2] = wt['weight'][wt['symbol'] == 'Si'][0] / 28.09  # Silicon
-    d_mat[3] = wt['weight'][wt['symbol'] == 'Ni'][0] / 58.71  # Nickel
-    d_mat[4] = wt['weight'][wt['symbol'] == 'Cr'][0] / 52.0  # Chromium
-    d_mat[5] = wt['weight'][wt['symbol'] == 'Mo'][0] / 95.94  # Molybdenum
-    d_mat[6] = wt['weight'][wt['symbol'] == 'Co'][0] / 58.94  # Cobalt
-    d_mat[7] = wt['weight'][wt['symbol'] == 'Al'][0] / 26.9815  # Aluminium
-    d_mat[8] = wt['weight'][wt['symbol'] == 'Cu'][0] / 63.546  # Copper
-    d_mat[9] = wt['weight'][wt['symbol'] == 'As'][0] / 74.9216  # Arsenic
-    d_mat[10] = wt['weight'][wt['symbol'] == 'Ti'][0] / 47.867  # Titanium
-    d_mat[11] = wt['weight'][wt['symbol'] == 'Vx'][0] / 50.9415  # Vanadium
-    d_mat[12] = wt['weight'][wt['symbol'] == 'Wx'][0] / 183.85  # Tungsten
-    d_mat[13] = wt['weight'][wt['symbol'] == 'Sx'][0] / 32.065  # Sulphur
-    d_mat[14] = wt['weight'][wt['symbol'] == 'Nx'][0] / 14.0067  # Nitrogen
-    d_mat[15] = wt['weight'][wt['symbol'] == 'Nb'][0] / 92.9064  # Niobium
-    d_mat[16] = wt['weight'][wt['symbol'] == 'Bx'][0] / 10.811  # Boron
-    d_mat[17] = wt['weight'][wt['symbol'] == 'Px'][0] / 30.9738  # Phosphorous
+    d_vect[0] = wt['weight'][wt['symbol'] == 'Cx'].item() / 12.0115   # Carbon
+    d_vect[1] = wt['weight'][wt['symbol'] == 'Mn'][0] / 54.94         # Manganese
+    d_vect[2] = wt['weight'][wt['symbol'] == 'Si'][0] / 28.09         # Silicon
+    d_vect[3] = wt['weight'][wt['symbol'] == 'Ni'][0] / 58.71         # Nickel
+    d_vect[4] = wt['weight'][wt['symbol'] == 'Cr'][0] / 52.0          # Chromium
+    d_vect[5] = wt['weight'][wt['symbol'] == 'Mo'][0] / 95.94         # Molybdenum
+    d_vect[6] = wt['weight'][wt['symbol'] == 'Co'][0] / 58.94         # Cobalt
+    d_vect[7] = wt['weight'][wt['symbol'] == 'Al'][0] / 26.9815       # Aluminium
+    d_vect[8] = wt['weight'][wt['symbol'] == 'Cu'][0] / 63.546        # Copper
+    d_vect[9] = wt['weight'][wt['symbol'] == 'As'][0] / 74.9216       # Arsenic
+    d_vect[10] = wt['weight'][wt['symbol'] == 'Ti'][0] / 47.867       # Titanium
+    d_vect[11] = wt['weight'][wt['symbol'] == 'Vx'][0] / 50.9415      # Vanadium
+    d_vect[12] = wt['weight'][wt['symbol'] == 'Wx'][0] / 183.85       # Tungsten
+    d_vect[13] = wt['weight'][wt['symbol'] == 'Sx'][0] / 32.065       # Sulphur
+    d_vect[14] = wt['weight'][wt['symbol'] == 'Nx'][0] / 14.0067      # Nitrogen
+    d_vect[15] = wt['weight'][wt['symbol'] == 'Nb'][0] / 92.9064      # Niobium
+    d_vect[16] = wt['weight'][wt['symbol'] == 'Bx'][0] / 10.811       # Boron
+    d_vect[17] = wt['weight'][wt['symbol'] == 'Px'][0] / 30.9738      # Phosphorous
 
-    b1 = np.sum(d_mat)
+    b1 = np.sum(d_vect).astype(np.float64).item()
 
-    # calculate mole fraction of each element with respect to the complete
-    # alloy composition (all elements)
-    c = d_mat / b1
+    # calculate mole fraction of each element with respect to the complete alloy composition (all elements)
+    c_vect = d_vect / b1
 
     # calculate the mole fraction of each element in relation to Fe only
-    y = c / c[-1]  # Fe is always the last element
-    y[-1] = 0.0
+    y_vect = c_vect / c_vect[-1]  # Fe is always the last element
+    y_vect[-1] = 0.0
 
-    return wt, c, y
+    return c_vect, y_vect
 
 
 def tzero2(wt_c: float) -> float:
@@ -294,7 +288,7 @@ def dg_fit(dg: float, t: float) -> (float, float):
     # Kaufman "Refractory Materials" vol.4, 19, 1970. Data for BCC (alpha) -> FCC (gamma) Iron
     dg_matrix = np.zeros((100, 3), dtype=np.float64)
     # set initial temperature as 0 K (at 20 K in each interval)
-    _tdh = 300
+    tdh = 300
 
     dg_matrix[0, 0] = 0
     dg_matrix[1, 0] = 100
@@ -302,8 +296,10 @@ def dg_fit(dg: float, t: float) -> (float, float):
 
     # TODO: This could be done more efficiently
     for i in range(3, 48):
-        dg_matrix[i, 0] = _tdh
-        _tdh = _tdh + 20
+        dg_matrix[i, 0] = tdh
+        tdh = tdh + 20
+
+    assert tdh >= 1200, "[ERROR] TDH: {}".format(tdh)
 
     dg_matrix[48, 0] = 1183
 
@@ -460,9 +456,9 @@ def dh_fit(t: float) -> (float, float):
     return dh, t
 
 
+# TODO: These are both constants. Question: do they ever change?
 def eta2li96() -> np.ndarray:
-    """
-    Set coefficients for the calculation of interaction coefficients for each alloying element with carbon
+    """Set coefficients for the calculation of interaction coefficients for each alloying element with carbon
     (E1i alpha or Delta phase). Values set in Li thesis (p.150, table 3.6, 1st column (E1i(alpha)) values
     referenced to Uhrenius, AIME, 1977, p.28-81
 
@@ -474,59 +470,59 @@ def eta2li96() -> np.ndarray:
     - B_MAT(M, 5): gamma (austenite) phase coefficients.
 
     Returns:
-    A numpy.ndarray matrix
+        A constant numpy.ndarray matrix
     """
     # TODO: Why has Dr. Bendeich made his array 20x6 when he only ever needs 20x5
     # initiated with all zeroes so if not used already set properly
-    _b_mat = np.zeros((20, 6), dtype=np.float64)
+    b_mat = np.zeros((20, 6), dtype=np.float64)
 
     # Mn - Li96
-    _b_mat[1, 5] = -4811
-    _b_mat[1, 3] = -5060
-    _b_mat[1, 1] = 0.464
-    _b_mat[1, 2] = -4989.0
+    b_mat[1, 5] = -4811
+    b_mat[1, 3] = -5060
+    b_mat[1, 1] = 0.464
+    b_mat[1, 2] = -4989.0
 
     # Si - Li96
-    _b_mat[2, 5] = 14794
-    _b_mat[2, 3] = 18740
+    b_mat[2, 5] = 14794
+    b_mat[2, 3] = 18740
     # note: -0.428 for this term but not in main routine
-    _b_mat[2, 1] = 0.464
-    _b_mat[2, 2] = 17049.0
+    b_mat[2, 1] = 0.464
+    b_mat[2, 2] = 17049.0
 
     # Ni - Li96
-    _b_mat[3, 5] = 5533
-    _b_mat[3, 3] = 5340
-    _b_mat[3, 1] = 0.464
-    _b_mat[3, 2] = 6377.0
+    b_mat[3, 5] = 5533
+    b_mat[3, 3] = 5340
+    b_mat[3, 1] = 0.464
+    b_mat[3, 2] = 6377.0
 
     # Cr - Li96
-    _b_mat[4, 4] = 14.193
-    _b_mat[4, 5] = -30209
-    _b_mat[4, 3] = -9500
-    _b_mat[4, 1] = 2.022
-    _b_mat[4, 2] = 5316.0
+    b_mat[4, 4] = 14.193
+    b_mat[4, 5] = -30209
+    b_mat[4, 3] = -9500
+    b_mat[4, 1] = 2.022
+    b_mat[4, 2] = 5316.0
 
     # Mo - Li96
-    _b_mat[5, 5] = -10714
-    _b_mat[5, 3] = -7490
-    _b_mat[5, 1] = 0.464
-    _b_mat[5, 2] = -9869.0
+    b_mat[5, 5] = -10714
+    b_mat[5, 3] = -7490
+    b_mat[5, 1] = 0.464
+    b_mat[5, 2] = -9869.0
 
     # Co - Bhadeshia, Ae3
-    _b_mat[6, 1] = 58.9
-    _b_mat[6, 3] = 3550
-    _b_mat[6, 4] = 0.0E0
-    _b_mat[6, 5] = 2800.0
+    b_mat[6, 1] = 58.9
+    b_mat[6, 3] = 3550
+    b_mat[6, 4] = 0.0E0
+    b_mat[6, 5] = 2800.0
 
     # Al (no data yet]
     # _b_mat[7, 1:5] = 0
 
     # Cu -Li96
-    _b_mat[8, 4] = 6.615
-    _b_mat[8, 5] = -5533
-    _b_mat[8, 3] = 7586
-    _b_mat[8, 1] = 7.08
-    _b_mat[8, 2] = -4689.0
+    b_mat[8, 4] = 6.615
+    b_mat[8, 5] = -5533
+    b_mat[8, 3] = 7586
+    b_mat[8, 1] = 7.08
+    b_mat[8, 2] = -4689.0
 
     # As (no data yet]
     # _b_mat[9, 1:5] = 0
@@ -535,16 +531,16 @@ def eta2li96() -> np.ndarray:
     # _b_mat[10, 1:5] = 0
 
     # V - Li96
-    _b_mat[11, 5] = -21650
-    _b_mat[11, 3] = -30100
-    _b_mat[11, 1] = 0.464
-    _b_mat[11, 2] = -20806.0
+    b_mat[11, 5] = -21650
+    b_mat[11, 3] = -30100
+    b_mat[11, 1] = 0.464
+    b_mat[11, 2] = -20806.0
 
     # W - Li96
-    _b_mat[12, 5] = -10342
-    _b_mat[12, 3] = -12230
-    _b_mat[12, 1] = 0.464
-    _b_mat[12, 2] = -2603.0
+    b_mat[12, 5] = -10342
+    b_mat[12, 3] = -12230
+    b_mat[12, 1] = 0.464
+    b_mat[12, 2] = -2603.0
 
     # S  (no data yet]
     # _b_mat[13, 1:5] = 0
@@ -553,9 +549,9 @@ def eta2li96() -> np.ndarray:
     # _b_mat[14, 1:5] = 0
 
     # Nb -Li96 & Bhadeshia, Ae3
-    _b_mat[15, 2] = -28770.0
-    _b_mat[15, 3] = -46615
-    _b_mat[15, 5] = -28770.0
+    b_mat[15, 2] = -28770.0
+    b_mat[15, 3] = -46615
+    b_mat[15, 5] = -28770.0
 
     # P and B  (no data yet)
     # _b_mat[16:17, 1:5] = 0
@@ -563,9 +559,10 @@ def eta2li96() -> np.ndarray:
     # Spare (no data yet)
     # _b_mat[18:20, 1:5] = 0
 
-    return _b_mat
+    return b_mat
 
 
+# TODO: These are both constants. Question: do they ever change?
 def dgi22() -> np.ndarray:
     """
     Data for alloying element free energy changes (DELTA G(I)) [Ferrite-Austenite transformation]
@@ -580,7 +577,7 @@ def dgi22() -> np.ndarray:
     E[i, 1] = coeff log T
 
     Returns:
-    A numpy.ndarray matrix
+        A constant numpy.ndarray matrix
     """
 
     _ee_mat = np.zeros((20, 5), dtype=np.float64)
@@ -657,19 +654,16 @@ def dgi22() -> np.ndarray:
 
 
 def ai_eqn3(
-        t0: float,
-        dg_n: float, dg_c: float, dg_fe: float,
-        dh_c: float, dh_fe: float,
-        eta1n_up: float, eta11_up: float,
-        eta1n_down: float, eta11_down: float,
+        t0: float, dg_n: float, dg_c: float, dg_fe: float, dh_c: float, dh_fe: float,
+        eta1n_up: float, eta11_up: float, eta1n_down: float, eta11_down: float,
         x1_up: float, x1_down: float
 ) -> np.array:
-    """
-    This subroutine evaluates Ai component of equation 3 for each alloying element in the Sugden and
+    """This subroutine evaluates Ai component of equation 3 for each alloying element in the Sugden and
     Bhadeshia paper (1989) on calculating Ae3.
 
     This method can be used for different phase transitions hence the generic nature of the equations.
     Currently it is being used for the gamma-alpha (austenite-ferrite) transition.
+
     Args:
         t0:
         dg_n:
@@ -692,17 +686,62 @@ def ai_eqn3(
     # NOTE: DOWN denotes the lower temp phase
     # =============================================================================== #
 
-    num_1 = np.exp((dg_c / (R * t0)) + eta11_up * x1_up)
-    den_1 = 1 + eta11_down * x1_down * np.exp(dg_c / (R * t0))
-    a10 = num_1 / den_1  # for carbon only, 1
+    # logger.info("\nt0: {}, dg_c: {}, dg_fe: {}, dh_c: {}, dh_fe: {}".format(t0, dg_c, dg_fe, dh_c, dh_fe))
+    # logger.info("\neta1n_up: {}, eta11_up: {}, eta1n_down: {}, eta11_down: {}, x1_up: {}, x1_down: {}"
+    #             .format(eta1n_up, eta11_up, eta1n_down, eta11_down, x1_up, x1_down))
 
-    num_2 = np.exp((dg_n / (R * t0)) + eta1n_up * x1_up)
-    den_2 = 1 + eta1n_down * x1_down * np.exp(dg_c / (R * t0))
-    an0 = num_2 / den_2
+    num_1 = math.exp((dg_c / (R * t0)) + eta11_up * x1_up)
+    den_1 = np.float64(1 + eta11_down * x1_down * math.exp(dg_c / (R * t0)))
+    a10 = np.float64(num_1 / den_1)  # for carbon only, 1
 
-    b = (dg_fe / (R * math.pow(t0, 2)) - ((math.pow(x1_up, 2) / 2) * (eta11_up - eta11_down * math.pow(a10, 2))))
+    # logger.info("num_1: {}, den_1: {}, a10: {}".format(num_1, den_1, a10))
 
-    num_3 = an0 - (1 + x1_up * (1 - x1_up) * (eta1n_up - eta11_down * a10 * an0)) * math.exp(b)
-    den_3 = (x1_up * dh_c * a10 + (1 - x1_up) * dh_fe) * np.exp(b)
+    num_2 = math.exp((dg_n / (R * t0)) + eta1n_up * x1_up)
+    den_2 = np.float64(1 + eta1n_down * x1_down * math.exp(dg_c / (R * t0)))
+    an0 = np.float64(num_2 / den_2)
 
-    return num_3 / den_3
+    b = np.float64((dg_fe / (R * (t0 ** 2))) - ((x1_up ** 2) / 2) * (eta11_up - eta11_down * (a10) ** 2))
+
+    num_3 = np.float64(an0 - (1 + x1_up * (1-x1_up) *
+                              (eta1n_up - eta11_down * a10 * an0)) * math.exp(b))
+    den_3 = np.float64((x1_up * dh_c * a10 + (1-x1_up) * dh_fe) * math.exp(b))
+
+    return np.float64(num_3 / den_3)
+
+
+def ae3_multi_carbon(wt: np.ndarray, results: np.ndarray) -> (np.ndarray, np.ndarray):
+    # (includes wt%Fe, AC(20), by difference)
+
+    # Only passing in the original wt% alloys
+    # (note: C and Fe will be overwritten below for each iteration of the main loop)
+    ae3 = np.float64(0)
+    t0 = np.float64(0)  # Ae3 value without alloying elements (just Carbon)
+    ai_vect = np.zeros(20, dtype=np.float64)
+    c = np.float64(0)  # initiate carbon content as 0.00 %
+
+    # reset wt% carbon in array to zero (this will be iterated below within the main loop)
+    wt['weight'][wt['name'] == 'carbon'] = 0.0
+    # reset wt% Fe (Iron) in array to zero (this will be updated below within the main loop)
+    wt['weight'][wt['name'] == 'iron'] = 0.0
+
+    # ========== # MAIN LOOP - iterates Carbon from 0.00 to 0.96 wt% # ========== #
+    for m in range(0, 97):
+        # UPDATE Ae3, T0, AI, wt, C to CALL Ae3SetC(Ae3, T0, AI[], wt[], C)
+        ae3, t0 = ae3_set_carbon(t0, ai_vect, wt, c)
+
+        # RESULTS Matrix
+        results[m, 0] = c           # Current carbon content, wt%-C
+        results[m, 1] = ae3 - 273   # Convert to degrees C, Ae3
+        results[m, 2] = t0 - 273    # Ae3 for Iron - carbon with no other alloy elem.
+        results[m, 3] = ai_vect[1]  # Solute partition interaction coefficient (Mn)
+        results[m, 4] = ai_vect[2]  # Solute partition interaction coefficient (Si)
+        results[m, 5] = ai_vect[3]  # Solute partition interaction coefficient (Ni)
+
+        for i in range(4, wt.shape[0] - 1):  # The rest (not Fe)
+            results[i+2, 5] = ai_vect[i]
+
+        # Update C wt% and repeat
+        c = c + 0.01
+
+    # NOTE: Results passed back for clarity but numpy.ndarray are updated by reference
+    return wt, results

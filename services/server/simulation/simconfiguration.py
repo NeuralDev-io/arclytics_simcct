@@ -29,10 +29,10 @@ from pathlib import Path
 from typing import *
 
 import numpy as np
-from prettytable import PrettyTable
+from prettytable import PrettyTable, MSWORD_FRIENDLY
 
 from logger.arc_logger import AppLogger
-from simulation.ae3_utilities import ae3_single_carbon
+from simulation.ae3_utilities import ae3_single_carbon, convert_wt_2_mol, ae3_multi_carbon
 from configs.settings import BASE_DIR, APP_CONFIGS
 
 DEFAULT_CONFIGS = Path(BASE_DIR) / 'configs' / 'sim_configs.json'
@@ -58,16 +58,27 @@ class SimConfiguration(object):
     on the Li '98 or Kirkaldy '83 equations as aggregated by Dr. Bendeich.
     """
 
-    def __init__(self, method=Method.Li98, alloy=Alloy.Parent, configs='', debug=False):
+    def __init__(self, method=Method.Li98, alloy=Alloy.Parent, configs=None, debug=False, *args, **kwargs):
         self.method = method
         self.alloy = alloy
 
-        config = None
+        config = {}
         if debug:
             config = self._get_default_test_configs()
         else:
             # TODO: Add the instance variables passed to instantiation
-            pass
+            self.ms_temp = None
+            self.bs_temp = None
+
+            self.ae1 = 0
+            self.ae3 = 0
+
+            self.xfe = 0
+            self.ceut = 0
+            self.cf = 0
+
+            if self.ae1 > 0 and self.ae3 > 0:
+                self.ae_check = True
 
         self.comp_parent = None
         self.comp_weld = None
@@ -78,10 +89,16 @@ class SimConfiguration(object):
             self.auto_ms_bs()
         if self.auto_austenite_calc:
             self.auto_ae1_ae3()
+        if self.auto_xfe_calc:
+            self.xfe_method2()
+
+        if self.ae_check:
+            # TODO: make sure simulation checks this
+            pass
 
     def _get_default_test_configs(self) -> dict:
         with open(DEFAULT_CONFIGS) as config_f:
-            config = json.load(config_f, parse_float=np.float32)
+            config = json.load(config_f, parse_float=np.float64)
             self.method = Method.Li98 if config['method']['li98'] else Method.Kirkaldy83
 
         self.nuc_start = config['transformation_definitions']['nucleation_start']
@@ -120,17 +137,17 @@ class SimConfiguration(object):
         c_mix = config['composition']['mix']
 
         self.comp_parent = np.zeros(len(c_parent),
-                                    dtype=[('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
+                                    dtype=[('idx', np.int), ('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
         self.comp_weld = np.zeros(len(c_weld),
-                                  dtype=[('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
+                                  dtype=[('idx', np.int), ('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
         self.comp_mix = np.zeros(len(c_mix),
-                                 dtype=[('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
+                                 dtype=[('idx', np.int), ('name', 'U20'), ('symbol', 'U2'), ('weight', np.float64)])
 
         # iterate over all 3 lists at once and store them in the np.ndarray
         for i, (e_p, e_w, e_m) in enumerate(zip(c_parent, c_weld, c_mix)):
-            self.comp_parent[i] = (e_p['name'], e_p['symbol'], e_p['value'])
-            self.comp_weld[i] = (e_w['name'], e_w['symbol'], e_w['value'])
-            self.comp_mix[i] = (e_m['name'], e_m['symbol'], e_m['value'])
+            self.comp_parent[i] = (i, e_p['name'], e_p['symbol'], e_p['value'])
+            self.comp_weld[i] = (i, e_w['name'], e_w['symbol'], e_w['value'])
+            self.comp_mix[i] = (i, e_m['name'], e_m['symbol'], e_m['value'])
 
     def auto_ms_bs(self) -> None:
         """We simply store the class variables bs_temp and ms_temp by doing the calculations."""
@@ -211,20 +228,74 @@ class SimConfiguration(object):
         ae3 = ae3 + (1570.0 - (323.0 * c) - (25.0 * mn) + (80.0 * si) - (3.0 * cr) - (32.0 * ni) -
                      32.0) * 5.0 / (3.0 * 9.0)
 
-        # NOTE: Check the results of ae1 and ae3 at this point
-
         # find the Ae3 temperature at the alloy Carbon content Using Ortho-equilibrium method
-        # ae3 = ae3_single_carbon(self.comp_parent.copy(), c)
-
+        ae3 = ae3_single_carbon(self.comp_parent.copy(), c)
         return ae1, ae3 - 273
 
+    def xfe_method2(self) -> None:
+        """Second method for estimating Xfe using parra-equilibrium methodology to predict  the Ae3 values with
+        increasing carbon content. To find the intercept with Ae1 (from simplified method) to determine the eutectic
+        carbon content wt%. With this value and a suitable estimate of the ferrite carbon content (~0.02 wt%).
+        With these limits ant the current alloy composition the lever rule can be used to determine the equilibrium
+        phase fraction
+
+        Returns:
+
+        """
+        wt = self.comp_parent.copy()
+
+        # Mole fractions: c to ALL elements; y to Fe only (y not used)
+        c_vect, y_vect = convert_wt_2_mol(wt)
+
+        # now let's get onto the main routine
+
+        # store results of each iteration of Carbon
+
+        results_mat = np.zeros((1000, 22), dtype=np.float64)
+        # reserve the initial carbon wt% as the main routine is passing back another value despite being set "ByVal"
+        wt_c = wt['weight'][wt['name'] == 'carbon'][0]
+
+        # Find Ae3 for array of Carbon contents form 0.00 to 0.96 wt%
+        # UPDATE wt, Results to CALL Ae3MultiC(wt, Results)
+        ae3_multi_carbon(wt, results_mat)
+
+        # TODO: We may or may not implement the Ae3 plot but we can if we want to.
+        # We can view the Ae3 plot with a call to the following
+        # CALL Ae3Plot(results_mat, self.ae1, wt_c)
+
+        # Find the Ae3-Ae1 intercept Carbon content (Eutectic composition
+        if self.ae1 > 0:
+            for i in range(1000):
+                if results_mat[i, 1] <= self.ae1:
+                    self.ceut = results_mat[i, 0]
+                    break
+
+        # Find the Ae3 temperature at the alloy Carbon content
+        # TODO: Not sure why we need to set ae3 here.
+        ae3 = ae3_single_carbon(wt, wt_c)
+
+        # Now calculate the important bit the Xfe equilibrium phase fraction of Ferrite
+        tie_length = self.ceut - self.cf
+        lever1 = tie_length - wt_c
+        self.xfe = lever1 / tie_length
+
+    @staticmethod
+    def _pretty_str_tables(comp: np.ndarray) -> PrettyTable:
+        table = PrettyTable(comp.dtype.names)
+        table.float_format['weight'] = '.3'
+        for row in comp:
+            table.add_row(row)
+        # table.set_style(MSWORD_FRIENDLY)
+        table.align['name'] = 'l'
+        table.align['symbol'] = 'l'
+        table.align['weight'] = 'r'
+
+        return table
+
     def __str__(self):
-        parent_t = PrettyTable(self.comp_parent.dtype.names)
-        for row in self.comp_parent:
-            parent_t.add_row(row)
-        parent_t.align['name'] = 'l'
-        parent_t.align['symbol'] = 'l'
-        parent_t.align['weight'] = 'r'
+        parent_t = self._pretty_str_tables(self.comp_parent)
+        weld_t = self._pretty_str_tables(self.comp_weld)
+        mix_t = self._pretty_str_tables(self.comp_mix)
 
         return """
 {:9}{}
@@ -246,8 +317,13 @@ Transformation Temperature Limits:
 Austenite Limits: 
   {:6}{:.4f}
   {:6}{:.4f}
+
 Alloy Composition:
 Parent: 
+{}
+Weld:
+{}
+Mix:
 {}
         """.format(
             'Method:', self.method.name, 'Alloy:', self.alloy.name,
@@ -257,5 +333,5 @@ Parent:
             'MS Temperature:', self.ms_temp, 'MS Undercool: ', self.ms_undercool,
             'BS Temperature: ', self.bs_temp,
             'Ae1:', self.ae1, 'Ae3:', self.ae3,
-            parent_t
+            parent_t, weld_t, mix_t
         )

@@ -26,9 +26,11 @@ import os
 
 from logger.arc_logger import AppLogger
 from simulation.simconfiguration import *
+from simulation.simulations import Simulation
 
 if __name__ == '__main__':
     logger = AppLogger(__name__)
     logger.info('SimConfiguration Start - Alpha version')
-    sim = SimConfiguration(debug=True)
-    print(sim)
+    configs = SimConfiguration(debug=True)
+    sim = Simulation(configs, debug=True)
+    sim.cct()

@@ -37,10 +37,6 @@ logger = AppLogger(__name__)
 R = np.float64(1.9858)
 
 
-# mat[][]
-# m = mat[:,1]
-
-
 def ae3_single_carbon(wt_comp: np.ndarray, wt_c: float) -> float:
     # Only passing in the original wt% alloys (note: C and Fe will be overwritten below for each iteration of
     # the main loop)

@@ -89,8 +89,8 @@ class SimConfiguration(object):
             config = json.load(config_f, parse_float=np.float64)
             self.method = Method.Li98 if config['method']['li98'] else Method.Kirkaldy83
 
-        self.nuc_start = config['transformation_definitions']['nucleation_start']
-        self.nuc_finish = config['transformation_definitions']['nucleation_finish']
+        self.nuc_start = config['transformation_definitions']['nucleation_start'] / 100
+        self.nuc_finish = config['transformation_definitions']['nucleation_finish'] / 100
         self.grain_type = config['grain_size']['type']
         self.grain_size = config['grain_size']['value']
         self.auto_xfe_calc = config['equilibrium_phase_fractions']['auto_calculate']
@@ -106,6 +106,8 @@ class SimConfiguration(object):
         self.ae_check = False
         self.ae1 = config['austenite_limits']['ae1_value']
         self.ae3 = config['austenite_limits']['ae3_value']
+        self.temp_peak = config['cooling_profile']['start_temperature']
+        self.cct_cooling_rate = config['cooling_profile']['cct_cooling_rate']
 
         return config
 

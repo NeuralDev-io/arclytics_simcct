@@ -260,5 +260,14 @@ class TestSimulation(unittest.TestCase):
     #     self.assertAlmostEqual(, 1.31950870247819, 8)
 
 
+class TestCoolingCurveTemperature(BaseConfigurationTest):
+    def setUp(self) -> None:
+        self.simulation = Simulation(self.sim_inst)
+
+    def test_ccr(self):
+
+        pass
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -25,6 +25,7 @@ import unittest
 import numpy as np
 from simulation.simconfiguration import SimConfiguration
 from simulation.ae3_utilities import *
+from simulation.simulations import *
 
 
 class BaseConfigurationTest(unittest.TestCase):
@@ -243,6 +244,18 @@ class TestXfe(BaseConfigurationTest):
     def test_xfe(self):
         logger.info("Xfe: {}, Ceut: {}. Cf: {}".format(self.sim_inst.xfe, self.sim_inst.ceut, self.sim_inst.cf))
         self.assertAlmostEqual(self.sim_inst.xfe, 0.94621026894865523, 8)
+
+
+class TestSimulation(unittest.TestCase):
+
+    def setUp(self):
+        sim_inst = SimConfiguration(debug=True)
+        self.simulation = Simulation(sim_inst)
+
+    def test__sigmoid2(self):
+        self.assertAlmostEqual(, 1.31950870247819, 8)
+
+
 
 
 if __name__ == '__main__':

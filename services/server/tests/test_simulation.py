@@ -240,19 +240,19 @@ class TestXfe(BaseConfigurationTest):
 
         ae3_multi_carbon(wt, results_mat)
 
-        self.assertAlmostEqual(results_mat[0, 0], 0)
-        self.assertAlmostEqual(results_mat[0, 1], 869.853324584521)
-        self.assertAlmostEqual(results_mat[0, 2], 910.690613312279)
-        self.assertAlmostEqual(results_mat[0, 3], -0.00111210865060011)
-        self.assertAlmostEqual(results_mat[0, 4], 0.000627505594071084)
-        self.assertAlmostEqual(results_mat[0, 5], 1)
+        self.assertAlmostEqual(results_mat[0, 0], 0, 8)
+        self.assertAlmostEqual(results_mat[0, 1], 869.853324584521, 8)
+        self.assertAlmostEqual(results_mat[0, 2], 910.690613312279, 8)
+        self.assertAlmostEqual(results_mat[0, 3], -0.00111210865060011, 8)
+        self.assertAlmostEqual(results_mat[0, 4], 0.000627505594071084, 8)
+        self.assertAlmostEqual(results_mat[0, 5], 1, 8)
 
-        self.assertAlmostEqual(results_mat[1, 0], 0.01)
-        self.assertAlmostEqual(results_mat[1, 1], 863.8233624987)
-        self.assertAlmostEqual(results_mat[1, 2], 904.97196331503)
-        self.assertAlmostEqual(results_mat[1, 3], -0.00111734265308321)
-        self.assertAlmostEqual(results_mat[1, 4], 0.00060366887082998)
-        self.assertAlmostEqual(results_mat[1, 5], 1)
+        self.assertAlmostEqual(results_mat[1, 0], 0.01, 8)
+        self.assertAlmostEqual(results_mat[1, 1], 863.8233624987, 8)
+        self.assertAlmostEqual(results_mat[1, 2], 904.97196331503, 8)
+        self.assertAlmostEqual(results_mat[1, 3], -0.00111734265308321, 8)
+        self.assertAlmostEqual(results_mat[1, 4], 0.00060366887082998, 8)
+        self.assertAlmostEqual(results_mat[1, 5], 1, 8)
         pass
 
     def test_ceut(self):

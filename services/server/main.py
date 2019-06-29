@@ -30,5 +30,5 @@ from simulation.simconfiguration import *
 if __name__ == '__main__':
     logger = AppLogger(__name__)
     logger.info('SimConfiguration Start - Alpha version')
-    sim = SimConfiguration()
+    sim = SimConfiguration(debug=True)
     # print(sim)

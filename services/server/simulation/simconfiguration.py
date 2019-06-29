@@ -222,11 +222,8 @@ class SimConfiguration(object):
         ae3 = ae3 + (1570.0 - (323.0 * c) - (25.0 * mn) + (80.0 * si) - (3.0 * cr) - (32.0 * ni) -
                      32.0) * 5.0 / (3.0 * 9.0)
 
-        # NOTE: Check the results of ae1 and ae3 at this point
-
         # find the Ae3 temperature at the alloy Carbon content Using Ortho-equilibrium method
-        # ae3 = ae3_single_carbon(self.comp_parent.copy(), c)
-
+        ae3 = ae3_single_carbon(self.comp_parent.copy(), c)
         return ae1, ae3 - 273
 
     @staticmethod

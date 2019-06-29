@@ -12,8 +12,8 @@
 	"equilibrium_phase_fractions": {
 		"auto_calculate":  true,
 		"xfe_value":  0.0,
-		"cf_value": 0.0,
-		"ceut_value":  0.0
+		"cf_value": 0.012,
+		"ceut_value":  0.762
 	},
 	"transformation_temp_limits": {
 		"auto_calculate":  true,

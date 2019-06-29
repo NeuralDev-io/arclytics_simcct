@@ -32,7 +32,7 @@ import numpy as np
 from prettytable import PrettyTable, MSWORD_FRIENDLY
 
 from logger.arc_logger import AppLogger
-from simulation.ae3_utilities import ae3_single_carbon
+from simulation.ae3_utilities import ae3_single_carbon, convert_wt_2_mol, ae3_multi_carbon
 from configs.settings import BASE_DIR, APP_CONFIGS
 
 DEFAULT_CONFIGS = Path(BASE_DIR) / 'configs' / 'sim_configs.json'
@@ -73,6 +73,10 @@ class SimConfiguration(object):
             self.ae1 = 0
             self.ae3 = 0
 
+            self.xfe = 0
+            self.ceut = 0
+            self.cf = 0
+
             if self.ae1 > 0 and self.ae3 > 0:
                 self.ae_check = True
 
@@ -85,6 +89,8 @@ class SimConfiguration(object):
             self.auto_ms_bs()
         if self.auto_austenite_calc:
             self.auto_ae1_ae3()
+        if self.auto_xfe_calc:
+            self.xfe_method2()
 
         if self.ae_check:
             # TODO: make sure simulation checks this
@@ -226,6 +232,53 @@ class SimConfiguration(object):
         ae3 = ae3_single_carbon(self.comp_parent.copy(), c)
         return ae1, ae3 - 273
 
+    def xfe_method2(self) -> None:
+        """Second method for estimating Xfe using parra-equilibrium methodology to predict  the Ae3 values with
+        increasing carbon content. To find the intercept with Ae1 (from simplified method) to determine the eutectic
+        carbon content wt%. With this value and a suitable estimate of the ferrite carbon content (~0.02 wt%).
+        With these limits ant the current alloy composition the lever rule can be used to determine the equilibrium
+        phase fraction
+
+        Returns:
+
+        """
+        wt = self.comp_parent.copy()
+
+        # Mole fractions: c to ALL elements; y to Fe only (y not used)
+        c_vect, y_vect = convert_wt_2_mol(wt)
+
+        # now let's get onto the main routine
+
+        # store results of each iteration of Carbon
+
+        results_mat = np.zeros((1000, 22), dtype=np.float64)
+        # reserve the initial carbon wt% as the main routine is passing back another value despite being set "ByVal"
+        wt_c = wt['weight'][wt['name'] == 'carbon'][0]
+
+        # Find Ae3 for array of Carbon contents form 0.00 to 0.96 wt%
+        # UPDATE wt, Results to CALL Ae3MultiC(wt, Results)
+        ae3_multi_carbon(wt, results_mat)
+
+        # TODO: We may or may not implement the Ae3 plot but we can if we want to.
+        # We can view the Ae3 plot with a call to the following
+        # CALL Ae3Plot(results_mat, self.ae1, wt_c)
+
+        # Find the Ae3-Ae1 intercept Carbon content (Eutectic composition
+        if self.ae1 > 0:
+            for i in range(1000):
+                if results_mat[i, 1] <= self.ae1:
+                    self.ceut = results_mat[i, 0]
+                    break
+
+        # Find the Ae3 temperature at the alloy Carbon content
+        # TODO: Not sure why we need to set ae3 here.
+        ae3 = ae3_single_carbon(wt, wt_c)
+
+        # Now calculate the important bit the Xfe equilibrium phase fraction of Ferrite
+        tie_length = self.ceut - self.cf
+        lever1 = tie_length - wt_c
+        self.xfe = lever1 / tie_length
+
     @staticmethod
     def _pretty_str_tables(comp: np.ndarray) -> PrettyTable:
         table = PrettyTable(comp.dtype.names)
@@ -264,6 +317,7 @@ Transformation Temperature Limits:
 Austenite Limits: 
   {:6}{:.4f}
   {:6}{:.4f}
+
 Alloy Composition:
 Parent: 
 {}

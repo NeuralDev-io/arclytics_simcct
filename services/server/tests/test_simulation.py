@@ -31,8 +31,10 @@ class BaseConfigurationTest(unittest.TestCase):
     def setUp(self) -> None:
         self.sim_inst = SimConfiguration(debug=True)
 
-    # def test_print(self):
-    #     print(self.sim_inst)
+    @classmethod
+    def setUpClass(cls) -> None:
+        # This runs only once
+        super(BaseConfigurationTest, cls).setUpClass()
 
 
 class TestMSnBS(BaseConfigurationTest):
@@ -230,8 +232,17 @@ class TestXfe(BaseConfigurationTest):
     def setUp(self) -> None:
         super(TestXfe, self).setUp()
 
-    # def test_xfe(self):
-    #     self.assertAlmostEqual(self.sim_inst.xfe, 0.946210, 4)
+    def test_ae3_multi_carbon(self):
+        # Do 2 iterations of the for loop and check the results for results[0:1, 0:5]
+        pass
+
+    def test_ceut(self):
+        # Test the XfeMethod2 section where self.ceut is changed.
+        pass
+
+    def test_xfe(self):
+        logger.info("Xfe: {}, Ceut: {}. Cf: {}".format(self.sim_inst.xfe, self.sim_inst.ceut, self.sim_inst.cf))
+        self.assertAlmostEqual(self.sim_inst.xfe, 0.94621026894865523, 8)
 
 
 if __name__ == '__main__':

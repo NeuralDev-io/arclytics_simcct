@@ -707,3 +707,41 @@ def ai_eqn3(
     den_3 = np.float64((x1_up * dh_c * a10 + (1-x1_up) * dh_fe) * math.exp(b))
 
     return np.float64(num_3 / den_3)
+
+
+def ae3_multi_carbon(wt: np.ndarray, results: np.ndarray) -> (np.ndarray, np.ndarray):
+    # (includes wt%Fe, AC(20), by difference)
+
+    # Only passing in the original wt% alloys
+    # (note: C and Fe will be overwritten below for each iteration of the main loop)
+    ae3 = np.float64(0)
+    t0 = np.float64(0)  # Ae3 value without alloying elements (just Carbon)
+    ai_vect = np.zeros(20, dtype=np.float64)
+    c = np.float64(0)  # initiate carbon content as 0.00 %
+
+    # reset wt% carbon in array to zero (this will be iterated below within the main loop)
+    wt['weight'][wt['name'] == 'carbon'] = 0.0
+    # reset wt% Fe (Iron) in array to zero (this will be updated below within the main loop)
+    wt['weight'][wt['name'] == 'iron'] = 0.0
+
+    # ========== # MAIN LOOP - iterates Carbon from 0.00 to 0.96 wt% # ========== #
+    for m in range(0, 97):
+        # UPDATE Ae3, T0, AI, wt, C to CALL Ae3SetC(Ae3, T0, AI[], wt[], C)
+        ae3, t0 = ae3_set_carbon(t0, ai_vect, wt, c)
+
+        # RESULTS Matrix
+        results[m, 0] = c           # Current carbon content, wt%-C
+        results[m, 1] = ae3 - 273   # Convert to degrees C, Ae3
+        results[m, 2] = t0 - 273    # Ae3 for Iron - carbon with no other alloy elem.
+        results[m, 3] = ai_vect[1]  # Solute partition interaction coefficient (Mn)
+        results[m, 4] = ai_vect[2]  # Solute partition interaction coefficient (Si)
+        results[m, 5] = ai_vect[3]  # Solute partition interaction coefficient (Ni)
+
+        for i in range(4, wt.shape[0] - 1):  # The rest (not Fe)
+            results[i+2, 5] = ai_vect[i]
+
+        # Update C wt% and repeat
+        c = c + 0.01
+
+    # NOTE: Results passed back for clarity but numpy.ndarray are updated by reference
+    return wt, results

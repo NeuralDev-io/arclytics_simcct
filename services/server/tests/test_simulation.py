@@ -26,6 +26,7 @@ from pprint import pprint
 import numpy as np
 from simulation.simconfiguration import SimConfiguration
 from simulation.ae3_utilities import *
+from simulation.simulations import *
 
 
 class TestAe3(unittest.TestCase):
@@ -62,6 +63,18 @@ class TestAe3(unittest.TestCase):
 
     # def test_xfe(self):
     #     self.assertAlmostEqual(self.sim_inst.xfe, 0.946210, 4)
+
+
+class TestSimulation(unittest.TestCase):
+
+    def setUp(self):
+        sim_inst = SimConfiguration(debug=True)
+        self.simulation = Simulation(sim_inst)
+
+    def test__sigmoid2(self):
+        self.assertAlmostEqual(, 1.31950870247819, 8)
+
+
 
 
 if __name__ == '__main__':

@@ -27,7 +27,7 @@ import enum
 import numpy as np
 
 from logger.arc_logger import AppLogger
-from simulation.utilities import Method, Alloy
+from simulation.utilities import Method, Alloy, sort_ccr
 from simulation.simconfiguration import SimConfiguration
 
 logger = AppLogger(__name__)
@@ -234,12 +234,27 @@ class Simulation(object):
 
         # Find the critical cooling rates for each phase
         # Storage for critical cooling rates
-        ccr = np.zeros((3, 2), dtype=np.float64)
+        ccr_mat = np.zeros((3, 2), dtype=np.float64)
         # CCR[0,0] - ferrite-init, CCR[0,1] - ferrite-finish
         # CCR(1,0] - pearlite-init, CCR[1,1] - pearlite-finish
         # CCR[2,0] - bainite-init, CCR[2,1] - bainite-finish
 
-        self.__critical_cooling_rate(ccr, self.g, self.ms, self.bs, self.ae1, self.ae3, integrated2_mat)
+        self.__critical_cooling_rate(ccr_mat, self.ms, self.bs, self.ae1, self.ae3, integrated2_mat)
+        # Sort Critical cooling rates from lowest to highest
+        sorted_ccr = sort_ccr(ccr_mat)
+
+        # Variable for the cooling rate (C/sec) at this point in time. Usually constant for each isotherm but might
+        # vary if using a defined cooling path from a table.
+        speedup = np.float64(1.2)
+        # Degrees/sec this starts at the fastesT critical cooling rate
+        cooling_rate = sorted_ccr[-1] * 2 * speedup
+
+        i_ctr = 4
+
+        # =============================================================================== #
+        # ========================== # MAIN COOLING RATE LOOP =========================== #
+        # =============================================================================== #
+
 
     @staticmethod
     def __sigmoid2(x) -> np.float64:
@@ -551,7 +566,7 @@ class Simulation(object):
                     sint_p
                 )
 
-            elif phase == Phase.B:
+            elif phase == Phase.B or phase == Phase.M:
                 bc = np.float64(math.exp(-10.23 + (10.18 * c) + (0.85 * mn) + (0.55 * ni) + (0.9 * cr) + (0.36 * mo)))
 
                 return np.float64(
@@ -597,7 +612,7 @@ class Simulation(object):
         return np.float64(-1)
 
     def __critical_cooling_rate(
-            self, ccr_mat: np.ndarray, g: float, ms: float, bs: float, ae1: float, ae3: float, integrated2: np.ndarray
+            self, ccr_mat: np.ndarray, ms: float, bs: float, ae1: float, ae3: float, integrated2: np.ndarray
     ):
         """
 
@@ -615,23 +630,24 @@ class Simulation(object):
         """
 
         # Current temperature
-        temp_curr = np.float(0)
+        temp_curr = None
 
         # ========================================================= #
         # ==================== # BAINITE CCR # ==================== #
         # ========================================================= #
-        phase = Phase.B
         torr_b, ccr_bcs, ccr_bcf = np.float64(0), np.float64(0), np.float64(0)
         time_accumulate = 0
         # initialise the time interval for this loop
         time_interval = 1.0
-
         # Start at Martensite temperature and work up to Bainite limit
         temp_curr = ms
 
+        # FIXME: This while loop can be put out to a helper function with:
+        #  - i.e. bs is limit
+        #  - return time_accumulate, ccr
         while temp_curr < bs:
             # Get isothermal nucleation time at current temperature
-            torr_b = self.__torr_calc2(torr_b, phase=phase, tcurr=temp_curr, integral2_mat=integrated2, i=1)
+            torr_b = self.__torr_calc2(torr_b, phase=Phase.B, tcurr=temp_curr, integral2_mat=integrated2, i=1)
 
             # Bainite start. Accumulation ratio
             ccr_bcs = ccr_bcs + (time_interval / torr_b)
@@ -648,10 +664,10 @@ class Simulation(object):
 
         while temp_curr < bs:
             # Get isothermal nucleation time at current temperature
-            torr_b = self.__torr_calc2(torr_b, phase=phase, tcurr=temp_curr, integral2_mat=integrated2, i=2)
+            torr_b = self.__torr_calc2(torr_b, phase=Phase.B, tcurr=temp_curr, integral2_mat=integrated2, i=2)
             # Bainite finish. Accumulation ratio
             ccr_bcf = ccr_bcf + (time_interval / torr_b)
-            temp_curr = temp_curr + 1
+            temp_curr = temp_curr + 1.0
             time_accumulate = time_accumulate + time_interval
 
         ccr_mat[2, 1] = ccr_bcf / ((bs - ms) / (time_accumulate - time_interval))
@@ -660,20 +676,17 @@ class Simulation(object):
         # ==================== # PEARLITE CCR # ==================== #
         # ========================================================== #
         torr_p, ccr_pcs, ccr_pcf = np.float(0.0), np.float(0.0), np.float(0.0)
-
         time_accumulate = 0
-
         temp_curr = bs
-        phase = Phase.P
 
         while temp_curr < ae1:
-            torr_p = self.__torr_calc2(torr_p, phase=phase, tcurr=temp_curr, integral2_mat=integrated2, i=1)
+            torr_p = self.__torr_calc2(torr_p, phase=Phase.P, tcurr=temp_curr, integral2_mat=integrated2, i=1)
             # Pearlite start. Accumulation ratio
             ccr_pcs = ccr_pcs + (time_interval / torr_p)
-            temp_curr = temp_curr + 1
+            temp_curr = temp_curr + 1.0
             time_accumulate = time_accumulate + time_interval
 
-        ccr_mat[1, 0] = ccr_pcs / (ae1 - bs) - (time_accumulate - time_interval)
+        ccr_mat[1, 0] = ccr_pcs / ((ae1 - bs) / (time_accumulate - time_interval))
 
         # Reset and run to full transformation
         time_accumulate = 0
@@ -681,7 +694,7 @@ class Simulation(object):
         temp_curr = bs
 
         while temp_curr < ae1:
-            torr_p = self.__torr_calc2(torr_p, phase=phase, tcurr=temp_curr, integral2_mat=integrated2, i=1)
+            torr_p = self.__torr_calc2(torr_p, phase=Phase.P, tcurr=temp_curr, integral2_mat=integrated2, i=1)
             # Pearlite start. Accumulation ratio
             ccr_pcf = ccr_pcf + (time_interval / torr_p)
             temp_curr = temp_curr + 1
@@ -693,19 +706,19 @@ class Simulation(object):
         # ==================== # FERRITE CCR # ==================== #
         # ========================================================= #
         torr_f, ccr_fcs, ccr_fcf = np.float(0.0), np.float(0.0), np.float(0.0)
+        time_accumulate = 0
 
         # Start at Bainite temperature and work up to Bainite limit
         temp_curr = bs
-        phase = Phase.F
 
         while temp_curr < ae3:
-            torr_f = self.__torr_calc2(torr_f, phase=phase, tcurr=temp_curr, integral2_mat=integrated2, i=1)
+            torr_f = self.__torr_calc2(torr_f, phase=Phase.F, tcurr=temp_curr, integral2_mat=integrated2, i=1)
             # Ferrite start. Accumulation ratio
             ccr_fcs = ccr_fcs + (time_interval / torr_f)
             temp_curr = temp_curr + 1
             time_accumulate = time_accumulate + time_interval
 
-        ccr_mat[0, 0] = ccr_fcs / ((ae3 - bs) - (time_accumulate - time_interval))
+        ccr_mat[0, 0] = ccr_fcs / ((ae3 - bs) / (time_accumulate - time_interval))
 
         # Reset and run to full transformation
         time_accumulate = 0
@@ -713,16 +726,21 @@ class Simulation(object):
         temp_curr = bs
 
         while temp_curr < ae3:
-            torr_f = self.__torr_calc2(torr_f, phase=phase, tcurr=temp_curr, integral2_mat=integrated2, i=1)
+            torr_f = self.__torr_calc2(torr_f, phase=Phase.F, tcurr=temp_curr, integral2_mat=integrated2, i=1)
             ccr_fcf = ccr_fcf + (time_interval / torr_f)
             temp_curr = temp_curr + 1
             time_accumulate = time_accumulate + time_interval
 
         ccr_mat[0, 1] = ccr_fcf / ((ae3 - bs) / (time_accumulate - time_interval))
 
+    # ======================================================================================================= #
+    # ============================== PUBLIC TEST METHODS FOR PRIVATE FUNCTIONS ============================== #
+    # ======================================================================================================= #
 
-# ======================================================================================================= #
-# ============================== PUBLIC TEST METHODS FOR PRIVATE FUNCTIONS ============================== #
-# ======================================================================================================= #
+    def test_vol_phantom_frac2(self, integrated_mat: np.ndarray) -> None:
+        self.__vol_phantom_frac2(integrated_mat)
 
-
+    def test_critical_cooling_rate(
+            self, ccr_mat: np.ndarray, ms: float, bs: float, ae1: float, ae3: float, integrated2: np.ndarray
+    ):
+        self.__critical_cooling_rate(ccr_mat, ms, bs, ae1, ae3, integrated2)

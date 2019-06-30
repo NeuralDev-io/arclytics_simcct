@@ -24,6 +24,7 @@ __date__ = '2019.06.26'
 import unittest
 import numpy as np
 from simulation.simconfiguration import SimConfiguration
+from simulation.utilities import *
 from simulation.ae3_utilities import *
 from simulation.simulations import *
 
@@ -283,7 +284,30 @@ class TestCoolingCurveTemperature(BaseConfigurationTest):
         self.simulation = Simulation(sim_inst, debug=True)
 
     def test_ccr(self):
-        pass
+        integrated2_mat = np.zeros((4, 11), dtype=np.float64)
+        self.simulation.test_vol_phantom_frac2(integrated2_mat)
+        ccr_mat = np.zeros((3, 2), dtype=np.float64)
+
+        logger.info("start_percent: {}".format(self.simulation.start_percent))
+        logger.info("finish_percent: {}".format(self.simulation.finish_percent))
+
+        self.simulation.test_critical_cooling_rate(ccr_mat, self.simulation.ms, self.simulation.bs,
+                                                   self.simulation.ae1, self.simulation.ae3, integrated2_mat)
+
+        logger.pprint(ccr_mat)
+
+        self.assertAlmostEqual(ccr_mat[0, 0], 158.9194157771073, 10)
+        self.assertAlmostEqual(ccr_mat[0, 1], 158.9194157771073, 10)
+        # Pearlite CCR
+        self.assertAlmostEqual(ccr_mat[1, 0], 0.21889237213174512, 10)
+        self.assertAlmostEqual(ccr_mat[1, 1], 0.21889237213174512, 10)
+        # Bainite CCR
+        self.assertAlmostEqual(ccr_mat[2, 0], 799.11526317494611, 10)
+        self.assertAlmostEqual(ccr_mat[2, 1], 41.167590371658619, 10)
+
+        ccr = sort_ccr(ccr_mat=ccr_mat)
+        print(ccr.__class__)
+        print(ccr)
 
 
 if __name__ == '__main__':

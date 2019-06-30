@@ -237,28 +237,35 @@ class TestXfe(BaseConfigurationTest):
     def test_ae3_multi_carbon(self):
         # Do 2 iterations of the for loop and check the results for results[0:1, 0:5]
         wt = self.sim_inst.comp_parent.copy()
-        results_mat = np.zeros((1000, 22), dtype=np.float64)
+        self.results_mat = np.zeros((1000, 22), dtype=np.float64)
 
-        ae3_multi_carbon(wt, results_mat)
+        ae3_multi_carbon(wt, self.results_mat)
 
-        self.assertAlmostEqual(results_mat[0, 0], 0, 8)
-        self.assertAlmostEqual(results_mat[0, 1], 869.853324584521, 8)
-        self.assertAlmostEqual(results_mat[0, 2], 910.690613312279, 8)
-        self.assertAlmostEqual(results_mat[0, 3], -0.00111210865060011, 8)
-        self.assertAlmostEqual(results_mat[0, 4], 0.000627505594071084, 8)
-        self.assertAlmostEqual(results_mat[0, 5], 1, 8)
+        self.assertAlmostEqual(self.results_mat[0, 0], 0, 8)
+        self.assertAlmostEqual(self.results_mat[0, 1], 869.853324584521, 8)
+        self.assertAlmostEqual(self.results_mat[0, 2], 910.690613312279, 8)
+        self.assertAlmostEqual(self.results_mat[0, 3], -0.00111210865060011, 8)
+        self.assertAlmostEqual(self.results_mat[0, 4], 0.000627505594071084, 8)
+        self.assertAlmostEqual(self.results_mat[0, 5], 1, 8)
 
-        self.assertAlmostEqual(results_mat[1, 0], 0.01, 8)
-        self.assertAlmostEqual(results_mat[1, 1], 863.8233624987, 8)
-        self.assertAlmostEqual(results_mat[1, 2], 904.97196331503, 8)
-        self.assertAlmostEqual(results_mat[1, 3], -0.00111734265308321, 8)
-        self.assertAlmostEqual(results_mat[1, 4], 0.00060366887082998, 8)
-        self.assertAlmostEqual(results_mat[1, 5], 1, 8)
+        self.assertAlmostEqual(self.results_mat[1, 0], 0.01, 8)
+        self.assertAlmostEqual(self.results_mat[1, 1], 863.8233624987, 8)
+        self.assertAlmostEqual(self.results_mat[1, 2], 904.97196331503, 8)
+        self.assertAlmostEqual(self.results_mat[1, 3], -0.00111734265308321, 8)
+        self.assertAlmostEqual(self.results_mat[1, 4], 0.00060366887082998, 8)
+        self.assertAlmostEqual(self.results_mat[1, 5], 1, 8)
         pass
 
     def test_ceut(self):
-        self.test_ae3_multi_carbon()
         # Test the XfeMethod2 section where self.ceut is changed.
+        self.test_ae3_multi_carbon()
+        if self.sim_inst.ae1 > 0:
+            for i in range(1000):
+                if self.results_mat[i, 1] <= self.sim_inst.ae1:
+                    self.ceut = self.results_mat[i, 0]
+                    break
+
+        self.assertAlmostEqual(self.ceut, 0.830000000000001, 15)  # fails at 16
         pass
 
     def test_xfe(self):
@@ -269,9 +276,47 @@ class TestXfe(BaseConfigurationTest):
 class TestSimulation(unittest.TestCase):
     def setUp(self):
         sim_inst = SimConfiguration(debug=True)
-        self.simulation = Simulation(sim_inst)
+        self.simulation = Simulation(sim_inst, debug=True)
         self.simulation.ttt()
         logger.info(self.simulation)
+
+    def test_vol_phantom_frac2(self):
+        # TODO
+        self.__vol_phantom_frac2(integrated2_mat)
+        pass
+
+
+
+    def test_ferrite_curves(self):
+        # TODO Check the values of fcs and fcf and at least the first 3 values
+
+        # for I in range(1, 3):
+        #     count_bn = 0
+        #     tcurr = self.MS
+        #
+        #     while tcurr < (self.BS - 1):
+        #         torr = self.__torr_calc2(torr, phase, tcurr, integrated2, I)
+        #
+        #         if I is 1:
+        #             fcs_vect[count_bn][0] = torr
+        #             fcs_vect[count_bn][1] = tcurr
+        #         else:
+        #             fcf_vect[count_bn][0] = torr
+        #             fcf_vect[count_bn][1] = tcurr
+        #         count_bn = count_bn + 1
+        #         tcurr = tcurr + 1
+
+        pass
+
+
+    def test_pearlite_curves(self):
+        # Check the values of pcs and pcf
+        pass
+
+    def test_bainite_curves(self):
+        # Check the values of bcs and bcf
+        pass
+
 
     # def test__sigmoid2(self):
     #     self.assertAlmostEqual(, 1.31950870247819, 8)

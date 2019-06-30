@@ -41,10 +41,6 @@ class Phase(enum.Enum):
 
 
 class Simulation(object):
-    # ======= TEMPORARY VARIABLES ======= #
-
-    # ======= TEMPORARY VARIABLES ======= #
-
     XBR = 1.0
 
     def __init__(self, sim_configs: SimConfiguration = None, debug=False):
@@ -92,89 +88,94 @@ class Simulation(object):
             self.AE1 = 701
             self.AE3 = 845.8379611854
 
+        self.debug = debug
+
     def ttt(self):
         # FIXME I have removed X and Xpct are not used. Ask if it can be removed.
-        w, h = 11, 4
-        integrated2 = [[0 for x in range(w)] for y in range(h)]
 
-        self.__vol_phantom_frac2(integrated2)
+        if self.debug:
+            ms = round(self.sim_configs.ms_temp)
+            bs = round(self.sim_configs.bs_temp)
+
+        integrated2_mat = np.zeros((4, 11), dtype=np.float64)
+
+        self.__vol_phantom_frac2(integrated2_mat)
 
         torr = 0.0
         # ========= FERRITE PHASE ========= #
         phase = Phase.F
-        fcs = [[0 for x in range(w)] for y in range(h)]  # Ferrite curve start
-        fcf = [[0 for x in range(w)] for y in range(h)]  # Ferrite curve finish
 
-        for I in range(1, 3):
-            tcurr = self.BS - 50
+        fcs_mat = np.zeros((10001, 2), dtype=np.float64)  # Ferrite Curve Start
+        fcf_mat = np.zeros((10001, 2), dtype=np.float64)  # Ferrite Curve Finish
+
+        for i in range(1, 3):
+            tcurr = bs - 50
             count_fn = 0
             while tcurr < (self.AE3 - 1):
-                torr = self.__torr_calc2(torr, phase, tcurr, integrated2, I)
+                torr = self.__torr_calc2(torr, phase, tcurr, integrated2_mat, i)
 
-                if I is 1:
-                    fcs[count_fn][0] = torr
-                    fcs[count_fn][1] = tcurr
+                if i is 1:
+                    fcs_mat[count_fn, 0] = torr
+                    fcs_mat[count_fn, 1] = tcurr
                 else:
-                    fcf[count_fn][0] = torr
-                    fcf[count_fn][1] = tcurr
+                    fcf_mat[count_fn, 0] = torr
+                    fcf_mat[count_fn, 1] = tcurr
 
                 count_fn = count_fn + 1
                 tcurr = tcurr + 1
 
         # ========= PEARLITE PHASE ========= #
         phase = Phase.P
-        w, h = 2, 10001
-        pcs_vect = [[0 for x in range(w)] for y in range(h)]  # Ferrite curve start
-        pcf_vect = [[0 for x in range(w)] for y in range(h)]  # Ferrite curve finish
+        pcs_mat =  np.zeros((10001, 2), dtype=np.float64) # Ferrite curve start
+        pcf_mat = np.zeros((10001, 2), dtype=np.float64)  # Ferrite curve finish
 
-        for I in range(1, 3):
-            tcurr = self.BS - 50
+        for i in range(1, 3):
+            tcurr = bs - 50
             count_pn = 0
-            while tcurr < (self.AE1 - 1):
-                torr = self.__torr_calc2(torr, phase, tcurr, integrated2, I)
-                if I is 1:
-                    pcs_vect[count_pn][0] = torr
-                    pcs_vect[count_pn][1] = tcurr
+
+            while tcurr < (round(self.sim_configs.ae1) - 1):
+                torr = self.__torr_calc2(torr, phase, tcurr, integrated2_mat, i)
+                if i is 1:
+                    pcs_mat[count_pn, 0] = torr
+                    pcs_mat[count_pn, 1] = tcurr
                 else:
-                    pcf_vect[count_pn][0] = torr
-                    pcf_vect[count_pn][1] = tcurr
+                    pcf_mat[count_pn, 0] = torr
+                    pcf_mat[count_pn, 1] = tcurr
 
                 count_pn = count_pn + 1
                 tcurr = tcurr + 1
 
         # ========= BAINITE PHASE ========= #
         phase = Phase.B
-        w, h = 2, 10001
-        bcs_vect = [[0 for x in range(w)] for y in range(h)]  # Ferrite curve start
-        bcf_vect = [[0 for x in range(w)] for y in range(h)]  # Ferrite curve finish
+        bcs_mat = np.zeros((10001, 2), dtype=np.float64)  # Ferrite curve start
+        bcf_mata = np.zeros((10001, 2), dtype=np.float64) # Ferrite curve finish
 
-        for I in range(1, 3):
+        for i in range(1, 3):
             count_bn = 0
-            tcurr = self.MS
+            tcurr = ms
 
-            while tcurr < (self.BS - 1):
-                torr = self.__torr_calc2(torr, phase, tcurr, integrated2, I)
+            while tcurr < (bs - 1):
+                torr = self.__torr_calc2(torr, phase, tcurr, integrated2_mat, i)
 
-                if I is 1:
-                    bcs_vect[count_bn][0] = torr
-                    bcs_vect[count_bn][1] = tcurr
+                if i is 1:
+                    bcs_mat[count_bn, 0] = torr
+                    bcs_mat[count_bn, 1] = tcurr
                 else:
-                    bcf_vect[count_bn][0] = torr
-                    bcf_vect[count_bn][1] = tcurr
+                    bcf_mata[count_bn, 0] = torr
+                    bcf_mata[count_bn, 1] = tcurr
                 count_bn = count_bn + 1
                 tcurr = tcurr + 1
 
         # ========= MARTENSITE ========= #
-        w, h = 2, 3  # CHANGE Used to be (2,100001) now has (2,3)
-        msf_vect = [[0 for _ in range(w)] for _ in range(h)]  # Ferrite curve start
-        tcurr = self.MS
-        torr = self.__torr_calc2(torr, phase, tcurr, integrated2, I)
+        msf_vect = np.zeros((3, 2), dtype=np.float64) # Ferrite curve start
+        tcurr = ms
+        torr = self.__torr_calc2(torr, phase, tcurr, integrated2_mat, i)
         # Uses Bainite cutoff time. So uses the Bainite phase as the argument
 
-        msf_vect[1][0] = 0.001
-        msf_vect[1][1] = self.MS
-        msf_vect[2][0] = torr
-        msf_vect[2][1] = self.MS
+        msf_vect[1, 0] = 0.001
+        msf_vect[1, 1] = ms
+        msf_vect[2, 0] = torr
+        msf_vect[2, 1] = ms
 
     def cct(self):
         # Can be used for any cooling path new routine to simplify iterative routines using any of the methods
@@ -284,6 +285,16 @@ class Simulation(object):
             return 1 / ((x ** (2.0 * (1 - x) / 3.0)) * ((1 - x) ** (2.0 * x / 3.0)))
         else:
             return numerator / ((x ** (2.0 * (1 - x) / 3.0)) * ((1 - x) ** (2.0 * x / 3.0)))
+
+    def __get_sx_integral(self, x):
+        if (x >= 0.00) and (x < 0.01):
+            return 1.7635 * x ** 0.6118
+        if (x >= 0.01) and (x < 0.5):
+            return 1.5401 * x ** 0.5846
+        if (x >= 0.5) and (x < 0.95):
+            return 1.4 * x ** 2 - 0.45 * x + 0.936
+        if (x >= 0.95) and (x <= 1.0):
+            return 2383.21 * x ** 3 - 6891.57 * x ** 2 + 6646 * x - 2135.57
 
     def __de_integrator(self, i, a, b, eps, err, nn, method):
         # FIXME Check if err and nn are needed to be returned somewhere in the code as they are passed by reference.
@@ -420,6 +431,7 @@ class Simulation(object):
 
             sig_int_pearlite, sig_int_pearlite_t = None, None
             # FIXME sig_int_pearlite_t is not used. Ask if it can be removed
+            sig_int_pearlite_t = self.__get_sx_integral(xp)
             sig_int_pearlite = self.__de_integrator(sig_int_pearlite, 0.0, xp, 0.000000000000001, err, nn, 1)
             integrated_mat[2, 1] = sig_int_pearlite
 
@@ -448,7 +460,7 @@ class Simulation(object):
                 xp = 0.9999999
 
             # FIXME sig_int_pearlite_t not used. Ask if it can be removed.
-            # sig_int_pearlite_t = self.__get_xs_integral(sig_int_pearlite_t, xp)
+            sig_int_pearlite_t = self.__get_xs_integral(xp)
             sig_int_pearlite = self.__de_integrator(sig_int_pearlite, 0.0, xp, 0.000000000000001, err, nn, 1)
             integrated_mat[3, 1] = sig_int_pearlite
 
@@ -502,7 +514,7 @@ class Simulation(object):
             sig_int_bainite = self.__de_integrator(sig_int_bainite, 0.0, xb, 0.000000000000001, err, nn, 3)
             integrated_mat[1, 2] = sig_int_bainite
 
-    def __torr_calc2(self, torr: float, phase: Phase, tcurr: float, integral2_vect: np.ndarray, i: int) -> float:
+    def __torr_calc2(self, torr: float, phase: Phase, tcurr: float, integral2_mat: np.ndarray, i: int) -> float:
         R_GAS = 1.985
 
         wt = self.sim_configs.comp_parent
@@ -517,11 +529,15 @@ class Simulation(object):
         ae3 = self.sim_configs.ae3
         bs = self.sim_configs.bs_temp
 
+        if self.debug:
+            bs = round(self.sim_configs.bs_temp)
+            ae1 = round(self.sim_confis.ae1)
+
         if self.sim_configs.method == Method.Li98:
 
-            sint_f = integral2_vect[i + 1][0]
-            sint_p = integral2_vect[i + 1][1]
-            sint_b = integral2_vect[i + 1][2]
+            sint_f = integral2_mat[i + 1, 0]
+            sint_p = integral2_mat[i + 1, 1]
+            sint_b = integral2_mat[i + 1, 2]
 
             if phase == Phase.F:
                 fc = np.float64(
@@ -542,7 +558,8 @@ class Simulation(object):
 
                 return np.float64(
                     pc /
-                    (math.pow(2, (0.32*g)) * math.pow((ae1 - tcurr), 3) * math.exp(-27500 / (R_GAS * (tcurr + 273)))) *
+                    (math.pow(2, (0.32*g)) * math.pow((round(ae1) - tcurr), 3) * math.exp(-27500 /
+                                                                                          (R_GAS * (tcurr + 273)))) *
                     sint_p
                 )
 
@@ -556,9 +573,9 @@ class Simulation(object):
                 )
 
         elif self.sim_configs.method == Method.Kirkaldy83:
-            iint_f = integral2_vect[i - 1][0]
-            iint_p = integral2_vect[i - 1][1]
-            iint_b = integral2_vect[i - 1][2]
+            iint_f = integral2_mat[i - 1, 0]
+            iint_p = integral2_mat[i - 1, 1]
+            iint_b = integral2_mat[i - 1, 2]
 
             if phase == Phase.F:
                 fc = np.float64(((59.6 * mn) + (1.45 * ni) + (67.7 * cr) + (244 * mo)))
@@ -618,7 +635,7 @@ class Simulation(object):
 
         while temp_curr < self.sim_configs.bs_temp:
             # Get isothermal nucleation time at current temperature
-            torr_b = self.__torr_calc2(torr_b, phase=phase, tcurr=temp_curr, integral2_vect=integrated2, i=1)
+            torr_b = self.__torr_calc2(torr_b, phase=phase, tcurr=temp_curr, integral2_mat=integrated2, i=1)
 
             # Bainite start. Accumulation ratio
             ccr_bcs = ccr_bcs + (time_interval / torr_b)

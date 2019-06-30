@@ -6,7 +6,7 @@
 # Attributions: 
 # [1] 
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
+__author__ = 'Arvy Salazar <@Xaraox>, Andrew Che <@codeninja55>'
 __copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = '{license}'
@@ -236,7 +236,24 @@ class TestXfe(BaseConfigurationTest):
 
     def test_ae3_multi_carbon(self):
         # Do 2 iterations of the for loop and check the results for results[0:1, 0:5]
-        self.results_mat = np.zeros((1000, 22), dtype=np.float64)
+        wt = self.sim_inst.comp_parent.copy()
+        results_mat = np.zeros((1000, 22), dtype=np.float64)
+
+        ae3_multi_carbon(wt, results_mat)
+
+        self.assertAlmostEqual(results_mat[0, 0], 0, 8)
+        self.assertAlmostEqual(results_mat[0, 1], 869.853324584521, 8)
+        self.assertAlmostEqual(results_mat[0, 2], 910.690613312279, 8)
+        self.assertAlmostEqual(results_mat[0, 3], -0.00111210865060011, 8)
+        self.assertAlmostEqual(results_mat[0, 4], 0.000627505594071084, 8)
+        self.assertAlmostEqual(results_mat[0, 5], 1, 8)
+
+        self.assertAlmostEqual(results_mat[1, 0], 0.01, 8)
+        self.assertAlmostEqual(results_mat[1, 1], 863.8233624987, 8)
+        self.assertAlmostEqual(results_mat[1, 2], 904.97196331503, 8)
+        self.assertAlmostEqual(results_mat[1, 3], -0.00111734265308321, 8)
+        self.assertAlmostEqual(results_mat[1, 4], 0.00060366887082998, 8)
+        self.assertAlmostEqual(results_mat[1, 5], 1, 8)
         pass
 
     def test_ceut(self):

@@ -282,6 +282,8 @@ class TestCoolingCurveTemperature(BaseConfigurationTest):
     def setUp(self) -> None:
         sim_inst = SimConfiguration(debug=True)
         self.simulation = Simulation(sim_inst, debug=True)
+        # Init some common variables
+        self.sorted_ccr = None
 
     def test_ccr(self):
         integrated2_mat = np.zeros((4, 11), dtype=np.float64)
@@ -293,9 +295,8 @@ class TestCoolingCurveTemperature(BaseConfigurationTest):
 
         self.simulation.test_critical_cooling_rate(ccr_mat, self.simulation.ms, self.simulation.bs,
                                                    self.simulation.ae1, self.simulation.ae3, integrated2_mat)
-
-        logger.pprint(ccr_mat)
-
+        # logger.pprint(ccr_mat)
+        # Ferrite CCR
         self.assertAlmostEqual(ccr_mat[0, 0], 158.9194157771073, 10)
         self.assertAlmostEqual(ccr_mat[0, 1], 158.9194157771073, 10)
         # Pearlite CCR
@@ -305,9 +306,13 @@ class TestCoolingCurveTemperature(BaseConfigurationTest):
         self.assertAlmostEqual(ccr_mat[2, 0], 799.11526317494611, 10)
         self.assertAlmostEqual(ccr_mat[2, 1], 41.167590371658619, 10)
 
-        ccr = sort_ccr(ccr_mat=ccr_mat)
-        print(ccr.__class__)
-        print(ccr)
+        self.sorted_ccr = sort_ccr(ccr_mat=ccr_mat)
+
+    def test_cct(self):
+        res = self.simulation.cct()
+
+        logger.info(res['ferrite_nucleation'][0:9, :])
+        logger.info(res['martensite'][0:9, :])
 
 
 if __name__ == '__main__':

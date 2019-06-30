@@ -33,5 +33,6 @@ if __name__ == '__main__':
     logger.info('SimConfiguration Start - Alpha version')
     configs = SimConfiguration(debug=True)
     print(configs)
-    # sim = Simulation(configs, debug=True)
-    # sim.cct()
+    sim = Simulation(configs, debug=True)
+    sim.cct()
+    logger.info('SimConfiguration Complete - Alpha version')

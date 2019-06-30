@@ -173,19 +173,6 @@ class Simulation(object):
         torr_f, torr_p, torr_b = None, None, None
         torr_f_end, torr_p_end, torr_b_end = None, None, None
 
-        # Set fraction of nucleation
-        nuc_frac_austenite = np.float64(1.0)
-        nuc_frac_ferrite = np.float64(0)
-        nuc_frac_pearlite = np.float64(0)
-        nuc_frac_bainite = np.float64(0)
-        nuc_frac_martensite = np.float64(0)
-        # Set fraction of completion
-        nuc_frac_austenite_end = np.float64(1.0)
-        nuc_frac_ferrite_end = np.float64(0)
-        nuc_frac_pearlite_end = np.float64(0)
-        nuc_frac_bainite_end = np.float64(0)
-        nuc_frac_martensite_end = np.float64(0)
-
         # Set initial grain size
         g_curr = self.g
 
@@ -202,16 +189,6 @@ class Simulation(object):
 
         temp_start = self.configs.temp_peak
 
-        # Trigger after Ferrite nucleation point has been found to stop the routine  recording for the
-        # current cooling rate
-        stop_f = None
-        stop_p = None  # Pearlite trigger
-        stop_b = None  # Bainite trigger
-        # Trigger after Ferrite nucleation point has been found to stop the routine
-        stop_f_end = None
-        stop_p_end = None  # Pearlite trigger
-        stop_b_end = None  # Bainite trigger
-
         # ========== # TIME LOOP # ========== #
         # The time increments can be either constant cooling rate or follow a defined curve. Figure this out first and
         # populate an array containing discreet increments of time for the FOR loop to follow. The increment size does
@@ -219,14 +196,15 @@ class Simulation(object):
         # to Ae3 only involves potential grain growth
 
         # Can hold 100000 time/temperature points for Ferrite nucleation temperature
-        cct_record_f_mat = np.zeros((10000, 3), dtype=np.float64)  # Ferrite
-        cct_record_p_mat = np.zeros((10000, 3), dtype=np.float64)  # Pearlite
-        cct_record_b_mat = np.zeros((10000, 3), dtype=np.float64)  # Bainite
-        cct_record_m_mat = np.zeros((10000, 3), dtype=np.float64)  # Martensite
+        cct_record_f_mat = np.zeros((10000, 2), dtype=np.float64)  # Ferrite
+        cct_record_p_mat = np.zeros((10000, 2), dtype=np.float64)  # Pearlite
+        cct_record_b_mat = np.zeros((10000, 2), dtype=np.float64)  # Bainite
+        cct_record_m_mat = np.zeros((10000, 2), dtype=np.float64)  # Martensite
         # Can hold 100000 time/temperature points for Ferrite finish temperature
-        cct_record_f_end_mat = np.zeros((10000, 3), dtype=np.float64)  # Ferrite
-        cct_record_p_end_mat = np.zeros((10000, 3), dtype=np.float64)  # Pearlite
-        cct_record_b_end_mat = np.zeros((10000, 3), dtype=np.float64)  # Bainite
+        cct_record_f_end_mat = np.zeros((10000, 2), dtype=np.float64)  # Ferrite
+        cct_record_p_end_mat = np.zeros((10000, 2), dtype=np.float64)  # Pearlite
+        cct_record_b_end_mat = np.zeros((10000, 2), dtype=np.float64)  # Bainite
+        cct_record_m_mat = np.zeros((10000, 2), dtype=np.float64)      # Martensite
 
         # Counters
         ii_f, ii_p, ii_b, ii_m = 0, 0, 0, 0
@@ -238,7 +216,6 @@ class Simulation(object):
         # CCR[0,0] - ferrite-init, CCR[0,1] - ferrite-finish
         # CCR(1,0] - pearlite-init, CCR[1,1] - pearlite-finish
         # CCR[2,0] - bainite-init, CCR[2,1] - bainite-finish
-
         self.__critical_cooling_rate(ccr_mat, self.ms, self.bs, self.ae1, self.ae3, integrated2_mat)
         # Sort Critical cooling rates from lowest to highest
         sorted_ccr = sort_ccr(ccr_mat)
@@ -246,15 +223,139 @@ class Simulation(object):
         # Variable for the cooling rate (C/sec) at this point in time. Usually constant for each isotherm but might
         # vary if using a defined cooling path from a table.
         speedup = np.float64(1.2)
-        # Degrees/sec this starts at the fastesT critical cooling rate
+        # Degrees/sec this starts at the fastest critical cooling rate
         cooling_rate = sorted_ccr[-1] * 2 * speedup
-
-        i_ctr = 4
+        i_ctr = 3
 
         # =============================================================================== #
         # ========================== # MAIN COOLING RATE LOOP =========================== #
         # =============================================================================== #
+        for i in range(100):
+            cooling_rate = cooling_rate / speedup
 
+            if cooling_rate < sorted_ccr[i_ctr]:
+                # set back to the next slowest critical cooling rate identified
+                i_ctr = i_ctr - 1
+
+                if i_ctr < 0:
+                    i_ctr = 0
+                    speedup = 2.0
+
+            # Initialise time at start for each cooling rate
+            time = 0.0
+            # Initialise temperature at the start point for each cooling rate
+            temp_curr = temp_start
+            # set the first increment time at 1 degree/increment (this will be controlled within the loop once started)
+            increm_time = 1 / cooling_rate
+
+            # Now within fixed Temperature path
+            # Reset the nucleation volume fractions to 0.0 for new cooling rate
+            nuc_frac_austenite = np.float64(1.0)
+            nuc_frac_ferrite = np.float64(0)
+            nuc_frac_pearlite = np.float64(0)
+            nuc_frac_bainite = np.float64(0)
+            nuc_frac_martensite = np.float64(0)
+            # Reset the nucleation volume fractions to 0.0 for new cooling rate
+            nuc_frac_austenite_end = np.float64(1.0)
+            nuc_frac_ferrite_end = np.float64(0)
+            nuc_frac_pearlite_end = np.float64(0)
+            nuc_frac_bainite_end = np.float64(0)
+            nuc_frac_martensite_end = np.float64(0)
+
+            # Reset the triggers for the current cooling rate (may not have been tripped on previous cooling rate)
+            # Trigger after Ferrite nucleation point has been found to stop the routine recoding for the
+            # current cooling rate
+            stop_f = 0.0
+            stop_p = 0.0  # Pearlite trigger
+            stop_b = 0.0  # Bainite trigger
+            # Trigger after Ferrite nucleation point has been found to stop the routine recording for the
+            # current cooling rate
+            stop_f_end = 0.0
+            stop_p_end = 0.0  # Pearlite trigger
+            stop_b_end = 0.0  # Bainite trigger
+
+            # ======================================== # STAGE 1 # ======================================== #
+            # If above this temperature no nucleation of any phase will be occurring, however, grain growth can occur.
+            while temp_curr > self.ae3:
+                # For the current temperature and time interval find the new grain size
+                # (if not fixed) for the moment we will use the fixed grain size
+                # g_curr = self.g
+                # Find the new temperature for the next iteration of this loop
+                temp_curr = self.__next_temp(temp_curr, cooling_rate, increm_time)
+                time = time + increm_time
+
+            # ======================================== # STAGE 2 # ======================================== #
+            # Now we are below Ae3 and any phase can occur (unless we subdivide further .... not necessary unless we
+            # need to speed the routine up)
+
+            # We want it to drop 1 degree each increment. We need the appropriate time step at the current cooling rate
+            increm_time = 1 / cooling_rate  # Slow things down a bit
+
+            # If above the martensite transformation temperature then we are looking for any phase that might occur
+            while temp_curr > self.ms:
+                # Find the total time to nucleation at the current temperature and divide the current increment time
+                # by this to find the fraction consumed in the current step. Then add this to the previous total for
+                # the relevant phases when the total is 1.0 nucleation has occurred.
+
+                # ==================== # Look for FERRITE START # ==================== #
+
+                # NOTE: The original code never actually runs into this condition.
+                # Inserted code for temperature dependant equilibrium phase fraction (Xfe)
+                # IF Form1CheckXFEtempDepend is True
+                #     CALL EquilibriumXFE(XFE, TempCurr, Ae3, Ae1)
+                #     IF XFE < 0 then SET XFE to 0.01
+                #     CALL VolPhantomFrac2(Integral2, Method, XStartPercent, XFinishPercent, XFE, XBr)
+                # FI
+
+                if stop_f == 0:
+                    phase = Phase.F
+                    torr_f = self.__torr_calc2(torr_f, phase=phase, tcurr=temp_curr, integral2_mat=integrated2_mat, i=1)
+                    # Add up the cumulative fraction of austenite converted toward the nucleation point
+                    nuc_frac_ferrite = nuc_frac_ferrite + (increm_time / torr_f)
+
+                    if nuc_frac_ferrite > 1.0:
+                        cct_record_f_mat[ii_f, 0] = time       # y-axis
+                        cct_record_f_mat[ii_f, 1] = temp_curr  # x-axis
+                        ii_f = ii_f + 1
+                        # trigger to stop recoding for ferrite for current cooling rate
+                        stop_f = 1
+
+                # ==================== # Look for FERRITE FINISH # ==================== #
+                if stop_f_end == 0:
+                    phase = Phase.F
+                    torr_f_end = self.__torr_calc2(torr_f_end, phase=phase, tcurr=temp_curr,
+                                                   integral2_mat=integrated2_mat, i=2)
+                    # Add up the cumulative fraction of austenite converted toward the nucleation point.
+                    nuc_frac_ferrite_end = nuc_frac_ferrite_end + (increm_time / torr_f_end)
+                    # Record current point and stop looking for this phase at current cooling rate.
+                    if nuc_frac_ferrite_end > 1.0:
+                        cct_record_f_end_mat[ii_f_end, 0] = time
+                        cct_record_f_end_mat[ii_f_end, 1] = temp_curr
+                        ii_f_end = ii_f_end + 1
+                        stop_f_end = 1
+
+                # TODO: Testing for this point
+
+                # ==================== # Look for PEARLITE START # ==================== #
+
+                # Stopping condition
+                # Find the new temperature for the next iteration of this loop
+                temp_curr = self.__next_temp(temp_curr, cooling_rate, increm_time)
+                time = time + increm_time
+
+        # ==================== # MARTENSITE # ==================== #
+        cct_record_m_mat[1, 0] = 0.001
+        cct_record_m_mat[1, 1] = self.ms
+        cct_record_m_mat[2, 0] = cct_record_b_end_mat[0, 0]  # first recorded bainite transformation time point
+        cct_record_b_mat[2, 1] = self.ms
+
+        return {
+            'ferrite_nucleation': cct_record_f_mat,
+            'ferrite_completion': cct_record_f_end_mat,
+            'pearlite_nucleation': cct_record_p_mat,
+            'pearlite_completion': cct_record_p_end_mat,
+            'martensite': cct_record_m_mat
+        }
 
     @staticmethod
     def __sigmoid2(x) -> np.float64:
@@ -732,6 +833,20 @@ class Simulation(object):
             time_accumulate = time_accumulate + time_interval
 
         ccr_mat[0, 1] = ccr_fcf / ((ae3 - bs) / (time_accumulate - time_interval))
+
+    @staticmethod
+    def __next_temp(current_temp: float, cooling_rate: float, time_inc_sec: float) -> np.float64:
+        """This routine is to return the next temperature expected in a constant cooling rate based on the:
+
+        Args:
+            current_temp: initial temperature.
+            cooling_rate: defined cooling rate (C / second).
+            time_inc_sec: time interval.
+
+        Returns:
+            float, the next temperature.
+        """
+        return np.float64(current_temp - cooling_rate * time_inc_sec)
 
     # ======================================================================================================= #
     # ============================== PUBLIC TEST METHODS FOR PRIVATE FUNCTIONS ============================== #

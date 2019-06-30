@@ -100,7 +100,7 @@ class Simulation(object):
                 tcurr = tcurr + 1
 
         # ========= PEARLITE PHASE ========= #
-        pcs_mat =  np.zeros((10001, 2), dtype=np.float64)  # Pearlite curve start
+        pcs_mat = np.zeros((10001, 2), dtype=np.float64)  # Pearlite curve start
         pcf_mat = np.zeros((10001, 2), dtype=np.float64)   # Pearlite curve finish
 
         for i in range(1, 3):
@@ -719,3 +719,10 @@ class Simulation(object):
             time_accumulate = time_accumulate + time_interval
 
         ccr_mat[0, 1] = ccr_fcf / ((ae3 - bs) / (time_accumulate - time_interval))
+
+
+# ======================================================================================================= #
+# ============================== PUBLIC TEST METHODS FOR PRIVATE FUNCTIONS ============================== #
+# ======================================================================================================= #
+
+

@@ -32,10 +32,10 @@ class BaseConfigurationTest(unittest.TestCase):
     def setUp(self) -> None:
         self.sim_inst = SimConfiguration(debug=True)
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        # This runs only once
-        super(BaseConfigurationTest, cls).setUpClass()
+    # @classmethod
+    # def setUpClass(cls) -> None:
+    #     This runs only once
+        # super(BaseConfigurationTest, cls).setUpClass()
 
 
 class TestMSnBS(BaseConfigurationTest):
@@ -43,10 +43,10 @@ class TestMSnBS(BaseConfigurationTest):
         super(TestMSnBS, self).setUp()
 
     def test_ms(self):
-        self.assertAlmostEqual(self.sim_inst.ms_temp, 464.1960, 4)
+        self.assertAlmostEqual(self.sim_inst.ms_temp, 464.19600000000008, 10)
 
     def test_bs(self):
-        self.assertAlmostEqual(self.sim_inst.bs_temp, 563.2380, 4)
+        self.assertAlmostEqual(self.sim_inst.bs_temp, 563.23800000000006, 10)
 
 
 class TestAe1nAe3(BaseConfigurationTest):
@@ -69,7 +69,7 @@ class TestAe1nAe3(BaseConfigurationTest):
         self.gi = None
 
     def test_ae1(self):
-        self.assertAlmostEqual(self.sim_inst.ae1, 700.9020, 4)
+        self.assertAlmostEqual(self.sim_inst.ae1, 700.90196296296301, 10)
 
     def test_con_wt_2_mol(self):
         wt = self.sim_inst.comp_parent.copy()
@@ -226,7 +226,7 @@ class TestAe1nAe3(BaseConfigurationTest):
 
     def test_ae3(self):
         # logger.info("Ae3: {:.4f}".format(self.sim_inst.ae3))
-        self.assertAlmostEqual(self.sim_inst.ae3, 845.83796118, 4)
+        self.assertAlmostEqual(self.sim_inst.ae3, 845.83796118539999, 10)
 
 
 class TestXfe(BaseConfigurationTest):
@@ -269,8 +269,8 @@ class TestXfe(BaseConfigurationTest):
         pass
 
     def test_xfe(self):
-        logger.info("Xfe: {}, Ceut: {}. Cf: {}".format(self.sim_inst.xfe, self.sim_inst.ceut, self.sim_inst.cf))
-        self.assertAlmostEqual(self.sim_inst.xfe, 0.94621026894865523, 8)
+        # logger.info("Xfe: {}, Ceut: {}. Cf: {}".format(self.sim_inst.xfe, self.sim_inst.ceut, self.sim_inst.cf))
+        self.assertAlmostEqual(self.sim_inst.xfe, 0.94621026894865523, 10)
 
 
 class TestSimulation(unittest.TestCase):
@@ -324,10 +324,10 @@ class TestSimulation(unittest.TestCase):
 
 class TestCoolingCurveTemperature(BaseConfigurationTest):
     def setUp(self) -> None:
-        self.simulation = Simulation(self.sim_inst)
+        sim_inst = SimConfiguration(debug=True)
+        self.simulation = Simulation(sim_inst, debug=True)
 
     def test_ccr(self):
-
         pass
 
 

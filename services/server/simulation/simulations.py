@@ -48,6 +48,7 @@ class Simulation(object):
     XBR = 1.0
 
     def __init__(self, sim_configs: SimConfiguration = None, debug=False):
+        self.debug = debug
         if debug:
             self.sim_configs = sim_configs
             self.start_percent = self.sim_configs.nuc_start
@@ -95,7 +96,7 @@ class Simulation(object):
     def ttt(self):
         # FIXME I have removed X and Xpct are not used. Ask if it can be removed.
         w, h = 11, 4
-        integrated2 = [[0 for x in range(w)] for y in range(h)]
+        integrated2 = np.zeros((11, 4), dtype=np.float64)
 
         self.__vol_phantom_frac2(integrated2)
 
@@ -265,8 +266,13 @@ class Simulation(object):
         # CCR(1,0] - pearlite-init, CCR[1,1] - pearlite-finish
         # CCR[2,0] - bainite-init, CCR[2,1] - bainite-finish
         # UPDATE CCR[] to CALL CriticalCR(CCR[], Method, G, MS, BS, Ae1, Ae3, Comp, Integral2, Alloy)
-        self.__critical_cooling_rate(ccr, self.sim_configs.grain_size, self.sim_configs.ms_temp,
-                                     self.sim_configs.bs_temp, self.sim_configs.ae1, self.sim_configs.ae3,
+
+        if self.debug:
+            ms = round(self.sim_configs.ms_temp)
+            bs = round(self.sim_configs.bs_temp)
+            ae1 = round(self.sim_configs.ae1)
+
+        self.__critical_cooling_rate(ccr, self.sim_configs.grain_size, ms, bs, ae1, self.sim_configs.ae3,
                                      self.sim_configs.comp_parent.copy(), integrated2_mat, pwd)
 
     def __sigmoid2(self, x):
@@ -519,9 +525,9 @@ class Simulation(object):
 
         if self.sim_configs.method == Method.Li98:
 
-            sint_f = integral2_vect[i + 1][0]
-            sint_p = integral2_vect[i + 1][1]
-            sint_b = integral2_vect[i + 1][2]
+            sint_f = integral2_vect[i+1, 0]
+            sint_p = integral2_vect[i+1, 1]
+            sint_b = integral2_vect[i+1, 2]
 
             if phase == Phase.F:
                 fc = np.float64(
@@ -556,9 +562,9 @@ class Simulation(object):
                 )
 
         elif self.sim_configs.method == Method.Kirkaldy83:
-            iint_f = integral2_vect[i - 1][0]
-            iint_p = integral2_vect[i - 1][1]
-            iint_b = integral2_vect[i - 1][2]
+            iint_f = integral2_vect[i-1, 0]
+            iint_p = integral2_vect[i-1, 1]
+            iint_b = integral2_vect[i-1, 2]
 
             if phase == Phase.F:
                 fc = np.float64(((59.6 * mn) + (1.45 * ni) + (67.7 * cr) + (244 * mo)))
@@ -568,27 +574,32 @@ class Simulation(object):
 
             elif phase == Phase.P:
                 pc = np.float64(1.79 + 5.42 * (cr + mo + 4 * mo * ni))
-                dinv = (1 / math.exp(-27500 / (R_GAS * (tcurr + 273)))) + \
-                       ((0.01 * cr + 0.52 * mo) / math.exp(-37500 / (R_GAS * (tcurr + 273))))
+                dinv = np.float64((1 / math.exp(-27500 / (R_GAS * (tcurr + 273)))) +
+                                  ((0.01 * cr + 0.52 * mo) / math.exp(-37500 / (R_GAS * (tcurr + 273)))))
 
-                return pc / ((2 ** ((g - 1) / 2) *
-                              ((self.sim_configs.ae1 - tcurr) ** 3) * (1 / dinv)) * iint_p)
+                return np.float64(
+                    pc /
+                    ((2 ** ((g - 1) / 2) * ((self.sim_configs.ae1 - tcurr) ** 3) * (1 / dinv)) * iint_p)
+                )
 
             elif phase == Phase.B:
                 bc = np.float64((2.34 + (10.1 * c) + (3.8 * cr) + (19.0 * mo)) * math.pow(10, -4))
 
-                return bc / (2 ** ((g - 1) / 2) * ((bs - tcurr) ** 2) *
-                             math.exp(-27500 / (R_GAS * (tcurr + 273)))) * iint_b
+                return np.float64(
+                    bc /
+                    (2 ** ((g - 1) / 2) * ((bs - tcurr) ** 2) * math.exp(-27500 / (R_GAS * (tcurr + 273)))) *
+                    iint_b
+                )
 
         return -1
 
     def __critical_cooling_rate(
-            self, ccr: np.ndarray, g: float, ms: float, bs: float, ae1: float, ae3: float,
+            self, ccr_mat: np.ndarray, g: float, ms: float, bs: float, ae1: float, ae3: float,
             comp: np.ndarray, integrated2: np.ndarray, pwd: int):
         """
 
         Args:
-            ccr:
+            ccr_mat:
             g:
             ms:
             bs:
@@ -606,24 +617,104 @@ class Simulation(object):
         # Current temperature
         temp_curr = np.float(0)
 
-        # ========== # BAINITE CCR # ========== #
+        # ========================================================= #
+        # ==================== # BAINITE CCR # ==================== #
+        # ========================================================= #
         phase = Phase.B
-        torr_b, ccr_bcs = np.float64(0), np.float64(0)
+        torr_b, ccr_bcs, ccr_bcf = np.float64(0), np.float64(0), np.float64(0)
         time_accumulate = 0
         # initialise the time interval for this loop
         time_interval = 1.0
 
         # Start at Martensite temperature and work up to Bainite limit
-        temp_curr = self.sim_configs.ms_temp
+        temp_curr = ms
 
-        while temp_curr < self.sim_configs.bs_temp:
+        while temp_curr < bs:
             # Get isothermal nucleation time at current temperature
             torr_b = self.__torr_calc2(torr_b, phase=phase, tcurr=temp_curr, integral2_vect=integrated2, i=1)
-
             # Bainite start. Accumulation ratio
             ccr_bcs = ccr_bcs + (time_interval / torr_b)
             temp_curr = temp_curr + 1
             time_accumulate = time_accumulate + time_interval
 
-        ccr[2, 0] = ccr_bcs / ((self.sim_configs.bs_temp - self.sim_configs.ms_temp) /
-                               (time_accumulate - time_interval))
+        ccr_mat[2, 0] = ccr_bcs / ((bs - ms) / (time_accumulate - time_interval))
+
+        # Reset and run to full transformation
+        time_accumulate = 0
+
+        # Start at Martensite temperature and work up to Bainite limit
+        temp_curr = ms
+
+        while temp_curr < bs:
+            # Get isothermal nucleation time at current temperature
+            torr_b = self.__torr_calc2(torr_b, phase=phase, tcurr=temp_curr, integral2_vect=integrated2, i=2)
+            # Bainite finish. Accumulation ratio
+            ccr_bcf = ccr_bcf + (time_interval / torr_b)
+            temp_curr = temp_curr + 1
+            time_accumulate = time_accumulate + time_interval
+
+        ccr_mat[2, 1] = ccr_bcf / ((bs - ms) / (time_accumulate - time_interval))
+
+        # ========================================================== #
+        # ==================== # PEARLITE CCR # ==================== #
+        # ========================================================== #
+        torr_p, ccr_pcs, ccr_pcf = np.float(0.0), np.float(0.0), np.float(0.0)
+
+        time_accumulate = 0
+
+        temp_curr = bs
+        phase = Phase.P
+
+        while temp_curr < ae1:
+            torr_p = self.__torr_calc2(torr_p, phase=phase, tcurr=temp_curr, integral2_vect=integrated2, i=1)
+            # Pearlite start. Accumulation ratio
+            ccr_pcs = ccr_pcs + (time_interval / torr_p)
+            temp_curr = temp_curr + 1
+            time_accumulate = time_accumulate + time_interval
+
+        ccr_mat[1, 0] = ccr_pcs / (ae1 - bs) - (time_accumulate - time_interval)
+
+        # Reset and run to full transformation
+        time_accumulate = 0
+        # Start at Martensite temperature and work up to Bainite limit
+        temp_curr = bs
+
+        while temp_curr < ae1:
+            torr_p = self.__torr_calc2(torr_p, phase=phase, tcurr=temp_curr, integral2_vect=integrated2, i=1)
+            # Pearlite start. Accumulation ratio
+            ccr_pcf = ccr_pcf + (time_interval / torr_p)
+            temp_curr = temp_curr + 1
+            time_accumulate = time_accumulate + time_interval
+
+        ccr_mat[1, 1] = ccr_pcf / ((ae1 - bs) / (time_accumulate - time_interval))
+
+        # ========================================================= #
+        # ==================== # FERRITE CCR # ==================== #
+        # ========================================================= #
+        torr_f, ccr_fcs, ccr_fcf = np.float(0.0), np.float(0.0), np.float(0.0)
+
+        # Start at Bainite temperature and work up to Bainite limit
+        temp_curr = bs
+        phase = Phase.F
+
+        while temp_curr < ae3:
+            torr_f = self.__torr_calc2(torr_f, phase=phase, tcurr=temp_curr, integral2_vect=integrated2, i=1)
+            # Ferrite start. Accumulation ratio
+            ccr_fcs = ccr_fcs + (time_interval / torr_f)
+            temp_curr = temp_curr + 1
+            time_accumulate = time_accumulate + time_interval
+
+        ccr_mat[0, 0] = ccr_fcs / ((ae3 - bs) - (time_accumulate - time_interval))
+
+        # Reset and run to full transformation
+        time_accumulate = 0
+        # Start at Martensite temperature and work up to Bainite limit
+        temp_curr = bs
+
+        while temp_curr < ae3
+            torr_f = self.__torr_calc2(torr_f, phase=phase, tcurr=temp_curr, integral2_vect=integrated2, i=1)
+            ccr_fcf = ccr_fcf + (time_interval / torr_f)
+            temp_curr = temp_curr + 1
+            time_accumulate = time_accumulate + time_interval
+
+        ccr_mat[0, 1] = ccr_fcf / ((ae3 - bs) / (time_accumulate - time_interval))

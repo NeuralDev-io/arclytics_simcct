@@ -22,6 +22,19 @@ __package__ = 'simulation'
 Some utilities that are used by SimCCT routines. 
 """
 
+import enum
+
+
+class Method(enum.Enum):
+    Li98 = 1
+    Kirkaldy83 = 2
+
+
+class Alloy(enum.Enum):
+    Parent = 1
+    Weld = 2
+    Mix = 3
+
 
 def linear_fit(x_point: float, x1: float, y1: float, x2: float, y2: float):
     """Routine to determine the linear fit between two points for a given ratio."""

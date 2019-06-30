@@ -232,6 +232,7 @@ class TestAe1nAe3(BaseConfigurationTest):
 class TestXfe(BaseConfigurationTest):
     def setUp(self) -> None:
         super(TestXfe, self).setUp()
+        self.results_mat = None
 
     def test_ae3_multi_carbon(self):
         # Do 2 iterations of the for loop and check the results for results[0:1, 0:5]
@@ -256,6 +257,7 @@ class TestXfe(BaseConfigurationTest):
         pass
 
     def test_ceut(self):
+        self.test_ae3_multi_carbon()
         # Test the XfeMethod2 section where self.ceut is changed.
         pass
 
@@ -265,14 +267,23 @@ class TestXfe(BaseConfigurationTest):
 
 
 class TestSimulation(unittest.TestCase):
-
-    def setUp(self) -> None:
+    def setUp(self):
         sim_inst = SimConfiguration(debug=True)
         self.simulation = Simulation(sim_inst)
+        self.simulation.ttt()
+        logger.info(self.simulation)
+
+    # def test__sigmoid2(self):
+    #     self.assertAlmostEqual(, 1.31950870247819, 8)
 
 
+class TestCoolingCurveTemperature(BaseConfigurationTest):
+    def setUp(self) -> None:
+        self.simulation = Simulation(self.sim_inst)
 
+    def test_ccr(self):
 
+        pass
 
 
 if __name__ == '__main__':

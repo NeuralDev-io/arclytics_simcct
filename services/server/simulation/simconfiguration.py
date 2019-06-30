@@ -24,13 +24,13 @@ __package__ = 'simulation'
 """
 
 import json
-import enum
 from pathlib import Path
 from typing import *
 
 import numpy as np
 from prettytable import PrettyTable, MSWORD_FRIENDLY
 
+from simulation.utilities import Method, Alloy
 from logger.arc_logger import AppLogger
 from simulation.ae3_utilities import ae3_single_carbon, convert_wt_2_mol, ae3_multi_carbon
 from configs.settings import BASE_DIR, APP_CONFIGS
@@ -40,20 +40,8 @@ DEBUG = APP_CONFIGS['general']['debug']
 logger = AppLogger(__name__)
 
 
-class Method(enum.Enum):
-    Li98 = 1
-    Kirkaldy83 = 2
-
-
-class Alloy(enum.Enum):
-    Parent = 1
-    Weld = 2
-    Mix = 3
-
-
 class SimConfiguration(object):
-    """
-    The SimConfiguration instance stores all the required arguments needed to simulate the Time-Temperature Transformation
+    """The SimConfiguration instance stores all the required arguments needed to simulate the Time-Temperature Transformation
     or the Cooling Curve Transformation. It also has methods to calculate some of these arguments automatically based
     on the Li '98 or Kirkaldy '83 equations as aggregated by Dr. Bendeich.
     """
@@ -101,8 +89,8 @@ class SimConfiguration(object):
             config = json.load(config_f, parse_float=np.float64)
             self.method = Method.Li98 if config['method']['li98'] else Method.Kirkaldy83
 
-        self.nuc_start = config['transformation_definitions']['nucleation_start']
-        self.nuc_finish = config['transformation_definitions']['nucleation_finish']
+        self.nuc_start = config['transformation_definitions']['nucleation_start'] / 100
+        self.nuc_finish = config['transformation_definitions']['nucleation_finish'] / 100
         self.grain_type = config['grain_size']['type']
         self.grain_size = config['grain_size']['value']
         self.auto_xfe_calc = config['equilibrium_phase_fractions']['auto_calculate']
@@ -118,6 +106,8 @@ class SimConfiguration(object):
         self.ae_check = False
         self.ae1 = config['austenite_limits']['ae1_value']
         self.ae3 = config['austenite_limits']['ae3_value']
+        self.temp_peak = config['cooling_profile']['start_temperature']
+        self.cct_cooling_rate = config['cooling_profile']['cct_cooling_rate']
 
         return config
 

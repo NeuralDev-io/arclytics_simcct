@@ -159,8 +159,6 @@ class Simulation(object):
         # (consistent with Kirkaldy implementation and explained by Watt et. al. 88)
         if self.xfe >= 1.0:
             logger.error('XFE has to be below 1.0')
-        else:
-            xfe = self.xfe
 
         x_pct_vect = np.array([self.finish_percent, self.start_percent])
         pwd = self.configs.alloy.value
@@ -204,7 +202,7 @@ class Simulation(object):
         cct_record_f_end_mat = np.zeros((10000, 2), dtype=np.float64)  # Ferrite
         cct_record_p_end_mat = np.zeros((10000, 2), dtype=np.float64)  # Pearlite
         cct_record_b_end_mat = np.zeros((10000, 2), dtype=np.float64)  # Bainite
-        cct_record_m_mat = np.zeros((10000, 2), dtype=np.float64)      # Martensite
+        cct_record_m_mat = np.zeros((10000, 1), dtype=np.float64)      # Martensite
 
         # Counters
         ii_f, ii_p, ii_b, ii_m = 0, 0, 0, 0
@@ -225,7 +223,7 @@ class Simulation(object):
         speedup = np.float64(1.2)
         # Degrees/sec this starts at the fastest critical cooling rate
         cooling_rate = sorted_ccr[-1] * 2 * speedup
-        i_ctr = 3
+        i_ctr = 3  # TODO: Original starts at 4, ask why?
 
         # =============================================================================== #
         # ========================== # MAIN COOLING RATE LOOP =========================== #
@@ -265,14 +263,14 @@ class Simulation(object):
             # Reset the triggers for the current cooling rate (may not have been tripped on previous cooling rate)
             # Trigger after Ferrite nucleation point has been found to stop the routine recoding for the
             # current cooling rate
-            stop_f = 0.0
-            stop_p = 0.0  # Pearlite trigger
-            stop_b = 0.0  # Bainite trigger
+            stop_f = False
+            stop_p = False  # Pearlite trigger
+            stop_b = False  # Bainite trigger
             # Trigger after Ferrite nucleation point has been found to stop the routine recording for the
             # current cooling rate
-            stop_f_end = 0.0
-            stop_p_end = 0.0  # Pearlite trigger
-            stop_b_end = 0.0  # Bainite trigger
+            stop_f_end = False
+            stop_p_end = False  # Pearlite trigger
+            stop_b_end = False  # Bainite trigger
 
             # ======================================== # STAGE 1 # ======================================== #
             # If above this temperature no nucleation of any phase will be occurring, however, grain growth can occur.
@@ -297,8 +295,6 @@ class Simulation(object):
                 # by this to find the fraction consumed in the current step. Then add this to the previous total for
                 # the relevant phases when the total is 1.0 nucleation has occurred.
 
-                # ==================== # Look for FERRITE START # ==================== #
-
                 # NOTE: The original code never actually runs into this condition.
                 # Inserted code for temperature dependant equilibrium phase fraction (Xfe)
                 # IF Form1CheckXFEtempDepend is True
@@ -307,10 +303,11 @@ class Simulation(object):
                 #     CALL VolPhantomFrac2(Integral2, Method, XStartPercent, XFinishPercent, XFE, XBr)
                 # FI
 
-                if stop_f == 0:
-                    phase = Phase.F
-                    torr_f = self.__torr_calc2(torr_f, phase=phase, tcurr=temp_curr, integral2_mat=integrated2_mat, i=1)
-                    # Add up the cumulative fraction of austenite converted toward the nucleation point
+                # ==================== # Look for FERRITE START # ==================== #
+                if not stop_f:
+                    torr_f = self.__torr_calc2(torr_f, phase=Phase.F, tcurr=temp_curr,
+                                               integral2_mat=integrated2_mat, i=1)
+                    # Add up the cumulative fraction of ferrite converted toward the nucleation point
                     nuc_frac_ferrite = nuc_frac_ferrite + (increm_time / torr_f)
 
                     if nuc_frac_ferrite > 1.0:
@@ -318,25 +315,72 @@ class Simulation(object):
                         cct_record_f_mat[ii_f, 1] = temp_curr  # x-axis
                         ii_f = ii_f + 1
                         # trigger to stop recoding for ferrite for current cooling rate
-                        stop_f = 1
+                        stop_f = True
 
                 # ==================== # Look for FERRITE FINISH # ==================== #
-                if stop_f_end == 0:
-                    phase = Phase.F
-                    torr_f_end = self.__torr_calc2(torr_f_end, phase=phase, tcurr=temp_curr,
+                if not stop_f_end:
+                    torr_f_end = self.__torr_calc2(torr_f_end, phase=Phase.F, tcurr=temp_curr,
                                                    integral2_mat=integrated2_mat, i=2)
-                    # Add up the cumulative fraction of austenite converted toward the nucleation point.
                     nuc_frac_ferrite_end = nuc_frac_ferrite_end + (increm_time / torr_f_end)
                     # Record current point and stop looking for this phase at current cooling rate.
                     if nuc_frac_ferrite_end > 1.0:
                         cct_record_f_end_mat[ii_f_end, 0] = time
                         cct_record_f_end_mat[ii_f_end, 1] = temp_curr
                         ii_f_end = ii_f_end + 1
-                        stop_f_end = 1
-
-                # TODO: Testing for this point
+                        stop_f_end = True
 
                 # ==================== # Look for PEARLITE START # ==================== #
+                if not stop_p and temp_curr < self.ae1:
+                    phase = Phase.P
+                    torr_p = self.__torr_calc2(torr_p, phase=phase, tcurr=temp_curr,
+                                               integral2_mat=integrated2_mat, i=1)
+                    # Add up the cumulative fraction of pearlite converted toward the nucleation point
+                    nuc_frac_pearlite = nuc_frac_pearlite + (increm_time / torr_p)
+
+                    if nuc_frac_pearlite > 1.0:
+                        cct_record_p_mat[ii_p, 0] = time
+                        cct_record_p_mat[ii_p, 1] = temp_curr
+                        ii_p = ii_p + 1
+                        # trigger to stop recoding for ferrite for current cooling rate
+                        stop_p = True
+
+                # ==================== # Look for PEARLITE FINISH # ==================== #
+                if not stop_p_end and temp_curr < self.ae1:
+                    phase = Phase.P
+                    torr_p_end = self.__torr_calc2(torr_p_end, phase=phase, tcurr=temp_curr,
+                                                   integral2_mat=integrated2_mat, i=2)
+                    nuc_frac_pearlite_end = nuc_frac_pearlite_end + (increm_time / torr_p_end)
+
+                    if nuc_frac_pearlite_end > 1.0:
+                        cct_record_p_end_mat[ii_p_end, 0] = time
+                        cct_record_p_end_mat[ii_p_end, 1] = temp_curr
+                        ii_p_end = ii_p_end + 1
+                        stop_p_end = True
+
+                # ==================== # Look for BAINITE START # ==================== #
+                if not stop_b and temp_curr < self.bs:
+                    torr_b = self.__torr_calc2(torr_b, phase=Phase.B, tcurr=temp_curr,
+                                               integral2_mat=integrated2_mat, i=1)
+                    # Add up the cumulative fraction of bainite converted toward the nucleation point
+                    nuc_frac_bainite = nuc_frac_bainite + (increm_time / torr_b)
+
+                    if nuc_frac_bainite > 1.0:
+                        cct_record_b_mat[ii_b, 0] = time
+                        cct_record_b_mat[ii_b, 1] = temp_curr
+                        ii_b = ii_b + 1
+                        stop_b = True
+
+                # ==================== # Look for BAINITE FINISH # ==================== #
+                if not stop_b_end and temp_curr < self.bs:
+                    torr_b_end = self.__torr_calc2(torr_b_end, phase=Phase.B, tcurr=temp_curr,
+                                                   integral2_mat=integrated2_mat, i=2)
+                    nuc_frac_bainite_end = nuc_frac_bainite_end + (increm_time / torr_b_end)
+
+                    if nuc_frac_bainite_end > 1.0:
+                        cct_record_b_end_mat[ii_b_end, 0] = time
+                        cct_record_b_end_mat[ii_b_end, 1] = temp_curr
+                        ii_b_end = ii_b_end + 1
+                        stop_b_end = True
 
                 # Stopping condition
                 # Find the new temperature for the next iteration of this loop
@@ -354,6 +398,8 @@ class Simulation(object):
             'ferrite_completion': cct_record_f_end_mat,
             'pearlite_nucleation': cct_record_p_mat,
             'pearlite_completion': cct_record_p_end_mat,
+            'bainite_nucleation': cct_record_b_mat,
+            'bainite_completion': cct_record_b_end_mat,
             'martensite': cct_record_m_mat
         }
 
@@ -363,9 +409,11 @@ class Simulation(object):
 
     @staticmethod
     def __imoid(x) -> np.float64:
+        """Kirkaldy 1983 method I(X)."""
         return np.float64(1 / (math.pow(x, (2.0 * (1 - x) / 3)) * math.pow((1 - x), (2.0 * x / 3))))
 
     def __imoid_prime2(self, x: float) -> np.float64:
+        """This is the specific Kirkaldy implementation for I(X) used in the "slugish" Kinetic Bainite reaction rate."""
         c = self.comp['weight'][self.comp['name'] == 'carbon'][0]
         ni = self.comp['weight'][self.comp['name'] == 'nickel'][0]
         cr = self.comp['weight'][self.comp['name'] == 'chromium'][0]
@@ -380,8 +428,8 @@ class Simulation(object):
 
         if b < 0:
             return np.float64(1 / (math.pow(x, (2.0 * (1 - x) / 3.0)) * math.pow((1 - x), (2.0 * x / 3.0))))
-        else:
-            return np.float64(numerator / (math.pow(x, (2.0 * (1 - x) / 3.0)) * math.pow((1 - x), (2.0 * x / 3.0))))
+
+        return np.float64(numerator / (math.pow(x, (2.0 * (1 - x) / 3.0)) * math.pow((1 - x), (2.0 * x / 3.0))))
 
     @staticmethod
     def __get_sx_integral(x):
@@ -526,7 +574,7 @@ class Simulation(object):
 
         if self.configs.method == Method.Li98:
 
-            # Ferrite Start
+            # FERRITE START
             xf = self.start_percent * self.xfe
 
             integrated_mat[2, 5] = xf
@@ -535,7 +583,7 @@ class Simulation(object):
             sig_int_ferrite = self.__de_integrator(sig_int_ferrite, 0.0, xf, 0.000000000000001, err, nn, 1)
             integrated_mat[2, 0] = sig_int_ferrite
 
-            # Pearlite Start
+            # PEARLITE START
             xpe = 1.0 - self.xfe
             # CheckPhantomTestP.Checked is always false because it is by default false and invisible
             xp = self.start_percent / (1 - self.xfe)
@@ -550,15 +598,13 @@ class Simulation(object):
             xb = self.start_percent
 
             integrated_mat[2, 7] = xb
-
             sig_int_bainite = 0
             sig_int_bainite = self.__de_integrator(sig_int_bainite, 0.0, xb, 0.000000000000001, err, nn, 1)
             integrated_mat[2, 2] = sig_int_bainite
 
             # ======================================================================================================= #
 
-            # Ferrite Finish
-
+            # FERRITE FINISH
             xf = self.finish_percent * self.xfe
             if xf > 1.0:
                 xf = 0.9999999
@@ -566,7 +612,7 @@ class Simulation(object):
             sig_int_ferrite = self.__de_integrator(sig_int_ferrite, 0.0, xf, 0.000000000000001, err, nn, 1)
             integrated_mat[3, 0] = sig_int_ferrite
 
-            # Pearlite Finish
+            # PEARLITE FINISH
             xp = self.finish_percent / (1 - self.xfe)
             if xp >= 1.0:
                 xp = 0.9999999
@@ -576,7 +622,7 @@ class Simulation(object):
             sig_int_pearlite = self.__de_integrator(sig_int_pearlite, 0.0, xp, 0.000000000000001, err, nn, 1)
             integrated_mat[3, 1] = sig_int_pearlite
 
-            # Bainite
+            # BAINITE
             xb = self.finish_percent
             if xb >= 1.0:
                 xb = 0.9999999

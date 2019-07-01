@@ -34,5 +34,6 @@ if __name__ == '__main__':
     configs = SimConfiguration(debug=True)
     print(configs)
     sim = Simulation(configs, debug=True)
-    sim.cct()
+    # sim.cct()
+    print(sim.plots_data.to_string('CCT'))
     logger.info('SimConfiguration Complete - Alpha version')

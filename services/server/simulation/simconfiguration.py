@@ -7,11 +7,11 @@
 # [1] 
 # ----------------------------------------------------------------------------------------------------------------------
 
-__author__ = 'Andrew Che <@codeninja55>'
+__author__ = ['Andrew Che <@codeninja55>', 'Arvy Salazar <@Xaraox>']
 __copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'TBA'
-__version__ = '0.0.1'
+__version__ = '0.2.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
@@ -50,28 +50,37 @@ class SimConfiguration(object):
         self.method = method
         self.alloy = alloy
 
-        config = {}
+        self.configs = configs
         if debug:
-            config = self._get_default_test_configs()
-        else:
-            # TODO: Add the instance variables passed to instantiation
-            self.ms_temp = None
-            self.bs_temp = None
+            self.configs = self._get_default_test_configs()
 
-            self.ae1 = 0
-            self.ae3 = 0
+        if configs is not None:
+            self.nuc_start = self.configs['transformation_definitions']['nucleation_start'] / 100
+            self.nuc_finish = self.configs['transformation_definitions']['nucleation_finish'] / 100
+            self.grain_type = self.configs['grain_size']['type']
+            self.grain_size = self.configs['grain_size']['value']
+            self.auto_xfe_calc = self.configs['equilibrium_phase_fractions']['auto_calculate']
+            self.xfe = self.configs['equilibrium_phase_fractions']['xfe_value']
+            self.cf = self.configs['equilibrium_phase_fractions']['cf_value']
+            self.ceut = self.configs['equilibrium_phase_fractions']['ceut_value']
+            self.auto_ms_bs_calc = self.configs['transformation_temp_limits']['auto_calculate']
+            self.ms_temp = self.configs['transformation_temp_limits']['ms_temp']
+            self.ms_undercool = self.configs['transformation_temp_limits']['ms_undercool']
+            self.bs_temp = self.configs['transformation_temp_limits']['bs_temp']
+            self.auto_austenite_calc = self.configs['austenite_limits']['auto_calculate']
+            self.ae1 = self.configs['austenite_limits']['ae1_value']
+            self.ae3 = self.configs['austenite_limits']['ae3_value']
+            self.temp_peak = self.configs['cooling_profile']['start_temperature']
+            self.cct_cooling_rate = self.configs['cooling_profile']['cct_cooling_rate']
 
-            self.xfe = 0
-            self.ceut = 0
-            self.cf = 0
-
+            self.ae_check = False
             if self.ae1 > 0 and self.ae3 > 0:
                 self.ae_check = True
 
         self.comp_parent = None
         self.comp_weld = None
         self.comp_mix = None
-        self.get_compositions(config)
+        self.get_compositions(self.configs)
 
         if self.auto_ms_bs_calc:
             self.auto_ms_bs()
@@ -79,10 +88,6 @@ class SimConfiguration(object):
             self.auto_ae1_ae3()
         if self.auto_xfe_calc:
             self.xfe_method2()
-
-        if self.ae_check:
-            # TODO: make sure simulation checks this
-            pass
 
     def _get_default_test_configs(self) -> dict:
         with open(DEFAULT_CONFIGS) as config_f:
@@ -147,43 +152,44 @@ class SimConfiguration(object):
     def get_bs(self) -> float:
         """Do the calculation based on Li98 or Kirkaldy 83 method and return the MS temperature."""
         # ensure we are getting the value and not the list by using index 0
-        C = self.comp_parent[self.comp_parent['name'] == 'carbon']['weight'][0]
-        Mn = self.comp_parent[self.comp_parent['name'] == 'manganese']['weight'][0]
-        Ni = self.comp_parent[self.comp_parent['name'] == 'nickel']['weight'][0]
-        Cr = self.comp_parent[self.comp_parent['name'] == 'chromium']['weight'][0]
-        Mo = self.comp_parent[self.comp_parent['name'] == 'molybdenum']['weight'][0]
+        c = self.comp_parent[self.comp_parent['name'] == 'carbon']['weight'][0]
+        mn = self.comp_parent[self.comp_parent['name'] == 'manganese']['weight'][0]
+        ni = self.comp_parent[self.comp_parent['name'] == 'nickel']['weight'][0]
+        cr = self.comp_parent[self.comp_parent['name'] == 'chromium']['weight'][0]
+        mo = self.comp_parent[self.comp_parent['name'] == 'molybdenum']['weight'][0]
 
         if self.method == Method.Li98:
             # Eqn [24] in paper. Li modified from Kirkaldy.
-            return 637.0 - (58 * C) - (35 * Mn) - (15 * Ni) - (34 * Cr) - (41 * Mo)
+            return 637.0 - (58 * c) - (35 * mn) - (15 * ni) - (34 * cr) - (41 * mo)
 
         if self.method == Method.Kirkaldy83:
             # Eqn [30] in Kirkaldy defined 1983 paper
-            return 656 - (58 * C) - (35 * Mn) - (15 * Ni) - (34 * Cr) - (41 * Mo)
+            return 656 - (58 * c) - (35 * mn) - (15 * ni) - (34 * cr) - (41 * mo)
         return -1
 
     def get_ms(self) -> float:
         """Do the calculation based on Li98 or Kirkaldy83 method and return the MS temperature."""
         # ensure we are getting the value and not the list by using index 0
-        C = self.comp_parent[self.comp_parent['name'] == 'carbon']['weight'][0]
-        Mn = self.comp_parent[self.comp_parent['name'] == 'manganese']['weight'][0]
-        Ni = self.comp_parent[self.comp_parent['name'] == 'nickel']['weight'][0]
-        Cr = self.comp_parent[self.comp_parent['name'] == 'chromium']['weight'][0]
-        Mo = self.comp_parent[self.comp_parent['name'] == 'molybdenum']['weight'][0]
-        Co = self.comp_parent[self.comp_parent['name'] == 'cobalt']['weight'][0]
-        Si = self.comp_parent[self.comp_parent['name'] == 'silicon']['weight'][0]
+        c = self.comp_parent[self.comp_parent['name'] == 'carbon']['weight'][0]
+        mn = self.comp_parent[self.comp_parent['name'] == 'manganese']['weight'][0]
+        ni = self.comp_parent[self.comp_parent['name'] == 'nickel']['weight'][0]
+        cr = self.comp_parent[self.comp_parent['name'] == 'chromium']['weight'][0]
+        mo = self.comp_parent[self.comp_parent['name'] == 'molybdenum']['weight'][0]
+        co = self.comp_parent[self.comp_parent['name'] == 'cobalt']['weight'][0]
+        si = self.comp_parent[self.comp_parent['name'] == 'silicon']['weight'][0]
 
         if self.method == Method.Li98:
             # Eqn [25] in paper by Kung and Raymond
-            return 539 - (423 * C) - (30.4 * Mn) - (17.7 * Ni) - (12.1 * Cr) - (7.5 * Mo) + (10.0 * Co) - (7.5 * Si)
+            return 539 - (423 * c) - (30.4 * mn) - (17.7 * ni) - (12.1 * cr) - (7.5 * mo) + (10.0 * co) - (7.5 * si)
 
         if self.method == Method.Kirkaldy83:
             # Eqn [31] in Kirkaldy 1983 paper
-            return 561 - (474 * C) - (33.0 * Mn) - (17.0 * Ni) - (17.0 * Cr) - (21.0 * Mo)
+            return 561 - (474 * c) - (33.0 * mn) - (17.0 * ni) - (17.0 * cr) - (21.0 * mo)
 
         return -1
 
     def auto_ae1_ae3(self) -> None:
+        """Calculate the austenite values based on composition automatically."""
         # validate the Austenite values have been generated and it will not crash the application
         self.ae_check = True
         self.ae1, self.ae3 = self.calc_ae1_ae3()
@@ -234,6 +240,7 @@ class SimConfiguration(object):
         """
         wt = self.comp_parent.copy()
 
+        # TODO: Not sure why we need this
         # Mole fractions: c to ALL elements; y to Fe only (y not used)
         c_vect, y_vect = convert_wt_2_mol(wt)
 
@@ -271,6 +278,7 @@ class SimConfiguration(object):
 
     @staticmethod
     def _pretty_str_tables(comp: np.ndarray) -> PrettyTable:
+        """Simply gives us a prettier table for compositions."""
         table = PrettyTable(comp.dtype.names)
         table.float_format['weight'] = '.3'
         for row in comp:
@@ -288,40 +296,46 @@ class SimConfiguration(object):
         mix_t = self._pretty_str_tables(self.comp_mix)
 
         return """
-{:9}{}
-{:9}{}
+-------------------------------------------------
+PHASE SIMULATION CONFIGURATIONS
+-------------------------------------------------
+{:30}{}
+{:30}{}
 Transformation Definitions:
-  {:19}{:.4f} %
-  {:19}{:.4f} %
+  {:28}{:.4f} %
+  {:28}{:.4f} %
 Grain Size:
-  {:8}{:8}
-  {:8}{:6.4f}
+  {:28}{:8}
+  {:28}{:6.4f}
 Equilibrium Phase Fractions:
-  {:8}{:.4f}
-  {:8}{:.4f} (weight %)
-  {:8}{:.4f} (weight %)
-Transformation Temperature Limits:
-  {:17}{:.4f}
-  {:17}{:.4f}
-  {:17}{:.4f}
+  {:28}{}
+  {:28}{:.4f}
+  {:28}{:.4f} (weight %)
+  {:28}{:.4f} (weight %)
+Transformation Temp. Limits:
+  {:28}{}
+  {:28}{:.4f}
+  {:28}{:.4f}
+  {:28}{:.4f}
 Austenite Limits: 
-  {:6}{:.4f}
-  {:6}{:.4f}
+  {:28}{}
+  {:28}{:.4f}
+  {:28}{:.4f}
 
 Alloy Composition:
 Parent: 
 {}
-Weld:
-{}
-Mix:
-{}
+-------------------------------------------------
         """.format(
             'Method:', self.method.name, 'Alloy:', self.alloy.name,
             'Nucleation Start:', self.nuc_start, 'Nucleation End:', self.nuc_finish,
             'Type:', self.grain_type, 'Value: ', self.grain_size,
+            'Auto Calculate:', self.auto_xfe_calc,
             'Xfe:', self.xfe, 'Cf:', self.cf, 'Ceut:', self.ceut,
+            'Auto Calculate:', self.auto_ms_bs_calc,
             'MS Temperature:', self.ms_temp, 'MS Undercool: ', self.ms_undercool,
             'BS Temperature: ', self.bs_temp,
+            'Auto Calculate:', self.auto_austenite_calc,
             'Ae1:', self.ae1, 'Ae3:', self.ae3,
             parent_t, weld_t, mix_t
         )

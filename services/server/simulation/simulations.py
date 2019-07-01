@@ -10,7 +10,7 @@ __author__ = ['Arvy Salazar <@Xaraox>', 'Andrew Che <@codeninja55>']
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'TBA'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
@@ -29,6 +29,7 @@ import numpy as np
 from logger.arc_logger import AppLogger
 from simulation.utilities import Method, Alloy, sort_ccr
 from simulation.simconfiguration import SimConfiguration
+from simulation.plots import Plots
 
 logger = AppLogger(__name__)
 
@@ -44,9 +45,11 @@ class Simulation(object):
     XBR = np.float64(1.0)
 
     def __init__(self, sim_configs: SimConfiguration = None, debug=False):
-        self.debug = debug
-
         if sim_configs is not None:
+
+            if not sim_configs.ae_check:
+                logger.error("No Ae1 and Ae3 value has been provided.")
+
             self.configs = sim_configs
             # TODO: Which one of the alloy types for PWD
             self.comp = None
@@ -60,11 +63,19 @@ class Simulation(object):
             self.ms = sim_configs.ms_temp
             self.bs = sim_configs.bs_temp
             self.g = sim_configs.grain_size
+
+            if not sim_configs.ae_check:
+                logger.error("To run the simulation, the Austenite values (Ae1 and Ae3) are required.")
+
             self.ae1 = sim_configs.ae1
             self.ae3 = sim_configs.ae3
             self.xfe = sim_configs.xfe
+
         else:
             logger.error("Need a configurations instance to run a CCT and TTT simulation.")
+
+        # Use an object of Plots instance to store the plot data
+        self.plots_data = Plots()
 
         if debug:
             self.comp = sim_configs.comp_parent.copy()
@@ -72,7 +83,7 @@ class Simulation(object):
             self.bs = round(sim_configs.bs_temp)
             self.ae1 = round(sim_configs.ae1)
 
-    def ttt(self):
+    def ttt(self) -> dict:
         # FIXME I have removed X and Xpct are not used. Ask if it can be removed.
         integrated2_mat = np.zeros((4, 11), dtype=np.float64)
 
@@ -84,40 +95,40 @@ class Simulation(object):
         fcf_mat = np.zeros((10001, 2), dtype=np.float64)  # Ferrite Curve Finish
 
         for i in range(1, 3):
-            tcurr = self.bs - 50
+            temp_curr = self.bs - 50
             count_fn = 0
-            while tcurr < (self.ae3 - 1):
-                torr = self.__torr_calc2(torr, Phase.F, tcurr, integrated2_mat, i)
+            while temp_curr < (self.ae3 - 1):
+                torr = self.__torr_calc2(torr, Phase.F, temp_curr, integrated2_mat, i)
 
                 if i == 1:
                     fcs_mat[count_fn, 0] = torr
-                    fcs_mat[count_fn, 1] = tcurr
+                    fcs_mat[count_fn, 1] = temp_curr
                 else:
                     fcf_mat[count_fn, 0] = torr
-                    fcf_mat[count_fn, 1] = tcurr
+                    fcf_mat[count_fn, 1] = temp_curr
 
                 count_fn = count_fn + 1
-                tcurr = tcurr + 1
+                temp_curr = temp_curr + 1
 
         # ========= PEARLITE PHASE ========= #
         pcs_mat = np.zeros((10001, 2), dtype=np.float64)  # Pearlite curve start
         pcf_mat = np.zeros((10001, 2), dtype=np.float64)   # Pearlite curve finish
 
         for i in range(1, 3):
-            tcurr = self.bs - 50
+            temp_curr = self.bs - 50
             count_pn = 0
 
-            while tcurr < (self.ae1 - 1):
-                torr = self.__torr_calc2(torr, Phase.P, tcurr, integrated2_mat, i)
+            while temp_curr < (self.ae1 - 1):
+                torr = self.__torr_calc2(torr, Phase.P, temp_curr, integrated2_mat, i)
                 if i is 1:
                     pcs_mat[count_pn, 0] = torr
-                    pcs_mat[count_pn, 1] = tcurr
+                    pcs_mat[count_pn, 1] = temp_curr
                 else:
                     pcf_mat[count_pn, 0] = torr
-                    pcf_mat[count_pn, 1] = tcurr
+                    pcf_mat[count_pn, 1] = temp_curr
 
                 count_pn = count_pn + 1
-                tcurr = tcurr + 1
+                temp_curr = temp_curr + 1
 
         # ========= BAINITE PHASE ========= #
         bcs_mat = np.zeros((10001, 2), dtype=np.float64)  # Bainite curve start
@@ -125,24 +136,24 @@ class Simulation(object):
 
         for i in range(1, 3):
             count_bn = 0
-            tcurr = self.ms
+            temp_curr = self.ms
 
-            while tcurr < (self.bs - 1):
-                torr = self.__torr_calc2(torr, Phase.B, tcurr, integrated2_mat, i)
+            while temp_curr < (self.bs - 1):
+                torr = self.__torr_calc2(torr, Phase.B, temp_curr, integrated2_mat, i)
 
                 if i is 1:
                     bcs_mat[count_bn, 0] = torr
-                    bcs_mat[count_bn, 1] = tcurr
+                    bcs_mat[count_bn, 1] = temp_curr
                 else:
                     bcf_mat[count_bn, 0] = torr
-                    bcf_mat[count_bn, 1] = tcurr
+                    bcf_mat[count_bn, 1] = temp_curr
                 count_bn = count_bn + 1
-                tcurr = tcurr + 1
+                temp_curr = temp_curr + 1
 
         # ========= MARTENSITE ========= #
         msf_mat = np.zeros((3, 2), dtype=np.float64)  # Martensite curve start
-        tcurr = self.ms
-        torr = self.__torr_calc2(torr, Phase.M, tcurr, integrated2_mat, i=1)
+        temp_curr = self.ms
+        torr = self.__torr_calc2(torr, Phase.M, temp_curr, integrated2_mat, i=1)
         # Uses Bainite cutoff time. So uses the Bainite phase as the argument
 
         msf_mat[1, 0] = np.float64(0.001)
@@ -150,7 +161,19 @@ class Simulation(object):
         msf_mat[2, 0] = torr
         msf_mat[2, 1] = self.ms
 
-    def cct(self):
+        self.plots_data.set_ttt_plot_data(
+            ferrite_start=fcs_mat,
+            ferrite_finish=fcf_mat,
+            pearlite_start=pcs_mat,
+            pearlite_finish=pcf_mat,
+            bainite_start=bcs_mat,
+            bainite_finish=bcf_mat,
+            martensite=msf_mat
+        )
+
+        return self.plots_data.get_ttt_plot_data()
+
+    def cct(self) -> dict:
         # Can be used for any cooling path new routine to simplify iterative routines using any of the methods
         # coded in. Should be much simpler to code and follow and only needs to be done once not repeated for each
         # method as before
@@ -202,7 +225,7 @@ class Simulation(object):
         cct_record_f_end_mat = np.zeros((10000, 2), dtype=np.float64)  # Ferrite
         cct_record_p_end_mat = np.zeros((10000, 2), dtype=np.float64)  # Pearlite
         cct_record_b_end_mat = np.zeros((10000, 2), dtype=np.float64)  # Bainite
-        cct_record_m_mat = np.zeros((10000, 1), dtype=np.float64)      # Martensite
+        cct_record_m_mat = np.zeros((2, 2), dtype=np.float64)          # Martensite
 
         # Counters
         ii_f, ii_p, ii_b, ii_m = 0, 0, 0, 0
@@ -252,13 +275,11 @@ class Simulation(object):
             nuc_frac_ferrite = np.float64(0)
             nuc_frac_pearlite = np.float64(0)
             nuc_frac_bainite = np.float64(0)
-            nuc_frac_martensite = np.float64(0)
             # Reset the nucleation volume fractions to 0.0 for new cooling rate
             nuc_frac_austenite_end = np.float64(1.0)
             nuc_frac_ferrite_end = np.float64(0)
             nuc_frac_pearlite_end = np.float64(0)
             nuc_frac_bainite_end = np.float64(0)
-            nuc_frac_martensite_end = np.float64(0)
 
             # Reset the triggers for the current cooling rate (may not have been tripped on previous cooling rate)
             # Trigger after Ferrite nucleation point has been found to stop the routine recoding for the
@@ -388,20 +409,22 @@ class Simulation(object):
                 time = time + increm_time
 
         # ==================== # MARTENSITE # ==================== #
-        cct_record_m_mat[1, 0] = 0.001
-        cct_record_m_mat[1, 1] = self.ms
-        cct_record_m_mat[2, 0] = cct_record_b_end_mat[0, 0]  # first recorded bainite transformation time point
-        cct_record_b_mat[2, 1] = self.ms
+        cct_record_m_mat[0, 0] = 0.001
+        cct_record_m_mat[0, 1] = self.ms
+        cct_record_m_mat[1, 0] = cct_record_b_end_mat[0, 0]  # first recorded bainite transformation time point
+        cct_record_b_mat[1, 1] = self.ms
 
-        return {
-            'ferrite_nucleation': cct_record_f_mat,
-            'ferrite_completion': cct_record_f_end_mat,
-            'pearlite_nucleation': cct_record_p_mat,
-            'pearlite_completion': cct_record_p_end_mat,
-            'bainite_nucleation': cct_record_b_mat,
-            'bainite_completion': cct_record_b_end_mat,
-            'martensite': cct_record_m_mat
-        }
+        self.plots_data.set_cct_plot_data(
+            ferrite_nucleation=cct_record_f_mat,
+            ferrite_completion=cct_record_f_end_mat,
+            pearlite_nucleation=cct_record_p_mat,
+            pearlite_completion=cct_record_p_end_mat,
+            bainite_nucleation=cct_record_b_mat,
+            bainite_completion=cct_record_b_end_mat,
+            martensite=cct_record_m_mat
+        )
+
+        return self.plots_data.get_cct_plot_data()
 
     @staticmethod
     def __sigmoid2(x) -> np.float64:

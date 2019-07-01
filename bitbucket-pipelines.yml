@@ -6,9 +6,12 @@ options:
 pipelines:
   default:
     - step:
+        services:
+          - docker
         script:
-          - apk add --no-cache py-pip bash
-          - pip install --no-cache-dir docker-compose
+          - apk add --no-cache --quiet py-pip bash
+          - apk add --quiet python python-dev build-base libffi-dev openssl-dev libgcc
+          - pip install --no-cache-dir docker-compose==1.23.2
           - docker-compose -v
           - docker-compose up -d
           - docker-compose down

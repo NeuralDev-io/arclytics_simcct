@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 # ----------------------------------------------------------------------------------------------------------------------
-# arclytics_simcct_api
-# serializers.py
+# arclytics_sim
+# base.py
 # 
 # Attributions: 
-# [1] https://www.django-rest-framework.org/tutorial/quickstart/
+# [1] 
 # ----------------------------------------------------------------------------------------------------------------------
 
 __author__ = 'Andrew Che <@codeninja55>'
@@ -15,27 +15,27 @@ __license__ = '{license}'
 __version__ = '{mayor}.{minor}.{rel}'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = '{dev_status}'
-__date__ = '2019.04.06'
+__status__ = 'development'
+__date__ = '2019.06.04'
 
-"""serializers.py: 
+"""base.py: 
 
 {Description}
 """
 
-from django.contrib.auth.models import User, Group
-from rest_framework import serializers
+from flask_testing import TestCase
+
+from api import app
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = User
-        fields = ('url', 'username', 'email', 'groups')
+class BaseTestCase(TestCase):
+    def create_app(self):
+        # app.config.from_object('project.config.TestingConfig')
+        # return app
+        pass
 
+    def setUp(self) -> None:
+        pass
 
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Group
-        fields = ('url', 'name')
-
-
+    def tearDown(self) -> None:
+        pass

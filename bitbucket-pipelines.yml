@@ -7,6 +7,8 @@ pipelines:
   default:
     - step:
         script:
-          - continuous_integration/dependencies.sh
+          - apk add --no-cache py-pip bash
+          - pip install --no-cache-dir docker-compose
+          - docker-compose -v
           - docker-compose up -d
           - docker-compose down

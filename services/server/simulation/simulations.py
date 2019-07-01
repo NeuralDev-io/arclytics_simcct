@@ -920,6 +920,8 @@ class Simulation(object):
     # ======================================================================================================= #
     # ============================== PUBLIC TEST METHODS FOR PRIVATE FUNCTIONS ============================== #
     # ======================================================================================================= #
+    def test_vol_phantom_frac2(self, integrated_mat: np.ndarray) -> None:
+        self.__vol_phantom_frac2(integrated_mat)
 
     def test_vol_phantom_frac2(self, integrated_mat: np.ndarray) -> None:
         self.__vol_phantom_frac2(integrated_mat)
@@ -928,3 +930,18 @@ class Simulation(object):
             self, ccr_mat: np.ndarray, ms: float, bs: float, ae1: float, ae3: float, integrated2: np.ndarray
     ):
         self.__critical_cooling_rate(ccr_mat, ms, bs, ae1, ae3, integrated2)
+
+    def test_torr_calc2(self, torr: float, phase: Phase, tcurr: float, integral2_mat: np.ndarray, i: int) -> np.float64:
+        return self.__torr_calc2(torr, phase, tcurr, integral2_mat, i)
+
+    def test_de_integrator(self, i, a, b, eps, err, nn, method) -> np.float64:
+        return self.__de_integrator(i, a, b, eps, err, nn, method)
+
+    def test_sigmoid2(self, x):
+        return self.__sigmoid2(x)
+
+    def test_imoid(self, x):
+        return self.__imoid(x)
+
+    def test_imoid_prime2(self, x):
+        return self.__imoid_prime2(x)

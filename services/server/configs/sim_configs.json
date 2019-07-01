@@ -7,7 +7,7 @@
 	},
 	"transformation_definitions": {
 		"nucleation_start": 1.0,
-		"nucleation_finish": 99.0
+		"nucleation_finish": 99.9
 	},
 	"equilibrium_phase_fractions": {
 		"auto_calculate":  true,

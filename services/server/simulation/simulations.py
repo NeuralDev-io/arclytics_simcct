@@ -442,7 +442,6 @@ class Simulation(object):
             # ======================================================================================================= #
 
             # Ferrite Finish
-
             xf = self.finish_percent * self.xfe
             if xf > 1.0:
                 xf = 0.9999999
@@ -551,7 +550,7 @@ class Simulation(object):
                     sint_p
                 )
 
-            elif phase == Phase.B:
+            elif phase == Phase.B or phase == Phase.M:
                 bc = np.float64(math.exp(-10.23 + (10.18 * c) + (0.85 * mn) + (0.55 * ni) + (0.9 * cr) + (0.36 * mo)))
 
                 return np.float64(
@@ -726,3 +725,11 @@ class Simulation(object):
 # ======================================================================================================= #
 
 
+    def test_vol_phantom_frac2(self, integrated_mat: np.ndarray) -> None:
+        self.__vol_phantom_frac2(integrated_mat)
+
+    def test_torr_calc2(self, torr: float, phase: Phase, tcurr: float, integral2_mat: np.ndarray, i: int) -> np.float64:
+        return self.__torr_calc2(torr, phase, tcurr, integral2_mat, i)
+
+    def test_de_integrator(self, i, a, b, eps, err, nn, method) -> np.float64:
+        return self.__de_integrator(self, i, a, b, eps, err, nn, method)

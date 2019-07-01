@@ -26,14 +26,14 @@ import os
 
 from logger.arc_logger import AppLogger
 from simulation.simconfiguration import *
-from simulation.simulations import Simulation
+from simulation.simulations import PhaseSimulation
 
 if __name__ == '__main__':
     logger = AppLogger(__name__)
     logger.info('SimConfiguration Start - Alpha version')
     configs = SimConfiguration(debug=True)
     print(configs)
-    sim = Simulation(configs, debug=True)
+    sim = PhaseSimulation(configs, debug=True)
     # sim.cct()
     print(sim.plots_data.to_string('CCT'))
     logger.info('SimConfiguration Complete - Alpha version')

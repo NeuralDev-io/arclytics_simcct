@@ -22,9 +22,6 @@ __date__ = '2019.06.26'
 """
 
 import unittest
-import numpy as np
-from simulation.simconfiguration import SimConfiguration
-from simulation.utilities import *
 from simulation.ae3_utilities import *
 from simulation.simulations import *
 
@@ -36,7 +33,7 @@ class BaseConfigurationTest(unittest.TestCase):
     # @classmethod
     # def setUpClass(cls) -> None:
     #     This runs only once
-        # super(BaseConfigurationTest, cls).setUpClass()
+    # super(BaseConfigurationTest, cls).setUpClass()
 
 
 class TestMSnBS(BaseConfigurationTest):
@@ -128,8 +125,6 @@ class TestAe1nAe3(BaseConfigurationTest):
 
         self.temp = self.t0  # starting point for evaluation
         self.a_vect = np.zeros(20, dtype=np.float64)
-        z = np.float64(1.0)
-        ctr = 0
         self.g_c = np.float64(0.0)
         self.g = np.float64(0.0)
         self.h = np.float64(0.0)
@@ -148,8 +143,8 @@ class TestAe1nAe3(BaseConfigurationTest):
 
         if self.temp > 1183:
             self.h = 2549.0 - 2.746 * self.temp + 0.0006503 * math.pow(self.temp, 2)
-            self.g = 2476.0 - 5.03 * self.temp + 0.003363 * math.pow(self.temp, 2) - 0.000000744 \
-                * math.pow(self.temp, 3)
+            self.g = (2476.0 - 5.03 * self.temp + 0.003363 * math.pow(self.temp, 2) - 0.000000744
+                      * math.pow(self.temp, 3))
         else:
             self.h, self.temp = dh_fit(self.temp)
 
@@ -173,17 +168,13 @@ class TestAe1nAe3(BaseConfigurationTest):
         self.test_dg_dh_fit()
 
         _sum = np.float64(0.0)
-        delta_t = np.float64(0.0)
 
         self.test_eta2li96()
         self.test_dgi22()
 
         # This will only test the first loop
 
-        self.ai_vect = np.zeros(self.sim_inst.comp_parent.shape[0], dtype=np.float128)
-        gi = None
-        e_aust1i, e_aust11 = None, None  # UP's
-        e_alpha1i, e_alpha11 = None, None  # DOWN's
+        self.ai_vect = np.zeros(self.sim_inst.comp_parent.shape[0], dtype=np.float64)
 
         for m in range(1, 3):
             if self.x_vect[m] == 0:
@@ -197,15 +188,15 @@ class TestAe1nAe3(BaseConfigurationTest):
                     self.gi = 6.118 * self.temp - 7808.0  # special set for Mn
                 else:
                     self.gi = self.e_mat[m, 1] + (self.e_mat[m, 2] + self.e_mat[m, 3] * self.temp + self.e_mat[m, 4] *
-                                             math.log(self.temp)) * self.temp
+                                                  math.log(self.temp)) * self.temp
 
-                H1 = np.float64(-15319.0)
+                h1 = np.float64(-15319.0)
 
                 e_alpha1i = self.b_mat[m, 1] + self.b_mat[m, 2] / self.temp
                 e_alpha11 = 4.786 + 5066 / self.temp
 
                 self.ai_vect[m] = ai_eqn3(
-                    t0=self.t0, dg_n=self.gi, dg_c=self.g_c, dg_fe=self.g, dh_c=H1, dh_fe=self.h,
+                    t0=self.t0, dg_n=self.gi, dg_c=self.g_c, dg_fe=self.g, dh_c=h1, dh_fe=self.h,
                     eta1n_up=e_aust1i, eta11_up=e_aust11, eta1n_down=e_alpha1i, eta11_down=e_alpha11,
                     x1_up=self.c_f, x1_down=self.c_f
                 )
@@ -277,10 +268,9 @@ class TestXfe(BaseConfigurationTest):
 class TestSimulation(BaseConfigurationTest):
     def setUp(self):
         super(TestSimulation, self).setUp()
-        self.simulation = Simulation(self.sim_inst, debug=True)
+        self.simulation = PhaseSimulation(self.sim_inst, debug=True)
         self.simulation.ttt()
         self.integrated2_mat = None
-        logger.info(self.simulation)
 
     def test_vol_phantom_frac2(self):
         # TODO remember to do the tests for Kirkaldy
@@ -317,42 +307,42 @@ class TestSimulation(BaseConfigurationTest):
 
         self.simulation.test_vol_phantom_frac2(self.integrated2_mat)
 
-        torr = None
+        torr = 0.0
 
         tcurr = (round(self.sim_inst.bs_temp) - 50)
 
         #  Phase F start
         torr = self.simulation.test_torr_calc2(torr, Phase.F, tcurr, self.integrated2_mat, 1)
         self.assertAlmostEqual(torr, 3.056444385041388, 10)
-        torr = self.simulation.test_torr_calc2(torr, Phase.F, tcurr+1, self.integrated2_mat, 1)
+        torr = self.simulation.test_torr_calc2(torr, Phase.F, tcurr + 1, self.integrated2_mat, 1)
         self.assertAlmostEqual(torr, 3.01585390138463, 10)
         #  Phase F finish
         torr = self.simulation.test_torr_calc2(torr, Phase.F, tcurr, self.integrated2_mat, 2)
         self.assertAlmostEqual(torr, 53.529223452826173, 10)
-        torr = self.simulation.test_torr_calc2(torr, Phase.F, tcurr+1, self.integrated2_mat, 2)
+        torr = self.simulation.test_torr_calc2(torr, Phase.F, tcurr + 1, self.integrated2_mat, 2)
         self.assertAlmostEqual(torr, 52.818339564228445, 10)
 
         # Phase P start
         torr = self.simulation.test_torr_calc2(torr, Phase.P, tcurr, self.integrated2_mat, 1)
         self.assertAlmostEqual(torr, 330.41439902451839, 10)
-        torr = self.simulation.test_torr_calc2(torr, Phase.P, tcurr+1, self.integrated2_mat, 1)
+        torr = self.simulation.test_torr_calc2(torr, Phase.P, tcurr + 1, self.integrated2_mat, 1)
         self.assertAlmostEqual(torr, 328.30774976008854, 10)
         # Phase P Finish
         torr = self.simulation.test_torr_calc2(torr, Phase.P, tcurr, self.integrated2_mat, 2)
         self.assertAlmostEqual(torr, 1185.5588352491131, 10)
-        torr = self.simulation.test_torr_calc2(torr, Phase.P, tcurr+1, self.integrated2_mat, 2)
+        torr = self.simulation.test_torr_calc2(torr, Phase.P, tcurr + 1, self.integrated2_mat, 2)
         self.assertAlmostEqual(torr, 1177.9999738447998, 10)
 
         tcurr = round(self.sim_inst.ms_temp)
         # Phase B start
         torr = self.simulation.test_torr_calc2(torr, Phase.B, tcurr, self.integrated2_mat, 1)
         self.assertAlmostEqual(torr, 0.083850562945195328, 10)
-        torr = self.simulation.test_torr_calc2(torr, Phase.B, tcurr+1, self.integrated2_mat, 1)
+        torr = self.simulation.test_torr_calc2(torr, Phase.B, tcurr + 1, self.integrated2_mat, 1)
         self.assertAlmostEqual(torr, 0.0834184750169105, 10)
         # Phase finish
         torr = self.simulation.test_torr_calc2(torr, Phase.B, tcurr, self.integrated2_mat, 2)
         self.assertAlmostEqual(torr, 1.6276460213092019, 10)
-        torr = self.simulation.test_torr_calc2(torr, Phase.B, tcurr+1, self.integrated2_mat, 2)
+        torr = self.simulation.test_torr_calc2(torr, Phase.B, tcurr + 1, self.integrated2_mat, 2)
         self.assertAlmostEqual(torr, 1.6192586453319149, 10)
         # Phase M
         tcurr = round(self.sim_inst.ms_temp)
@@ -391,24 +381,21 @@ class TestSimulation(BaseConfigurationTest):
         sig_int_bainite = None
         sig_int_bainite = self.simulation.test_de_integrator(sig_int_bainite, 0.0, xb, 0.000000000000001, err, nn, 3)
         self.assertAlmostEqual(sig_int_bainite, 0.64064546121071431, 10)
-        pas
 
     def test_sigmoid2(self):
         self.assertAlmostEqual(self.simulation.test_sigmoid2(0.49950000000000006), 1.3195087024781862, 10)
-        pass
 
     def test_imoid(self):
         self.assertAlmostEqual(self.simulation.test_imoid(0.49950000000000006), 1.5874026393706624, 10)
-        pass
 
     def test_imoid_prime2(self):
         self.assertAlmostEqual(self.simulation.test_imoid_prime2(0.49950000000000006), 3.2311093572469849, 10)
-        pass
+
 
 class TestCoolingCurveTemperature(BaseConfigurationTest):
     def setUp(self) -> None:
         sim_inst = SimConfiguration(debug=True)
-        self.simulation = Simulation(sim_inst, debug=True)
+        self.simulation = PhaseSimulation(sim_inst, debug=True)
         # Init some common variables
         self.sorted_ccr = None
 
@@ -416,9 +403,6 @@ class TestCoolingCurveTemperature(BaseConfigurationTest):
         integrated2_mat = np.zeros((4, 11), dtype=np.float64)
         self.simulation.test_vol_phantom_frac2(integrated2_mat)
         ccr_mat = np.zeros((3, 2), dtype=np.float64)
-
-        logger.info("start_percent: {}".format(self.simulation.start_percent))
-        logger.info("finish_percent: {}".format(self.simulation.finish_percent))
 
         self.simulation.test_critical_cooling_rate(ccr_mat, self.simulation.ms, self.simulation.bs,
                                                    self.simulation.ae1, self.simulation.ae3, integrated2_mat)

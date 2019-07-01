@@ -27,7 +27,7 @@ import enum
 import numpy as np
 
 from logger.arc_logger import AppLogger
-from simulation.utilities import Method, Alloy, sort_ccr
+from simulation.utilities import Method, sort_ccr
 from simulation.simconfiguration import SimConfiguration
 from simulation.plots import Plots
 
@@ -41,7 +41,7 @@ class Phase(enum.Enum):
     M = 4
 
 
-class Simulation(object):
+class PhaseSimulation(object):
     XBR = np.float64(1.0)
 
     def __init__(self, sim_configs: SimConfiguration = None, debug=False):
@@ -183,8 +183,9 @@ class Simulation(object):
         if self.xfe >= 1.0:
             logger.error('XFE has to be below 1.0')
 
-        x_pct_vect = np.array([self.finish_percent, self.start_percent])
-        pwd = self.configs.alloy.value
+        # TODO: these are not used
+        # x_pct_vect = np.array([self.finish_percent, self.start_percent])
+        # pwd = self.configs.alloy.value
 
         # Volume fraction remaining for potential Bainite precipitation. Starts at 1.0 but may reduce if in CCT mode
         # if Ferrite/Pearlite already formed
@@ -195,7 +196,7 @@ class Simulation(object):
         torr_f_end, torr_p_end, torr_b_end = None, None, None
 
         # Set initial grain size
-        g_curr = self.g
+        # g_curr = self.g
 
         # Kirkaldy:
         # [0,0], [0,1], [0,2] spots for starting precipitation
@@ -220,7 +221,6 @@ class Simulation(object):
         cct_record_f_mat = np.zeros((10000, 2), dtype=np.float64)  # Ferrite
         cct_record_p_mat = np.zeros((10000, 2), dtype=np.float64)  # Pearlite
         cct_record_b_mat = np.zeros((10000, 2), dtype=np.float64)  # Bainite
-        cct_record_m_mat = np.zeros((10000, 2), dtype=np.float64)  # Martensite
         # Can hold 100000 time/temperature points for Ferrite finish temperature
         cct_record_f_end_mat = np.zeros((10000, 2), dtype=np.float64)  # Ferrite
         cct_record_p_end_mat = np.zeros((10000, 2), dtype=np.float64)  # Pearlite
@@ -271,12 +271,12 @@ class Simulation(object):
 
             # Now within fixed Temperature path
             # Reset the nucleation volume fractions to 0.0 for new cooling rate
-            nuc_frac_austenite = np.float64(1.0)
+            # nuc_frac_austenite = np.float64(1.0)
             nuc_frac_ferrite = np.float64(0)
             nuc_frac_pearlite = np.float64(0)
             nuc_frac_bainite = np.float64(0)
             # Reset the nucleation volume fractions to 0.0 for new cooling rate
-            nuc_frac_austenite_end = np.float64(1.0)
+            # nuc_frac_austenite_end = np.float64(1.0)
             nuc_frac_ferrite_end = np.float64(0)
             nuc_frac_pearlite_end = np.float64(0)
             nuc_frac_bainite_end = np.float64(0)
@@ -511,6 +511,7 @@ class Simulation(object):
         err = abs(i) * epst
         h = 2 * h0
         m = 1
+        errh = 0.0
 
         while True:
             iback = i
@@ -574,7 +575,8 @@ class Simulation(object):
         xbr: remaining volume available for transformation to Bainite. Will be = 1.0 for TTT but may be lower in CCT if
              Ferrite and Pearlite have already formed.
 
-        nuc_start: the requested start %. usually 1.0% or 0.1% (converted to a fraction i.e. 0.01 or 0.001 respectively).
+        nuc_start: the requested start %. usually 1.0% or 0.1% (converted to a fraction i.e. 0.01 or 0.001
+                    respectively).
         nuc_finish: the requested end %. usually 99.9% (converted to a fraction. i.e. 0.999)
 
         Definitions of "integrated_mat[,]"
@@ -607,14 +609,14 @@ class Simulation(object):
             integrated_mat[2, 0] = sig_int_ferrite
 
             # PEARLITE START
-            xpe = 1.0 - self.xfe
+            # xpe = 1.0 - self.xfe
             # CheckPhantomTestP.Checked is always false because it is by default false and invisible
             xp = self.start_percent / (1 - self.xfe)
             integrated_mat[2, 6] = xp
 
             sig_int_pearlite, sig_int_pearlite_t = 0, 0
             # TODO: sig_int_pearlite_t is not used. Ask if it can be removed
-            sig_int_pearlite_t = self.__get_sx_integral(xp)
+            # sig_int_pearlite_t = self.__get_sx_integral(xp)
             sig_int_pearlite = self.__de_integrator(sig_int_pearlite, 0.0, xp, 0.000000000000001, err, nn, 1)
             integrated_mat[2, 1] = sig_int_pearlite
 
@@ -781,14 +783,12 @@ class Simulation(object):
 
         return np.float64(-1)
 
-    def __critical_cooling_rate(
-            self, ccr_mat: np.ndarray, ms: float, bs: float, ae1: float, ae3: float, integrated2: np.ndarray
-    ):
+    def __critical_cooling_rate(self, ccr_mat: np.ndarray, ms: float, bs: float,
+                                ae1: float, ae3: float, integrated2: np.ndarray):
         """
 
         Args:
             ccr_mat:
-            g:
             ms:
             bs:
             ae1:
@@ -800,7 +800,7 @@ class Simulation(object):
         """
 
         # Current temperature
-        temp_curr = None
+        # temp_curr = None
 
         # ========================================================= #
         # ==================== # BAINITE CCR # ==================== #
@@ -920,9 +920,6 @@ class Simulation(object):
     # ======================================================================================================= #
     # ============================== PUBLIC TEST METHODS FOR PRIVATE FUNCTIONS ============================== #
     # ======================================================================================================= #
-    def test_vol_phantom_frac2(self, integrated_mat: np.ndarray) -> None:
-        self.__vol_phantom_frac2(integrated_mat)
-
     def test_vol_phantom_frac2(self, integrated_mat: np.ndarray) -> None:
         self.__vol_phantom_frac2(integrated_mat)
 

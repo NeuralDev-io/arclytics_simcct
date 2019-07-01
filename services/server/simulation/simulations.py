@@ -732,4 +732,13 @@ class Simulation(object):
         return self.__torr_calc2(torr, phase, tcurr, integral2_mat, i)
 
     def test_de_integrator(self, i, a, b, eps, err, nn, method) -> np.float64:
-        return self.__de_integrator(self, i, a, b, eps, err, nn, method)
+        return self.__de_integrator(i, a, b, eps, err, nn, method)
+
+    def test_sigmoid2(self, x):
+        return self.__sigmoid2(x)
+
+    def test_imoid(self, x):
+        return self.__imoid(x)
+
+    def test_imoid_prime2(self, x):
+        return self.__imoid_prime2(x)

@@ -311,7 +311,7 @@ class TestSimulation(BaseConfigurationTest):
         pass
 
     def test_torr_calc(self):
-        # Tests for the 3 different phases
+        """ Checks the first 2 values. """
         self.test_vol_phantom_frac2()
 
         self.simulation.test_vol_phantom_frac2(self.integrated2_mat)
@@ -342,7 +342,7 @@ class TestSimulation(BaseConfigurationTest):
         torr = self.simulation.test_torr_calc2(torr, Phase.P, tcurr+1, self.integrated2_mat, 2)
         self.assertAlmostEqual(torr, 1177.9999738447998, 10)
 
-        tcurr = round (self.sim_inst.ms_temp)
+        tcurr = round(self.sim_inst.ms_temp)
         # Phase B start
         torr = self.simulation.test_torr_calc2(torr, Phase.B, tcurr, self.integrated2_mat, 1)
         self.assertAlmostEqual(torr, 0.083850562945195328, 10)
@@ -360,59 +360,49 @@ class TestSimulation(BaseConfigurationTest):
 
         pass
 
-    # def test_de_integrator(self):
-    #     err = None
-    #     nn = None
-    #     # ===== Tests for method 1 ===== #
-    #     sig_int_ferrite = None
-    #     xf = self.sim_inst.nuc_start * self.sim_inst.xfe
-    #
-    #     def __de_integrator(self, i, a, b, eps, err, nn, method) -> np.float64
-    #     sig_int_ferrite = self.simulation.test_de_integrator(sig_int_ferrite, 0.0, xf, 0.000000000000001, err, nn, 1)
-    #     assert(sig_int_ferrite, 0.10097017653666272)
-    #
-    #     # ===== Tests for method 2 ===== #
-    #
-    #     # ===== Tests for method 3 ===== #
-    #     pass
+    def test_de_integrator(self):
+        """
+        This unit test is tests de_integrator which is used by vol_phantom_frac2(). The method uses
+        3 different methods to calculate the Double Exponential Transformation.
+        Method 1 is used for Li's algorithm
+        Method 2 is used for Kirk83 algorithm
+        Method 3 is used for Kirk83 algorithm for the Bianite curves
+        """
+        err = None
+        nn = None
+        # ===== Test for method 1 ===== #
+        xf = self.sim_inst.nuc_start * self.sim_inst.xfe
+        sig_int_ferrite = None
+        sig_int_ferrite = self.simulation.test_de_integrator(sig_int_ferrite,
+                                                             0.0, xf,
+                                                             0.000000000000001,
+                                                             err, nn,
+                                                             method=1)
+        self.assertAlmostEqual(sig_int_ferrite, 0.10097017653666272, 10)
 
+        # ===== Test for method 2 ===== #
+        xf = self.sim_inst.nuc_start / self.sim_inst.xfe
+        sig_int_ferrite = None
+        sig_int_ferrite = self.simulation.test_de_integrator(sig_int_ferrite, 0.0, xf, 0.000000000000001, err, nn, 2)
+        self.assertAlmostEqual(sig_int_ferrite, 0.65227162834046781, 10)
+        # ===== Test for method 3 ===== #
+        xb = self.sim_inst.nuc_start
+        sig_int_bainite = None
+        sig_int_bainite = self.simulation.test_de_integrator(sig_int_bainite, 0.0, xb, 0.000000000000001, err, nn, 3)
+        self.assertAlmostEqual(sig_int_bainite, 0.64064546121071431, 10)
+        pas
 
-
-    def test_ferrite_curves(self):
-        # TODO Check the values of fcs and fcf and at least the first 3 values
-
-        # for I in range(1, 3):
-        #     count_bn = 0
-        #     tcurr = self.MS
-        #
-        #     while tcurr < (self.BS - 1):
-        #         torr = self.__torr_calc2(torr, phase, tcurr, integrated2, I)
-        #
-        #         if I is 1:
-        #             fcs_vect[count_bn][0] = torr
-        #             fcs_vect[count_bn][1] = tcurr
-        #         else:
-        #             fcf_vect[count_bn][0] = torr
-        #             fcf_vect[count_bn][1] = tcurr
-        #         count_bn = count_bn + 1
-        #         tcurr = tcurr + 1
-
+    def test_sigmoid2(self):
+        self.assertAlmostEqual(self.simulation.test_sigmoid2(0.49950000000000006), 1.3195087024781862, 10)
         pass
 
-
-    def test_pearlite_curves(self):
-        # Check the values of pcs and pcf
+    def test_imoid(self):
+        self.assertAlmostEqual(self.simulation.test_imoid(0.49950000000000006), 1.5874026393706624, 10)
         pass
 
-
-    def test_bainite_curves(self):
-        # Check the values of bcs and bcf
+    def test_imoid_prime2(self):
+        self.assertAlmostEqual(self.simulation.test_imoid_prime2(0.49950000000000006), 3.2311093572469849, 10)
         pass
-
-
-    # def test__sigmoid2(self):
-    #     self.assertAlmostEqual(, 1.31950870247819, 8)
-
 
 class TestCoolingCurveTemperature(BaseConfigurationTest):
     def setUp(self) -> None:

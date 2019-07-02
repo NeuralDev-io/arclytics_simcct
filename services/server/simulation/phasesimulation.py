@@ -15,9 +15,10 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.06.29'
-"""simulations.py: 
+"""phasesimulation.py: 
 
-{Description}
+This file is the module for the solid-state phase transformation simulation as defined by Dr. Bendeich but 
+re-written to conform to Object-Oriented programming.
 """
 
 import math

@@ -2,9 +2,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # plots.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
@@ -15,7 +15,6 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = '{dev_status}'
 __date__ = '2019.07.01'
-
 """plots.py: 
 
 {Description}
@@ -46,7 +45,8 @@ class Plots(object):
 
     def set_cct_plot_data(self, ferrite_nucleation, ferrite_completion,
                           pearlite_nucleation, pearlite_completion,
-                          bainite_nucleation, bainite_completion, martensite) -> None:
+                          bainite_nucleation, bainite_completion,
+                          martensite) -> None:
         self.cct = {
             'ferrite_nucleation': ferrite_nucleation,
             'ferrite_completion': ferrite_completion,
@@ -57,9 +57,8 @@ class Plots(object):
             'martensite': martensite
         }
 
-    def set_ttt_plot_data(self, ferrite_start, ferrite_finish,
-                          pearlite_start, pearlite_finish,
-                          bainite_start, bainite_finish,
+    def set_ttt_plot_data(self, ferrite_start, ferrite_finish, pearlite_start,
+                          pearlite_finish, bainite_start, bainite_finish,
                           martensite) -> None:
         self.ttt = {
             'ferrite_start': ferrite_start,

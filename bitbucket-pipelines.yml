@@ -19,7 +19,7 @@ pipelines:
           - export PYTHONPATH=$PYTHONPATH:./services/server/:./services/server/simulation/
           - cd ./services/server
 #          - python -m unittest ./services/server/tests/test_simulation.py  # Run specific Phase Simulation tests only
-          - python -m unittest tests/test_simulation.py  # Run specific Phase Simulation tests only
+          - python3 -m unittest tests/test_simulation.py  # Run specific Phase Simulation tests only
           - pip3 install --no-cache-dir docker-compose==1.24.0
           - docker-compose -v
           - cd ../../

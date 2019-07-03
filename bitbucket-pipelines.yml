@@ -13,7 +13,6 @@ pipelines:
           - apk add --quiet py3-pip bash python3 python3-dev
           - apk add --quiet build-base libffi-dev openssl-dev libgcc
           - python3 --version
-          - pip -V
           - pip3 -V
           - pip3 install --quiet --cache-dir ~/.pip3/cache/ -r ./services/server/requirements.txt
           - export PYTHONPATH=$PYTHONPATH:./services/server/:./services/server/simulation/

@@ -7,16 +7,15 @@ pipelines:
   default:
     - step:
         caches:
-          - pip
           - pip3
           - docker
         script:
           - apk add --quiet py3-pip bash python3 python3-dev
           - apk add --quiet build-base libffi-dev openssl-dev libgcc
-          - python --version
+          - python3 --version
           - pip -V
           - pip3 -V
-          - pip3 install --cache-dir ~/.pip3/cache/ -q -r ./services/server/requirements.txt
+          - pip3 install --quiet --cache-dir ~/.pip3/cache/ -r ./services/server/requirements.txt
           - export PYTHONPATH=$PYTHONPATH:./services/server/:./services/server/simulation/
           - cd ./services/server
           #          - python -m unittest ./services/server/tests/test_simulation.py  # Run specific Phase Simulation tests only

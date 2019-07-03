@@ -24,17 +24,20 @@ Just some configuration settings.
 class BaseConfig:
     """Base configuration"""
     TESTING = False
+    MONGO_URI = 'mongodb://mongodb:27017/arc'
 
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
+    MONGO_DBNAME = 'arc'
 
 
 class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
+    MONGO_DBNAME = 'arc_test'
 
 
 class ProductionConfig(BaseConfig):
     """Production configuration"""
-    pass
+    MONGO_DBNAME = 'arclytics'

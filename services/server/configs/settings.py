@@ -35,8 +35,6 @@ sys.path.append(BASE_DIR)
 ENV_CONFIGS = os.path.join(BASE_DIR, '.env')
 if os.path.isfile(ENV_CONFIGS):
     load_dotenv(ENV_CONFIGS)
-else:
-    raise FileNotFoundError('Cannot find .env file.')
 
 DEFAULT_LOGGER = AppLogger('ARCLYTICS')
 APP_CONFIGS = None

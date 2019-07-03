@@ -20,6 +20,9 @@ __date__ = '2019.06.04'
 This script is to our CLI script tool to manage the application.
 """
 
+import sys
+import unittest
+
 from flask.cli import FlaskGroup
 
 from api import app, User
@@ -33,11 +36,21 @@ cli = FlaskGroup(app)
 def recreate_db():
     test = User(
         email='andrew@neuraldev.io',
-        first_name='Andrew',
-        last_name='Che',
+        # first_name='Andrew',
+        # last_name='Che',
         username='codeninja55',
-        user_type='2'
+        # user_type='2'
     ).save()
+
+
+@cli.command()
+def test():
+    """Runs the tests without code coverage."""
+    tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
+    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    if result.wasSuccessful():
+        return 0
+    sys.exit(result)
 
 
 if __name__ == '__main__':

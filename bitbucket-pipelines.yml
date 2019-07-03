@@ -16,5 +16,6 @@ pipelines:
           - python3 -m unittest discover -s ./services/server/tests -t ./services/server
           - pip3 install --no-cache-dir docker-compose==1.24.0
           - docker-compose -v
-          - docker-compose up -d
+          - docker-compose up -d --build
+          - docker-compose exec server python manage.py test  # This should start the test runner for the API server
           - docker-compose down

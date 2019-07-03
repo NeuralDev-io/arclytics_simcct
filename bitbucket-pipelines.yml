@@ -8,7 +8,6 @@ pipelines:
     - step:
         caches:
           - pip
-          - pip3
           - docker
         services:
           - docker

@@ -26,7 +26,9 @@ import unittest
 from flask import current_app
 from flask_testing import TestCase
 
-from api import app
+from api import create_app
+
+app = create_app()
 
 
 class TestDevelopmentConfig(TestCase):

@@ -23,86 +23,64 @@ This is the entrypoint to our Python Flask API server.
 """
 
 import os
-import datetime
+from typing import Tuple
 
-from flask import Flask, jsonify
-from flask_restful import Resource, Api
-from mongoengine import connect, Document, StringField, EmailField, ObjectIdField, BooleanField, DateTimeField
+from flask import Flask
+from mongoengine import connect
 
 from configs.settings import DEFAULT_LOGGER, APP_CONFIGS
 
-# instantiate the application
-app = Flask(__name__)
-
-# API interface
-api = Api(app=app)
-
-# Setup the configuration for Flask
-app_settings = os.getenv('APP_SETTINGS')
-app.config.from_object(app_settings)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', '')
-
-# Log the App Configs
-DEFAULT_LOGGER.pprint(app.config)
-
-# Mongo Client interface with MongoEngine as Object Document Mapper (ODM)
-app.config['MONGO_URI'] = os.getenv('MONGO_URI')
-app.config['MONGO_HOST'] = os.environ.get('MONGO_HOST', 'localhost')
-app.config['MONGO_PORT'] = os.environ.get('MONGO_PORT', 27017)
-# app.config['MONGO_USER'] = os.environ.get('MONGODB_USER', '')               # stored in .env
-# app.config['MONGO_PASSWORD'] = os.environ.get('MONGODB_PASSWORD', None)     # stored in .env
-
-# Connect to the Mongo Client
-mongo = connect(
-    app.config['MONGO_DBNAME'],
-    host=app.config['MONGO_HOST'],
-    port=int(app.config['MONGO_PORT']),
-    # username=app.config['MONGO_USER'],  # FIXME: Do not leave this commented for Production Environment
-    # password=app.config['MONGO_PASSWORD'],
-)
-
-# User type choices
-USERS = (('1', 'ADMIN'), ('2', 'USER'))
+# FIXME: Need to find a better way to do this as Globals should not be used
+# Instantiate the Mongo object to store a connection
+mongo = None
 
 
-# ========== # MODEL # ========== #
-class User(Document):
-    _user_id = ObjectIdField(name='_user_id', primary_key=True)
-    email = EmailField(required=True, unique=True)
-    # password = StringField()
-    # first_name = StringField(required=True)
-    # last_name = StringField(required=True)
-    username = StringField(required=True)
-    # user_type = StringField(required=True, max_length=1, choices=USERS)
-    active = BooleanField(default=True)
-    # is_admin = BooleanField(default=False)
-    created = DateTimeField(default=datetime.datetime.utcnow())
-    last_updated = DateTimeField(default=None)
-    last_login = DateTimeField(default=None)
-    # Define the collection and indexing for this document
-    meta = {
-        'collection': 'users',
-        'indexes': [
-            'last_login',
-            # {'fields': ['created'], 'expireAfterSeconds': 3600},  # Time To Live index - expires from collection
-            'email'
-        ]
-    }
+def create_app(script_info=None) -> Flask:
+    """
 
-    # MongoEngine allows you to create custom cleaning rules for your documents when calling save().
-    # By providing a custom clean() method you can do any pre validation / data cleaning.
-    # This might be useful if you want to ensure a default value based on other document values.
-    # def clean(self):
-    #     pass
+    Args:
+        script_info:
 
+    Returns:
 
-# ========== # ROUTES # ========== #
-class PingTest(Resource):
-    def get(self):
-        return {
-            'status': 'success',
-            'message': 'pong'
-        }
+    """
 
+    # instantiate the application
+    app = Flask(__name__)
 
-api.add_resource(PingTest, '/users/ping')
+    # Setup the configuration for Flask
+    app_settings = os.getenv('APP_SETTINGS')
+    app.config.from_object(app_settings)
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', '')
+
+    # Mongo Client interface with MongoEngine as Object Document Mapper (ODM)
+    app.config['MONGO_URI'] = os.environ.get('MONGO_URI', '')
+    app.config['MONGO_HOST'] = os.environ.get('MONGO_HOST', 'localhost')
+    app.config['MONGO_PORT'] = os.environ.get('MONGO_PORT', 27017)
+    # app.config['MONGO_USER'] = os.environ.get('MONGODB_USER', '')               # stored in .env
+    # app.config['MONGO_PASSWORD'] = os.environ.get('MONGODB_PASSWORD', None)     # stored in .env
+
+    # Connect to the Mongo Client
+    global mongo
+    mongo = connect(
+        app.config['MONGO_DBNAME'],
+        host=app.config['MONGO_HOST'],
+        port=int(app.config['MONGO_PORT']),
+        # username=app.config['MONGO_USER'],  # FIXME: Do not leave this commented for Production Environment
+        # password=app.config['MONGO_PASSWORD'],
+    )
+
+    # Log the App Configs
+    if app is None:
+        DEFAULT_LOGGER.pprint(app.config)
+
+    # Register blueprints
+    from api.users import users_blueprint
+    app.register_blueprint(users_blueprint)
+
+    # Shell context for Flask CLI
+    @app.shell_context_processor
+    def ctx():
+        return {'app': app, 'mongo': mongo}
+
+    return app

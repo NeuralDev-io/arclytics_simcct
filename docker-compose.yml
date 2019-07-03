@@ -15,7 +15,6 @@ services:
     expose:
       - 8000
     environment:
-      - FLASK_APP=api/__init__.py
       - FLASK_ENV=development
       - APP_SETTINGS=api.config.DevelopmentConfig
       - MONGO_HOST=localhost

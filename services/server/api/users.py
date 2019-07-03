@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
-# views.py
+# users.py
 # 
 # Attributions: 
 # [1] 
@@ -14,9 +14,28 @@ __version__ = '0.1.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
-__date__ = '2019.06.09'
-"""views.py: 
+__date__ = '2019.07.03'
+"""users.py: 
 
-The controller and routes for the Arclytics Sim API.
+{Description}
 """
 
+import datetime
+
+from flask import Blueprint
+from flask_restful import Resource, Api
+
+users_blueprint = Blueprint('users', __name__)
+api = Api(users_blueprint)
+
+
+# ========== # RESOURCE ROUTES # ========== #
+class PingTest(Resource):
+    def get(self):
+        return {
+            'status': 'success',
+            'message': 'pong'
+        }
+
+
+api.add_resource(PingTest, '/users/ping')

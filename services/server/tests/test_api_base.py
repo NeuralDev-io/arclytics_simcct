@@ -22,7 +22,9 @@ __date__ = '2019.07.03'
 
 from flask_testing import TestCase
 
-from api import app
+from api import create_app
+
+app = create_app()
 
 
 class BaseTestCase(TestCase):

@@ -13,7 +13,8 @@ pipelines:
           - apk add --quiet build-base libffi-dev openssl-dev libgcc
           - apk add --quiet python3 python3-dev
           - pip3 install -r ./services/server/requirements.txt
-          - python -m unittest services/server/tests/test_simulation.py  # run specific Phase Simulation tests only
+          - export PYTHONPATH=./services/server/         # Add the Flask API Server service as Module
+          - python -m unittest ./services/server/tests/test_simulation.py  # run specific Phase Simulation tests only
           - pip3 install --no-cache-dir docker-compose==1.24.0
           - docker-compose -v
           - docker-compose up -d --build

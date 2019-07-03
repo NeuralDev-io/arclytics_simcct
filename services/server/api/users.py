@@ -20,8 +20,6 @@ __date__ = '2019.07.03'
 {Description}
 """
 
-import datetime
-
 from flask import Blueprint
 from flask_restful import Resource, Api
 

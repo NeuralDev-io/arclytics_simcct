@@ -8,9 +8,9 @@ TIME_STAMP="Started on $RIGHT_NOW by $USER"
 ##### Check if DB is up and running
 echo "Waiting for Mongo..."
 
-# while ! nc -z mongo 27017; do
-#     sleep 0.1
-# done
+while ! nc -z mongodb 27017; do
+    sleep 0.1
+done
 
 echo "Mongo started."
 
@@ -49,8 +49,8 @@ while [ "$1" != "" ]; do
     shift
 done
 
-echo $TITLE
-echo $TIME_STAMP
+echo "$TITLE"
+echo "$TIME_STAMP"
 echo "ENVIRONMENT VARIABLES:"
 echo "FLASK_APP: $FLASK_APP"
 echo "FLASK_ENV: $FLASK_ENV"
@@ -61,7 +61,7 @@ echo ""
 # if [ $WSGI == ""]; then
 #     exit
 if [ "$WSGI" == "gunicorn" ]; then
-    gunicorn -b $HOST:$PORT api.app:app
+    gunicorn -b $HOST:$PORT api.__init__:app
 else
     python manage.py run -h $HOST -p $PORT
 fi

@@ -29,7 +29,7 @@ import math
 from typing import *
 import numpy as np
 from logger.arc_logger import AppLogger
-from .utilities import linear_fit
+from simulation.utilities import linear_fit
 
 logger = AppLogger(__name__)
 

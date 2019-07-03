@@ -7,7 +7,7 @@ RIGHT_NOW=$(date +"%x %r %Z")
 TIME_STAMP="Started on $RIGHT_NOW by $USER"
 
 ##### Setup some Flask Environment variables
-export FLASK_APP=api/app.py
+export FLASK_APP=api/__init__.py
 export FLASK_ENV=development
 export APP_SETTINGS=api.config.DevelopmentConfig
 
@@ -58,7 +58,7 @@ echo ""
 # if [ $WSGI == ""]; then
 #     exit
 if [ "$WSGI" == "gunicorn" ]; then
-    gunicorn -b $HOST:$PORT api.app:app
+    gunicorn -b $HOST:$PORT api.__init__:app
 else
     python manage.py run -h $HOST -p $PORT
 fi

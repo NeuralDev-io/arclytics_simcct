@@ -1,12 +1,12 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
-# ----------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # manage.py
 # 
 # Attributions: 
 # [1] 
-# ----------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
@@ -29,9 +29,25 @@ from pathlib import Path
 
 from flask.cli import FlaskGroup
 from prettytable import PrettyTable
+import coverage
 
 from api import create_app, get_app_db
 from api.models import User
+
+COV = coverage.coverage(
+    branch=True,
+    include='api/*',
+    omit=[
+        'config.py',
+        'tests/*',
+        'simulation/*',
+        'configs/*',
+        'data/*',
+        'logger/*',
+        'logs/*',
+    ]
+)
+COV.start()
 
 app = create_app()
 cli = FlaskGroup(create_app=create_app)
@@ -82,6 +98,22 @@ def seed_user_db():
     tbl.align['Username'] = 'l'
     tbl.align['Email'] = 'l'
     print(tbl)
+
+
+@cli.command('test_coverage')
+def cov():
+    """Runs the unit tests with coverage."""
+    tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
+    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    if result.wasSuccessful():
+        COV.stop()
+        COV.save()
+        print('Coverage Summary:')
+        COV.report()
+        COV.html_report()
+        COV.erase()
+        return 0
+    sys.exit(result)
 
 
 if __name__ == '__main__':

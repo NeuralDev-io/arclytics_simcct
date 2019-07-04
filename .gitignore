@@ -220,3 +220,4 @@ typings/
 .idea/
 
 *.db
+/services/server/htmlcov/

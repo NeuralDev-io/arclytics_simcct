@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-
-# ----------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # app.py
 #
 # Attributions:
 # [1] https://testdriven.io/courses/microservices-with-docker-flask-and-react/part-one-microservices/
-# ----------------------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
@@ -16,24 +15,22 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.06.04'
-__name__ = 'Arclytics_API'
 """__init__.py:
 
 This is the entrypoint to our Python Flask API server.
 """
 
-import calendar
 import datetime
 import os
 import json
-
 from bson import ObjectId
+
 from flask import Flask
-from mongoengine import connect, QuerySet
+from mongoengine import connect
 from mongoengine.connection import disconnect_all, get_connection, get_db, MongoEngineConnectionError
 
-from configs.settings import DEFAULT_LOGGER, APP_CONFIGS
 from api.mongodb import MongoSingleton
+from configs.settings import DEFAULT_LOGGER
 
 
 class JSONEncoder(json.JSONEncoder):

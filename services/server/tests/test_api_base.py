@@ -34,8 +34,8 @@ app = create_app()
 class BaseTestCase(TestCase):
     def create_app(self):
         app.config.from_object('api.config.TestingConfig')
-        db = init_db(app)
-        set_app_db(db)
+        self.db = init_db(app)
+        set_app_db(self.db)
         return app
 
     def setUp(self) -> None:
@@ -45,4 +45,4 @@ class BaseTestCase(TestCase):
         self.assertEqual(db_in_use.name, 'arc_test')
 
     def tearDown(self) -> None:
-        db.instance.client.drop_database('arc_test')
+        self.db.instance.client.drop_database('arc_test')

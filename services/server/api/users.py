@@ -22,6 +22,7 @@ This file defines all the API resource routes and controller definitions using t
 
 from flask import Blueprint, request
 from flask_restful import Resource, Api
+from mongoengine import ValidationError, NotUniqueError
 
 from logger.arc_logger import AppLogger
 from api.models import User
@@ -46,21 +47,45 @@ class UsersList(Resource):
     def post(self):
         post_data = request.get_json()
 
+        # Validating empty payload
+        response = {
+            'status': 'fail',
+            'message': 'Invalid payload.'
+        }
+        if not post_data:
+            return response, 400
+
         # Extract the request body data
         email = post_data.get('email', '')
         username = post_data.get('username', '')
 
-        # Create a Mongo User object and save it
-        new_user = User(email=email, username=username)
-        logger.info("New User Instance: {}".format(new_user))
-        new_user.save()
-        logger.info("New User _id: {}".format(new_user.id))
+        if not email:
+            return response, 400
 
-        response = {
-            'status': 'success',
-            'message': '{email} was added'.format(email=email)
-        }
-        return response, 201
+        # Validation checks
+        try:
+            # Create a Mongo User object and save it
+            if not User.objects(email=email):
+                new_user = User(
+                    email=email,
+                    username=username,
+                )
+                new_user.save()  # should use cascade save
+                response['status'] = 'success'
+                response['message'] = '{email} was added'.format(email=email)
+                return response, 201
+            else:
+                response['message'] = 'Error, email exists.'
+                return response, 400
+        except ValidationError as e:
+            logger.error('Validation Error: {}'.format(e))
+        except NotUniqueError as e:
+            logger.error('Not Unique Error: {}'.format(e))
+
+        # We should not reach this point
+        response['status'] = 'fail'
+        response['message'] = 'Sorry, someone forgot to validate some bug.'
+        return response, 400
 
 
 # ========== # RESOURCE ROUTES # ========== #

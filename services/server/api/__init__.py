@@ -32,7 +32,6 @@ from mongoengine.connection import disconnect_all, get_connection, get_db, Mongo
 from configs.settings import DEFAULT_LOGGER, APP_CONFIGS
 from api.mongodb import MongoSingleton
 
-# FIXME: Need to find a better way to do this as Globals should not be used
 # Instantiate the Mongo object to store a connection
 _db = None
 
@@ -53,13 +52,13 @@ def init_db(app) -> MongoSingleton:
     # Test to make sure the connection has been created.
     try:
         conn = get_connection('default')
-        DEFAULT_LOGGER.debug('MongoDB Connected: {}'.format(conn))
+        # DEFAULT_LOGGER.debug('MongoDB Connected: {}'.format(conn))
     except MongoEngineConnectionError as e:
         DEFAULT_LOGGER.error('MongoDB Failed to Connect.\n Error: {}'.format(e))
 
     try:
         db_curr = get_db('default')
-        DEFAULT_LOGGER.debug('MongoDB Database in use: {}'.format(db_curr))
+        # DEFAULT_LOGGER.debug('MongoDB Database in use: {}'.format(db_curr))
     except MongoEngineConnectionError as e:
         DEFAULT_LOGGER.error('MongoDB Failed to Get Database.\n Error: {}'.format(e))
 

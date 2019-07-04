@@ -34,10 +34,10 @@ from api.mongodb import MongoSingleton
 
 # FIXME: Need to find a better way to do this as Globals should not be used
 # Instantiate the Mongo object to store a connection
-db = None
+_db = None
 
 
-def connect_mongodb(app) -> MongoSingleton:
+def init_db(app) -> MongoSingleton:
     """Make a connection to the MongoDB container and returns a singleton wrapper on a pymongo.MongoClient."""
     disconnect_all()
 
@@ -66,6 +66,12 @@ def connect_mongodb(app) -> MongoSingleton:
     return MongoSingleton(mongo_client)
 
 
+def set_app_db(db: MongoSingleton) -> None:
+    """Simply sets the module-level global database singleton object."""
+    global _db
+    _db = db
+
+
 def create_app(script_info=None) -> Flask:
     """
 
@@ -92,8 +98,8 @@ def create_app(script_info=None) -> Flask:
     # app.config['MONGO_PASSWORD'] = os.environ.get('MONGODB_PASSWORD', None)     # stored in .env
 
     # Connect to the Mongo Client
-    global db
-    db = connect_mongodb(app)
+    db = init_db(app)
+    set_app_db(db)
 
     # Log the App Configs
     # if app is None:

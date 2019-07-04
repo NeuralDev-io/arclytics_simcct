@@ -24,7 +24,7 @@ from pymongo import MongoClient
 from mongoengine.connection import get_db, get_connection
 from flask_testing import TestCase
 
-from api import create_app, db, connect_mongodb
+from api import create_app, set_app_db, init_db
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -34,8 +34,8 @@ app = create_app()
 class BaseTestCase(TestCase):
     def create_app(self):
         app.config.from_object('api.config.TestingConfig')
-        global db
-        db = connect_mongodb(app)
+        db = init_db(app)
+        set_app_db(db)
         return app
 
     def setUp(self) -> None:
@@ -45,4 +45,4 @@ class BaseTestCase(TestCase):
         self.assertEqual(db_in_use.name, 'arc_test')
 
     def tearDown(self) -> None:
-        db.instance.client.drop_database()
+        db.instance.client.drop_database('arc_test')

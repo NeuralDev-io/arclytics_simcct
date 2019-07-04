@@ -26,7 +26,7 @@ import unittest
 
 from flask.cli import FlaskGroup
 
-from api import create_app, mongo
+from api import create_app
 from api.models import User
 
 app = create_app()

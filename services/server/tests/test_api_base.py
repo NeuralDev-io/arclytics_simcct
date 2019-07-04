@@ -20,20 +20,29 @@ __date__ = '2019.07.03'
 {Description}
 """
 
+from pymongo import MongoClient
+from mongoengine.connection import get_db, get_connection
 from flask_testing import TestCase
 
-from api import create_app
+from api import create_app, db, connect_mongodb
+from logger.arc_logger import AppLogger
 
+logger = AppLogger(__name__)
 app = create_app()
 
 
 class BaseTestCase(TestCase):
     def create_app(self):
         app.config.from_object('api.config.TestingConfig')
+        global db
+        db = connect_mongodb(app)
         return app
 
     def setUp(self) -> None:
-        pass
+        conn = get_connection('default')
+        self.assertIsInstance(conn, MongoClient)
+        db_in_use = get_db()
+        self.assertEqual(db_in_use.name, 'arc_test')
 
     def tearDown(self) -> None:
-        pass
+        db.instance.client.drop_database()

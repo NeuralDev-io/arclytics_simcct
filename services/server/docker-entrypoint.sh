@@ -8,7 +8,7 @@ TIME_STAMP="Started on $RIGHT_NOW by $USER"
 ##### Check if DB is up and running
 echo "Waiting for Mongo..."
 
-while ! nc -z mongodb 27017; do
+while ! nc -z users-db 27017; do
     sleep 0.1
 done
 

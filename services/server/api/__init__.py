@@ -22,15 +22,37 @@ __name__ = 'Arclytics_API'
 This is the entrypoint to our Python Flask API server.
 """
 
+import calendar
+import datetime
 import os
-from typing import Tuple
+import json
 
+from bson import ObjectId
 from flask import Flask
-from mongoengine import connect
+from mongoengine import connect, QuerySet
 from mongoengine.connection import disconnect_all, get_connection, get_db, MongoEngineConnectionError
 
 from configs.settings import DEFAULT_LOGGER, APP_CONFIGS
 from api.mongodb import MongoSingleton
+
+
+class JSONEncoder(json.JSONEncoder):
+    """Extends the json-encoder to properly convert dates and bson.ObjectId"""
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        if isinstance(o, set):
+            return list(o)
+        if isinstance(o, datetime.datetime):
+            # if o.utcoffset() is not None:
+            #     o = o - o.utcoffset()
+            # millis = int(
+            #     calendar.timegm(o.timetuple()) * 1000 + o.microsecond / 1000
+            # )
+            # return millis
+            return str(o)
+        return json.JSONEncoder.default(self, o)
+
 
 # Instantiate the Mongo object to store a connection
 _db = None
@@ -71,6 +93,11 @@ def set_app_db(db: MongoSingleton) -> None:
     _db = db
 
 
+def get_app_db() -> any:
+    """Simply get the module-level global database singleton object."""
+    return _db
+
+
 def create_app(script_info=None) -> Flask:
     """
 
@@ -107,6 +134,9 @@ def create_app(script_info=None) -> Flask:
     # Register blueprints
     from api.users import users_blueprint
     app.register_blueprint(users_blueprint)
+
+    # Use the modified JSON encoder to handle serializing ObjectId, sets, and datetime objects
+    app.json_encoder = JSONEncoder
 
     # Shell context for Flask CLI
     @app.shell_context_processor

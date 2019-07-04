@@ -25,6 +25,7 @@ import unittest
 
 from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
+from api.models import User
 
 logger = AppLogger(__name__)
 
@@ -104,6 +105,52 @@ class TestUserService(BaseTestCase):
             self.assertEqual(response.status_code, 400)
             self.assertIn('Error, email exists.', data['message'])
             self.assertIn('fail', data['status'])
+
+    def test_single_user(self):
+        """Ensure we can get a single user works as expected."""
+        user = User.objects.create(username='codeninja55', email='andrew@neuraldev.io')
+
+        with self.client:
+            resp = self.client.get('/users/{user_id}'.format(user_id=user.id))
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('codeninja55', data['data']['username'])
+            self.assertIn('andrew@neuraldev.io', data['data']['email'])
+            self.assertIn('success', data['status'])
+
+    def test_single_user_no_id(self):
+        """Ensure error is thrown if an id is not provided."""
+        with self.client:
+            response = self.client.get('/users/blah')
+            data = json.loads(response.data.decode())
+            self.assertEqual(response.status_code, 404)
+            self.assertIn('Invalid bson.ObjectId type.', data['message'])
+            self.assertIn('fail', data['status'])
+
+    def test_single_user_incorrect_id(self):
+        """Ensure error is thrown if the id does not exist."""
+        with self.client:
+            from bson import ObjectId
+            id = ObjectId()
+            response = self.client.get('/users/{}'.format(id))
+            data = json.loads(response.data.decode())
+            self.assertEqual(response.status_code, 404)
+            self.assertIn('User does not exist', data['message'])
+            self.assertIn('fail', data['status'])
+
+    def test_get_all_users(self):
+        """Ensure we can get all users."""
+        User.objects.create(username='iron_man', email='tony@starkindustries.com')
+        User.objects.create(username='black_widow', email='nat@shield.gov.us')
+
+        with self.client:
+            resp = self.client.get('/users')
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(len(data['data']['users']), 2)
+            self.assertIn('iron_man', data['data']['users'][0]['username'])
+            self.assertIn('black_widow', data['data']['users'][1]['username'])
+            self.assertIn('success', data['status'])
 
 
 if __name__ == '__main__':

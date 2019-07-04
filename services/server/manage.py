@@ -21,12 +21,16 @@ __date__ = '2019.06.04'
 This script is to our CLI script tool to manage the application.
 """
 
+import os
+import json
 import sys
 import unittest
+from pathlib import Path
 
 from flask.cli import FlaskGroup
+from prettytable import PrettyTable
 
-from api import create_app
+from api import create_app, get_app_db
 from api.models import User
 
 app = create_app()
@@ -36,13 +40,7 @@ cli = FlaskGroup(create_app=create_app)
 # TODO: Command to recreate database
 @cli.command('recreate_db')
 def recreate_db():
-    test = User(
-        email='andrew@neuraldev.io',
-        # first_name='Andrew',
-        # last_name='Che',
-        username='codeninja55',
-        # user_type='2'
-    ).save()
+    pass
 
 
 @cli.command()
@@ -53,6 +51,37 @@ def test():
     if result.wasSuccessful():
         return 0
     sys.exit(result)
+
+
+@cli.command('flush')
+def flush():
+    """Drop all collections in the database."""
+    from mongoengine.connection import get_db
+    conn = get_app_db()
+    db = get_db('default')
+    conn.instance.client.drop_database(db.name)
+
+
+@cli.command('seed_db')
+def seed_user_db():
+    """Seed the database with some basic users."""
+    from configs.settings import BASE_DIR
+    from mongoengine.connection import get_db
+    db = get_db('default')
+
+    path = Path(BASE_DIR) / 'data' / 'seed_user_data.json'
+    if os.path.isfile(path):
+        with open(path) as f:
+            data = json.load(f)
+
+    tbl = PrettyTable(['No.', 'Username', 'Email'])
+    print('Seeding users to <{}> database:'.format(db.name))
+    for i, u in enumerate(data):
+        User.objects.create(**u)
+        tbl.add_row((str(i+1), u['username'], u['email']))
+    tbl.align['Username'] = 'l'
+    tbl.align['Email'] = 'l'
+    print(tbl)
 
 
 if __name__ == '__main__':

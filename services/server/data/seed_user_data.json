@@ -1,0 +1,26 @@
+[
+    {
+        "email": "tony@starkindustries.com",
+        "username": "iron_man"
+    },
+    {
+        "email": "nat@marvel.io",
+        "username": "black_widow"
+    },
+    {
+        "email": "capt@marvel.io",
+        "username": "captain_america"
+    },
+    {
+        "email": "hulk@marvel.io",
+        "username": "hulk"
+    },
+    {
+        "email": "thor@asgard.space",
+        "username": "god_of_thunder"
+    },
+    {
+        "email": "hawkeye@shield.com",
+        "username": "ronin"
+    }
+]

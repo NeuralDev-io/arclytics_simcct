@@ -19,11 +19,14 @@ __date__ = '2019.07.03'
 
 This file defines all the API resource routes and controller definitions using the Flask Resource inheritance model.
 """
+import json
+from bson import ObjectId
 
 from flask import Blueprint, request
 from flask_restful import Resource, Api
 from mongoengine import ValidationError, NotUniqueError
 
+from api import JSONEncoder
 from logger.arc_logger import AppLogger
 from api.models import User
 
@@ -44,7 +47,19 @@ class PingTest(Resource):
 
 class UsersList(Resource):
     """Route for Users for Create and Retrieve List."""
+    def get(self):
+        """Get all users."""
+        queryset = User.objects()
+        response = {
+            'status': 'success',
+            'data': {
+                'users': json.loads(queryset.to_json())
+            }
+        }
+        return response, 200
+
     def post(self):
+        """Register a new user."""
         post_data = request.get_json()
 
         # Validating empty payload
@@ -88,6 +103,39 @@ class UsersList(Resource):
         return response, 400
 
 
+class Users(Resource):
+    """Resource for User Retrieve."""
+    def get(self, user_id):
+        """Get a single user detail with query as user_id."""
+        response = {
+            'status': 'fail',
+            'message': 'User does not exist.'
+        }
+
+        # Validation check fo ObjectId
+        if not ObjectId.is_valid(user_id):
+            response['message'] = 'Invalid bson.ObjectId type.'
+            return response, 404
+
+        # Validation check for User exists
+        if not User.objects(id=user_id):
+            return response, 404
+        else:
+            user = User.objects.get(id=user_id)
+            response = {
+                'status': 'success',
+                'data': {
+                    'id': JSONEncoder().encode(user.id),  # To serialize bson.ObjectId properly
+                    'email': user.email,
+                    'username': user.username,
+                    'active': user.active,
+                }
+            }
+
+        return response, 200
+
+
 # ========== # RESOURCE ROUTES # ========== #
 api.add_resource(PingTest, '/users/ping')
 api.add_resource(UsersList, '/users')
+api.add_resource(Users, '/users/<user_id>')

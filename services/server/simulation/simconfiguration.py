@@ -211,18 +211,13 @@ class SimConfiguration(object):
         # Do the calculations
         # 1. Equations of Andrews (1965)
         ae1 = (723.0 - (16.9 * ni) + (29.1 * si) + (6.38 * wx) - (10.7 * mn) + (16.9 * cr) + (290 * asx)) / 3.0
-        ae3 = (910.0 - (203 * np.sqrt(c)) + (44.7 * si) - (15.2 * ni) + (31.5 * mo) + (104.0 * vx) + (13.1 * wx) -
-               (30 * mn) + (11.0 * cr) + (20.0 * cu) - (700.0 * px) - (400.0 * al) - (120.0 * asx) - (400.0 * ti)) / 3.0
 
         # 2. Equations of Eldis (in Barralis, 1982): 1/3 due to averaging
         ae1 = ae1 + (712.0 - (17.8 * mn) - (19.1 * ni) + (20.1 * si) + (11.9 * cr) + (9.8 * mo)) / 3.
-        ae3 = ae3 + (871.0 - (254.4 * np.sqrt(c)) - (14.2 * ni) + (51.7 * si)) / 3.0
 
         # 3. Equations of Grange (1961): 1/3 due to averaging, convert from F to C
         # (-32*(5/9))
         ae1 = ae1 + (1333.0 - (25.0 * mn) + (40.0 * si) + (42.0 * cr) - (26.0 * ni) - 32.0) * 5.0 / (3.0 * 9.0)
-        ae3 = ae3 + (1570.0 - (323.0 * c) - (25.0 * mn) + (80.0 * si) - (3.0 * cr) - (32.0 * ni) -
-                     32.0) * 5.0 / (3.0 * 9.0)
 
         # find the Ae3 temperature at the alloy Carbon content Using Ortho-equilibrium method
         ae3 = ae3_single_carbon(self.comp_parent.copy(), c)
@@ -256,7 +251,7 @@ class SimConfiguration(object):
         # UPDATE wt, Results to CALL Ae3MultiC(wt, Results)
         ae3_multi_carbon(wt, results_mat)
 
-        # TODO: We may or may not implement the Ae3 plot but we can if we want to.
+        # TODO: We may or may not implement the Ae3 plot but we can if we want to. -- WE ARE GOING TO DO PLOT
         # We can view the Ae3 plot with a call to the following
         # CALL Ae3Plot(results_mat, self.ae1, wt_c)
 

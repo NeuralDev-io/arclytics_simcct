@@ -4,18 +4,32 @@ options:
   docker: true
 
 pipelines:
-  default:
-    - step:
-        services:
-          - docker
-        script:
-          - apk add --no-cache --quiet py-pip bash
-          - apk add --quiet build-base libffi-dev openssl-dev libgcc
-          - apk add --quiet python3 python3-dev
-          - pip3 install -r ./services/server/requirements.txt
-          - python -m unittest services/server/tests/test_simulation.py  # run specific Phase Simulation tests only
-          - pip3 install --no-cache-dir docker-compose==1.24.0
-          - docker-compose -v
-          - docker-compose up -d --build
-#          - docker-compose exec server python manage.py test  # This should start the test runner for the API server
-          - docker-compose down
+  branches:
+    develop:
+      - step:
+          services:
+            - docker
+          caches:
+            - pip3
+            - docker
+          script:
+            - mkdir -p ~/.pip3/cache
+            - apk add --quiet py3-pip bash python3 python3-dev
+            - apk add --quiet build-base libffi-dev openssl-dev libgcc
+            - python3 --version
+            - pip3 install --quiet --cache-dir ~/.pip3/cache --upgrade pip
+            - pip3 -V
+            - pip3 install --quiet --cache-dir ~/.pip3/cache -r ./services/server/requirements.txt
+            - export PYTHONPATH=$PYTHONPATH:./services/server/:./services/server/simulation/
+            - cd ./services/server
+            - python3 -m unittest tests/test_simulation.py  # Run specific Phase Simulation tests only
+            - pip3 install --quiet --cache-dir ~/.pip3/cache docker-compose==1.24.0
+            - docker-compose -v
+            - cd ../../
+            - docker-compose up -d --build
+            - docker-compose exec -T server python manage.py test  # This should start the test runner for the API server
+            - docker-compose down
+
+definitions:
+  caches:
+    pip3: ~/.pip3/cache

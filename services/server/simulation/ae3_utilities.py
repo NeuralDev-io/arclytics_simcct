@@ -10,7 +10,7 @@
 #  - Refactor all the unused pass-by-reference variables that are unused.
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
-__copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
+__copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'TBA'
 __version__ = '0.0.6'
@@ -80,8 +80,8 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray, c: float) -
 
     # Now convert to mole fraction for updated composition with this iteration
     # TODO:
-    #  - Check that the _yy_vect is redundant and not used
-    #  - Returning wt_mat also seems pretty redundant as it is not changed
+    #  - Check that the _yy_vect is redundant and not used  -- YES
+    #  - Returning wt_mat also seems pretty redundant as it is not changed  -- YES
     # x_vect: mole fractions of all elements, with C as always index=0 and Fe as always index=-1
     # y: # mole fractions of Fe (not used)
     x_vect, y_vect = convert_wt_2_mol(wt_mat)
@@ -178,7 +178,6 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray, c: float) -
                     # Data from Gilmour et.al., met. trans., 1972
                     gi = np.float64(6.118 * temp - 7808.0)  # special set for Mn
                 else:
-                    # TODO: Check which base VB does log in.
                     gi = np.float64(e_mat[m, 1] + (e_mat[m, 2] + e_mat[m, 3] * temp + e_mat[m, 4] *
                                                    math.log(temp)) * temp)
 
@@ -240,12 +239,10 @@ def convert_wt_2_mol(wt: np.ndarray) -> (np.ndarray, np.array):
 
     # add all the wt% to find total wt% alloying elements
     # note: ensure last one with index -1 is Iron, Fe
-    # TODO: Why 1 to 11 only?
     d_vect[-1] = np.sum(wt['weight'][1:11]).astype(np.float64).item()
     d_vect[-1] = 100.0 - d_vect[-1]  # find wt% Fe by difference
     d_vect[-1] = d_vect[-1] / 55.84  # Fe, calculate moles Fe if 100 g of alloy
 
-    # TODO: What happens if we have more elements, how do we know what fractions?
     d_vect[0] = wt['weight'][wt['symbol'] == 'Cx'].item() / 12.0115   # Carbon
     d_vect[1] = wt['weight'][wt['symbol'] == 'Mn'][0] / 54.94         # Manganese
     d_vect[2] = wt['weight'][wt['symbol'] == 'Si'][0] / 28.09         # Silicon
@@ -284,7 +281,7 @@ def tzero2(wt_c: float) -> float:
 
 # TODO: possible to declare dg inside function and just return it
 def dg_fit(dg: float, t: float) -> (float, float):
-    # Linear fits between 'Delta G' (Gibbs free enegy change) values in table V (last column) by
+    # Linear fits between 'Delta G' (Gibbs free energy change) values in table V (last column) by
     # Kaufman "Refractory Materials" vol.4, 19, 1970. Data for BCC (alpha) -> FCC (gamma) Iron
     dg_matrix = np.zeros((100, 3), dtype=np.float64)
     # set initial temperature as 0 K (at 20 K in each interval)
@@ -294,7 +291,7 @@ def dg_fit(dg: float, t: float) -> (float, float):
     dg_matrix[1, 0] = 100
     dg_matrix[2, 0] = 200
 
-    # TODO: This could be done more efficiently
+    # FIXME: This could be done more efficiently
     for i in range(3, 48):
         dg_matrix[i, 0] = tdh
         tdh = tdh + 20
@@ -472,7 +469,7 @@ def eta2li96() -> np.ndarray:
     Returns:
         A constant numpy.ndarray matrix
     """
-    # TODO: Why has Dr. Bendeich made his array 20x6 when he only ever needs 20x5
+    # TODO: Why has Dr. Bendeich made his array 20x6 when he only ever needs 20x5  -- MUST BE SET
     # initiated with all zeroes so if not used already set properly
     b_mat = np.zeros((20, 6), dtype=np.float64)
 
@@ -710,6 +707,12 @@ def ai_eqn3(
 
 
 def ae3_multi_carbon(wt: np.ndarray, results: np.ndarray) -> (np.ndarray, np.ndarray):
+    """
+    Range of composition for Carbon.
+    :param wt:
+    :param results:
+    :return:
+    """
     # (includes wt%Fe, AC(20), by difference)
 
     # Only passing in the original wt% alloys

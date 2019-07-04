@@ -25,7 +25,7 @@ pipelines:
           - docker-compose -v
           - cd ../../
           - docker-compose up -d --build
-          - docker-compose exec server python manage.py test  # This should start the test runner for the API server
+          - docker-compose exec -T server python manage.py test  # This should start the test runner for the API server
           - docker-compose down
 definitions:
   caches:

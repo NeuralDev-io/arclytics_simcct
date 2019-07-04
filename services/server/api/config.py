@@ -24,7 +24,6 @@ Just some configuration settings.
 class BaseConfig:
     """Base configuration"""
     TESTING = False
-    MONGO_URI = 'mongodb://mongodb:27017/arc'
 
 
 class DevelopmentConfig(BaseConfig):

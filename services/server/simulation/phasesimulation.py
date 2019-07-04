@@ -42,7 +42,7 @@ class Phase(enum.Enum):
 
 
 class PhaseSimulation(object):
-    XBR = np.float64(1.0)
+    # XBR = np.float64(1.0)
 
     def __init__(self, sim_configs: SimConfiguration = None, debug=False):
         if sim_configs is not None:
@@ -90,6 +90,8 @@ class PhaseSimulation(object):
     def ttt(self) -> dict:
         # FIXME I have removed X and Xpct are not used. Ask if it can be removed.
         integrated2_mat = np.zeros((4, 11), dtype=np.float64)
+
+        # Xbr removed
 
         self.__vol_phantom_frac2(integrated2_mat)
 
@@ -263,7 +265,7 @@ class PhaseSimulation(object):
         speedup = np.float64(1.2)
         # Degrees/sec this starts at the fastest critical cooling rate
         cooling_rate = sorted_ccr[-1] * 2 * speedup
-        i_ctr = 3  # TODO: Original starts at 4, ask why?
+        i_ctr = 3  # TODO: Original starts at 4, ask why?  -- just because he doesn't like 0
 
         # =============================================================================== #
         # ========================== # MAIN COOLING RATE LOOP =========================== #
@@ -311,6 +313,7 @@ class PhaseSimulation(object):
             stop_b_end = False  # Bainite trigger
 
             # ======================================== # STAGE 1 # ======================================== #
+            # FIXME: May need to check if start temp is below ae3
             # If above this temperature no nucleation of any phase will be occurring, however, grain growth can occur.
             while temp_curr > self.ae3:
                 # For the current temperature and time interval find the new grain size

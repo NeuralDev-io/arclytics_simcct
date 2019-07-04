@@ -22,7 +22,7 @@ __date__ = '2019.07.03'
 
 import datetime
 
-from mongoengine import Document, StringField, EmailField, ObjectIdField, BooleanField, DateTimeField
+from mongoengine import Document, StringField, EmailField, BooleanField, DateTimeField
 
 
 # User type choices
@@ -31,7 +31,7 @@ USERS = (('1', 'ADMIN'), ('2', 'USER'))
 
 # ========== # MODELS SCHEMA # ========== #
 class User(Document):
-    _user_id = ObjectIdField(name='_user_id', primary_key=True)
+    # _user_id = ObjectIdField(name='_user_id', primary_key=True)
     email = EmailField(required=True, unique=True)
     # password = StringField()
     # first_name = StringField(required=True)

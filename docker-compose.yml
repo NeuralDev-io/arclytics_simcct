@@ -38,11 +38,20 @@ services:
       - MONGO_DATA_DIR=/usr/data/db
       - MONGO_LOG_DIR=/dev/null
 
-#  client:
-#    build:
-#      context: ./services/client
-#      dockerfile: Dockerfile
-#    ports:
-#      - 8080:8080
-#    depends_on:
-#      - server
+  client:
+    build:
+      context: ./services/client
+      dockerfile: Dockerfile
+    container_name: 'react'
+    volumes:
+      - ./services/client:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - 3000:3000
+    expose:
+      - 3000
+    environment:
+      - NODE_ENV=development
+#      - REACT_APP_USERS_SERVICE_URL=http://localhost
+    depends_on:
+      - server

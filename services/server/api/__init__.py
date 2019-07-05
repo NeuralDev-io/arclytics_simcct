@@ -144,6 +144,8 @@ def create_app(script_info=None) -> Flask:
     # Register blueprints
     from api.users import users_blueprint
     app.register_blueprint(users_blueprint)
+    from api.auth import auth_blueprint
+    app.register_blueprint(auth_blueprint)
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and datetime objects
     app.json_encoder = JSONEncoder

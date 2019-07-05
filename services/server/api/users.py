@@ -22,7 +22,7 @@ This file defines all the API resource routes and controller definitions using t
 import json
 from bson import ObjectId
 
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from flask_restful import Resource, Api
 from mongoengine import ValidationError, NotUniqueError
 

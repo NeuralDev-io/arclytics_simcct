@@ -44,7 +44,7 @@ class TestingConfig(BaseConfig):
     MONGO_DBNAME = 'arc_test'
     BCRYPT_LOG_ROUNDS = 4
     TOKEN_EXPIRATION_DAYS = 0
-    TOKEN_EXPIRATION_SECONDS = 10
+    TOKEN_EXPIRATION_SECONDS = 5
 
 
 class ProductionConfig(BaseConfig):

@@ -50,7 +50,7 @@ class User(Document):
     password = StringField(default=None, max_length=255, null=False, min_length=6)
     # first_name = StringField(required=True)
     # last_name = StringField(required=True)
-    username = StringField(required=True)
+    username = StringField(required=True, unique=True)
     # user_type = StringField(required=True, max_length=1, choices=USERS)
     active = BooleanField(default=True)
     is_admin = BooleanField(default=False)
@@ -91,11 +91,11 @@ class User(Document):
         """Generates JWT auth token that is returned as bytes."""
         try:
             payload = {
-                'expiration': datetime.datetime.utcnow() + datetime.timedelta(
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(
                     days=current_app.config.get('TOKEN_EXPIRATION_DAYS', 0),
                     seconds=current_app.config.get('TOKEN_EXPIRATION_SECONDS', 0)
                 ),
-                'issued': JSONEncoder().encode(datetime.datetime.utcnow()),
+                'issued': datetime.datetime.utcnow(),
                 'subject': user_id
             }
 
@@ -103,14 +103,13 @@ class User(Document):
                 payload=payload,
                 key=current_app.config.get('SECRET_KEY', None),
                 algorithm='HS256',
-                headers=None,
                 json_encoder=JSONEncoder
             )
         except Exception as e:
             logger.error('Encode auth token error: {}'.format(e))
 
     @staticmethod
-    def decode_auth_token(auth_token: bytes) -> Union[str, int]:
+    def decode_auth_token(auth_token: bytes) -> Union[ObjectId, str]:
         """Decodes the JWT auth token.
 
         Args:
@@ -124,12 +123,12 @@ class User(Document):
                 jwt=auth_token,
                 key=current_app.config.get('SECRET_KEY', None)
             )
-            return payload['subject']
+            return ObjectId(payload['subject'])
         except jwt.ExpiredSignatureError as e:
-            logger.error('Signature expired error.')
+            # logger.error('Signature expired error.')
             return 'Signature expired. Please login again.'
         except jwt.InvalidTokenError as e:
-            logger.error('Invalid token error.')
+            # logger.error('Invalid token error.')
             return 'Invalid token. Please log in again.'
 
     # MongoEngine allows you to create custom cleaning rules for your documents when calling save().
@@ -142,3 +141,6 @@ class User(Document):
 
         if self.last_updated is None:
             self.last_updated = self.created
+
+    def __str__(self):
+        pass

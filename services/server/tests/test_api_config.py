@@ -57,7 +57,7 @@ class TestTestingConfig(TestCase):
         self.assertTrue(app.config['MONGO_DBNAME'] == 'arc_test')
         self.assertTrue(app.config['BCRYPT_LOG_ROUNDS'] == 4)
         self.assertTrue(app.config['TOKEN_EXPIRATION_DAYS'] == 0)
-        self.assertTrue(app.config['TOKEN_EXPIRATION_SECONDS'] == 10)
+        self.assertTrue(app.config['TOKEN_EXPIRATION_SECONDS'] == 5)
 
 
 class TestProductionConfig(TestCase):

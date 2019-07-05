@@ -93,7 +93,12 @@ def seed_user_db():
     tbl = PrettyTable(['No.', 'Username', 'Email'])
     print('Seeding users to <{}> database:'.format(db.name))
     for i, u in enumerate(data):
-        User.objects.create(**u)
+        new_user = User(
+            email=u['email'],
+            username=u['username']
+        )
+        new_user.set_password(u['password'])
+        new_user.save()
         tbl.add_row((str(i+1), u['username'], u['email']))
     tbl.align['Username'] = 'l'
     tbl.align['Email'] = 'l'

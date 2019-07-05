@@ -25,9 +25,10 @@ from flask import Blueprint, jsonify, request
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from api.models import User
-from api import get_flask_mongo, bcrypt
+from api import bcrypt
 
 from logger.arc_logger import AppLogger
+from api.auth_decorators import authenticate
 
 logger = AppLogger(__name__)
 
@@ -127,77 +128,47 @@ def login():
         return jsonify(response), 400
 
     if len(str(password)) < 6 or len(str(password)) > 254:
-        response['message'] = 'The password is invalid.'
+        response['message'] = 'Email or password combination incorrect.'
         return jsonify(response), 400
 
     if not User.objects(email=email):
         response['message'] = 'User does not exist.'
         return jsonify(response), 404
-    else:
-        user = User.objects.get(email=email)
-        if bcrypt.check_password_hash(user.password, password):
-            auth_token = user.encode_auth_token(user.id)
-            if auth_token:
-                response['status'] = 'success'
-                response['message'] = 'Successfully logged in.'
-                response['auth_token'] = auth_token.decode()
-                return jsonify(response), 200
-        else:
-            response['message'] = 'Either password or email is incorrect.'
-            return jsonify(response), 404
+
+    user = User.objects.get(email=email)
+
+    if bcrypt.check_password_hash(user.password, password):
+        auth_token = user.encode_auth_token(user.id)
+        if auth_token:
+            response['status'] = 'success'
+            response['message'] = 'Successfully logged in.'
+            response['auth_token'] = auth_token.decode()
+            return jsonify(response), 200
+
+    response['message'] = 'Email or password combination incorrect.'
+    return jsonify(response), 404
 
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])
-def logout():
+@authenticate
+def logout(resp):
     """Log the user out and invalidate the auth token."""
-
-    # get auth token
-    auth_header = request.headers.get('Authorization', '')
     response = {
-        'status': 'fail',
-        'message': 'Provide a valid JWT auth token.'
+        'status': 'success',
+        'message': 'Successfully logged out.'
     }
 
-    if auth_header:
-        # auth_header = 'Bearer token'
-        auth_token = auth_header.split(' ')[1]
-
-        # Decode either returns bson.ObjectId if successful or a string from an exception
-        resp = User.decode_auth_token(auth_token=auth_token)
-
-        if isinstance(resp, ObjectId):
-            response['status'] = 'success'
-            response['message'] = 'Successfully logged out.'
-            return jsonify(response), 200
-        else:
-            response['message'] = resp
-            return jsonify(response), 401
-
-    return jsonify(response), 403
+    return jsonify(response), 200
 
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
-def get_user_status():
+@authenticate
+def get_user_status(resp):
     """Get the current session status of the user."""
-    # get auth token
-    auth_header = request.headers.get('Authorization')
+    user = User.objects.get(id=resp)
     response = {
-        'status': 'fail',
-        'message': 'Provide a valid JWT auth token.'
+        'status': 'success',
+        'message': 'User status good.',
+        'data': user.to_dict()
     }
-
-    if auth_header:
-        auth_token = auth_header.split(' ')[1]
-        resp = User.decode_auth_token(auth_token)
-
-        if isinstance(resp, ObjectId):
-            user = User.objects.get(id=resp)
-            response['status'] = 'success'
-            response['message'] = 'User status good.'
-            response['data'] = user.to_dict()
-            return jsonify(response), 200
-
-        response['message'] = resp
-        return jsonify(response), 401
-    else:
-        return jsonify(response), 401
+    return jsonify(response), 200

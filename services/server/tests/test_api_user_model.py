@@ -25,15 +25,36 @@ import unittest
 import json
 
 from bson.son import SON
+from mongoengine import Document, StringField, EmailField, BooleanField, DateTimeField
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from tests.test_api_base import BaseTestCase
-from api.models import User, PasswordValidationError
+from api import models
+from api.models import User, PasswordValidationError, USERS
 
 
 class TestUserModel(BaseTestCase):
-    def test_add_User(self):
-        user = User(username='codeninja55', email='andrew@neuraldev.io')
+    def test_user_model_schema(self):
+        self.assertIsInstance(User.__base__, Document.__class__)
+        self.assertIsInstance(User.email, EmailField)
+        self.assertIsInstance(User.username, StringField)
+        self.assertIsInstance(User.active, BooleanField)
+
+    def test_user_type_choices(self):
+        admin_choice = USERS[0]
+        normal_choice = USERS[1]
+        self.assertEqual(admin_choice[0], '1')
+        self.assertEqual(admin_choice[1], 'ADMIN')
+        self.assertEqual(normal_choice[0], '2')
+        self.assertEqual(normal_choice[1], 'USER')
+
+    def test_password_validation_error(self):
+        err = PasswordValidationError()
+        self.assertTrue(PasswordValidationError.__base__ is Exception)
+        self.assertIn('A password must be set before saving.', str(err))
+
+    def test_add_user(self):
+        user = models.User(username='codeninja55', email='andrew@neuraldev.io')
         user.set_password('IAmIronMan')
         user.save()
         self.assertTrue(user.id)
@@ -68,7 +89,9 @@ class TestUserModel(BaseTestCase):
         user = User(username='codeninja55', email='andrew@neuraldev.io')
         user.set_password('IAmIronMan')
         user.save()
-        self.assertTrue(user.to_dict(), dict)
+        user_dict = user.to_dict()
+        self.assertTrue(user_dict['_id'], user.id)
+        self.assertTrue(user_dict, dict)
 
     def test_to_json(self):
         user = User(username='codeninja55', email='andrew@neuraldev.io')

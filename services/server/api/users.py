@@ -22,18 +22,27 @@ This file defines all the API resource routes and controller definitions using t
 import json
 from bson import ObjectId
 
-from flask import Blueprint, request, jsonify
-from flask_restful import Resource, Api
+from flask import Blueprint, request
+from flask_restful import Resource, Api, reqparse
 from mongoengine import ValidationError, NotUniqueError
 
 from api import JSONEncoder
 from logger.arc_logger import AppLogger
 from api.models import User
+from api.auth_decorators import authenticate_restful, authenticate_admin
 
 users_blueprint = Blueprint('users', __name__)
 api = Api(users_blueprint)
 
 logger = AppLogger(__name__)
+
+
+# A built-in request parse from Flask RESTful
+parser = reqparse.RequestParser()
+
+parser.add_argument('email', help='This field cannot be blank.', required=True)
+parser.add_argument('username', help='This field cannot be blank.', required=False)
+parser.add_argument('password', help='This field cannot be blank.', required=True)
 
 
 # ========== # RESOURCE DEFINITIONS # ========== #
@@ -47,8 +56,13 @@ class PingTest(Resource):
 
 class UsersList(Resource):
     """Route for Users for Create and Retrieve List."""
-    def get(self):
-        """Get all users."""
+
+    method_decorators = {
+        'get': [authenticate_admin]
+    }
+
+    def get(self, resp):
+        """Get all users only available to admins."""
         queryset = User.objects()
         response = {
             'status': 'success',
@@ -58,59 +72,53 @@ class UsersList(Resource):
         }
         return response, 200
 
-    def post(self):
-        """Register a new user."""
-        post_data = request.get_json()
 
-        # Validating empty payload
-        response = {
-            'status': 'fail',
-            'message': 'Invalid payload.'
-        }
-        if not post_data:
-            return response, 400
+# TODO
+# class AdminCreate(Resource):
+#     """Route for Users for Create Admin."""
 
-        # Extract the request body data
-        email = post_data.get('email', '')
-        username = post_data.get('username', '')
-        password = post_data.get('password', '')
+    # method_decorators = {
+    #     'post': [authenticate_admin]
+    # }
 
-        if not email:
-            return response, 400
-
-        if not password:
-            response['message'] = 'A user account must have a password.'
-            return response, 400
-
-        # Validation checks
-        try:
-            # Create a Mongo User object and save it
-            if not User.objects(email=email):
-                new_user = User(
-                    email=email,
-                    username=username,
-                )
-                new_user.set_password(raw_password=password)  # ensure we set an encrypted password.
-                new_user.save()  # should use cascade save
-                response['status'] = 'success'
-                response['message'] = '{email} was added'.format(email=email)
-                return response, 201
-            else:
-                response['message'] = 'Error, email exists.'
-                return response, 400
-        except ValidationError as e:
-            logger.error('Validation Error: {}'.format(e))
-        except NotUniqueError as e:
-            logger.error('Not Unique Error: {}'.format(e))
-
-        # We should not reach this point
-        response['status'] = 'fail'
-        response['message'] = 'Sorry, someone forgot to validate some bug.'
-        return response, 400
+    # def post(self):
+    #     """Make a user an administrator"""
+    #     post_data = request.get_json()
+    #
+    #     # Validating empty payload
+    #     response = {
+    #         'status': 'fail',
+    #         'message': 'User does not exist.'
+    #     }
+    #     if not post_data:
+    #         return response, 400
+    #
+    #     # Extract the request body data
+    #     email = post_data.get('email', '')
+    #
+    #     if not email:
+    #         response['message'] = 'Invalid email provided.'
+    #         return response, 400
+    #
+    #     # Validation checks
+    #     if not User.objects(email=email):
+    #         return response, 201
+    #
+    #     user = User.objects.get(email=email)
+    #     user.is_admin = True
+    #     # TODO: must validate/verify with email
+    #     response['message'] = '{} was made an administrator'.format(user.email)
+    #     return response, 200
 
 
 class Users(Resource):
     """Resource for User Retrieve."""
+
+    method_decorators = {
+        'get': [authenticate_restful],
+        'update': [authenticate_restful]
+    }
+
     def get(self, user_id):
         """Get a single user detail with query as user_id."""
         response = {
@@ -118,30 +126,28 @@ class Users(Resource):
             'message': 'User does not exist.'
         }
 
-        # Validation check fo ObjectId
-        if not ObjectId.is_valid(user_id):
-            response['message'] = 'Invalid bson.ObjectId type.'
-            return response, 404
+        # Validation check fo ObjectId done in authenticate_restful decorator
+        # if not ObjectId.is_valid(user_id):
+        #     response['message'] = 'Invalid bson.ObjectId type.'
+        #     return response, 404
 
-        # Validation check for User exists
-        if not User.objects(id=user_id):
-            return response, 404
-        else:
-            user = User.objects.get(id=user_id)
-            response = {
-                'status': 'success',
-                'data': {
-                    'id': JSONEncoder().encode(user.id),  # To serialize bson.ObjectId properly
-                    'email': user.email,
-                    'username': user.username,
-                    'active': user.active,
-                }
+        # Validation check for User exists done in authenticate_restful decorator
+        user = User.objects.get(id=user_id)
+        response = {
+            'status': 'success',
+            'data': {
+                'id': JSONEncoder().encode(user.id),  # To serialize bson.ObjectId properly
+                'email': user.email,
+                'username': user.username,
+                'active': user.active,
             }
+        }
 
         return response, 200
 
 
 # ========== # RESOURCE ROUTES # ========== #
-api.add_resource(PingTest, '/users/ping')
+api.add_resource(PingTest, '/ping')
 api.add_resource(UsersList, '/users')
+# api.add_resource(AdminCreate, '/users/register_admin')
 api.add_resource(Users, '/users/<user_id>')

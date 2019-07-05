@@ -6,9 +6,9 @@
 # Attributions: 
 # [1] https://python-3-patterns-idioms-test.readthedocs.io/en/latest/Singleton.html
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
+__author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['']
-__license__ = '{license}'
+__license__ = 'TBA'
 __version__ = '1.0.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
@@ -21,7 +21,7 @@ This module defines a singleton instance of a PyMongo MongoClient using the Mong
 from pymongo import MongoClient
 
 
-class MongoSingleton(object):
+class MongoSingleton:
     instance = None
 
     class __Mongo:
@@ -29,7 +29,7 @@ class MongoSingleton(object):
             self.client = obj
 
         def __str__(self):
-            return '__Mongo'
+            return '__Mongo.MongoClient'
 
     def __init__(self, obj: MongoClient):
         if not MongoSingleton.instance:

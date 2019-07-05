@@ -6,7 +6,7 @@
 # Attributions: 
 # [1] 
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
+__author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
 __version__ = '0.2.0'
@@ -30,9 +30,8 @@ from flask import current_app
 from logger.arc_logger import AppLogger
 from api import bcrypt, JSONEncoder
 
+
 logger = AppLogger(__name__)
-
-
 # User type choices
 USERS = (('1', 'ADMIN'), ('2', 'USER'))
 
@@ -53,7 +52,8 @@ class User(Document):
     username = StringField(required=True, unique=True)
     # user_type = StringField(required=True, max_length=1, choices=USERS)
     active = BooleanField(default=True)
-    is_admin = BooleanField(default=False)
+    is_admin = BooleanField(default=False, name='admin')
+    verified = BooleanField(default=False)
     created = DateTimeField(default=datetime.datetime.utcnow())
     last_updated = DateTimeField(default=None)
     last_login = DateTimeField(default=None)
@@ -61,9 +61,8 @@ class User(Document):
     meta = {
         'collection': 'users',
         'indexes': [
+            'email',
             'last_login',
-            # {'fields': ['created'], 'expireAfterSeconds': 3600},  # Time To Live index - expires from collection
-            'email'
         ]
     }
 
@@ -80,6 +79,7 @@ class User(Document):
             '_id': self.id,
             'email': self.email,
             'username': self.username,
+            'admin': self.is_admin,
             'created': self.created,
             'active': self.active,
             'last_updated': self.last_updated,
@@ -87,7 +87,7 @@ class User(Document):
         }
 
     @staticmethod
-    def encode_auth_token(user_id: ObjectId) -> bytes:
+    def encode_auth_token(user_id: ObjectId) -> Union[bytes, None]:
         """Generates JWT auth token that is returned as bytes."""
         try:
             payload = {
@@ -95,8 +95,8 @@ class User(Document):
                     days=current_app.config.get('TOKEN_EXPIRATION_DAYS', 0),
                     seconds=current_app.config.get('TOKEN_EXPIRATION_SECONDS', 0)
                 ),
-                'issued': datetime.datetime.utcnow(),
-                'subject': user_id
+                'iat': datetime.datetime.utcnow(),
+                'sub': user_id
             }
 
             return jwt.encode(
@@ -107,6 +107,7 @@ class User(Document):
             )
         except Exception as e:
             logger.error('Encode auth token error: {}'.format(e))
+            return None
 
     @staticmethod
     def decode_auth_token(auth_token: bytes) -> Union[ObjectId, str]:
@@ -123,7 +124,7 @@ class User(Document):
                 jwt=auth_token,
                 key=current_app.config.get('SECRET_KEY', None)
             )
-            return ObjectId(payload['subject'])
+            return ObjectId(payload['sub'])
         except jwt.ExpiredSignatureError as e:
             # logger.error('Signature expired error.')
             return 'Signature expired. Please login again.'
@@ -142,5 +143,5 @@ class User(Document):
         if self.last_updated is None:
             self.last_updated = self.created
 
-    def __str__(self):
-        pass
+    # def __str__(self):
+    #     pass

@@ -36,8 +36,15 @@ from api.models import User
 
 COV = coverage.coverage(
     branch=True,
-    include='api/*',
+    include=[
+        'api/models.py',
+        'api/users.py',
+        'api/auth.py',
+        'api/auth_decorators.py',
+        'api/mongodb.py',
+    ],
     omit=[
+        'api/__init__.py'
         'config.py',
         'tests/*',
         'simulation/*',
@@ -109,12 +116,12 @@ def seed_user_db():
 def cov():
     """Runs the unit tests with coverage."""
     tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
-    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    result = unittest.TextTestRunner(verbosity=3).run(tests)
     if result.wasSuccessful():
         COV.stop()
         COV.save()
         print('Coverage Summary:')
-        COV.report()
+        COV.report(show_missing=True)
         COV.html_report()
         COV.erase()
         return 0

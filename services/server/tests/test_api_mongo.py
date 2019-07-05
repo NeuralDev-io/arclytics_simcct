@@ -37,12 +37,15 @@ class TestMongoSingleton(BaseTestCase):
         self.mongo_client = None
 
     def test_mongo_singleton(self):
-        inst = MongoSingleton(None)
-        self.assertIsInstance(inst, MongoSingleton)
-        type = getattr(inst, 'instance')
-        self.assertEqual(inst.instance, type)
+        parent = MongoSingleton(None)
         flask_mongo_client = get_flask_mongo()
         inst_client = MongoSingleton(flask_mongo_client)
+        child = getattr(parent, 'instance')
+        attr = MongoSingleton.__getattr__(parent, 'client')
+        self.assertIsInstance(parent, MongoSingleton)
+        self.assertEqual(attr.__class__, pymongo.MongoClient)
+        self.assertEqual(str(child), '__Mongo.MongoClient')
+        self.assertEqual(parent.instance, child)
         self.assertIsInstance(inst_client.instance.client, pymongo.MongoClient)
 
     def test_api_module_methods(self):

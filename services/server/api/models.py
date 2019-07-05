@@ -7,40 +7,49 @@
 # [1] 
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
-__copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
 __license__ = 'TBA'
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.03'
 """models.py: 
 
-{Description}
+This module stores the mongoengine.Document models for the Arclytics API microservice.
 """
 
 import datetime
-import json
 
 from mongoengine import Document, StringField, EmailField, BooleanField, DateTimeField
+from mongoengine.errors import ValidationError
+
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
 
 
 # User type choices
 USERS = (('1', 'ADMIN'), ('2', 'USER'))
 
 
+# ========== # CUSTOM EXCEPTIONS # ========== #
+class PasswordValidationError(Exception):
+    """Raises an Exception if now password was set before trying to save the User model."""
+    def __init__(self):
+        super(PasswordValidationError, self).__init__('A password must be set before saving.')
+
+
 # ========== # MODELS SCHEMA # ========== #
 class User(Document):
-    # _user_id = ObjectIdField(name='_user_id', primary_key=True)
     email = EmailField(required=True, unique=True)
-    # password = StringField()
+    password = StringField(default=None, max_length=255, null=False, min_length=6)
     # first_name = StringField(required=True)
     # last_name = StringField(required=True)
     username = StringField(required=True)
     # user_type = StringField(required=True, max_length=1, choices=USERS)
     active = BooleanField(default=True)
-    # is_admin = BooleanField(default=False)
+    is_admin = BooleanField(default=False)
     created = DateTimeField(default=datetime.datetime.utcnow())
     last_updated = DateTimeField(default=None)
     last_login = DateTimeField(default=None)
@@ -54,7 +63,12 @@ class User(Document):
         ]
     }
 
-    def to_dict(self, *args, **kwargs):
+    def set_password(self, raw_password: str) -> None:
+        """Helper utility method to save an encrypted password using the Bcrypt Flask extension."""
+        self.password = raw_password
+
+    def to_dict(self, *args, **kwargs) -> dict:
+        """Simple Document.User helper method to get a Python dict back."""
         return {
             '_id': self.id,
             'email': self.email,
@@ -68,5 +82,10 @@ class User(Document):
     # MongoEngine allows you to create custom cleaning rules for your documents when calling save().
     # By providing a custom clean() method you can do any pre validation / data cleaning.
     # This might be useful if you want to ensure a default value based on other document values.
-    # def clean(self):
-    #     pass
+    def clean(self):
+        """Ensures a `password` has been stored before saving."""
+        if self.password is None:
+            raise PasswordValidationError()
+
+        if self.last_updated is None:
+            self.last_updated = self.created

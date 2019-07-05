@@ -73,8 +73,13 @@ class UsersList(Resource):
         # Extract the request body data
         email = post_data.get('email', '')
         username = post_data.get('username', '')
+        password = post_data.get('password', '')
 
         if not email:
+            return response, 400
+
+        if not password:
+            response['message'] = 'A user account must have a password.'
             return response, 400
 
         # Validation checks
@@ -85,6 +90,7 @@ class UsersList(Resource):
                     email=email,
                     username=username,
                 )
+                new_user.set_password(raw_password=password)  # ensure we set an encrypted password.
                 new_user.save()  # should use cascade save
                 response['status'] = 'success'
                 response['message'] = '{email} was added'.format(email=email)

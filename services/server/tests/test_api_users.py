@@ -47,7 +47,8 @@ class TestUserService(BaseTestCase):
                 '/users',
                 data=json.dumps({
                     'username': 'codeninja55',
-                    'email': 'andrew@neuraldev.io'
+                    'email': 'andrew@neuraldev.io',
+                    'password': 'IAmIronMan'
                 }),
                 content_type='application/json'
             )
@@ -74,7 +75,7 @@ class TestUserService(BaseTestCase):
         with self.client:
             response = self.client.post(
                 '/users',
-                data=json.dumps({'username': 'codeninja55'}),
+                data=json.dumps({'username': 'codeninja55', 'password': 'IAmIronMan'}),
                 content_type='application/json',
             )
             data = json.loads(response.data.decode())
@@ -89,10 +90,28 @@ class TestUserService(BaseTestCase):
                 '/users',
                 data=json.dumps({
                     'username': 'codeninja55',
-                    'email': 'andrew@neuraldev.io'
+                    'email': 'andrew@neuraldev.io',
+                    'password': 'IAmIronMan'
                 }),
                 content_type='application/json',
             )
+            response = self.client.post(
+                '/users',
+                data=json.dumps({
+                    'username': 'codeninja55',
+                    'email': 'andrew@neuraldev.io',
+                    'password': 'IAmActuallyElonMusk'
+                }),
+                content_type='application/json',
+            )
+            data = json.loads(response.data.decode())
+            self.assertEqual(response.status_code, 400)
+            self.assertIn('Error, email exists.', data['message'])
+            self.assertIn('fail', data['status'])
+
+    def test_add_user_no_password(self):
+        """Ensure error is throw if the user does not have a password."""
+        with self.client:
             response = self.client.post(
                 '/users',
                 data=json.dumps({
@@ -103,12 +122,14 @@ class TestUserService(BaseTestCase):
             )
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 400)
-            self.assertIn('Error, email exists.', data['message'])
+            self.assertIn('A user account must have a password.', data['message'])
             self.assertIn('fail', data['status'])
 
     def test_single_user(self):
         """Ensure we can get a single user works as expected."""
-        user = User.objects.create(username='codeninja55', email='andrew@neuraldev.io')
+        user = User(username='codeninja55', email='andrew@neuraldev.io')
+        user.set_password('IAmIronMan')
+        user.save()
 
         with self.client:
             resp = self.client.get('/users/{user_id}'.format(user_id=user.id))
@@ -140,8 +161,12 @@ class TestUserService(BaseTestCase):
 
     def test_get_all_users(self):
         """Ensure we can get all users."""
-        User.objects.create(username='iron_man', email='tony@starkindustries.com')
-        User.objects.create(username='black_widow', email='nat@shield.gov.us')
+        tony = User(username='iron_man', email='tony@starkindustries.com')
+        tony.set_password('IAmTheRealIronMan')
+        tony.save()
+        nat = User(username='black_widow', email='nat@shield.gov.us')
+        nat.set_password('IveGotRedInMyLedger')
+        nat.save()
 
         with self.client:
             resp = self.client.get('/users')

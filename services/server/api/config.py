@@ -20,11 +20,16 @@ __date__ = '2019.06.04'
 Just some configuration settings.
 """
 
+import os
+
 
 class BaseConfig:
     """Base configuration"""
     TESTING = False
     BCRYPT_LOG_ROUNDS = 13
+    SECRET_KEY = os.environ.get('SECRET_KEY', '')
+    TOKEN_EXPIRATION_DAYS = 30
+    TOKEN_EXPIRATION_SECONDS = 0
 
 
 class DevelopmentConfig(BaseConfig):
@@ -38,6 +43,8 @@ class TestingConfig(BaseConfig):
     TESTING = True
     MONGO_DBNAME = 'arc_test'
     BCRYPT_LOG_ROUNDS = 4
+    TOKEN_EXPIRATION_DAYS = 0
+    TOKEN_EXPIRATION_SECONDS = 10
 
 
 class ProductionConfig(BaseConfig):

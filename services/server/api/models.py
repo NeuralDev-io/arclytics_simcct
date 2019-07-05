@@ -20,12 +20,15 @@ This module stores the mongoengine.Document models for the Arclytics API microse
 """
 
 import datetime
+import jwt
+from typing import Union
 
+from bson import ObjectId
 from mongoengine import Document, StringField, EmailField, BooleanField, DateTimeField
 from flask import current_app
 
 from logger.arc_logger import AppLogger
-from api import bcrypt
+from api import bcrypt, JSONEncoder
 
 logger = AppLogger(__name__)
 
@@ -82,6 +85,52 @@ class User(Document):
             'last_updated': self.last_updated,
             'last_login': self.last_login,
         }
+
+    @staticmethod
+    def encode_auth_token(user_id: ObjectId) -> bytes:
+        """Generates JWT auth token that is returned as bytes."""
+        try:
+            payload = {
+                'expiration': datetime.datetime.utcnow() + datetime.timedelta(
+                    days=current_app.config.get('TOKEN_EXPIRATION_DAYS', 0),
+                    seconds=current_app.config.get('TOKEN_EXPIRATION_SECONDS', 0)
+                ),
+                'issued': JSONEncoder().encode(datetime.datetime.utcnow()),
+                'subject': user_id
+            }
+
+            return jwt.encode(
+                payload=payload,
+                key=current_app.config.get('SECRET_KEY', None),
+                algorithm='HS256',
+                headers=None,
+                json_encoder=JSONEncoder
+            )
+        except Exception as e:
+            logger.error('Encode auth token error: {}'.format(e))
+
+    @staticmethod
+    def decode_auth_token(auth_token: bytes) -> Union[str, int]:
+        """Decodes the JWT auth token.
+
+        Args:
+            auth_token: a bytes type that was encoded by
+
+        Returns:
+            An integer or string.
+        """
+        try:
+            payload = jwt.decode(
+                jwt=auth_token,
+                key=current_app.config.get('SECRET_KEY', None)
+            )
+            return payload['subject']
+        except jwt.ExpiredSignatureError as e:
+            logger.error('Signature expired error.')
+            return 'Signature expired. Please login again.'
+        except jwt.InvalidTokenError as e:
+            logger.error('Invalid token error.')
+            return 'Invalid token. Please log in again.'
 
     # MongoEngine allows you to create custom cleaning rules for your documents when calling save().
     # By providing a custom clean() method you can do any pre validation / data cleaning.

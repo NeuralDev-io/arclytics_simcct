@@ -121,7 +121,6 @@ def create_app(script_info=None) -> Flask:
     # Setup the configuration for Flask
     app_settings = os.getenv('APP_SETTINGS')
     app.config.from_object(app_settings)
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', '')
 
     # Mongo Client interface with MongoEngine as Object Document Mapper (ODM)
     app.config['MONGO_URI'] = os.environ.get('MONGO_URI', '')

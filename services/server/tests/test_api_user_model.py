@@ -87,6 +87,23 @@ class TestUserModel(BaseTestCase):
         user_two.set_password('youknotwhatitwas')
         self.assertNotEqual(user_one.password, user_two.password)
 
+    def test_encode_auth_token(self):
+        """Ensure that a JWT auth token is generated properly."""
+        user = user_one = User(username='codeninja55', email='andrew@neuraldev.io')
+        user.set_password('youknotwhatitis')
+        user.save()
+        auth_token = user.encode_auth_token(user.id)
+        self.assertTrue(isinstance(auth_token, bytes))
+
+    def test_decode_auth_token(self):
+        """Ensure that a JWT auth token is generated properly."""
+        user = user_one = User(username='codeninja55', email='andrew@neuraldev.io')
+        user.set_password('youknotwhatitis')
+        user.save()
+        auth_token = user.encode_auth_token(user.id)
+        self.assertTrue(isinstance(auth_token, bytes))
+        self.assertEqual(User.decode_auth_token(auth_token), str(user.id))
+
 
 if __name__ == '__main__':
     unittest.main()

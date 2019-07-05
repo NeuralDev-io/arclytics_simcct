@@ -24,7 +24,6 @@ __date__ = '2019.07.05'
 import unittest
 
 import pymongo
-from mongoengine import connect
 from mongoengine.connection import get_db, get_connection
 
 from tests.test_api_base import BaseTestCase, app

@@ -21,6 +21,7 @@ __date__ = '2019.07.03'
 """
 
 import datetime
+import json
 
 from mongoengine import Document, StringField, EmailField, BooleanField, DateTimeField
 
@@ -52,6 +53,17 @@ class User(Document):
             'email'
         ]
     }
+
+    def to_dict(self, *args, **kwargs):
+        return {
+            '_id': self.id,
+            'email': self.email,
+            'username': self.username,
+            'created': self.created,
+            'active': self.active,
+            'last_updated': self.last_updated,
+            'last_login': self.last_login,
+        }
 
     # MongoEngine allows you to create custom cleaning rules for your documents when calling save().
     # By providing a custom clean() method you can do any pre validation / data cleaning.

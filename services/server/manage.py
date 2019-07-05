@@ -31,7 +31,7 @@ from flask.cli import FlaskGroup
 from prettytable import PrettyTable
 import coverage
 
-from api import create_app, get_app_db
+from api import create_app, get_flask_mongo
 from api.models import User
 
 COV = coverage.coverage(
@@ -73,7 +73,7 @@ def test():
 def flush():
     """Drop all collections in the database."""
     from mongoengine.connection import get_db
-    conn = get_app_db()
+    conn = get_flask_mongo()
     db = get_db('default')
     conn.instance.client.drop_database(db.name)
 

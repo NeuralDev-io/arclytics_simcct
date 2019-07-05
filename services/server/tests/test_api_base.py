@@ -24,7 +24,7 @@ from pymongo import MongoClient
 from mongoengine.connection import get_db, get_connection
 from flask_testing import TestCase
 
-from api import create_app, set_app_db, init_db
+from api import create_app, set_flask_mongo, init_db
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -35,7 +35,7 @@ class BaseTestCase(TestCase):
     def create_app(self):
         app.config.from_object('api.config.TestingConfig')
         self.db = init_db(app)
-        set_app_db(self.db)
+        set_flask_mongo(self.db)
         return app
 
     def setUp(self) -> None:

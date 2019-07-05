@@ -28,7 +28,7 @@ class BaseConfig:
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
-    MONGO_DBNAME = 'arc'
+    MONGO_DBNAME = 'arc_dev'
 
 
 class TestingConfig(BaseConfig):

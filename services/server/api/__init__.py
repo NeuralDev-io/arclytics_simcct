@@ -52,17 +52,22 @@ class JSONEncoder(json.JSONEncoder):
 
 
 # Instantiate the Mongo object to store a connection
-_db = None
+_mongo_client = None
 
 
-def init_db(app) -> MongoSingleton:
+def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
     """Make a connection to the MongoDB container and returns a singleton wrapper on a pymongo.MongoClient."""
     disconnect_all()
 
+    if app is not None:
+        db_name = app.config['MONGO_DBNAME']
+        host = app.config['MONGO_HOST']
+        port = int(app.config['MONGO_PORT'])
+
     mongo_client = connect(
-        app.config['MONGO_DBNAME'],
-        host=app.config['MONGO_HOST'],
-        port=int(app.config['MONGO_PORT']),
+        db_name,
+        host=host,
+        port=int(port),
         alias='default'
         # username=app.config['MONGO_USER'],  # FIXME: Do not leave this commented for Production Environment
         # password=app.config['MONGO_PASSWORD'],
@@ -84,15 +89,15 @@ def init_db(app) -> MongoSingleton:
     return MongoSingleton(mongo_client)
 
 
-def set_app_db(db: MongoSingleton) -> None:
+def set_flask_mongo(mongo_singleton: MongoSingleton) -> None:
     """Simply sets the module-level global database singleton object."""
-    global _db
-    _db = db
+    global _mongo_client
+    _mongo_client = mongo_singleton
 
 
-def get_app_db() -> any:
+def get_flask_mongo() -> any:
     """Simply get the module-level global database singleton object."""
-    return _db
+    return _mongo_client
 
 
 def create_app(script_info=None) -> Flask:
@@ -122,7 +127,7 @@ def create_app(script_info=None) -> Flask:
 
     # Connect to the Mongo Client
     db = init_db(app)
-    set_app_db(db)
+    set_flask_mongo(db)
 
     # Log the App Configs
     # if app is None:

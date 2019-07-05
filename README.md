@@ -61,7 +61,7 @@ docker-compose >= 1.24.0
 flask >= 
 Flask-RESTful >= 
 MongoDB >= 4.0.10
-nodejs >= 11.11.0
+nodejs >= 10.15.3
 Flask-Testing
 gunicorn
 nginx
@@ -71,13 +71,18 @@ nginx
 
 #### Installing Anaconda
 
-For Windows, Linux or macOS, you can download the installer for Anaconda [here](https://www.anaconda.com/distribution/#download-section).
+- **Windows**/**macOS**: download the installer for Anaconda [here](https://www.anaconda.com/distribution/#download-section).
+- **Linux** (Ubuntu 16.04/18.04): follow [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-anaconda-on-ubuntu-18-04-quickstart) by DigitalOcean to install Anaconda.
 
 Once installed, if you are using Linux/macOS, open the terminal to create a virtual environment. If you are using Windows, you can open the Anaconda Prompt.
 
 ![Windows Anaconda Prompt](./docs/assets/anaconda-prompt-1.png)
 
-To get the database running, install Docker from [here](https://www.docker.com/get-started). From here, select **Download for Windows** or **Download for Mac**. It will ask you to login or create an account before you can download. Once you have create an account, please select **Get Docker Desktop for Windows (stable)**. During installation, **DO NOT** select the option for Windows containers. 
+#### Installing Docker
+
+To get the database running, install Docker from [here](https://www.docker.com/get-started). From here, select **Download for Windows** or **Download for Mac**. It will ask you to login or create an account before you can download. Once you have create an account, please select **Get Docker Desktop for Windows (stable)**. During installation, **DO NOT** select the option for Windows containers.
+
+If you're using **Linux** (Ubuntu/Cent OS), you can also follow [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04)to install Docker from the terminal.
 
 Optionally, you can download and use the Docker GUI by downloading Kitematic from [here](https://docs.docker.com/toolbox/toolbox_install_windows/) for Windows.
 
@@ -98,6 +103,7 @@ channels:
 dependencies:
   - django=2.1.7
   - djangorestframework=3.9.2
+  - nodejs=10.15.3
   - numpy=1.16.2
   - psycopg2=2.7.6.1
   - python=3.7.2
@@ -112,15 +118,15 @@ To install the development environment, the following steps will be required.
 **Linux/macOS**
 
 ```bash
-$ conda create --name arclytics python=3.7 flask -c anaconda
-$ source activate arclytics
+$ conda create --name arclytics python=3.7 flask conda-forge::nodejs=10.15.3 -c anaconda
+$ conda activate arclytics
 ```
 
 **Windows**
 
 ```powershell
-> conda create --name arclytics python=3.7 flask -c anaconda
-> activate arclytics
+> conda create --name arclytics python=3.7 flask conda-forge::nodejs=10.15.3 -c anaconda
+> conda activate arclytics
 ```
 
 
@@ -132,8 +138,20 @@ You could also install from the provided `environment-dev.yml`.
 
 ```
 $ conda env create -f environment-dev.yml
-$ source activate arclytics
+$ conda activate arclytics
 ```
+
+#### Installing necessary packages in Anaconda environment
+
+With conda environment being activated, the following command can be executed in Linux.
+
+```bash
+(arclytics) $ cd /services/server
+(arclytics) $ pip install -r requirements.txt
+(arclytics) $ cd ../client
+(arclytics) $ npm install
+```
+
 
 
 ### Database
@@ -236,7 +254,7 @@ Ensure you are in the main `arclytics_sim` directory.
 ```
 **NOTE:** Using Windows backslashes in this command. 
 
-That should create everything for you without you ever having to connect to the psql shell (unless you screw up and have to go in there to delete it ofcourse). 
+That should create everything for you without you ever having to connect to the psql shell (unless you screw up and have to go in there to delete it of course). 
 
 **3)** If necessary, change the Django settings file to use the running Postgres Docker container instance.
 

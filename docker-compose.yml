@@ -3,9 +3,9 @@ version: '3.7'
 
 services:
 
-  server:
+  users-server:
     build:
-      context: ./services/server
+      context: services/user-server
       dockerfile: Dockerfile
     container_name: 'flask'
     volumes:  # used to mount the code into the container for live updates

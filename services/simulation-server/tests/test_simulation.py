@@ -22,8 +22,8 @@ The test module for the Phase Simulation package.
 
 import unittest
 
-from simulation.ae3_utilities import *
-from simulation.phasesimulation import *
+from ae3_utilities import *
+from phasesimulation import *
 
 
 class BaseConfigurationTest(unittest.TestCase):

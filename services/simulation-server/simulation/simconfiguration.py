@@ -25,14 +25,13 @@ __package__ = 'simulation'
 
 import json
 from pathlib import Path
-from typing import *
 
 import numpy as np
-from prettytable import PrettyTable, MSWORD_FRIENDLY
+from prettytable import PrettyTable
 
-from simulation.utilities import Method, Alloy
+from utilities import Method, Alloy
 from logger.arc_logger import AppLogger
-from simulation.ae3_utilities import ae3_single_carbon, convert_wt_2_mol, ae3_multi_carbon
+from ae3_utilities import ae3_single_carbon, convert_wt_2_mol, ae3_multi_carbon
 from configs.settings import BASE_DIR, APP_CONFIGS
 
 DEFAULT_CONFIGS = Path(BASE_DIR) / 'configs' / 'sim_configs.json'

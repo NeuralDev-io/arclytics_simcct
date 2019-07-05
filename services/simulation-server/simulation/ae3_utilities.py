@@ -26,10 +26,9 @@ Ae3 is calculated using ortho-equilibrium methods.
 """
 
 import math
-from typing import *
 import numpy as np
 from logger.arc_logger import AppLogger
-from simulation.utilities import linear_fit
+from utilities import linear_fit
 
 logger = AppLogger(__name__)
 

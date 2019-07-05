@@ -27,9 +27,9 @@ import enum
 import numpy as np
 
 from logger.arc_logger import AppLogger
-from simulation.utilities import Method, sort_ccr
-from simulation.simconfiguration import SimConfiguration
-from simulation.plots import Plots
+from utilities import Method, sort_ccr
+from simconfiguration import SimConfiguration
+from plots import Plots
 
 logger = AppLogger(__name__)
 

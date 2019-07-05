@@ -24,19 +24,23 @@ Just some configuration settings.
 class BaseConfig:
     """Base configuration"""
     TESTING = False
+    BCRYPT_LOG_ROUNDS = 13
 
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
     MONGO_DBNAME = 'arc_dev'
+    BCRYPT_LOG_ROUNDS = 4
 
 
 class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
     MONGO_DBNAME = 'arc_test'
+    BCRYPT_LOG_ROUNDS = 4
 
 
 class ProductionConfig(BaseConfig):
     """Production configuration"""
     MONGO_DBNAME = 'arclytics'
+    BCRYPT_LOG_ROUNDS = 13

@@ -22,9 +22,10 @@ This module stores the mongoengine.Document models for the Arclytics API microse
 import datetime
 
 from mongoengine import Document, StringField, EmailField, BooleanField, DateTimeField
-from mongoengine.errors import ValidationError
+from flask import current_app
 
 from logger.arc_logger import AppLogger
+from api import bcrypt
 
 logger = AppLogger(__name__)
 
@@ -65,7 +66,10 @@ class User(Document):
 
     def set_password(self, raw_password: str) -> None:
         """Helper utility method to save an encrypted password using the Bcrypt Flask extension."""
-        self.password = raw_password
+        self.password = bcrypt.generate_password_hash(
+            password=raw_password,
+            rounds=current_app.config.get('BCRYPT_LOG_ROUNDS')
+        ).decode()
 
     def to_dict(self, *args, **kwargs) -> dict:
         """Simple Document.User helper method to get a Python dict back."""

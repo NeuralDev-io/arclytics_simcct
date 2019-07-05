@@ -42,6 +42,7 @@ class TestUserModel(BaseTestCase):
         self.assertEqual(user.last_updated, user.created)
         self.assertIsNone(user.last_login)
         self.assertTrue(user.active)
+        self.assertTrue(user.password)
 
     def test_email_validation(self):
         user = User(username='Fake Twtitter', email='russianfakeemail@russia')

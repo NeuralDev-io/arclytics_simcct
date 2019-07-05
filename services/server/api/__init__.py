@@ -28,6 +28,8 @@ from bson import ObjectId
 from flask import Flask
 from mongoengine import connect
 from mongoengine.connection import disconnect_all, get_connection, get_db, MongoEngineConnectionError
+from flask_cors import CORS
+from flask_bcrypt import Bcrypt
 
 from api.mongodb import MongoSingleton
 from configs.settings import DEFAULT_LOGGER
@@ -53,6 +55,9 @@ class JSONEncoder(json.JSONEncoder):
 
 # Instantiate the Mongo object to store a connection
 _mongo_client = None
+# Some other extensions to Flask
+cors = CORS()
+bcrypt = Bcrypt()
 
 
 def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
@@ -128,6 +133,10 @@ def create_app(script_info=None) -> Flask:
     # Connect to the Mongo Client
     db = init_db(app)
     set_flask_mongo(db)
+
+    # Set up Flask extensions
+    cors.init_app(app)
+    bcrypt.init_app(app)
 
     # Log the App Configs
     # if app is None:

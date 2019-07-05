@@ -19,13 +19,13 @@ pipelines:
             - python3 --version
             - pip3 install --quiet --cache-dir ~/.pip3/cache --upgrade pip
             - pip3 -V
-            - pip3 install --quiet --cache-dir ~/.pip3/cache -r ./services/server/requirements.txt
-            - export PYTHONPATH=$PYTHONPATH:./services/server/:./services/server/simulation/
-            - cd ./services/server
+            - pip3 install --quiet --cache-dir ~/.pip3/cache -r ./services/user-server/requirements.txt
+            - export PYTHONPATH=$PYTHONPATH:./services/server/:./services/user-server/simulation/
+            - cd ./services/simulation-server
             - python3 -m unittest tests/test_simulation.py  # Run specific Phase Simulation tests only
+            - cd ../../
             - pip3 install --quiet --cache-dir ~/.pip3/cache docker-compose==1.24.0
             - docker-compose -v
-            - cd ../../
             - docker-compose up -d --build
             - docker-compose exec -T server python manage.py test  # This should start the test runner for the API server
             - docker-compose down

@@ -7,9 +7,9 @@ services:
     build:
       context: services/user-server
       dockerfile: Dockerfile
-    container_name: 'flask'
+    container_name: flask-users-service
     volumes:  # used to mount the code into the container for live updates
-      - ./services/server:/usr/src/app
+      - ./services/user-server:/usr/src/app
     ports:
       - 8000:8000
     expose:
@@ -29,7 +29,7 @@ services:
       context: ./services/db
       dockerfile: Dockerfile
     restart: always
-    container_name: 'mongodb'
+    container_name: mongo-users
     ports:
       - 27017:27017
     expose:
@@ -42,7 +42,7 @@ services:
     build:
       context: ./services/client
       dockerfile: Dockerfile
-    container_name: 'react'
+    container_name: react-client
     volumes:
       - ./services/client:/usr/src/app
       - /usr/src/app/node_modules
@@ -54,4 +54,20 @@ services:
       - NODE_ENV=development
 #      - REACT_APP_USERS_SERVICE_URL=http://localhost
     depends_on:
-      - server
+      - users-server
+
+  swagger:
+    build:
+      context: ./services/swagger
+      dockerfile: Dockerfile
+    container_name: swagger-ui
+    volumes:
+      - ./services/swagger/swagger.json:/usr/share/nginx/html/swagger.json
+    ports:
+      - 3008:8080  # expose ports - HOST:CONTAINER
+    expose:
+      - 3008
+    environment:
+      - URL=swagger.json
+    depends_on:
+      - users-server

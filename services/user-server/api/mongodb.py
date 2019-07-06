@@ -2,8 +2,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # mongodb.py
-# 
-# Attributions: 
+#
+# Attributions:
 # [1] https://python-3-patterns-idioms-test.readthedocs.io/en/latest/Singleton.html
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
@@ -25,6 +25,7 @@ class MongoSingleton:
     instance = None
 
     class __Mongo:
+
         def __init__(self, obj: MongoClient):
             self.client = obj
 

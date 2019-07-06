@@ -2,9 +2,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # test_api_mongo.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
@@ -15,7 +15,6 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = '{dev_status}'
 __date__ = '2019.07.05'
-
 """test_api_mongo.py: 
 
 {Description}
@@ -32,6 +31,7 @@ from api import get_flask_mongo, set_flask_mongo, init_db
 
 
 class TestMongoSingleton(BaseTestCase):
+
     def setUp(self) -> None:
         super(TestMongoSingleton, self).setUp()
         self.mongo_client = None
@@ -50,7 +50,8 @@ class TestMongoSingleton(BaseTestCase):
 
     def test_api_module_methods(self):
         current_client = get_flask_mongo()
-        self.assertIsInstance(current_client.instance.client, pymongo.MongoClient)
+        self.assertIsInstance(current_client.instance.client,
+                              pymongo.MongoClient)
         set_flask_mongo(None)
         wrong_client = get_flask_mongo()
         self.assertIsNone(wrong_client)

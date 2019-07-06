@@ -2,9 +2,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # auth.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
@@ -14,7 +14,6 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.05'
-
 """auth.py: 
 
 {Description}
@@ -43,10 +42,7 @@ def register_user():
     post_data = request.get_json()
 
     # Validating empty payload
-    response = {
-        'status': 'fail',
-        'message': 'Invalid payload.'
-    }
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
     if not post_data:
         return jsonify(response), 400
 
@@ -75,7 +71,8 @@ def register_user():
             email=email,
             username=username,
         )
-        new_user.set_password(raw_password=password)  # ensure we set an encrypted password.
+        new_user.set_password(
+            raw_password=password)  # ensure we set an encrypted password.
     else:
         response['message'] = 'This user already exists.'
         return jsonify(response), 400
@@ -108,10 +105,7 @@ def login():
     post_data = request.get_json()
 
     # Validating empty payload
-    response = {
-        'status': 'fail',
-        'message': 'Invalid payload.'
-    }
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
     if not post_data:
         return jsonify(response), 400
 
@@ -153,10 +147,7 @@ def login():
 @authenticate
 def logout(resp):
     """Log the user out and invalidate the auth token."""
-    response = {
-        'status': 'success',
-        'message': 'Successfully logged out.'
-    }
+    response = {'status': 'success', 'message': 'Successfully logged out.'}
 
     return jsonify(response), 200
 

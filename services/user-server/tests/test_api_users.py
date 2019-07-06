@@ -2,9 +2,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # test_api_users.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
@@ -35,6 +35,7 @@ logger = AppLogger(__name__)
 
 class TestUserService(BaseTestCase):
     """Tests for the User API service."""
+
     def test_ping(self):
         """Ensure the /ping route behaves correctly."""
         res = self.client.get('/ping')
@@ -50,21 +51,20 @@ class TestUserService(BaseTestCase):
         tony.save()
 
         with self.client:
-            resp_login = self.client.post(
-                '/auth/login',
-                data=json.dumps({
-                    'email': 'tony@starkindustries.com',
-                    'password': 'IAmTheRealIronMan'
-                }),
-                content_type='application/json'
-            )
+            resp_login = self.client.post('/auth/login',
+                                          data=json.dumps({
+                                              'email':
+                                              'tony@starkindustries.com',
+                                              'password':
+                                              'IAmTheRealIronMan'
+                                          }),
+                                          content_type='application/json')
             token = json.loads(resp_login.data.decode())['auth_token']
 
             resp = self.client.get(
                 '/users/{user_id}'.format(user_id=tony.id),
                 content_type='application/json',
-                headers={'Authorization': 'Bearer {}'.format(token)}
-            )
+                headers={'Authorization': 'Bearer {}'.format(token)})
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
             self.assertIn('iron_man', data['data']['username'])
@@ -77,14 +77,14 @@ class TestUserService(BaseTestCase):
         tony.save()
 
         with self.client:
-            resp_login = self.client.post(
-                '/auth/login',
-                data=json.dumps({
-                    'email': 'tony@starkindustries.com',
-                    'password': 'IAmTheRealIronMan'
-                }),
-                content_type='application/json'
-            )
+            resp_login = self.client.post('/auth/login',
+                                          data=json.dumps({
+                                              'email':
+                                              'tony@starkindustries.com',
+                                              'password':
+                                              'IAmTheRealIronMan'
+                                          }),
+                                          content_type='application/json')
             token = json.loads(resp_login.data.decode())['auth_token']
 
             # Update Tony to be inactive
@@ -94,8 +94,7 @@ class TestUserService(BaseTestCase):
             resp = self.client.get(
                 '/users/{user_id}'.format(user_id=tony.id),
                 content_type='application/json',
-                headers={'Authorization': 'Bearer {}'.format(token)}
-            )
+                headers={'Authorization': 'Bearer {}'.format(token)})
 
             data = json.loads(resp.data.decode())
             self.assertEqual(data['message'], 'User is not active.')
@@ -127,32 +126,30 @@ class TestUserService(BaseTestCase):
         tony.save()
         current_app.config['TOKEN_EXPIRATION_SECONDS'] = -1
         with self.client:
-            resp_login = self.client.post(
-                '/auth/login',
-                data=json.dumps({
-                    'email': 'tony@starkindustries.com',
-                    'password': 'IAmTheRealIronMan'
-                }),
-                content_type='application/json'
-            )
+            resp_login = self.client.post('/auth/login',
+                                          data=json.dumps({
+                                              'email':
+                                              'tony@starkindustries.com',
+                                              'password':
+                                              'IAmTheRealIronMan'
+                                          }),
+                                          content_type='application/json')
             # invalid token logout
             token = json.loads(resp_login.data.decode())['auth_token']
             response = self.client.get(
                 '/users/{}'.format(tony.id),
-                headers={'Authorization': 'Bearer {token}'.format(token=token)}
-            )
+                headers={'Authorization': 'Bearer {token}'.format(token=token)})
             data = json.loads(response.data.decode())
             self.assertEqual('fail', data['status'])
-            self.assertEqual('Signature expired. Please login again.', data['message'])
+            self.assertEqual('Signature expired. Please login again.',
+                             data['message'])
             self.assertEqual(response.status_code, 401)
 
     def test_get_all_users_no_header(self):
         with self.client:
-            resp = self.client.get(
-                '/users',
-                content_type='application/json',
-                headers={}
-            )
+            resp = self.client.get('/users',
+                                   content_type='application/json',
+                                   headers={})
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 403)
             self.assertIn('fail', data['status'])
@@ -170,21 +167,20 @@ class TestUserService(BaseTestCase):
         nat.save()
 
         with self.client:
-            resp_login = self.client.post(
-                '/auth/login',
-                data=json.dumps({
-                    'email': 'tony@starkindustries.com',
-                    'password': 'IAmTheRealIronMan'
-                }),
-                content_type='application/json'
-            )
+            resp_login = self.client.post('/auth/login',
+                                          data=json.dumps({
+                                              'email':
+                                              'tony@starkindustries.com',
+                                              'password':
+                                              'IAmTheRealIronMan'
+                                          }),
+                                          content_type='application/json')
             token = json.loads(resp_login.data.decode())['auth_token']
 
             resp = self.client.get(
                 '/users',
                 content_type='application/json',
-                headers={'Authorization': 'Bearer {}'.format(token)}
-            )
+                headers={'Authorization': 'Bearer {}'.format(token)})
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 403)
             self.assertIn('fail', data['status'])
@@ -197,24 +193,24 @@ class TestUserService(BaseTestCase):
         thor.is_admin = True
         thor.save()
         with self.client:
-            resp_login = self.client.post(
-                '/auth/login',
-                data=json.dumps({
-                    'email': 'thor@avengers.io',
-                    'password': 'StrongestAvenger'
-                }),
-                content_type='application/json'
-            )
+            resp_login = self.client.post('/auth/login',
+                                          data=json.dumps({
+                                              'email':
+                                              'thor@avengers.io',
+                                              'password':
+                                              'StrongestAvenger'
+                                          }),
+                                          content_type='application/json')
             # token = json.loads(resp_login.data.decode())['auth_token']
             token = 'KJASlkdjlkajsdlkjlkasjdlkjalosd'
             resp = self.client.get(
                 '/users',
-                headers={'Authorization': 'Bearer {token}'.format(token=token)}
-            )
+                headers={'Authorization': 'Bearer {token}'.format(token=token)})
             data = json.loads(resp.data.decode())
             self.assertEqual('fail', data['status'])
             self.assertNotIn('data', data)
-            self.assertEqual('Invalid token. Please log in again.', data['message'])
+            self.assertEqual('Invalid token. Please log in again.',
+                             data['message'])
             self.assertEqual(resp.status_code, 401)
 
     def test_get_all_users(self):
@@ -231,21 +227,20 @@ class TestUserService(BaseTestCase):
         nat.save()
 
         with self.client:
-            resp_login = self.client.post(
-                '/auth/login',
-                data=json.dumps({
-                    'email': 'tony@starkindustries.com',
-                    'password': 'IAmTheRealIronMan'
-                }),
-                content_type='application/json'
-            )
+            resp_login = self.client.post('/auth/login',
+                                          data=json.dumps({
+                                              'email':
+                                              'tony@starkindustries.com',
+                                              'password':
+                                              'IAmTheRealIronMan'
+                                          }),
+                                          content_type='application/json')
             token = json.loads(resp_login.data.decode())['auth_token']
 
             resp = self.client.get(
                 '/users',
                 content_type='application/json',
-                headers={'Authorization': 'Bearer {}'.format(token)}
-            )
+                headers={'Authorization': 'Bearer {}'.format(token)})
             data = json.loads(resp.data.decode())
 
             self.assertEqual(resp.status_code, 200)

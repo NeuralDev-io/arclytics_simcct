@@ -2,9 +2,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # test_api_user_model.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
@@ -15,7 +15,6 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = '{dev_status}'
 __date__ = '2019.07.05'
-
 """test_api_user_model.py: 
 
 {Description}
@@ -34,6 +33,7 @@ from api.models import User, PasswordValidationError, USERS
 
 
 class TestUserModel(BaseTestCase):
+
     def test_user_model_schema(self):
         self.assertIsInstance(User.__base__, Document.__class__)
         self.assertIsInstance(User.email, EmailField)
@@ -80,7 +80,8 @@ class TestUserModel(BaseTestCase):
         user = User(username='codeninja55', email='andrew@neuraldev.io')
         user.set_password('IAmIronMan')
         user.save()
-        duplicate_user = User(username='codeninja55', email='andrew@neuraldev.io')
+        duplicate_user = User(username='codeninja55',
+                              email='andrew@neuraldev.io')
         duplicate_user.set_password('IThinkIAmIronMan')
         with self.assertRaises(NotUniqueError):
             duplicate_user.save()
@@ -112,7 +113,8 @@ class TestUserModel(BaseTestCase):
 
     def test_encode_auth_token(self):
         """Ensure that a JWT auth token is generated properly."""
-        user = user_one = User(username='codeninja55', email='andrew@neuraldev.io')
+        user = user_one = User(username='codeninja55',
+                               email='andrew@neuraldev.io')
         user.set_password('youknotwhatitis')
         user.save()
         auth_token = user.encode_auth_token(user.id)
@@ -120,7 +122,8 @@ class TestUserModel(BaseTestCase):
 
     def test_decode_auth_token(self):
         """Ensure that a JWT auth token is generated properly."""
-        user = user_one = User(username='codeninja55', email='andrew@neuraldev.io')
+        user = user_one = User(username='codeninja55',
+                               email='andrew@neuraldev.io')
         user.set_password('youknotwhatitis')
         user.save()
         auth_token = user.encode_auth_token(user.id)

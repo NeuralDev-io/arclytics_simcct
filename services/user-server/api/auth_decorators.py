@@ -2,9 +2,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # auth_decorators.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['']
@@ -14,12 +14,10 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.06'
-
 """auth_decorators.py: 
 
 {Description}
 """
-
 
 from functools import wraps
 
@@ -30,6 +28,7 @@ from api.models import User
 
 
 def authenticate(f):
+
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {
@@ -58,10 +57,12 @@ def authenticate(f):
             return jsonify(response), 401
 
         return f(resp, *args, **kwargs)
+
     return decorated_func
 
 
 def authenticate_restful(f):
+
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {
@@ -94,6 +95,7 @@ def authenticate_restful(f):
 
 
 def authenticate_admin(f):
+
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {

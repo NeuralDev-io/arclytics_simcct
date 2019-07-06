@@ -2,9 +2,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # models.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
@@ -30,7 +30,6 @@ from flask import current_app
 from logger.arc_logger import AppLogger
 from api import bcrypt, JSONEncoder
 
-
 logger = AppLogger(__name__)
 # User type choices
 USERS = (('1', 'ADMIN'), ('2', 'USER'))
@@ -39,14 +38,19 @@ USERS = (('1', 'ADMIN'), ('2', 'USER'))
 # ========== # CUSTOM EXCEPTIONS # ========== #
 class PasswordValidationError(Exception):
     """Raises an Exception if now password was set before trying to save the User model."""
+
     def __init__(self):
-        super(PasswordValidationError, self).__init__('A password must be set before saving.')
+        super(PasswordValidationError,
+              self).__init__('A password must be set before saving.')
 
 
 # ========== # MODELS SCHEMA # ========== #
 class User(Document):
     email = EmailField(required=True, unique=True)
-    password = StringField(default=None, max_length=255, null=False, min_length=6)
+    password = StringField(default=None,
+                           max_length=255,
+                           null=False,
+                           min_length=6)
     # first_name = StringField(required=True)
     # last_name = StringField(required=True)
     username = StringField(required=True, unique=True)
@@ -70,8 +74,7 @@ class User(Document):
         """Helper utility method to save an encrypted password using the Bcrypt Flask extension."""
         self.password = bcrypt.generate_password_hash(
             password=raw_password,
-            rounds=current_app.config.get('BCRYPT_LOG_ROUNDS')
-        ).decode()
+            rounds=current_app.config.get('BCRYPT_LOG_ROUNDS')).decode()
 
     def to_dict(self, *args, **kwargs) -> dict:
         """Simple Document.User helper method to get a Python dict back."""
@@ -91,20 +94,21 @@ class User(Document):
         """Generates JWT auth token that is returned as bytes."""
         try:
             payload = {
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(
+                'exp':
+                datetime.datetime.utcnow() + datetime.timedelta(
                     days=current_app.config.get('TOKEN_EXPIRATION_DAYS', 0),
-                    seconds=current_app.config.get('TOKEN_EXPIRATION_SECONDS', 0)
-                ),
-                'iat': datetime.datetime.utcnow(),
-                'sub': user_id
+                    seconds=current_app.config.get('TOKEN_EXPIRATION_SECONDS',
+                                                   0)),
+                'iat':
+                datetime.datetime.utcnow(),
+                'sub':
+                user_id
             }
 
-            return jwt.encode(
-                payload=payload,
-                key=current_app.config.get('SECRET_KEY', None),
-                algorithm='HS256',
-                json_encoder=JSONEncoder
-            )
+            return jwt.encode(payload=payload,
+                              key=current_app.config.get('SECRET_KEY', None),
+                              algorithm='HS256',
+                              json_encoder=JSONEncoder)
         except Exception as e:
             logger.error('Encode auth token error: {}'.format(e))
             return None
@@ -120,10 +124,8 @@ class User(Document):
             An integer or string.
         """
         try:
-            payload = jwt.decode(
-                jwt=auth_token,
-                key=current_app.config.get('SECRET_KEY', None)
-            )
+            payload = jwt.decode(jwt=auth_token,
+                                 key=current_app.config.get('SECRET_KEY', None))
             return ObjectId(payload['sub'])
         except jwt.ExpiredSignatureError as e:
             # logger.error('Signature expired error.')

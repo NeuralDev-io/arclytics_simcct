@@ -37,6 +37,7 @@ from configs.settings import DEFAULT_LOGGER
 
 class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""
+
     def default(self, o):
         if isinstance(o, ObjectId):
             return str(o)
@@ -89,7 +90,8 @@ def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
         db_curr = get_db('default')
         # DEFAULT_LOGGER.debug('MongoDB Database in use: {}'.format(db_curr))
     except MongoEngineConnectionError as e:
-        DEFAULT_LOGGER.error('MongoDB Failed to Get Database.\n Error: {}'.format(e))
+        DEFAULT_LOGGER.error(
+            'MongoDB Failed to Get Database.\n Error: {}'.format(e))
 
     return MongoSingleton(mongo_client)
 

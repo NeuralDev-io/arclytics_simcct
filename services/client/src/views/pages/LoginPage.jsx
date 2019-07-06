@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import Button from '../../lib/button'
 
 class LoginPage extends Component {
   componentDidMount = () => {
@@ -9,7 +10,7 @@ class LoginPage extends Component {
   render() {
     return (
       <div>
-        Login page here.
+        <Button onClick={() => {}}>BUTTON</Button>
       </div>
     )
   }

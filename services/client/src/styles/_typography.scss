@@ -9,6 +9,7 @@ $font-secondary: "Quicksand" $font-primary;
 /* set base values */
 $base-text-size: .875em;
 $base-line-height: 1.25em;
+$base-letter-spacing: .025em;
 
 /* type scale */
 $text-sub2: .6875em;
@@ -32,6 +33,17 @@ $line-height-sub1: 1.375em;
 $line-height-sub2: 1em;
 $line-height-btn: $base-line-height;
 
+/* letter spacing */
+$letter-spacing-h1: .025em;
+$letter-spacing-h2: .02em;
+$letter-spacing-h3: -.005em;
+$letter-spacing-h4: 0em;
+$letter-spacing-h5: .015em;
+$letter-spacing-h6: .025em;
+$letter-spacing-sub1: .02em;
+$letter-spacing-sub2: .045em;
+$letter-spacing-btn: .045em;
+
 * {
   margin: 0;
 }
@@ -49,52 +61,69 @@ body {
 h1, .text--h1 {
   font-size: $text-h1;
   line-height: $line-height-h1;
+  font-family: $font-secondary;
+  letter-spacing: $letter-spacing-h1;
 }
 
 h2, .text--h2 {
   font-size: $text-h2;
   line-height: $line-height-h2;
+  font-family: $font-secondary;
+  letter-spacing: $letter-spacing-h2;
 }
 
 h3, .text--h3 {
   font-size: $text-h3;
   line-height: $line-height-h3;
   font-weight: 500;
+  font-family: $font-secondary;
+  letter-spacing: $letter-spacing-h3;
 }
 
 h4, .text--h4 {
   font-size: $text-h4;
   line-height: $line-height-h4;
   font-weight: 500;
+  font-family: $font-secondary;
+  letter-spacing: $letter-spacing-h4;
 }
 
 h5, .text--h5 {
   font-size: $text-h5;
   line-height: $line-height-h5;
   font-weight: 600;
+  font-family: $font-primary;
+  letter-spacing: $letter-spacing-h5;
 }
 
 h6 {
   font-size: $base-text-size;
   line-height: $line-height-h6;
   font-weight: 600;
+  font-family: $font-primary;
+  letter-spacing: $letter-spacing-h6;
 }
 
 p {
   font-size: $base-text-size;
   line-height: $base-line-height;
+  font-family: $base-letter-spacing;
 }
 
 .text--btn {
   font-size: $text-btn;
   line-height: $line-height-btn;
   font-weight: 600;
+  font-family: $font-primary;
+  letter-spacing: $letter-spacing-btn;
 }
 
 .text--sub1 {
   font-size: $text-sub1;
   line-height: $line-height-sub1;
   color: $n500;
+  font-family: $font-primary;
+  letter-spacing: $letter-spacing-sub1;
 }
 
 .text--sub2 {
@@ -102,4 +131,6 @@ p {
   line-height: $line-height-sub2;
   font-weight: 500;
   color: $n500;
+  font-family: $font-primary;
+  letter-spacing: $letter-spacing-sub2;
 }

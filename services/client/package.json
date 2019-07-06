@@ -22,7 +22,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "eslint --ext .js,.jsx .",
+    "lint": "eslint --ext .js,.jsx ./",
     "lint-fix": "eslint --ext .js,.jsx ./ --fix",
     "lint-fix-docker": "eslint --ext .js,.jsx --fix ./; exit 0"
   },

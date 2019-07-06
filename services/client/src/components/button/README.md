@@ -17,7 +17,7 @@ export const App = () => (
     <Button
       appearance="dangerous"
       onClick={() => console.log("danger!")}
-      size="large"
+      length="long"
     >
       Delete entire app
   </div>
@@ -42,11 +42,11 @@ One of <`button` | `submit` | `reset`>
 
 Button type. Default is `button`.
 
-#### `size`: string
+#### `length`: string
 
 One of <`default` | `small` | `large`>
 
-Size of the button. Default is `default`.
+Length of the button. Default is `default`.
 
 #### `isDisabled`: boolean
 

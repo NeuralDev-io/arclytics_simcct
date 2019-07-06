@@ -5,7 +5,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
- * Select button component.
+ * Select button component. A wrapper around react-select component.
+ * https://github.com/JedWatson/react-select
  *
  * @version 1.0.0
  * @author Dalton Le

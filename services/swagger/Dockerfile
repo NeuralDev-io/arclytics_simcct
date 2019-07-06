@@ -16,7 +16,7 @@ ENV BASE_URL ""
 COPY ./docker/nginx.conf ./docker/cors.conf /etc/nginx/
 
 # copy swagger files to the `/js` folder
-COPY ./dist/* /usr/share/nginx/html/
+COPY public /usr/share/nginx/html/
 COPY ./docker/run.sh /usr/share/nginx/
 COPY ./docker/configurator /usr/share/nginx/configurator
 

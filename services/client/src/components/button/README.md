@@ -2,6 +2,8 @@
 
 **Version:** 1.0.0
 
+Styling support for buttons with icons coming soon...
+
 ## Usage
 
 ```react

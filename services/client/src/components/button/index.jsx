@@ -17,6 +17,7 @@ import { InlineSpinner } from '../spinner'
 
 import styles from './styles.module.scss'
 
+// TODO: Add styling support for buttons with icons
 const Button = (props) => {
   const {
     type = 'button',

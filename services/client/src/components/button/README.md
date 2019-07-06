@@ -20,6 +20,7 @@ export const App = () => (
       length="long"
     >
       Delete entire app
+    </Button>
   </div>
 )
 ```

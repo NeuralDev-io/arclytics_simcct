@@ -1,10 +1,7 @@
 bcrypt==3.1.7
-coverage==4.5.3
-dask==1.2.2
 Flask==1.0.2
 Flask-Bcrypt==0.7.1
 Flask-Cors==3.0.7
-Flask-JWT-Extended==3.18.2
 Flask-RESTful==0.3.7
 Flask-Testing==0.7.1
 gunicorn==19.9.0
@@ -12,7 +9,6 @@ mongoengine==0.18.2
 numpy==1.16.4
 prettytable==0.7.2
 PyJWT==1.7.1
-pylint==2.3.1
 python-dateutil==2.8.0
 python-dotenv==0.10.3
 PyYAML==5.1

@@ -19,8 +19,8 @@ pipelines:
             - python3 --version
             - pip3 install --quiet --cache-dir ~/.pip3/cache --upgrade pip
             - pip3 -V
-            - pip3 install --quiet --cache-dir ~/.pip3/cache -r ./services/user-server/requirements.txt
-            - export PYTHONPATH=$PYTHONPATH:./services/server/:./services/user-server/simulation/
+            - pip3 install --quiet --cache-dir ~/.pip3/cache -r ./services/simulation-server/requirements.txt
+            - export PYTHONPATH=$PYTHONPATH:./services/server/:./services/simulation-server/simulation/
             - cd ./services/simulation-server
             - python3 -m unittest tests/test_simulation.py  # Run specific Phase Simulation tests only
             - cd ../../

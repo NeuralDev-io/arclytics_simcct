@@ -16,7 +16,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import ReactSelect from 'react-select'
 
-import styles from './styles.module.scss'
+import styles from './Select.module.scss'
 import colours from '../../styles/_colors_light.scss'
 
 const Select = (props) => {
@@ -31,7 +31,7 @@ const Select = (props) => {
     value,
     onChange,
   } = props
-  const classname = `${styles.select} ${length === 'default' ? '' : styles[length]} ${isDisabled ? styles.disabled : ''} ${className || ''}`
+  const classname = `${styles.select} ${length === 'default' ? '' : styles[length]} ${className || ''}`
 
   const customStyles = {
     container: provided => ({
@@ -43,7 +43,7 @@ const Select = (props) => {
         return '7.5rem'
       })(),
     }),
-    control: provided => ({
+    control: (provided, state) => ({
       ...provided,
       backgroundColor: colours.n10,
       borderRadius: 6,
@@ -51,6 +51,12 @@ const Select = (props) => {
       borderWidth: 1,
       padding: '0 .25rem 0 .55rem',
       height: '2.5rem',
+      cursor: state.isDisabled ? 'not-allowed' : 'pointer',
+
+      '&:hover': {
+        backgroundColor: colours.n20,
+        borderColor: colours.n20,
+      },
     }),
     valueContainer: () => ({
       padding: 0,
@@ -64,11 +70,15 @@ const Select = (props) => {
         if (state.isDisabled) return colours.n300
         if (state.hasValue) return colours.n900
         return colours.n600
-      })(),
+      })()
     }),
     option: provided => ({
       ...provided,
       padding: '.5rem .75rem',
+    }),
+    placeholder: (provided, state) => ({
+      ...provided,
+      color: state.isDisabled ? colours.n300 : colours.n600,
     }),
   }
 

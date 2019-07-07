@@ -22,23 +22,14 @@ class SignupPage extends Component {
               setSubmitting(true)
            
               const res = await signup(values)
-              console.log(res.status)
               if (res.status === 201) {
-                const promise = new Promise((resolve, reject) => {
-                  login({
-                    email: values.email,
-                    password: values.password
-                  }, resolve, reject)
-                })
-                promise.then(data => {
-                  localStorage.setItem("token", data.token)
-                  localStorage.setItem("userId", data.user.pk)
-                  this.props.getUser(data.user.pk)
-                  this.props.history.push('/')
-                })
+                //TODO: Store user's atuh token
+                setStatus({message: values.message})
+                
               }
               else if (res.status === 400) {
-                setStatus({message: "Email already existed"})
+                // TODO: read the status message then display appropriate message
+                setStatus({message: values.message})
               }
               setSubmitting(false)
             }}
@@ -95,10 +86,7 @@ class SignupPage extends Component {
                     onBlur={handleBlur}
                     value={values.passwordConfirmed}
                     placeholder="Confirm password"
-                   
                   />
-                
-                  <h6>{errors.licence && touched.licence && errors.licence}</h6>
                   <h6>{status && status.message && status.message}</h6>
                 </div>
                 <button name="SIGN UP" type="submit" disabled={isSubmitting}>SIGN UP</button>
@@ -153,7 +141,7 @@ export const signupValidation = values => {
 }
 
 export const login = async (values, resolve, reject) => {
-  fetch('http://localhost:8000/auth/login/', {
+  fetch('http://localhost:8000/auth/login', {
     method: 'POST',
     mode: 'cors',
     headers: {
@@ -171,12 +159,12 @@ export const login = async (values, resolve, reject) => {
 }
 
 export const signup = async (values) => {
-  const { email, username, password} = values
-  const res = await fetch('http://localhost:8000/auth/register/', {
+  const { email, username, password } = values
+  const res = await fetch('http://localhost:8000/auth/register', {
     method: 'POST',
     mode: 'cors',
     headers: {
-      "Content-Type": "application/json"
+      "content-Type": "application/json"
     },
     body: JSON.stringify({
       email,

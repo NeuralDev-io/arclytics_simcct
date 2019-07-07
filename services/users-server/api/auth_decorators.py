@@ -73,7 +73,7 @@ def authenticate_restful(f):
         auth_header = request.headers.get('Authorization', '')
 
         if not auth_header:
-            return response, 403
+            return response, 400
 
         # auth_header = 'Bearer token'
         auth_token = auth_header.split(' ')[1]
@@ -86,8 +86,8 @@ def authenticate_restful(f):
 
         user = User.objects.get(id=resp)
         if not user.active:
-            response['message'] = 'User is not active.'
-            return response, 403
+            response['message'] = 'User must sign in again.'
+            return response, 401
 
         return f(*args, **kwargs)
 

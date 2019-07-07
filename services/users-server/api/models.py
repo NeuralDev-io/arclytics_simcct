@@ -26,10 +26,12 @@ from typing import Union
 import json
 from bson import ObjectId
 from mongoengine import (Document,
+                         EmbeddedDocument,
                          StringField,
                          EmailField,
                          BooleanField,
                          DateTimeField,
+                         EmbeddedDocumentField,
                          EmbeddedDocumentListField)
 from flask import current_app
 
@@ -38,7 +40,7 @@ from api import bcrypt, JSONEncoder
 
 logger = AppLogger(__name__)
 # User type choices
-USERS = ((1, 'ADMIN'), (2, 'USER'))
+USERS = (('1', 'ADMIN'), ('2', 'USER'))
 
 
 # ========== # CUSTOM EXCEPTIONS # ========== #
@@ -57,11 +59,11 @@ class User(Document):
                            max_length=64,
                            null=False,
                            min_length=6)
-    first_name = StringField(required=True)
-    last_name = StringField(required=True)
-    username = StringField(required=True, unique=True)
+    # first_name = StringField(required=True, max_length=255)
+    # last_name = StringField(required=True, max_length=255)
+    username = StringField(required=True, unique=True, min_length=1, max_length=180)
     user_type = StringField(required=True, max_length=1, choices=USERS, default=USERS[1][0])
-    profile = EmbeddedDocumentListField()
+    # profile = EmbeddedDocumentListField()
     # TODO: Make these
     # saved_configurations = EmbeddedDocumentListField(document_type=Configurations)
     # saved_compositions = EmbeddedDocumentListField(document_type=Compositions)

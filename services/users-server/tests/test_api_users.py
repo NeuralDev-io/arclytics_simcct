@@ -97,16 +97,16 @@ class TestUserService(BaseTestCase):
                 headers={'Authorization': 'Bearer {}'.format(token)})
 
             data = json.loads(resp.data.decode())
-            self.assertEqual(data['message'], 'User is not active.')
+            self.assertEqual(data['message'], 'User must sign in again.')
             self.assertEqual('fail', data['status'])
-            self.assertEqual(resp.status_code, 403)
+            self.assertEqual(resp.status_code, 401)
 
     def test_single_user_invalid_id(self):
         """Ensure error is thrown if an id is not provided."""
         with self.client:
             response = self.client.get('/users/blah')
             data = json.loads(response.data.decode())
-            self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.status_code, 400)
             self.assertIn('Provide a valid JWT auth token.', data['message'])
             self.assertIn('fail', data['status'])
 
@@ -116,7 +116,7 @@ class TestUserService(BaseTestCase):
             id = ObjectId()
             response = self.client.get('/users/{}'.format(id))
             data = json.loads(response.data.decode())
-            self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.status_code, 400)
             self.assertIn('Provide a valid JWT auth token.', data['message'])
             self.assertIn('fail', data['status'])
 

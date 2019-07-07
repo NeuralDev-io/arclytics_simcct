@@ -20,7 +20,7 @@ COPY ./dist/* /usr/share/nginx/html/
 COPY ./docker/run.sh /usr/share/nginx/
 COPY ./docker/configurator /usr/share/nginx/configurator
 
-COPY ./swagger.json /usr/share/nginx/html/swagger.json
+COPY ./swagger.yml /usr/share/nginx/html/swagger.yml
 
 RUN chmod +x /usr/share/nginx/run.sh
 

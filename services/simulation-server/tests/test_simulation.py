@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # arclytics_sim
 # test_simulation.py
 #
 # Attributions:
 # [1]
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 __author__ = ['Arvy Salazar <@Xaraox>, Andrew Che <@codeninja55>']
-__copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
 __version__ = '0.1.0'
@@ -20,10 +19,17 @@ __date__ = '2019.06.26'
 The test module for the Phase Simulation package.
 """
 
+import os
+import sys
 import unittest
 
-from ae3_utilities import *
-from phasesimulation import *
+from simulation.ae3_utilities import *
+from simulation.phasesimulation import *
+
+BASE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
+)
+sys.path.append(BASE_DIR)
 
 
 class BaseConfigurationTest(unittest.TestCase):
@@ -136,8 +142,8 @@ class TestAe1nAe3(BaseConfigurationTest):
         # while z > 0.5:
         if self.temp > 0:
             self.g, self.temp = dg_fit(self.g, self.temp)
-        else:
-            logger.error("Negative temperature determined for Ae3.")
+        # else:
+        #     logger.error("Negative temperature determined for Ae3.")
         self.assertAlmostEqual(self.g, 3.980423951788, 8)
         self.assertAlmostEqual(self.temp, 1160.1305069880798, 8)
 
@@ -251,7 +257,8 @@ class TestXfe(BaseConfigurationTest):
         self.results_mat = None
 
     def test_ae3_multi_carbon(self):
-        # Do 2 iterations of the for loop and check the results for results[0:1, 0:5]
+        # Do 2 iterations of the for loop and check the results for results
+        # [0:1, 0:5]
         wt = self.sim_inst.comp_parent.copy()
         self.results_mat = np.zeros((1000, 22), dtype=np.float64)
 
@@ -285,7 +292,8 @@ class TestXfe(BaseConfigurationTest):
         pass
 
     def test_xfe(self):
-        # logger.info("Xfe: {}, Ceut: {}. Cf: {}".format(self.sim_inst.xfe, self.sim_inst.ceut, self.sim_inst.cf))
+        # logger.info("Xfe: {}, Ceut: {}. Cf: {}".format(self.sim_inst.xfe,
+        # self.sim_inst.ceut, self.sim_inst.cf))
         self.assertAlmostEqual(self.sim_inst.xfe, 0.94621026894865523, 10)
 
 
@@ -431,8 +439,9 @@ class TestSimulation(BaseConfigurationTest):
 
     def test_de_integrator(self):
         """
-        This unit test is tests de_integrator which is used by vol_phantom_frac2(). The method uses
-        3 different methods to calculate the Double Exponential Transformation.
+        This unit test is tests de_integrator which is used by
+        vol_phantom_frac2(). The method uses 3 different methods to calculate
+        the Double Exponential Transformation.
         Method 1 is used for Li's algorithm
         Method 2 is used for Kirk83 algorithm
         Method 3 is used for Kirk83 algorithm for the Bianite curves
@@ -513,8 +522,8 @@ class TestCoolingCurveTemperature(BaseConfigurationTest):
     def test_cct(self):
         res = self.simulation.cct()
 
-        logger.info(res['ferrite_nucleation'][0:9, :])
-        logger.info(res['martensite'][0:9, :])
+        # logger.info(res['ferrite_nucleation'][0:9, :])
+        # logger.info(res['martensite'][0:9, :])
 
 
 if __name__ == '__main__':

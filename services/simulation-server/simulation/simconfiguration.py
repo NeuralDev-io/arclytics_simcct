@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # arclytics_sim
 # simconfiguration.py
 #
 # Attributions:
 # [1]
-# ----------------------------------------------------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>', 'Arvy Salazar <@Xaraox>']
-__copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'TBA'
 __version__ = '0.2.0'
@@ -22,26 +20,31 @@ __package__ = 'simulation'
 {Description}
 """
 
+import os
 import json
 from pathlib import Path
 
 import numpy as np
 from prettytable import PrettyTable
 
-from utilities import Method, Alloy
-from logger.arc_logger import AppLogger
-from ae3_utilities import ae3_single_carbon, convert_wt_2_mol, ae3_multi_carbon
-from configs.settings import BASE_DIR, APP_CONFIGS
+from simulation.utilities import Method, Alloy
+# from logger.arc_logger import AppLogger
+from simulation.ae3_utilities import (
+    ae3_single_carbon, convert_wt_2_mol, ae3_multi_carbon
+)
+from simulation.settings import BASE_DIR
 
-DEFAULT_CONFIGS = Path(BASE_DIR) / 'configs' / 'sim_configs.json'
-DEBUG = APP_CONFIGS['general']['debug']
-logger = AppLogger(__name__)
+DEFAULT_CONFIGS = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+# DEBUG = APP_CONFIGS['general']['debug']
+# logger = AppLogger(__name__)
 
 
 class SimConfiguration(object):
-    """The SimConfiguration instance stores all the required arguments needed to simulate the Time-Temperature Transformation
-    or the Cooling Curve Transformation. It also has methods to calculate some of these arguments automatically based
-    on the Li '98 or Kirkaldy '83 equations as aggregated by Dr. Bendeich.
+    """The SimConfiguration instance stores all the required arguments needed
+    to simulate the Time-Temperature Transformation or the Cooling Curve
+    Transformation. It also has methods to calculate some of these arguments
+    automatically based on the Li '98 or Kirkaldy '83 equations as aggregated
+    by Dr. Bendeich.
     """
 
     def __init__(
@@ -50,8 +53,6 @@ class SimConfiguration(object):
         alloy=Alloy.Parent,
         configs=None,
         debug=False,
-        *args,
-        **kwargs
     ):
         self.method = method
         self.alloy = alloy
@@ -183,12 +184,19 @@ class SimConfiguration(object):
             self.comp_mix[i] = (i, e_m['name'], e_m['symbol'], e_m['value'])
 
     def auto_ms_bs(self) -> None:
-        """We simply store the class variables bs_temp and ms_temp by doing the calculations."""
+        """
+        We simply store the class variables bs_temp and ms_temp by doing
+        the calculations.
+        """
         self.bs_temp = self.get_bs()
         self.ms_temp = self.get_ms()
 
     def get_bs(self) -> float:
-        """Do the calculation based on Li98 or Kirkaldy 83 method and return the MS temperature."""
+        """
+        Do the calculation based on Li98 or Kirkaldy 83 method and return
+        the MS temperature.
+        """
+
         # ensure we are getting the value and not the list by using index 0
         c = self.comp_parent[self.comp_parent['name'] == 'carbon']['weight'][0]
         mn = self.comp_parent[self.comp_parent['name'] == 'manganese'
@@ -212,7 +220,10 @@ class SimConfiguration(object):
         return -1
 
     def get_ms(self) -> float:
-        """Do the calculation based on Li98 or Kirkaldy83 method and return the MS temperature."""
+        """
+        Do the calculation based on Li98 or Kirkaldy83 method and return the
+        MS temperature.
+        """
         # ensure we are getting the value and not the list by using index 0
         c = self.comp_parent[self.comp_parent['name'] == 'carbon']['weight'][0]
         mn = self.comp_parent[self.comp_parent['name'] == 'manganese'
@@ -244,7 +255,8 @@ class SimConfiguration(object):
 
     def auto_ae1_ae3(self) -> None:
         """Calculate the austenite values based on composition automatically."""
-        # validate the Austenite values have been generated and it will not crash the application
+        # validate the Austenite values have been generated and it will not
+        # crash the application
         self.ae_check = True
         self.ae1, self.ae3 = self.calc_ae1_ae3()
 
@@ -287,23 +299,26 @@ class SimConfiguration(object):
             (9.8 * mo)
         ) / 3.
 
-        # 3. Equations of Grange (1961): 1/3 due to averaging, convert from F to C
-        # (-32*(5/9))
+        # 3. Equations of Grange (1961): 1/3 due to averaging, convert from F
+        # to C (-32*(5/9))
         ae1 = ae1 + (
             1333.0 - (25.0 * mn) + (40.0 * si) + (42.0 * cr) -
             (26.0 * ni) - 32.0
         ) * 5.0 / (3.0 * 9.0)
 
-        # find the Ae3 temperature at the alloy Carbon content Using Ortho-equilibrium method
+        # find the Ae3 temperature at the alloy Carbon content Using
+        # Ortho-equilibrium method
         ae3 = ae3_single_carbon(self.comp_parent.copy(), c)
         return ae1, ae3 - 273
 
     def xfe_method2(self) -> None:
-        """Second method for estimating Xfe using parra-equilibrium methodology to predict  the Ae3 values with
-        increasing carbon content. To find the intercept with Ae1 (from simplified method) to determine the eutectic
-        carbon content wt%. With this value and a suitable estimate of the ferrite carbon content (~0.02 wt%).
-        With these limits ant the current alloy composition the lever rule can be used to determine the equilibrium
-        phase fraction
+        """Second method for estimating Xfe using parra-equilibrium methodology
+        to predict  the Ae3 values with increasing carbon content. To find
+        the intercept with Ae1 (from simplified method) to determine the
+        eutectic carbon content wt%. With this value and a suitable estimate
+        of the ferrite carbon content (~0.02 wt%). With these limits ant the
+        current alloy composition the lever rule can be used to determine the
+        equilibrium phase fraction
 
         Returns:
 
@@ -319,14 +334,16 @@ class SimConfiguration(object):
         # store results of each iteration of Carbon
 
         results_mat = np.zeros((1000, 22), dtype=np.float64)
-        # reserve the initial carbon wt% as the main routine is passing back another value despite being set "ByVal"
+        # reserve the initial carbon wt% as the main routine is passing back
+        # another value despite being set "ByVal"
         wt_c = wt['weight'][wt['name'] == 'carbon'][0]
 
         # Find Ae3 for array of Carbon contents form 0.00 to 0.96 wt%
         # UPDATE wt, Results to CALL Ae3MultiC(wt, Results)
         ae3_multi_carbon(wt, results_mat)
 
-        # TODO: We may or may not implement the Ae3 plot but we can if we want to. -- WE ARE GOING TO DO PLOT
+        # TODO: We may or may not implement the Ae3 plot but we can if we want
+        #    to. -- WE ARE GOING TO DO PLOT
         # We can view the Ae3 plot with a call to the following
         # CALL Ae3Plot(results_mat, self.ae1, wt_c)
 
@@ -341,7 +358,8 @@ class SimConfiguration(object):
         # TODO: Not sure why we need to set ae3 here.
         ae3 = ae3_single_carbon(wt, wt_c)
 
-        # Now calculate the important bit the Xfe equilibrium phase fraction of Ferrite
+        # Now calculate the important bit the Xfe equilibrium phase fraction
+        # of Ferrite
         tie_length = self.ceut - self.cf
         lever1 = tie_length - wt_c
         self.xfe = lever1 / tie_length

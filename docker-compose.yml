@@ -3,13 +3,14 @@ version: '3.7'
 
 services:
 
-  server:
+  users-server:
     build:
-      context: ./services/server
+      context: services/users-server
       dockerfile: Dockerfile
-    container_name: 'flask'
+    image: arc_sim_users_service:development
+    container_name: arc_sim_users_service
     volumes:  # used to mount the code into the container for live updates
-      - ./services/server:/usr/src/app
+      - ./services/users-server:/usr/src/app
     ports:
       - 8000:8000
     expose:
@@ -17,19 +18,20 @@ services:
     environment:
       - FLASK_ENV=development
       - APP_SETTINGS=api.config.DevelopmentConfig
-      - MONGO_HOST=users-db
+      - MONGO_HOST=mongodb
       - MONGO_PORT=27017
     depends_on:
-      - users-db
+      - mongodb
     links:
-      - users-db
+      - mongodb
 
-  users-db:
+  mongodb:
     build:
       context: ./services/db
       dockerfile: Dockerfile
+    image: arc_sim_mongo:development
     restart: always
-    container_name: 'mongodb'
+    container_name: arc_sim_mongo
     ports:
       - 27017:27017
     expose:
@@ -42,7 +44,8 @@ services:
     build:
       context: ./services/client
       dockerfile: Dockerfile
-    container_name: 'react'
+    image: arc_sim_client:development
+    container_name: arc_sim_client
     volumes:
       - ./services/client:/usr/src/app
       - /usr/src/app/node_modules
@@ -52,6 +55,27 @@ services:
       - 3000
     environment:
       - NODE_ENV=development
-#      - REACT_APP_USERS_SERVICE_URL=http://localhost
     depends_on:
-      - server
+      - users-server
+      - mongodb
+    links:
+      - users-server
+
+  swagger:
+    build:
+      context: ./services/swagger
+      dockerfile: Dockerfile
+    image: arc_sim_swagger:development
+    container_name: arc_sim_swagger
+    volumes:
+      - ./services/swagger/swagger.json:/usr/share/nginx/html/swagger.json
+    ports:
+      - 3008:8080  # expose ports - HOST:CONTAINER
+    expose:
+      - 3008
+    environment:
+      - URL=swagger.yml
+    depends_on:
+      - users-server
+    links:
+      - users-server

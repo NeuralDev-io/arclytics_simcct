@@ -220,4 +220,5 @@ typings/
 .idea/
 
 *.db
-/services/server/htmlcov/
+services/server/htmlcov/
+!services/swagger/dist/

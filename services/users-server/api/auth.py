@@ -16,7 +16,8 @@ __status__ = 'development'
 __date__ = '2019.07.05'
 """auth.py: 
 
-{Description}
+This script describes the Users authentication endpoints for registration,
+login, and logout.
 """
 
 from bson import ObjectId
@@ -72,10 +73,11 @@ def register_user():
         new_user = User(
             email=email,
             username=username,
+            first_name=first_name,
+            last_name=last_name
         )
-        new_user.set_password(
-            raw_password=password
-        )  # ensure we set an encrypted password.
+        # ensure we set an encrypted password.
+        new_user.set_password(raw_password=password)
     else:
         response['message'] = 'This user already exists.'
         return jsonify(response), 400
@@ -102,8 +104,8 @@ def register_user():
 
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
 def login():
-    """Blueprint route for registration of users with a returned JWT if
-    successful.
+    """
+    Blueprint route for registration of users with a returned JWT if successful.
     """
 
     # Get the post data

@@ -135,8 +135,10 @@ def create_app(script_info=None) -> Flask:
     app.config['MONGO_URI'] = os.environ.get('MONGO_URI', '')
     app.config['MONGO_HOST'] = os.environ.get('MONGO_HOST', '')
     app.config['MONGO_PORT'] = os.environ.get('MONGO_PORT', 27017)
-    # app.config['MONGO_USER'] = os.environ.get('MONGODB_USER', '')               # stored in .env
-    # app.config['MONGO_PASSWORD'] = os.environ.get('MONGODB_PASSWORD', None)     # stored in .env
+    # app.config['MONGO_USER'] = os.environ.get('MONGODB_USER', '')
+    # stored in .env
+    # app.config['MONGO_PASSWORD'] = os.environ.get('MONGODB_PASSWORD', None)
+    # stored in .env
 
     # Connect to the Mongo Client
     db = init_db(app)
@@ -156,7 +158,8 @@ def create_app(script_info=None) -> Flask:
     from api.auth import auth_blueprint
     app.register_blueprint(auth_blueprint)
 
-    # Use the modified JSON encoder to handle serializing ObjectId, sets, and datetime objects
+    # Use the modified JSON encoder to handle serializing ObjectId, sets, and
+    # datetime objects
     app.json_encoder = JSONEncoder
 
     # Shell context for Flask CLI

@@ -149,13 +149,7 @@ class User(Document):
     last_updated = DateTimeField(default=None, null=False)
     last_login = DateTimeField(default=None)
     # Define the collection and indexing for this document
-    meta = {
-        'collection': 'users',
-        'indexes': [
-            'email',
-            'last_login',
-        ]
-    }
+    meta = {'collection': 'users'}
 
     def set_password(self, raw_password: str) -> None:
         """Helper utility method to save an encrypted password using the
@@ -251,9 +245,10 @@ class User(Document):
             # logger.error('Invalid token error.')
             return 'Invalid token. Please log in again.'
 
-    # MongoEngine allows you to create custom cleaning rules for your documents when calling save().
-    # By providing a custom clean() method you can do any pre validation / data cleaning.
-    # This might be useful if you want to ensure a default value based on other document values.
+    # MongoEngine allows you to create custom cleaning rules for your documents
+    # when calling save(). By providing a custom clean() method you can do
+    # any pre validation / data cleaning. This might be useful if you want to
+    # ensure a default value based on other document values.
     def clean(self):
         """Ensures a `password` has been stored before saving."""
         if self.password is None:
@@ -264,16 +259,3 @@ class User(Document):
 
     def __str__(self):
         return self.to_json()
-
-
-# ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
-
-
-class UserProfile(EmbeddedDocument):
-    aim = StringField(help_text='', required=False, default=None)
-    occupation = StringField(help_text='', required=False, default=None)
-    highest_education = StringField(help_text='', required=False, default=None)
-    sci_tech_exp = StringField(help_text='', required=False, default=None)
-    phase_transform_exp = StringField(
-        help_text='', required=False, default=None
-    )

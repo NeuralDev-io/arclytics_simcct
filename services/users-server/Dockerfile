@@ -5,9 +5,22 @@ LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
 
 # install dependencies
 RUN apk update && \
-    apk add --virtual build-deps gcc python-dev musl-dev && \
-    apk add --no-cache libffi-dev build-base py2-pip python2-dev && \
-    apk add netcat-openbsd
+    apk add --virtual build-deps gcc && \
+    apk add --no-cache build-base python3-dev && \
+    apk add --no-cache libffi-dev py-pip && \
+    apk add --no-cache netcat-openbsd
+
+# Pillow dependencies
+# RUN apk --no-cache add python-dev  jpeg-dev \
+#                       zlib-dev \
+#                       freetype-dev \
+#                       lcms2-dev \
+#                       openjpeg-dev \
+#                       tiff-dev \
+#                       tk-dev \
+#                       tcl-dev \
+#                       harfbuzz-dev \
+#                       fribidi-dev
 
 # set working directory
 RUN mkdir -p /usr/src/app

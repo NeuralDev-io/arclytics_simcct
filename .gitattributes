@@ -1,0 +1,5 @@
+*.sh text eol=lf
+./services/swagger/docker-run.sh text eol=lf
+./services/users-server/docker-entrypoint.sh text eol=lf
+./services/simulation-server/docker-entrypoint.sh text eol=lf
+./services/db/drop_all.sh text eol=lf

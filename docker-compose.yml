@@ -5,11 +5,11 @@ services:
 
   users-server:
     build:
-      context: services/user-server
+      context: services/users-server
       dockerfile: Dockerfile
     container_name: flask-users-service
     volumes:  # used to mount the code into the container for live updates
-      - ./services/user-server:/usr/src/app
+      - ./services/users-server:/usr/src/app
     ports:
       - 8000:8000
     expose:
@@ -17,19 +17,19 @@ services:
     environment:
       - FLASK_ENV=development
       - APP_SETTINGS=api.config.DevelopmentConfig
-      - MONGO_HOST=users-db
+      - MONGO_HOST=mongodb
       - MONGO_PORT=27017
     depends_on:
-      - users-db
+      - mongodb
     links:
-      - users-db
+      - mongodb
 
-  users-db:
+  mongodb:
     build:
       context: ./services/db
       dockerfile: Dockerfile
     restart: always
-    container_name: mongo-users
+    container_name: mongodb
     ports:
       - 27017:27017
     expose:
@@ -54,6 +54,9 @@ services:
       - NODE_ENV=development
     depends_on:
       - users-server
+      - mongodb
+    links:
+      - users-server
 
   swagger:
     build:
@@ -69,4 +72,6 @@ services:
     environment:
       - URL=swagger.json
     depends_on:
+      - users-server
+    links:
       - users-server

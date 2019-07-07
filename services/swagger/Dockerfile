@@ -4,9 +4,9 @@
 
 FROM nginx:1.15-alpine
 
-RUN apk --no-cache add nodejs
+LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
 
-LABEL maintainer="fehguy"
+RUN apk --no-cache add nodejs
 
 ENV API_KEY "**None**"
 ENV SWAGGER_JSON "/app/swagger.json"
@@ -16,11 +16,11 @@ ENV BASE_URL ""
 COPY ./docker/nginx.conf ./docker/cors.conf /etc/nginx/
 
 # copy swagger files to the `/js` folder
-COPY public /usr/share/nginx/html/
+COPY ./dist/* /usr/share/nginx/html/
 COPY ./docker/run.sh /usr/share/nginx/
 COPY ./docker/configurator /usr/share/nginx/configurator
 
-COPY swagger.json /usr/share/nginx/html/swagger.json
+COPY ./swagger.json /usr/share/nginx/html/swagger.json
 
 RUN chmod +x /usr/share/nginx/run.sh
 

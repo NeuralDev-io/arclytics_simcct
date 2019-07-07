@@ -1,6 +1,6 @@
 import React from 'react'
 
-import styles from './styles.module.scss'
+import styles from './Spinner.module.scss'
 
 export const InlineSpinner = () => (
   <div className={`${styles.inline} animate-inf-rotate-cc`} />

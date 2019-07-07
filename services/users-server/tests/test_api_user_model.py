@@ -79,8 +79,9 @@ class TestUserModel(BaseTestCase):
         user = User(username='codeninja55', email='andrew@neuraldev.io')
         user.set_password('IAmIronMan')
         user.save()
-        duplicate_user = User(username='codeninja55',
-                              email='andrew@neuraldev.io')
+        duplicate_user = User(
+            username='codeninja55', email='andrew@neuraldev.io'
+        )
         duplicate_user.set_password('IThinkIAmIronMan')
         with self.assertRaises(NotUniqueError):
             duplicate_user.save()
@@ -112,8 +113,9 @@ class TestUserModel(BaseTestCase):
 
     def test_encode_auth_token(self):
         """Ensure that a JWT auth token is generated properly."""
-        user = user_one = User(username='codeninja55',
-                               email='andrew@neuraldev.io')
+        user = user_one = User(
+            username='codeninja55', email='andrew@neuraldev.io'
+        )
         user.set_password('youknotwhatitis')
         user.save()
         auth_token = user.encode_auth_token(user.id)
@@ -121,8 +123,9 @@ class TestUserModel(BaseTestCase):
 
     def test_decode_auth_token(self):
         """Ensure that a JWT auth token is generated properly."""
-        user = user_one = User(username='codeninja55',
-                               email='andrew@neuraldev.io')
+        user = user_one = User(
+            username='codeninja55', email='andrew@neuraldev.io'
+        )
         user.set_password('youknotwhatitis')
         user.save()
         auth_token = user.encode_auth_token(user.id)

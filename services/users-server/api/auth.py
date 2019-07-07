@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # arclytics_sim
 # auth.py
 #
 # Attributions:
 # [1]
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
@@ -72,7 +72,8 @@ def register_user():
             username=username,
         )
         new_user.set_password(
-            raw_password=password)  # ensure we set an encrypted password.
+            raw_password=password
+        )  # ensure we set an encrypted password.
     else:
         response['message'] = 'This user already exists.'
         return jsonify(response), 400
@@ -99,7 +100,9 @@ def register_user():
 
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
 def login():
-    """Blueprint route for registration of users with a returned JWT if successful."""
+    """Blueprint route for registration of users with a returned JWT if
+    successful.
+    """
 
     # Get the post data
     post_data = request.get_json()

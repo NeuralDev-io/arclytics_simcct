@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # arclytics_sim
 # users.py
 #
 # Attributions:
 # [1]
-# ------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
@@ -17,7 +17,8 @@ __status__ = 'development'
 __date__ = '2019.07.03'
 """users.py: 
 
-This file defines all the API resource routes and controller definitions using the Flask Resource inheritance model.
+This file defines all the API resource routes and controller definitions using 
+the Flask Resource inheritance model.
 """
 import json
 from bson import ObjectId
@@ -35,20 +36,10 @@ api = Api(users_blueprint)
 
 logger = AppLogger(__name__)
 
-# A built-in request parse from Flask RESTful
-parser = reqparse.RequestParser()
-
-parser.add_argument('email', help='This field cannot be blank.', required=True)
-parser.add_argument('username',
-                    help='This field cannot be blank.',
-                    required=False)
-parser.add_argument('password',
-                    help='This field cannot be blank.',
-                    required=True)
-
 
 # ========== # RESOURCE DEFINITIONS # ========== #
 class PingTest(Resource):
+    """A simple resource for sanity checking that the server is working."""
 
     def get(self):
         return {'status': 'success', 'message': 'pong'}
@@ -62,6 +53,7 @@ class UsersList(Resource):
     def get(self, resp):
         """Get all users only available to admins."""
         queryset = User.objects()
+        # The QuerySet.to_json() method returns a string. We use json.loads() to make it a Python dict.
         response = {
             'status': 'success',
             'data': {
@@ -112,6 +104,27 @@ class UsersList(Resource):
 class Users(Resource):
     """Resource for User Retrieve."""
 
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument(
+            'email',
+            type=str,
+            help='This field cannot be blank.',
+            required=True
+        )
+        self.reqparse.add_argument(
+            'username',
+            type=str,
+            help='This field cannot be blank.',
+            required=False
+        )
+        self.reqparse.add_argument(
+            'password',
+            type=str,
+            help='This field cannot be blank.',
+            required=True
+        )
+
     method_decorators = {
         'get': [authenticate_restful],
         'update': [authenticate_restful]
@@ -126,13 +139,11 @@ class Users(Resource):
         #     response['message'] = 'Invalid bson.ObjectId type.'
         #     return response, 404
 
-        # Validation check for User exists done in authenticate_restful decorator
+        # Validation check for User exists done in authenticate_restful
+        # decorator
         user = User.objects.get(id=user_id)
-        response['status'] = 'success'
-        response['message'] = 'Here you go.'
-        response['data'] = user.to_response()
-
-        return response, 200
+        from flask import make_response
+        return make_response(user.to_json(), 200)
 
 
 # ========== # RESOURCE ROUTES # ========== #

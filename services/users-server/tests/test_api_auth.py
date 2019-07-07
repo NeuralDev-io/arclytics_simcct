@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # arclytics_sim
 # test_api_auth.py
 #
 # Attributions:
 # [1]
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = '{license}'
@@ -31,13 +31,17 @@ from tests.test_api_base import BaseTestCase
 class TestAuthEndpoints(BaseTestCase):
     def test_user_registration(self):
         """Ensure we can register a user."""
-        resp = self.client.post('/auth/register',
-                                data=json.dumps({
-                                    'username': 'black_widow',
-                                    'email': 'natasha@avengers.io',
-                                    'password': 'RedInMyLedger'
-                                }),
-                                content_type='application/json')
+        resp = self.client.post(
+            '/auth/register',
+            data=json.dumps(
+                {
+                    'username': 'black_widow',
+                    'email': 'natasha@avengers.io',
+                    'password': 'RedInMyLedger'
+                }
+            ),
+            content_type='application/json'
+        )
         data = json.loads(resp.data.decode())
         self.assertTrue(data['status'] == 'success')
         self.assertTrue(data['message'] == 'User has been registered.')
@@ -52,11 +56,13 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client:
             response = self.client.post(
                 '/auth/register',
-                data=json.dumps({
-                    'username': 'ansto_joe',
-                    'email': 'test@test.com',
-                    'password': 'test123'
-                }),
+                data=json.dumps(
+                    {
+                        'username': 'ansto_joe',
+                        'email': 'test@test.com',
+                        'password': 'test123'
+                    }
+                ),
                 content_type='application/json',
             )
             data = json.loads(response.data.decode())
@@ -71,11 +77,13 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client:
             response = self.client.post(
                 '/auth/register',
-                data=json.dumps({
-                    'username': 'ansto_joe',
-                    'email': 'test@test2.com',
-                    'password': 'test123'
-                }),
+                data=json.dumps(
+                    {
+                        'username': 'ansto_joe',
+                        'email': 'test@test2.com',
+                        'password': 'test123'
+                    }
+                ),
                 content_type='application/json',
             )
             data = json.loads(response.data.decode())
@@ -85,9 +93,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_user_registration_invalid_json(self):
         with self.client:
-            response = self.client.post('/auth/register',
-                                        data=json.dumps({}),
-                                        content_type='application/json')
+            response = self.client.post(
+                '/auth/register',
+                data=json.dumps({}),
+                content_type='application/json'
+            )
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 400)
             self.assertIn('Invalid payload.', data['message'])
@@ -97,27 +107,32 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client:
             response = self.client.post(
                 '/auth/register',
-                data=json.dumps({
-                    'username': 'ansto_joe',
-                    'password': 'test123'
-                }),
+                data=json.dumps(
+                    {
+                        'username': 'ansto_joe',
+                        'password': 'test123'
+                    }
+                ),
                 content_type='application/json',
             )
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 400)
-            self.assertIn('A user account must have an email.',
-                          data['message'])
+            self.assertIn(
+                'A user account must have an email.', data['message']
+            )
             self.assertIn('fail', data['status'])
 
     def test_user_registration_invalid_json_keys_invalid_email(self):
         with self.client:
             response = self.client.post(
                 '/auth/register',
-                data=json.dumps({
-                    'username': 'ansto_joe',
-                    'email': 'joe@mistakenemail',
-                    'password': 'test123'
-                }),
+                data=json.dumps(
+                    {
+                        'username': 'ansto_joe',
+                        'email': 'joe@mistakenemail',
+                        'password': 'test123'
+                    }
+                ),
                 content_type='application/json',
             )
             data = json.loads(response.data.decode())
@@ -129,27 +144,32 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client:
             response = self.client.post(
                 '/auth/register',
-                data=json.dumps({
-                    'username': 'insecure_user',
-                    'email': 'test@yahoo.com'
-                }),
+                data=json.dumps(
+                    {
+                        'username': 'insecure_user',
+                        'email': 'test@yahoo.com'
+                    }
+                ),
                 content_type='application/json',
             )
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 400)
-            self.assertIn('A user account must have a password.',
-                          data['message'])
+            self.assertIn(
+                'A user account must have a password.', data['message']
+            )
             self.assertIn('fail', data['status'])
 
     def test_user_registration_invalid_json_keys_bad_password(self):
         with self.client:
             response = self.client.post(
                 '/auth/register',
-                data=json.dumps({
-                    'username': 'insecure_user',
-                    'email': 'test@yahoo.com',
-                    'password': 'test'
-                }),
+                data=json.dumps(
+                    {
+                        'username': 'insecure_user',
+                        'email': 'test@yahoo.com',
+                        'password': 'test'
+                    }
+                ),
                 content_type='application/json',
             )
             data = json.loads(response.data.decode())
@@ -162,12 +182,16 @@ class TestAuthEndpoints(BaseTestCase):
             user = User(username='test', email='test@test.com')
             user.set_password('test123')
             user.save()
-            response = self.client.post('/auth/login',
-                                        data=json.dumps({
-                                            'email': 'test@test.com',
-                                            'password': 'test123'
-                                        }),
-                                        content_type='application/json')
+            response = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'test@test.com',
+                        'password': 'test123'
+                    }
+                ),
+                content_type='application/json'
+            )
             data = json.loads(response.data.decode())
             self.assertIn(data['message'], 'Successfully logged in.')
             self.assertTrue(data['status'] == 'success')
@@ -180,9 +204,11 @@ class TestAuthEndpoints(BaseTestCase):
             user = User(username='test', email='test@test.com')
             user.set_password('test123')
             user.save()
-            response = self.client.post('/auth/login',
-                                        data=json.dumps({}),
-                                        content_type='application/json')
+            response = self.client.post(
+                '/auth/login',
+                data=json.dumps({}),
+                content_type='application/json'
+            )
             data = json.loads(response.data.decode())
             self.assertEqual('Invalid payload.', data['message'])
             self.assertTrue(data['status'] == 'fail')
@@ -193,12 +219,14 @@ class TestAuthEndpoints(BaseTestCase):
         user.set_password('test123')
         user.save()
         with self.client:
-            resp_1 = self.client.post('/auth/login',
-                                      data=json.dumps({
-                                          'username': 'test',
-                                          'password': 'test123'
-                                      }),
-                                      content_type='application/json')
+            resp_1 = self.client.post(
+                '/auth/login',
+                data=json.dumps({
+                    'username': 'test',
+                    'password': 'test123'
+                }),
+                content_type='application/json'
+            )
             data = json.loads(resp_1.data.decode())
             self.assertEqual('You must provide an email.', data['message'])
             self.assertTrue(data['status'] == 'fail')
@@ -206,26 +234,33 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertTrue(resp_1.content_type == 'application/json')
             self.assertEqual(resp_1.status_code, 400)
 
-            resp_2 = self.client.post('/auth/login',
-                                      data=json.dumps({
-                                          'email': 'test@test.com',
-                                      }),
-                                      content_type='application/json')
+            resp_2 = self.client.post(
+                '/auth/login',
+                data=json.dumps({
+                    'email': 'test@test.com',
+                }),
+                content_type='application/json'
+            )
             data = json.loads(resp_2.data.decode())
             self.assertEqual('You must provide a password.', data['message'])
             self.assertTrue(data['status'] == 'fail')
             self.assertNotIn('auth_token', data)
             self.assertEqual(resp_2.status_code, 400)
 
-            resp_3 = self.client.post('/auth/login',
-                                      data=json.dumps({
-                                          'email': 'test@test.com',
-                                          'password': 'short'
-                                      }),
-                                      content_type='application/json')
+            resp_3 = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'test@test.com',
+                        'password': 'short'
+                    }
+                ),
+                content_type='application/json'
+            )
             data = json.loads(resp_3.data.decode())
-            self.assertEqual('Email or password combination incorrect.',
-                             data['message'])
+            self.assertEqual(
+                'Email or password combination incorrect.', data['message']
+            )
             self.assertTrue(data['status'] == 'fail')
             self.assertNotIn('auth_token', data)
             self.assertEqual(resp_3.status_code, 400)
@@ -235,17 +270,20 @@ class TestAuthEndpoints(BaseTestCase):
             user = User(username='test', email='test@test.com')
             user.set_password('test123')
             user.save()
-            response = self.client.post('/auth/login',
-                                        data=json.dumps({
-                                            'email':
-                                            'test@test.com',
-                                            'password':
-                                            'wrongpassword'
-                                        }),
-                                        content_type='application/json')
+            response = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'test@test.com',
+                        'password': 'wrongpassword'
+                    }
+                ),
+                content_type='application/json'
+            )
             data = json.loads(response.data.decode())
-            self.assertEqual('Email or password combination incorrect.',
-                             data['message'])
+            self.assertEqual(
+                'Email or password combination incorrect.', data['message']
+            )
             self.assertTrue(data['status'] == 'fail')
             self.assertNotIn('auth_token', data)
             self.assertTrue(response.content_type == 'application/json')
@@ -253,12 +291,16 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_not_registered_user_login(self):
         with self.client:
-            response = self.client.post('/auth/login',
-                                        data=json.dumps({
-                                            'email': 'test@test.com',
-                                            'password': 'test123'
-                                        }),
-                                        content_type='application/json')
+            response = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'test@test.com',
+                        'password': 'test123'
+                    }
+                ),
+                content_type='application/json'
+            )
             data = json.loads(response.data.decode())
             self.assertTrue(data['status'] == 'fail')
             self.assertTrue(data['message'] == 'User does not exist.')
@@ -270,17 +312,20 @@ class TestAuthEndpoints(BaseTestCase):
         user.set_password('wrongpassword')
         user.save()
         with self.client:
-            response = self.client.post('/auth/login',
-                                        data=json.dumps({
-                                            'email':
-                                            'test@test.com',
-                                            'password':
-                                            '<html>wrongpassword</html>'
-                                        }),
-                                        content_type='application/json')
+            response = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'test@test.com',
+                        'password': '<html>wrongpassword</html>'
+                    }
+                ),
+                content_type='application/json'
+            )
             data = json.loads(response.data.decode())
-            self.assertEqual('Email or password combination incorrect.',
-                             data['message'])
+            self.assertEqual(
+                'Email or password combination incorrect.', data['message']
+            )
             self.assertTrue(data['status'] == 'fail')
             self.assertNotIn('auth_token', data)
             self.assertTrue(response.content_type == 'application/json')
@@ -292,19 +337,24 @@ class TestAuthEndpoints(BaseTestCase):
         user.save()
         with self.client:
             # user login
-            resp_login = self.client.post('/auth/login',
-                                          data=json.dumps({
-                                              'email': 'test@test.com',
-                                              'password': 'test123'
-                                          }),
-                                          content_type='application/json')
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'test@test.com',
+                        'password': 'test123'
+                    }
+                ),
+                content_type='application/json'
+            )
             # valid token logout
             token = json.loads(resp_login.data.decode())['auth_token']
-            response = self.client.get('/auth/logout',
-                                       headers={
-                                           'Authorization':
-                                           'Bearer {token}'.format(token=token)
-                                       })
+            response = self.client.get(
+                '/auth/logout',
+                headers={
+                    'Authorization': 'Bearer {token}'.format(token=token)
+                }
+            )
             data = json.loads(response.data.decode())
             self.assertIn(
                 'success',
@@ -319,33 +369,41 @@ class TestAuthEndpoints(BaseTestCase):
         user.save()
         current_app.config['TOKEN_EXPIRATION_SECONDS'] = -1
         with self.client:
-            resp_login = self.client.post('/auth/login',
-                                          data=json.dumps({
-                                              'email': 'test@test.com',
-                                              'password': 'test123'
-                                          }),
-                                          content_type='application/json')
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'test@test.com',
+                        'password': 'test123'
+                    }
+                ),
+                content_type='application/json'
+            )
             # invalid token logout
             token = json.loads(resp_login.data.decode())['auth_token']
-            response = self.client.get('/auth/logout',
-                                       headers={
-                                           'Authorization':
-                                           'Bearer {token}'.format(token=token)
-                                       })
+            response = self.client.get(
+                '/auth/logout',
+                headers={
+                    'Authorization': 'Bearer {token}'.format(token=token)
+                }
+            )
             data = json.loads(response.data.decode())
             self.assertEqual('fail', data['status'])
-            self.assertEqual('Signature expired. Please login again.',
-                             data['message'])
+            self.assertEqual(
+                'Signature expired. Please login again.', data['message']
+            )
             self.assertEqual(response.status_code, 401)
 
     def test_invalid_logout(self):
         with self.client:
             response = self.client.get(
-                '/auth/logout', headers={'Authorization': 'Bearer invalid'})
+                '/auth/logout', headers={'Authorization': 'Bearer invalid'}
+            )
             data = json.loads(response.data.decode())
             self.assertTrue(data['status'] == 'fail')
-            self.assertEqual('Invalid token. Please log in again.',
-                             data['message'])
+            self.assertEqual(
+                'Invalid token. Please log in again.', data['message']
+            )
             self.assertEqual(response.status_code, 401)
 
     def test_invalid_auth_header(self):
@@ -353,8 +411,9 @@ class TestAuthEndpoints(BaseTestCase):
             response = self.client.get('/auth/logout', headers={})
             data = json.loads(response.data.decode())
             self.assertTrue(data['status'] == 'fail')
-            self.assertEqual('Provide a valid JWT auth token.',
-                             data['message'])
+            self.assertEqual(
+                'Provide a valid JWT auth token.', data['message']
+            )
             self.assertEqual(response.status_code, 403)
 
     def test_user_status(self):
@@ -362,18 +421,23 @@ class TestAuthEndpoints(BaseTestCase):
         user.set_password('test123')
         user.save()
         with self.client:
-            resp_login = self.client.post('/auth/login',
-                                          data=json.dumps({
-                                              'email': 'test@test.com',
-                                              'password': 'test123'
-                                          }),
-                                          content_type='application/json')
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'test@test.com',
+                        'password': 'test123'
+                    }
+                ),
+                content_type='application/json'
+            )
             token = json.loads(resp_login.data.decode())['auth_token']
             resp_status = self.client.get(
                 '/auth/status',
                 headers={
                     'Authorization': 'Bearer {token}'.format(token=token)
-                })
+                }
+            )
             data = json.loads(resp_status.data.decode())
             self.assertIn('success', data['status'])
             self.assertTrue(data['data'] is not None)
@@ -385,11 +449,13 @@ class TestAuthEndpoints(BaseTestCase):
     def test_invalid_status(self):
         with self.client:
             response = self.client.get(
-                '/auth/status', headers={'Authorization': 'Bearer invalid'})
+                '/auth/status', headers={'Authorization': 'Bearer invalid'}
+            )
             data = json.loads(response.data.decode())
             self.assertTrue(data['status'] == 'fail')
-            self.assertEqual('Invalid token. Please log in again.',
-                             data['message'])
+            self.assertEqual(
+                'Invalid token. Please log in again.', data['message']
+            )
             self.assertEqual(response.status_code, 401)
 
     def test_invalid_logout_inactivate(self):
@@ -398,22 +464,28 @@ class TestAuthEndpoints(BaseTestCase):
         user.active = False
         user.save()
         with self.client:
-            resp_login = self.client.post('/auth/login',
-                                          data=json.dumps({
-                                              'email': 'test@test.com',
-                                              'password': 'test123'
-                                          }),
-                                          content_type='application/json')
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'test@test.com',
+                        'password': 'test123'
+                    }
+                ),
+                content_type='application/json'
+            )
             token = json.loads(resp_login.data.decode())['auth_token']
-            response = self.client.get('/auth/logout',
-                                       headers={
-                                           'Authorization':
-                                           'Bearer {token}'.format(token=token)
-                                       })
+            response = self.client.get(
+                '/auth/logout',
+                headers={
+                    'Authorization': 'Bearer {token}'.format(token=token)
+                }
+            )
             data = json.loads(response.data.decode())
             self.assertEqual('fail', data['status'])
-            self.assertEqual('Provide a valid JWT auth token.',
-                             data['message'])
+            self.assertEqual(
+                'Provide a valid JWT auth token.', data['message']
+            )
             self.assertEqual(response.status_code, 401)
 
     def test_invalid_status_inactive(self):
@@ -422,20 +494,26 @@ class TestAuthEndpoints(BaseTestCase):
         user.active = False
         user.save()
         with self.client:
-            resp_login = self.client.post('/auth/login',
-                                          data=json.dumps({
-                                              'email': 'test@test.com',
-                                              'password': 'test123'
-                                          }),
-                                          content_type='application/json')
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'test@test.com',
+                        'password': 'test123'
+                    }
+                ),
+                content_type='application/json'
+            )
             token = json.loads(resp_login.data.decode())['auth_token']
             response = self.client.get(
                 '/auth/status',
-                headers={'Authorization': 'Bearer {}'.format(token)})
+                headers={'Authorization': 'Bearer {}'.format(token)}
+            )
             data = json.loads(response.data.decode())
             self.assertTrue(data['status'] == 'fail')
             self.assertTrue(
-                data['message'] == 'Provide a valid JWT auth token.')
+                data['message'] == 'Provide a valid JWT auth token.'
+            )
             self.assertEqual(response.status_code, 401)
 
 

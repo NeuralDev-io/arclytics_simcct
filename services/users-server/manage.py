@@ -1,12 +1,12 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # arclytics_sim
 # manage.py
 #
 # Attributions:
 # [1]
-# ------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
@@ -34,24 +34,26 @@ import coverage
 from api import create_app, get_flask_mongo
 from api.models import User
 
-COV = coverage.coverage(branch=True,
-                        include=[
-                            'api/models.py',
-                            'api/users.py',
-                            'api/auth.py',
-                            'api/auth_decorators.py',
-                            'api/mongodb.py',
-                        ],
-                        omit=[
-                            'api/__init__.py'
-                            'config.py',
-                            'tests/*',
-                            'simulation/*',
-                            'configs/*',
-                            'data/*',
-                            'logger/*',
-                            'logs/*',
-                        ])
+COV = coverage.coverage(
+    branch=True,
+    include=[
+        'api/models.py',
+        'api/users.py',
+        'api/auth.py',
+        'api/auth_decorators.py',
+        'api/mongodb.py',
+    ],
+    omit=[
+        'api/__init__.py'
+        'config.py',
+        'tests/*',
+        'simulation/*',
+        'configs/*',
+        'data/*',
+        'logger/*',
+        'logs/*',
+    ]
+)
 COV.start()
 
 app = create_app()

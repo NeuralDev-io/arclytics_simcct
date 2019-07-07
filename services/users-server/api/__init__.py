@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # arclytics_sim
 # app.py
 #
 # Attributions:
-# [1] https://testdriven.io/courses/microservices-with-docker-flask-and-react/part-one-microservices/
-# ------------------------------------------------------------------------------------------------------------
+# [1]
+# https://testdriven.io/courses/microservices-with-docker-flask-and-react/
+# part-one-microservices/
+# -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
@@ -62,7 +64,8 @@ bcrypt = Bcrypt()
 
 
 def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
-    """Make a connection to the MongoDB container and returns a singleton wrapper on a pymongo.MongoClient."""
+    """Make a connection to the MongoDB container and returns a singleton
+    wrapper on a pymongo.MongoClient."""
     disconnect_all()
 
     if app is not None:
@@ -75,7 +78,8 @@ def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
         host=host,
         port=int(port),
         alias='default'
-        # username=app.config['MONGO_USER'],  # FIXME: Do not leave this commented for Production Environment
+        # FIXME: Do not leave this commented for Production Environment
+        # username=app.config['MONGO_USER'],
         # password=app.config['MONGO_PASSWORD'],
     )
 
@@ -85,14 +89,16 @@ def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
         # DEFAULT_LOGGER.debug('MongoDB Connected: {}'.format(conn))
     except MongoEngineConnectionError as e:
         DEFAULT_LOGGER.error(
-            'MongoDB Failed to Connect.\n Error: {}'.format(e))
+            'MongoDB Failed to Connect.\n Error: {}'.format(e)
+        )
 
     try:
         db_curr = get_db('default')
         # DEFAULT_LOGGER.debug('MongoDB Database in use: {}'.format(db_curr))
     except MongoEngineConnectionError as e:
         DEFAULT_LOGGER.error(
-            'MongoDB Failed to Get Database.\n Error: {}'.format(e))
+            'MongoDB Failed to Get Database.\n Error: {}'.format(e)
+        )
 
     return MongoSingleton(mongo_client)
 

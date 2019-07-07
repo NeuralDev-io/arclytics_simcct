@@ -28,7 +28,6 @@ from api.models import User
 
 
 def authenticate(f):
-
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {
@@ -62,7 +61,6 @@ def authenticate(f):
 
 
 def authenticate_restful(f):
-
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {
@@ -95,7 +93,6 @@ def authenticate_restful(f):
 
 
 def authenticate_admin(f):
-
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {

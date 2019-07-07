@@ -29,7 +29,6 @@ from tests.test_api_base import BaseTestCase
 
 
 class TestAuthEndpoints(BaseTestCase):
-
     def test_user_registration(self):
         """Ensure we can register a user."""
         resp = self.client.post('/auth/register',
@@ -106,7 +105,8 @@ class TestAuthEndpoints(BaseTestCase):
             )
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 400)
-            self.assertIn('A user account must have an email.', data['message'])
+            self.assertIn('A user account must have an email.',
+                          data['message'])
             self.assertIn('fail', data['status'])
 
     def test_user_registration_invalid_json_keys_invalid_email(self):
@@ -300,9 +300,11 @@ class TestAuthEndpoints(BaseTestCase):
                                           content_type='application/json')
             # valid token logout
             token = json.loads(resp_login.data.decode())['auth_token']
-            response = self.client.get(
-                '/auth/logout',
-                headers={'Authorization': 'Bearer {token}'.format(token=token)})
+            response = self.client.get('/auth/logout',
+                                       headers={
+                                           'Authorization':
+                                           'Bearer {token}'.format(token=token)
+                                       })
             data = json.loads(response.data.decode())
             self.assertIn(
                 'success',
@@ -325,9 +327,11 @@ class TestAuthEndpoints(BaseTestCase):
                                           content_type='application/json')
             # invalid token logout
             token = json.loads(resp_login.data.decode())['auth_token']
-            response = self.client.get(
-                '/auth/logout',
-                headers={'Authorization': 'Bearer {token}'.format(token=token)})
+            response = self.client.get('/auth/logout',
+                                       headers={
+                                           'Authorization':
+                                           'Bearer {token}'.format(token=token)
+                                       })
             data = json.loads(response.data.decode())
             self.assertEqual('fail', data['status'])
             self.assertEqual('Signature expired. Please login again.',
@@ -349,7 +353,8 @@ class TestAuthEndpoints(BaseTestCase):
             response = self.client.get('/auth/logout', headers={})
             data = json.loads(response.data.decode())
             self.assertTrue(data['status'] == 'fail')
-            self.assertEqual('Provide a valid JWT auth token.', data['message'])
+            self.assertEqual('Provide a valid JWT auth token.',
+                             data['message'])
             self.assertEqual(response.status_code, 403)
 
     def test_user_status(self):
@@ -366,7 +371,9 @@ class TestAuthEndpoints(BaseTestCase):
             token = json.loads(resp_login.data.decode())['auth_token']
             resp_status = self.client.get(
                 '/auth/status',
-                headers={'Authorization': 'Bearer {token}'.format(token=token)})
+                headers={
+                    'Authorization': 'Bearer {token}'.format(token=token)
+                })
             data = json.loads(resp_status.data.decode())
             self.assertIn('success', data['status'])
             self.assertTrue(data['data'] is not None)
@@ -398,12 +405,15 @@ class TestAuthEndpoints(BaseTestCase):
                                           }),
                                           content_type='application/json')
             token = json.loads(resp_login.data.decode())['auth_token']
-            response = self.client.get(
-                '/auth/logout',
-                headers={'Authorization': 'Bearer {token}'.format(token=token)})
+            response = self.client.get('/auth/logout',
+                                       headers={
+                                           'Authorization':
+                                           'Bearer {token}'.format(token=token)
+                                       })
             data = json.loads(response.data.decode())
             self.assertEqual('fail', data['status'])
-            self.assertEqual('Provide a valid JWT auth token.', data['message'])
+            self.assertEqual('Provide a valid JWT auth token.',
+                             data['message'])
             self.assertEqual(response.status_code, 401)
 
     def test_invalid_status_inactive(self):

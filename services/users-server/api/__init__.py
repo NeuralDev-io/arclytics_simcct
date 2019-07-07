@@ -50,7 +50,7 @@ class JSONEncoder(json.JSONEncoder):
             #     calendar.timegm(o.timetuple()) * 1000 + o.microsecond / 1000
             # )
             # return millis
-            return str(o)
+            return str(o.isoformat())
         return json.JSONEncoder.default(self, o)
 
 
@@ -84,7 +84,8 @@ def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
         conn = get_connection('default')
         # DEFAULT_LOGGER.debug('MongoDB Connected: {}'.format(conn))
     except MongoEngineConnectionError as e:
-        DEFAULT_LOGGER.error('MongoDB Failed to Connect.\n Error: {}'.format(e))
+        DEFAULT_LOGGER.error(
+            'MongoDB Failed to Connect.\n Error: {}'.format(e))
 
     try:
         db_curr = get_db('default')

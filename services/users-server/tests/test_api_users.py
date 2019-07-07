@@ -67,9 +67,8 @@ class TestUserService(BaseTestCase):
                 headers={'Authorization': 'Bearer {}'.format(token)})
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('iron_man', data['data']['username'])
-            self.assertIn('tony@starkindustries.com', data['data']['email'])
-            self.assertIn('success', data['status'])
+            self.assertIn('iron_man', data['username'])
+            self.assertIn('tony@starkindustries.com', data['email'])
 
     def test_single_user_not_active(self):
         tony = User(username='iron_man', email='tony@starkindustries.com')
@@ -113,8 +112,8 @@ class TestUserService(BaseTestCase):
     def test_single_user_incorrect_id(self):
         """Ensure error is thrown if the id does not exist."""
         with self.client:
-            id = ObjectId()
-            response = self.client.get('/users/{}'.format(id))
+            _id = ObjectId()
+            response = self.client.get(f'/users/{_id}')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 400)
             self.assertIn('Provide a valid JWT auth token.', data['message'])
@@ -136,9 +135,11 @@ class TestUserService(BaseTestCase):
                                           content_type='application/json')
             # invalid token logout
             token = json.loads(resp_login.data.decode())['auth_token']
-            response = self.client.get(
-                '/users/{}'.format(tony.id),
-                headers={'Authorization': 'Bearer {token}'.format(token=token)})
+            response = self.client.get('/users/{}'.format(tony.id),
+                                       headers={
+                                           'Authorization':
+                                           'Bearer {token}'.format(token=token)
+                                       })
             data = json.loads(response.data.decode())
             self.assertEqual('fail', data['status'])
             self.assertEqual('Signature expired. Please login again.',
@@ -203,9 +204,11 @@ class TestUserService(BaseTestCase):
                                           content_type='application/json')
             # token = json.loads(resp_login.data.decode())['auth_token']
             token = 'KJASlkdjlkajsdlkjlkasjdlkjalosd'
-            resp = self.client.get(
-                '/users',
-                headers={'Authorization': 'Bearer {token}'.format(token=token)})
+            resp = self.client.get('/users',
+                                   headers={
+                                       'Authorization':
+                                       'Bearer {token}'.format(token=token)
+                                   })
             data = json.loads(resp.data.decode())
             self.assertEqual('fail', data['status'])
             self.assertNotIn('data', data)

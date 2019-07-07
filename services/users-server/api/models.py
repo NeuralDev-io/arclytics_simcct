@@ -25,15 +25,10 @@ from typing import Union
 
 import json
 from bson import ObjectId
-from mongoengine import (Document,
-                         EmbeddedDocument,
-                         StringField,
-                         EmailField,
-                         BooleanField,
-                         DateTimeField,
-                         EmbeddedDocumentField,
+from mongoengine import (Document, EmbeddedDocument, StringField, EmailField,
+                         BooleanField, DateTimeField, EmbeddedDocumentField,
                          EmbeddedDocumentListField)
-from flask import current_app
+from flask import current_app, json, jsonify
 
 from logger.arc_logger import AppLogger
 from api import bcrypt, JSONEncoder

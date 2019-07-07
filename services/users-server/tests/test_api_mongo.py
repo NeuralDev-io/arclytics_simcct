@@ -31,7 +31,6 @@ from api import get_flask_mongo, set_flask_mongo, init_db
 
 
 class TestMongoSingleton(BaseTestCase):
-
     def setUp(self) -> None:
         super(TestMongoSingleton, self).setUp()
         self.mongo_client = None

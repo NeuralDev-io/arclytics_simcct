@@ -43,7 +43,6 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.06.24'
-
 """Module level logger that can be used as a wrapper that extends the default logging module."""
 
 import sys
@@ -56,11 +55,11 @@ from pprint import pprint, pformat
 from os import path, makedirs, access, W_OK, getcwd
 from pathlib import Path
 
-
 __name__ = "ArcLogger"
 
 PWD = os.path.dirname(os.path.abspath(__file__))
-BASE_DIR = os.path.abspath(os.path.join(PWD, os.pardir))  # should be arclytics_sim/services/server/
+BASE_DIR = os.path.abspath(os.path.join(
+    PWD, os.pardir))  # should be arclytics_sim/services/server/
 PREFIX_LOG_PATH = Path(BASE_DIR) / 'logs'
 PREFIX_CONFIG_PATH = os.path.abspath(os.path.join(BASE_DIR, 'configs'))
 DEFAULT_CONFIG = Path(BASE_DIR) / 'configs' / 'app.json'
@@ -100,7 +99,10 @@ class AppLogger(object):
     _stdout_mode = True
     _profiler_mode = False
 
-    def __init__(self, caller: str, prefix_logpath: str = PREFIX_LOG_PATH, custom_config: str = ""):
+    def __init__(self,
+                 caller: str,
+                 prefix_logpath: str = PREFIX_LOG_PATH,
+                 custom_config: str = ""):
         # Get the debug level from the default app config if no custom config has been set
         self._config_mode = self._check_config(custom_config=custom_config)
 
@@ -114,7 +116,8 @@ class AppLogger(object):
                 os.makedirs(PREFIX_LOG_PATH)
             except OSError as e:
                 print("Error: %s - %s." % (e.filename, e.strerror))
-        logfile_path = os.path.abspath(os.path.join(PREFIX_LOG_PATH, (caller + ".log")))
+        logfile_path = os.path.abspath(
+            os.path.join(PREFIX_LOG_PATH, (caller + ".log")))
         if prefix_logpath is not PREFIX_LOG_PATH:
             logfile_path = Path(prefix_logpath) / "logs" / (caller + ".log")
         self.log_path = check_logpath(logfile_path, not self._debug_mode)
@@ -154,15 +157,11 @@ class AppLogger(object):
         """
         self.config = None
 
-        if custom_config is not "" and not (PREFIX_CONFIG_PATH / custom_config).is_file():
-            warning_msg = (
-                    "Configuration files must go into ../configs/" +
-                    'config_path={0}'.format(custom_config)
-            )
-            warnings.warn(
-                    warning_msg,
-                    RuntimeWarning
-            )
+        if custom_config is not "" and not (PREFIX_CONFIG_PATH /
+                                            custom_config).is_file():
+            warning_msg = ("Configuration files must go into ../configs/" +
+                           'config_path={0}'.format(custom_config))
+            warnings.warn(warning_msg, RuntimeWarning)
             return False
 
         if custom_config is not "":
@@ -185,11 +184,8 @@ class AppLogger(object):
             return True
         return False
 
-    def _configure_common(self,
-                          log_level: str,
-                          log_format: str,
-                          handler_name: str,
-                          handler):
+    def _configure_common(self, log_level: str, log_format: str,
+                          handler_name: str, handler):
         """
         Common configuration code.
 
@@ -201,7 +197,8 @@ class AppLogger(object):
         """
 
         # Attach handlers and formatters
-        formatter = logging.Formatter(fmt=log_format, datefmt=ReportingFormats.DATE_FMT.value)
+        formatter = logging.Formatter(fmt=log_format,
+                                      datefmt=ReportingFormats.DATE_FMT.value)
         handler.setFormatter(fmt=formatter)
         handler.setLevel(log_level)
         self.logger.addHandler(handler)
@@ -218,13 +215,15 @@ class AppLogger(object):
         log_filename = Path(self.log_path)
         log_abspath = log_filename.absolute()
 
-        general_handler = logging.FileHandler(filename=log_abspath, mode='a', delay=True)
+        general_handler = logging.FileHandler(filename=log_abspath,
+                                              mode='a',
+                                              delay=True)
 
         self._configure_common(
-                log_level=log_level,
-                log_format=ReportingFormats.FILE.value,
-                handler_name="default_file",
-                handler=general_handler,
+            log_level=log_level,
+            log_format=ReportingFormats.FILE.value,
+            handler_name="default_file",
+            handler=general_handler,
         )
 
         # NOTE: If debug_mod or std_mode is one, create a Stream Handler with appropriate log level.
@@ -245,10 +244,10 @@ class AppLogger(object):
                     handler_name = "default_stdout"
                 console_handler.setLevel(stream_log_level)
                 self._configure_common(
-                        log_level=stream_log_level,
-                        log_format=ReportingFormats.STDOUT.value,
-                        handler_name=handler_name,
-                        handler=console_handler,
+                    log_level=stream_log_level,
+                    log_format=ReportingFormats.STDOUT.value,
+                    handler_name=handler_name,
+                    handler=console_handler,
                 )
             # NOTE: If profiler_mode is set
             # FIXME: NO IDEA WHY EVEN WHEN THIS IS FALSE A PROFILER HANDLER IS CREATED
@@ -276,10 +275,10 @@ class AppLogger(object):
             log_format: The log format which will default to STDOUT enum value.
         """
         self._configure_common(
-                log_level=log_level,
-                log_format=log_format,
-                handler_name="stream_debug",
-                handler=logging.StreamHandler(stream=sys.stderr),
+            log_level=log_level,
+            log_format=log_format,
+            handler_name="stream_debug",
+            handler=logging.StreamHandler(stream=sys.stderr),
         )
 
     def configure_stdout_logger(self,
@@ -295,10 +294,10 @@ class AppLogger(object):
             log_format: The log format which will default to STDOUT enum value.
         """
         self._configure_common(
-                log_level=log_level,
-                log_format=log_format,
-                handler_name="stream_stdout",
-                handler=logging.StreamHandler(stream=sys.stdout),
+            log_level=log_level,
+            log_format=log_format,
+            handler_name="stream_stdout",
+            handler=logging.StreamHandler(stream=sys.stdout),
         )
 
     def debug(self, msg: str, *args, **kwargs):
@@ -386,10 +385,7 @@ class AppLogger(object):
             duration: A float of time.time() for the time duration of the method execution.
         """
         msg = "Method: {method:<18} {arrow:8} Executed: {duration:.4f}s".format(
-            method=method,
-            arrow="==>",
-            duration=duration
-        )
+            method=method, arrow="==>", duration=duration)
 
         # Log if DEBUG is enabled
         if self.logger.isEnabledFor(logging.getLevelName("DEBUG")):
@@ -454,16 +450,15 @@ def check_logpath(log_path, debug_mode=False):
         except PermissionError as e:
             warning_msg = (
                 "Unable to create logging file path. Default to '.'\n" +
-                "\tLog Path: {}\n".format(log_path) + "\tException: {}\n".format(e)
-            )
+                "\tLog Path: {}\n".format(log_path) +
+                "\tException: {}\n".format(e))
             warnings.warn(warning_msg, RuntimeWarning)
 
     if not access(PREFIX_LOG_PATH.absolute(), W_OK):
         # Unable to write to log path
         warning_msg = (
             "Write permissions not allowed on path. Defaulting to '.'\n" +
-            "\tLog Path: {}".format(log_path)
-        )
+            "\tLog Path: {}".format(log_path))
         warnings.warn(warning_msg, RuntimeWarning)
         return '.'
 

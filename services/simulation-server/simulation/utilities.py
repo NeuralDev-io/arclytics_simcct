@@ -2,9 +2,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # utilities.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
@@ -16,7 +16,6 @@ __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.06.25'
 __package__ = 'simulation'
-
 """utilities.py: 
 
 Some utilities that are used by SimCCT routines. 

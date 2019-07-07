@@ -33,7 +33,6 @@ from api.models import User, PasswordValidationError, USERS
 
 
 class TestUserModel(BaseTestCase):
-
     def test_user_model_schema(self):
         self.assertIsInstance(User.__base__, Document.__class__)
         self.assertIsInstance(User.email, EmailField)

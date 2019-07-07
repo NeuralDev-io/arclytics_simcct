@@ -32,7 +32,6 @@ app = create_app()
 
 
 class TestDevelopmentConfig(TestCase):
-
     def create_app(self):
         app.config.from_object('api.config.DevelopmentConfig')
         return app
@@ -48,7 +47,6 @@ class TestDevelopmentConfig(TestCase):
 
 
 class TestTestingConfig(TestCase):
-
     def create_app(self):
         app.config.from_object('api.config.TestingConfig')
         return app
@@ -65,7 +63,6 @@ class TestTestingConfig(TestCase):
 
 
 class TestProductionConfig(TestCase):
-
     def create_app(self):
         app.config.from_object('api.config.ProductionConfig')
         return app

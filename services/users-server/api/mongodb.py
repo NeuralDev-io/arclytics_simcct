@@ -25,7 +25,6 @@ class MongoSingleton:
     instance = None
 
     class __Mongo:
-
         def __init__(self, obj: MongoClient):
             self.client = obj
 

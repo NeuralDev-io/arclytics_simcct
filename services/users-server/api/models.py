@@ -16,20 +16,20 @@ __status__ = 'development'
 __date__ = '2019.07.03'
 """models.py: 
 
-This module stores the mongoengine.Document models for the Arclytics API microservice.
+This module stores the mongoengine.Document models for the Arclytics API Users
+microservice.
 """
 
 import datetime
 import jwt
 from typing import Union
 
-import json
 from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
-    DateTimeField, EmbeddedDocumentField, EmbeddedDocumentListField
+    DateTimeField, EmbeddedDocumentField
 )
-from flask import current_app, json, jsonify
+from flask import current_app, json
 
 from logger.arc_logger import AppLogger
 from api import bcrypt, JSONEncoder
@@ -51,6 +51,68 @@ class PasswordValidationError(Exception):
               self).__init__('A password must be set before saving.')
 
 
+# ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
+
+
+class UserProfile(EmbeddedDocument):
+    # Not having this for now until we can figure out where to store the photos
+    # TODO: Uncomment Pillow depdencneis Dockerfile to use and
+    #  install Pillow==6.1.0
+    # profile_photo = ImageField(
+    #     required=False,
+    #     size=(800, 600, True),
+    #     thumbnail_size=(300, 300, True),
+    #     help_text='Please provide a photo of 800x600 pixels only.'
+    # )
+    aim = StringField(
+        help_text='What sentence best describes you?',
+        required=False,
+        default=None
+    )
+    highest_education = StringField(
+        help_text='What is the highest level of education have you studied?',
+        required=False,
+        default=None
+    )
+    sci_tech_exp = StringField(
+        help_text='What is your experience with scientific software?',
+        required=False,
+        default=None
+    )
+    phase_transform_exp = StringField(
+        help_text=(
+            'What is your experience with solid-state phase '
+            'transformation?'
+        ),
+        required=False,
+        default=None
+    )
+
+    def to_dict(self) -> dict:
+        """
+        Simple EmbeddedDocument.UserProfile helper method to get a Python dict
+        back.
+        """
+        return {
+            'aim': self.aim,
+            'highest_education': self.highest_education,
+            'sci_tech_exp': self.sci_tech_exp,
+            'phase_transform_exp': self.phase_transform_exp
+        }
+
+
+class AdminProfile(EmbeddedDocument):
+    position = StringField(max_length=255, required=True)
+    mobile_number = StringField(max_length=11, min_length=10)
+
+    def to_json(self) -> dict:
+        """
+        Simple EmbeddedDocument.AdminProfile helper method to get a
+        Python dict back.
+        """
+        return {'position': self.position, 'mobile_number': self.mobile_number}
+
+
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
 class User(Document):
     email = EmailField(required=True, unique=True)
@@ -69,7 +131,8 @@ class User(Document):
         choices=USERS,
         default=USERS[1][0]
     )
-    # profile = EmbeddedDocumentListField()
+    profile = EmbeddedDocumentField(document_type=UserProfile)
+    admin_profile = EmbeddedDocumentField(document_type=AdminProfile)
     # TODO: Make these
     # saved_configurations = EmbeddedDocumentListField(
     # document_type=Configurations)
@@ -103,11 +166,16 @@ class User(Document):
             rounds=current_app.config.get('BCRYPT_LOG_ROUNDS')
         ).decode()
 
-    def to_dict(self, *args, **kwargs) -> dict:
+    def to_dict(self) -> dict:
         """Simple Document.User helper method to get a Python dict back."""
-        last_login = self.last_login if self.last_login is None else self.last_login.isoformat(
-        )
-        return {
+        last_login = None
+        if self.last_login is not None:
+            last_login = self.last_login.isoformat()
+        profile = None
+        if self.profile is not None:
+            profile = self.profile.to_dict()
+
+        user = {
             '_id': str(self.id),
             'email': self.email,
             'first_name': self.first_name,
@@ -119,10 +187,19 @@ class User(Document):
             'created': str(self.created.isoformat()),
             'last_updated': str(self.last_updated.isoformat()),
             'last_login': str(last_login),
+            'profile': profile
         }
 
+        if self.admin_profile is not None:
+            user['admin_profile'] = self.admin_profile.to_json()
+
+        return user
+
     def to_json(self, *args, **kwargs):
-        """Override the default method to customise the way a JSON format is transformed."""
+        """
+        Override the default method to customise the way a JSON format is
+        transformed.
+        """
         return json.dumps(self.to_dict())
 
     @staticmethod

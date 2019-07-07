@@ -53,7 +53,12 @@ class TestUserModel(BaseTestCase):
         self.assertIn('A password must be set before saving.', str(err))
 
     def test_add_user(self):
-        user = models.User(username='codeninja55', email='andrew@neuraldev.io')
+        user = models.User(
+            username='codeninja55',
+            email='andrew@neuraldev.io',
+            first_name='Andrew',
+            last_name='Che'
+        )
         user.set_password('IAmIronMan')
         user.save()
         self.assertTrue(user.id)
@@ -65,29 +70,52 @@ class TestUserModel(BaseTestCase):
         self.assertTrue(user.password)
 
     def test_email_validation(self):
-        user = User(username='Fake Twtitter', email='russianfakeemail@russia')
+        user = User(
+            username='Fake Twtitter',
+            email='russianfakeemail@russia',
+            first_name='Vlad',
+            last_name='Ruskie'
+        )
         user.set_password('IAmIronMan')
         with self.assertRaises(ValidationError):
             user.save()
 
     def test_password_validation(self):
-        user = User(username='Fake User', email='russianfakeemail@russia.com')
+        user = User(
+            username='Fake User',
+            email='russianfakeemail@russia.com',
+            first_name='Real',
+            last_name='Trumpie'
+        )
         with self.assertRaises(PasswordValidationError):
             user.save()
 
     def test_add_user_duplicate_email(self):
-        user = User(username='codeninja55', email='andrew@neuraldev.io')
+        user = User(
+            username='codeninja55',
+            email='andrew@neuraldev.io',
+            first_name='Andrew',
+            last_name='Che'
+        )
         user.set_password('IAmIronMan')
         user.save()
         duplicate_user = User(
-            username='codeninja55', email='andrew@neuraldev.io'
+            username='codeninja55',
+            email='andrew@neuraldev.io',
+            first_name='Andrew',
+            last_name='Che'
         )
         duplicate_user.set_password('IThinkIAmIronMan')
         with self.assertRaises(NotUniqueError):
             duplicate_user.save()
 
     def test_to_dict(self):
-        user = User(username='codeninja55', email='andrew@neuraldev.io')
+        user = User(
+            username='codeninja55',
+            email='andrew@neuraldev.io',
+            first_name='Andrew',
+            last_name='Che'
+        )
         user.set_password('IAmIronMan')
         user.save()
         user_dict = user.to_dict()
@@ -95,7 +123,12 @@ class TestUserModel(BaseTestCase):
         self.assertTrue(user_dict, dict)
 
     def test_to_json(self):
-        user = User(username='codeninja55', email='andrew@neuraldev.io')
+        user = User(
+            username='codeninja55',
+            email='andrew@neuraldev.io',
+            first_name='Andrew',
+            last_name='Che'
+        )
         user.set_password('IAmIronMan')
         user.save()
         user_json = json.loads(user.to_json())  # mongoengine returns a string
@@ -105,16 +138,30 @@ class TestUserModel(BaseTestCase):
         self.assertEqual(user_json['username'], 'codeninja55')
 
     def test_passwords_are_random(self):
-        user_one = User(username='codeninja55', email='andrew@neuraldev.io')
+        user_one = User(
+            username='codeninja55',
+            email='andrew@neuraldev.io',
+            first_name='Andrew',
+            last_name='Che'
+        )
+
         user_one.set_password('youknotwhatitis')
-        user_two = User(username='cn55', email='andrew@codeninja55.me')
+        user_two = User(
+            username='cn55',
+            email='andrew@codeninja55.me',
+            first_name='Andrew',
+            last_name='Che'
+        )
         user_two.set_password('youknotwhatitwas')
         self.assertNotEqual(user_one.password, user_two.password)
 
     def test_encode_auth_token(self):
         """Ensure that a JWT auth token is generated properly."""
         user = user_one = User(
-            username='codeninja55', email='andrew@neuraldev.io'
+            username='codeninja55',
+            email='andrew@neuraldev.io',
+            first_name='Andrew',
+            last_name='Che'
         )
         user.set_password('youknotwhatitis')
         user.save()
@@ -124,7 +171,10 @@ class TestUserModel(BaseTestCase):
     def test_decode_auth_token(self):
         """Ensure that a JWT auth token is generated properly."""
         user = user_one = User(
-            username='codeninja55', email='andrew@neuraldev.io'
+            username='codeninja55',
+            email='andrew@neuraldev.io',
+            first_name='Andrew',
+            last_name='Che'
         )
         user.set_password('youknotwhatitis')
         user.save()

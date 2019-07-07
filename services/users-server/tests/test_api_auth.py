@@ -37,6 +37,8 @@ class TestAuthEndpoints(BaseTestCase):
                 {
                     'username': 'black_widow',
                     'email': 'natasha@avengers.io',
+                    'first_name': 'Natasha',
+                    'last_name': 'Romanoff',
                     'password': 'RedInMyLedger'
                 }
             ),
@@ -50,17 +52,24 @@ class TestAuthEndpoints(BaseTestCase):
         self.assertEqual(resp.status_code, 201)
 
     def test_user_registration_duplicate_email(self):
-        user = User(username='test', email='test@test.com')
-        user.set_password('test123')
+        user = User(
+            username='hulk',
+            email='green_machine@avengers.io',
+            first_name='Bruce',
+            last_name='Banner'
+        )
+        user.set_password('HulkSmash!')
         user.save()
         with self.client:
             response = self.client.post(
                 '/auth/register',
                 data=json.dumps(
                     {
-                        'username': 'ansto_joe',
-                        'email': 'test@test.com',
-                        'password': 'test123'
+                        'username': 'hulk',
+                        'email': 'green_machine@avengers.io',
+                        'first_name': 'Bruce',
+                        'last_name': 'Banner',
+                        'password': 'HulkSmash!'
                     }
                 ),
                 content_type='application/json',
@@ -71,7 +80,12 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertIn('fail', data['status'])
 
     def test_user_registration_duplicate_username(self):
-        user = User(username='ansto_joe', email='test@test.com')
+        user = User(
+            username='ansto_joe',
+            email='test@test.com',
+            first_name='Joe',
+            last_name='Blow'
+        )
         user.set_password('test123')
         user.save()
         with self.client:
@@ -81,6 +95,8 @@ class TestAuthEndpoints(BaseTestCase):
                     {
                         'username': 'ansto_joe',
                         'email': 'test@test2.com',
+                        'first_name': 'Joe',
+                        'last_name': 'Blow',
                         'password': 'test123'
                     }
                 ),
@@ -110,6 +126,8 @@ class TestAuthEndpoints(BaseTestCase):
                 data=json.dumps(
                     {
                         'username': 'ansto_joe',
+                        'first_name': 'Joe',
+                        'last_name': 'Blow',
                         'password': 'test123'
                     }
                 ),
@@ -179,15 +197,20 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_registered_user_login(self):
         with self.client:
-            user = User(username='test', email='test@test.com')
-            user.set_password('test123')
+            user = User(
+                username='friendly_neighborhood_spiderman',
+                email='spiderman@newavenger.io',
+                first_name='Peter',
+                last_name='Parker'
+            )
+            user.set_password('SpideySenses')
             user.save()
             response = self.client.post(
                 '/auth/login',
                 data=json.dumps(
                     {
-                        'email': 'test@test.com',
-                        'password': 'test123'
+                        'email': 'spiderman@newavenger.io',
+                        'password': 'SpideySenses'
                     }
                 ),
                 content_type='application/json'
@@ -201,7 +224,12 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_empty_user_login(self):
         with self.client:
-            user = User(username='test', email='test@test.com')
+            user = User(
+                username='hawkeye',
+                email='hawkeye@avengers.io',
+                first_name='Clint',
+                last_name='Barton'
+            )
             user.set_password('test123')
             user.save()
             response = self.client.post(
@@ -215,16 +243,23 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(response.status_code, 400)
 
     def test_bad_login_details(self):
-        user = User(username='test', email='test@test.com')
+        user = User(
+            username='war_machine',
+            email='war_machine@avengers.io',
+            first_name='James',
+            last_name='Rhodey'
+        )
         user.set_password('test123')
         user.save()
         with self.client:
             resp_1 = self.client.post(
                 '/auth/login',
-                data=json.dumps({
-                    'username': 'test',
-                    'password': 'test123'
-                }),
+                data=json.dumps(
+                    {
+                        'username': 'war_machine',
+                        'password': 'test123'
+                    }
+                ),
                 content_type='application/json'
             )
             data = json.loads(resp_1.data.decode())
@@ -237,7 +272,7 @@ class TestAuthEndpoints(BaseTestCase):
             resp_2 = self.client.post(
                 '/auth/login',
                 data=json.dumps({
-                    'email': 'test@test.com',
+                    'email': 'war_machine@avengers.io',
                 }),
                 content_type='application/json'
             )
@@ -267,14 +302,19 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_invalid_user_login(self):
         with self.client:
-            user = User(username='test', email='test@test.com')
-            user.set_password('test123')
+            user = User(
+                username='ant_man',
+                email='ant_man@avengers.io',
+                first_name='Scott',
+                last_name='Lang'
+            )
+            user.set_password('ILoveCassie')
             user.save()
             response = self.client.post(
                 '/auth/login',
                 data=json.dumps(
                     {
-                        'email': 'test@test.com',
+                        'email': 'ant_man@avengers.io',
                         'password': 'wrongpassword'
                     }
                 ),
@@ -308,15 +348,20 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(response.status_code, 404)
 
     def test_bad_auth_token_encoding(self):
-        user = User(username='test', email='test@test.com', user_type='2')
-        user.set_password('wrongpassword')
+        user = User(
+            username='winter_soldier',
+            email='metal_arm@newavengers.io',
+            first_name='Bucky',
+            last_name='Barnes'
+        )
+        user.set_password('badpassword')
         user.save()
         with self.client:
             response = self.client.post(
                 '/auth/login',
                 data=json.dumps(
                     {
-                        'email': 'test@test.com',
+                        'email': 'metal_arm@newavengers.io',
                         'password': '<html>wrongpassword</html>'
                     }
                 ),
@@ -332,8 +377,13 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(response.status_code, 404)
 
     def test_valid_logout(self):
-        user = User(username='test', email='test@test.com')
-        user.set_password('test123')
+        user = User(
+            username='falcon',
+            email='falcon@newavengers.io',
+            first_name='Sam',
+            last_name='Wilson'
+        )
+        user.set_password('NewCaptainAmerica')
         user.save()
         with self.client:
             # user login
@@ -341,8 +391,8 @@ class TestAuthEndpoints(BaseTestCase):
                 '/auth/login',
                 data=json.dumps(
                     {
-                        'email': 'test@test.com',
-                        'password': 'test123'
+                        'email': 'falcon@newavengers.io',
+                        'password': 'NewCaptainAmerica'
                     }
                 ),
                 content_type='application/json'
@@ -364,8 +414,13 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(response.status_code, 200)
 
     def test_invalid_logout_expired_token(self):
-        user = User(username='test', email='test@test.com')
-        user.set_password('test123')
+        user = User(
+            username='black_panther',
+            email='tchalla@newavengers.io',
+            first_name='Tchalla',
+            last_name='Wakandan'
+        )
+        user.set_password('SomebodyGetThatManAShield!')
         user.save()
         current_app.config['TOKEN_EXPIRATION_SECONDS'] = -1
         with self.client:
@@ -373,8 +428,8 @@ class TestAuthEndpoints(BaseTestCase):
                 '/auth/login',
                 data=json.dumps(
                     {
-                        'email': 'test@test.com',
-                        'password': 'test123'
+                        'email': 'tchalla@newavengers.io',
+                        'password': 'SomebodyGetThatManAShield!'
                     }
                 ),
                 content_type='application/json'
@@ -417,16 +472,21 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(response.status_code, 403)
 
     def test_user_status(self):
-        user = User(username='test', email='test@test.com')
-        user.set_password('test123')
+        user = User(
+            username='scarlet_witch',
+            email='scarlet_witch@avengers.io',
+            first_name='Wanda',
+            last_name='Maximoff'
+        )
+        user.set_password('YouTookEverythingFromMe!')
         user.save()
         with self.client:
             resp_login = self.client.post(
                 '/auth/login',
                 data=json.dumps(
                     {
-                        'email': 'test@test.com',
-                        'password': 'test123'
+                        'email': 'scarlet_witch@avengers.io',
+                        'password': 'YouTookEverythingFromMe!'
                     }
                 ),
                 content_type='application/json'
@@ -441,8 +501,8 @@ class TestAuthEndpoints(BaseTestCase):
             data = json.loads(resp_status.data.decode())
             self.assertIn('success', data['status'])
             self.assertTrue(data['data'] is not None)
-            self.assertIn('test', data['data']['username'])
-            self.assertIn('test@test.com', data['data']['email'])
+            self.assertIn('scarlet_witch', data['data']['username'])
+            self.assertIn('scarlet_witch@avengers.io', data['data']['email'])
             self.assertTrue(data['data']['active'] is True)
             self.assertEqual(resp_status.status_code, 200)
 
@@ -459,8 +519,13 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(response.status_code, 401)
 
     def test_invalid_logout_inactivate(self):
-        user = User(username='test', email='test@test.com')
-        user.set_password('test123')
+        user = User(
+            username='captain_marvel',
+            email='most_hated_avenger@disney.com',
+            first_name='Carol',
+            last_name='Danvers'
+        )
+        user.set_password('OnlyHereBecauseOfFeminism')
         user.active = False
         user.save()
         with self.client:
@@ -468,8 +533,8 @@ class TestAuthEndpoints(BaseTestCase):
                 '/auth/login',
                 data=json.dumps(
                     {
-                        'email': 'test@test.com',
-                        'password': 'test123'
+                        'email': 'most_hated_avenger@disney.com',
+                        'password': 'OnlyHereBecauseOfFeminism'
                     }
                 ),
                 content_type='application/json'
@@ -489,8 +554,13 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(response.status_code, 401)
 
     def test_invalid_status_inactive(self):
-        user = User(username='test', email='test@test.com')
-        user.set_password('test123')
+        user = User(
+            username='hells_kitchen_devil',
+            email='daredevil@marvel.io',
+            first_name='Matthew',
+            last_name='Murdock'
+        )
+        user.set_password('BlindLawyer')
         user.active = False
         user.save()
         with self.client:
@@ -498,8 +568,8 @@ class TestAuthEndpoints(BaseTestCase):
                 '/auth/login',
                 data=json.dumps(
                     {
-                        'email': 'test@test.com',
-                        'password': 'test123'
+                        'email': 'daredevil@marvel.io',
+                        'password': 'BlindLawyer'
                     }
                 ),
                 content_type='application/json'

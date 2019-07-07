@@ -46,10 +46,12 @@ class TestUserService(BaseTestCase):
 
     def test_single_user(self):
         """Ensure we can get a single user works as expected."""
-        tony = User(username='iron_man',
-                    email='tony@starkindustries.com',
-                    first_name='Tony',
-                    last_name='Stark')
+        tony = User(
+            username='iron_man',
+            email='tony@starkindustries.com',
+            first_name='Tony',
+            last_name='Stark'
+        )
         tony.set_password('IAmTheRealIronMan')
         tony.save()
 
@@ -72,15 +74,18 @@ class TestUserService(BaseTestCase):
                 headers={'Authorization': 'Bearer {}'.format(token)}
             )
             data = json.loads(resp.data.decode())
+            print(data)
             self.assertEqual(resp.status_code, 200)
             self.assertIn('iron_man', data['username'])
             self.assertIn('tony@starkindustries.com', data['email'])
 
     def test_single_user_not_active(self):
-        tony = User(username='iron_man',
-                    email='tony@starkindustries.com',
-                    first_name = 'Tony',
-                    last_name = 'Stark')
+        tony = User(
+            username='iron_man',
+            email='tony@starkindustries.com',
+            first_name='Tony',
+            last_name='Stark'
+        )
         tony.set_password('IAmTheRealIronMan')
         tony.save()
 
@@ -132,10 +137,12 @@ class TestUserService(BaseTestCase):
             self.assertIn('fail', data['status'])
 
     def test_single_user_expired_token(self):
-        tony = User(username='iron_man',
-                    email='tony@starkindustries.com',
-                    first_name='Tony',
-                    last_name='Stark')
+        tony = User(
+            username='iron_man',
+            email='tony@starkindustries.com',
+            first_name='Tony',
+            last_name='Stark'
+        )
         tony.set_password('IAmTheRealIronMan')
         tony.save()
         current_app.config['TOKEN_EXPIRATION_SECONDS'] = -1
@@ -178,14 +185,21 @@ class TestUserService(BaseTestCase):
 
     def test_unauthorized_get_all_users(self):
         """Ensure we can't get all users because we are not authorized."""
-        tony = User(username='iron_man',
-                    email='tony@starkindustries.com',
-                    first_name='Tony',
-                    last_name='Stark')
+        tony = User(
+            username='iron_man',
+            email='tony@starkindustries.com',
+            first_name='Tony',
+            last_name='Stark'
+        )
         tony.set_password('IAmTheRealIronMan')
         tony.is_admin = False
         tony.save()
-        nat = User(username='black_widow', email='nat@shield.gov.us')
+        nat = User(
+            username='black_widow',
+            email='nat@shield.gov.us',
+            first_name='Natasha',
+            last_name='Romanoff'
+        )
         nat.set_password('IveGotRedInMyLedger')
         nat.save()
 
@@ -214,10 +228,12 @@ class TestUserService(BaseTestCase):
             self.assertIn('Not authorized.', data['message'])
 
     def test_get_all_users_expired_token(self):
-        thor = User(username='thor',
-                    email='thor@avengers.io',
-                    first_name='Thor',
-                    last_name='Odinson')
+        thor = User(
+            username='thor',
+            email='thor@avengers.io',
+            first_name='Thor',
+            last_name='Odinson'
+        )
         thor.set_password('StrongestAvenger')
         thor.is_admin = True
         thor.save()
@@ -250,23 +266,29 @@ class TestUserService(BaseTestCase):
 
     def test_get_all_users(self):
         """Ensure we can get all users if logged in ant authorized."""
-        tony = User(username='iron_man',
-                    email='tony@starkindustries.com',
-                    first_name='Tony',
-                    last_name='Stark')
+        tony = User(
+            username='iron_man',
+            email='tony@starkindustries.com',
+            first_name='Tony',
+            last_name='Stark'
+        )
         tony.set_password('IAmTheRealIronMan')
         tony.is_admin = True
         tony.save()
-        steve = User(username='cap',
-                     email='steve@avengers.io',
-                     first_name='Steve',
-                     last_name='Rogers')
+        steve = User(
+            username='cap',
+            email='steve@avengers.io',
+            first_name='Steve',
+            last_name='Rogers'
+        )
         steve.set_password('ICanDoThisAllDay')
         steve.save()
-        nat = User(username='black_widow',
-                   email='nat@shield.gov.us',
-                   first_name='Natasha',
-                   last_name='Romanoff')
+        nat = User(
+            username='black_widow',
+            email='nat@shield.gov.us',
+            first_name='Natasha',
+            last_name='Romanoff'
+        )
         nat.set_password('IveGotRedInMyLedger')
         nat.save()
 

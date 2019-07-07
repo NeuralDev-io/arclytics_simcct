@@ -50,6 +50,8 @@ def register_user():
     email = post_data.get('email', '')
     username = post_data.get('username', '')
     password = post_data.get('password', '')
+    first_name = post_data.get('first_name', '')
+    last_name = post_data.get('last_name', '')
 
     if not email:
         response['message'] = 'A user account must have an email.'

@@ -23,8 +23,14 @@ import datetime
 import jwt
 from typing import Union
 
+import json
 from bson import ObjectId
-from mongoengine import Document, StringField, EmailField, BooleanField, DateTimeField
+from mongoengine import (Document,
+                         StringField,
+                         EmailField,
+                         BooleanField,
+                         DateTimeField,
+                         EmbeddedDocumentListField)
 from flask import current_app
 
 from logger.arc_logger import AppLogger
@@ -32,7 +38,7 @@ from api import bcrypt, JSONEncoder
 
 logger = AppLogger(__name__)
 # User type choices
-USERS = (('1', 'ADMIN'), ('2', 'USER'))
+USERS = ((1, 'ADMIN'), (2, 'USER'))
 
 
 # ========== # CUSTOM EXCEPTIONS # ========== #
@@ -44,17 +50,23 @@ class PasswordValidationError(Exception):
               self).__init__('A password must be set before saving.')
 
 
-# ========== # MODELS SCHEMA # ========== #
+# ========== # DOCUMENTS MODELS SCHEMA # ========== #
 class User(Document):
     email = EmailField(required=True, unique=True)
     password = StringField(default=None,
-                           max_length=255,
+                           max_length=64,
                            null=False,
                            min_length=6)
-    # first_name = StringField(required=True)
-    # last_name = StringField(required=True)
+    first_name = StringField(required=True)
+    last_name = StringField(required=True)
     username = StringField(required=True, unique=True)
-    # user_type = StringField(required=True, max_length=1, choices=USERS)
+    user_type = StringField(required=True, max_length=1, choices=USERS, default=USERS[1][0])
+    profile = EmbeddedDocumentListField()
+    # TODO: Make these
+    # saved_configurations = EmbeddedDocumentListField(document_type=Configurations)
+    # saved_compositions = EmbeddedDocumentListField(document_type=Compositions)
+
+    # Some rather useful metadata information that's not core to the definition of a user
     active = BooleanField(default=True)
     is_admin = BooleanField(default=False, name='admin')
     verified = BooleanField(default=False)
@@ -88,6 +100,10 @@ class User(Document):
             'last_updated': self.last_updated,
             'last_login': self.last_login,
         }
+
+    def to_response(self, *args, **kwargs) -> json:
+        """Simple helper method to get a json class from a string returned by mongoengine.Document.to_json()."""
+        return json.loads(self.to_json())
 
     @staticmethod
     def encode_auth_token(user_id: ObjectId) -> Union[bytes, None]:
@@ -147,3 +163,5 @@ class User(Document):
 
     # def __str__(self):
     #     pass
+
+# ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #

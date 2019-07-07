@@ -22,7 +22,7 @@ This file defines all the API resource routes and controller definitions using t
 import json
 from bson import ObjectId
 
-from flask import Blueprint
+from flask import Blueprint, jsonify, make_response
 from flask_restful import Resource, Api, reqparse
 
 from api import JSONEncoder
@@ -129,7 +129,8 @@ class Users(Resource):
         # Validation check for User exists done in authenticate_restful decorator
         user = User.objects.get(id=user_id)
         response['status'] = 'success'
-        response['data'] = user.to_dict()
+        response['message'] = 'Here you go.'
+        response['data'] = user.to_response()
 
         return response, 200
 

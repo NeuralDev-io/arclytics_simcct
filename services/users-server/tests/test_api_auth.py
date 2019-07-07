@@ -266,7 +266,7 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(response.status_code, 404)
 
     def test_bad_auth_token_encoding(self):
-        user = User(username='test', email='test@test.com')
+        user = User(username='test', email='test@test.com', user_type='2')
         user.set_password('wrongpassword')
         user.save()
         with self.client:

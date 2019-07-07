@@ -1,18 +1,18 @@
 {
   "openapi": "3.0.2",
   "info": {
-    "version": "0.0.1",
+    "version": "0.0.2",
     "title": "Arclytics Sim API",
-    "description": "Swagger spec for documenting the users service"
+    "description": "Swagger spec for documenting the users and simulation service"
   },
   "servers": [
     {
-      "description": "Users Server Service",
+      "description": "Users Service Flask Server",
       "url": "http://localhost",
-      "port": "8001"
+      "port": "8000"
     },
     {
-      "description": "SimCCT Server Service",
+      "description": "SimCCT Service Flask Server",
       "url": "http://localhost",
       "port": "8001"
     }

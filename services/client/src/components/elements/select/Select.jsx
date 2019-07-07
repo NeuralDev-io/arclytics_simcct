@@ -17,7 +17,7 @@ import PropTypes from 'prop-types'
 import ReactSelect from 'react-select'
 
 import styles from './Select.module.scss'
-import colours from '../../styles/_colors_light.scss'
+import colours from '../../../styles/_colors_light.scss'
 
 const Select = (props) => {
   const {
@@ -70,7 +70,7 @@ const Select = (props) => {
         if (state.isDisabled) return colours.n300
         if (state.hasValue) return colours.n900
         return colours.n600
-      })()
+      })(),
     }),
     option: provided => ({
       ...provided,

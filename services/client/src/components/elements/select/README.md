@@ -6,7 +6,7 @@
 
 ```react
 import React, { Component } from 'react'
-import { Select } from '~atoms/form'
+import Select from '~/components/atoms/select'
 
 class App extends Component {
   constructor(props) {

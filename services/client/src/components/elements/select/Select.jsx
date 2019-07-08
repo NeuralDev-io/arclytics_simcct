@@ -19,6 +19,7 @@ import ReactSelect from 'react-select'
 import styles from './Select.module.scss'
 import colours from '../../../styles/_colors_light.scss'
 
+// TODO: include validation
 const Select = (props) => {
   const {
     length,

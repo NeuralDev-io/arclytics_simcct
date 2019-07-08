@@ -20,13 +20,12 @@ __date__ = '2019.07.03'
 This file defines all the API resource routes and controller definitions using 
 the Flask Resource inheritance model.
 """
-import json
-from bson import ObjectId
 
-from flask import Blueprint, jsonify, make_response
+import json
+
+from flask import Blueprint, make_response
 from flask_restful import Resource, Api, reqparse
 
-from api import JSONEncoder
 from logger.arc_logger import AppLogger
 from api.models import User
 from api.auth_decorators import authenticate_restful, authenticate_admin
@@ -52,15 +51,14 @@ class UsersList(Resource):
 
     def get(self, resp):
         """Get all users only available to admins."""
-        queryset = User.objects()
-        # The QuerySet.to_json() method returns a string. We use json.loads() to make it a Python dict.
+        user_list = User.as_dict
         response = {
             'status': 'success',
             'data': {
-                'users': json.loads(queryset.to_json())
+                'users': user_list
             }
         }
-        return response, 200
+        return response, 200, {'content-type': 'application/json'}
 
 
 # TODO
@@ -142,8 +140,7 @@ class Users(Resource):
         # Validation check for User exists done in authenticate_restful
         # decorator
         user = User.objects.get(id=user_id)
-        from flask import make_response
-        return make_response(user.to_json(), 200)
+        return user.to_json(), 200, {'content-type': 'application/json'}
 
 
 # ========== # RESOURCE ROUTES # ========== #

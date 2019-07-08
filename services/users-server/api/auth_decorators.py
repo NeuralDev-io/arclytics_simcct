@@ -104,7 +104,7 @@ def authenticate_admin(f):
         auth_header = request.headers.get('Authorization', '')
 
         if not auth_header:
-            return response, 403
+            return response, 400
 
         # auth_header = 'Bearer token'
         auth_token = auth_header.split(' ')[1]
@@ -119,6 +119,10 @@ def authenticate_admin(f):
         if not admin or not admin.is_admin:
             response['message'] = 'Not authorized.'
             return response, 403
+
+        if not admin.active:
+            response['message'] = 'Admin must sign in again.'
+            return response, 401
 
         return f(resp, *args, **kwargs)
 

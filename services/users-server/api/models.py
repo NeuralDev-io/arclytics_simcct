@@ -27,8 +27,8 @@ from typing import Union
 from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
-    DateTimeField, EmbeddedDocumentField
-)
+    DateTimeField, EmbeddedDocumentField,
+    queryset_manager)
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
@@ -56,8 +56,8 @@ class PasswordValidationError(Exception):
 
 class UserProfile(EmbeddedDocument):
     # Not having this for now until we can figure out where to store the photos
-    # TODO: Uncomment Pillow depdencneis Dockerfile to use and
-    #  install Pillow==6.1.0
+    # TODO(andrew@neuraldev.io): Uncomment Pillow dependencies Dockerfile to use
+    #  and install Pillow==6.1.0
     # profile_photo = ImageField(
     #     required=False,
     #     size=(800, 600, True),
@@ -105,7 +105,7 @@ class AdminProfile(EmbeddedDocument):
     position = StringField(max_length=255, required=True)
     mobile_number = StringField(max_length=11, min_length=10)
 
-    def to_json(self) -> dict:
+    def to_dict(self) -> dict:
         """
         Simple EmbeddedDocument.AdminProfile helper method to get a
         Python dict back.
@@ -185,7 +185,7 @@ class User(Document):
         }
 
         if self.admin_profile is not None:
-            user['admin_profile'] = self.admin_profile.to_json()
+            user['admin_profile'] = self.admin_profile.to_dict()
 
         return user
 
@@ -256,6 +256,23 @@ class User(Document):
 
         if self.last_updated is None:
             self.last_updated = self.created
+
+    @queryset_manager
+    def as_dict(doc_cls, queryset) -> list:
+        """Adding an additional QuerySet context method to return a list of
+        `api.models.Users` Documents instead of a QuerySet.
+
+        Usage:
+            users_list = User.as_dict()
+
+        Args:
+            queryset: the queryset that must is accepted as part of the Mongo
+                      BSON parameter.
+
+        Returns:
+            A list with every Users Document object converted to dict.
+        """
+        return [obj.to_dict() for obj in queryset]
 
     def __str__(self):
         return self.to_json()

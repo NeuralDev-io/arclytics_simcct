@@ -74,7 +74,6 @@ class TestUserService(BaseTestCase):
                 headers={'Authorization': 'Bearer {}'.format(token)}
             )
             data = json.loads(resp.data.decode())
-            print(data)
             self.assertEqual(resp.status_code, 200)
             self.assertIn('iron_man', data['username'])
             self.assertIn('tony@starkindustries.com', data['email'])
@@ -178,7 +177,7 @@ class TestUserService(BaseTestCase):
                 '/users', content_type='application/json', headers={}
             )
             data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 403)
+            self.assertEqual(resp.status_code, 400)
             self.assertIn('fail', data['status'])
             self.assertNotIn('data', data)
             self.assertIn('Provide a valid JWT auth token.', data['message'])

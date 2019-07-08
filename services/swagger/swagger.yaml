@@ -3,12 +3,17 @@ info:
   version: 0.0.2
   title: Arclytics Sim API
   description: Swagger spec for documenting the users and simulation service
+
+
 servers:
   - description: Users Service Flask Server
     url: 'http://localhost:8000'
   - description: SimCCT Service Flask Server
     url: 'http://localhost:8001'
+
+
 paths:
+
   /ping:
     get:
       summary: Just a sanity check
@@ -29,7 +34,7 @@ paths:
               example:
                 status: success
                 message: pong!
-  # TODO:
+
   /users:
     get:
       summary: Returns all users
@@ -43,7 +48,42 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/user'
+                  $ref: '#/components/schemas/User'
+                example:
+                  - _id: 5d2339db2d789ae1a9f15a9e
+                    email: tony@starkindustries.com
+                    username: iron_man
+                    first_name: Tony
+                    last_name: Stark
+                    active: true
+                    admin: true
+                    created: '2019-07-08T12:40:55.948000+00:00'
+                    last_updated: '2019-07-08T12:40:55.948000+00:00'
+                    last_login: '2019-07-08T12:40:59.168000+00:00'
+                    profile: None
+                  - _id: 5d2339db2d789ae1a9f15a9f
+                    email: steve@avengers.io
+                    username: captain_america
+                    first_name: Steve
+                    last_name: Rogers
+                    active: false
+                    admin: false
+                    created: '2019-07-08T12:40:55.948000+00:00'
+                    last_updated: '2019-07-08T12:40:55.948000+00:00'
+                    last_login: None
+                    profile: None
+                  - _id: 5d2339db2d789ae1a9f15aa0
+                    email: nat@shield.gov.us
+                    username: black_widow
+                    first_name: Natasha
+                    last_name: Romanoff
+                    active: false
+                    admin: false
+                    verified: true
+                    created: '2019-07-08T12:40:55.948000+00:00'
+                    last_updated: '2019-07-08T12:40:55.948000+00:00'
+                    last_login: None
+                    profile: None
         '400':
           description: The request parameters are bad.
           content:
@@ -101,6 +141,7 @@ paths:
                   value:
                     status: fail
                     message: Not authorized.
+
   '/users/{id}':
     get:
       summary: Returns a user based on a single user ID
@@ -129,7 +170,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/user'
+                      $ref: '#/components/schemas/User'
         '400':
           description: The request parameters are bad.
           content:
@@ -171,6 +212,7 @@ paths:
                   value:
                     status: fail
                     message: Invalid token. Please log in again.
+
   /auth/register:
     post:
       summary: Register and create a new user
@@ -199,13 +241,58 @@ paths:
                 - last_name
                 - username
       responses:
-        '200':
-          description: user object
+        '201':
+          description: Successful registration.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/user'
-  #TODO:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: User has been registered
+                  auth_token:
+                    type: string
+                    format: byte
+                    example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjI1OTAzOTYsImlhdCI6MTU2MjU5MDM5MSwic3ViIjoiNWQyMzNjYjcxODE3YjIwNzU5NjZkNWJiIn0.SNRHYOgw2jAkIVWkuWA0a_PXu9S_QGcb2W7wrvXlqQk
+        '400':
+          description: Invalid payload in request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Bad Request Body':
+                  value:
+                    status: fail
+                    message: Invalid payload.
+                'No Email':
+                  value:
+                    status: fail
+                    message: A user account must have an email.
+                'No Password':
+                  value:
+                    status: fail
+                    message: A user account must have a password.
+                'Invalid Password':
+                  value:
+                    status: fail
+                    message: The password is invalid.
+                'Duplicate User':
+                  value:
+                    status: fail
+                    message: This user already exists.
+                'Validation Error on Backend':
+                  value:
+                    status: fail
+                    message: This user cannot be validated.
+                'Unique Consistency Error':
+                  value:
+                    status: fail
+                    message: The user details already exists.
   /auth/login:
     post:
       summary: Logs a user in
@@ -224,9 +311,15 @@ paths:
               required:
                 - email
                 - password
-            example:
-              email: tony@avengers.io
-              password: IAmIronMan
+            examples:
+              'Tony Stark':
+                value:
+                  email: tony@avengers.io
+                  password: IAmIronMan
+              'Peter Parker':
+                value:
+                  email: spiderman@newavengers.io
+                  password: SpideySenses
       responses:
         '200':
           description: Successfully logged in
@@ -241,19 +334,135 @@ paths:
                   message:
                     type: string
                     description: The message response
+                  status:
+                    type: string
+                    description: The status of the request
+              examples:
+                'Tony Stark':
+                  value:
+                    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjI1ODQ4NTIsImlhdCI6MTU2MjU4NDg0Nywic3ViIjoiNWQyMzI3MGY1NmVjNWRlOTU4MTI2MTEzIn0.DZwBE1IDUY-RLVoGugnnAq2_zm_PHnu2ECkhKEaOst0
+                    message: Successfully logged in.
+                    status: success
+                'Peter Parker':
+                  value:
+                    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjI1ODQ4NTIsImlhdCI6MTU2MjU4NDg0Nywic3ViIjoiNWQyMzI3MGY1NmVjNWRlOTU4MTI2MTEyIn0.XTd4KbTchN-1I9r07xUnPom6xCWDEWi2eOoBe14Xi1Q
+                    message: Successfully logged in.
+                    status: success
+        '400':
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Payloard':
+                  value:
+                    status: fail
+                    message: Invalid payload.
+                'No Email':
+                  value:
+                    status: fail
+                    message: You must provide an email.
+                'No Password':
+                  value:
+                    status: fail
+                    message: You must provide a password.
+                'Bad Password':
+                  value:
+                    status: fail
+                    message: Email or password combination incorrect.
+        '404':
+          description: Could not find a user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
               example:
-                token: 5d21ae0591d133a14725ad6c
-                message: Successfully logged in.
-  # TODO:
+                value:
+                  status: fail
+                  message: User does not exist.
+        default:
+          description: Something went wrong with validating details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                value:
+                  status: fail
+                  message: Email or password combination incorrect.
+
   /auth/status:
     get:
-      summary: Returns the logged in user's status
+      summary: Returns the logged in user's status and details.
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: api.models.User object
-  # TODO:
+          description: Response status and the user details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/User'
+              example:
+                status: success
+                data:
+                  _id: 5d2340060f8b5fa4a8daca91
+                  email: scarlet_witch@avengers.io
+                  username: scarlet_witch
+                  first_name: Wanda
+                  last_name: Maximoff
+                  active: true
+                  admin: false
+                  verified: false
+                  created: '2019-07-08T13:07:16.080000+00:00'
+                  last_updated: '2019-07-08T13:07:16.080000+00:00'
+                  last_login: '2019-07-08T13:07:18.042000+00:00'
+                  profile: None
+        '400':
+          description: Bad request body provided with no JSON Web Token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Auth Header':
+                  value:
+                    status: fail
+                    message: Provide a valid JWT auth token.
+        '401':
+          description: The user is not authenticated to perform this request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Non Active User':
+                  value:
+                    status: fail
+                    message: This user does not exist.
+                'Expired Token':
+                  value:
+                    status: fail
+                    message: Signature expired. Please login again.
+                'Invalid Token':
+                  value:
+                    status: fail
+                    message: Invalid token. Please log in again.
+
   /auth/logout:
     get:
       summary: Logs a user out
@@ -262,13 +471,63 @@ paths:
       responses:
         '200':
           description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                value:
+                  status: success
+                  message: Successfully logged out.
+        '400':
+          description: Bad request body provided with no JSON Web Token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Auth Header':
+                  value:
+                    status: fail
+                    message: Provide a valid JWT auth token.
+        '401':
+          description: The user is not authenticated to perform this request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Non Active User':
+                  value:
+                    status: fail
+                    message: This user does not exist.
+                'Expired Token':
+                  value:
+                    status: fail
+                    message: Signature expired. Please login again.
+                'Invalid Token':
+                  value:
+                    status: fail
+                    message: Invalid token. Please log in again.
+
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
+
+
   schemas:
-    user:
+    User:
+      type: object
       properties:
         _id:
           type: string
@@ -339,10 +598,11 @@ components:
           format: date-time
           required: false
         profile:
-          $ref: '#/components/schemas/userProfile'
+          $ref: '#/components/schemas/UserProfile'
         admin_profile:
-          $ref: '#/components/schemas/adminProfile'
-    userProfile:
+          $ref: '#/components/schemas/AdminProfile'
+    UserProfile:
+      type: object
       properties:
         aim:
           description: What sentene best describes you?
@@ -360,7 +620,8 @@ components:
           description: What is your experience with solid-state phse transformation?
           type: string
           format: string
-    adminProfile:
+    AdminProfile:
+      type: object
       properties:
         mobile_number:
           type: string
@@ -370,3 +631,9 @@ components:
         position:
           type: string
           format: string
+    Response:
+      properties:
+        message:
+          type: string
+        status:
+          type: string

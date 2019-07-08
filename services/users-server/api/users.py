@@ -28,7 +28,7 @@ from flask_restful import Resource, Api, reqparse
 
 from logger.arc_logger import AppLogger
 from api.models import User
-from api.auth_decorators import authenticate_restful, authenticate_admin
+from api.middleware import login_required, authenticate_admin
 
 users_blueprint = Blueprint('users', __name__)
 api = Api(users_blueprint)
@@ -61,7 +61,7 @@ class UsersList(Resource):
         return response, 200, {'content-type': 'application/json'}
 
 
-# TODO
+# TODO(andrew@neuraldev.io -- Sprint 6)
 # class AdminCreate(Resource):
 #     """Route for Users for Create Admin."""
 
@@ -102,35 +102,13 @@ class UsersList(Resource):
 class Users(Resource):
     """Resource for User Retrieve."""
 
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument(
-            'email',
-            type=str,
-            help='This field cannot be blank.',
-            required=True
-        )
-        self.reqparse.add_argument(
-            'username',
-            type=str,
-            help='This field cannot be blank.',
-            required=False
-        )
-        self.reqparse.add_argument(
-            'password',
-            type=str,
-            help='This field cannot be blank.',
-            required=True
-        )
-
     method_decorators = {
-        'get': [authenticate_restful],
-        'update': [authenticate_restful]
+        'get': [login_required],
+        'update': [login_required]
     }
 
     def get(self, user_id):
         """Get a single user detail with query as user_id."""
-        response = {'status': 'fail', 'message': 'User does not exist.'}
 
         # Validation check fo ObjectId done in authenticate_restful decorator
         # if not ObjectId.is_valid(user_id):
@@ -140,7 +118,11 @@ class Users(Resource):
         # Validation check for User exists done in authenticate_restful
         # decorator
         user = User.objects.get(id=user_id)
-        return user.to_json(), 200, {'content-type': 'application/json'}
+        response = {
+            'status': 'success',
+            'data': user.to_dict()
+        }
+        return response, 200, {'content-type': 'application/json'}
 
 
 # ========== # RESOURCE ROUTES # ========== #

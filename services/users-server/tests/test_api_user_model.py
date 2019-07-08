@@ -33,6 +33,8 @@ from api.models import User, PasswordValidationError, USERS
 
 
 class TestUserModel(BaseTestCase):
+    """Run direct tests on the User model without an API call."""
+
     def test_user_model_schema(self):
         self.assertIsInstance(User.__base__, Document.__class__)
         self.assertIsInstance(User.email, EmailField)
@@ -62,6 +64,8 @@ class TestUserModel(BaseTestCase):
         user.set_password('IAmIronMan')
         user.save()
         self.assertTrue(user.id)
+        self.assertEqual(user.first_name, 'Andrew')
+        self.assertEqual(user.last_name, 'Che')
         self.assertEqual('codeninja55', user.username)
         self.assertEqual('andrew@neuraldev.io', user.email)
         self.assertEqual(user.last_updated, user.created)

@@ -20,9 +20,9 @@ This module stores the mongoengine.Document models for the Arclytics API Users
 microservice.
 """
 
-import datetime
 import jwt
-from typing import Union
+from datetime import datetime, tzinfo, timedelta
+from typing import Union, Optional
 
 from bson import ObjectId
 from mongoengine import (
@@ -39,7 +39,8 @@ logger = AppLogger(__name__)
 USERS = (('1', 'ADMIN'), ('2', 'USER'))
 
 
-# ========== # CUSTOM EXCEPTIONS # ========== #
+# ========== # UTILITIES # ========== #
+# TODO(andrew@neuraldev.io): move these to a separate file at some point.
 class PasswordValidationError(Exception):
     """
     Raises an Exception if now password was set before trying to save
@@ -49,6 +50,14 @@ class PasswordValidationError(Exception):
     def __init__(self):
         super(PasswordValidationError,
               self).__init__('A password must be set before saving.')
+
+
+class SimpleUTC(tzinfo):
+    def tzname(self, dt: Optional[datetime]) -> Optional[str]:
+        return 'UTC'
+
+    def utcoffset(self, dt: Optional[datetime]) -> Optional[timedelta]:
+        return timedelta(0)
 
 
 # ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
@@ -145,9 +154,9 @@ class User(Document):
     verified = BooleanField(default=False)
     # Make sure when converting these that it follows ISO8601 format as
     # defined in settings.DATETIME_FMT
-    created = DateTimeField(default=datetime.datetime.utcnow(), null=False)
+    created = DateTimeField(default=datetime.utcnow(), null=False)
     last_updated = DateTimeField(default=None, null=False)
-    last_login = DateTimeField(default=None)
+    last_login = DateTimeField()
     # Define the collection and indexing for this document
     meta = {'collection': 'users'}
 
@@ -164,7 +173,7 @@ class User(Document):
         """Simple Document.User helper method to get a Python dict back."""
         last_login = None
         if self.last_login is not None:
-            last_login = self.last_login.isoformat()
+            last_login = self.last_login.replace(tzinfo=SimpleUTC()).isoformat()
         profile = None
         if self.profile is not None:
             profile = self.profile.to_dict()
@@ -178,8 +187,10 @@ class User(Document):
             'active': self.active,
             'admin': self.is_admin,
             'verified': self.verified,
-            'created': str(self.created.isoformat()),
-            'last_updated': str(self.last_updated.isoformat()),
+            'created':
+                str(self.created.replace(tzinfo=SimpleUTC()).isoformat()),
+            'last_updated':
+                str(self.last_updated.replace(tzinfo=SimpleUTC()).isoformat()),
             'last_login': str(last_login),
             'profile': profile
         }
@@ -201,16 +212,14 @@ class User(Document):
         """Generates JWT auth token that is returned as bytes."""
         try:
             payload = {
-                'exp':
-                datetime.datetime.utcnow() + datetime.timedelta(
-                    days=current_app.config.get('TOKEN_EXPIRATION_DAYS', 0),
-                    seconds=current_app.config.
-                    get('TOKEN_EXPIRATION_SECONDS', 0)
+                'exp': datetime.utcnow() + timedelta(
+                    days=current_app.config
+                        .get('TOKEN_EXPIRATION_DAYS', 0),
+                    seconds=current_app.config
+                        .get('TOKEN_EXPIRATION_SECONDS', 0)
                 ),
-                'iat':
-                datetime.datetime.utcnow(),
-                'sub':
-                user_id
+                'iat': datetime.utcnow(),
+                'sub': user_id
             }
 
             return jwt.encode(

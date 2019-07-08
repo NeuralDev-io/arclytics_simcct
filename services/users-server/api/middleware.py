@@ -38,7 +38,7 @@ def authenticate(f):
         auth_header = request.headers.get('Authorization', '')
 
         if not auth_header:
-            return jsonify(response), 403
+            return jsonify(response), 400
 
         # auth_header = 'Bearer token'
         auth_token = auth_header.split(' ')[1]
@@ -54,6 +54,7 @@ def authenticate(f):
         # Validate the user is active
         user = User.objects.get(id=resp)
         if not user or not user.active:
+            response['message'] = 'This user does not exist.'
             return jsonify(response), 401
 
         return f(resp, *args, **kwargs)
@@ -61,7 +62,7 @@ def authenticate(f):
     return decorated_func
 
 
-def authenticate_restful(f):
+def login_required(f):
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {
@@ -74,7 +75,7 @@ def authenticate_restful(f):
         if not auth_header:
             return response, 400
 
-        # auth_header = 'Bearer token'
+        # auth_header = 'Bearer {token}'
         auth_token = auth_header.split(' ')[1]
 
         resp = User.decode_auth_token(auth_token=auth_token)

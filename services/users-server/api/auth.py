@@ -20,15 +20,16 @@ This script describes the Users authentication endpoints for registration,
 login, and logout.
 """
 
-from bson import ObjectId
+from datetime import datetime
+
 from flask import Blueprint, jsonify, request
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from api.models import User
 from api import bcrypt
-
 from logger.arc_logger import AppLogger
-from api.auth_decorators import authenticate
+from api.middleware import authenticate
+from api.models import SimpleUTC
 
 logger = AppLogger(__name__)
 
@@ -62,7 +63,7 @@ def register_user():
         response['message'] = 'A user account must have a password.'
         return jsonify(response), 400
 
-    if len(str(password)) < 6 or len(str(password)) > 254:
+    if len(str(password)) < 6 or len(str(password)) > 120:
         response['message'] = 'The password is invalid.'
         return jsonify(response), 400
 
@@ -89,7 +90,7 @@ def register_user():
         auth_token = new_user.encode_auth_token(new_user.id)
         response['status'] = 'success'
         response['message'] = 'User has been registered.'
-        response['auth_token'] = auth_token.decode()
+        response['token'] = auth_token.decode()
         return jsonify(response), 201
 
     except ValidationError as e:
@@ -120,6 +121,7 @@ def login():
     email = post_data.get('email', '')
     password = post_data.get('password', '')
 
+    # Validate some of these
     if not email:
         response['message'] = 'You must provide an email.'
         return jsonify(response), 400
@@ -141,9 +143,13 @@ def login():
     if bcrypt.check_password_hash(user.password, password):
         auth_token = user.encode_auth_token(user.id)
         if auth_token:
+            # Let's save some stats for later
+            user.last_login = datetime.utcnow()
+            user.save()
+
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
-            response['auth_token'] = auth_token.decode()
+            response['token'] = auth_token.decode()
             return jsonify(response), 200
 
     response['message'] = 'Email or password combination incorrect.'
@@ -166,7 +172,6 @@ def get_user_status(resp):
     user = User.objects.get(id=resp)
     response = {
         'status': 'success',
-        'message': 'User status good.',
         'data': user.to_dict()
     }
     return jsonify(response), 200

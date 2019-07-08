@@ -88,12 +88,18 @@ paths:
                     type: string
                     format: string
               examples:
-                SignedOut:
+                'Not Active':
                   value:
                     status: fail
                     message: User must sign in again.
-
-  # TODO:
+                'Expired Token':
+                  value:
+                    status: fail
+                    message: Signature expired. Please login again.
+                'Invalid Token':
+                  value:
+                    status: fail
+                    message: Invalid token. Please log in again.
   /auth/register:
     post:
       summary: Register and create a new user
@@ -193,14 +199,11 @@ components:
     user:
       properties:
         _id:
-          type: object
-          properties:
-            $oid:
-              type: string
-              format: byte
-              required: false
-              readOnly: true
-              uniqueItems: true
+          type: string
+          format: byte
+          required: false
+          readOnly: true
+          uniqueItems: true
         email:
           type: string
           format: email

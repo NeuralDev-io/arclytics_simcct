@@ -1,14 +1,30 @@
-# This is a sample build configuration for Python.
-# Check our guides at https://confluence.atlassian.com/x/x4UWN for more examples.
-# Only use spaces to indent your .yml configuration.
-# -----
-# You can specify a custom docker image from Docker Hub as your build environment.
-image: python:3.7.2
+image: docker:stable
+
+options:
+  docker: true
 
 pipelines:
-  default:
-    - step:
-        caches:
-          - pip
-        script: # Modify the commands below to build your repository.
-          - pip install -r requirements.txt
+  branches:
+    develop:
+      - step:
+          services:
+            - docker
+          caches:
+            - pip3
+            - docker
+            - node
+            - pip
+          script:
+            - apk add --quiet py3-pip bash python3 python3-dev
+            - apk add --quiet build-base libffi-dev openssl-dev libgcc
+            - pip3 install --quiet --cache-dir ~/.pip3/cache --upgrade pip
+            - pip3 install --quiet --cache-dir ~/.pip3/cache docker-compose==1.24.0
+            - docker-compose -v
+            - docker-compose up -d --build
+            # This should start the test runner for the API server
+            - docker-compose exec -T users-server python manage.py test_coverage
+            - docker-compose down
+
+definitions:
+  caches:
+    pip3: ~/.pip3/cache

@@ -1,0 +1,223 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "version": "0.0.2",
+    "title": "Arclytics Sim API",
+    "description": "Swagger spec for documenting the users and simulation service"
+  },
+  "servers": [
+    {
+      "description": "Users Service Flask Server",
+      "url": "http://localhost"
+    },
+    {
+      "description": "SimCCT Service Flask Server",
+      "url": "http://localhost"
+    }
+  ],
+  "paths": {
+    "/ping": {
+      "get": {
+        "summary": "Just a sanity check",
+        "responses": {
+          "200": {
+            "description": "Successful sanity checking.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {"type":  "string", "description":  "The status of `success` or `fail`."},
+                    "message": {"type":  "string", "description":  "The message response"}
+                  }
+                },
+                "example": {
+                  "status": "success",
+                  "message": "pong!"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "summary": "Returns all users",
+        "security": [
+          {"bearerAuth": []}
+        ],
+        "responses": {
+          "200": {"description": "user object"}
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "summary": "Returns a user based on a single user ID",
+        "parameters": [{
+          "name": "id",
+          "in": "path",
+          "description": "ID of user to fetch",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "ObjectId"
+          }
+        }],
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "api.models.User object"}
+        },
+        "requestBody": {
+          "description": "Get the user detail from the system",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {"type": "string"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "Register and create a new user",
+        "requestBody": {
+          "description": "User details to add",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {"type": "string"},
+                  "password": {"type": "string"},
+                  "username": {"type":  "string"}
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "user object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Logs a user in",
+        "requestBody": {
+          "description": "User to log in",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {"type": "string"},
+                  "password": {"type": "string"}
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              },
+              "example": {
+                "email": "tony@avengers.io",
+                "password": "IAmIronMan"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully logged in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {"type":  "string", "description":  "The JWT Token"},
+                    "message": {"type":  "string", "description":  "The message response"}
+                  }
+                },
+                "example": {
+                  "token": "lkj12309isdfjl1j23lkjsdlkfkjhsdfsdf",
+                  "message": "Successfully logged in."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/status": {
+      "get": {
+        "summary": "Returns the logged in user's status",
+        "security": [
+          {"bearerAuth": []}
+        ],
+        "responses": {
+          "200": {"description": "api.models.User object"}
+        }
+      }
+    },
+    "/auth/logout": {
+      "get": {
+        "summary": "Logs a user out",
+        "security": [
+          {"bearerAuth": []}
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully logged out"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "user": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

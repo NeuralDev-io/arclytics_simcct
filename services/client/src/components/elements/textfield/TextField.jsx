@@ -11,10 +11,62 @@
  * @author Dalton Le
  */
 
-import React from 'react'
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 
-const TextField = () => (
-  <div>Am a text field.</div>
-)
+import styles from './TextField.module.scss'
+
+// TODO: include validation
+class TextField extends Component {
+  handleChange = (e) => {
+    const { onChange } = this.props
+    onChange(e.target.value)
+  }
+
+  render() {
+    const {
+      placeholder = 'Input',
+      isDisabled = false,
+      type = 'text',
+      className = '',
+      value = '',
+      length = 'default',
+      name,
+    } = this.props
+    const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${className || ''}`
+
+    return (
+      <input
+        type={type}
+        className={classname}
+        placeholder={placeholder}
+        name={name}
+        value={value}
+        onChange={e => this.handleChange(e)}
+        disabled={isDisabled}
+      />
+    )
+  }
+}
+
+TextField.propTypes = {
+  name: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  length: PropTypes.string,
+  value: PropTypes.string,
+  type: PropTypes.string,
+  placeholder: PropTypes.string,
+  isDisabled: PropTypes.bool,
+  className: PropTypes.string,
+}
+
+TextField.defaultProps = {
+  type: 'text',
+  length: 'default',
+  placeholder: 'Input',
+  isDisabled: false,
+  className: '',
+  value: '',
+}
 
 export default TextField

@@ -68,7 +68,7 @@ services:
     image: arc_sim_swagger:development
     container_name: arc_sim_swagger
     volumes:
-      - ./services/swagger/swagger.yml:/usr/share/nginx/html/swagger.yml
+      - ./services/swagger/swagger.yaml:/usr/share/nginx/html/swagger.yaml
     ports:
       - 3008:8080  # expose ports - HOST:CONTAINER
     expose:

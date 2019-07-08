@@ -37,7 +37,13 @@ paths:
         - bearerAuth: []
       responses:
         '200':
-          description: user object
+          description: A list of User objects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/user'
         '400':
           description: The request parameters are bad.
           content:
@@ -332,3 +338,35 @@ components:
           type: string
           format: date-time
           required: false
+        profile:
+          $ref: '#/components/schemas/userProfile'
+        admin_profile:
+          $ref: '#/components/schemas/adminProfile'
+    userProfile:
+      properties:
+        aim:
+          description: What sentene best describes you?
+          type: string
+          format: string
+        highest_education:
+          description: What is the highest level of education have you studied?
+          type: string
+          format: string
+        sci_tech_exp:
+          description: What is your experience with scientific software?
+          type: string
+          format: string
+        phase_transform_exp:
+          description: What is your experience with solid-state phse transformation?
+          type: string
+          format: string
+    adminProfile:
+      properties:
+        mobile_number:
+          type: string
+          format: string
+          maxLength: 10
+          minLength: 10
+        position:
+          type: string
+          format: string

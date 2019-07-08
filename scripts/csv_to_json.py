@@ -1,6 +1,5 @@
-#!/usr/bin/python
-'''This script prompts the user for the name of an output file produced by
-the SSTP program and writes the file's data to a JSON file.'''
+"""This script prompts the user for the name of an output file produced by
+the SSTP program and writes the file's data to a JSON file."""
 
 import json
 
@@ -16,22 +15,18 @@ with open(INPUT_FILE_NAME, 'r') as file_in:
 
     #Set Ae1
     ae1 = line[5:-1]
-    print('Ae1: ' + ae1)
 
     #Read and Set Ae3
     line = file_in.readline()
     ae3 = line[5:-1]
-    print('Ae3: ' + ae3)
 
     #Read and set nucleation at start
     line = file_in.readline()
     nucleation_at_start = line[22:-1]
-    print('nucleation at start: ' + nucleation_at_start)
 
     #Read and set nucleation at finish
     line = file_in.readline()
     nucleation_at_finish = line[23:-1]
-    print('nucleation at finish: ' + nucleation_at_finish)
 
     #Skip blank line
     file_in.readline()
@@ -39,12 +34,10 @@ with open(INPUT_FILE_NAME, 'r') as file_in:
     #Read and set ASTM median prior grain size
     line = file_in.readline()
     astm = line[30:-1]
-    print('ASTM median prior grain size: ' + astm)
 
     #Read and set Diameter prior grain size
     line = file_in.readline()
     diameter = line[27:-4]
-    print('Diameter prior grain size: ' + diameter)
 
     #Skip 2 blank lines
     file_in.readline()
@@ -53,7 +46,6 @@ with open(INPUT_FILE_NAME, 'r') as file_in:
     #Read and set Initial CCT temperature
     line = file_in.readline()
     initial_cct_temp = line[25:-3]
-    print('Initial CCT temperature: ' + initial_cct_temp)
 
     #Skip 5 lines
     for i in range(5):

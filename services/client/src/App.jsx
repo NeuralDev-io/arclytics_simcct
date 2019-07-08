@@ -3,7 +3,7 @@ import { Provider } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
 import store from './state/store'
 import LoginPage from './views/pages/LoginPage'
-import SignupPage from './views/pages/SignupPage'
+import SignupPage from './views/pages/signup/SignupPage'
 
 import './App.scss'
 

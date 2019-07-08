@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
 
+import styles from './SignupPagae.module.scss'
+
 class SignupPage extends Component {
   componentDidMount = () => {
 
@@ -9,6 +11,7 @@ class SignupPage extends Component {
 
   render() {
     return (
+      //TODO: do the styles then the designss
       <div>
         <Formik
             initialValues={{ 
@@ -23,18 +26,18 @@ class SignupPage extends Component {
            
               const res = await signup(values)
               if (res.status === 201) {
-                //TODO: Store user's atuh token
-                setStatus({message: values.message})
-                
+                //TODO: Store user's auth token
+                localStorage.setItem("auth_token", values.auth_token) 
+                setStatus({message: values.auth_token})
               }
               else if (res.status === 400) {
-                // TODO: read the status message then display appropriate message
+                // TODO: read the status message then display appropriate message. Maybe have a special case for unknown messages
                 setStatus({message: values.message})
               }
               setSubmitting(false)
             }}
           >
-            {({
+            {({ //TODO: This was copy and pasted 
               values,
               errors,
               status,
@@ -108,6 +111,8 @@ const mapDispatchToProps = {
 
 export default connect(mapStateToProps, mapDispatchToProps)(SignupPage)
 
+
+//TODO: Move this function for Validation and import it. Talk to matt 
 export const signupValidation = values => {
   const {
     email, username, password, passwordConfirmed
@@ -128,8 +133,8 @@ export const signupValidation = values => {
 
   if (!password) {
     errors.password = 'Required'
-  } else if (password.length < 6 || password.length > 20) {
-    errors.password = 'Password must be 6-20 characters'
+  } else if (password.length < 6 || password.length > 254) {
+    errors.password = 'Password must be'
   }
   if (!passwordConfirmed) {
     errors.passwordConfirmed = 'Required'
@@ -140,24 +145,8 @@ export const signupValidation = values => {
   return errors
 }
 
-export const login = async (values, resolve, reject) => {
-  fetch('http://localhost:8000/auth/login', {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(values)
-  })
-  .then(res => {
-    if (res.status === 200)
-      resolve(res.json())
-    else if (res.status === 400)
-      reject("Wrong email or password.")
-  })
-  .catch(err => console.log(err))
-}
 
+//TODO: Move this function to a separate file for Authentication and import it. Talk to Matt
 export const signup = async (values) => {
   const { email, username, password } = values
   const res = await fetch('http://localhost:8000/auth/register', {

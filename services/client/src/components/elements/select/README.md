@@ -6,7 +6,7 @@
 
 ```react
 import React, { Component } from 'react'
-import Select from '~/components/atoms/select'
+import Select from '~/components/elements/select'
 
 class App extends Component {
   constructor(props) {
@@ -44,9 +44,9 @@ class App extends Component {
 }
 ```
 
-## Button Props
+## Props
 
-#### `name`: string
+#### `name`: string (required)
 
 Name of select element.
 
@@ -66,9 +66,9 @@ One of <`default` | `short` | `long` | `stretch`>
 
 
 
-#### `onChange`: func
+#### `onChange`: func (required)
 
-
+A single argument is the new value object.
 
 #### `options`: array
 
@@ -76,7 +76,12 @@ One of <`default` | `short` | `long` | `stretch`>
 
 #### `value`: object
 
-
+```
+Object {
+  label: string,
+  value: string
+}
+```
 
 #### `defaultValue`: object
 

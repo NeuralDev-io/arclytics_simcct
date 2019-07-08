@@ -53,7 +53,8 @@ class UsersList(Resource):
     def get(self, resp):
         """Get all users only available to admins."""
         queryset = User.objects()
-        # The QuerySet.to_json() method returns a string. We use json.loads() to make it a Python dict.
+        # The QuerySet.to_json() method returns a string. We use json.loads()
+        # to make it a Python dict.
         response = {
             'status': 'success',
             'data': {

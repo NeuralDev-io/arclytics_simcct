@@ -21,7 +21,7 @@ COPY ./dist/* /usr/share/nginx/html/
 COPY ./docker/run.sh /usr/share/nginx/
 COPY ./docker/configurator /usr/share/nginx/configurator
 
-COPY swagger.yaml /usr/share/nginx/html/swagger.yaml
+COPY ./swagger.yaml /usr/share/nginx/html/swagger.yaml
 
 RUN chmod +x /usr/share/nginx/run.sh
 

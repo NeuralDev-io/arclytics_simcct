@@ -74,8 +74,4 @@ services:
     expose:
       - 3008
     environment:
-      - URL=swagger.yml
-    depends_on:
-      - users-server
-    links:
-      - users-server
+      - URL=swagger.yaml

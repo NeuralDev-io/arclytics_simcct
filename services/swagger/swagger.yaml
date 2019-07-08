@@ -13,7 +13,6 @@ servers:
 
 
 paths:
-
   /ping:
     get:
       summary: Just a sanity check
@@ -240,6 +239,14 @@ paths:
                 - first_name
                 - last_name
                 - username
+            examples:
+              'Thor':
+                value:
+                  email: thor@avengers.io
+                  username: god_of_thunder
+                  first_name: Thor
+                  last_name: Odinson
+                  password: StrongestAvenger
       responses:
         '201':
           description: Successful registration.
@@ -254,7 +261,7 @@ paths:
                   message:
                     type: string
                     example: User has been registered
-                  auth_token:
+                  token:
                     type: string
                     format: byte
                     example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjI1OTAzOTYsImlhdCI6MTU2MjU5MDM5MSwic3ViIjoiNWQyMzNjYjcxODE3YjIwNzU5NjZkNWJiIn0.SNRHYOgw2jAkIVWkuWA0a_PXu9S_QGcb2W7wrvXlqQk
@@ -293,6 +300,7 @@ paths:
                   value:
                     status: fail
                     message: The user details already exists.
+
   /auth/login:
     post:
       summary: Logs a user in
@@ -378,9 +386,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               example:
-                value:
-                  status: fail
-                  message: User does not exist.
+                status: fail
+                message: User does not exist.
         default:
           description: Something went wrong with validating details.
           content:

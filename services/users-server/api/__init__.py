@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # arclytics_sim
 # app.py
 #
 # Attributions:
-# [1] https://testdriven.io/courses/microservices-with-docker-flask-and-react/part-one-microservices/
-# ------------------------------------------------------------------------------------------------------------
+# [1]
+# https://testdriven.io/courses/microservices-with-docker-flask-and-react/
+# part-one-microservices/
+# -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
@@ -50,7 +52,7 @@ class JSONEncoder(json.JSONEncoder):
             #     calendar.timegm(o.timetuple()) * 1000 + o.microsecond / 1000
             # )
             # return millis
-            return str(o)
+            return str(o.isoformat())
         return json.JSONEncoder.default(self, o)
 
 
@@ -62,7 +64,8 @@ bcrypt = Bcrypt()
 
 
 def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
-    """Make a connection to the MongoDB container and returns a singleton wrapper on a pymongo.MongoClient."""
+    """Make a connection to the MongoDB container and returns a singleton
+    wrapper on a pymongo.MongoClient."""
     disconnect_all()
 
     if app is not None:
@@ -75,7 +78,8 @@ def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
         host=host,
         port=int(port),
         alias='default'
-        # username=app.config['MONGO_USER'],  # FIXME: Do not leave this commented for Production Environment
+        # FIXME: Do not leave this commented for Production Environment
+        # username=app.config['MONGO_USER'],
         # password=app.config['MONGO_PASSWORD'],
     )
 
@@ -84,14 +88,17 @@ def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
         conn = get_connection('default')
         # DEFAULT_LOGGER.debug('MongoDB Connected: {}'.format(conn))
     except MongoEngineConnectionError as e:
-        DEFAULT_LOGGER.error('MongoDB Failed to Connect.\n Error: {}'.format(e))
+        DEFAULT_LOGGER.error(
+            'MongoDB Failed to Connect.\n Error: {}'.format(e)
+        )
 
     try:
         db_curr = get_db('default')
         # DEFAULT_LOGGER.debug('MongoDB Database in use: {}'.format(db_curr))
     except MongoEngineConnectionError as e:
         DEFAULT_LOGGER.error(
-            'MongoDB Failed to Get Database.\n Error: {}'.format(e))
+            'MongoDB Failed to Get Database.\n Error: {}'.format(e)
+        )
 
     return MongoSingleton(mongo_client)
 
@@ -128,8 +135,10 @@ def create_app(script_info=None) -> Flask:
     app.config['MONGO_URI'] = os.environ.get('MONGO_URI', '')
     app.config['MONGO_HOST'] = os.environ.get('MONGO_HOST', '')
     app.config['MONGO_PORT'] = os.environ.get('MONGO_PORT', 27017)
-    # app.config['MONGO_USER'] = os.environ.get('MONGODB_USER', '')               # stored in .env
-    # app.config['MONGO_PASSWORD'] = os.environ.get('MONGODB_PASSWORD', None)     # stored in .env
+    # app.config['MONGO_USER'] = os.environ.get('MONGODB_USER', '')
+    # stored in .env
+    # app.config['MONGO_PASSWORD'] = os.environ.get('MONGODB_PASSWORD', None)
+    # stored in .env
 
     # Connect to the Mongo Client
     db = init_db(app)
@@ -149,7 +158,8 @@ def create_app(script_info=None) -> Flask:
     from api.auth import auth_blueprint
     app.register_blueprint(auth_blueprint)
 
-    # Use the modified JSON encoder to handle serializing ObjectId, sets, and datetime objects
+    # Use the modified JSON encoder to handle serializing ObjectId, sets, and
+    # datetime objects
     app.json_encoder = JSONEncoder
 
     # Shell context for Flask CLI

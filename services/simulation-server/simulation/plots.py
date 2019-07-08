@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # arclytics_sim
 # plots.py
 #
 # Attributions:
 # [1]
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
@@ -43,10 +43,10 @@ class Plots(object):
     def from_pickle(cls):
         pass
 
-    def set_cct_plot_data(self, ferrite_nucleation, ferrite_completion,
-                          pearlite_nucleation, pearlite_completion,
-                          bainite_nucleation, bainite_completion,
-                          martensite) -> None:
+    def set_cct_plot_data(
+        self, ferrite_nucleation, ferrite_completion, pearlite_nucleation,
+        pearlite_completion, bainite_nucleation, bainite_completion, martensite
+    ) -> None:
         self.cct = {
             'ferrite_nucleation': ferrite_nucleation,
             'ferrite_completion': ferrite_completion,
@@ -57,9 +57,10 @@ class Plots(object):
             'martensite': martensite
         }
 
-    def set_ttt_plot_data(self, ferrite_start, ferrite_finish, pearlite_start,
-                          pearlite_finish, bainite_start, bainite_finish,
-                          martensite) -> None:
+    def set_ttt_plot_data(
+        self, ferrite_start, ferrite_finish, pearlite_start, pearlite_finish,
+        bainite_start, bainite_finish, martensite
+    ) -> None:
         self.ttt = {
             'ferrite_start': ferrite_start,
             'ferrite_finish': ferrite_finish,

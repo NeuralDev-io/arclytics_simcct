@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # arclytics_sim
 # auth.py
 #
 # Attributions:
 # [1]
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
@@ -16,7 +16,8 @@ __status__ = 'development'
 __date__ = '2019.07.05'
 """auth.py: 
 
-{Description}
+This script describes the Users authentication endpoints for registration,
+login, and logout.
 """
 
 from bson import ObjectId
@@ -50,6 +51,8 @@ def register_user():
     email = post_data.get('email', '')
     username = post_data.get('username', '')
     password = post_data.get('password', '')
+    first_name = post_data.get('first_name', '')
+    last_name = post_data.get('last_name', '')
 
     if not email:
         response['message'] = 'A user account must have an email.'
@@ -70,9 +73,11 @@ def register_user():
         new_user = User(
             email=email,
             username=username,
+            first_name=first_name,
+            last_name=last_name
         )
-        new_user.set_password(
-            raw_password=password)  # ensure we set an encrypted password.
+        # ensure we set an encrypted password.
+        new_user.set_password(raw_password=password)
     else:
         response['message'] = 'This user already exists.'
         return jsonify(response), 400
@@ -99,7 +104,9 @@ def register_user():
 
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
 def login():
-    """Blueprint route for registration of users with a returned JWT if successful."""
+    """
+    Blueprint route for registration of users with a returned JWT if successful.
+    """
 
     # Get the post data
     post_data = request.get_json()

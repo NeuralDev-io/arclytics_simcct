@@ -1,12 +1,12 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
-# ------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # arclytics_sim
 # manage.py
 #
 # Attributions:
 # [1]
-# ------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
@@ -34,24 +34,26 @@ import coverage
 from api import create_app, get_flask_mongo
 from api.models import User
 
-COV = coverage.coverage(branch=True,
-                        include=[
-                            'api/models.py',
-                            'api/users.py',
-                            'api/auth.py',
-                            'api/auth_decorators.py',
-                            'api/mongodb.py',
-                        ],
-                        omit=[
-                            'api/__init__.py'
-                            'config.py',
-                            'tests/*',
-                            'simulation/*',
-                            'configs/*',
-                            'data/*',
-                            'logger/*',
-                            'logs/*',
-                        ])
+COV = coverage.coverage(
+    branch=True,
+    include=[
+        'api/models.py',
+        'api/users.py',
+        'api/auth.py',
+        'api/auth_decorators.py',
+        'api/mongodb.py',
+    ],
+    omit=[
+        'api/__init__.py'
+        'config.py',
+        'tests/*',
+        'simulation/*',
+        'configs/*',
+        'data/*',
+        'logger/*',
+        'logs/*',
+    ]
+)
 COV.start()
 
 app = create_app()
@@ -95,13 +97,23 @@ def seed_user_db():
         with open(path) as f:
             data = json.load(f)
 
-    tbl = PrettyTable(['No.', 'Username', 'Email'])
+    tbl = PrettyTable(['No.', 'Username', 'Email', 'Name'])
     print('Seeding users to <{}> database:'.format(db.name))
     for i, u in enumerate(data):
-        new_user = User(email=u['email'], username=u['username'])
+        new_user = User(
+            email=u['email'],
+            username=u['username'],
+            first_name=u['first_name'],
+            last_name=u['last_name']
+        )
         new_user.set_password(u['password'])
         new_user.save()
-        tbl.add_row((str(i + 1), u['username'], u['email']))
+        tbl.add_row(
+            (
+                str(i + 1), u['username'], u['email'],
+                '{} {}'.format(u['first_name'], u['last_name'])
+            )
+        )
     tbl.align['Username'] = 'l'
     tbl.align['Email'] = 'l'
     print(tbl)

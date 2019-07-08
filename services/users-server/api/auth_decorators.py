@@ -28,7 +28,6 @@ from api.models import User
 
 
 def authenticate(f):
-
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {
@@ -44,7 +43,8 @@ def authenticate(f):
         # auth_header = 'Bearer token'
         auth_token = auth_header.split(' ')[1]
 
-        # Decode either returns bson.ObjectId if successful or a string from an exception
+        # Decode either returns bson.ObjectId if successful or a string from an
+        # exception
         resp = User.decode_auth_token(auth_token=auth_token)
 
         if not isinstance(resp, ObjectId):
@@ -62,7 +62,6 @@ def authenticate(f):
 
 
 def authenticate_restful(f):
-
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {
@@ -95,7 +94,6 @@ def authenticate_restful(f):
 
 
 def authenticate_admin(f):
-
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {

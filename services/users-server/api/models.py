@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # arclytics_sim
 # models.py
 #
 # Attributions:
 # [1]
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
@@ -16,24 +16,20 @@ __status__ = 'development'
 __date__ = '2019.07.03'
 """models.py: 
 
-This module stores the mongoengine.Document models for the Arclytics API microservice.
+This module stores the mongoengine.Document models for the Arclytics API Users
+microservice.
 """
 
 import datetime
 import jwt
 from typing import Union
 
-import json
 from bson import ObjectId
-from mongoengine import (Document,
-                         EmbeddedDocument,
-                         StringField,
-                         EmailField,
-                         BooleanField,
-                         DateTimeField,
-                         EmbeddedDocumentField,
-                         EmbeddedDocumentListField)
-from flask import current_app
+from mongoengine import (
+    Document, EmbeddedDocument, StringField, EmailField, BooleanField,
+    DateTimeField, EmbeddedDocumentField
+)
+from flask import current_app, json
 
 from logger.arc_logger import AppLogger
 from api import bcrypt, JSONEncoder
@@ -45,67 +41,160 @@ USERS = (('1', 'ADMIN'), ('2', 'USER'))
 
 # ========== # CUSTOM EXCEPTIONS # ========== #
 class PasswordValidationError(Exception):
-    """Raises an Exception if now password was set before trying to save the User model."""
+    """
+    Raises an Exception if now password was set before trying to save
+    the User model.
+    """
 
     def __init__(self):
         super(PasswordValidationError,
               self).__init__('A password must be set before saving.')
 
 
+# ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
+
+
+class UserProfile(EmbeddedDocument):
+    # Not having this for now until we can figure out where to store the photos
+    # TODO: Uncomment Pillow depdencneis Dockerfile to use and
+    #  install Pillow==6.1.0
+    # profile_photo = ImageField(
+    #     required=False,
+    #     size=(800, 600, True),
+    #     thumbnail_size=(300, 300, True),
+    #     help_text='Please provide a photo of 800x600 pixels only.'
+    # )
+    aim = StringField(
+        help_text='What sentence best describes you?',
+        required=False,
+        default=None
+    )
+    highest_education = StringField(
+        help_text='What is the highest level of education have you studied?',
+        required=False,
+        default=None
+    )
+    sci_tech_exp = StringField(
+        help_text='What is your experience with scientific software?',
+        required=False,
+        default=None
+    )
+    phase_transform_exp = StringField(
+        help_text=(
+            'What is your experience with solid-state phase '
+            'transformation?'
+        ),
+        required=False,
+        default=None
+    )
+
+    def to_dict(self) -> dict:
+        """
+        Simple EmbeddedDocument.UserProfile helper method to get a Python dict
+        back.
+        """
+        return {
+            'aim': self.aim,
+            'highest_education': self.highest_education,
+            'sci_tech_exp': self.sci_tech_exp,
+            'phase_transform_exp': self.phase_transform_exp
+        }
+
+
+class AdminProfile(EmbeddedDocument):
+    position = StringField(max_length=255, required=True)
+    mobile_number = StringField(max_length=11, min_length=10)
+
+    def to_json(self) -> dict:
+        """
+        Simple EmbeddedDocument.AdminProfile helper method to get a
+        Python dict back.
+        """
+        return {'position': self.position, 'mobile_number': self.mobile_number}
+
+
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
 class User(Document):
     email = EmailField(required=True, unique=True)
-    password = StringField(default=None,
-                           max_length=64,
-                           null=False,
-                           min_length=6)
-    # first_name = StringField(required=True, max_length=255)
-    # last_name = StringField(required=True, max_length=255)
-    username = StringField(required=True, unique=True, min_length=1, max_length=180)
-    user_type = StringField(required=True, max_length=1, choices=USERS, default=USERS[1][0])
-    # profile = EmbeddedDocumentListField()
+    password = StringField(
+        default=None, max_length=64, null=False, min_length=6
+    )
+    first_name = StringField(required=True, max_length=255)
+    last_name = StringField(required=True, max_length=255)
+    username = StringField(
+        required=True, unique=True, min_length=1, max_length=180
+    )
+    user_type = StringField(
+        required=False,
+        max_length=1,
+        null=False,
+        choices=USERS,
+        default=USERS[1][0]
+    )
+    profile = EmbeddedDocumentField(document_type=UserProfile)
+    admin_profile = EmbeddedDocumentField(document_type=AdminProfile)
     # TODO: Make these
-    # saved_configurations = EmbeddedDocumentListField(document_type=Configurations)
+    # saved_configurations = EmbeddedDocumentListField(
+    # document_type=Configurations)
     # saved_compositions = EmbeddedDocumentListField(document_type=Compositions)
 
-    # Some rather useful metadata information that's not core to the definition of a user
+    # Some rather useful metadata information that's not core to the
+    # definition of a user
     active = BooleanField(default=True)
-    is_admin = BooleanField(default=False, name='admin')
+    is_admin = BooleanField(default=False, db_field='admin')
     verified = BooleanField(default=False)
-    created = DateTimeField(default=datetime.datetime.utcnow())
-    last_updated = DateTimeField(default=None)
+    # Make sure when converting these that it follows ISO8601 format as
+    # defined in settings.DATETIME_FMT
+    created = DateTimeField(default=datetime.datetime.utcnow(), null=False)
+    last_updated = DateTimeField(default=None, null=False)
     last_login = DateTimeField(default=None)
     # Define the collection and indexing for this document
-    meta = {
-        'collection': 'users',
-        'indexes': [
-            'email',
-            'last_login',
-        ]
-    }
+    meta = {'collection': 'users'}
 
     def set_password(self, raw_password: str) -> None:
-        """Helper utility method to save an encrypted password using the Bcrypt Flask extension."""
+        """Helper utility method to save an encrypted password using the
+        Bcrypt Flask extension.
+        """
         self.password = bcrypt.generate_password_hash(
             password=raw_password,
-            rounds=current_app.config.get('BCRYPT_LOG_ROUNDS')).decode()
+            rounds=current_app.config.get('BCRYPT_LOG_ROUNDS')
+        ).decode()
 
-    def to_dict(self, *args, **kwargs) -> dict:
+    def to_dict(self) -> dict:
         """Simple Document.User helper method to get a Python dict back."""
-        return {
-            '_id': self.id,
+        last_login = None
+        if self.last_login is not None:
+            last_login = self.last_login.isoformat()
+        profile = None
+        if self.profile is not None:
+            profile = self.profile.to_dict()
+
+        user = {
+            '_id': str(self.id),
             'email': self.email,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
             'username': self.username,
-            'admin': self.is_admin,
-            'created': self.created,
             'active': self.active,
-            'last_updated': self.last_updated,
-            'last_login': self.last_login,
+            'admin': self.is_admin,
+            'verified': self.verified,
+            'created': str(self.created.isoformat()),
+            'last_updated': str(self.last_updated.isoformat()),
+            'last_login': str(last_login),
+            'profile': profile
         }
 
-    def to_response(self, *args, **kwargs) -> json:
-        """Simple helper method to get a json class from a string returned by mongoengine.Document.to_json()."""
-        return json.loads(self.to_json())
+        if self.admin_profile is not None:
+            user['admin_profile'] = self.admin_profile.to_json()
+
+        return user
+
+    def to_json(self, *args, **kwargs):
+        """
+        Override the default method to customise the way a JSON format is
+        transformed.
+        """
+        return json.dumps(self.to_dict())
 
     @staticmethod
     def encode_auth_token(user_id: ObjectId) -> Union[bytes, None]:
@@ -115,18 +204,21 @@ class User(Document):
                 'exp':
                 datetime.datetime.utcnow() + datetime.timedelta(
                     days=current_app.config.get('TOKEN_EXPIRATION_DAYS', 0),
-                    seconds=current_app.config.get('TOKEN_EXPIRATION_SECONDS',
-                                                   0)),
+                    seconds=current_app.config.
+                    get('TOKEN_EXPIRATION_SECONDS', 0)
+                ),
                 'iat':
                 datetime.datetime.utcnow(),
                 'sub':
                 user_id
             }
 
-            return jwt.encode(payload=payload,
-                              key=current_app.config.get('SECRET_KEY', None),
-                              algorithm='HS256',
-                              json_encoder=JSONEncoder)
+            return jwt.encode(
+                payload=payload,
+                key=current_app.config.get('SECRET_KEY', None),
+                algorithm='HS256',
+                json_encoder=JSONEncoder
+            )
         except Exception as e:
             logger.error('Encode auth token error: {}'.format(e))
             return None
@@ -142,8 +234,9 @@ class User(Document):
             An integer or string.
         """
         try:
-            payload = jwt.decode(jwt=auth_token,
-                                 key=current_app.config.get('SECRET_KEY', None))
+            payload = jwt.decode(
+                jwt=auth_token, key=current_app.config.get('SECRET_KEY', None)
+            )
             return ObjectId(payload['sub'])
         except jwt.ExpiredSignatureError as e:
             # logger.error('Signature expired error.')
@@ -152,9 +245,10 @@ class User(Document):
             # logger.error('Invalid token error.')
             return 'Invalid token. Please log in again.'
 
-    # MongoEngine allows you to create custom cleaning rules for your documents when calling save().
-    # By providing a custom clean() method you can do any pre validation / data cleaning.
-    # This might be useful if you want to ensure a default value based on other document values.
+    # MongoEngine allows you to create custom cleaning rules for your documents
+    # when calling save(). By providing a custom clean() method you can do
+    # any pre validation / data cleaning. This might be useful if you want to
+    # ensure a default value based on other document values.
     def clean(self):
         """Ensures a `password` has been stored before saving."""
         if self.password is None:
@@ -163,7 +257,5 @@ class User(Document):
         if self.last_updated is None:
             self.last_updated = self.created
 
-    # def __str__(self):
-    #     pass
-
-# ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
+    def __str__(self):
+        return self.to_json()

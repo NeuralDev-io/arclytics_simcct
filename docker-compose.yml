@@ -7,7 +7,8 @@ services:
     build:
       context: services/users-server
       dockerfile: Dockerfile
-    container_name: flask-users-service
+    image: arc_sim_users_service:development
+    container_name: arc_sim_users_service
     volumes:  # used to mount the code into the container for live updates
       - ./services/users-server:/usr/src/app
     ports:
@@ -28,8 +29,9 @@ services:
     build:
       context: ./services/db
       dockerfile: Dockerfile
+    image: arc_sim_mongo:development
     restart: always
-    container_name: mongodb
+    container_name: arc_sim_mongo
     ports:
       - 27017:27017
     expose:
@@ -42,7 +44,8 @@ services:
     build:
       context: ./services/client
       dockerfile: Dockerfile
-    container_name: react-client
+    image: arc_sim_client:development
+    container_name: arc_sim_client
     volumes:
       - ./services/client:/usr/src/app
       - /usr/src/app/node_modules
@@ -62,7 +65,8 @@ services:
     build:
       context: ./services/swagger
       dockerfile: Dockerfile
-    container_name: swagger-ui
+    image: arc_sim_swagger:development
+    container_name: arc_sim_swagger
     volumes:
       - ./services/swagger/swagger.json:/usr/share/nginx/html/swagger.json
     ports:

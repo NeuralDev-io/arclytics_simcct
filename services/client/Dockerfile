@@ -20,7 +20,6 @@ RUN npm ci
 RUN npm config set unsafe-perm true
 
 RUN npm install react-scripts@2.1.8 -g --silent
-RUN pwd
 RUN npm run lint-fix-docker
 
 # start app

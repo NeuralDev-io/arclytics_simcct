@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # arclytics_sim
 # simulations.py
 #
 # Attributions:
 # [1]
-# ----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 __author__ = ['Arvy Salazar <@Xaraox>', 'Andrew Che <@codeninja55>']
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
@@ -17,8 +17,9 @@ __status__ = 'development'
 __date__ = '2019.06.29'
 """phasesimulation.py: 
 
-This file is the module for the solid-state phase transformation simulation as defined by Dr. Bendeich but 
-re-written to conform to Object-Oriented programming.
+This file is the module for the solid-state phase transformation simulation as 
+defined by Dr. Bendeich but re-written to conform to Object-Oriented 
+programming.
 """
 
 import math
@@ -26,12 +27,12 @@ import enum
 
 import numpy as np
 
-from logger.arc_logger import AppLogger
-from utilities import Method, sort_ccr
-from simconfiguration import SimConfiguration
-from plots import Plots
+# from logger.arc_logger import AppLogger
+from simulation.utilities import Method, sort_ccr
+from simulation.simconfiguration import SimConfiguration
+from simulation.plots import Plots
 
-logger = AppLogger(__name__)
+# logger = AppLogger(__name__)
 
 
 class Phase(enum.Enum):
@@ -48,7 +49,8 @@ class PhaseSimulation(object):
         if sim_configs is not None:
 
             if not sim_configs.ae_check:
-                logger.error("No Ae1 and Ae3 value has been provided.")
+                # logger.error("No Ae1 and Ae3 value has been provided.")
+                print("No Ae1 and Ae3 value has been provided.")
 
             self.configs = sim_configs
             # TODO: Which one of the alloy types for PWD
@@ -58,25 +60,28 @@ class PhaseSimulation(object):
             self.finish_percent = sim_configs.nuc_finish
 
             if self.start_percent > 1.0 or self.finish_percent > 1.0:
-                logger.debug("Start or Finish percent must be a fraction.")
+                # logger.debug("Start or Finish percent must be a fraction.")
+                print("Start or Finish percent must be a fraction.")
 
             self.ms = sim_configs.ms_temp
             self.bs = sim_configs.bs_temp
             self.g = sim_configs.grain_size
 
-            if not sim_configs.ae_check:
-                logger.error(
-                    "To run the simulation, the Austenite values (Ae1 and Ae3) are required."
-                )
+            # if not sim_configs.ae_check:
+            #     logger.error(
+            #         "To run the simulation, the Austenite values (Ae1 and "
+            #         "Ae3) are required. "
+            #     )
 
             self.ae1 = sim_configs.ae1
             self.ae3 = sim_configs.ae3
             self.xfe = sim_configs.xfe
 
-        else:
-            logger.error(
-                "Need a configurations instance to run a CCT and TTT simulation."
-            )
+        # else:
+        #     logger.error(
+        #         "Need a configurations instance to run a CCT and TTT "
+        #         "simulation. "
+        #     )
 
         # Use an object of Plots instance to store the plot data
         self.plots_data = Plots()
@@ -88,7 +93,8 @@ class PhaseSimulation(object):
             self.ae1 = round(sim_configs.ae1)
 
     def ttt(self) -> dict:
-        # FIXME I have removed X and Xpct are not used. Ask if it can be removed.
+        # FIXME I have removed X and Xpct are not used. Ask if it can be
+        #  removed -- YES
         integrated2_mat = np.zeros((4, 11), dtype=np.float64)
 
         # Xbr removed
@@ -196,20 +202,24 @@ class PhaseSimulation(object):
         return self.plots_data.get_ttt_plot_data()
 
     def cct(self) -> dict:
-        # Can be used for any cooling path new routine to simplify iterative routines using any of the methods
-        # coded in. Should be much simpler to code and follow and only needs to be done once not repeated for each
-        # method as before
+        # Can be used for any cooling path new routine to simplify iterative
+        # routines using any of the methods coded in. Should be much simpler
+        # to code and follow and only needs to be done once not repeated for
+        # each method as before
 
         # The equilibrium phase fraction of ferrite at the eutectic temperature
-        # (consistent with Kirkaldy implementation and explained by Watt et. al. 88)
+        # (consistent with Kirkaldy implementation and explained by
+        # Watt et. al. 88)
         if self.xfe >= 1.0:
-            logger.error('XFE has to be below 1.0')
+            # logger.error('XFE has to be below 1.0')
+            print('XFE has to be below 1.0')
 
         # TODO: these are not used
         # x_pct_vect = np.array([self.finish_percent, self.start_percent])
         # pwd = self.configs.alloy.value
 
-        # Volume fraction remaining for potential Bainite precipitation. Starts at 1.0 but may reduce if in CCT mode
+        # Volume fraction remaining for potential Bainite precipitation.
+        # Starts at 1.0 but may reduce if in CCT mode
         # if Ferrite/Pearlite already formed
         # self.XBR
 
@@ -228,18 +238,23 @@ class PhaseSimulation(object):
         # [3,0], [3,1], [3,2] spots for finishing precipitation
         integrated2_mat = np.zeros((4, 11), dtype=np.float64)
 
-        # Get integrals for relevant % transformed  at nucleation (start) and finish
+        # Get integrals for relevant % transformed  at nucleation (start) and
+        # finish
         self.__vol_phantom_frac2(integrated2_mat)
 
         temp_start = self.configs.temp_peak
 
         # ========== # TIME LOOP # ========== #
-        # The time increments can be either constant cooling rate or follow a defined curve. Figure this out first and
-        # populate an array containing discreet increments of time for the FOR loop to follow. The increment size does
-        # not have to be constant as some segments can be run through quickly i.e. the cooling from initial temperature
-        # to Ae3 only involves potential grain growth
+        # The time increments can be
+        # either constant cooling rate or follow a defined curve. Figure this
+        # out first and populate an array containing discreet increments of
+        # time for the FOR loop to follow. The increment size does not have
+        # to be constant as some segments can be run through quickly i.e. the
+        # cooling from initial temperature to Ae3 only involves potential
+        # grain growth
 
-        # Can hold 100000 time/temperature points for Ferrite nucleation temperature
+        # Can hold 100000 time/temperature points for Ferrite nucleation
+        # temperature
         cct_record_f_mat = np.zeros((10000, 2), dtype=np.float64)  # Ferrite
         cct_record_p_mat = np.zeros((10000, 2), dtype=np.float64)  # Pearlite
         cct_record_b_mat = np.zeros((10000, 2), dtype=np.float64)  # Bainite
@@ -271,16 +286,18 @@ class PhaseSimulation(object):
         # Sort Critical cooling rates from lowest to highest
         sorted_ccr = sort_ccr(ccr_mat)
 
-        # Variable for the cooling rate (C/sec) at this point in time. Usually constant for each isotherm but might
-        # vary if using a defined cooling path from a table.
+        # Variable for the cooling rate (C/sec) at this point in time.
+        # Usually constant for each isotherm but might vary if using a
+        # defined cooling path from a table.
         speedup = np.float64(1.2)
         # Degrees/sec this starts at the fastest critical cooling rate
         cooling_rate = sorted_ccr[-1] * 2 * speedup
-        i_ctr = 3  # TODO: Original starts at 4, ask why?  -- just because he doesn't like 0
+        i_ctr = 3  # TODO: Original starts at 4, ask why?  -- just because
+        # he doesn't like 0
 
-        # =============================================================================== #
-        # ========================== # MAIN COOLING RATE LOOP =========================== #
-        # =============================================================================== #
+        # =================================================================== #
+        # ===================== # MAIN COOLING RATE LOOP ==================== #
+        # =================================================================== #
         for i in range(100):
             cooling_rate = cooling_rate / speedup
 
@@ -296,7 +313,8 @@ class PhaseSimulation(object):
             time = 0.0
             # Initialise temperature at the start point for each cooling rate
             temp_curr = temp_start
-            # set the first increment time at 1 degree/increment (this will be controlled within the loop once started)
+            # set the first increment time at 1 degree/increment (this will
+            # be controlled within the loop once started)
             increm_time = 1 / cooling_rate
 
             # Now within fixed Temperature path
@@ -311,53 +329,60 @@ class PhaseSimulation(object):
             nuc_frac_pearlite_end = np.float64(0)
             nuc_frac_bainite_end = np.float64(0)
 
-            # Reset the triggers for the current cooling rate (may not have been tripped on previous cooling rate)
-            # Trigger after Ferrite nucleation point has been found to stop the routine recoding for the
-            # current cooling rate
+            # Reset the triggers for the current cooling rate (may not have
+            # been tripped on previous cooling rate) Trigger after Ferrite
+            # nucleation point has been found to stop the routine recoding
+            # for the current cooling rate
             stop_f = False
             stop_p = False  # Pearlite trigger
             stop_b = False  # Bainite trigger
-            # Trigger after Ferrite nucleation point has been found to stop the routine recording for the
-            # current cooling rate
+            # Trigger after Ferrite nucleation point has been found to stop
+            # the routine recording for the current cooling rate
             stop_f_end = False
             stop_p_end = False  # Pearlite trigger
             stop_b_end = False  # Bainite trigger
 
-            # ======================================== # STAGE 1 # ======================================== #
-            # FIXME: May need to check if start temp is below ae3
-            # If above this temperature no nucleation of any phase will be occurring, however, grain growth can occur.
+            # ========================= # STAGE 1 # =========================
+            # FIXME: May need to check if start temp is below ae3 If above
+            #  this temperature no nucleation of any phase will be occurring,
+            #  however, grain growth can occur.
             while temp_curr > self.ae3:
-                # For the current temperature and time interval find the new grain size
-                # (if not fixed) for the moment we will use the fixed grain size
-                # g_curr = self.g
-                # Find the new temperature for the next iteration of this loop
+                # For the current temperature and time interval find the new
+                # grain size (if not fixed) for the moment we will use the
+                # fixed grain size g_curr = self.g Find the new temperature
+                # for the next iteration of this loop
                 temp_curr = self.__next_temp(
                     temp_curr, cooling_rate, increm_time
                 )
                 time = time + increm_time
 
-            # ======================================== # STAGE 2 # ======================================== #
-            # Now we are below Ae3 and any phase can occur (unless we subdivide further .... not necessary unless we
-            # need to speed the routine up)
+            # ========================= # STAGE 2 # =========================
+            # Now we are below Ae3 and any phase can occur (unless we
+            # subdivide further .... not necessary unless we need to speed
+            # the routine up)
 
-            # We want it to drop 1 degree each increment. We need the appropriate time step at the current cooling rate
+            # We want it to drop 1 degree each increment. We need the
+            # appropriate time step at the current cooling rate
             increm_time = 1 / cooling_rate  # Slow things down a bit
 
-            # If above the martensite transformation temperature then we are looking for any phase that might occur
+            # If above the martensite transformation temperature then we are
+            # looking for any phase that might occur
             while temp_curr > self.ms:
-                # Find the total time to nucleation at the current temperature and divide the current increment time
-                # by this to find the fraction consumed in the current step. Then add this to the previous total for
-                # the relevant phases when the total is 1.0 nucleation has occurred.
+                # Find the total time to nucleation at the current
+                # temperature and divide the current increment time by this
+                # to find the fraction consumed in the current step. Then add
+                # this to the previous total for the relevant phases when the
+                # total is 1.0 nucleation has occurred.
 
-                # NOTE: The original code never actually runs into this condition.
-                # Inserted code for temperature dependant equilibrium phase fraction (Xfe)
-                # IF Form1CheckXFEtempDepend is True
-                #     CALL EquilibriumXFE(XFE, TempCurr, Ae3, Ae1)
-                #     IF XFE < 0 then SET XFE to 0.01
-                #     CALL VolPhantomFrac2(Integral2, Method, XStartPercent, XFinishPercent, XFE, XBr)
-                # FI
+                # NOTE: The original code never actually runs into this
+                #  condition. Inserted code for temperature dependant
+                #  equilibrium phase fraction (Xfe) IF
+                #  Form1CheckXFEtempDepend is True CALL EquilibriumXFE(XFE,
+                #  TempCurr, Ae3, Ae1) IF XFE < 0 then SET XFE to 0.01 CALL
+                #  VolPhantomFrac2(Integral2, Method, XStartPercent,
+                #  XFinishPercent, XFE, XBr) FI
 
-                # ==================== # Look for FERRITE START # ==================== #
+                # =============== # Look for FERRITE START # =============== #
                 if not stop_f:
                     torr_f = self.__torr_calc2(
                         torr_f,
@@ -366,7 +391,8 @@ class PhaseSimulation(object):
                         integral2_mat=integrated2_mat,
                         i=1
                     )
-                    # Add up the cumulative fraction of ferrite converted toward the nucleation point
+                    # Add up the cumulative fraction of ferrite converted
+                    # toward the nucleation point
                     nuc_frac_ferrite = nuc_frac_ferrite + (
                         increm_time / torr_f
                     )
@@ -375,10 +401,11 @@ class PhaseSimulation(object):
                         cct_record_f_mat[ii_f, 0] = time  # y-axis
                         cct_record_f_mat[ii_f, 1] = temp_curr  # x-axis
                         ii_f = ii_f + 1
-                        # trigger to stop recoding for ferrite for current cooling rate
+                        # trigger to stop recoding for ferrite for current
+                        # cooling rate
                         stop_f = True
 
-                # ==================== # Look for FERRITE FINISH # ==================== #
+                # =============== # Look for FERRITE FINISH # =============== #
                 if not stop_f_end:
                     torr_f_end = self.__torr_calc2(
                         torr_f_end,
@@ -390,14 +417,15 @@ class PhaseSimulation(object):
                     nuc_frac_ferrite_end = nuc_frac_ferrite_end + (
                         increm_time / torr_f_end
                     )
-                    # Record current point and stop looking for this phase at current cooling rate.
+                    # Record current point and stop looking for this phase at
+                    # current cooling rate.
                     if nuc_frac_ferrite_end > 1.0:
                         cct_record_f_end_mat[ii_f_end, 0] = time
                         cct_record_f_end_mat[ii_f_end, 1] = temp_curr
                         ii_f_end = ii_f_end + 1
                         stop_f_end = True
 
-                # ==================== # Look for PEARLITE START # ==================== #
+                # =============== # Look for PEARLITE START # =============== #
                 if not stop_p and temp_curr < self.ae1:
                     phase = Phase.P
                     torr_p = self.__torr_calc2(
@@ -407,7 +435,8 @@ class PhaseSimulation(object):
                         integral2_mat=integrated2_mat,
                         i=1
                     )
-                    # Add up the cumulative fraction of pearlite converted toward the nucleation point
+                    # Add up the cumulative fraction of pearlite converted
+                    # toward the nucleation point
                     nuc_frac_pearlite = nuc_frac_pearlite + (
                         increm_time / torr_p
                     )
@@ -416,10 +445,11 @@ class PhaseSimulation(object):
                         cct_record_p_mat[ii_p, 0] = time
                         cct_record_p_mat[ii_p, 1] = temp_curr
                         ii_p = ii_p + 1
-                        # trigger to stop recoding for ferrite for current cooling rate
+                        # trigger to stop recoding for ferrite for current
+                        # cooling rate
                         stop_p = True
 
-                # ==================== # Look for PEARLITE FINISH # ==================== #
+                # =============== # Look for PEARLITE FINISH # =============== #
                 if not stop_p_end and temp_curr < self.ae1:
                     phase = Phase.P
                     torr_p_end = self.__torr_calc2(
@@ -439,7 +469,7 @@ class PhaseSimulation(object):
                         ii_p_end = ii_p_end + 1
                         stop_p_end = True
 
-                # ==================== # Look for BAINITE START # ==================== #
+                # =============== # Look for BAINITE START # =============== #
                 if not stop_b and temp_curr < self.bs:
                     torr_b = self.__torr_calc2(
                         torr_b,
@@ -448,7 +478,8 @@ class PhaseSimulation(object):
                         integral2_mat=integrated2_mat,
                         i=1
                     )
-                    # Add up the cumulative fraction of bainite converted toward the nucleation point
+                    # Add up the cumulative fraction of bainite converted
+                    # toward the nucleation point
                     nuc_frac_bainite = nuc_frac_bainite + (
                         increm_time / torr_b
                     )
@@ -459,7 +490,7 @@ class PhaseSimulation(object):
                         ii_b = ii_b + 1
                         stop_b = True
 
-                # ==================== # Look for BAINITE FINISH # ==================== #
+                # =============== # Look for BAINITE FINISH # =============== #
                 if not stop_b_end and temp_curr < self.bs:
                     torr_b_end = self.__torr_calc2(
                         torr_b_end,
@@ -521,7 +552,8 @@ class PhaseSimulation(object):
         )
 
     def __imoid_prime2(self, x: float) -> np.float64:
-        """This is the specific Kirkaldy implementation for I(X) used in the "slugish" Kinetic Bainite reaction rate."""
+        """This is the specific Kirkaldy implementation for I(X) used in the
+        "slugish" Kinetic Bainite reaction rate. """
         c = self.comp['weight'][self.comp['name'] == 'carbon'][0]
         ni = self.comp['weight'][self.comp['name'] == 'nickel'][0]
         cr = self.comp['weight'][self.comp['name'] == 'chromium'][0]
@@ -586,7 +618,8 @@ class PhaseSimulation(object):
         Returns:
 
         """
-        # FIXME Check if err and nn are needed to be returned somewhere in the code as they are passed by reference.
+        # FIXME Check if err and nn are needed to be returned somewhere in
+        #  the code as they are passed by reference.
         n = 0
         # Adjustable parameters
         mmax = 256
@@ -674,25 +707,32 @@ class PhaseSimulation(object):
         return i
 
     def __vol_phantom_frac2(self, integrated_mat) -> None:
-        """This routine will return the expected volume or phantom fraction for the specific methodology being
-        requested by the USER defined precipitation points for starting and finishing.
+        """This routine will return the expected volume or phantom fraction for
+        the specific methodology being requested by the USER defined
+        precipitation points for starting and finishing.
 
         xfe: equilibrium phase fraction of ferrite.
-        xbr: remaining volume available for transformation to Bainite. Will be = 1.0 for TTT but may be lower in CCT if
-             Ferrite and Pearlite have already formed.
+        xbr: remaining volume available for transformation to Bainite. Will
+             be = 1.0 for TTT but may be lower in CCT if Ferrite and Pearlite
+             have already formed.
 
-        nuc_start: the requested start %. usually 1.0% or 0.1% (converted to a fraction i.e. 0.01 or 0.001
-                    respectively).
-        nuc_finish: the requested end %. usually 99.9% (converted to a fraction. i.e. 0.999)
+        nuc_start: the requested start %. usually 1.0% or 0.1% (converted to a
+                   fraction i.e. 0.01 or 0.001 respectively).
+        nuc_finish: the requested end %. usually 99.9% (converted to a
+                    fraction. i.e. 0.999)
 
         Definitions of "integrated_mat[,]"
         Kirkaldy:
-        [0,0], [0,1], [0,2]: spots for starting precipitation of F, P, and B respectively.
-        [1,0], [1,1], [1,2]: spots for finishing precipitation of F, P, and B respectively.
+        [0,0], [0,1], [0,2]: spots for starting precipitation of F, P, and B
+        respectively.
+        [1,0], [1,1], [1,2]: spots for finishing precipitation of F, P, and B
+        respectively.
 
         Li98:
-        [2,0], [2,1], [2,2]: spots for starting precipitation of F, P, and B respectively
-        [3,0], [3,1], [3,2]: spots for finishing precipitation of F, P, and B respectively
+        [2,0], [2,1], [2,2]: spots for starting precipitation of F, P, and B
+        respectively
+        [3,0], [3,1], [3,2]: spots for finishing precipitation of F, P, and B
+        respectively
 
         Args:
             integrated_mat: definition above.
@@ -716,9 +756,8 @@ class PhaseSimulation(object):
             )
             integrated_mat[2, 0] = sig_int_ferrite
 
-            # PEARLITE START
-            # xpe = 1.0 - self.xfe
-            # CheckPhantomTestP.Checked is always false because it is by default false and invisible
+            # PEARLITE START xpe = 1.0 - self.xfe CheckPhantomTestP.Checked
+            # is always false because it is by default false and invisible
             xp = self.start_percent / (1 - self.xfe)
             integrated_mat[2, 6] = xp
 
@@ -739,7 +778,7 @@ class PhaseSimulation(object):
             )
             integrated_mat[2, 2] = sig_int_bainite
 
-            # ======================================================================================================= #
+            # =============================================================== #
 
             # FERRITE FINISH
             xf = self.finish_percent * self.xfe
@@ -1118,7 +1157,8 @@ class PhaseSimulation(object):
     def __next_temp(
         current_temp: float, cooling_rate: float, time_inc_sec: float
     ) -> np.float64:
-        """This routine is to return the next temperature expected in a constant cooling rate based on the:
+        """This routine is to return the next temperature expected in a constant
+        cooling rate based on the:
 
         Args:
             current_temp: initial temperature.
@@ -1130,9 +1170,9 @@ class PhaseSimulation(object):
         """
         return np.float64(current_temp - cooling_rate * time_inc_sec)
 
-    # ======================================================================================================= #
-    # ============================== PUBLIC TEST METHODS FOR PRIVATE FUNCTIONS ============================== #
-    # ======================================================================================================= #
+    # ===================================================================== #
+    # ============= PUBLIC TEST METHODS FOR PRIVATE FUNCTIONS ============= #
+    # ===================================================================== #
     def test_vol_phantom_frac2(self, integrated_mat: np.ndarray) -> None:
         self.__vol_phantom_frac2(integrated_mat)
 

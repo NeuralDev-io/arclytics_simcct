@@ -5,7 +5,7 @@ import thunk from 'redux-thunk'
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 import * as reducers from './ducks'
-import userPersistReducer from './ducks/user-persist/reducers'
+import myPersistReducer from './ducks/persist/reducers'
 
 const persistConfig = {
   key: 'userPersist',
@@ -14,7 +14,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   ...reducers,
-  user: persistReducer(persistConfig, userPersistReducer),
+  user: persistReducer(persistConfig, myPersistReducer),
 })
 
 const initialState = {}

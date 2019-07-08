@@ -8,7 +8,6 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
-__copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
 __license__ = 'TBA'
 __version__ = '0.1.0'

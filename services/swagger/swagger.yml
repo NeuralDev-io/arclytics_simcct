@@ -38,7 +38,63 @@ paths:
       responses:
         '200':
           description: user object
-
+        '400':
+          description: The request parameters are bad.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                    example: fail
+                  message:
+                    type: string
+                    format: string
+                    example: Provide a valid JWT auth token.
+        '401':
+          description: The user is not authenticated to perform this request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Not Logged In':
+                  value:
+                    status: fail
+                    message: Admin must sign in again.
+                'Expired Token':
+                  value:
+                    status: fail
+                    message: Signature expired. Please login again.
+                'Invalid Token':
+                  value:
+                    status: fail
+                    message: Invalid token. Please log in again.
+        '403':
+          description: Unauthorized access to endpoint.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Non Admin User':
+                  value:
+                    status: fail
+                    message: Not authorized.
   '/users/{id}':
     get:
       summary: Returns a user based on a single user ID
@@ -58,7 +114,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/user'
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/user'
         '400':
           description: The request parameters are bad.
           content:
@@ -75,7 +140,7 @@ paths:
                     format: string
                     example: Provide a valid JWT auth token.
         '401':
-          description: The user is not authorized to perform this request.
+          description: The user is not authenticated to perform this request.
           content:
             application/json:
               schema:
@@ -88,7 +153,7 @@ paths:
                     type: string
                     format: string
               examples:
-                'Not Active':
+                'Not Logged In':
                   value:
                     status: fail
                     message: User must sign in again.
@@ -182,6 +247,7 @@ paths:
       responses:
         '200':
           description: api.models.User object
+  # TODO:
   /auth/logout:
     get:
       summary: Logs a user out

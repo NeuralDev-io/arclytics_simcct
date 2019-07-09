@@ -89,13 +89,21 @@ services:
     build:
       context: ./services/swagger
       dockerfile: Dockerfile
-    image: arc_sim_swagger:development
-    container_name: arc_sim_swagger
+    image: arc_sim_swagger:1.0
+    container_name: swagger-ui
     volumes:
       - ./services/swagger/swagger.yaml:/usr/share/nginx/html/swagger.yaml
     ports:
-      - 3008:8080  # expose ports - HOST:CONTAINER
+      - 3001:8080  # expose ports - HOST:CONTAINER
     expose:
-      - 3008
+      - 3001
     environment:
       - URL=swagger.yaml
+
+  swagger-editor:
+    image: swaggerapi/swagger-editor
+    container_name: arc_sim_swagger_editor
+    ports:
+      - 80:8080
+    expose:
+      - 80

@@ -539,75 +539,68 @@ components:
         _id:
           type: string
           format: byte
-          required: false
           readOnly: true
           uniqueItems: true
         email:
           type: string
           format: email
-          required: true
           uniqueItems: true
           example: tony@avengers.io
         password:
           type: string
           format: password
-          required: true
           minLength: 6
           maxLength: 255
           uniqueItems: false
           writeOnly: true
         first_name:
           type: string
-          required: true
           maxLength: 255
           example: Tony
         last_name:
           type: string
-          required: true
           maxLength: 255
           example: Stark
         username:
           type: string
-          required: true
           minLength: 1
           maxLength: 180
           example: iron_man
         user_type:
           type: string
           format: int32
-          required: false
           maxLength: 1
           example: '2'
           default: '2'
         active:
           type: boolean
-          required: false
           readOnly: true
           default: true
         admin:
           type: boolean
-          required: false
           default: false
         created:
           type: string
           format: date-time
-          required: false
         verified:
           type: boolean
-          required: false
           default: false
         last_updated:
           type: string
           format: date-time
-          required: false
         last_login:
           type: string
           format: date-time
-          required: false
         profile:
           $ref: '#/components/schemas/UserProfile'
         admin_profile:
           $ref: '#/components/schemas/AdminProfile'
+      required:
+        - email
+        - password
+        - username
+        - first_name
+        - last_name
     UserProfile:
       type: object
       properties:

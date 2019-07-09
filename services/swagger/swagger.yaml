@@ -3,15 +3,11 @@ info:
   version: 0.0.2
   title: Arclytics Sim API
   description: Swagger spec for documenting the users and simulation service
-
-
 servers:
   - description: Users Service Flask Server
     url: 'http://localhost:8000'
   - description: SimCCT Service Flask Server
     url: 'http://localhost:8001'
-
-
 paths:
   /ping:
     get:
@@ -33,7 +29,7 @@ paths:
               example:
                 status: success
                 message: pong!
-
+  # TODO:
   /users:
     get:
       summary: Returns all users
@@ -137,7 +133,6 @@ paths:
                   value:
                     status: fail
                     message: Not authorized.
-
   '/users/{id}':
     get:
       summary: Returns a user based on a single user ID
@@ -166,7 +161,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/User'
+                      $ref: '#/components/schemas/user'
         '400':
           description: The request parameters are bad.
           content:
@@ -208,7 +203,6 @@ paths:
                   value:
                     status: fail
                     message: Invalid token. Please log in again.
-
   /auth/register:
     post:
       summary: Register and create a new user
@@ -241,8 +235,8 @@ paths:
                   last_name: Odinson
                   password: StrongestAvenger
       responses:
-        '201':
-          description: Successful registration.
+        '200':
+          description: user object
           content:
             application/json:
               schema:
@@ -312,15 +306,9 @@ paths:
               required:
                 - email
                 - password
-            examples:
-              'Tony Stark':
-                value:
-                  email: tony@avengers.io
-                  password: IAmIronMan
-              'Peter Parker':
-                value:
-                  email: spiderman@newavengers.io
-                  password: SpideySenses
+            example:
+              email: tony@avengers.io
+              password: IAmIronMan
       responses:
         '200':
           description: Successfully logged in
@@ -335,49 +323,6 @@ paths:
                   message:
                     type: string
                     description: The message response
-                  status:
-                    type: string
-                    description: The status of the request
-              examples:
-                'Tony Stark':
-                  value:
-                    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjI1ODQ4NTIsImlhdCI6MTU2MjU4NDg0Nywic3ViIjoiNWQyMzI3MGY1NmVjNWRlOTU4MTI2MTEzIn0.DZwBE1IDUY-RLVoGugnnAq2_zm_PHnu2ECkhKEaOst0
-                    message: Successfully logged in.
-                    status: success
-                'Peter Parker':
-                  value:
-                    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjI1ODQ4NTIsImlhdCI6MTU2MjU4NDg0Nywic3ViIjoiNWQyMzI3MGY1NmVjNWRlOTU4MTI2MTEyIn0.XTd4KbTchN-1I9r07xUnPom6xCWDEWi2eOoBe14Xi1Q
-                    message: Successfully logged in.
-                    status: success
-        '400':
-          description: Invalid request body.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Payloard':
-                  value:
-                    status: fail
-                    message: Invalid payload.
-                'No Email':
-                  value:
-                    status: fail
-                    message: You must provide an email.
-                'No Password':
-                  value:
-                    status: fail
-                    message: You must provide a password.
-                'Bad Password':
-                  value:
-                    status: fail
-                    message: Email or password combination incorrect.
-        '404':
-          description: Could not find a user.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
               example:
                 status: fail
                 message: User does not exist.
@@ -394,7 +339,7 @@ paths:
 
   /auth/status:
     get:
-      summary: Returns the logged in user's status and details.
+      summary: Returns the logged in user's status
       security:
         - bearerAuth: []
       responses:
@@ -470,63 +415,13 @@ paths:
       responses:
         '200':
           description: Successfully logged out
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                value:
-                  status: success
-                  message: Successfully logged out.
-        '400':
-          description: Bad request body provided with no JSON Web Token.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Auth Header':
-                  value:
-                    status: fail
-                    message: Provide a valid JWT auth token.
-        '401':
-          description: The user is not authenticated to perform this request.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    format: string
-                  message:
-                    type: string
-                    format: string
-              examples:
-                'Non Active User':
-                  value:
-                    status: fail
-                    message: This user does not exist.
-                'Expired Token':
-                  value:
-                    status: fail
-                    message: Signature expired. Please login again.
-                'Invalid Token':
-                  value:
-                    status: fail
-                    message: Invalid token. Please log in again.
-
-
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
-
-
   schemas:
-    User:
-      type: object
+    user:
       properties:
         _id:
           type: string
@@ -579,7 +474,7 @@ components:
           type: string
           format: date-time
         profile:
-          $ref: '#/components/schemas/UserProfile'
+          $ref: '#/components/schemas/userProfile'
         admin_profile:
           $ref: '#/components/schemas/AdminProfile'
       required:
@@ -606,8 +501,7 @@ components:
           description: What is your experience with solid-state phse transformation?
           type: string
           format: string
-    AdminProfile:
-      type: object
+    adminProfile:
       properties:
         mobile_number:
           type: string
@@ -617,9 +511,3 @@ components:
         position:
           type: string
           format: string
-    Response:
-      properties:
-        message:
-          type: string
-        status:
-          type: string

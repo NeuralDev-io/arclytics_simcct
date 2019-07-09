@@ -8,8 +8,9 @@ LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
 
 RUN apk --no-cache add nodejs
 
+#ENV SPEC="{ \"openapi\": \"3.0.2\" }"
 ENV API_KEY "**None**"
-ENV SWAGGER_JSON "/app/swagger.json"
+ENV SWAGGER_JSON "/app/swagger.yaml"
 ENV PORT 8080
 ENV BASE_URL ""
 
@@ -20,7 +21,7 @@ COPY ./dist/* /usr/share/nginx/html/
 COPY ./docker/run.sh /usr/share/nginx/
 COPY ./docker/configurator /usr/share/nginx/configurator
 
-COPY ./swagger.yml /usr/share/nginx/html/swagger.yml
+COPY ./swagger.yaml /usr/share/nginx/html/swagger.yaml
 
 RUN chmod +x /usr/share/nginx/run.sh
 

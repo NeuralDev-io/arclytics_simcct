@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Swagger UI</title>
+  <title>Arclytics Sim | Swagger UI</title>
   <link rel="stylesheet" type="text/css" href="./swagger-ui.css" >
   <link rel="icon" type="image/png" href="./favicon-32x32.png" sizes="32x32" />
   <link rel="icon" type="image/png" href="./favicon-16x16.png" sizes="16x16" />
@@ -37,19 +37,22 @@
   <script src="./swagger-ui-bundle.js"> </script>
   <script src="./swagger-ui-standalone-preset.js"> </script>
   <script>
+    import Topbar from "../src/plugins/topbar/topbar"
+
     window.onload = function() {
       window["SwaggerUIBundle"] = window["swagger-ui-bundle"]
       window["SwaggerUIStandalonePreset"] = window["swagger-ui-standalone-preset"]
       // Build a system
       const ui = SwaggerUIBundle({
-        url: "https://petstore.swagger.io/v2/swagger.json",
+        url: "https://bitbucket.org/!api/2.0/snippets/codeninja55/nA6L4o/fdac6231d5c3d720392a84a22c982804aba0cc59/files/swagger.yaml",
         dom_id: '#swagger-ui',
         presets: [
           SwaggerUIBundle.presets.apis,
           SwaggerUIStandalonePreset
         ],
         plugins: [
-          SwaggerUIBundle.plugins.DownloadUrl
+          SwaggerUIBundle.plugins.DownloadUrl,
+          Topbar
         ],
         layout: "StandaloneLayout"
       })

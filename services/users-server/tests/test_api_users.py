@@ -66,7 +66,7 @@ class TestUserService(BaseTestCase):
                 ),
                 content_type='application/json'
             )
-            token = json.loads(resp_login.data.decode())['auth_token']
+            token = json.loads(resp_login.data.decode())['token']
 
             resp = self.client.get(
                 '/users/{user_id}'.format(user_id=tony.id),
@@ -74,12 +74,15 @@ class TestUserService(BaseTestCase):
                 headers={'Authorization': 'Bearer {}'.format(token)}
             )
             data = json.loads(resp.data.decode())
-            print(data)
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('iron_man', data['username'])
-            self.assertIn('tony@starkindustries.com', data['email'])
+            self.assertIn('iron_man', data['data']['username'])
+            self.assertIn('tony@starkindustries.com', data['data']['email'])
 
     def test_single_user_not_active(self):
+        """
+        Ensure if user is not active they can't use authenticated endpoints
+        like get: /users/<id>
+        """
         tony = User(
             username='iron_man',
             email='tony@starkindustries.com',
@@ -100,9 +103,10 @@ class TestUserService(BaseTestCase):
                 ),
                 content_type='application/json'
             )
-            token = json.loads(resp_login.data.decode())['auth_token']
+            token = json.loads(resp_login.data.decode())['token']
 
             # Update Tony to be inactive
+            tony.reload()
             tony.active = False
             tony.save()
 
@@ -113,9 +117,9 @@ class TestUserService(BaseTestCase):
             )
 
             data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 401)
             self.assertEqual(data['message'], 'User must sign in again.')
             self.assertEqual('fail', data['status'])
-            self.assertEqual(resp.status_code, 401)
 
     def test_single_user_invalid_id(self):
         """Ensure error is thrown if an id is not provided."""
@@ -158,7 +162,7 @@ class TestUserService(BaseTestCase):
                 content_type='application/json'
             )
             # invalid token logout
-            token = json.loads(resp_login.data.decode())['auth_token']
+            token = json.loads(resp_login.data.decode())['token']
             response = self.client.get(
                 '/users/{}'.format(tony.id),
                 headers={
@@ -178,7 +182,7 @@ class TestUserService(BaseTestCase):
                 '/users', content_type='application/json', headers={}
             )
             data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 403)
+            self.assertEqual(resp.status_code, 400)
             self.assertIn('fail', data['status'])
             self.assertNotIn('data', data)
             self.assertIn('Provide a valid JWT auth token.', data['message'])
@@ -214,7 +218,7 @@ class TestUserService(BaseTestCase):
                 ),
                 content_type='application/json'
             )
-            token = json.loads(resp_login.data.decode())['auth_token']
+            token = json.loads(resp_login.data.decode())['token']
 
             resp = self.client.get(
                 '/users',
@@ -248,7 +252,7 @@ class TestUserService(BaseTestCase):
                 ),
                 content_type='application/json'
             )
-            # token = json.loads(resp_login.data.decode())['auth_token']
+            # token = json.loads(resp_login.data.decode())['token']
             token = 'KJASlkdjlkajsdlkjlkasjdlkjalosd'
             resp = self.client.get(
                 '/users',
@@ -265,7 +269,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(resp.status_code, 401)
 
     def test_get_all_users(self):
-        """Ensure we can get all users if logged in ant authorized."""
+        """Ensure we can get all users if logged in and authorized."""
         tony = User(
             username='iron_man',
             email='tony@starkindustries.com',
@@ -274,6 +278,7 @@ class TestUserService(BaseTestCase):
         )
         tony.set_password('IAmTheRealIronMan')
         tony.is_admin = True
+        tony.verified = True
         tony.save()
         steve = User(
             username='cap',
@@ -290,6 +295,7 @@ class TestUserService(BaseTestCase):
             last_name='Romanoff'
         )
         nat.set_password('IveGotRedInMyLedger')
+        nat.verified = True
         nat.save()
 
         with self.client:
@@ -303,15 +309,15 @@ class TestUserService(BaseTestCase):
                 ),
                 content_type='application/json'
             )
-            token = json.loads(resp_login.data.decode())['auth_token']
-
+            token = json.loads(resp_login.data.decode())['token']
+            tony.reload()
+            self.assertTrue(tony.active)
             resp = self.client.get(
                 '/users',
                 content_type='application/json',
                 headers={'Authorization': 'Bearer {}'.format(token)}
             )
             data = json.loads(resp.data.decode())
-
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(len(data['data']['users']), 3)
             self.assertIn('iron_man', data['data']['users'][0]['username'])

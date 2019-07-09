@@ -29,6 +29,8 @@ from tests.test_api_base import BaseTestCase
 
 
 class TestAuthEndpoints(BaseTestCase):
+    """This module tests all the authentication endpoints and middleware."""
+
     def test_user_registration(self):
         """Ensure we can register a user."""
         resp = self.client.post(
@@ -47,7 +49,7 @@ class TestAuthEndpoints(BaseTestCase):
         data = json.loads(resp.data.decode())
         self.assertTrue(data['status'] == 'success')
         self.assertTrue(data['message'] == 'User has been registered.')
-        self.assertTrue(data['auth_token'])
+        self.assertTrue(data['token'])
         self.assertTrue(resp.content_type == 'application/json')
         self.assertEqual(resp.status_code, 201)
 
@@ -196,16 +198,26 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertIn('fail', data['status'])
 
     def test_registered_user_login(self):
+        """Ensure we can login as users after they have registered."""
         with self.client:
-            user = User(
+            peter = User(
                 username='friendly_neighborhood_spiderman',
                 email='spiderman@newavenger.io',
                 first_name='Peter',
                 last_name='Parker'
             )
-            user.set_password('SpideySenses')
-            user.save()
-            response = self.client.post(
+            peter.set_password('SpideySenses')
+            peter.save()
+            tony = User(
+                username='iron_man',
+                email='tony@avengers.io',
+                first_name='Tony',
+                last_name='Stark'
+            )
+            tony.set_password('IAmIronMan')
+            tony.save()
+
+            response_peter = self.client.post(
                 '/auth/login',
                 data=json.dumps(
                     {
@@ -215,23 +227,33 @@ class TestAuthEndpoints(BaseTestCase):
                 ),
                 content_type='application/json'
             )
-            data = json.loads(response.data.decode())
+            data = json.loads(response_peter.data.decode())
             self.assertIn(data['message'], 'Successfully logged in.')
             self.assertTrue(data['status'] == 'success')
-            self.assertTrue(data['auth_token'])
-            self.assertTrue(response.content_type == 'application/json')
-            self.assertEqual(response.status_code, 200)
+            self.assertTrue(data['token'])
+            self.assertTrue(response_peter.content_type == 'application/json')
+            self.assertEqual(response_peter.status_code, 200)
+
+            response_tony = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'tony@avengers.io',
+                        'password': 'IAmIronMan'
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(response_tony.data.decode())
+            self.assertIn(data['message'], 'Successfully logged in.')
+            self.assertTrue(data['status'] == 'success')
+            self.assertTrue(data['token'])
+            self.assertTrue(response_tony.content_type == 'application/json')
+            self.assertEqual(response_tony.status_code, 200)
 
     def test_empty_user_login(self):
+        """Ensure if no request body provided it returns appropriate message."""
         with self.client:
-            user = User(
-                username='hawkeye',
-                email='hawkeye@avengers.io',
-                first_name='Clint',
-                last_name='Barton'
-            )
-            user.set_password('test123')
-            user.save()
             response = self.client.post(
                 '/auth/login',
                 data=json.dumps({}),
@@ -243,6 +265,9 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(response.status_code, 400)
 
     def test_bad_login_details(self):
+        """
+        Ensure if bad details are given, it will fail with appropriate messages.
+        """
         user = User(
             username='war_machine',
             email='war_machine@avengers.io',
@@ -265,7 +290,7 @@ class TestAuthEndpoints(BaseTestCase):
             data = json.loads(resp_1.data.decode())
             self.assertEqual('You must provide an email.', data['message'])
             self.assertTrue(data['status'] == 'fail')
-            self.assertNotIn('auth_token', data)
+            self.assertNotIn('token', data)
             self.assertTrue(resp_1.content_type == 'application/json')
             self.assertEqual(resp_1.status_code, 400)
 
@@ -279,7 +304,7 @@ class TestAuthEndpoints(BaseTestCase):
             data = json.loads(resp_2.data.decode())
             self.assertEqual('You must provide a password.', data['message'])
             self.assertTrue(data['status'] == 'fail')
-            self.assertNotIn('auth_token', data)
+            self.assertNotIn('token', data)
             self.assertEqual(resp_2.status_code, 400)
 
             resp_3 = self.client.post(
@@ -297,7 +322,7 @@ class TestAuthEndpoints(BaseTestCase):
                 'Email or password combination incorrect.', data['message']
             )
             self.assertTrue(data['status'] == 'fail')
-            self.assertNotIn('auth_token', data)
+            self.assertNotIn('token', data)
             self.assertEqual(resp_3.status_code, 400)
 
     def test_invalid_user_login(self):
@@ -325,7 +350,7 @@ class TestAuthEndpoints(BaseTestCase):
                 'Email or password combination incorrect.', data['message']
             )
             self.assertTrue(data['status'] == 'fail')
-            self.assertNotIn('auth_token', data)
+            self.assertNotIn('token', data)
             self.assertTrue(response.content_type == 'application/json')
             self.assertEqual(response.status_code, 404)
 
@@ -372,7 +397,7 @@ class TestAuthEndpoints(BaseTestCase):
                 'Email or password combination incorrect.', data['message']
             )
             self.assertTrue(data['status'] == 'fail')
-            self.assertNotIn('auth_token', data)
+            self.assertNotIn('token', data)
             self.assertTrue(response.content_type == 'application/json')
             self.assertEqual(response.status_code, 404)
 
@@ -398,7 +423,7 @@ class TestAuthEndpoints(BaseTestCase):
                 content_type='application/json'
             )
             # valid token logout
-            token = json.loads(resp_login.data.decode())['auth_token']
+            token = json.loads(resp_login.data.decode())['token']
             response = self.client.get(
                 '/auth/logout',
                 headers={
@@ -435,7 +460,7 @@ class TestAuthEndpoints(BaseTestCase):
                 content_type='application/json'
             )
             # invalid token logout
-            token = json.loads(resp_login.data.decode())['auth_token']
+            token = json.loads(resp_login.data.decode())['token']
             response = self.client.get(
                 '/auth/logout',
                 headers={
@@ -469,9 +494,10 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(
                 'Provide a valid JWT auth token.', data['message']
             )
-            self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.status_code, 400)
 
     def test_user_status(self):
+
         user = User(
             username='scarlet_witch',
             email='scarlet_witch@avengers.io',
@@ -491,7 +517,7 @@ class TestAuthEndpoints(BaseTestCase):
                 ),
                 content_type='application/json'
             )
-            token = json.loads(resp_login.data.decode())['auth_token']
+            token = json.loads(resp_login.data.decode())['token']
             resp_status = self.client.get(
                 '/auth/status',
                 headers={
@@ -512,13 +538,14 @@ class TestAuthEndpoints(BaseTestCase):
                 '/auth/status', headers={'Authorization': 'Bearer invalid'}
             )
             data = json.loads(response.data.decode())
-            self.assertTrue(data['status'] == 'fail')
             self.assertEqual(
                 'Invalid token. Please log in again.', data['message']
             )
+            self.assertEqual(data['status'], 'fail')
             self.assertEqual(response.status_code, 401)
 
-    def test_invalid_logout_inactivate(self):
+    def test_invalid_logout_inactive(self):
+        """Ensure if user is not active, they cannot logout."""
         user = User(
             username='captain_marvel',
             email='most_hated_avenger@disney.com',
@@ -539,7 +566,7 @@ class TestAuthEndpoints(BaseTestCase):
                 ),
                 content_type='application/json'
             )
-            token = json.loads(resp_login.data.decode())['auth_token']
+            token = json.loads(resp_login.data.decode())['token']
             response = self.client.get(
                 '/auth/logout',
                 headers={
@@ -547,13 +574,14 @@ class TestAuthEndpoints(BaseTestCase):
                 }
             )
             data = json.loads(response.data.decode())
-            self.assertEqual('fail', data['status'])
             self.assertEqual(
-                'Provide a valid JWT auth token.', data['message']
+                'This user does not exist.', data['message']
             )
+            self.assertEqual('fail', data['status'])
             self.assertEqual(response.status_code, 401)
 
     def test_invalid_status_inactive(self):
+        """Ensure if user is not active they can't get a status."""
         user = User(
             username='hells_kitchen_devil',
             email='daredevil@marvel.io',
@@ -574,7 +602,7 @@ class TestAuthEndpoints(BaseTestCase):
                 ),
                 content_type='application/json'
             )
-            token = json.loads(resp_login.data.decode())['auth_token']
+            token = json.loads(resp_login.data.decode())['token']
             response = self.client.get(
                 '/auth/status',
                 headers={'Authorization': 'Bearer {}'.format(token)}
@@ -582,7 +610,7 @@ class TestAuthEndpoints(BaseTestCase):
             data = json.loads(response.data.decode())
             self.assertTrue(data['status'] == 'fail')
             self.assertTrue(
-                data['message'] == 'Provide a valid JWT auth token.'
+                data['message'] == 'This user does not exist.'
             )
             self.assertEqual(response.status_code, 401)
 

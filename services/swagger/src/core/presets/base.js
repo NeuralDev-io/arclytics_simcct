@@ -83,6 +83,8 @@ import SvgAssets from "core/components/svg-assets"
 
 import Markdown from "core/components/providers/markdown"
 
+import Topbar from "../../plugins/topbar/topbar"
+
 import BaseLayout from "core/components/layouts/base"
 
 import * as LayoutUtils from "core/components/layout-utils"
@@ -159,6 +161,7 @@ export default function() {
       Example,
       ExamplesSelect,
       ExamplesSelectValueRetainer,
+      Topbar
     }
   }
 
@@ -187,6 +190,7 @@ export default function() {
     downloadUrlPlugin,
     deepLinkingPlugin,
     filter,
-    onComplete
+    onComplete,
+    Topbar
   ]
 }

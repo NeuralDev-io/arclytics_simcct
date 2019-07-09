@@ -32,9 +32,11 @@ from simulation.utilities import Method, Alloy
 from simulation.ae3_utilities import (
     ae3_single_carbon, convert_wt_2_mol, ae3_multi_carbon
 )
-from simulation.settings import BASE_DIR
 
-DEFAULT_CONFIGS = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+BASE = os.path.abspath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
+)
+DEFAULT_CONFIGS = Path(BASE) / 'simulation' / 'sim_configs.json'
 # DEBUG = APP_CONFIGS['general']['debug']
 # logger = AppLogger(__name__)
 

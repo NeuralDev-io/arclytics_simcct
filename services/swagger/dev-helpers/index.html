@@ -37,22 +37,19 @@
   <script src="./swagger-ui-bundle.js"> </script>
   <script src="./swagger-ui-standalone-preset.js"> </script>
   <script>
-    import Topbar from "../src/plugins/topbar/topbar"
-
     window.onload = function() {
       window["SwaggerUIBundle"] = window["swagger-ui-bundle"]
       window["SwaggerUIStandalonePreset"] = window["swagger-ui-standalone-preset"]
       // Build a system
       const ui = SwaggerUIBundle({
-        url: "https://bitbucket.org/!api/2.0/snippets/codeninja55/nA6L4o/fdac6231d5c3d720392a84a22c982804aba0cc59/files/swagger.yaml",
+        url: "https://petstore.swagger.io/v2/swagger.json",
         dom_id: '#swagger-ui',
         presets: [
           SwaggerUIBundle.presets.apis,
           SwaggerUIStandalonePreset
         ],
         plugins: [
-          SwaggerUIBundle.plugins.DownloadUrl,
-          Topbar
+          SwaggerUIBundle.plugins.DownloadUrl
         ],
         layout: "StandaloneLayout"
       })

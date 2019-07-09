@@ -7,8 +7,8 @@ services:
     build:
       context: services/users-server
       dockerfile: Dockerfile
-    image: arc_sim_users_service:development
-    container_name: arc_sim_users_service
+    image: arc_sim_users_service:1.0
+    container_name: arc-users
     volumes:  # used to mount the code into the container for live updates
       - ./services/users-server:/usr/src/app
     ports:
@@ -29,8 +29,8 @@ services:
     build:
       context: services/simcct-server
       dockerfile: Dockerfile
-    image: arc_simcct_service:development
-    container_name: arc_simcct_service
+    image: arc_simcct_service:1.0
+    container_name: arc-simcct
     volumes:  # used to mount the code into the container for live updates
       - ./services/simcct-server:/usr/src/app
     ports:
@@ -53,9 +53,9 @@ services:
     build:
       context: ./services/db
       dockerfile: Dockerfile
-    image: arc_sim_mongo:development
+    image: arc_sim_mongo:1.0
     restart: always
-    container_name: arc_sim_mongo
+    container_name: arc-mongo
     ports:
       - 27017:27017
     expose:
@@ -68,8 +68,8 @@ services:
     build:
       context: ./services/client
       dockerfile: Dockerfile
-    image: arc_sim_client:development
-    container_name: arc_sim_client
+    image: arc_sim_client:1.0
+    container_name: arc-client
     volumes:
       - ./services/client:/usr/src/app
       - /usr/src/app/node_modules
@@ -102,7 +102,7 @@ services:
 
   swagger-editor:
     image: swaggerapi/swagger-editor
-    container_name: arc_sim_swagger_editor
+    container_name: swagger-editor
     ports:
       - 80:8080
     expose:

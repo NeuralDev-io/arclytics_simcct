@@ -9,7 +9,6 @@
 # part-one-microservices/
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
-__copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
 __license__ = 'TBA'
 __version__ = '0.1.0'
@@ -19,7 +18,7 @@ __status__ = 'development'
 __date__ = '2019.06.04'
 """__init__.py:
 
-This is the entrypoint to our Python Flask API server.
+This is the entrypoint to our Users Flask API server.
 """
 
 import datetime
@@ -29,7 +28,8 @@ from bson import ObjectId
 
 from flask import Flask
 from mongoengine import connect
-from mongoengine.connection import disconnect_all, get_connection, get_db, MongoEngineConnectionError
+from mongoengine.connection import (disconnect_all, get_connection, get_db,
+                                    MongoEngineConnectionError)
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 

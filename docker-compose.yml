@@ -25,6 +25,30 @@ services:
     links:
       - mongodb
 
+  simcct-server:
+    build:
+      context: services/simcct-server
+      dockerfile: Dockerfile
+    image: arc_simcct_service:development
+    container_name: arc_simcct_service
+    volumes:  # used to mount the code into the container for live updates
+      - ./services/simcct-server:/usr/src/app
+    ports:
+      - 8001:8000
+    expose:
+      - 8001
+    environment:
+      - FLASK_ENV=development
+      - APP_SETTINGS=configs.flask_configs.DevelopmentConfig
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+    depends_on:
+      - mongodb
+      - users-server
+    links:
+      - mongodb
+      - users-server
+
   mongodb:
     build:
       context: ./services/db

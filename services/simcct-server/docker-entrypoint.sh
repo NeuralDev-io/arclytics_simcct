@@ -1,14 +1,14 @@
 #!/bin/sh
 
 ##### Constants
-TITLE="Arclytics Flask Server Information for $HOSTNAME"
+TITLE="Arclytics SimCCT Flask Server Information for $HOSTNAME"
 RIGHT_NOW=$(date +"%x %r %Z")
 TIME_STAMP="Started on $RIGHT_NOW by $USER"
 
 ##### Check if DB is up and running
 echo "Waiting for Mongo..."
 
-while ! nc -z users-db 27017; do
+while ! socat - TCP4:mongodb:27017; do
     sleep 0.1
 done
 
@@ -24,7 +24,7 @@ HOST=0.0.0.0
 PORT=8000
 WSGI=""
 
-while [ "$1" != "" ]; do
+while [[ "$1" != "" ]]; do
     case $1 in
         -H | --host )
             shift
@@ -52,7 +52,7 @@ done
 echo "$TITLE"
 echo "$TIME_STAMP"
 echo "ENVIRONMENT VARIABLES:"
-echo "FLASK_APP: $FLASK_APP"
+echo "FLASK_APP: SimCCT Service"
 echo "FLASK_ENV: $FLASK_ENV"
 echo "APP_SETTINGS: $APP_SETTINGS"
 echo "Starting Flask server..."
@@ -60,7 +60,7 @@ echo ""
 
 # if [ $WSGI == ""]; then
 #     exit
-if [ "$WSGI" == "gunicorn" ]; then
+if [[ "$WSGI" == "gunicorn" ]]; then
     gunicorn -b $HOST:$PORT api.__init__:app
 else
     python manage.py run -h $HOST -p $PORT

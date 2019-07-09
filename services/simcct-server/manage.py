@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/opt/conda/bin/python
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
@@ -14,7 +14,7 @@ __version__ = '0.1.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
-__date__ = '2019.06.04'
+__date__ = '2019.07.09'
 """manage.py: 
 
 This script is to our CLI script tool to manage the application.
@@ -27,11 +27,9 @@ import unittest
 from pathlib import Path
 
 from flask.cli import FlaskGroup
-from prettytable import PrettyTable
 import coverage
 
-from api import create_app, get_flask_mongo
-from api.models import User
+from api import create_app
 
 app = create_app()
 cli = FlaskGroup(create_app=create_app)

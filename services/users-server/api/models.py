@@ -20,15 +20,15 @@ This module stores the mongoengine.Document models for the Arclytics API Users
 microservice.
 """
 
-import datetime
 import jwt
-from typing import Union
+from datetime import datetime, tzinfo, timedelta
+from typing import Union, Optional
 
 from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
-    DateTimeField, EmbeddedDocumentField
-)
+    DateTimeField, EmbeddedDocumentField,
+    queryset_manager)
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
@@ -39,7 +39,8 @@ logger = AppLogger(__name__)
 USERS = (('1', 'ADMIN'), ('2', 'USER'))
 
 
-# ========== # CUSTOM EXCEPTIONS # ========== #
+# ========== # UTILITIES # ========== #
+# TODO(andrew@neuraldev.io): move these to a separate file at some point.
 class PasswordValidationError(Exception):
     """
     Raises an Exception if now password was set before trying to save
@@ -51,13 +52,21 @@ class PasswordValidationError(Exception):
               self).__init__('A password must be set before saving.')
 
 
+class SimpleUTC(tzinfo):
+    def tzname(self, dt: Optional[datetime]) -> Optional[str]:
+        return 'UTC'
+
+    def utcoffset(self, dt: Optional[datetime]) -> Optional[timedelta]:
+        return timedelta(0)
+
+
 # ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
 
 
 class UserProfile(EmbeddedDocument):
     # Not having this for now until we can figure out where to store the photos
-    # TODO: Uncomment Pillow depdencneis Dockerfile to use and
-    #  install Pillow==6.1.0
+    # TODO(andrew@neuraldev.io): Uncomment Pillow dependencies Dockerfile to use
+    #  and install Pillow==6.1.0
     # profile_photo = ImageField(
     #     required=False,
     #     size=(800, 600, True),
@@ -105,7 +114,7 @@ class AdminProfile(EmbeddedDocument):
     position = StringField(max_length=255, required=True)
     mobile_number = StringField(max_length=11, min_length=10)
 
-    def to_json(self) -> dict:
+    def to_dict(self) -> dict:
         """
         Simple EmbeddedDocument.AdminProfile helper method to get a
         Python dict back.
@@ -145,9 +154,9 @@ class User(Document):
     verified = BooleanField(default=False)
     # Make sure when converting these that it follows ISO8601 format as
     # defined in settings.DATETIME_FMT
-    created = DateTimeField(default=datetime.datetime.utcnow(), null=False)
+    created = DateTimeField(default=datetime.utcnow(), null=False)
     last_updated = DateTimeField(default=None, null=False)
-    last_login = DateTimeField(default=None)
+    last_login = DateTimeField()
     # Define the collection and indexing for this document
     meta = {'collection': 'users'}
 
@@ -164,7 +173,7 @@ class User(Document):
         """Simple Document.User helper method to get a Python dict back."""
         last_login = None
         if self.last_login is not None:
-            last_login = self.last_login.isoformat()
+            last_login = self.last_login.replace(tzinfo=SimpleUTC()).isoformat()
         profile = None
         if self.profile is not None:
             profile = self.profile.to_dict()
@@ -178,14 +187,16 @@ class User(Document):
             'active': self.active,
             'admin': self.is_admin,
             'verified': self.verified,
-            'created': str(self.created.isoformat()),
-            'last_updated': str(self.last_updated.isoformat()),
+            'created':
+                str(self.created.replace(tzinfo=SimpleUTC()).isoformat()),
+            'last_updated':
+                str(self.last_updated.replace(tzinfo=SimpleUTC()).isoformat()),
             'last_login': str(last_login),
             'profile': profile
         }
 
         if self.admin_profile is not None:
-            user['admin_profile'] = self.admin_profile.to_json()
+            user['admin_profile'] = self.admin_profile.to_dict()
 
         return user
 
@@ -201,16 +212,14 @@ class User(Document):
         """Generates JWT auth token that is returned as bytes."""
         try:
             payload = {
-                'exp':
-                datetime.datetime.utcnow() + datetime.timedelta(
-                    days=current_app.config.get('TOKEN_EXPIRATION_DAYS', 0),
-                    seconds=current_app.config.
-                    get('TOKEN_EXPIRATION_SECONDS', 0)
+                'exp': datetime.utcnow() + timedelta(
+                    days=current_app.config
+                        .get('TOKEN_EXPIRATION_DAYS', 0),
+                    seconds=current_app.config
+                        .get('TOKEN_EXPIRATION_SECONDS', 0)
                 ),
-                'iat':
-                datetime.datetime.utcnow(),
-                'sub':
-                user_id
+                'iat': datetime.utcnow(),
+                'sub': user_id
             }
 
             return jwt.encode(
@@ -256,6 +265,23 @@ class User(Document):
 
         if self.last_updated is None:
             self.last_updated = self.created
+
+    @queryset_manager
+    def as_dict(doc_cls, queryset) -> list:
+        """Adding an additional QuerySet context method to return a list of
+        `api.models.Users` Documents instead of a QuerySet.
+
+        Usage:
+            users_list = User.as_dict()
+
+        Args:
+            queryset: the queryset that must is accepted as part of the Mongo
+                      BSON parameter.
+
+        Returns:
+            A list with every Users Document object converted to dict.
+        """
+        return [obj.to_dict() for obj in queryset]
 
     def __str__(self):
         return self.to_json()

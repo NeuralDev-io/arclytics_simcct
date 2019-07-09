@@ -20,16 +20,15 @@ __date__ = '2019.07.03'
 This file defines all the API resource routes and controller definitions using 
 the Flask Resource inheritance model.
 """
-import json
-from bson import ObjectId
 
-from flask import Blueprint, jsonify, make_response
+import json
+
+from flask import Blueprint, make_response
 from flask_restful import Resource, Api, reqparse
 
-from api import JSONEncoder
 from logger.arc_logger import AppLogger
 from api.models import User
-from api.auth_decorators import authenticate_restful, authenticate_admin
+from api.middleware import login_required, authenticate_admin
 
 users_blueprint = Blueprint('users', __name__)
 api = Api(users_blueprint)
@@ -52,18 +51,17 @@ class UsersList(Resource):
 
     def get(self, resp):
         """Get all users only available to admins."""
-        queryset = User.objects()
-        # The QuerySet.to_json() method returns a string. We use json.loads() to make it a Python dict.
+        user_list = User.as_dict
         response = {
             'status': 'success',
             'data': {
-                'users': json.loads(queryset.to_json())
+                'users': user_list
             }
         }
-        return response, 200
+        return response, 200, {'content-type': 'application/json'}
 
 
-# TODO
+# TODO(andrew@neuraldev.io -- Sprint 6)
 # class AdminCreate(Resource):
 #     """Route for Users for Create Admin."""
 
@@ -104,35 +102,13 @@ class UsersList(Resource):
 class Users(Resource):
     """Resource for User Retrieve."""
 
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument(
-            'email',
-            type=str,
-            help='This field cannot be blank.',
-            required=True
-        )
-        self.reqparse.add_argument(
-            'username',
-            type=str,
-            help='This field cannot be blank.',
-            required=False
-        )
-        self.reqparse.add_argument(
-            'password',
-            type=str,
-            help='This field cannot be blank.',
-            required=True
-        )
-
     method_decorators = {
-        'get': [authenticate_restful],
-        'update': [authenticate_restful]
+        'get': [login_required],
+        'update': [login_required]
     }
 
     def get(self, user_id):
         """Get a single user detail with query as user_id."""
-        response = {'status': 'fail', 'message': 'User does not exist.'}
 
         # Validation check fo ObjectId done in authenticate_restful decorator
         # if not ObjectId.is_valid(user_id):
@@ -142,8 +118,11 @@ class Users(Resource):
         # Validation check for User exists done in authenticate_restful
         # decorator
         user = User.objects.get(id=user_id)
-        from flask import make_response
-        return make_response(user.to_json(), 200)
+        response = {
+            'status': 'success',
+            'data': user.to_dict()
+        }
+        return response, 200, {'content-type': 'application/json'}
 
 
 # ========== # RESOURCE ROUTES # ========== #

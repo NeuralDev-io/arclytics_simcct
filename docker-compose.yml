@@ -40,6 +40,7 @@ services:
     environment:
       - FLASK_ENV=development
       - APP_SETTINGS=configs.flask_configs.DevelopmentConfig
+      - USERS_HOST=users-server:8000
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
     depends_on:

@@ -25,6 +25,7 @@ from datetime import datetime
 
 from bson import ObjectId
 from flask import Flask
+from flask_restful import Api
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from flask_cors import CORS
@@ -85,6 +86,8 @@ def create_app(script_info=None) -> Flask:
     #     DEFAULT_LOGGER.pprint(app.config)
 
     # Register blueprints
+    from api.views import test_blueprint
+    app.register_blueprint(test_blueprint)
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects
@@ -93,8 +96,6 @@ def create_app(script_info=None) -> Flask:
     # Shell context for Flask CLI
     @app.shell_context_processor
     def ctx():
-        return {'app': app}
-
-    print(app.config)
+        return {'app': app, 'mongo': mongo_client}
 
     return app

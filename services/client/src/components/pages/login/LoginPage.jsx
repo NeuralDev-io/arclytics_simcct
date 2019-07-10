@@ -33,7 +33,7 @@ class LoginPage extends Component {
                 login(values, resolve, reject)
               })
               promise.then(data => {
-                localStorage.setItem("token", data.token)
+                localStorage.setItem('token', data.token)
                 this.props.history.push('/')
                 setSubmitting(false)
               })
@@ -81,7 +81,7 @@ class LoginPage extends Component {
                   <h6>{errors.password && touched.password && errors.password}</h6>
                   <h6>{status && status.message && status.message}</h6>
                   <div>
-                    <a href="http://localhost:3000/signup">  <h6 className={styles.help}>Trouble Signing in?</h6> </a>  
+                    <a href="http://localhost:3000/signup">  <h6 className={styles.help}>Trouble signing in?</h6> </a>  
                   </div>       
                   <div className={styles.clear}>
                     <Button className={styles.signIn} name="SIGN IN" type="submit" length="long" isSubmitting={isSubmitting}>SIGN IN</Button> 

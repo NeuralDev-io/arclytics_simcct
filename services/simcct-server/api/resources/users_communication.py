@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# views.py
+# users_communication.py
 # 
 # Attributions: 
 # [1] https://stackoverflow.com/questions/53568275/
@@ -15,19 +15,19 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.10'
-"""views.py: 
+"""users_communication.py: 
 
-{Description}
+This resource module defines and implements resources for cross-container 
+communication between simcct-server and the users-server.
 """
 
 import os
 
 import requests
-from flask import Blueprint, current_app
-from flask_restful import Resource, Api
+from flask import Blueprint
+from flask_restful import Resource
 
-test_blueprint = Blueprint('users', __name__)
-api = Api(test_blueprint)
+users_blueprint = Blueprint('users', __name__)
 
 
 class UsersPing(Resource):
@@ -43,5 +43,3 @@ class UsersPing(Resource):
         print(res)
         return res.json(), 200, {'content-type': 'application/json'}
 
-
-api.add_resource(UsersPing, '/users/ping')

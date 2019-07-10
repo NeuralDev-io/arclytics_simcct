@@ -30,7 +30,7 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from flask_cors import CORS
 
-import configs
+from api.resources.users_communication import UsersPing
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -80,14 +80,13 @@ def create_app(script_info=None) -> Flask:
 
     # Set up Flask extensions
     cors.init_app(app)
-
-    # Log the App Configs
-    # if app is None:
-    #     DEFAULT_LOGGER.pprint(app.config)
+    from api.resources.users_communication import users_blueprint
+    api = Api(users_blueprint)
 
     # Register blueprints
-    from api.views import test_blueprint
-    app.register_blueprint(test_blueprint)
+    app.register_blueprint(users_blueprint)
+
+    api.add_resource(UsersPing, '/users/ping')
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects

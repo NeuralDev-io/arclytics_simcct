@@ -44,10 +44,8 @@ class SignupPage extends Component {
     return (
       //TODO: do the styles then the designss
       <div>
-         <div>
-          <h1> ARCLYTICS </h1> 
-        </div>
         <div>
+          <h1> ARCLYTICS </h1> 
           <h1> Sign Up </h1> 
         </div>
         <Formik

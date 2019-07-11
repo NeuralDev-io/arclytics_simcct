@@ -145,6 +145,8 @@ def login():
             user.last_login = datetime.utcnow()
             user.save()
 
+            # TODO: Set the configurations/compositions for the session here
+
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
             response['token'] = auth_token.decode()

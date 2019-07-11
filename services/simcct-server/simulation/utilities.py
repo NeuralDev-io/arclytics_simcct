@@ -30,9 +30,9 @@ class Method(enum.Enum):
 
 
 class Alloy(enum.Enum):
-    Parent = 1
-    Weld = 2
-    Mix = 3
+    parent = 1
+    weld = 2
+    mix = 3
 
 
 def linear_fit(x_point: float, x1: float, y1: float, x2: float, y2: float):

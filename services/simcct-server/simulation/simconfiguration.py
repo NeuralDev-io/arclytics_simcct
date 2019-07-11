@@ -63,11 +63,11 @@ class SimConfiguration(object):
                            if configs['method'] == 'Li98'
                            else Method.Kirkaldy83)
 
-            self.alloy = Alloy.Parent
+            self.alloy = Alloy.parent
             if configs['alloy'] == 'mix':
-                self.alloy = Alloy.Mix
+                self.alloy = Alloy.mix
             elif configs['alloy'] == 'weld':
-                self.alloy = Alloy.Weld
+                self.alloy = Alloy.weld
 
             self.nuc_start = configs['nucleation_start'] / 100
             self.nuc_finish = configs['nucleation_finish'] / 100

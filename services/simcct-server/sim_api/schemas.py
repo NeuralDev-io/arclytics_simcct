@@ -41,37 +41,6 @@ class CompositionSchema(Schema):
     compositions = fields.List(fields.Nested(ElementSchema), required=True)
 
 
-
-class TransformationDefinitionsSchema(Schema):
-    nucleation_start = fields.Decimal(required=True)
-    nucleation_finish = fields.Decimal(required=True)
-
-
-class EquilibriumPhaseFractionsSchema(Schema):
-    auto_calculate = fields.Boolean(default=True, required=True)
-    xfe_value = fields.Decimal(required=True)
-    cf_value = fields.Decimal(required=True)
-    ceut_value = fields.Decimal(required=True)
-
-
-class TransformationLimitsSchema(Schema):
-    auto_calculate = fields.Boolean(default=True, required=True)
-    ms_temp = fields.Decimal(required=True)
-    ms_undercool = fields.Decimal(required=True)
-    bs_temp = fields.Decimal(required=True)
-
-
-class AusteniteLimitsSchema(Schema):
-    auto_calculate = fields.Boolean(default=True, required=True)
-    ae1_value = fields.Decimal(required=True)
-    ae3_value = fields.Decimal(required=True)
-
-
-class UserCoolingProfileSchema(Schema):
-    start_temp = fields.Int()
-    cct_cooling_rate = fields.Int()
-
-
 class ConfigurationsSchema(Schema):
     method = fields.Str(default='li98',
                         required=True,
@@ -87,7 +56,21 @@ class ConfigurationsSchema(Schema):
                                        'required': 'A method is required.'})
     grain_size_type = fields.Str(required=True, default='ASTM')
     grain_size_value = fields.Decimal(required=True)
-
+    nucleation_start = fields.Decimal(required=True)
+    nucleation_finish = fields.Decimal(required=True)
+    auto_calculate_xfe = fields.Boolean(default=True, required=True)
+    xfe_value = fields.Decimal(required=True)
+    cf_value = fields.Decimal(required=True)
+    ceut_value = fields.Decimal(required=True)
+    auto_calculate_ms_bs = fields.Boolean(default=True, required=True)
+    ms_temp = fields.Decimal(required=True)
+    ms_undercool = fields.Decimal(required=True)
+    bs_temp = fields.Decimal(required=True)
+    auto_calculate_ae = fields.Boolean(default=True, required=True)
+    ae1_value = fields.Decimal(required=True)
+    ae3_value = fields.Decimal(required=True)
+    start_temp = fields.Int()
+    cct_cooling_rate = fields.Int()
 
     class Meta:
         # By default, load will raise a ValidationError if it encounters a key

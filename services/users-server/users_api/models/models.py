@@ -27,8 +27,8 @@ from typing import Union, Optional
 from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
-    DateTimeField, EmbeddedDocumentField, DecimalField, IntField,
-    queryset_manager)
+    DateTimeField, EmbeddedDocumentField, IntField, FloatField, ListField,
+    EmbeddedDocumentListField, queryset_manager)
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
@@ -123,25 +123,94 @@ class AdminProfile(EmbeddedDocument):
 
 
 class Configuration(EmbeddedDocument):
-    method = StringField()
-    alloy = StringField()
-    grain_size = DecimalField()
+    method = StringField(default='Li98')
+    alloy = StringField(default='parent')
+    grain_size = FloatField(default=0.0)
     grain_size_type = StringField(default='ASTM')
-    nucleation_start = DecimalField(default=1.0)
-    nucleation_finish = DecimalField(default=99.9)
+    nucleation_start = FloatField(default=1.0)
+    nucleation_finish = FloatField(default=99.9)
     auto_calculate_xfe = BooleanField(default=True)
-    xfe_value = DecimalField()
-    cf_value = DecimalField()
-    ceut_value = DecimalField()
+    xfe_value = FloatField()
+    cf_value = FloatField()
+    ceut_value = FloatField()
     auto_calculate_ms_bs = BooleanField(default=True)
-    ms_temp = DecimalField()
-    ms_undercool = DecimalField()
-    bs_temp = DecimalField()
+    ms_temp = FloatField()
+    ms_undercool = FloatField()
+    bs_temp = FloatField()
     auto_calculate_ae = BooleanField(default=True)
-    ae1_temp = DecimalField()
-    ae3_temp = DecimalField()
-    start_temp = DecimalField()
+    ae1_temp = FloatField()
+    ae3_temp = FloatField()
+    start_temp = FloatField()
     cct_cooling_rate = IntField()
+
+    def to_dict(self) -> dict:
+        """
+        Simple EmbeddedDocument.Configuration helper method to get a Python dict
+        """
+        return {
+            'method': self.method,
+            'alloy': self.alloy,
+            'grain_size_type': self.grain_size_type,
+            'grain_size': self.grain_size,
+            'nucleation_start': self.nucleation_start,
+            'nucleation_finish': self.nucleation_finish,
+            'auto_calculate_xfe': self.auto_calculate_xfe,
+            'auto_calculate_ms_bs': self.auto_calculate_ms_bs,
+            'auto_calculate_ae': self.auto_calculate_ae,
+            'xfe_value': self.xfe_value,
+            'cf_value': self.cf_value,
+            'ceut_value': self.ceut_value,
+            'ms_temp': self.ms_temp,
+            'ms_undercool': self.ms_undercool,
+            'bs_temp': self.bs_temp,
+            'ae1_temp': self.ae1_temp,
+            'ae3_temp': self.ae3_temp,
+            'start_temp': self.start_temp,
+            'cct_cooling_rate': self.cct_cooling_rate
+        }
+
+    @queryset_manager
+    def as_dict(cls, queryset) -> list:
+        """Adding an additional QuerySet context method to return a list of
+        `users_api.models.Configuration` Documents instead of a QuerySet.
+
+        Usage:
+            config_list = Configuration.as_dict()
+
+        Args:
+            queryset: the queryset that must is accepted as part of the Mongo
+                      BSON parameter.
+
+        Returns:
+            A list with every Configuration Document object converted to dict.
+        """
+        return [obj.to_dict() for obj in queryset]
+
+    def __str__(self):
+        return self.to_json()
+
+
+class Element(EmbeddedDocument):
+    name = StringField()
+    symbol = StringField(max_length=2)
+    weight = FloatField()
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'symbol': self.symbol,
+            'weight': self.weight
+        }
+
+    def __str__(self):
+        return self.to_json()
+
+
+class Compositions(EmbeddedDocument):
+    comp = ListField(EmbeddedDocumentField(Element))
+
+    def __str__(self):
+        return self.to_json()
 
 
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
@@ -152,18 +221,13 @@ class User(Document):
     )
     first_name = StringField(required=True, max_length=255)
     last_name = StringField(required=True, max_length=255)
-    user_type = StringField(
-        required=False,
-        max_length=1,
-        null=False,
-        choices=USERS,
-        default=USERS[1][0]
-    )
+    user_type = StringField(required=False, max_length=1, null=False,
+                            choices=USERS, default=USERS[1][0])
     profile = EmbeddedDocumentField(document_type=UserProfile)
     admin_profile = EmbeddedDocumentField(document_type=AdminProfile)
 
     last_configuration = EmbeddedDocumentField(document_type=Configuration)
-    # last_compositions = EmbeddedDocumentField(document_type=)
+    last_compositions = EmbeddedDocumentField(document_type=Compositions)
 
     # TODO(andrew@neuraldev.io -- Sprint 6): Make these
     # saved_configurations = EmbeddedDocumentListField(
@@ -195,8 +259,11 @@ class User(Document):
     def to_dict(self) -> dict:
         """Simple Document.User helper method to get a Python dict back."""
         last_login = None
+        last_updated = None
         if self.last_login is not None:
-            last_login = self.last_login.replace(tzinfo=SimpleUTC()).isoformat()
+            last_login = self.last_login.isoformat()
+        if self.last_updated is not None:
+            last_updated = self.last_updated.isoformat()
         profile = None
         if self.profile is not None:
             profile = self.profile.to_dict()
@@ -209,10 +276,8 @@ class User(Document):
             'active': self.active,
             'admin': self.is_admin,
             'verified': self.verified,
-            'created':
-                str(self.created.replace(tzinfo=SimpleUTC()).isoformat()),
-            'last_updated':
-                str(self.last_updated.replace(tzinfo=SimpleUTC()).isoformat()),
+            'last_updated': str(last_updated),
+            'created': str(self.created.isoformat()),
             'last_login': str(last_login),
             'profile': profile
         }
@@ -227,7 +292,7 @@ class User(Document):
         Override the default method to customise the way a JSON format is
         transformed.
         """
-        return json.dumps(self.to_dict())
+        return json.dumps(self.to_dict(), cls=JSONEncoder)
 
     @staticmethod
     def encode_auth_token(user_id: ObjectId) -> Union[bytes, None]:
@@ -289,7 +354,7 @@ class User(Document):
             self.last_updated = self.created
 
     @queryset_manager
-    def as_dict(doc_cls, queryset) -> list:
+    def as_dict(cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
         `users_api.models.Users` Documents instead of a QuerySet.
 

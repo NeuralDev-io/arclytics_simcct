@@ -22,6 +22,7 @@ This is the entrypoint to our Users Flask API server.
 """
 
 import datetime
+import decimal
 import os
 import json
 from bson import ObjectId
@@ -48,6 +49,8 @@ class JSONEncoder(json.JSONEncoder):
             return list(o)
         if isinstance(o, datetime.datetime):
             return str(o.isoformat())
+        if isinstance(o, decimal.Decimal):
+            return str(o)
         return json.JSONEncoder.default(self, o)
 
 

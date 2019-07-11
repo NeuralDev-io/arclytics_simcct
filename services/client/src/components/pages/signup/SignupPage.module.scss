@@ -1,2 +1,51 @@
-@import "../../../styles/_colors-light.scss";
-@import "../../../styles/_typography.scss";
+// @import "../../../styles/_colors-light.scss";
+// @import "../../../styles/_typography.scss";
+
+.outer{
+    width: 100vw;
+    height: 100vh;
+}
+
+.form{
+    margin: 8.0632rem 0 0 11.125rem;
+    width: 23.75rem;
+
+}
+
+.logo{
+    margin-bottom: 7.624375rem;
+}
+
+.signUp{
+    margin-bottom: 2.3125rem;
+}
+
+.name{
+    margin-bottom: 2.8125rem;
+    height:2.25rem;
+}
+
+.firstName{
+    float:left;    
+}
+
+.lastName{
+    float:right;
+}
+
+.emailPassword{
+    margin-bottom: 3.37500rem;
+}
+
+.passwordConfirmed{
+    margin-bottom: 3.5rem;
+}
+
+.signUpButton{
+    margin-bottom: 1rem;
+}
+
+
+.signIn{
+    color: #299D67;
+}

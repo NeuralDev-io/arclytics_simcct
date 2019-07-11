@@ -33,7 +33,7 @@ from mongoengine.connection import (disconnect_all, get_connection, get_db,
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 
-from api.mongodb import MongoSingleton
+from users_api.mongodb import MongoSingleton
 from configs.settings import DEFAULT_LOGGER
 
 
@@ -153,9 +153,9 @@ def create_app(script_info=None) -> Flask:
     #     DEFAULT_LOGGER.pprint(app.config)
 
     # Register blueprints
-    from api.users import users_blueprint
+    from users_api.resources.users import users_blueprint
     app.register_blueprint(users_blueprint)
-    from api.auth import auth_blueprint
+    from users_api.resources.auth import auth_blueprint
     app.register_blueprint(auth_blueprint)
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and

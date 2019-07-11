@@ -32,7 +32,7 @@ from mongoengine import (
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
-from api import bcrypt, JSONEncoder
+from users_api import bcrypt, JSONEncoder
 
 logger = AppLogger(__name__)
 # User type choices
@@ -130,9 +130,6 @@ class User(Document):
     )
     first_name = StringField(required=True, max_length=255)
     last_name = StringField(required=True, max_length=255)
-    username = StringField(
-        required=True, unique=True, min_length=1, max_length=180
-    )
     user_type = StringField(
         required=False,
         max_length=1,
@@ -183,7 +180,6 @@ class User(Document):
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
-            'username': self.username,
             'active': self.active,
             'admin': self.is_admin,
             'verified': self.verified,
@@ -269,7 +265,7 @@ class User(Document):
     @queryset_manager
     def as_dict(doc_cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
-        `api.models.Users` Documents instead of a QuerySet.
+        `users_api.models.Users` Documents instead of a QuerySet.
 
         Usage:
             users_list = User.as_dict()

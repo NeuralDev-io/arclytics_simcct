@@ -25,11 +25,11 @@ from datetime import datetime
 from flask import Blueprint, jsonify, request
 from mongoengine.errors import ValidationError, NotUniqueError
 
-from api.models import User
-from api import bcrypt
+from users_api.models.models import User
+from users_api import bcrypt
 from logger.arc_logger import AppLogger
-from api.middleware import authenticate
-from api.models import SimpleUTC
+from users_api.middleware import authenticate
+from users_api.models.models import SimpleUTC
 
 logger = AppLogger(__name__)
 
@@ -50,7 +50,6 @@ def register_user():
 
     # Extract the request body data
     email = post_data.get('email', '')
-    username = post_data.get('username', '')
     password = post_data.get('password', '')
     first_name = post_data.get('first_name', '')
     last_name = post_data.get('last_name', '')
@@ -73,7 +72,6 @@ def register_user():
     if not User.objects(email=email):
         new_user = User(
             email=email,
-            username=username,
             first_name=first_name,
             last_name=last_name
         )

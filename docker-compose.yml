@@ -17,7 +17,7 @@ services:
       - 8000
     environment:
       - FLASK_ENV=development
-      - APP_SETTINGS=api.config.DevelopmentConfig
+      - APP_SETTINGS=users_api.config.DevelopmentConfig
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
     depends_on:
@@ -43,12 +43,27 @@ services:
       - USERS_HOST=users-server:8000
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
+      - REDIS_HOST=redis
     depends_on:
       - mongodb
       - users-server
+      - redis
     links:
       - mongodb
       - users-server
+      - redis
+
+  redis:
+    build:
+      context: ./services/redis
+      dockerfile: Dockerfile
+    image: arc_sim_redis:0.1
+    restart: always
+    container_name: arc-redis
+    ports:
+      - 6379:6379
+    expose:
+      - 6379
 
   mongodb:
     build:

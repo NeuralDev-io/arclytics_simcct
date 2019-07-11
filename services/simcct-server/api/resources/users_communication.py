@@ -40,6 +40,5 @@ class UsersPing(Resource):
 
         url = f'http://{users_server}/ping'
         res = requests.get(url)
-        print(res)
         return res.json(), 200, {'content-type': 'application/json'}
 

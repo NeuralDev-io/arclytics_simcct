@@ -17,16 +17,14 @@ __status__ = 'development'
 __date__ = '2019.07.03'
 """base.py: 
 
-{Description}
+The base TestCase that all others subclass from.
 """
-
-import json
 
 from pymongo import MongoClient
 from mongoengine.connection import get_db, get_connection
 from flask_testing import TestCase
 
-from api import create_app, set_flask_mongo, init_db
+from users_api import create_app, set_flask_mongo, init_db
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -35,7 +33,7 @@ app = create_app()
 
 class BaseTestCase(TestCase):
     def create_app(self):
-        app.config.from_object('api.config.TestingConfig')
+        app.config.from_object('users_api.config.TestingConfig')
         self.db = init_db(app)
         set_flask_mongo(self.db)
         return app

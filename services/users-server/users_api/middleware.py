@@ -24,7 +24,7 @@ from functools import wraps
 from bson import ObjectId
 from flask import request, jsonify
 
-from api.models import User
+from users_api.models.models import User
 
 
 def authenticate(f):

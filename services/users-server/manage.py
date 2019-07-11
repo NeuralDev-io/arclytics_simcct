@@ -37,17 +37,16 @@ from users_api.models.models import User
 COV = coverage.coverage(
     branch=True,
     include=[
-        'users_api/models.py',
-        'users_api/users.py',
-        'users_api/auth.py',
-        'users_api/auth_decorators.py',
+        'users_api/models/models.py',
+        'users_api/resources/users.py',
+        'users_api/resources/auth.py',
+        'users_api/middleware.py',
         'users_api/mongodb.py',
     ],
     omit=[
         'users_api/__init__.py'
-        'config.py',
+        'users_api/config.py',
         'tests/*',
-        'simulation/*',
         'configs/*',
         'data/*',
         'logger/*',

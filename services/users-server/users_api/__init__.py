@@ -32,6 +32,7 @@ from mongoengine.connection import (disconnect_all, get_connection, get_db,
                                     MongoEngineConnectionError)
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
+from flask_marshmallow import Marshmallow
 
 from users_api.mongodb import MongoSingleton
 from configs.settings import DEFAULT_LOGGER
@@ -46,12 +47,6 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(o, set):
             return list(o)
         if isinstance(o, datetime.datetime):
-            # if o.utcoffset() is not None:
-            #     o = o - o.utcoffset()
-            # millis = int(
-            #     calendar.timegm(o.timetuple()) * 1000 + o.microsecond / 1000
-            # )
-            # return millis
             return str(o.isoformat())
         return json.JSONEncoder.default(self, o)
 
@@ -61,6 +56,7 @@ _mongo_client = None
 # Some other extensions to Flask
 cors = CORS()
 bcrypt = Bcrypt()
+ma = Marshmallow()
 
 
 def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
@@ -78,7 +74,8 @@ def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
         host=host,
         port=int(port),
         alias='default'
-        # FIXME: Do not leave this commented for Production Environment
+        # FIXME(andrew@neuraldev.io): Do not leave this commented for
+        #  Production Environment
         # username=app.config['MONGO_USER'],
         # password=app.config['MONGO_PASSWORD'],
     )
@@ -131,6 +128,7 @@ def create_app(script_info=None) -> Flask:
     app_settings = os.getenv('APP_SETTINGS')
     app.config.from_object(app_settings)
 
+    # ========== # CONNECT TO DATABASE # ========== #
     # Mongo Client interface with MongoEngine as Object Document Mapper (ODM)
     app.config['MONGO_URI'] = os.environ.get('MONGO_URI', '')
     app.config['MONGO_HOST'] = os.environ.get('MONGO_HOST', '')
@@ -144,13 +142,11 @@ def create_app(script_info=None) -> Flask:
     db = init_db(app)
     set_flask_mongo(db)
 
+    # ========== # INIT FLASK EXTENSIONS # ========== #
     # Set up Flask extensions
     cors.init_app(app)
     bcrypt.init_app(app)
-
-    # Log the App Configs
-    # if app is None:
-    #     DEFAULT_LOGGER.pprint(app.config)
+    ma.init_app(app)
 
     # Register blueprints
     from users_api.resources.users import users_blueprint

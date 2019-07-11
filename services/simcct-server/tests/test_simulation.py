@@ -58,7 +58,7 @@ class TestAe1nAe3(BaseConfigurationTest):
         super(TestAe1nAe3, self).setUp()
 
         # Set up some instance variables for other tests
-        self.wt = self.sim_inst.comp_parent.copy()
+        self.wt = self.sim_inst.comp.copy()
         self.temp = np.float64(0.0)
         self.a_vect = None
         self.x_vect = None
@@ -76,7 +76,7 @@ class TestAe1nAe3(BaseConfigurationTest):
         self.assertAlmostEqual(self.sim_inst.ae1, 700.90196296296301, 10)
 
     def test_con_wt_2_mol(self):
-        wt = self.sim_inst.comp_parent.copy()
+        wt = self.sim_inst.comp.copy()
         wt['weight'][wt['name'] == 'carbon'] = 0.0
         wt['weight'][wt['name'] == 'iron'] = 0.0
         self.assertAlmostEqual(wt['weight'][wt['name'] == 'carbon'], 0.0, 6)
@@ -86,8 +86,8 @@ class TestAe1nAe3(BaseConfigurationTest):
                             dtype=np.float64).astype(np.float64).item()
         self.assertAlmostEqual(self.wt_pc, 2.21, 2)
 
-        self.wt_c = self.sim_inst.comp_parent['weight'][
-            self.sim_inst.comp_parent['name'] == 'carbon'][0]
+        self.wt_c = self.sim_inst.comp['weight'][
+            self.sim_inst.comp['name'] == 'carbon'][0]
         self.wt_pc = self.wt_pc + self.wt_c
         self.assertAlmostEqual(self.wt_pc, 2.254, 3)
 
@@ -188,7 +188,7 @@ class TestAe1nAe3(BaseConfigurationTest):
         # This will only test the first loop
 
         self.ai_vect = np.zeros(
-            self.sim_inst.comp_parent.shape[0], dtype=np.float64
+            self.sim_inst.comp.shape[0], dtype=np.float64
         )
 
         for m in range(1, 3):
@@ -259,7 +259,7 @@ class TestXfe(BaseConfigurationTest):
     def test_ae3_multi_carbon(self):
         # Do 2 iterations of the for loop and check the results for results
         # [0:1, 0:5]
-        wt = self.sim_inst.comp_parent.copy()
+        wt = self.sim_inst.comp.copy()
         self.results_mat = np.zeros((1000, 22), dtype=np.float64)
 
         ae3_multi_carbon(wt, self.results_mat)

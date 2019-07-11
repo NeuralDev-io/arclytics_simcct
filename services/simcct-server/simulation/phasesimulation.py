@@ -87,14 +87,12 @@ class PhaseSimulation(object):
         self.plots_data = Plots()
 
         if debug:
-            self.comp = sim_configs.comp_parent.copy()
+            self.comp = sim_configs.comp.copy()
             self.ms = round(sim_configs.ms_temp)
             self.bs = round(sim_configs.bs_temp)
             self.ae1 = round(sim_configs.ae1)
 
     def ttt(self) -> dict:
-        # FIXME I have removed X and Xpct are not used. Ask if it can be
-        #  removed -- YES
         integrated2_mat = np.zeros((4, 11), dtype=np.float64)
 
         # Xbr removed

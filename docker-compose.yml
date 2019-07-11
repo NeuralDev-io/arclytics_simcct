@@ -20,10 +20,12 @@ services:
       - APP_SETTINGS=users_api.config.DevelopmentConfig
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
+      - SIMCCT_HOST=simcct-server:8001
     depends_on:
       - mongodb
     links:
       - mongodb
+      - simcct-server
 
   simcct-server:
     build:
@@ -45,12 +47,9 @@ services:
       - MONGO_PORT=27017
       - REDIS_HOST=redis
     depends_on:
-      - mongodb
-      - users-server
       - redis
     links:
       - mongodb
-      - users-server
       - redis
 
   redis:

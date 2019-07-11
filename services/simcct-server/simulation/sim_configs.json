@@ -1,96 +1,44 @@
 {
-	"method": {"li98": true, "kirkaldy83": false},
-	"alloy": "parent",
-	"grain_size": {
-		"type": "ASTM",
-		"value": 8.0
-	},
-	"transformation_definitions": {
+	"configurations": {
+		"method": "Li98",
+		"alloy": "parent",
+		"grain_size_type": "ASTM",
+		"grain_size": 8.0,
 		"nucleation_start": 1.0,
-		"nucleation_finish": 99.9
-	},
-	"equilibrium_phase_fractions": {
-		"auto_calculate":  true,
-		"xfe_value":  0.0,
+		"nucleation_finish": 99.9,
+		"auto_calculate_xfe": true,
+		"xfe_value": 0.0,
 		"cf_value": 0.012,
-		"ceut_value":  0.762
+		"ceut_value": 0.762,
+		"auto_calculate_ms_bs": true,
+		"ms_temp": 0.0,
+		"ms_undercool": 100.0,
+		"bs_temp": 0.0,
+		"auto_calculate_ae": true,
+		"ae1_temp": 0.0,
+		"ae3_temp": 0.0,
+		"start_temperature": 900,
+		"cct_cooling_rate": 10
 	},
-	"transformation_temp_limits": {
-		"auto_calculate":  true,
-		"ms_temp":  0.0,
-		"ms_undercool":  100.0,
-		"bs_temp":  0.0
-	},
-	"austenite_limits": {
-		"auto_calculate":  true,
-		"ae1_value": 0.0,
-		"ae3_value": 0.0
-	},
-	"composition": {
-		"parent": [
-			{"name": "carbon","symbol": "Cx", "value": 0.044},
-			{"name": "manganese","symbol": "Mn", "value": 1.73},
-			{"name": "silicon", "symbol": "Si", "value": 0.22},
-			{"name": "nickel", "symbol": "Ni", "value": 0.0},
-			{"name": "chromium","symbol": "Cr", "value": 0.0},
-			{"name": "molybdenum","symbol": "Mo","value": 0.26},
-			{"name": "aluminium","symbol": "Al", "value": 0.0},
-			{"name": "copper","symbol": "Cu", "value": 0.0},
-			{"name": "arsenic","symbol": "As", "value": 0.0},
-			{"name": "titanium","symbol": "Ti", "value": 0.0},
-			{"name": "cobalt","symbol": "Co", "value": 0.0},
-			{"name": "vanadium","symbol": "Vx", "value": 0.0},
-			{"name": "tungsten","symbol": "Wx", "value": 0.0},
-			{"name": "sulphur","symbol": "Sx", "value": 0.0},
-			{"name": "nitrogen","symbol": "Nx", "value": 0.0},
-			{"name": "niobium","symbol": "Nb", "value": 0.0},
-			{"name": "boron","symbol": "Bx", "value": 0.0},
-			{"name": "phosphorous","symbol": "Px", "value": 0.0},
-			{"name": "iron", "symbol": "Fe", "value": 0.0}
-		],
-		"weld": [
-			{"name": "carbon","symbol": "Cx", "value": 0.044},
-			{"name": "manganese","symbol": "Mn", "value": 1.73},
-			{"name": "silicon", "symbol": "Si", "value": 0.22},
-			{"name": "nickel", "symbol": "Ni", "value": 0.0},
-			{"name": "chromium","symbol": "Cr", "value": 0.0},
-			{"name": "molybdenum","symbol": "Mo","value": 0.26},
-			{"name": "aluminium","symbol": "Al", "value": 0.0},
-			{"name": "copper","symbol": "Cu", "value": 0.0},
-			{"name": "arsenic","symbol": "As", "value": 0.0},
-			{"name": "titanium","symbol": "Ti", "value": 0.0},
-			{"name": "cobalt","symbol": "Co", "value": 0.0},
-			{"name": "vanadium","symbol": "Vx", "value": 0.0},
-			{"name": "tungsten","symbol": "Wx", "value": 0.0},
-			{"name": "sulphur","symbol": "Sx", "value": 0.0},
-			{"name": "nitrogen","symbol": "Nx", "value": 0.0},
-			{"name": "niobium","symbol": "Nb", "value": 0.0},
-			{"name": "boron","symbol": "Bx", "value": 0.0},
-			{"name": "phosphorous","symbol": "Px", "value": 0.0},
-			{"name": "iron", "symbol": "Fe", "value": 0.0}
-		],
-		"mix": [
-			{"name": "carbon","symbol": "Cx", "value": 0.044},
-			{"name": "manganese","symbol": "Mn", "value": 1.73},
-			{"name": "silicon", "symbol": "Si", "value": 0.22},
-			{"name": "nickel", "symbol": "Ni", "value": 0.0},
-			{"name": "chromium","symbol": "Cr", "value": 0.0},
-			{"name": "molybdenum","symbol": "Mo","value": 0.26},
-			{"name": "aluminium","symbol": "Al", "value": 0.0},
-			{"name": "copper","symbol": "Cu", "value": 0.0},
-			{"name": "arsenic","symbol": "As", "value": 0.0},
-			{"name": "titanium","symbol": "Ti", "value": 0.0},
-			{"name": "cobalt","symbol": "Co", "value": 0.0},
-			{"name": "vanadium","symbol": "Vx", "value": 0.0},
-			{"name": "tungsten","symbol": "Wx", "value": 0.0},
-			{"name": "sulphur","symbol": "Sx", "value": 0.0},
-			{"name": "nitrogen","symbol": "Nx", "value": 0.0},
-			{"name": "niobium","symbol": "Nb", "value": 0.0},
-			{"name": "boron","symbol": "Bx", "value": 0.0},
-			{"name": "phosphorous","symbol": "Px", "value": 0.0},
-			{"name": "iron", "symbol": "Fe", "value": 0.0}
-		]
-	},
-	"cooling_profile": {"start_temperature":  900, "cct_cooling_rate":  10},
-	"cct": {"user_cooling_curve": true}
+	"compositions": [
+		{"name": "carbon","symbol": "Cx", "value": 0.044},
+		{"name": "manganese","symbol": "Mn", "value": 1.73},
+		{"name": "silicon", "symbol": "Si", "value": 0.22},
+		{"name": "nickel", "symbol": "Ni", "value": 0.0},
+		{"name": "chromium","symbol": "Cr", "value": 0.0},
+		{"name": "molybdenum","symbol": "Mo","value": 0.26},
+		{"name": "aluminium","symbol": "Al", "value": 0.0},
+		{"name": "copper","symbol": "Cu", "value": 0.0},
+		{"name": "arsenic","symbol": "As", "value": 0.0},
+		{"name": "titanium","symbol": "Ti", "value": 0.0},
+		{"name": "cobalt","symbol": "Co", "value": 0.0},
+		{"name": "vanadium","symbol": "Vx", "value": 0.0},
+		{"name": "tungsten","symbol": "Wx", "value": 0.0},
+		{"name": "sulphur","symbol": "Sx", "value": 0.0},
+		{"name": "nitrogen","symbol": "Nx", "value": 0.0},
+		{"name": "niobium","symbol": "Nb", "value": 0.0},
+		{"name": "boron","symbol": "Bx", "value": 0.0},
+		{"name": "phosphorous","symbol": "Px", "value": 0.0},
+		{"name": "iron", "symbol": "Fe", "value": 0.0}
+	]
 }

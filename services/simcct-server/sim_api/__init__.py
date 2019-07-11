@@ -34,8 +34,7 @@ from flask_session import Session
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-from api.resources.users_communication import UsersPing
-from api.resources.session import SessionPing
+from sim_api.resources.session import SessionPing
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -117,16 +116,13 @@ def create_app(script_info=None) -> Flask:
     app.config['SESSION_KEY_PREFIX'] = 'session:'
     sess.init_app(app)
 
-    from api.resources.users_communication import users_blueprint
-    api = Api(users_blueprint)
+    from sim_api.resources.session import session_blueprint
+    api = Api(session_blueprint)
 
     # Register blueprints
-    app.register_blueprint(users_blueprint)
-    from api.resources.session import session_blueprint
     app.register_blueprint(session_blueprint)
 
-    # API Resources
-    api.add_resource(UsersPing, '/users/ping')
+    # ========== # API ROUTES # ========== #
     api.add_resource(SessionPing, '/session/ping')
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and

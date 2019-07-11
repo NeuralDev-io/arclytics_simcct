@@ -31,15 +31,15 @@ class BaseConfig:
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
-    MONGO_DBNAME = 'simcct_dev'
+    MONGO_DBNAME = 'arc_dev'
 
 
 class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
-    MONGO_DBNAME = 'simcct_test'
+    MONGO_DBNAME = 'arc_test'
 
 
 class ProductionConfig(BaseConfig):
     """Production configuration"""
-    MONGO_DBNAME = 'simcct'
+    MONGO_DBNAME = 'arclytics'

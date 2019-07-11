@@ -7,7 +7,6 @@ RUN conda install --yes --freeze-installed \
     nomkl \
     numpy==1.16.4 \
     marshmallow==3.0.0b8 \
-    anaconda::redis==5.0.3 \
     conda-forge::flask==1.0.2 \
     conda-forge::socat \
     && conda clean -tipsy \

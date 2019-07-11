@@ -27,7 +27,7 @@ from typing import Union, Optional
 from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
-    DateTimeField, EmbeddedDocumentField,
+    DateTimeField, EmbeddedDocumentField, DecimalField, IntField,
     queryset_manager)
 from flask import current_app, json
 
@@ -122,6 +122,28 @@ class AdminProfile(EmbeddedDocument):
         return {'position': self.position, 'mobile_number': self.mobile_number}
 
 
+class Configuration(EmbeddedDocument):
+    method = StringField()
+    alloy = StringField()
+    grain_size = DecimalField()
+    grain_size_type = StringField(default='ASTM')
+    nucleation_start = DecimalField(default=1.0)
+    nucleation_finish = DecimalField(default=99.9)
+    auto_calculate_xfe = BooleanField(default=True)
+    xfe_value = DecimalField()
+    cf_value = DecimalField()
+    ceut_value = DecimalField()
+    auto_calculate_ms_bs = BooleanField(default=True)
+    ms_temp = DecimalField()
+    ms_undercool = DecimalField()
+    bs_temp = DecimalField()
+    auto_calculate_ae = BooleanField(default=True)
+    ae1_temp = DecimalField()
+    ae3_temp = DecimalField()
+    start_temp = DecimalField()
+    cct_cooling_rate = IntField()
+
+
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
 class User(Document):
     email = EmailField(required=True, unique=True)
@@ -139,7 +161,11 @@ class User(Document):
     )
     profile = EmbeddedDocumentField(document_type=UserProfile)
     admin_profile = EmbeddedDocumentField(document_type=AdminProfile)
-    # TODO: Make these
+
+    last_configuration = EmbeddedDocumentField(document_type=Configuration)
+    # last_compositions = EmbeddedDocumentField(document_type=)
+
+    # TODO(andrew@neuraldev.io -- Sprint 6): Make these
     # saved_configurations = EmbeddedDocumentListField(
     # document_type=Configurations)
     # saved_compositions = EmbeddedDocumentListField(document_type=Compositions)

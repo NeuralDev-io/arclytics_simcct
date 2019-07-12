@@ -33,11 +33,13 @@ class LoginPage extends Component {
                 login(values, resolve, reject)
               })
               promise.then(data => {
+                console.log("then block")
                 localStorage.setItem('token', data.token)
                 this.props.history.push('/')
                 setSubmitting(false)
               })
               .catch(err => {
+                console.log("error")
                 // setStatus({ message: err })
                 setSubmitting(false)
               })
@@ -119,10 +121,14 @@ export const login = async (values, resolve, reject) => {
   .then(res => {
     const jsonResponse = res.json() //TODO: for debug only remove later
     console.log(jsonResponse) 
-    if (res.status === 200)
-      resolve(res.json())
-    else if (res.status === 400)
+    if (res.status === 200){
+      console.log("res status === 200")
+      resolve(jsonResponse)
+    }
+    else if (res.status === 400){
+      console.log("res status === 200")
       reject("Wrong email or password.")
+    }
   })
   .catch(err => console.log(err))
 }

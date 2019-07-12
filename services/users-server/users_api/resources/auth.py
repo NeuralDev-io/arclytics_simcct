@@ -91,6 +91,7 @@ def register_user() -> Tuple[dict, int]:
         # ensure we set an encrypted password.
         new_user.set_password(raw_password=password)
     else:
+        print(User.objects(email=email))
         response['message'] = 'This user already exists.'
         return jsonify(response), 400
 

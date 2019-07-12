@@ -128,9 +128,12 @@ def create_app(script_info=None) -> Flask:
     # datetime objects
     app.json_encoder = JSONEncoder
 
+    import pprint
+    pprint.pprint(app.config)
+
     # Shell context for Flask CLI
     @app.shell_context_processor
     def ctx():
-        return {'app': app, 'mongo': mongo_client, 'session': sess}
+        return {'app': app}
 
     return app

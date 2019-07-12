@@ -291,12 +291,10 @@ class TestUserService(BaseTestCase):
         with self.client:
             resp_login = self.client.post(
                 '/auth/login',
-                data=json.dumps(
-                    {
-                        'email': 'tony@starkindustries.com',
-                        'password': 'IAmTheRealIronMan'
-                    }
-                ),
+                data=json.dumps({
+                    'email': 'tony@starkindustries.com',
+                    'password': 'IAmTheRealIronMan'
+                }),
                 content_type='application/json'
             )
             token = json.loads(resp_login.data.decode())['token']

@@ -23,11 +23,13 @@ __date__ = '2019.07.12'
 import os
 
 import redis
+from flask_session import Session
 from flask_testing import TestCase
 
 from sim_api import create_app
 
 app = create_app()
+sess = Session()
 
 
 class BaseTestCase(TestCase):
@@ -38,15 +40,11 @@ class BaseTestCase(TestCase):
 
     def create_app(self):
         app.config.from_object('configs.flask_configs.TestingConfig')
+        self.redis = redis.Redis(host=self.host, port=self.port, db=self.db)
+        self.redis.client_setname('arc_sim_redis_testing')
         return app
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.redis = redis.Redis(host=cls.host, port=cls.port, db=cls.db)
-        cls.redis.client_setname('arc_sim_redis_testing')
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        cls.redis.flushall()
-        cls.redis.flushdb()
+    def tearDown(self) -> None:
+        self.redis.flushall()
+        self.redis.flushdb()
 

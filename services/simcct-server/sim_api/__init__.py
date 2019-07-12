@@ -56,6 +56,11 @@ BASE_DIR = os.path.abspath(
 )
 sys.path.append(BASE_DIR)
 
+# Load environment variables
+env_path = os.path.join(BASE_DIR, '.env')
+if os.path.isfile(env_path):
+    load_dotenv(env_path)
+
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'
 DATE_FMT = '%Y-%m-%d'
 
@@ -74,11 +79,6 @@ def create_app(script_info=None) -> Flask:
     app_settings = os.getenv('APP_SETTINGS')
     app.config.from_object(app_settings)
 
-    # Load environment variables
-    env_path = os.path.join(BASE_DIR, '.env')
-    if os.path.isfile(env_path):
-        load_dotenv(env_path)
-
     # ========== # CONNECT TO DATABASE # ========== #
     # Mongo Client interface with PyMongo
     app.config['MONGO_HOST'] = os.environ.get('MONGO_HOST', '')
@@ -94,18 +94,16 @@ def create_app(script_info=None) -> Flask:
                                port=int(app.config['MONGO_PORT']))
     try:
         mongo_client.admin.command('ismaster')
-        print('[INFO] Connected to MongoDB')
-        print(mongo_client)
     except ConnectionFailure as e:
         print('[DEBUG] Unable to Connect to MongoDB')
 
     # Redis Client
     # TODO(andrew@neuraldev.io): Need to set the password in production
     redis_client = redis.Redis(host=os.environ.get('REDIS_HOST'),
-                               port=6379)
+                               port=int(os.environ.get('REDIS_PORT')),
+                               db=int(app.config['REDIS_DB']))
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
-    # TODO(andrew@neuraldev.io): Need to set a IP whitelist
     cors.init_app(app)
 
     # Flask-Session and Redis
@@ -124,7 +122,7 @@ def create_app(script_info=None) -> Flask:
 
     # ========== # API ROUTES # ========== #
     api.add_resource(Session, '/session')
-    api.add_resource(UsersPing, '/session/ping')
+    api.add_resource(UsersPing, '/users/ping')
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects

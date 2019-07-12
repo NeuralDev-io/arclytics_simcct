@@ -63,7 +63,7 @@ class Session(Resource):
         return response, 201
 
     def get(self):
-
+        # TODO(andrew@neuraldev.io): Not really sure if I want this endpoint.
         response = {
             'status': 'success',
             'session_id': session.sid
@@ -82,9 +82,6 @@ class UsersPing(Resource):
         users_server = os.environ.get('USERS_HOST', None)
         # We use the built-in DNS server of Docker to resolve the correct
         # IP address of the other container [1].
-
         url = f'http://{users_server}/ping'
-
         res = requests.get(url)
-        print(res)
         return res.json(), 200, {'content-type': 'application/json'}

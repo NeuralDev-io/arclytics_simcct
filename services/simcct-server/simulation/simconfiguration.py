@@ -98,6 +98,21 @@ class SimConfiguration(object):
         if self.auto_xfe_calc:
             self.xfe_method2()
 
+    def auto_ms_bs(self) -> None:
+        """
+        We simply store the class variables bs_temp and ms_temp by doing
+        the calculations.
+        """
+        self.bs_temp = self.get_bs(self.method, self.comp)
+        self.ms_temp = self.get_ms(self.method, self.comp)
+
+    def auto_ae1_ae3(self) -> None:
+        """Calculate the austenite values based on composition automatically."""
+        # validate the Austenite values have been generated and it will not
+        # crash the application
+        self.ae_check = True
+        self.ae1, self.ae3 = self.calc_ae1_ae3()
+
     @staticmethod
     def get_compositions(comp_list: list = None) -> np.ndarray:
         """
@@ -122,14 +137,6 @@ class SimConfiguration(object):
         for i, e in enumerate(comp_list):
             comp[i] = (i, e['name'], e['symbol'], e['value'])
         return comp
-
-    def auto_ms_bs(self) -> None:
-        """
-        We simply store the class variables bs_temp and ms_temp by doing
-        the calculations.
-        """
-        self.bs_temp = self.get_bs(self.method, self.comp)
-        self.ms_temp = self.get_ms(self.method, self.comp)
 
     @staticmethod
     def get_bs(method: Method = None, comp: np.ndarray = None) -> float:
@@ -186,13 +193,6 @@ class SimConfiguration(object):
                     (17.0 * ni) - (17.0 * cr) - (21.0 * mo))
 
         return -1
-
-    def auto_ae1_ae3(self) -> None:
-        """Calculate the austenite values based on composition automatically."""
-        # validate the Austenite values have been generated and it will not
-        # crash the application
-        self.ae_check = True
-        self.ae1, self.ae3 = self.calc_ae1_ae3()
 
     def calc_ae1_ae3(self) -> (np.float, np.float):
         c = self.comp[self.comp['name'] == 'carbon']['weight'][0]

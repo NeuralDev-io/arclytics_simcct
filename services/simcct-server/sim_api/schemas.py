@@ -22,7 +22,7 @@ __date__ = '2019.07.09'
 
 import enum
 
-from marshmallow import Schema, fields, EXCLUDE
+from marshmallow import Schema, fields
 
 
 class AlloyOption(enum.Enum):
@@ -56,20 +56,20 @@ class ConfigurationsSchema(Schema):
                                        'required': 'A method is required.'})
     # TODO(andrew@neuraldev.io -- Sprint 6): do error messages on all these
     grain_size_type = fields.Str(required=True, default='ASTM')
-    grain_size_value = fields.Decimal(required=True)
-    nucleation_start = fields.Decimal(required=True)
-    nucleation_finish = fields.Decimal(required=True)
+    grain_size = fields.Float(required=True)
+    nucleation_start = fields.Float(required=True)
+    nucleation_finish = fields.Float(required=True)
     auto_calculate_xfe = fields.Boolean(default=True, required=True)
-    xfe_value = fields.Decimal(required=True)
-    cf_value = fields.Decimal(required=True)
-    ceut_value = fields.Decimal(required=True)
+    xfe_value = fields.Float(required=True)
+    cf_value = fields.Float(required=True)
+    ceut_value = fields.Float(required=True)
     auto_calculate_ms_bs = fields.Boolean(default=True, required=True)
-    ms_temp = fields.Decimal(required=True)
-    ms_undercool = fields.Decimal(required=True)
-    bs_temp = fields.Decimal(required=True)
+    ms_temp = fields.Float(required=True)
+    ms_undercool = fields.Float(required=True)
+    bs_temp = fields.Float(required=True)
     auto_calculate_ae = fields.Boolean(default=True, required=True)
-    ae1_value = fields.Decimal(required=True)
-    ae3_value = fields.Decimal(required=True)
+    ae1_temp = fields.Decimal(required=True)
+    ae3_temp = fields.Decimal(required=True)
     start_temp = fields.Int()
     cct_cooling_rate = fields.Int()
 
@@ -80,4 +80,5 @@ class ConfigurationsSchema(Schema):
         #  - EXCLUDE: exclude unknown fields
         #  - INCLUDE: accept and include the unknown fields
         #  - RAISE: Raise a validationError if there are any
-        unknown = EXCLUDE
+        # unknown = EXCLUDE
+        pass

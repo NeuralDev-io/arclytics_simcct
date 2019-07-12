@@ -91,7 +91,6 @@ def register_user() -> Tuple[dict, int]:
         # ensure we set an encrypted password.
         new_user.set_password(raw_password=password)
     else:
-        print(User.objects(email=email))
         response['message'] = 'This user already exists.'
         return jsonify(response), 400
 
@@ -115,14 +114,14 @@ def register_user() -> Tuple[dict, int]:
         return jsonify(response), 400
 
 
-def async_register_session(user_id: str = None,
+def async_register_session(user: User = None,
                            auth_token: str = None) -> Optional[dict]:
     """We make an async method to allow registering the user to a session
     during login. Doing this in a separate thread doesn't slow the process
     down. Although you may need to be careful about tracking down bugs.
 
     Args:
-        user_id: a stringified version of the User's ObjectId.
+        user: the `users_api.models.User` to create a session for.
         auth_token: a stringified type of the User's JWT token.
 
     Returns:
@@ -137,14 +136,29 @@ def async_register_session(user_id: str = None,
     # JSON and write the correct MIME type ('application/json') in
     # header.
 
+    last_configs = {}
+    user_id = ''
+
+    if isinstance(user, User):
+        user_id = user.id
+
+        # We get the configurations if None, otherwise simcct-server is
+        # expecting an empty dict.
+
+        if user.last_configuration is not None:
+            last_configs = user.last_configuration.to_dict()
+
     resp = requests.post(
         url=f'http://{simcct_host}/session',
-        json={'_id': user_id, 'token': auth_token}
-    )
+        json={
+            '_id': str(user_id),
+            'token': auth_token,
+            'last_configurations': last_configs
+        })
     # Because this method is in an async state, we want to know if our request
     # to the other side has failed by raising an exception.
     if resp.json().get('status') == 'fail':
-        _id = None if user_id == '' else user_id
+        _id = None if user_id == '' else user.id
         raise SessionValidationError(
             f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
         )
@@ -199,7 +213,7 @@ def login() -> Tuple[dict, int]:
             # We will register the session for the user to the simcct-server
             # in the background so as not to slow the login process down.
             thr = Thread(target=async_register_session,
-                         args=[str(user.id), str(auth_token)])
+                         args=[user, str(auth_token)])
             thr.start()
             # Leave this here -- create a queue for responses
             # thr.join()

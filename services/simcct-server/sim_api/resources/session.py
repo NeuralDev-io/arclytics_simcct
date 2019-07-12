@@ -20,11 +20,15 @@ This module defines the resources for session management.
 """
 
 import os
+import json
 
 import requests
+from marshmallow import ValidationError
 from flask import Blueprint, session, request
 from flask_restful import Resource
 from bson import ObjectId
+
+from sim_api.schemas import ConfigurationsSchema
 
 session_blueprint = Blueprint('session', __name__)
 
@@ -35,8 +39,8 @@ class Session(Resource):
         post_data = request.get_json()
 
         response = {
-                'status': 'fail',
-                'message': 'Invalid payload.'
+            'status': 'fail',
+            'message': 'Invalid payload.'
         }
 
         if not post_data:
@@ -44,6 +48,7 @@ class Session(Resource):
 
         user_id = post_data.get('_id', None)
         token = post_data.get('token', None)
+        user_configs = post_data.get('last_configurations', None)
 
         if not user_id:
             response['message'] = 'User ObjectId must be provided.'
@@ -53,8 +58,20 @@ class Session(Resource):
             response['message'] = 'JWT token must be provided.'
             return response, 401
 
+        configs = None
+        if user_configs:
+            try:
+                configs = ConfigurationsSchema().load(user_configs)
+            except ValidationError as e:
+                print(e)
+        else:
+            configs = {
+                'method': 'Li98'
+            }
+
         session['user_id'] = user_id
         session['token'] = token
+        session[f'{user_id}:last_configurations'] = configs
 
         response['status'] = 'success'
         response['message'] = 'User session initiated.'
@@ -63,7 +80,6 @@ class Session(Resource):
         return response, 201
 
     def get(self):
-        # TODO(andrew@neuraldev.io): Not really sure if I want this endpoint.
         response = {
             'status': 'success',
             'session_id': session.sid

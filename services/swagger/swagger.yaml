@@ -51,7 +51,6 @@ paths:
                 example:
                   - _id: 5d2339db2d789ae1a9f15a9e
                     email: tony@starkindustries.com
-                    username: iron_man
                     first_name: Tony
                     last_name: Stark
                     active: true
@@ -62,7 +61,6 @@ paths:
                     profile: None
                   - _id: 5d2339db2d789ae1a9f15a9f
                     email: steve@avengers.io
-                    username: captain_america
                     first_name: Steve
                     last_name: Rogers
                     active: false
@@ -72,8 +70,7 @@ paths:
                     last_login: None
                     profile: None
                   - _id: 5d2339db2d789ae1a9f15aa0
-                    email: nat@shield.gov.us
-                    username: black_widow
+                    email: black_widow@avengers.io
                     first_name: Natasha
                     last_name: Romanoff
                     active: false
@@ -227,8 +224,6 @@ paths:
                   type: string
                 password:
                   type: string
-                username:
-                  type: string
                 first_name:
                   type: string
                 last_name:
@@ -238,12 +233,10 @@ paths:
                 - password
                 - first_name
                 - last_name
-                - username
             examples:
               'Thor':
                 value:
                   email: thor@avengers.io
-                  username: god_of_thunder
                   first_name: Thor
                   last_name: Odinson
                   password: StrongestAvenger
@@ -422,7 +415,6 @@ paths:
                 data:
                   _id: 5d2340060f8b5fa4a8daca91
                   email: scarlet_witch@avengers.io
-                  username: scarlet_witch
                   first_name: Wanda
                   last_name: Maximoff
                   active: true
@@ -539,75 +531,62 @@ components:
         _id:
           type: string
           format: byte
-          required: false
           readOnly: true
           uniqueItems: true
         email:
           type: string
           format: email
-          required: true
           uniqueItems: true
           example: tony@avengers.io
         password:
           type: string
           format: password
-          required: true
           minLength: 6
           maxLength: 255
           uniqueItems: false
           writeOnly: true
         first_name:
           type: string
-          required: true
           maxLength: 255
           example: Tony
         last_name:
           type: string
-          required: true
           maxLength: 255
           example: Stark
-        username:
-          type: string
-          required: true
-          minLength: 1
-          maxLength: 180
-          example: iron_man
         user_type:
           type: string
           format: int32
-          required: false
           maxLength: 1
           example: '2'
           default: '2'
         active:
           type: boolean
-          required: false
           readOnly: true
           default: true
         admin:
           type: boolean
-          required: false
           default: false
         created:
           type: string
           format: date-time
-          required: false
         verified:
           type: boolean
-          required: false
           default: false
         last_updated:
           type: string
           format: date-time
-          required: false
         last_login:
           type: string
           format: date-time
-          required: false
         profile:
           $ref: '#/components/schemas/UserProfile'
         admin_profile:
           $ref: '#/components/schemas/AdminProfile'
+      required:
+        - email
+        - password
+        - first_name
+        - last_name
     UserProfile:
       type: object
       properties:

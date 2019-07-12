@@ -7,8 +7,8 @@ services:
     build:
       context: services/users-server
       dockerfile: Dockerfile
-    image: arc_sim_users_service:development
-    container_name: arc_sim_users_service
+    image: arc_sim_users_service:1.0
+    container_name: arc-users
     volumes:  # used to mount the code into the container for live updates
       - ./services/users-server:/usr/src/app
     ports:
@@ -17,7 +17,7 @@ services:
       - 8000
     environment:
       - FLASK_ENV=development
-      - APP_SETTINGS=api.config.DevelopmentConfig
+      - APP_SETTINGS=users_api.config.DevelopmentConfig
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
     depends_on:
@@ -25,13 +25,53 @@ services:
     links:
       - mongodb
 
+  simcct-server:
+    build:
+      context: services/simcct-server
+      dockerfile: Dockerfile
+    image: arc_simcct_service:1.0
+    container_name: arc-simcct
+    volumes:  # used to mount the code into the container for live updates
+      - ./services/simcct-server:/usr/src/app
+    ports:
+      - 8001:8000
+    expose:
+      - 8001
+    environment:
+      - FLASK_ENV=development
+      - APP_SETTINGS=configs.flask_configs.DevelopmentConfig
+      - USERS_HOST=users-server:8000
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - REDIS_HOST=redis
+    depends_on:
+      - mongodb
+      - users-server
+      - redis
+    links:
+      - mongodb
+      - users-server
+      - redis
+
+  redis:
+    build:
+      context: ./services/redis
+      dockerfile: Dockerfile
+    image: arc_sim_redis:0.1
+    restart: always
+    container_name: arc-redis
+    ports:
+      - 6379:6379
+    expose:
+      - 6379
+
   mongodb:
     build:
       context: ./services/db
       dockerfile: Dockerfile
-    image: arc_sim_mongo:development
+    image: arc_sim_mongo:1.0
     restart: always
-    container_name: arc_sim_mongo
+    container_name: arc-mongo
     ports:
       - 27017:27017
     expose:
@@ -44,8 +84,8 @@ services:
     build:
       context: ./services/client
       dockerfile: Dockerfile
-    image: arc_sim_client:development
-    container_name: arc_sim_client
+    image: arc_sim_client:1.0
+    container_name: arc-client
     volumes:
       - ./services/client:/usr/src/app
       - /usr/src/app/node_modules
@@ -65,13 +105,21 @@ services:
     build:
       context: ./services/swagger
       dockerfile: Dockerfile
-    image: arc_sim_swagger:development
-    container_name: arc_sim_swagger
+    image: arc_sim_swagger:1.0
+    container_name: swagger-ui
     volumes:
       - ./services/swagger/swagger.yaml:/usr/share/nginx/html/swagger.yaml
     ports:
-      - 3008:8080  # expose ports - HOST:CONTAINER
+      - 3001:8080  # expose ports - HOST:CONTAINER
     expose:
-      - 3008
+      - 3001
     environment:
       - URL=swagger.yaml
+
+  swagger-editor:
+    image: swaggerapi/swagger-editor
+    container_name: swagger-editor
+    ports:
+      - 80:8080
+    expose:
+      - 80

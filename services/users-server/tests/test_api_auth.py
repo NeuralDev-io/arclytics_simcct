@@ -24,7 +24,7 @@ import unittest
 
 from flask import current_app
 
-from api.models import User
+from users_api.models.models import User
 from tests.test_api_base import BaseTestCase
 
 
@@ -37,7 +37,6 @@ class TestAuthEndpoints(BaseTestCase):
             '/auth/register',
             data=json.dumps(
                 {
-                    'username': 'black_widow',
                     'email': 'natasha@avengers.io',
                     'first_name': 'Natasha',
                     'last_name': 'Romanoff',
@@ -55,7 +54,6 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_user_registration_duplicate_email(self):
         user = User(
-            username='hulk',
             email='green_machine@avengers.io',
             first_name='Bruce',
             last_name='Banner'
@@ -67,7 +65,6 @@ class TestAuthEndpoints(BaseTestCase):
                 '/auth/register',
                 data=json.dumps(
                     {
-                        'username': 'hulk',
                         'email': 'green_machine@avengers.io',
                         'first_name': 'Bruce',
                         'last_name': 'Banner',
@@ -79,34 +76,6 @@ class TestAuthEndpoints(BaseTestCase):
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 400)
             self.assertIn('This user already exists.', data['message'])
-            self.assertIn('fail', data['status'])
-
-    def test_user_registration_duplicate_username(self):
-        user = User(
-            username='ansto_joe',
-            email='test@test.com',
-            first_name='Joe',
-            last_name='Blow'
-        )
-        user.set_password('test123')
-        user.save()
-        with self.client:
-            response = self.client.post(
-                '/auth/register',
-                data=json.dumps(
-                    {
-                        'username': 'ansto_joe',
-                        'email': 'test@test2.com',
-                        'first_name': 'Joe',
-                        'last_name': 'Blow',
-                        'password': 'test123'
-                    }
-                ),
-                content_type='application/json',
-            )
-            data = json.loads(response.data.decode())
-            self.assertEqual(response.status_code, 400)
-            self.assertIn('The users details already exists.', data['message'])
             self.assertIn('fail', data['status'])
 
     def test_user_registration_invalid_json(self):
@@ -127,7 +96,6 @@ class TestAuthEndpoints(BaseTestCase):
                 '/auth/register',
                 data=json.dumps(
                     {
-                        'username': 'ansto_joe',
                         'first_name': 'Joe',
                         'last_name': 'Blow',
                         'password': 'test123'
@@ -148,7 +116,6 @@ class TestAuthEndpoints(BaseTestCase):
                 '/auth/register',
                 data=json.dumps(
                     {
-                        'username': 'ansto_joe',
                         'email': 'joe@mistakenemail',
                         'password': 'test123'
                     }
@@ -166,7 +133,6 @@ class TestAuthEndpoints(BaseTestCase):
                 '/auth/register',
                 data=json.dumps(
                     {
-                        'username': 'insecure_user',
                         'email': 'test@yahoo.com'
                     }
                 ),
@@ -185,7 +151,6 @@ class TestAuthEndpoints(BaseTestCase):
                 '/auth/register',
                 data=json.dumps(
                     {
-                        'username': 'insecure_user',
                         'email': 'test@yahoo.com',
                         'password': 'test'
                     }
@@ -201,7 +166,6 @@ class TestAuthEndpoints(BaseTestCase):
         """Ensure we can login as users after they have registered."""
         with self.client:
             peter = User(
-                username='friendly_neighborhood_spiderman',
                 email='spiderman@newavenger.io',
                 first_name='Peter',
                 last_name='Parker'
@@ -209,7 +173,6 @@ class TestAuthEndpoints(BaseTestCase):
             peter.set_password('SpideySenses')
             peter.save()
             tony = User(
-                username='iron_man',
                 email='tony@avengers.io',
                 first_name='Tony',
                 last_name='Stark'
@@ -269,7 +232,6 @@ class TestAuthEndpoints(BaseTestCase):
         Ensure if bad details are given, it will fail with appropriate messages.
         """
         user = User(
-            username='war_machine',
             email='war_machine@avengers.io',
             first_name='James',
             last_name='Rhodey'
@@ -281,7 +243,6 @@ class TestAuthEndpoints(BaseTestCase):
                 '/auth/login',
                 data=json.dumps(
                     {
-                        'username': 'war_machine',
                         'password': 'test123'
                     }
                 ),
@@ -328,7 +289,6 @@ class TestAuthEndpoints(BaseTestCase):
     def test_invalid_user_login(self):
         with self.client:
             user = User(
-                username='ant_man',
                 email='ant_man@avengers.io',
                 first_name='Scott',
                 last_name='Lang'
@@ -374,7 +334,6 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_bad_auth_token_encoding(self):
         user = User(
-            username='winter_soldier',
             email='metal_arm@newavengers.io',
             first_name='Bucky',
             last_name='Barnes'
@@ -403,7 +362,6 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_valid_logout(self):
         user = User(
-            username='falcon',
             email='falcon@newavengers.io',
             first_name='Sam',
             last_name='Wilson'
@@ -440,7 +398,6 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_invalid_logout_expired_token(self):
         user = User(
-            username='black_panther',
             email='tchalla@newavengers.io',
             first_name='Tchalla',
             last_name='Wakandan'
@@ -499,7 +456,6 @@ class TestAuthEndpoints(BaseTestCase):
     def test_user_status(self):
 
         user = User(
-            username='scarlet_witch',
             email='scarlet_witch@avengers.io',
             first_name='Wanda',
             last_name='Maximoff'
@@ -527,7 +483,6 @@ class TestAuthEndpoints(BaseTestCase):
             data = json.loads(resp_status.data.decode())
             self.assertIn('success', data['status'])
             self.assertTrue(data['data'] is not None)
-            self.assertIn('scarlet_witch', data['data']['username'])
             self.assertIn('scarlet_witch@avengers.io', data['data']['email'])
             self.assertTrue(data['data']['active'] is True)
             self.assertEqual(resp_status.status_code, 200)
@@ -547,7 +502,6 @@ class TestAuthEndpoints(BaseTestCase):
     def test_invalid_logout_inactive(self):
         """Ensure if user is not active, they cannot logout."""
         user = User(
-            username='captain_marvel',
             email='most_hated_avenger@disney.com',
             first_name='Carol',
             last_name='Danvers'
@@ -583,7 +537,6 @@ class TestAuthEndpoints(BaseTestCase):
     def test_invalid_status_inactive(self):
         """Ensure if user is not active they can't get a status."""
         user = User(
-            username='hells_kitchen_devil',
             email='daredevil@marvel.io',
             first_name='Matthew',
             last_name='Murdock'

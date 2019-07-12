@@ -1,4 +1,0 @@
----
-url: "swagger.yaml"
-dom_id: "#swagger-ui"
-validatorUrl: "https://online.swagger.io/validator"

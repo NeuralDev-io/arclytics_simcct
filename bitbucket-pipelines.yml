@@ -19,9 +19,9 @@ pipelines:
             - pip3 install --quiet --cache-dir ~/.pip3/cache --upgrade pip
             - pip3 -V
             - echo $PWD
-            - pip3 install --quiet --cache-dir ~/.pip3/cache -r ./services/simulation-server/requirements.txt
-            - export PYTHONPATH=./services/simulation-server/:./services/simulation-server/simulation/
-            - cd ./services/simulation-server
+            - pip3 install --quiet --cache-dir ~/.pip3/cache -r ./services/simcct-server/requirements.txt
+            - export PYTHONPATH=./services/simcct-server/:./services/simcct-server/simulation/
+            - cd ./services/simcct-server
             - python3 -m unittest tests/test_simulation.py  # Run specific Phase Simulation tests only
             - cd ../../
             - echo $PWD

@@ -23,9 +23,8 @@ services:
       - SIMCCT_HOST=simcct-server:8001
     depends_on:
       - mongodb
-    links:
-      - mongodb
-      - simcct-server
+    networks:
+      - host
 
   simcct-server:
     build:
@@ -33,10 +32,10 @@ services:
       dockerfile: Dockerfile
     image: arc_simcct_service:1.0
     container_name: arc-simcct
-    volumes:  # used to mount the code into the container for live updates
+    volumes:
       - ./services/simcct-server:/usr/src/app
     ports:
-      - 8001:8000
+      - 8001:8001
     expose:
       - 8001
     environment:
@@ -48,9 +47,8 @@ services:
       - REDIS_HOST=redis
     depends_on:
       - redis
-    links:
-      - mongodb
-      - redis
+    networks:
+      - host
 
   redis:
     build:
@@ -63,6 +61,8 @@ services:
       - 6379:6379
     expose:
       - 6379
+    networks:
+      - host
 
   mongodb:
     build:
@@ -78,6 +78,8 @@ services:
     environment:
       - MONGO_DATA_DIR=/usr/data/db
       - MONGO_LOG_DIR=/dev/null
+    networks:
+      - host
 
   client:
     build:
@@ -122,3 +124,6 @@ services:
       - 80:8080
     expose:
       - 80
+
+networks:
+  host:

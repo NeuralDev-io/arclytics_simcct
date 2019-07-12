@@ -20,7 +20,11 @@ This script describes the Users authentication endpoints for registration,
 login, and logout.
 """
 
+import os
+import requests
 from datetime import datetime
+from typing import Tuple, Optional
+from threading import Thread
 
 from flask import Blueprint, jsonify, request
 from mongoengine.errors import ValidationError, NotUniqueError
@@ -36,8 +40,17 @@ logger = AppLogger(__name__)
 auth_blueprint = Blueprint('auth', __name__)
 
 
+class SessionValidationError(Exception):
+    """
+    A custom exception to be raised by a threaded async call to register if
+    the response is not what we are expecting.
+    """
+    def __init__(self, msg: str):
+        super(SessionValidationError, self).__init__(msg)
+
+
 @auth_blueprint.route(rule='/auth/register', methods=['POST'])
-def register_user():
+def register_user() -> Tuple[dict, int]:
     """Blueprint route for registration of users."""
 
     # Get the post data
@@ -101,8 +114,45 @@ def register_user():
         return jsonify(response), 400
 
 
+def async_register_session(user_id: str = None,
+                           auth_token: str = None) -> Optional[dict]:
+    """We make an async method to allow registering the user to a session
+    during login. Doing this in a separate thread doesn't slow the process
+    down. Although you may need to be careful about tracking down bugs.
+
+    Args:
+        user_id: a stringified version of the User's ObjectId.
+        auth_token: a stringified type of the User's JWT token.
+
+    Returns:
+        The response from the simcct-server.
+    """
+
+    # We now need to send a request to the simcct-server to initiate
+    # a session as a server-side store to save the last compositions
+    # TODO(andrew@neuraldev.io): need to also set last configurations.
+    simcct_host = os.environ.get('SIMCCT_HOST', None)
+    # Using the `json` param tells requests to serialize the dict to
+    # JSON and write the correct MIME type ('application/json') in
+    # header.
+
+    resp = requests.post(
+        url=f'http://{simcct_host}/session',
+        json={'_id': user_id, 'token': auth_token}
+    )
+    # Because this method is in an async state, we want to know if our request
+    # to the other side has failed by raising an exception.
+    if resp.json().get('status') == 'fail':
+        _id = None if user_id == '' else user_id
+        raise SessionValidationError(
+            f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
+        )
+    # q.put(resp)
+    return resp.json()
+
+
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
-def login():
+def login() -> Tuple[dict, int]:
     """
     Blueprint route for registration of users with a returned JWT if successful.
     """
@@ -145,7 +195,14 @@ def login():
             user.last_login = datetime.utcnow()
             user.save()
 
-            # TODO: Set the configurations/compositions for the session here
+            # We will register the session for the user to the simcct-server
+            # in the background so as not to slow the login process down.
+            thr = Thread(target=async_register_session,
+                         args=[str(user.id), str(auth_token)])
+            thr.start()
+            # Leave this here -- create a queue for responses
+            # thr.join()
+            # print(q.get().json())
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
@@ -158,7 +215,7 @@ def login():
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])
 @authenticate
-def logout(resp):
+def logout(resp) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
     response = {'status': 'success', 'message': 'Successfully logged out.'}
 
@@ -167,7 +224,7 @@ def logout(resp):
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
 @authenticate
-def get_user_status(resp):
+def get_user_status(resp) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     user = User.objects.get(id=resp)
     response = {

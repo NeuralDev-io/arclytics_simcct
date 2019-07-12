@@ -54,6 +54,7 @@ class ConfigurationsSchema(Schema):
                        data_key='alloy',
                        error_messages={'null': 'You must provide a method.',
                                        'required': 'A method is required.'})
+    # TODO(andrew@neuraldev.io -- Sprint 6): do error messages on all these
     grain_size_type = fields.Str(required=True, default='ASTM')
     grain_size_value = fields.Decimal(required=True)
     nucleation_start = fields.Decimal(required=True)

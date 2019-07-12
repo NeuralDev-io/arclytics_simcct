@@ -30,11 +30,11 @@ from bson import ObjectId
 from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api
-from flask_session import Session
+from flask_session import Session as FlaskSession
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-from sim_api.resources.session import SessionPing
+from sim_api.resources.session import Session, UsersPing
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -61,7 +61,7 @@ DATE_FMT = '%Y-%m-%d'
 
 # Some Flask extensions
 cors = CORS()
-sess = Session()
+sess = FlaskSession()
 
 
 def create_app(script_info=None) -> Flask:
@@ -123,7 +123,8 @@ def create_app(script_info=None) -> Flask:
     app.register_blueprint(session_blueprint)
 
     # ========== # API ROUTES # ========== #
-    api.add_resource(SessionPing, '/session/ping')
+    api.add_resource(Session, '/session')
+    api.add_resource(UsersPing, '/session/ping')
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects

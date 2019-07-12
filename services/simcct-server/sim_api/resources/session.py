@@ -19,21 +19,72 @@ __date__ = '2019.07.10'
 This module defines the resources for session management. 
 """
 
-from flask import Blueprint, session
+import os
+
+import requests
+from flask import Blueprint, session, request
 from flask_restful import Resource
+from bson import ObjectId
 
 session_blueprint = Blueprint('session', __name__)
 
 
-class SessionPing(Resource):
+class Session(Resource):
+
+    def post(self):
+        post_data = request.get_json()
+
+        response = {
+                'status': 'fail',
+                'message': 'Invalid payload.'
+        }
+
+        if not post_data:
+            return response, 400
+
+        user_id = post_data.get('_id', None)
+        token = post_data.get('token', None)
+
+        if not user_id:
+            response['message'] = 'User ObjectId must be provided.'
+            return response, 401
+
+        if not token:
+            response['message'] = 'JWT token must be provided.'
+            return response, 401
+
+        session['user_id'] = user_id
+        session['token'] = token
+
+        response['status'] = 'success'
+        response['message'] = 'User session initiated.'
+        response['session_id'] = session.sid
+
+        return response, 201
 
     def get(self):
-        session['redis_test'] = {
-            'Test': ['This should save a value', 'Another value'],
-            'Test2': 'A third value'
+
+        response = {
+            'status': 'success',
+            'session_id': session.sid
         }
-        res = {
-            'Session ID': session.sid,
-            'Redis Store': session['redis_test']
-        }
-        return res, 200
+
+        return response, 200
+
+
+class UsersPing(Resource):
+    """
+    This is just a sanity check to ensure we can connect from this server to
+    the users-server through Docker just fine.
+    """
+
+    def get(self):
+        users_server = os.environ.get('USERS_HOST', None)
+        # We use the built-in DNS server of Docker to resolve the correct
+        # IP address of the other container [1].
+
+        url = f'http://{users_server}/ping'
+
+        res = requests.get(url)
+        print(res)
+        return res.json(), 200, {'content-type': 'application/json'}

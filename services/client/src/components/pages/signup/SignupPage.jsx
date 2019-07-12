@@ -24,27 +24,14 @@ import styles from './SignupPage.module.scss'
 // import background from '../../../assets/background_img.png'
 
 class SignupPage extends Component {
-  
-  // constructor(props) {
-  //   super(props)
-  //   this.state = {
-  //     value: undefined,
-  //   }
-  // }
 
   componentDidMount = () => {
 
   }
 
-  // handleChange = (val) => {
-  //   this.setState({
-  //     value: val,
-  //   })
-  // }
 
   render() {
     return (
-      //(arvy@neuraldev.io -- sprint 6 or Nov 2019) TODO: do the styles then the designss
       <div className={styles.outer}>
         <div className={styles.form}>
           <div className={styles.logo}><h3> ARCLYTICS </h3> </div>
@@ -66,10 +53,11 @@ class SignupPage extends Component {
                 })
                 promise.then(data => {
                   localStorage.setItem('token', data.token)
+                  this.props.history.push('/')
                   setSubmitting(false)
                 })
                 .catch(err => {
-                  setStatus({ message: err })
+                  setStatus({ message: err})
                   setSubmitting(false)
                 })
               }}
@@ -154,6 +142,7 @@ class SignupPage extends Component {
                     </div> 
                   </div>
                   <div className={styles.signUpButton}>
+                    <h6 className={styles.errors}>{status && status.message && status.message}</h6>
                     <Button name="SIGN UP" appearance="default" type="submit" length="small" disabled={isSubmitting}> SIGNUP </Button>
                   </div>
                 </form>
@@ -179,7 +168,7 @@ const mapDispatchToProps = {
 export default connect(mapStateToProps, mapDispatchToProps)(SignupPage)
 
 
-//TODO: Move this function for Validation and import it.
+//TODO:(arvy@neuraldev.io -- july 2019) Move this function for Validation and import it.
 export const signupValidation = values => {
   const {
     email, firstName, lastName, password, passwordConfirmed
@@ -217,9 +206,9 @@ export const signupValidation = values => {
 }
 
 
-//TODO: Move this function to a separate file for Authentication and import it. Talk to Matt
+//TODO: (arvy@neuraldev.io -- july 2019) Move this function to a separate file for Authentication and import it. Talk to Matt
 export const signup = async (values, resolve, reject) => {
-  const { email, username, password, firstName, lastName } = values
+  const { email, password, firstName, lastName } = values
   fetch('http://localhost:8000/auth/register', {
     method: 'POST',
     mode: 'cors',
@@ -228,19 +217,18 @@ export const signup = async (values, resolve, reject) => {
     },
     body: JSON.stringify({
       email,
-      username,
       password,
       first_name: firstName,
       last_name: lastName
     })
   })
   .then(res => {
-    const jsonResponse = res.json() //TODO: for debug only remove later
-    console.log(jsonResponse) 
-    if (res.status === 200)
-      resolve(jsonResponse)
-    else if (res.status === 400)
-      reject("Error")
+    if (res.status === 201){
+      resolve(res.json())
+    }
+    else if (res.status === 400){
+      res.json().then(object => reject(object.message))
+    }
   })
   .catch(err => console.log(err))
 }

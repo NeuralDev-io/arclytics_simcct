@@ -45,6 +45,7 @@ services:
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - REDIS_HOST=redis
+      - REDIS_PORT=6379
     depends_on:
       - redis
     networks:

@@ -4,31 +4,38 @@ type=""
 build=0
 tty=0
 test_type="test"
+test_type_title="Flask-Testing Unittests (without coverage)"
 
 # Run only the users-server tests
 users-server() {
-  echo "# ==================== # RUNNING USERS-SERVER TESTS # ===================== #"
-  echo "Beginning Test Coverage for Users-Server"
-  if [[ ${tty} == 1 ]]; then
-      docker-compose exec -T users-server python manage.py "${test_type}"
-  else
-      docker-compose exec users-server python manage.py "${test_type}"
-  fi
-  echo "Finishing Test Coverage for Users-Server"
-  echo "# ============================================-------------================ #"
+    echo ""
+    echo "# ==================== # RUNNING USERS-SERVER TESTS # ===================== #"
+    echo "# Beginning ${test_type_title} for Users-Server"
+    echo ""
+    if [[ ${tty} == 1 ]]; then
+        docker-compose exec -T users-server python manage.py "${test_type}"
+    else
+        docker-compose exec users-server python manage.py "${test_type}"
+    fi
+    echo ""
+    echo "# Finishing ${test_type_title} for Users-Server"
+    echo "# ======================================================================== #"
 }
 
 # Run only the simcct-server tests
 simcct-server() {
-  echo "# ==================== # RUNNING SIMCCT-SERVER TESTS # ==================== #"
-  echo "Beginning Test Coverage for SimCCT-Server"
-  if [[ ${tty} == 1 ]]; then
-    docker-compose exec -T simcct-server python manage.py "${test_type}"
-  else
-    docker-compose exec simcct-server python manage.py "${test_type}"
-  fi
-  echo "Finishing Test Coverage for SimCCT-Server"
-  echo "# ============================================-------------================ #"
+    echo ""
+    echo "# ==================== # RUNNING SIMCCT-SERVER TESTS # ==================== #"
+    echo "# Beginning ${test_type_title} for SimCCT-Server"
+    echo ""
+    if [[ ${tty} == 1 ]]; then
+        docker-compose exec -T simcct-server python manage.py "${test_type}"
+    else
+        docker-compose exec simcct-server python manage.py "${test_type}"
+    fi
+    echo ""
+    echo "# Finishing ${test_type_title} for SimCCT-Server"
+    echo "# ======================================================================== #"
 }
 
 # Run server-side tests
@@ -135,6 +142,7 @@ while [[ "$1" != "" ]] ; do
         -c | --coverage )
             coverage=1
             test_type="test_coverage"
+            test_type_title="Flask-Testing Unittests with Coverage"
             ;;
         -h | --help )
             usage

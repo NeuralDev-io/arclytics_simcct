@@ -26,20 +26,23 @@ import os
 class BaseConfig:
     """Base configuration"""
     TESTING = False
-    SECRET_KEY = os.environ.get('SECRET_KEY', '')
+    SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
     MONGO_DBNAME = 'arc_dev'
+    REDIS_DB = 1
 
 
 class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
     MONGO_DBNAME = 'arc_test'
+    REDIS_DB = 15
 
 
 class ProductionConfig(BaseConfig):
     """Production configuration"""
     MONGO_DBNAME = 'arclytics'
+    REDIS_DB = 0

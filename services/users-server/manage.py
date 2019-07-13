@@ -37,17 +37,16 @@ from users_api.models.models import User
 COV = coverage.coverage(
     branch=True,
     include=[
-        'users_api/models.py',
-        'users_api/users.py',
-        'users_api/auth.py',
-        'users_api/auth_decorators.py',
+        'users_api/models/models.py',
+        'users_api/resources/users.py',
+        'users_api/resources/auth.py',
+        'users_api/middleware.py',
         'users_api/mongodb.py',
     ],
     omit=[
         'users_api/__init__.py'
-        'config.py',
+        'users_api/config.py',
         'tests/*',
-        'simulation/*',
         'configs/*',
         'data/*',
         'logger/*',
@@ -60,7 +59,7 @@ app = create_app()
 cli = FlaskGroup(create_app=create_app)
 
 
-# TODO: Command to recreate database
+# TODO(andrew@neuraldev.io -- Sprint 6): Command to recreate database
 @cli.command('recreate_db')
 def recreate_db():
     pass
@@ -70,7 +69,7 @@ def recreate_db():
 def test():
     """Runs the tests without code coverage."""
     tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
-    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    result = unittest.TextTestRunner(verbosity=3).run(tests)
     if result.wasSuccessful():
         return 0
     sys.exit(result)
@@ -123,12 +122,12 @@ def seed_user_db():
 def cov():
     """Runs the unit tests with coverage."""
     tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
-    result = unittest.TextTestRunner(verbosity=3).run(tests)
+    result = unittest.TextTestRunner(verbosity=4).run(tests)
     if result.wasSuccessful():
         COV.stop()
         COV.save()
         print('Coverage Summary:')
-        COV.report(show_missing=True)
+        COV.report(show_missing=False)
         COV.html_report()
         COV.erase()
         return 0

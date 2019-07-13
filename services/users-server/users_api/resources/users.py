@@ -98,7 +98,7 @@ class UsersList(Resource):
 
 
 class Users(Resource):
-    """Resource for User Retrieve."""
+    """Resource for User Retrieve and Update."""
 
     method_decorators = {
         'get': [login_required],
@@ -106,7 +106,7 @@ class Users(Resource):
     }
 
     def get(self, user_id):
-        """Get a single user detail with query as user_id."""
+        """Get a single user detail with query parameter as user_id."""
 
         # Validation check fo ObjectId done in authenticate_restful decorator
         # if not ObjectId.is_valid(user_id):

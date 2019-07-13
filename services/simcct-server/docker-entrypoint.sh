@@ -21,10 +21,10 @@ usage() {
 
 # defaults
 HOST=0.0.0.0
-PORT=8000
+PORT=8001
 WSGI=""
 
-while  "$1" != "" ; do
+while [ "$1" != "" ] ; do
     case $1 in
         -H | --host )
             shift
@@ -60,7 +60,7 @@ echo ""
 
 # if [ $WSGI == ""]; then
 #     exit
-if  "$WSGI" == "gunicorn" ; then
+if  [ "$WSGI" == "gunicorn" ] ; then
     gunicorn -b $HOST:$PORT api.__init__:app
 else
     python manage.py run -h $HOST -p $PORT

@@ -28,7 +28,9 @@ from mongoengine import Document, StringField, EmailField, BooleanField
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from tests.test_api_base import BaseTestCase
-from users_api.models.models import User, PasswordValidationError, USERS
+from users_api.models.models import (User, PasswordValidationError,
+                                     USERS, Configuration, Element,
+                                     Compositions)
 
 
 class TestUserModel(BaseTestCase):
@@ -68,6 +70,47 @@ class TestUserModel(BaseTestCase):
         self.assertIsNone(user.last_login)
         self.assertTrue(user.active)
         self.assertTrue(user.password)
+
+    def test_add_configuration(self):
+        user = User(
+            email='eric@shield.gov.us',
+            first_name='Eric',
+            last_name='Selvig'
+        )
+        user.set_password('BifrostIsReal')
+
+        config = Configuration(method='Li98', alloy='parent', grain_size=8.0,
+                               grain_size_type='ASTM', nucleation_start=1.0,
+                               nucleation_finish=99.99)
+        user.last_configuration = config
+        user.cascade_save()
+
+        self.assertEqual(user.last_configuration.method, 'Li98')
+        self.assertEqual(user.last_configuration.grain_size, 8.0)
+        self.assertEqual(user.last_configuration.grain_size_type, 'ASTM')
+        self.assertEqual(user.last_configuration.nucleation_start, 1.0)
+        self.assertEqual(user.last_configuration.nucleation_finish, 99.99)
+
+    def test_add_compositions(self):
+        user = User(
+            email='eric@shield.gov.us',
+            first_name='Eric',
+            last_name='Selvig'
+        )
+        user.set_password('BifrostIsReal')
+
+        elem1 = Element(name='carbon', symbol='cx', weight=0.044)
+        elem2 = Element(name='manganese', symbol='mn', weight=1.73)
+        comp = Compositions()
+        comp.comp.append(elem1)
+        comp.comp.append(elem2)
+        user.last_compositions = comp
+        user.cascade_save()
+
+        self.assertEqual(user.last_compositions.comp[0]['name'], 'carbon')
+        self.assertEqual(user.last_compositions.comp[0]['weight'], 0.044)
+        self.assertEqual(user.last_compositions.comp[1]['name'], 'manganese')
+        self.assertEqual(user.last_compositions.comp[1]['weight'], 1.73)
 
     def test_email_validation(self):
         user = User(
@@ -125,7 +168,6 @@ class TestUserModel(BaseTestCase):
         )
         user.set_password('IAmIronMan')
         user.save()
-        user_json = json.loads(user.to_json())  # mongoengine returns a string
         self.assertIsInstance(user.to_mongo(), SON)
         self.assertTrue(user.to_json(), str)
         self.assertTrue(user.to_dict(), dict)
@@ -137,7 +179,7 @@ class TestUserModel(BaseTestCase):
             last_name='Che'
         )
 
-        user_one.set_password('youknotwhatitis')
+        user_one.set_password('youknotwhatitwas')
         user_two = User(
             email='andrew@codeninja55.me',
             first_name='Andrew',

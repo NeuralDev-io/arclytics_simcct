@@ -39,6 +39,7 @@ class TestSessionService(BaseTestCase):
     base_url = f'http://{users_host}'
 
     def test_session_user_ping(self):
+        """Just a sanity check test that there is connection to users-server."""
         with self.client:
             res = self.client.get('/users/ping')
             data = json.loads(res.data.decode())
@@ -47,6 +48,9 @@ class TestSessionService(BaseTestCase):
             self.assertEqual(data['status'], 'success')
 
     def test_session_post(self):
+        """Ensure we can use the requests library to make registration/login
+        to the users-server and get the correct responses.
+        """
         resp = requests.post(
             url=f'{self.base_url}/auth/register',
             json={
@@ -91,9 +95,8 @@ class TestSessionService(BaseTestCase):
             self.assertEqual(data['message'], 'User session initiated.')
 
     def test_login_user_with_no_configurations(self):
-        """
-        Ensure that if the user logged in without configurations it defaults to
-        the empty configs.
+        """Ensure that if the user logged in without configurations it defaults
+        to the empty configs.
         """
         _id = ObjectId()
         with current_app.test_client() as client:
@@ -102,7 +105,6 @@ class TestSessionService(BaseTestCase):
                 data=json.dumps({
                     '_id': str(_id),
                     'token': "ThisIsOnlyATestingToken",
-                    'last_configurations': {}
                 }),
                 content_type='application/json'
             )
@@ -113,11 +115,53 @@ class TestSessionService(BaseTestCase):
             self.assertEqual(sess_saved['method'], 'Li98')
 
     def test_login_user_with_configurations(self):
-        """
-        Ensure that if a user has an appropriate last_configurations then
+        """Ensure that if a user has an appropriate last_configurations then
         it is set appropriately.
         """
-        pass
+        _id = ObjectId()
+
+        configs = {
+            'method': 'Li98',
+            'alloy': 'parent',
+            'grain_size': 8.0,
+            'grain_size_type': 'ASTM',
+            'nucleation_start': 1.0,
+            'nucleation_finish': 99.9,
+            'auto_calculate_xfe': True,
+            'xfe_value': 0.0,
+            'cf_value': 0.012,
+            'ceut_value': 0.762,
+            'auto_calculate_ms_bs': True,
+            'transformation_method': 'Li98',
+            'ms_temp': 0.0,
+            'ms_undercool': 100.0,
+            'bs_temp': 0.0,
+            'auto_calculate_ae': True,
+            'ae1_temp': 0.0,
+            'ae3_temp': 0.0,
+            'start_temp': 900.0,
+            'cct_cooling_rate': 10
+        }
+
+        with current_app.test_client() as client:
+            login_res = client.post(
+                '/session',
+                data=json.dumps({
+                    '_id': str(_id),
+                    'token': "ThisIsOnlyATestingToken",
+                    'last_configurations': configs,
+                    'last_compositions': {'comp': []}
+                }),
+                content_type='application/json'
+            )
+            data = json.loads(login_res.data.decode())
+            self.assertTrue(data['status'] == 'success')
+            self.assertEqual(data['message'], 'User session initiated.')
+            sess_saved = session.get(f'{str(_id)}:last_configurations')
+            self.assertEqual(sess_saved['method'], 'Li98')
+            self.assertEqual(sess_saved['alloy'], 'parent')
+            self.assertEqual(sess_saved['grain_size_type'], 'ASTM')
+            self.assertEqual(sess_saved['grain_size'], 8.0)
 
     def test_login_user_with_compositions(self):
         """Ensure if the user a last_compositions it is added to Redis store."""
@@ -145,9 +189,9 @@ class TestSessionService(BaseTestCase):
             self.assertEqual(comp_store['comp'][0]['name'], e1['name'])
             self.assertEqual(comp_store['comp'][0]['symbol'], e1['symbol'])
             self.assertEqual(comp_store['comp'][0]['weight'], e1['weight'])
-            self.assertEqual(comp_store['comp'][1]['name'], e1['name'])
-            self.assertEqual(comp_store['comp'][1]['symbol'], e1['symbol'])
-            self.assertEqual(comp_store['comp'][1]['weight'], e1['weight'])
-            self.assertEqual(comp_store['comp'][2]['name'], e1['name'])
-            self.assertEqual(comp_store['comp'][2]['symbol'], e1['symbol'])
-            self.assertEqual(comp_store['comp'][2]['weight'], e1['weight'])
+            self.assertEqual(comp_store['comp'][1]['name'], e2['name'])
+            self.assertEqual(comp_store['comp'][1]['symbol'], e2['symbol'])
+            self.assertEqual(comp_store['comp'][1]['weight'], e2['weight'])
+            self.assertEqual(comp_store['comp'][2]['name'], e3['name'])
+            self.assertEqual(comp_store['comp'][2]['symbol'], e3['symbol'])
+            self.assertEqual(comp_store['comp'][2]['weight'], e3['weight'])

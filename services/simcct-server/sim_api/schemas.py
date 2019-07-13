@@ -75,7 +75,7 @@ class ConfigurationsSchema(Schema):
             'null': 'A method must be provided to calculate MS and BS.',
             'required': 'A method is required to calculate MS and BS.'
         }
-                                       )
+    )
     ms_temp = fields.Float(required=False)
     ms_undercool = fields.Float(required=False)
     bs_temp = fields.Float(required=False)

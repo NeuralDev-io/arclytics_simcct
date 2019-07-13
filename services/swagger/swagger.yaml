@@ -11,7 +11,7 @@ servers:
     url: 'http://localhost:8001'
 
 paths:
-  /users/ping:
+  /ping:
     get:
       summary: Just a sanity check
       tags:
@@ -431,6 +431,28 @@ paths:
         '200':
           description: Successfully logged out
 
+  /users/ping:
+    get:
+      summary: Just a sanity check that simcct-server can sanely connect to users-server.
+      tags:
+        - Sessions
+      responses:
+        '200':
+          description: You are not crazy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: The status of `success` or `fail`.
+                  message:
+                    type: string
+                    description: The message response
+              example:
+                status: success
+                message: pong!
 
 components:
   securitySchemes:

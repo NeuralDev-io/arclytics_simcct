@@ -2,9 +2,9 @@
 
 
 BASEDIR=$PWD
-CONFIG="${BASEDIR}/services/users-server/.yapf.cfg"
+CONFIG="${BASEDIR}/.yapf.cfg"
 USERS_DIR="${BASEDIR}/services/users-server"
-SIM_DIR="${BASEDIR}/services/simulation-server"
+SIM_DIR="${BASEDIR}/services/simcct-server"
 EXCLUDE_DIR="${BASEDIR}/services/client"
 echo "Running yapf formatter"
 echo "Current Directory: ${BASEDIR}"

@@ -1,3 +1,69 @@
-@import "../../../styles/_colors-light.scss";
-@import "../../../styles/_layout.scss";
-@import "../../../styles/_typography.scss";
+// @import "../../../styles/_colors-light.scss";
+// @import "../../../styles/_typography.scss";
+// @import "src/assets/background.png";
+ 
+$bg-img: url('../../../assets/background_img.png');
+
+.outer{
+    width: 100vw;
+    height: 100vh;
+    background: $bg-img no-repeat center center fixed;
+    background-size: cover;
+    // background-image: $bg-img;
+    padding-top: 8.0632rem;
+    // background-repeat: no-repeat;
+    // background-position: right -120% bottom -120px;
+    // background-color: #F6F6F6;
+    // background-size: cover;
+    overflow:hidden;
+}
+
+.form{
+    margin-left: 11.125rem;
+    width: 23.75rem;
+}
+
+.logo{
+    margin-bottom: 7.624375rem;
+}
+
+.signUp{
+    margin-bottom: 2.3125rem;
+}
+
+.name{
+    margin-bottom: 2.8125rem;
+    height:2.25rem;
+}
+
+.firstName{
+    float:left;    
+}
+
+.lastName{
+    float:right;
+}
+
+.emailPassword{
+    height: 2.25rem;
+    margin-bottom: 3.37500rem;
+}
+
+.passwordConfirmed{
+    height: 2.25rem;
+    margin-bottom: 3.5rem;
+}
+
+.signUpButton{
+    margin-bottom: 1rem;
+}
+
+
+.signIn{
+    height: 2.5rem;
+    color: #299D67;
+}
+
+.errors{
+    color:red;
+}

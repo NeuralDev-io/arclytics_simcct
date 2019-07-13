@@ -28,7 +28,7 @@ from flask import current_app
 
 from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
-from api.models import User
+from users_api.models.models import User
 
 logger = AppLogger(__name__)
 
@@ -47,7 +47,6 @@ class TestUserService(BaseTestCase):
     def test_single_user(self):
         """Ensure we can get a single user works as expected."""
         tony = User(
-            username='iron_man',
             email='tony@starkindustries.com',
             first_name='Tony',
             last_name='Stark'
@@ -75,7 +74,6 @@ class TestUserService(BaseTestCase):
             )
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('iron_man', data['data']['username'])
             self.assertIn('tony@starkindustries.com', data['data']['email'])
 
     def test_single_user_not_active(self):
@@ -84,7 +82,6 @@ class TestUserService(BaseTestCase):
         like get: /users/<id>
         """
         tony = User(
-            username='iron_man',
             email='tony@starkindustries.com',
             first_name='Tony',
             last_name='Stark'
@@ -142,7 +139,6 @@ class TestUserService(BaseTestCase):
 
     def test_single_user_expired_token(self):
         tony = User(
-            username='iron_man',
             email='tony@starkindustries.com',
             first_name='Tony',
             last_name='Stark'
@@ -190,7 +186,6 @@ class TestUserService(BaseTestCase):
     def test_unauthorized_get_all_users(self):
         """Ensure we can't get all users because we are not authorized."""
         tony = User(
-            username='iron_man',
             email='tony@starkindustries.com',
             first_name='Tony',
             last_name='Stark'
@@ -199,7 +194,6 @@ class TestUserService(BaseTestCase):
         tony.is_admin = False
         tony.save()
         nat = User(
-            username='black_widow',
             email='nat@shield.gov.us',
             first_name='Natasha',
             last_name='Romanoff'
@@ -233,7 +227,6 @@ class TestUserService(BaseTestCase):
 
     def test_get_all_users_expired_token(self):
         thor = User(
-            username='thor',
             email='thor@avengers.io',
             first_name='Thor',
             last_name='Odinson'
@@ -271,7 +264,6 @@ class TestUserService(BaseTestCase):
     def test_get_all_users(self):
         """Ensure we can get all users if logged in and authorized."""
         tony = User(
-            username='iron_man',
             email='tony@starkindustries.com',
             first_name='Tony',
             last_name='Stark'
@@ -281,7 +273,6 @@ class TestUserService(BaseTestCase):
         tony.verified = True
         tony.save()
         steve = User(
-            username='cap',
             email='steve@avengers.io',
             first_name='Steve',
             last_name='Rogers'
@@ -289,7 +280,6 @@ class TestUserService(BaseTestCase):
         steve.set_password('ICanDoThisAllDay')
         steve.save()
         nat = User(
-            username='black_widow',
             email='nat@shield.gov.us',
             first_name='Natasha',
             last_name='Romanoff'
@@ -301,12 +291,10 @@ class TestUserService(BaseTestCase):
         with self.client:
             resp_login = self.client.post(
                 '/auth/login',
-                data=json.dumps(
-                    {
-                        'email': 'tony@starkindustries.com',
-                        'password': 'IAmTheRealIronMan'
-                    }
-                ),
+                data=json.dumps({
+                    'email': 'tony@starkindustries.com',
+                    'password': 'IAmTheRealIronMan'
+                }),
                 content_type='application/json'
             )
             token = json.loads(resp_login.data.decode())['token']
@@ -320,11 +308,8 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(len(data['data']['users']), 3)
-            self.assertIn('iron_man', data['data']['users'][0]['username'])
             self.assertTrue(data['data']['users'][0]['admin'])
-            self.assertIn('cap', data['data']['users'][1]['username'])
             self.assertFalse(data['data']['users'][1]['admin'])
-            self.assertIn('black_widow', data['data']['users'][2]['username'])
             self.assertIn('success', data['status'])
 
 

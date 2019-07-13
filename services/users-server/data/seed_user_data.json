@@ -1,43 +1,37 @@
 [
     {
-        "email": "tony@avengers.io",
+        "email": "iron_man@avengers.io",
         "password": "IAmIronMan",
-        "username": "iron_man",
         "first_name": "Tony",
         "last_name": "Stark"
     },
     {
-        "email": "nat@marvel.io",
+        "email": "black_widow@marvel.io",
         "password": "RedInMyLedger",
-        "username": "black_widow",
         "first_name": "Natasha",
         "last_name": "Romanoff"
     },
     {
-        "email": "steve@avengers.io",
+        "email": "captain_america@avengers.io",
         "password": "ICanDoThisAllDay",
-        "username": "captain_america",
         "first_name": "Steve",
         "last_name": "Rogers"
     },
     {
         "email": "hulk@avengers.io",
         "password": "HulkSmash",
-        "username": "hulk",
         "first_name": "Bruce",
         "last_name": "Banner"
     },
     {
         "email": "thor@avengers.io",
         "password": "StrongestAvenger",
-        "username": "god_of_thunder",
         "first_name": "Thor",
         "last_name": "Odinson"
     },
     {
         "email": "hawkeye@avengers.io",
         "password": "BowAndArrows",
-        "username": "ronin",
         "first_name": "Clint",
         "last_name": "Barton"
     }

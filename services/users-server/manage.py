@@ -31,23 +31,22 @@ from flask.cli import FlaskGroup
 from prettytable import PrettyTable
 import coverage
 
-from api import create_app, get_flask_mongo
-from api.models import User
+from users_api import create_app, get_flask_mongo
+from users_api.models.models import User
 
 COV = coverage.coverage(
     branch=True,
     include=[
-        'api/models.py',
-        'api/users.py',
-        'api/auth.py',
-        'api/auth_decorators.py',
-        'api/mongodb.py',
+        'users_api/models/models.py',
+        'users_api/resources/users.py',
+        'users_api/resources/auth.py',
+        'users_api/middleware.py',
+        'users_api/mongodb.py',
     ],
     omit=[
-        'api/__init__.py'
-        'config.py',
+        'users_api/__init__.py'
+        'users_api/config.py',
         'tests/*',
-        'simulation/*',
         'configs/*',
         'data/*',
         'logger/*',
@@ -60,7 +59,7 @@ app = create_app()
 cli = FlaskGroup(create_app=create_app)
 
 
-# TODO: Command to recreate database
+# TODO(andrew@neuraldev.io -- Sprint 6): Command to recreate database
 @cli.command('recreate_db')
 def recreate_db():
     pass
@@ -70,7 +69,7 @@ def recreate_db():
 def test():
     """Runs the tests without code coverage."""
     tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
-    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    result = unittest.TextTestRunner(verbosity=3).run(tests)
     if result.wasSuccessful():
         return 0
     sys.exit(result)
@@ -97,12 +96,11 @@ def seed_user_db():
         with open(path) as f:
             data = json.load(f)
 
-    tbl = PrettyTable(['No.', 'Username', 'Email', 'Name'])
+    tbl = PrettyTable(['No.', 'Email', 'Name'])
     print('Seeding users to <{}> database:'.format(db.name))
     for i, u in enumerate(data):
         new_user = User(
             email=u['email'],
-            username=u['username'],
             first_name=u['first_name'],
             last_name=u['last_name']
         )
@@ -110,11 +108,12 @@ def seed_user_db():
         new_user.save()
         tbl.add_row(
             (
-                str(i + 1), u['username'], u['email'],
+                str(i + 1),
+                u['email'],
                 '{} {}'.format(u['first_name'], u['last_name'])
             )
         )
-    tbl.align['Username'] = 'l'
+    tbl.align['Name'] = 'l'
     tbl.align['Email'] = 'l'
     print(tbl)
 
@@ -123,12 +122,12 @@ def seed_user_db():
 def cov():
     """Runs the unit tests with coverage."""
     tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
-    result = unittest.TextTestRunner(verbosity=3).run(tests)
+    result = unittest.TextTestRunner(verbosity=4).run(tests)
     if result.wasSuccessful():
         COV.stop()
         COV.save()
         print('Coverage Summary:')
-        COV.report(show_missing=True)
+        COV.report(show_missing=False)
         COV.html_report()
         COV.erase()
         return 0

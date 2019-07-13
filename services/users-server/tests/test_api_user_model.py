@@ -99,8 +99,8 @@ class TestUserModel(BaseTestCase):
         )
         user.set_password('BifrostIsReal')
 
-        elem1 = Element(name='carbon', symbol='Cx', weight=0.044)
-        elem2 = Element(name='manganese', symbol='Mn', weight=1.73)
+        elem1 = Element(name='carbon', symbol='cx', weight=0.044)
+        elem2 = Element(name='manganese', symbol='mn', weight=1.73)
         comp = Compositions()
         comp.comp.append(elem1)
         comp.comp.append(elem2)

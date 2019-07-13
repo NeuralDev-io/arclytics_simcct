@@ -9,7 +9,7 @@
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
@@ -134,6 +134,7 @@ class Configuration(EmbeddedDocument):
     cf_value = FloatField()
     ceut_value = FloatField()
     auto_calculate_ms_bs = BooleanField(default=True)
+    transformation_method = StringField(default='Li98')
     ms_temp = FloatField()
     ms_undercool = FloatField()
     bs_temp = FloatField()
@@ -156,6 +157,7 @@ class Configuration(EmbeddedDocument):
             'nucleation_finish': self.nucleation_finish,
             'auto_calculate_xfe': self.auto_calculate_xfe,
             'auto_calculate_ms_bs': self.auto_calculate_ms_bs,
+            'transformation_method': self.transformation_method,
             'auto_calculate_ae': self.auto_calculate_ae,
             'xfe_value': self.xfe_value,
             'cf_value': self.cf_value,

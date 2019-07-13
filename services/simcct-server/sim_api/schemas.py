@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# schema.py
+# schemas.py
 # 
 # Attributions: 
 # [1] 
@@ -9,15 +9,17 @@
 __author__ = 'Andrew Che <@codeninja55>'
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
+__license__ = 'TBA'
+__version__ = '0.3.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = '{dev_status}'
+__status__ = 'development'
 __date__ = '2019.07.09'
-"""schema.py: 
+"""schemas.py: 
 
-{Description}
+These describe the schema required for the configurations and compositions
+that will be received by the simcct-server as request body data. They will
+be used to validate the post data is correct before adding to any DB.
 """
 
 import enum
@@ -42,7 +44,7 @@ class CompositionSchema(Schema):
 
 
 class ConfigurationsSchema(Schema):
-    method = fields.Str(default='li98',
+    method = fields.Str(default='Li98',
                         required=True,
                         allow_none=False,
                         data_key='method',
@@ -60,16 +62,26 @@ class ConfigurationsSchema(Schema):
     nucleation_start = fields.Float(required=True)
     nucleation_finish = fields.Float(required=True)
     auto_calculate_xfe = fields.Boolean(default=True, required=True)
-    xfe_value = fields.Float(required=True)
-    cf_value = fields.Float(required=True)
-    ceut_value = fields.Float(required=True)
+    xfe_value = fields.Float(required=False)
+    cf_value = fields.Float(required=False)
+    ceut_value = fields.Float(required=False)
     auto_calculate_ms_bs = fields.Boolean(default=True, required=True)
-    ms_temp = fields.Float(required=True)
-    ms_undercool = fields.Float(required=True)
-    bs_temp = fields.Float(required=True)
+    transformation_method = fields.Str(
+        default='Li98',
+        required=True,
+        allow_none=False,
+        data_key='transformation_method',
+        error_messages={
+            'null': 'A method must be provided to calculate MS and BS.',
+            'required': 'A method is required to calculate MS and BS.'
+        }
+                                       )
+    ms_temp = fields.Float(required=False)
+    ms_undercool = fields.Float(required=False)
+    bs_temp = fields.Float(required=False)
     auto_calculate_ae = fields.Boolean(default=True, required=True)
-    ae1_temp = fields.Decimal(required=True)
-    ae3_temp = fields.Decimal(required=True)
+    ae1_temp = fields.Float(required=False)
+    ae3_temp = fields.Float(required=False)
     start_temp = fields.Int()
     cct_cooling_rate = fields.Int()
 

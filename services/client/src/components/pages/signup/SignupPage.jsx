@@ -14,19 +14,18 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
+import { signup } from '../../../utils/AuthenticationHelper'
+import { signupValidation } from '../../../utils/ValidationHelper'
 
 import Button from '../../elements/button'
-// import TextField from '../../elements/textfield/TextField';
 import TextField from '../../elements/textfield'
-
 import styles from './SignupPage.module.scss'
-
-// import background from '../../../assets/background_img.png'
 
 class SignupPage extends Component {
 
   componentDidMount = () => {
-
+    if (localStorage.getItem("token"))
+      this.props.history.push('/')
   }
 
 
@@ -168,67 +167,4 @@ const mapDispatchToProps = {
 export default connect(mapStateToProps, mapDispatchToProps)(SignupPage)
 
 
-//TODO:(arvy@neuraldev.io -- july 2019) Move this function for Validation and import it.
-export const signupValidation = values => {
-  const {
-    email, firstName, lastName, password, passwordConfirmed
-  } = values
-  let errors = {}
 
-  if (!firstName) {
-    errors.firstName = 'Required'
-  }
-  if (!lastName) {
-    errors.lastName = 'Required'
-  }
-  
-  if (!email) {
-    errors.email = 'Required'
-  } else if (
-    !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
-  ) {
-    errors.email = 'Invalid email'
-  }
-
-  if (!password) {
-    errors.password = 'Required'
-  } else if (password.length < 6 || password.length > 254) {
-    errors.password = 'Password must be more than 6 characters'
-  }
-
-  if (!passwordConfirmed) {
-    errors.passwordConfirmed = 'Required'
-  } else if (password !== passwordConfirmed) {
-    errors.passwordConfirmed = 'Password does not match'
-  }
-
-  return errors
-}
-
-
-//TODO: (arvy@neuraldev.io -- july 2019) Move this function to a separate file for Authentication and import it. Talk to Matt
-export const signup = async (values, resolve, reject) => {
-  const { email, password, firstName, lastName } = values
-  fetch('http://localhost:8000/auth/register', {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      "content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      email,
-      password,
-      first_name: firstName,
-      last_name: lastName
-    })
-  })
-  .then(res => {
-    if (res.status === 201){
-      resolve(res.json())
-    }
-    else if (res.status === 400){
-      res.json().then(object => reject(object.message))
-    }
-  })
-  .catch(err => console.log(err))
-}

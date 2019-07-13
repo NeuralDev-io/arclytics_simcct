@@ -79,7 +79,7 @@ class LoginPage extends Component {
                     length="stretch"
                     className = {styles.password}
                   />
-                  {/* TODO: Remember to put a link here */} 
+                  {/* TODO: Ask about the error messages and how they should show up*/} 
                   <h6>{errors.password && touched.password && errors.password}</h6>
                   <h6>{status && status.message && status.message}</h6>
                   <div>

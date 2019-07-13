@@ -4,18 +4,18 @@ info:
   title: Arclytics Sim API
   description: Swagger spec for documenting the users and simulation service
 
-
 servers:
   - description: Users Service Flask Server
     url: 'http://localhost:8000'
   - description: SimCCT Service Flask Server
     url: 'http://localhost:8001'
 
-
 paths:
-  /ping:
+  /users/ping:
     get:
       summary: Just a sanity check
+      tags:
+        - Users
       responses:
         '200':
           description: You are not crazy.
@@ -33,10 +33,11 @@ paths:
               example:
                 status: success
                 message: pong!
-
   /users:
     get:
       summary: Returns all users
+      tags:
+        - Users
       security:
         - bearerAuth: []
       responses:
@@ -50,7 +51,7 @@ paths:
                   $ref: '#/components/schemas/User'
                 example:
                   - _id: 5d2339db2d789ae1a9f15a9e
-                    email: tony@starkindustries.com
+                    email: iron_man@avengers.io
                     first_name: Tony
                     last_name: Stark
                     active: true
@@ -60,7 +61,7 @@ paths:
                     last_login: '2019-07-08T12:40:59.168000+00:00'
                     profile: None
                   - _id: 5d2339db2d789ae1a9f15a9f
-                    email: steve@avengers.io
+                    email: captain_america@avengers.io
                     first_name: Steve
                     last_name: Rogers
                     active: false
@@ -137,10 +138,11 @@ paths:
                   value:
                     status: fail
                     message: Not authorized.
-
   '/users/{id}':
     get:
       summary: Returns a user based on a single user ID
+      tags:
+        - Users
       parameters:
         - name: id
           in: path
@@ -208,10 +210,11 @@ paths:
                   value:
                     status: fail
                     message: Invalid token. Please log in again.
-
   /auth/register:
     post:
       summary: Register and create a new user
+      tags:
+        - Auth
       requestBody:
         description: User details to add
         required: true
@@ -241,8 +244,8 @@ paths:
                   last_name: Odinson
                   password: StrongestAvenger
       responses:
-        '201':
-          description: Successful registration.
+        '200':
+          description: user object
           content:
             application/json:
               schema:
@@ -297,6 +300,8 @@ paths:
   /auth/login:
     post:
       summary: Logs a user in
+      tags:
+        - Auth
       requestBody:
         description: User to log in
         required: true
@@ -312,15 +317,9 @@ paths:
               required:
                 - email
                 - password
-            examples:
-              'Tony Stark':
-                value:
-                  email: tony@avengers.io
-                  password: IAmIronMan
-              'Peter Parker':
-                value:
-                  email: spiderman@newavengers.io
-                  password: SpideySenses
+            example:
+              email: tony@avengers.io
+              password: IAmIronMan
       responses:
         '200':
           description: Successfully logged in
@@ -335,49 +334,6 @@ paths:
                   message:
                     type: string
                     description: The message response
-                  status:
-                    type: string
-                    description: The status of the request
-              examples:
-                'Tony Stark':
-                  value:
-                    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjI1ODQ4NTIsImlhdCI6MTU2MjU4NDg0Nywic3ViIjoiNWQyMzI3MGY1NmVjNWRlOTU4MTI2MTEzIn0.DZwBE1IDUY-RLVoGugnnAq2_zm_PHnu2ECkhKEaOst0
-                    message: Successfully logged in.
-                    status: success
-                'Peter Parker':
-                  value:
-                    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjI1ODQ4NTIsImlhdCI6MTU2MjU4NDg0Nywic3ViIjoiNWQyMzI3MGY1NmVjNWRlOTU4MTI2MTEyIn0.XTd4KbTchN-1I9r07xUnPom6xCWDEWi2eOoBe14Xi1Q
-                    message: Successfully logged in.
-                    status: success
-        '400':
-          description: Invalid request body.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Payloard':
-                  value:
-                    status: fail
-                    message: Invalid payload.
-                'No Email':
-                  value:
-                    status: fail
-                    message: You must provide an email.
-                'No Password':
-                  value:
-                    status: fail
-                    message: You must provide a password.
-                'Bad Password':
-                  value:
-                    status: fail
-                    message: Email or password combination incorrect.
-        '404':
-          description: Could not find a user.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
               example:
                 status: fail
                 message: User does not exist.
@@ -394,7 +350,9 @@ paths:
 
   /auth/status:
     get:
-      summary: Returns the logged in user's status and details.
+      summary: Returns the logged in user's status
+      tags:
+        - Auth
       security:
         - bearerAuth: []
       responses:
@@ -465,56 +423,13 @@ paths:
   /auth/logout:
     get:
       summary: Logs a user out
+      tags:
+        - Auth
       security:
         - bearerAuth: []
       responses:
         '200':
           description: Successfully logged out
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                value:
-                  status: success
-                  message: Successfully logged out.
-        '400':
-          description: Bad request body provided with no JSON Web Token.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Auth Header':
-                  value:
-                    status: fail
-                    message: Provide a valid JWT auth token.
-        '401':
-          description: The user is not authenticated to perform this request.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    format: string
-                  message:
-                    type: string
-                    format: string
-              examples:
-                'Non Active User':
-                  value:
-                    status: fail
-                    message: This user does not exist.
-                'Expired Token':
-                  value:
-                    status: fail
-                    message: Signature expired. Please login again.
-                'Invalid Token':
-                  value:
-                    status: fail
-                    message: Invalid token. Please log in again.
 
 
 components:
@@ -526,7 +441,6 @@ components:
 
   schemas:
     User:
-      type: object
       properties:
         _id:
           type: string
@@ -537,7 +451,7 @@ components:
           type: string
           format: email
           uniqueItems: true
-          example: tony@avengers.io
+          example: iron_man@avengers.io
         password:
           type: string
           format: password
@@ -607,7 +521,6 @@ components:
           type: string
           format: string
     AdminProfile:
-      type: object
       properties:
         mobile_number:
           type: string
@@ -619,7 +532,152 @@ components:
           format: string
     Response:
       properties:
-        message:
-          type: string
         status:
           type: string
+          format: string
+          example:
+            - fail
+            - success
+        message:
+          type: string
+          format: string
+    Configuration:
+      type: object
+      properties:
+        method:
+          description: A string that is a choice of either of the following enums [Li98 | Kirkaldy83]
+          type: string
+          format: string
+          enum:
+            - 'Li98'
+            - 'Kirkaldy83'
+        alloy:
+          description: A string that is a choice of either of the following enums [parent | weld | mix]
+          type: string
+          format: string
+          enum:
+            - 'parent'
+            - 'weld'
+            - 'mix'
+        grain_size_type:
+          description: A string that is a choice of either of the following enums [ASTM | diam]
+          type: string
+          format: string
+          enum:
+            - 'ASTM'
+            - 'diam'
+        gran_size:
+          type: number
+          format: double
+        nucleation_start:
+          type: number
+          format: double
+        nucleation_finish:
+          type: number
+          format: double
+        auto_calculate_xfe:
+          type: boolean
+          default: true
+        xfe_value:
+          type: number
+          format: double
+        cf_value:
+          type: number
+          format: double
+        ceut_value:
+          type: number
+          format: double
+        auto_calculate_ms_bs:
+          type: boolean
+          default: true
+        transformation_method:
+          description: A string that is a choice of either of the following enums [Li98 | Kirkaldy83]
+          type: string
+          format: string
+          enum:
+            - 'Li98'
+            - 'Kirkaldy83'
+        ms_temp:
+          type: number
+          format: double
+        ms_undercool:
+          type: number
+          format: double
+        bs_temp:
+          type: number
+          format: double
+        auto_calculate_ae:
+          type: boolean
+          default: true
+        ae1_temp:
+          type: number
+          format: double
+        ae3_temp:
+          type: number
+          format: double
+        start_temp:
+          type: integer
+        cct_cooling_rate:
+          type: integer
+    Element:
+      type: object
+      properties:
+        name:
+          description: A lowercase full name of the element.
+          type: string
+          format: string
+          example:
+            - carbon
+            - manganese
+            - silicon
+            - nickel
+            - chromium
+            - molybdenum
+            - aluminium
+            - copper
+            - tungsten
+            - iron
+        symbol:
+          description: "A 2-character lowercase symbol for the name of the element. Note if the periodic symbol is 1
+           letter, add an 'x' at the end of the character (i.e. carbon, c becomes cx)."
+          type: string
+          format: string
+          maxLength: 2
+          example:
+            - cx
+            - mn
+            - si
+            - ni
+            - cr
+            - mo
+            - al
+            - cu
+            - wx
+            - fe
+        weight:
+          description: The weight of the element in the alloy.
+          type: number
+          format: double
+          example:
+            - 0.044
+            - 1.73
+            - 0.22
+            - 0.0
+            - 0.0
+            - 0.26
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+    Compositions:
+      type: array
+      items:
+        $ref: '#/components/schemas/Element'
+
+tags:
+  - name: Users
+    description: Endpoints for users and admins.
+  - name: Auth
+    description: Endpoints for Authentication and Authorization.
+  - name: Sessions
+    description: Endpoints that manage sessions.

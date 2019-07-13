@@ -36,7 +36,7 @@ class AlloyOption(enum.Enum):
 class ElementSchema(Schema):
     name = fields.Str(required=True)
     symbol = fields.Str(required=True)
-    value = fields.Decimal(required=True)
+    weight = fields.Float(required=True)
 
 
 class CompositionSchema(Schema):

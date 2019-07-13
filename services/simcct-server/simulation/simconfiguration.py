@@ -35,7 +35,7 @@ from simulation.ae3_utilities import (
 BASE = os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
 )
-DEFAULT_CONFIGS = Path(BASE) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS = Path(BASE) / 'simulation' / 'sim_configs.json'
 
 
 class SimConfiguration(object):
@@ -50,7 +50,7 @@ class SimConfiguration(object):
                  debug: bool = False):
 
         if debug:
-            with open(DEFAULT_CONFIGS) as config_f:
+            with open(_TEST_CONFIGS) as config_f:
                 sim_configs = json.load(config_f, parse_float=np.float64)
             configs = sim_configs['configurations']
             compositions = sim_configs['compositions']
@@ -112,6 +112,11 @@ class SimConfiguration(object):
         # crash the application
         self.ae_check = True
         self.ae1, self.ae3 = self.calc_ae1_ae3()
+
+    # TODO(andrew@neuraldev.io): need to implement this as xfe_method2() will
+    #  need to be refactored to become a static method.
+    def auto_xfe(self) -> None:
+        pass
 
     @staticmethod
     def get_compositions(comp_list: list = None) -> np.ndarray:
@@ -241,10 +246,6 @@ class SimConfiguration(object):
 
         """
         wt = self.comp.copy()
-
-        # TODO: Not sure why we need this
-        # Mole fractions: c to ALL elements; y to Fe only (y not used)
-        c_vect, y_vect = convert_wt_2_mol(wt)
 
         # now let's get onto the main routine
 

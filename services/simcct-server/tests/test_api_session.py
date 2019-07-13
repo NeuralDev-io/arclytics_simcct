@@ -25,9 +25,8 @@ import json
 import requests
 from pathlib import Path
 
-import flask
 from bson import ObjectId
-from flask import current_app
+from flask import current_app, session
 
 from sim_api import BASE_DIR
 from tests.test_api_base import BaseTestCase, app
@@ -91,7 +90,11 @@ class TestSessionService(BaseTestCase):
             self.assertTrue(data['status'] == 'success')
             self.assertEqual(data['message'], 'User session initiated.')
 
-    def test_session(self):
+    def test_login_user_with_no_configurations(self):
+        """
+        Ensure that if the user logged in without configurations it defaults to
+        the empty configs.
+        """
         _id = ObjectId()
         with current_app.test_client() as client:
             login_res = client.post(
@@ -106,5 +109,45 @@ class TestSessionService(BaseTestCase):
             data = json.loads(login_res.data.decode())
             self.assertTrue(data['status'] == 'success')
             self.assertEqual(data['message'], 'User session initiated.')
-            sess_saved = flask.session.get(f'{str(_id)}:last_configurations')
+            sess_saved = session.get(f'{str(_id)}:last_configurations')
             self.assertEqual(sess_saved['method'], 'Li98')
+
+    def test_login_user_with_configurations(self):
+        """
+        Ensure that if a user has an appropriate last_configurations then
+        it is set appropriately.
+        """
+        pass
+
+    def test_login_user_with_compositions(self):
+        """Ensure if the user a last_compositions it is added to Redis store."""
+        _id = ObjectId()
+        e1 = {'name': 'carbon', 'symbol': 'cx', 'weight': 0.044}
+        e2 = {'name': 'manganese', 'symbol': 'mn', 'weight': 1.73}
+        e3 = {'name': 'silicon', 'symbol': 'si', 'weight': 0.22}
+
+        with current_app.test_client() as client:
+            login_res = client.post(
+                '/session',
+                data=json.dumps({
+                    '_id': str(_id),
+                    'token': "ThisIsOnlyATestingToken",
+                    'last_configurations': {},
+                    'last_compositions': {'comp': [e1, e2, e3]}
+                }),
+                content_type='application/json'
+            )
+            data = json.loads(login_res.data.decode())
+            self.assertTrue(data['status'] == 'success')
+            self.assertEqual(data['message'], 'User session initiated.')
+            comp_store = session.get(f'{str(_id)}:last_compositions')
+            self.assertTrue(comp_store['comp'])
+            self.assertEqual(comp_store['comp'][0]['name'], e1['name'])
+            self.assertEqual(comp_store['comp'][0]['symbol'], e1['symbol'])
+            self.assertEqual(comp_store['comp'][0]['weight'], e1['weight'])
+            self.assertEqual(comp_store['comp'][1]['name'], e1['name'])
+            self.assertEqual(comp_store['comp'][1]['symbol'], e1['symbol'])
+            self.assertEqual(comp_store['comp'][1]['weight'], e1['weight'])
+            self.assertEqual(comp_store['comp'][2]['name'], e1['name'])
+            self.assertEqual(comp_store['comp'][2]['symbol'], e1['symbol'])
+            self.assertEqual(comp_store['comp'][2]['weight'], e1['weight'])

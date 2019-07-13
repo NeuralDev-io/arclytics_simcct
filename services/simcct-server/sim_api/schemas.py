@@ -61,11 +61,11 @@ class ConfigurationsSchema(Schema):
     grain_size = fields.Float(required=True)
     nucleation_start = fields.Float(required=True)
     nucleation_finish = fields.Float(required=True)
-    auto_calculate_xfe = fields.Boolean(default=True, required=True)
+    auto_calculate_xfe = fields.Boolean(default=False, required=True)
     xfe_value = fields.Float(required=False)
     cf_value = fields.Float(required=False)
     ceut_value = fields.Float(required=False)
-    auto_calculate_ms_bs = fields.Boolean(default=True, required=True)
+    auto_calculate_ms_bs = fields.Boolean(default=False, required=True)
     transformation_method = fields.Str(
         default='Li98',
         required=True,
@@ -79,7 +79,7 @@ class ConfigurationsSchema(Schema):
     ms_temp = fields.Float(required=False)
     ms_undercool = fields.Float(required=False)
     bs_temp = fields.Float(required=False)
-    auto_calculate_ae = fields.Boolean(default=True, required=True)
+    auto_calculate_ae = fields.Boolean(default=False, required=True)
     ae1_temp = fields.Float(required=False)
     ae3_temp = fields.Float(required=False)
     start_temp = fields.Int()

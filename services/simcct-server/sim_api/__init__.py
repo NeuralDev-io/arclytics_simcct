@@ -119,6 +119,8 @@ def create_app(script_info=None) -> Flask:
 
     # Register blueprints
     app.register_blueprint(session_blueprint)
+    from sim_api.resources.sim_configurations import configurations_blueprint
+    app.register_blueprint(configurations_blueprint)
 
     # ========== # API ROUTES # ========== #
     api.add_resource(Session, '/session')

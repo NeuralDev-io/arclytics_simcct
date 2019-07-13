@@ -30,12 +30,11 @@ from bson import ObjectId
 from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api
-from flask_session import Session
+from flask_session import Session as FlaskSession
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-from api.resources.users_communication import UsersPing
-from api.resources.session import SessionPing
+from sim_api.resources.session import Session, UsersPing
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -57,12 +56,17 @@ BASE_DIR = os.path.abspath(
 )
 sys.path.append(BASE_DIR)
 
+# Load environment variables
+env_path = os.path.join(BASE_DIR, '.env')
+if os.path.isfile(env_path):
+    load_dotenv(env_path)
+
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'
 DATE_FMT = '%Y-%m-%d'
 
 # Some Flask extensions
 cors = CORS()
-sess = Session()
+sess = FlaskSession()
 
 
 def create_app(script_info=None) -> Flask:
@@ -74,11 +78,6 @@ def create_app(script_info=None) -> Flask:
     # ========== # CONFIGURATIONS # ========== #
     app_settings = os.getenv('APP_SETTINGS')
     app.config.from_object(app_settings)
-
-    # Load environment variables
-    env_path = os.path.join(BASE_DIR, '.env')
-    if os.path.isfile(env_path):
-        load_dotenv(env_path)
 
     # ========== # CONNECT TO DATABASE # ========== #
     # Mongo Client interface with PyMongo
@@ -95,18 +94,16 @@ def create_app(script_info=None) -> Flask:
                                port=int(app.config['MONGO_PORT']))
     try:
         mongo_client.admin.command('ismaster')
-        print('[INFO] Connected to MongoDB')
-        print(mongo_client)
     except ConnectionFailure as e:
         print('[DEBUG] Unable to Connect to MongoDB')
 
     # Redis Client
     # TODO(andrew@neuraldev.io): Need to set the password in production
     redis_client = redis.Redis(host=os.environ.get('REDIS_HOST'),
-                               port=6379)
+                               port=int(os.environ.get('REDIS_PORT')),
+                               db=int(app.config['REDIS_DB']))
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
-    # TODO(andrew@neuraldev.io): Need to set a IP whitelist
     cors.init_app(app)
 
     # Flask-Session and Redis
@@ -117,17 +114,15 @@ def create_app(script_info=None) -> Flask:
     app.config['SESSION_KEY_PREFIX'] = 'session:'
     sess.init_app(app)
 
-    from api.resources.users_communication import users_blueprint
-    api = Api(users_blueprint)
+    from sim_api.resources.session import session_blueprint
+    api = Api(session_blueprint)
 
     # Register blueprints
-    app.register_blueprint(users_blueprint)
-    from api.resources.session import session_blueprint
     app.register_blueprint(session_blueprint)
 
-    # API Resources
+    # ========== # API ROUTES # ========== #
+    api.add_resource(Session, '/session')
     api.add_resource(UsersPing, '/users/ping')
-    api.add_resource(SessionPing, '/session/ping')
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects
@@ -136,6 +131,6 @@ def create_app(script_info=None) -> Flask:
     # Shell context for Flask CLI
     @app.shell_context_processor
     def ctx():
-        return {'app': app, 'mongo': mongo_client, 'session': sess}
+        return {'app': app}
 
     return app

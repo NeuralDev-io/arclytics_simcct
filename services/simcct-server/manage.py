@@ -21,15 +21,30 @@ This script is to our CLI script tool to manage the application.
 """
 
 import os
-import json
 import sys
 import unittest
-from pathlib import Path
 
 from flask.cli import FlaskGroup
 import coverage
 
-from api import create_app
+from sim_api import create_app
+
+COV = coverage.coverage(
+    branch=True,
+    include=[
+        'sim_api/resources/session.py',
+        'sim_api/schemas.py',
+    ],
+    omit=[
+        'sim_api/__init__.py'
+        'tests/*',
+        'configs/*',
+        'data/*',
+        'logger/*',
+        'logs/*',
+    ]
+)
+COV.start()
 
 app = create_app()
 cli = FlaskGroup(create_app=create_app)
@@ -39,8 +54,24 @@ cli = FlaskGroup(create_app=create_app)
 def test():
     """Runs the tests without code coverage."""
     tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
-    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    result = unittest.TextTestRunner(verbosity=3).run(tests)
     if result.wasSuccessful():
+        return 0
+    sys.exit(result)
+
+
+@cli.command('test_coverage')
+def cov():
+    """Runs the unit tests with coverage."""
+    tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
+    result = unittest.TextTestRunner(verbosity=4).run(tests)
+    if result.wasSuccessful():
+        COV.stop()
+        COV.save()
+        print('\nCoverage Summary:')
+        COV.report(show_missing=False)
+        COV.html_report()
+        COV.erase()
         return 0
     sys.exit(result)
 

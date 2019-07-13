@@ -98,7 +98,7 @@ class TestSessionService(BaseTestCase):
                 '/session',
                 data=json.dumps({
                     '_id': str(_id),
-                    'token': "lkajsdlkjlkasjd",
+                    'token': "ThisIsOnlyATestingToken",
                     'last_configurations': {}
                 }),
                 content_type='application/json'
@@ -106,9 +106,5 @@ class TestSessionService(BaseTestCase):
             data = json.loads(login_res.data.decode())
             self.assertTrue(data['status'] == 'success')
             self.assertEqual(data['message'], 'User session initiated.')
-            print(f'{str(_id)}:last_configuration')
-            print(flask.session.get(f'{str(_id)}:last_configurations'))
-            print(flask.session)
-            with client.session_transaction() as sess:
-                sess['TEST'] = "HELLO WORLD!"
-            flask.session['TEST2'] = 'HELLO WORLD AGAIN!'
+            sess_saved = flask.session.get(f'{str(_id)}:last_configurations')
+            self.assertEqual(sess_saved['method'], 'Li98')

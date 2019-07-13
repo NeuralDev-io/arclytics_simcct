@@ -135,7 +135,7 @@ class SimConfiguration(object):
                         ])
         # iterate over lists at once and store them in the np.ndarray
         for i, e in enumerate(comp_list):
-            comp[i] = (i, e['name'], e['symbol'], e['value'])
+            comp[i] = (i, e['name'], e['symbol'], e['weight'])
         return comp
 
     @staticmethod

@@ -40,7 +40,7 @@ class ElementSchema(Schema):
 
 
 class CompositionSchema(Schema):
-    compositions = fields.List(fields.Nested(ElementSchema), required=True)
+    comp = fields.List(fields.Nested(ElementSchema), required=True)
 
 
 class ConfigurationsSchema(Schema):

@@ -58,6 +58,8 @@ class Session(Resource):
             response['message'] = 'JWT token must be provided.'
             return response, 401
 
+        # TODO(andrew@neuraldev.io): Need to do some validation for some fields
+
         configs = None
         if user_configs:
             try:
@@ -66,7 +68,26 @@ class Session(Resource):
                 print(e)
         else:
             configs = {
-                'method': 'Li98'
+                'method': 'Li98',
+                'alloy': 'parent',
+                'grain_size_type': 'ASTM',
+                'grain_size': 0.0,
+                'nucleation_start': 1.0,
+                'nucleation_finish': 99.90,
+                'auto_calculate_xfe': True,
+                'xfe_value': 0.0,
+                'cf_value': 0.0,
+                'ceut_value': 0.0,
+                'auto_calculate_ms_bs': True,
+                'transformation_method': 'Li98',
+                'ms_temp': 0.0,
+                'ms_undercool': 0.0,
+                'bs_temp': 0.0,
+                'auto_calculate_ae': True,
+                'ae1_temp': 0.0,
+                'ae3_temp': 0.0,
+                'start_temp': 0,
+                'cct_cooling_rate': 0
             }
 
         session['user_id'] = user_id

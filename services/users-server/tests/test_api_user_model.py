@@ -20,8 +20,10 @@ __date__ = '2019.07.05'
 {Description}
 """
 
-import unittest
+import os
 import json
+import unittest
+from pathlib import Path
 
 from bson.son import SON
 from mongoengine import Document, StringField, EmailField, BooleanField
@@ -31,6 +33,9 @@ from tests.test_api_base import BaseTestCase
 from users_api.models.models import (User, PasswordValidationError,
                                      USERS, Configuration, Element,
                                      Compositions)
+
+
+_TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 
 
 class TestUserModel(BaseTestCase):
@@ -72,6 +77,7 @@ class TestUserModel(BaseTestCase):
         self.assertTrue(user.password)
 
     def test_add_configuration(self):
+        """Test how we can add configurations as an embedded document."""
         user = User(
             email='eric@shield.gov.us',
             first_name='Eric',
@@ -79,19 +85,25 @@ class TestUserModel(BaseTestCase):
         )
         user.set_password('BifrostIsReal')
 
-        config = Configuration(method='Li98', alloy='parent', grain_size=8.0,
-                               grain_size_type='ASTM', nucleation_start=1.0,
-                               nucleation_finish=99.99)
-        user.last_configuration = config
+        with open(_TEST_CONFIGS_PATH, 'r') as f:
+            test_json = json.load(f)
+        test_configs = test_json['configurations']
+
+        config_inst = Configuration(**test_configs)
+        user.last_configuration = config_inst
         user.cascade_save()
 
         self.assertEqual(user.last_configuration.method, 'Li98')
         self.assertEqual(user.last_configuration.grain_size, 8.0)
         self.assertEqual(user.last_configuration.grain_size_type, 'ASTM')
         self.assertEqual(user.last_configuration.nucleation_start, 1.0)
-        self.assertEqual(user.last_configuration.nucleation_finish, 99.99)
+        self.assertEqual(user.last_configuration.nucleation_finish, 99.9)
+        self.assertEqual(user.last_configuration.ms_undercool, 100.0)
+        self.assertEqual(user.last_configuration.start_temp, 900)
+        self.assertEqual(user.last_configuration.cct_cooling_rate, 10)
 
     def test_add_compositions(self):
+        """Test how we can add the compositions as an embedded document."""
         user = User(
             email='eric@shield.gov.us',
             first_name='Eric',
@@ -111,6 +123,37 @@ class TestUserModel(BaseTestCase):
         self.assertEqual(user.last_compositions.comp[0]['weight'], 0.044)
         self.assertEqual(user.last_compositions.comp[1]['name'], 'manganese')
         self.assertEqual(user.last_compositions.comp[1]['weight'], 1.73)
+
+    def test_add_compositions_from_json(self):
+        """Ensure we can loop a JSON-converted dict to create a compositions."""
+        user = User(
+            email='eric@shield.gov.us',
+            first_name='Eric',
+            last_name='Selvig'
+        )
+        user.set_password('BifrostIsReal')
+
+        with open(_TEST_CONFIGS_PATH, 'r') as f:
+            test_json = json.load(f)
+        test_comp = test_json['compositions']
+
+        new_comp_inst = Compositions()
+        for e in test_comp:
+            elem_inst = Element(**e)
+            new_comp_inst.comp.append(elem_inst)
+
+        user.last_compositions = new_comp_inst
+        user.cascade_save()
+
+        self.assertEqual(user.last_compositions.comp[0]['name'], 'carbon')
+        self.assertEqual(user.last_compositions.comp[0]['symbol'], 'cx')
+        self.assertEqual(user.last_compositions.comp[0]['weight'], 0.044)
+        self.assertEqual(user.last_compositions.comp[1]['name'], 'manganese')
+        self.assertEqual(user.last_compositions.comp[1]['symbol'], 'mn')
+        self.assertEqual(user.last_compositions.comp[1]['weight'], 1.73)
+        self.assertEqual(user.last_compositions.comp[2]['name'], 'silicon')
+        self.assertEqual(user.last_compositions.comp[2]['symbol'], 'si')
+        self.assertEqual(user.last_compositions.comp[2]['weight'], 0.22)
 
     def test_email_validation(self):
         user = User(

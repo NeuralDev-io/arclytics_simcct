@@ -137,6 +137,7 @@ def async_register_session(user: User = None,
     # header.
 
     last_configs = {}
+    last_compositions = {'comp': []}
     user_id = ''
 
     if isinstance(user, User):
@@ -148,12 +149,16 @@ def async_register_session(user: User = None,
         if user.last_configuration is not None:
             last_configs = user.last_configuration.to_dict()
 
+        if user.last_compositions is not None:
+            last_compositions['comp'] = user.last_compositions
+
     resp = requests.post(
         url=f'http://{simcct_host}/session',
         json={
             '_id': str(user_id),
             'token': auth_token,
-            'last_configurations': last_configs
+            'last_configurations': last_configs,
+            'last_compositions': last_compositions
         })
     # Because this method is in an async state, we want to know if our request
     # to the other side has failed by raising an exception.

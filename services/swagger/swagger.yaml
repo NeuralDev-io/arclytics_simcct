@@ -670,9 +670,13 @@ components:
             - 0.0
             - 0.0
     Compositions:
-      type: array
-      items:
-        $ref: '#/components/schemas/Element'
+      type: object
+      properties:
+        comp:
+          description: A list of element objects as the composition.
+          type: array
+          items:
+            $ref: '#/components/schemas/Element'
 
 tags:
   - name: Users

@@ -48,34 +48,14 @@ class TestSimConfigurations(BaseTestCase):
         configs = test_json['configurations']
         comp = {'comp': test_json['compositions']}
 
-        users_host = os.environ.get('USERS_HOST')
-        base_url = f'http://{users_host}'
-        login_res = requests.post(
-            f'{base_url}/auth/login',
-            json={
-                "email": "spidey@avengers.io",
-                "password": "PeterTingle!"
-            }
-        )
-        data = login_res.json()
-        token = data['token']
-
-        user_resp = requests.get(
-            f'{base_url}/auth/status',
-            headers={
-                'Content-type': 'application/json',
-                'Authorization': f'Bearer {token}'
-            }
-        )
-        data = user_resp.json()
-        self.assertEqual(data['status'], 'success')
-        user_id = data['data']['_id']
+        token = 'ABCDEFGHIJKLMOPQRSTUVWXYZ123'
+        _id = ObjectId()
 
         sess_res = client.post(
             '/session',
             data=json.dumps(
                 {
-                    '_id': str(user_id),
+                    '_id': str(_id),
                     'last_configurations': configs,
                     'last_compositions': comp
                 }

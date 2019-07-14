@@ -21,19 +21,23 @@ This script is to our CLI script tool to manage the application.
 """
 
 import os
+import json
 import sys
 import unittest
+from pathlib import Path
 
-from flask.cli import FlaskGroup
 import coverage
+from flask.cli import FlaskGroup
+from pymongo import MongoClient
 
 from sim_api import create_app
 
 COV = coverage.coverage(
     branch=True,
     include=[
-        'sim_api/resources/session.py',
-        'sim_api/resources/sim_configurations.py',
+        'sim_api/resources/*',
+        'sim_api/alloys/*',
+        'sim_api/alloys_service.py',
         'sim_api/schemas.py',
         'sim_api/middleware.py',
     ],
@@ -46,8 +50,42 @@ COV = coverage.coverage(
 )
 COV.start()
 
+BASE_DIR = os.path.dirname(os.path.relpath(__file__))
+
 app = create_app()
 cli = FlaskGroup(create_app=create_app)
+
+
+@cli.command('seed_db')
+def seed_alloy_db():
+    client = MongoClient(host=os.environ.get('MONGO_HOST'),
+                         port=int(os.environ.get('MONGO_PORT')))
+    db = client['alloys-dev']
+    path = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+    if os.path.isfile(path):
+        with open(path) as f:
+            data = json.load(f)
+
+    comp = data['compositions']
+
+    from sim_api.schemas import AlloySchema
+    data = AlloySchema().load({'name': 'Alloy-1', 'compositions': comp})
+    db.alloys.insert_one(data)
+    import pprint
+    for alloy in db.alloys.find():
+        pprint.pprint(alloy)
+
+
+@cli.command('flush')
+def flush():
+    client = MongoClient(host=os.environ.get('MONGO_HOST'),
+                         port=int(os.environ.get('MONGO_PORT')))
+    client['arc'].drop_collection('alloys')
+    client['arc-dev'].drop_collection('alloys')
+    client['arc-test'].drop_collection('alloys')
+    client.drop_database('arc')
+    client.drop_database('arc-dev')
+    client.drop_database('arc-test')
 
 
 @cli.command()

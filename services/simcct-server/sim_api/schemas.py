@@ -38,6 +38,12 @@ class ElementSchema(Schema):
     weight = fields.Float(required=True)
 
 
+class AlloySchema(Schema):
+    name = fields.Str(required=True)
+    compositions = fields.List(fields.Nested(ElementSchema), required=True)
+
+
+# TODO(andrew@neuraldev.io -- soon): Change this to Alloy Schema
 class CompositionSchema(Schema):
     comp = fields.List(fields.Nested(ElementSchema), required=True)
 
@@ -101,3 +107,4 @@ class ConfigurationsSchema(Schema):
         #  - RAISE: Raise a validationError if there are any
         # unknown = EXCLUDE
         pass
+

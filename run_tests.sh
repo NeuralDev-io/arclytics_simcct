@@ -29,7 +29,6 @@ simcct-server() {
     echo "# Beginning ${test_type_title} for SimCCT-Server"
     echo ""
     docker-compose exec users-server python manage.py flush
-    docker-compose exec users-server python manage.py seed_db
     if [[ ${tty} == 1 ]]; then
         docker-compose exec -T simcct-server python manage.py "${test_type}"
     else

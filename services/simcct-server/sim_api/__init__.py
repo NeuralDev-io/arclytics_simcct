@@ -36,6 +36,7 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
 from sim_api.resources.session import Session, UsersPing
+from sim_api.resources.alloys import Alloys
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -97,13 +98,13 @@ def create_app(script_info=None) -> Flask:
 
     # Connect to the Mongo Client
     # TODO(andrew@neuraldev.io): Need to set the password in production
-    mongo_client = MongoClient(
-        host=app.config['MONGO_HOST'], port=int(app.config['MONGO_PORT'])
-    )
-    try:
-        mongo_client.admin.command('ismaster')
-    except ConnectionFailure as e:
-        print('[DEBUG] Unable to Connect to MongoDB')
+    # mongo_client = MongoClient(
+    #     host=app.config['MONGO_HOST'], port=int(app.config['MONGO_PORT'])
+    # )
+    # try:
+    #     mongo_client.admin.command('ismaster')
+    # except ConnectionFailure as e:
+    #     print('[DEBUG] Unable to Connect to MongoDB')
 
     # Redis Client
     # TODO(andrew@neuraldev.io): Need to set the password in production
@@ -131,10 +132,13 @@ def create_app(script_info=None) -> Flask:
     app.register_blueprint(session_blueprint)
     from sim_api.resources.sim_configurations import configs_blueprint
     app.register_blueprint(configs_blueprint)
+    from sim_api.resources.alloys import alloys_blueprint
+    app.register_blueprint(alloys_blueprint)
 
     # ========== # API ROUTES # ========== #
     api.add_resource(Session, '/session')
     api.add_resource(UsersPing, '/users/ping')
+    api.add_resource(Alloys, '/alloys')
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects

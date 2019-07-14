@@ -91,7 +91,7 @@ def seed_user_db():
     from mongoengine.connection import get_db
     db = get_db('default')
 
-    path = Path(BASE_DIR) / 'data' / 'seed_user_data.json'
+    path = Path(BASE_DIR) / 'seed_user_data.json'
     if os.path.isfile(path):
         with open(path) as f:
             data = json.load(f)

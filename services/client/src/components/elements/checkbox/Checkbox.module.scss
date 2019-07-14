@@ -5,6 +5,7 @@
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
+  position: relative;
 
   // hide default checkbox
   input[type="checkbox"] {

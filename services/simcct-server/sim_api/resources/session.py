@@ -28,15 +28,16 @@ from flask import Blueprint, session, request
 from flask_restful import Resource
 from bson import ObjectId
 
-from sim_api.schemas import (
-    ConfigurationsSchema, CompositionSchema, ElementSchema
-)
+from sim_api.schemas import (ConfigurationsSchema, CompositionSchema)
+from sim_api.middleware import token_required_restful
 
 session_blueprint = Blueprint('session', __name__)
 
 
 class Session(Resource):
-    def post(self):
+    method_decorators = {'post': [token_required_restful]}
+
+    def post(self, token):
         post_data = request.get_json()
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}
@@ -45,16 +46,11 @@ class Session(Resource):
             return response, 400
 
         user_id = post_data.get('_id', None)
-        token = post_data.get('token', None)
         user_configs = post_data.get('last_configurations', None)
         user_comp = post_data.get('last_compositions', None)
 
-        if not user_id:
+        if not ObjectId.is_valid(user_id):
             response['message'] = 'User ObjectId must be provided.'
-            return response, 401
-
-        if not token:
-            response['message'] = 'JWT token must be provided.'
             return response, 401
 
         # TODO(andrew@neuraldev.io): Need to do some validation for some fields

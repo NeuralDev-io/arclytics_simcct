@@ -28,40 +28,43 @@ from flask import Blueprint, session, request, jsonify
 from marshmallow import ValidationError
 
 from sim_api.schemas import CompositionSchema
-from simulation.simconfiguration import SimConfiguration
+from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
+from sim_api.middleware import token_required
 
-configs_blueprint = Blueprint('configurations', __name__)
+configs_blueprint = Blueprint('configs', __name__)
 
 
 @configs_blueprint.route(rule='/configs/method/update', methods=['POST'])
-def method_change():
-    post_data = request.get_json()
+@token_required
+def method_change(token):
+    """This POST endpoint simply updates the `method` for CCT and TTT
+    calculations
+    in the session store
 
+    Args:
+        token: a valid JWT token.
+
+    Returns:
+        A response object with appropriate status and message strings.
+    """
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+    post_data = request.get_json()
     if not post_data:
         return jsonify(response), 400
-
-    # Extract the needed request data
-    auth_header = request.headers.get('Authorization', None)
-
-    if not auth_header:
-        response['message'] = 'You must provide a valid Authorization header.'
-        return jsonify(response), 401
-
-    token = auth_header.split(' ')[1]
-
     # Extract the method from the post request body
-    method = post_data['method']
+    method = post_data.get('method', None)
 
     if not method:
         response['message'] = 'No method was provided.'
         return jsonify(response), 400
 
     if not method == Method.Li98.name and not method == Method.Kirkaldy83.name:
-        response['message'] = ('Invalid method provided (must be Li98 or '
-                               'Kirkaldy83).')
+        response['message'] = (
+            'Invalid method provided (must be Li98 or '
+            'Kirkaldy83).'
+        )
         return jsonify(response), 400
 
     session_configs = session.get(f'{token}:configurations')
@@ -70,9 +73,8 @@ def method_change():
         response['message'] = 'No previous session configurations was set.'
         return jsonify(response), 404
 
-    if method == 'Li98':
-        session_configs['method'] = Method.Li98.name
-    elif method == 'Kirkaldy83':
+    session_configs['method'] = Method.Li98.name
+    if method == 'Kirkaldy83':
         session_configs['method'] = Method.Kirkaldy83.name
 
     response['status'] = 'success'
@@ -81,33 +83,24 @@ def method_change():
 
 
 @configs_blueprint.route(rule='/configs/comp/update', methods=['POST'])
-def composition_change():
-    # - Combined method for changing the sessions compositions
-    # - Check if the compositions are valid
-    # -
-    # - Check if auto calculate is selected for ms_bs, ae, or xfe
-    # - Compute for the calculations that auto_calculate_x is True
-    # - Save the value to session store.
-    # - Return the values
+@token_required
+def composition_change(token):
+    """This POST endpoint simply updates the `compositions` in the session
+    store so that we can update all the other methods.
 
-    post_data = request.get_json()
+    Args:
+        token: a valid JWT token.
 
+    Returns:
+        A response object with appropriate status and message strings.
+    """
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+    post_data = request.get_json()
     if not post_data:
         return jsonify(response), 400
-
-    # Extract the needed request data
-    auth_header = request.headers.get('Authorization', None)
-
-    if not auth_header:
-        response['message'] = 'You must provide a valid Authorization header.'
-        return jsonify(response), 401
-
-    token = auth_header.split(' ')[1]
-
     # Extract the method from the post request body
-    comp = post_data['compositions']
+    comp = post_data.get('compositions', None)
 
     if not comp:
         response['message'] = 'No composition list was provided.'
@@ -122,43 +115,107 @@ def composition_change():
 
     session[f'{token}:compositions'] = comp_obj
 
+    # TODO: Update the MS/BS, Ae, and Xfe values if the auto calculate is True
+    session_configs = session.get(f'{token}:configurations')
+
+    # Well, if we don't need to auto calculate anything, let's get out of here
+    if (
+        not session_configs['auto_calculate_ms_bs']
+        and not session_configs['auto_calculate_ae']
+        and not session_configs['auto_calculate_xfe']
+    ):
+        response['status'] = 'success'
+        response['message'] = 'Compositions updated.'
+        return jsonify(response), 200
+
+    comp_list = session.get(f'{token}:compositions')['comp']
+    comp_np_arr = SimConfig.get_compositions(comp_list)
+
+    # We need to store some results so let's prepare an empty dict
+    response['message'] = 'Compositions and other values updated.'
+    response['data'] = {}
+
+    if session_configs['auto_calculate_ms_bs']:
+        # We need to convert them to our enums as required by the calculations.
+        _transformation_method = Method.Li98
+        if session_configs['transformation_method'] == 'Kirkaldy83':
+            _transformation_method = Method.Kirkaldy83
+
+        ms_temp = SimConfig.get_ms(_transformation_method, comp=comp_np_arr)
+        bs_temp = SimConfig.get_bs(_transformation_method, comp=comp_np_arr)
+
+        session_configs['auto_calculate_ms_bs'] = True
+        session_configs['ms_temp'] = ms_temp
+        session_configs['bs_temp'] = bs_temp
+        response['data']['ms_temp'] = ms_temp
+        response['data']['bs_temp'] = bs_temp
+
+    if session_configs['auto_calculate_ae']:
+        ae1, ae3 = SimConfig.calc_ae1_ae3(comp_np_arr)
+
+        session_configs['auto_calculate_ae'] = True
+        session_configs['ae1_temp'] = ae1
+        session_configs['ae3_temp'] = ae3
+        response['data']['ae1_temp'] = ae1
+        response['data']['ae3_temp'] = ae3
+
+    if session_configs['auto_calculate_xfe']:
+        ae1_temp = np.float64(session_configs['ae1_temp'])
+        if ae1_temp <= 0:
+            response['message'] = (
+                'Ae1 must be more than zero to find the '
+                'Equilibrium Phase Fraction.'
+            )
+            return jsonify(response), 400
+
+        cf = np.float32(session_configs['cf_value'])
+        xfe, ceut = SimConfig.xfe_method2(comp_np_arr, ae1_temp, cf)
+
+        session_configs['auto_calculate_xfe'] = True
+        session_configs['xfe_value'] = xfe
+        session_configs['ceut_value'] = ceut
+        response['data']['xfe_value'] = xfe
+        response['data']['ceut_value'] = ceut
+        response['data']['cf_value'] = float(cf)
+
+    session[f'{token}:compositions'] = session_configs
+
     response['status'] = 'success'
-    response['message'] = 'Compositions updated.'
     return jsonify(response), 200
 
 
 @configs_blueprint.route(rule='/configs/auto/ms-bs', methods=['POST'])
-def auto_calculate_ms_bs():
+@token_required
+def auto_calculate_ms_bs(token):
+    """This POST endpoint auto calculates the `MS` and `BS` as the user has
+    selected the auto calculate feature without the need for sending the
+    compositions as they are already stored in the session store.
+
+    Args:
+        token: a valid JWT token.
+
+    Returns:
+        A response object with appropriate status and message strings as well
+        as the calculated MS and BS temperatures.
+    """
+
     # - If user has logged in first time, then this endpoint should not be
     #   possible as they have no compositions.
     #   * Need to do the validation checks for this.
-    #
-    # - If they have a session store of compositions, use that.
-    # - Check if the compositions has valid elements required.
-    # - Compute the MS and BS
-    # - Update the MS and BS for session store
-    # - Return the values
-
-    # Get the post data
-    post_data = request.get_json()
 
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+    post_data = request.get_json()
     if not post_data:
         return jsonify(response), 400
 
-    # Extract the needed request data
-    auth_header = request.headers.get('Authorization', None)
-
-    if not auth_header:
-        response['message'] = 'You must provide a valid Authorization header.'
-        return jsonify(response), 401
-
-    token = auth_header.split(' ')[1]
-
     # Let's do some validation of those arguments we really need.
-    _auto_calc_ms_bs = post_data['auto_calculate_ms_bs']
-    _post_trans_method = post_data['transformation_method']
+    _auto_calc_ms_bs = post_data.get('auto_calculate_ms_bs', None)
+    _post_trans_method = post_data.get('transformation_method', None)
+
+    if not _auto_calc_ms_bs:
+        response['message'] = 'Post data auto calculate for MS or BS is false.'
+        return jsonify(response), 400
 
     # Ensure we have the transformation method to use for MS/BS Calculations
     if not _post_trans_method:
@@ -166,29 +223,20 @@ def auto_calculate_ms_bs():
         return jsonify(response), 400
 
     # We need to convert them to our enums as required by the calculations.
-    _transformation_method = None
-    if _post_trans_method == 'Li98':
-        _transformation_method = Method.Li98
-    elif _post_trans_method == 'Kirkaldy83':
+    _transformation_method = Method.Li98
+    if _post_trans_method == 'Kirkaldy83':
         _transformation_method = Method.Kirkaldy83
 
     session_configs = session.get(f'{token}:configurations')
 
-    if not _auto_calc_ms_bs:
-        response['message'] = 'Auto calculate for MS or BS is false.'
-        return jsonify(response), 400
-
     session_configs['auto_calculate_ms_bs'] = True
+    session_configs['transformation_method'] = _transformation_method.name
 
     comp_list = session.get(f'{token}:compositions')['comp']
-    comp_np_arr = SimConfiguration.get_compositions(comp_list)
+    comp_np_arr = SimConfig.get_compositions(comp_list)
 
-    ms_temp = SimConfiguration.get_ms(
-        method=_transformation_method, comp=comp_np_arr
-    )
-    bs_temp = SimConfiguration.get_bs(
-        method=_transformation_method, comp=comp_np_arr
-    )
+    ms_temp = SimConfig.get_ms(method=_transformation_method, comp=comp_np_arr)
+    bs_temp = SimConfig.get_bs(method=_transformation_method, comp=comp_np_arr)
 
     if ms_temp == -1 or bs_temp == -1:
         response['message'] = (
@@ -200,6 +248,7 @@ def auto_calculate_ms_bs():
     # Save the new calculated BS and MS to the Session store
     session_configs['ms_temp'] = ms_temp
     session_configs['bs_temp'] = bs_temp
+    session[f'{token}:configurations'] = session_configs
 
     response['status'] = 'success'
     response.pop('message')
@@ -209,53 +258,48 @@ def auto_calculate_ms_bs():
 
 
 @configs_blueprint.route(rule='/configs/auto/ae', methods=['POST'])
-def auto_calculate_ae():
+@token_required
+def auto_calculate_ae(token):
+    """This POST endpoint auto calculates the `Ae1` and `Ae3` as the user has
+    selected the auto calculate feature without the need for sending the
+    compositions as they are already stored in the session store.
+
+    Args:
+        token: a valid JWT token.
+
+    Returns:
+        A response object with appropriate status and message strings as
+        well as the calculated Ae1 and Ae3 temperatures.
+    """
     # - If user has logged in first time, then this endpoint should not be
     #   possible as they have no compositions.
     #   * Need to do the validation checks for this.
-    #
-    # - If they have a session store of compositions, use that.
-    # - Check if the compositions has valid elements required.
-    # - Compute the xfe (and others) values
-    # - Update the xfe (and others) values for session store
-    # - Return the values
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
 
     # Get the post data
     post_data = request.get_json()
-
-    response = {'status': 'fail', 'message': 'Invalid payload.'}
-
     if not post_data:
         return jsonify(response), 400
 
-    # Extract the needed request data
-    auth_header = request.headers.get('Authorization', None)
-
-    if not auth_header:
-        response['message'] = 'You must provide a valid Authorization header.'
-        return jsonify(response), 401
-
-    token = auth_header.split(' ')[1]
-
     # Let's do some validation of those arguments we really need.
-    _auto_calc_ae = post_data['auto_calculate_ae']
-
-    session_configs = session.get(f'{token}:configurations')
+    _auto_calc_ae = post_data.get('auto_calculate_ae', None)
 
     if not _auto_calc_ae:
         response['message'] = 'Auto calculate for Austenite is false.'
         return jsonify(response), 400
 
+    session_configs = session.get(f'{token}:configurations')
     session_configs['auto_calculate_ae'] = True
 
     comp_list = session.get(f'{token}:compositions')['comp']
-    comp_np_arr = SimConfiguration.get_compositions(comp_list)
+    comp_np_arr = SimConfig.get_compositions(comp_list)
 
-    ae1, ae3 = SimConfiguration.calc_ae1_ae3(comp_np_arr)
+    ae1, ae3 = SimConfig.calc_ae1_ae3(comp_np_arr)
 
     # Save the new calculated Ae1 and Ae3 to the Session store
     session_configs['ae1_temp'] = ae1
     session_configs['ae3_temp'] = ae3
+    session[f'{token}:configurations'] = session_configs
 
     response['status'] = 'success'
     response.pop('message')
@@ -265,36 +309,31 @@ def auto_calculate_ae():
 
 
 @configs_blueprint.route(rule='/configs/auto/xfe', methods=['POST'])
-def auto_calculate_xfe():
+@token_required
+def auto_calculate_xfe(token):
+    """This POST endpoint auto calculates the `Xfe` and `Ceut` as the user has
+    selected the auto calculate feature without the need for sending the
+    compositions as they are already stored in the session store.
+
+    Args:
+        token: a valid JWT token.
+
+    Returns:
+        A response object with appropriate status and message strings as
+        well as the calculated Xfe, Ceut and Cf values.
+    """
     # - If user has logged in first time, then this endpoint should not be
     #   possible as they have no compositions.
     #   * Need to do the validation checks for this.
-    #
-    # - If they have a session store of compositions, use that.
-    # - Check if the compositions has valid elements required.
-    # - Compute the Ae1 and Ae3
-    # - Update the Ae1 and Ae3 for session store
-    # - Return the values
-
-    # Get the post data
-    post_data = request.get_json()
 
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+    post_data = request.get_json()
     if not post_data:
         return jsonify(response), 400
 
-    # Extract the needed request data
-    auth_header = request.headers.get('Authorization', None)
-
-    if not auth_header:
-        response['message'] = 'You must provide a valid Authorization header.'
-        return jsonify(response), 401
-
-    token = auth_header.split(' ')[1]
-
     # Let's do some validation of those arguments we really need.
-    _auto_calc_xfe = post_data['auto_calculate_xfe']
+    _auto_calc_xfe = post_data.get('auto_calculate_xfe', None)
 
     if not _auto_calc_xfe:
         response['message'] = 'Auto calculate for Equilibrium Phase is false.'
@@ -304,7 +343,7 @@ def auto_calculate_xfe():
     session_configs['auto_calculate_xfe'] = True
 
     comp_list = session.get(f'{token}:compositions')['comp']
-    comp_np_arr = SimConfiguration.get_compositions(comp_list)
+    comp_np_arr = SimConfig.get_compositions(comp_list)
 
     # TODO(andrew@neuraldev.io): We need to do an Ae check here because this
     #  requires the use of Ae1 to get ceut. No ae_check bool is currently set
@@ -319,11 +358,12 @@ def auto_calculate_xfe():
 
     cf = np.float32(session_configs['cf_value'])
 
-    xfe, ceut = SimConfiguration.xfe_method2(comp_np_arr, ae1_temp, cf)
+    xfe, ceut = SimConfig.xfe_method2(comp_np_arr, ae1_temp, cf)
 
     # Save the new calculated Xfe and Ceut to the Session store
     session_configs['xfe_value'] = xfe
     session_configs['ceut_value'] = ceut
+    session[f'{token}:configurations'] = session_configs
 
     response['status'] = 'success'
     response.pop('message')

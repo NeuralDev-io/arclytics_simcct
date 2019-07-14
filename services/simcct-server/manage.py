@@ -33,14 +33,14 @@ COV = coverage.coverage(
     branch=True,
     include=[
         'sim_api/resources/session.py',
+        'sim_api/resources/sim_configurations.py',
         'sim_api/schemas.py',
+        'sim_api/middleware.py',
     ],
     omit=[
         'sim_api/__init__.py'
         'tests/*',
         'configs/*',
-        'data/*',
-        'logger/*',
         'logs/*',
     ]
 )

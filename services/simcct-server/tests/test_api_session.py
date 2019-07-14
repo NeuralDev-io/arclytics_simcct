@@ -86,15 +86,74 @@ class TestSessionService(BaseTestCase):
                 data=json.dumps(
                     {
                         '_id': user_id,
-                        'token': token,
                         'last_configurations': test_json['configurations']
                     }
                 ),
+                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(login_res.data.decode())
             self.assertTrue(data['status'] == 'success')
             self.assertEqual(data['message'], 'User session initiated.')
+
+    def test_login_session_empty_post_data(self):
+        with self.app.test_client() as client:
+
+            login_res = client.post(
+                '/session',
+                data=json.dumps({}),
+                headers={'Authorization': f'Bearer JustATest!'},
+                content_type='application/json'
+            )
+            data = json.loads(login_res.data.decode())
+            self.assertTrue(data['status'] == 'fail')
+            self.assertEqual(data['message'], 'Invalid payload.')
+            self.assert400(login_res)
+
+    def test_login_session_no_user_id(self):
+        with self.app.test_client() as client:
+            token = 'TESTTESTTEST!'
+            login_res = client.post(
+                '/session',
+                data=json.dumps({'token': 'ThisWontBeRead'}),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(login_res.data.decode())
+            self.assertTrue(data['status'] == 'fail')
+            self.assertEqual(
+                data['message'], 'User ObjectId must be provided.'
+            )
+            self.assert401(login_res)
+
+    def test_login_session_invalid_objectid_user_id(self):
+        with self.app.test_client() as client:
+            login_res = client.post(
+                '/session',
+                data=json.dumps({'_id': 'NotAValidObjectIdType'}),
+                headers={'Authorization': f'Bearer JustATest!'},
+                content_type='application/json'
+            )
+            data = json.loads(login_res.data.decode())
+            self.assertTrue(data['status'] == 'fail')
+            self.assertEqual(
+                data['message'], 'User ObjectId must be provided.'
+            )
+            self.assert401(login_res)
+
+    def test_login_session_no_token(self):
+        with self.app.test_client() as client:
+            _id = ObjectId()
+            login_res = client.post(
+                '/session',
+                data=json.dumps({'_id': str(_id)}),
+                headers={'Authorization': f'Bearer '},
+                content_type='application/json'
+            )
+            data = json.loads(login_res.data.decode())
+            self.assertTrue(data['status'] == 'fail')
+            self.assertEqual(data['message'], 'Invalid JWT token in header.')
+            self.assert401(login_res)
 
     def test_login_user_with_no_configurations(self):
         """Ensure that if the user logged in without configurations it defaults
@@ -107,8 +166,8 @@ class TestSessionService(BaseTestCase):
                 '/session',
                 data=json.dumps({
                     '_id': str(_id),
-                    'token': token,
                 }),
+                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(login_res.data.decode())
@@ -153,13 +212,13 @@ class TestSessionService(BaseTestCase):
                 data=json.dumps(
                     {
                         '_id': str(_id),
-                        'token': token,
                         'last_configurations': configs,
                         'last_compositions': {
                             'comp': []
                         }
                     }
                 ),
+                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(login_res.data.decode())
@@ -193,6 +252,7 @@ class TestSessionService(BaseTestCase):
                         }
                     }
                 ),
+                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(login_res.data.decode())

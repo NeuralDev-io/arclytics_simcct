@@ -34,5 +34,11 @@
         "password": "BowAndArrows",
         "first_name": "Clint",
         "last_name": "Barton"
+    },
+    {
+        "email": "spidey@avengers.io",
+        "password": "PeterTingle!",
+        "first_name": "Peter",
+        "last_name": "Parker"
     }
 ]

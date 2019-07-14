@@ -5,6 +5,8 @@
 #
 # Attributions:
 # [1]
+# TODO:
+#  - Write a middleware token_required() decorator method to refactor.
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
@@ -23,22 +25,62 @@ configurations for the main simulations page.
 import numpy as np
 
 from flask import Blueprint, session, request, jsonify
+from marshmallow import ValidationError
 
+from sim_api.schemas import CompositionSchema
 from simulation.simconfiguration import SimConfiguration
 from simulation.utilities import Method
 
-configurations_blueprint = Blueprint('configurations', __name__)
+configs_blueprint = Blueprint('configurations', __name__)
 
 
-@configurations_blueprint.route(
-    rule='/configs/method/update', methods=['POST']
-)
+@configs_blueprint.route(rule='/configs/method/update', methods=['POST'])
 def method_change():
-    # Just change the session store method.
-    pass
+    post_data = request.get_json()
+
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    if not post_data:
+        return jsonify(response), 400
+
+    # Extract the needed request data
+    auth_header = request.headers.get('Authorization', None)
+
+    if not auth_header:
+        response['message'] = 'You must provide a valid Authorization header.'
+        return jsonify(response), 401
+
+    token = auth_header.split(' ')[1]
+
+    # Extract the method from the post request body
+    method = post_data['method']
+
+    if not method:
+        response['message'] = 'No method was provided.'
+        return jsonify(response), 400
+
+    if not method == Method.Li98.name and not method == Method.Kirkaldy83.name:
+        response['message'] = ('Invalid method provided (must be Li98 or '
+                               'Kirkaldy83).')
+        return jsonify(response), 400
+
+    session_configs = session.get(f'{token}:configurations')
+
+    if session_configs is None:
+        response['message'] = 'No previous session configurations was set.'
+        return jsonify(response), 404
+
+    if method == 'Li98':
+        session_configs['method'] = Method.Li98.name
+    elif method == 'Kirkaldy83':
+        session_configs['method'] = Method.Kirkaldy83.name
+
+    response['status'] = 'success'
+    response['message'] = f'Changed to {method} method.'
+    return jsonify(response), 200
 
 
-@configurations_blueprint.route(rule='/configs/comp/update', methods=['POST'])
+@configs_blueprint.route(rule='/configs/comp/update', methods=['POST'])
 def composition_change():
     # - Combined method for changing the sessions compositions
     # - Check if the compositions are valid
@@ -48,10 +90,44 @@ def composition_change():
     # - Save the value to session store.
     # - Return the values
 
-    pass
+    post_data = request.get_json()
+
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    if not post_data:
+        return jsonify(response), 400
+
+    # Extract the needed request data
+    auth_header = request.headers.get('Authorization', None)
+
+    if not auth_header:
+        response['message'] = 'You must provide a valid Authorization header.'
+        return jsonify(response), 401
+
+    token = auth_header.split(' ')[1]
+
+    # Extract the method from the post request body
+    comp = post_data['compositions']
+
+    if not comp:
+        response['message'] = 'No composition list was provided.'
+        return jsonify(response), 400
+
+    try:
+        comp_obj = CompositionSchema().load(comp)
+    except ValidationError as e:
+        response['errors'] = e.messages
+        response['bad_data'] = e.data
+        return jsonify(response), 400
+
+    session[f'{token}:compositions'] = comp_obj
+
+    response['status'] = 'success'
+    response['message'] = 'Compositions updated.'
+    return jsonify(response), 200
 
 
-@configurations_blueprint.route(rule='/configs/auto/ms-bs', methods=['POST'])
+@configs_blueprint.route(rule='/configs/auto/ms-bs', methods=['POST'])
 def auto_calculate_ms_bs():
     # - If user has logged in first time, then this endpoint should not be
     #   possible as they have no compositions.
@@ -76,7 +152,7 @@ def auto_calculate_ms_bs():
 
     if not auth_header:
         response['message'] = 'You must provide a valid Authorization header.'
-        return jsonify(response), 400
+        return jsonify(response), 401
 
     token = auth_header.split(' ')[1]
 
@@ -119,7 +195,7 @@ def auto_calculate_ms_bs():
             'Something went wrong with the MS and BS '
             'calculations'
         )
-        return jsonify(response), 400
+        return jsonify(response), 418
 
     # Save the new calculated BS and MS to the Session store
     session_configs['ms_temp'] = ms_temp
@@ -132,7 +208,7 @@ def auto_calculate_ms_bs():
     return jsonify(response), 200
 
 
-@configurations_blueprint.route(rule='/configs/auto/ae', methods=['POST'])
+@configs_blueprint.route(rule='/configs/auto/ae', methods=['POST'])
 def auto_calculate_ae():
     # - If user has logged in first time, then this endpoint should not be
     #   possible as they have no compositions.
@@ -157,7 +233,7 @@ def auto_calculate_ae():
 
     if not auth_header:
         response['message'] = 'You must provide a valid Authorization header.'
-        return jsonify(response), 400
+        return jsonify(response), 401
 
     token = auth_header.split(' ')[1]
 
@@ -188,7 +264,7 @@ def auto_calculate_ae():
     return jsonify(response), 200
 
 
-@configurations_blueprint.route(rule='/configs/auto/xfe', methods=['POST'])
+@configs_blueprint.route(rule='/configs/auto/xfe', methods=['POST'])
 def auto_calculate_xfe():
     # - If user has logged in first time, then this endpoint should not be
     #   possible as they have no compositions.
@@ -213,7 +289,7 @@ def auto_calculate_xfe():
 
     if not auth_header:
         response['message'] = 'You must provide a valid Authorization header.'
-        return jsonify(response), 400
+        return jsonify(response), 401
 
     token = auth_header.split(' ')[1]
 

@@ -113,6 +113,7 @@ class Session(Resource):
                 comp_obj = CompositionSchema().load(user_comp)
             except ValidationError as e:
                 response['errors'] = e
+                return response, 400
 
         session[f'{session.sid}:user'] = user_id
         session[f'{session.sid}:token'] = token

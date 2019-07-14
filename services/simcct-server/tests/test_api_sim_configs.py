@@ -36,34 +36,62 @@ _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 class TestSimConfigurations(BaseTestCase):
 
     # NOTE:
-    #  - We can treat the session stores of the compositions as always being
-    #    the one that's displayed on the Client UI.
-    #  - We may be able to do the same as above for configurations.
+    #  - We can treat the session stores of the compositions and configurations
+    #    as always being the one that's displayed on the Client UI.
 
-    def test_on_compositions_change(self):
-        # 1. Pass all compositions?
+    def login_client(self, client):
         with open(_TEST_CONFIGS_PATH, 'r') as f:
             test_json = json.load(f)
 
+        configs = test_json['configurations']
         comp = {'comp': test_json['compositions']}
+        _id = ObjectId()
         token = 'ThisIsATestToken'
 
-        # with app.test_client() as client:
-        #     res = client.post(
-        #         '/configs/comp/update',
-        #         data=json.dumps({
-        #             'token': token,
-        #             'compositions': comp
-        #         }),
-        #         content_type='application/json'
-        #     )
-        #     data = json.loads(res.data.decode())
-        #     print(data)
+        sess_res = client.post(
+            '/session',
+            data=json.dumps(
+                {
+                    '_id': str(_id),
+                    'token': token,
+                    'last_configurations': configs,
+                    'last_compositions': comp
+                }
+            ),
+            content_type='application/json'
+        )
+        data = json.loads(sess_res.data.decode())
+        session_store = session.get(f'{token}:compositions')
+        self.assertEqual(data['status'], 'success')
+        self.assertTrue(sess_res.status_code == 201)
+        self.assertEqual(comp, session_store)
 
-    def test_auto_update_ms_bs(self):
-        """Ensure we get the correct calculations for MS and BS given the
-        testing configs and the testing compositions.
-        """
+        return configs, comp, token
+
+    def test_on_compositions_change(self):
+        """Ensure if we update the compositions it changes in session store."""
+        with current_app.test_client() as client:
+            configs, comp, token = self.login_client(client)
+
+            new_comp = comp
+            new_comp['comp'][0]['weight'] = 0.050
+
+            res = client.post(
+                '/configs/comp/update',
+                data=json.dumps({'compositions': new_comp}),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+
+            self.assertEqual(data['message'], 'Compositions updated.')
+            self.assert200(res)
+            self.assertEqual(data['status'], 'success')
+            session_comp = session.get(f'{token}:compositions')
+            self.assertEqual(session_comp, new_comp)
+
+    def test_on_compositions_change_invalid_comp_schema(self):
+        """Ensure if we send a bad compositions schema we get errors."""
         with open(_TEST_CONFIGS_PATH, 'r') as f:
             test_json = json.load(f)
 
@@ -78,7 +106,7 @@ class TestSimConfigurations(BaseTestCase):
                 data=json.dumps(
                     {
                         '_id': str(_id),
-                        'token': str(token),
+                        'token': token,
                         'last_configurations': configs,
                         'last_compositions': comp
                     }
@@ -86,8 +114,71 @@ class TestSimConfigurations(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(sess_res.data.decode())
+            session_store = session.get(f'{token}:compositions')
             self.assertEqual(data['status'], 'success')
             self.assertTrue(sess_res.status_code == 201)
+            self.assertEqual(comp, session_store)
+
+            new_comp = comp
+            new_comp['comp'][0]['weight'] = 0.050
+
+            res = client.post(
+                '/configs/comp/update',
+                data=json.dumps({'compositions': {'comp': new_comp}}),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+
+            self.assertEqual(data['message'], 'Invalid payload.')
+            self.assert400(res)
+            self.assertEqual(data['status'], 'fail')
+            self.assertTrue(data['errors'])
+            self.assertTrue(data['bad_data'])
+            session_comp = session.get(f'{token}:compositions')
+            self.assertNotEqual(session_comp, new_comp)
+
+    def test_on_method_change(self):
+        """Ensure we can change the method in the session store."""
+        with current_app.test_client() as client:
+            configs, comp, token = self.login_client(client)
+
+            method = 'Kirkaldy83'
+            res = client.post(
+                '/configs/method/update',
+                data=json.dumps({'method': method}),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+
+            session_store = session.get(f'{token}:configurations')
+            self.assertEqual(data['message'], f'Changed to {method} method.')
+            self.assertEqual(data['status'], 'success')
+            self.assert200(res)
+            self.assertEqual(session_store['method'], 'Kirkaldy83')
+
+            method = 'Li98'
+            res = client.post(
+                '/configs/method/update',
+                data=json.dumps({'method': method}),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+
+            session_store = session.get(f'{token}:configurations')
+            self.assertEqual(data['message'], f'Changed to {method} method.')
+            self.assertEqual(data['status'], 'success')
+            self.assert200(res)
+            self.assertEqual(session_store['method'], method)
+
+    def test_auto_update_ms_bs(self):
+        """Ensure we get the correct calculations for MS and BS given the
+        testing configs and the testing compositions.
+        """
+        with current_app.test_client() as client:
+            configs, comp, token = self.login_client(client)
 
             res = client.post(
                 '/configs/auto/ms-bs',
@@ -117,30 +208,8 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure we get the correct calculations for Ae1 and Ae3 given the
         testing configs and the testing compositions.
         """
-        with open(_TEST_CONFIGS_PATH, 'r') as f:
-            test_json = json.load(f)
-
-        configs = test_json['configurations']
-        comp = {'comp': test_json['compositions']}
-        _id = ObjectId()
-        token = 'ThisIsATestToken'
-
         with current_app.test_client() as client:
-            sess_res = client.post(
-                '/session',
-                data=json.dumps(
-                    {
-                        '_id': str(_id),
-                        'token': str(token),
-                        'last_configurations': configs,
-                        'last_compositions': comp
-                    }
-                ),
-                content_type='application/json'
-            )
-            data = json.loads(sess_res.data.decode())
-            self.assertEqual(data['status'], 'success')
-            self.assertTrue(sess_res.status_code == 201)
+            configs, comp, token = self.login_client(client)
 
             res = client.post(
                 '/configs/auto/ae',
@@ -166,30 +235,8 @@ class TestSimConfigurations(BaseTestCase):
             self.assertAlmostEqual(ae3, 845.83796118539999, 8)
 
     def test_auto_update_xfe_bad_ae1(self):
-        with open(_TEST_CONFIGS_PATH, 'r') as f:
-            test_json = json.load(f)
-
-        configs = test_json['configurations']
-        comp = {'comp': test_json['compositions']}
-        _id = ObjectId()
-        token = 'ThisIsATestToken'
-
         with current_app.test_client() as client:
-            sess_res = client.post(
-                '/session',
-                data=json.dumps(
-                    {
-                        '_id': str(_id),
-                        'token': str(token),
-                        'last_configurations': configs,
-                        'last_compositions': comp
-                    }
-                ),
-                content_type='application/json'
-            )
-            data = json.loads(sess_res.data.decode())
-            self.assertEqual(data['status'], 'success')
-            self.assertTrue(sess_res.status_code == 201)
+            configs, comp, token = self.login_client(client)
 
             res = client.post(
                 '/configs/auto/xfe',
@@ -215,31 +262,8 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure we get the correct calculations for Xfe given the testing
         configs and the testing compositions.
         """
-        with open(_TEST_CONFIGS_PATH, 'r') as f:
-            test_json = json.load(f)
-
-        configs = test_json['configurations']
-        comp = {'comp': test_json['compositions']}
-        _id = ObjectId()
-        token = 'ThisIsATestToken'
-
         with current_app.test_client() as client:
-            sess_res = client.post(
-                '/session',
-                data=json.dumps(
-                    {
-                        '_id': str(_id),
-                        'token': str(token),
-                        'last_configurations': configs,
-                        'last_compositions': comp
-                    }
-                ),
-                content_type='application/json'
-            )
-            data = json.loads(sess_res.data.decode())
-            self.assertEqual(data['status'], 'success')
-            self.assertTrue(sess_res.status_code == 201)
-
+            configs, comp, token = self.login_client(client)
             # We need to update Ae1 and Ae3 first before we can properly get
             # the results for Xfe
             res = client.post(

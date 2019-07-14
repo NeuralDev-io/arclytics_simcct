@@ -7,42 +7,42 @@ $font-primary: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Robo
 $font-secondary: "Quicksand" $font-primary;
 
 /* set base values */
-$base-text-size: .875em;
-$base-line-height: 1.25em;
-$base-letter-spacing: .025em;
+$base-text-size: .875rem;
+$base-line-height: 1.25rem;
+$base-letter-spacing: .025rem;
 
 /* type scale */
-$text-sub2: .6875em;
-$text-sub1: 1em;
+$text-sub2: .6875rem;
+$text-sub1: 1rem;
 $text-h6: $base-text-size;
-$text-h5: 1.125em;
-$text-h4: 1.375em;
-$text-h3: 1.6875em;
-$text-h2: 2.215em;
-$text-h1: 2.6875em;
+$text-h5: 1.125rem;
+$text-h4: 1.375rem;
+$text-h3: 1.6875rem;
+$text-h2: 2.215rem;
+$text-h1: 2.6875rem;
 $text-btn: $base-text-size;
 
 /* line spacing */
-$line-height-h1: 3.375em;
+$line-height-h1: 3.375rem;
 $line-height-h2: $text-h1;
 $line-height-h3: $text-h2;
 $line-height-h4: $text-h3;
 $line-height-h5: $text-h4;
 $line-height-h6: $base-line-height;
-$line-height-sub1: 1.375em;
-$line-height-sub2: 1em;
+$line-height-sub1: 1.375rem;
+$line-height-sub2: 1rem;
 $line-height-btn: $base-line-height;
 
 /* letter spacing */
-$letter-spacing-h1: .025em;
-$letter-spacing-h2: .02em;
-$letter-spacing-h3: -.005em;
-$letter-spacing-h4: 0em;
-$letter-spacing-h5: .015em;
-$letter-spacing-h6: .025em;
-$letter-spacing-sub1: .02em;
-$letter-spacing-sub2: .045em;
-$letter-spacing-btn: .045em;
+$letter-spacing-h1: .025rem;
+$letter-spacing-h2: .02rem;
+$letter-spacing-h3: -.005rem;
+$letter-spacing-h4: 0rem;
+$letter-spacing-h5: .015rem;
+$letter-spacing-h6: .025rem;
+$letter-spacing-sub1: .02rem;
+$letter-spacing-sub2: .045rem;
+$letter-spacing-btn: .045rem;
 
 * {
   margin: 0;
@@ -129,7 +129,7 @@ p {
 .text--sub2 {
   font-size: $text-sub2;
   line-height: $line-height-sub2;
-  font-weight: 500;
+  font-weight: 600;
   color: $n500;
   font-family: $font-primary;
   letter-spacing: $letter-spacing-sub2;

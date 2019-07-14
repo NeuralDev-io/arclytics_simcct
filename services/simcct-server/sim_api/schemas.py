@@ -2,9 +2,9 @@
 # -----------------------------------------------------------------------------
 # arclytics_sim
 # schemas.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
@@ -44,18 +44,26 @@ class CompositionSchema(Schema):
 
 
 class ConfigurationsSchema(Schema):
-    method = fields.Str(default='Li98',
-                        required=True,
-                        allow_none=False,
-                        data_key='method',
-                        error_messages={'null': 'You must provide a method.',
-                                        'required': 'A method is required.'})
-    alloy = fields.Str(default=AlloyOption.parent.name,
-                       required=True,
-                       allow_none=False,
-                       data_key='alloy',
-                       error_messages={'null': 'You must provide a method.',
-                                       'required': 'A method is required.'})
+    method = fields.Str(
+        default='Li98',
+        required=True,
+        allow_none=False,
+        data_key='method',
+        error_messages={
+            'null': 'You must provide a method.',
+            'required': 'A method is required.'
+        }
+    )
+    alloy = fields.Str(
+        default=AlloyOption.parent.name,
+        required=True,
+        allow_none=False,
+        data_key='alloy',
+        error_messages={
+            'null': 'You must provide a method.',
+            'required': 'A method is required.'
+        }
+    )
     # TODO(andrew@neuraldev.io -- Sprint 6): do error messages on all these
     grain_size_type = fields.Str(required=True, default='ASTM')
     grain_size = fields.Float(required=True)

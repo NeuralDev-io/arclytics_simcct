@@ -2,9 +2,9 @@
 # -----------------------------------------------------------------------------
 # arclytics_sim
 # test_api_session.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
@@ -83,11 +83,13 @@ class TestSessionService(BaseTestCase):
 
             login_res = client.post(
                 '/session',
-                data=json.dumps({
-                    '_id': user_id,
-                    'token': token,
-                    'last_configurations': test_json['configurations']
-                }),
+                data=json.dumps(
+                    {
+                        '_id': user_id,
+                        'token': token,
+                        'last_configurations': test_json['configurations']
+                    }
+                ),
                 content_type='application/json'
             )
             data = json.loads(login_res.data.decode())
@@ -99,19 +101,20 @@ class TestSessionService(BaseTestCase):
         to the empty configs.
         """
         _id = ObjectId()
+        token = 'ThisIsOnlyATestingToken'
         with current_app.test_client() as client:
             login_res = client.post(
                 '/session',
                 data=json.dumps({
                     '_id': str(_id),
-                    'token': "ThisIsOnlyATestingToken",
+                    'token': token,
                 }),
                 content_type='application/json'
             )
             data = json.loads(login_res.data.decode())
             self.assertTrue(data['status'] == 'success')
             self.assertEqual(data['message'], 'User session initiated.')
-            sess_saved = session.get(f'{str(_id)}:last_configurations')
+            sess_saved = session.get(f'{str(token)}:configurations')
             self.assertEqual(sess_saved['method'], 'Li98')
 
     def test_login_user_with_configurations(self):
@@ -142,26 +145,32 @@ class TestSessionService(BaseTestCase):
             'start_temp': 900.0,
             'cct_cooling_rate': 10
         }
+        token = 'ThisIsOnlyATestingToken'
 
         with current_app.test_client() as client:
             login_res = client.post(
                 '/session',
-                data=json.dumps({
-                    '_id': str(_id),
-                    'token': "ThisIsOnlyATestingToken",
-                    'last_configurations': configs,
-                    'last_compositions': {'comp': []}
-                }),
+                data=json.dumps(
+                    {
+                        '_id': str(_id),
+                        'token': token,
+                        'last_configurations': configs,
+                        'last_compositions': {
+                            'comp': []
+                        }
+                    }
+                ),
                 content_type='application/json'
             )
             data = json.loads(login_res.data.decode())
             self.assertTrue(data['status'] == 'success')
             self.assertEqual(data['message'], 'User session initiated.')
-            sess_saved = session.get(f'{str(_id)}:last_configurations')
+            sess_saved = session.get(f'{str(token)}:configurations')
             self.assertEqual(sess_saved['method'], 'Li98')
             self.assertEqual(sess_saved['alloy'], 'parent')
             self.assertEqual(sess_saved['grain_size_type'], 'ASTM')
             self.assertEqual(sess_saved['grain_size'], 8.0)
+            self.assertEqual(sess_saved['auto_calculate_ms_bs'], True)
 
     def test_login_user_with_compositions(self):
         """Ensure if the user a last_compositions it is added to Redis store."""
@@ -169,22 +178,27 @@ class TestSessionService(BaseTestCase):
         e1 = {'name': 'carbon', 'symbol': 'cx', 'weight': 0.044}
         e2 = {'name': 'manganese', 'symbol': 'mn', 'weight': 1.73}
         e3 = {'name': 'silicon', 'symbol': 'si', 'weight': 0.22}
+        token = 'ThisIsOnlyATestingToken'
 
         with current_app.test_client() as client:
             login_res = client.post(
                 '/session',
-                data=json.dumps({
-                    '_id': str(_id),
-                    'token': "ThisIsOnlyATestingToken",
-                    'last_configurations': {},
-                    'last_compositions': {'comp': [e1, e2, e3]}
-                }),
+                data=json.dumps(
+                    {
+                        '_id': str(_id),
+                        'token': token,
+                        'last_configurations': {},
+                        'last_compositions': {
+                            'comp': [e1, e2, e3]
+                        }
+                    }
+                ),
                 content_type='application/json'
             )
             data = json.loads(login_res.data.decode())
             self.assertTrue(data['status'] == 'success')
             self.assertEqual(data['message'], 'User session initiated.')
-            comp_store = session.get(f'{str(_id)}:last_compositions')
+            comp_store = session.get(f'{str(token)}:compositions')
             self.assertTrue(comp_store['comp'])
             self.assertEqual(comp_store['comp'][0]['name'], e1['name'])
             self.assertEqual(comp_store['comp'][0]['symbol'], e1['symbol'])

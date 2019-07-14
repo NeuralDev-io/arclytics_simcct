@@ -25,6 +25,7 @@ import sys
 from datetime import datetime
 
 import redis
+import numpy as np
 from dotenv import load_dotenv
 from bson import ObjectId
 from flask import Flask
@@ -47,6 +48,12 @@ class JSONEncoder(json.JSONEncoder):
             return list(o)
         if isinstance(o, datetime):
             return str(o.isoformat())
+        if isinstance(o, np.float):
+            return str(o)
+        if isinstance(o, np.float32):
+            return str(o)
+        if isinstance(o, np.float64):
+            return str(o)
         return json.JSONEncoder.default(self, o)
 
 
@@ -90,8 +97,9 @@ def create_app(script_info=None) -> Flask:
 
     # Connect to the Mongo Client
     # TODO(andrew@neuraldev.io): Need to set the password in production
-    mongo_client = MongoClient(host=app.config['MONGO_HOST'],
-                               port=int(app.config['MONGO_PORT']))
+    mongo_client = MongoClient(
+        host=app.config['MONGO_HOST'], port=int(app.config['MONGO_PORT'])
+    )
     try:
         mongo_client.admin.command('ismaster')
     except ConnectionFailure as e:
@@ -99,9 +107,11 @@ def create_app(script_info=None) -> Flask:
 
     # Redis Client
     # TODO(andrew@neuraldev.io): Need to set the password in production
-    redis_client = redis.Redis(host=os.environ.get('REDIS_HOST'),
-                               port=int(os.environ.get('REDIS_PORT')),
-                               db=int(app.config['REDIS_DB']))
+    redis_client = redis.Redis(
+        host=os.environ.get('REDIS_HOST'),
+        port=int(os.environ.get('REDIS_PORT')),
+        db=int(app.config['REDIS_DB'])
+    )
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
     cors.init_app(app)

@@ -30,10 +30,9 @@ from mongoengine import Document, StringField, EmailField, BooleanField
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from tests.test_api_base import BaseTestCase
-from users_api.models.models import (User, PasswordValidationError,
-                                     USERS, Configuration, Element,
-                                     Compositions)
-
+from users_api.models.models import (
+    User, PasswordValidationError, USERS, Configuration, Element, Compositions
+)
 
 _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 
@@ -61,9 +60,7 @@ class TestUserModel(BaseTestCase):
 
     def test_add_user(self):
         user = User(
-            email='andrew@neuraldev.io',
-            first_name='Andrew',
-            last_name='Che'
+            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
         )
         user.set_password('IAmIronMan')
         user.save()
@@ -79,9 +76,7 @@ class TestUserModel(BaseTestCase):
     def test_add_configuration(self):
         """Test how we can add configurations as an embedded document."""
         user = User(
-            email='eric@shield.gov.us',
-            first_name='Eric',
-            last_name='Selvig'
+            email='eric@shield.gov.us', first_name='Eric', last_name='Selvig'
         )
         user.set_password('BifrostIsReal')
 
@@ -105,9 +100,7 @@ class TestUserModel(BaseTestCase):
     def test_add_compositions(self):
         """Test how we can add the compositions as an embedded document."""
         user = User(
-            email='eric@shield.gov.us',
-            first_name='Eric',
-            last_name='Selvig'
+            email='eric@shield.gov.us', first_name='Eric', last_name='Selvig'
         )
         user.set_password('BifrostIsReal')
 
@@ -127,9 +120,7 @@ class TestUserModel(BaseTestCase):
     def test_add_compositions_from_json(self):
         """Ensure we can loop a JSON-converted dict to create a compositions."""
         user = User(
-            email='eric@shield.gov.us',
-            first_name='Eric',
-            last_name='Selvig'
+            email='eric@shield.gov.us', first_name='Eric', last_name='Selvig'
         )
         user.set_password('BifrostIsReal')
 
@@ -176,16 +167,12 @@ class TestUserModel(BaseTestCase):
 
     def test_add_user_duplicate_email(self):
         user = User(
-            email='andrew@neuraldev.io',
-            first_name='Andrew',
-            last_name='Che'
+            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
         )
         user.set_password('IAmIronMan')
         user.save()
         duplicate_user = User(
-            email='andrew@neuraldev.io',
-            first_name='Andrew',
-            last_name='Che'
+            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
         )
         duplicate_user.set_password('IThinkIAmIronMan')
         with self.assertRaises(NotUniqueError):
@@ -193,9 +180,7 @@ class TestUserModel(BaseTestCase):
 
     def test_to_dict(self):
         user = User(
-            email='andrew@neuraldev.io',
-            first_name='Andrew',
-            last_name='Che'
+            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
         )
         user.set_password('IAmIronMan')
         user.save()
@@ -205,9 +190,7 @@ class TestUserModel(BaseTestCase):
 
     def test_to_json(self):
         user = User(
-            email='andrew@neuraldev.io',
-            first_name='Andrew',
-            last_name='Che'
+            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
         )
         user.set_password('IAmIronMan')
         user.save()
@@ -217,9 +200,7 @@ class TestUserModel(BaseTestCase):
 
     def test_passwords_are_random(self):
         user_one = User(
-            email='andrew@neuraldev.io',
-            first_name='Andrew',
-            last_name='Che'
+            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
         )
 
         user_one.set_password('youknotwhatitwas')
@@ -234,9 +215,7 @@ class TestUserModel(BaseTestCase):
     def test_encode_auth_token(self):
         """Ensure that a JWT auth token is generated properly."""
         user = User(
-            email='andrew@neuraldev.io',
-            first_name='Andrew',
-            last_name='Che'
+            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
         )
         user.set_password('youknotwhatitis')
         user.save()
@@ -246,9 +225,7 @@ class TestUserModel(BaseTestCase):
     def test_decode_auth_token(self):
         """Ensure that a JWT auth token is generated properly."""
         user = User(
-            email='andrew@neuraldev.io',
-            first_name='Andrew',
-            last_name='Che'
+            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
         )
         user.set_password('youknotwhatitis')
         user.save()

@@ -28,21 +28,18 @@ from flask import Blueprint, session, request
 from flask_restful import Resource
 from bson import ObjectId
 
-from sim_api.schemas import (ConfigurationsSchema, CompositionSchema,
-                             ElementSchema)
+from sim_api.schemas import (
+    ConfigurationsSchema, CompositionSchema, ElementSchema
+)
 
 session_blueprint = Blueprint('session', __name__)
 
 
 class Session(Resource):
-
     def post(self):
         post_data = request.get_json()
 
-        response = {
-            'status': 'fail',
-            'message': 'Invalid payload.'
-        }
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
 
         if not post_data:
             return response, 400
@@ -119,8 +116,8 @@ class Session(Resource):
 
         session[f'{session.sid}:user'] = user_id
         session[f'{session.sid}:token'] = token
-        session[f'{user_id}:last_configurations'] = configs
-        session[f'{user_id}:last_compositions'] = comp_obj
+        session[f'{token}:configurations'] = configs
+        session[f'{token}:compositions'] = comp_obj
 
         response['status'] = 'success'
         response['message'] = 'User session initiated.'

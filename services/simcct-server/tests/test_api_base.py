@@ -2,9 +2,9 @@
 # -----------------------------------------------------------------------------
 # arclytics_sim
 # test_api_base.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
@@ -47,4 +47,3 @@ class BaseTestCase(TestCase):
     def tearDown(self) -> None:
         self.redis.flushall()
         self.redis.flushdb()
-

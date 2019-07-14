@@ -108,8 +108,7 @@ def seed_user_db():
         new_user.save()
         tbl.add_row(
             (
-                str(i + 1),
-                u['email'],
+                str(i + 1), u['email'],
                 '{} {}'.format(u['first_name'], u['last_name'])
             )
         )

@@ -45,6 +45,7 @@ class SessionValidationError(Exception):
     A custom exception to be raised by a threaded async call to register if
     the response is not what we are expecting.
     """
+
     def __init__(self, msg: str):
         super(SessionValidationError, self).__init__(msg)
 
@@ -84,9 +85,7 @@ def register_user() -> Tuple[dict, int]:
     # Create a Mongo User object if one doesn't exists
     if not User.objects(email=email):
         new_user = User(
-            email=email,
-            first_name=first_name,
-            last_name=last_name
+            email=email, first_name=first_name, last_name=last_name
         )
         # ensure we set an encrypted password.
         new_user.set_password(raw_password=password)
@@ -159,7 +158,8 @@ def async_register_session(user: User = None,
             'token': auth_token,
             'last_configurations': last_configs,
             'last_compositions': last_compositions
-        })
+        }
+    )
     # Because this method is in an async state, we want to know if our request
     # to the other side has failed by raising an exception.
     if resp.json().get('status') == 'fail':
@@ -217,8 +217,10 @@ def login() -> Tuple[dict, int]:
 
             # We will register the session for the user to the simcct-server
             # in the background so as not to slow the login process down.
-            thr = Thread(target=async_register_session,
-                         args=[user, str(auth_token)])
+            thr = Thread(
+                target=async_register_session, args=[user,
+                                                     str(auth_token)]
+            )
             thr.start()
             # Leave this here -- create a queue for responses
             # thr.join()
@@ -247,8 +249,5 @@ def logout(resp) -> Tuple[dict, int]:
 def get_user_status(resp) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     user = User.objects.get(id=resp)
-    response = {
-        'status': 'success',
-        'data': user.to_dict()
-    }
+    response = {'status': 'success', 'data': user.to_dict()}
     return jsonify(response), 200

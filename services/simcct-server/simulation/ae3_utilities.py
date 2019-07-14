@@ -289,24 +289,24 @@ def convert_wt_2_mol(wt: np.ndarray) -> (np.ndarray, np.array):
     d_vect[-1] = 100.0 - d_vect[-1]  # find wt% Fe by difference
     d_vect[-1] = d_vect[-1] / 55.84  # Fe, calculate moles Fe if 100 g of alloy
 
-    d_vect[0] = wt['weight'][wt['symbol'] == 'Cx'].item() / 12.0115  # Carbon
-    d_vect[1] = wt['weight'][wt['symbol'] == 'Mn'][0] / 54.94  # Manganese
-    d_vect[2] = wt['weight'][wt['symbol'] == 'Si'][0] / 28.09  # Silicon
-    d_vect[3] = wt['weight'][wt['symbol'] == 'Ni'][0] / 58.71  # Nickel
-    d_vect[4] = wt['weight'][wt['symbol'] == 'Cr'][0] / 52.0  # Chromium
-    d_vect[5] = wt['weight'][wt['symbol'] == 'Mo'][0] / 95.94  # Molybdenum
-    d_vect[6] = wt['weight'][wt['symbol'] == 'Co'][0] / 58.94  # Cobalt
-    d_vect[7] = wt['weight'][wt['symbol'] == 'Al'][0] / 26.9815  # Aluminium
-    d_vect[8] = wt['weight'][wt['symbol'] == 'Cu'][0] / 63.546  # Copper
-    d_vect[9] = wt['weight'][wt['symbol'] == 'As'][0] / 74.9216  # Arsenic
-    d_vect[10] = wt['weight'][wt['symbol'] == 'Ti'][0] / 47.867  # Titanium
-    d_vect[11] = wt['weight'][wt['symbol'] == 'Vx'][0] / 50.9415  # Vanadium
-    d_vect[12] = wt['weight'][wt['symbol'] == 'Wx'][0] / 183.85  # Tungsten
-    d_vect[13] = wt['weight'][wt['symbol'] == 'Sx'][0] / 32.065  # Sulphur
-    d_vect[14] = wt['weight'][wt['symbol'] == 'Nx'][0] / 14.0067  # Nitrogen
-    d_vect[15] = wt['weight'][wt['symbol'] == 'Nb'][0] / 92.9064  # Niobium
-    d_vect[16] = wt['weight'][wt['symbol'] == 'Bx'][0] / 10.811  # Boron
-    d_vect[17] = wt['weight'][wt['symbol'] == 'Px'][0] / 30.9738  # Phosphorous
+    d_vect[0] = wt['weight'][wt['symbol'] == 'cx'].item() / 12.0115  # Carbon
+    d_vect[1] = wt['weight'][wt['symbol'] == 'mn'][0] / 54.94  # Manganese
+    d_vect[2] = wt['weight'][wt['symbol'] == 'si'][0] / 28.09  # Silicon
+    d_vect[3] = wt['weight'][wt['symbol'] == 'ni'][0] / 58.71  # Nickel
+    d_vect[4] = wt['weight'][wt['symbol'] == 'cr'][0] / 52.0  # Chromium
+    d_vect[5] = wt['weight'][wt['symbol'] == 'mo'][0] / 95.94  # Molybdenum
+    d_vect[6] = wt['weight'][wt['symbol'] == 'co'][0] / 58.94  # Cobalt
+    d_vect[7] = wt['weight'][wt['symbol'] == 'al'][0] / 26.9815  # Aluminium
+    d_vect[8] = wt['weight'][wt['symbol'] == 'cu'][0] / 63.546  # Copper
+    d_vect[9] = wt['weight'][wt['symbol'] == 'as'][0] / 74.9216  # Arsenic
+    d_vect[10] = wt['weight'][wt['symbol'] == 'ti'][0] / 47.867  # Titanium
+    d_vect[11] = wt['weight'][wt['symbol'] == 'vx'][0] / 50.9415  # Vanadium
+    d_vect[12] = wt['weight'][wt['symbol'] == 'wx'][0] / 183.85  # Tungsten
+    d_vect[13] = wt['weight'][wt['symbol'] == 'sx'][0] / 32.065  # Sulphur
+    d_vect[14] = wt['weight'][wt['symbol'] == 'nx'][0] / 14.0067  # Nitrogen
+    d_vect[15] = wt['weight'][wt['symbol'] == 'nb'][0] / 92.9064  # Niobium
+    d_vect[16] = wt['weight'][wt['symbol'] == 'bx'][0] / 10.811  # Boron
+    d_vect[17] = wt['weight'][wt['symbol'] == 'px'][0] / 30.9738  # Phosphorous
 
     b1 = np.sum(d_vect).astype(np.float64).item()
 

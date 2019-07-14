@@ -28,7 +28,8 @@ from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
     DateTimeField, EmbeddedDocumentField, IntField, FloatField, ListField,
-    EmbeddedDocumentListField, queryset_manager)
+    EmbeddedDocumentListField, queryset_manager
+)
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
@@ -223,8 +224,13 @@ class User(Document):
     )
     first_name = StringField(required=True, max_length=255)
     last_name = StringField(required=True, max_length=255)
-    user_type = StringField(required=False, max_length=1, null=False,
-                            choices=USERS, default=USERS[1][0])
+    user_type = StringField(
+        required=False,
+        max_length=1,
+        null=False,
+        choices=USERS,
+        default=USERS[1][0]
+    )
     profile = EmbeddedDocumentField(document_type=UserProfile)
     admin_profile = EmbeddedDocumentField(document_type=AdminProfile)
 
@@ -301,14 +307,16 @@ class User(Document):
         """Generates JWT auth token that is returned as bytes."""
         try:
             payload = {
-                'exp': datetime.utcnow() + timedelta(
-                    days=current_app.config
-                        .get('TOKEN_EXPIRATION_DAYS', 0),
-                    seconds=current_app.config
-                        .get('TOKEN_EXPIRATION_SECONDS', 0)
+                'exp':
+                datetime.utcnow() + timedelta(
+                    days=current_app.config.get('TOKEN_EXPIRATION_DAYS', 0),
+                    seconds=current_app.config.
+                    get('TOKEN_EXPIRATION_SECONDS', 0)
                 ),
-                'iat': datetime.utcnow(),
-                'sub': user_id
+                'iat':
+                datetime.utcnow(),
+                'sub':
+                user_id
             }
 
             return jwt.encode(

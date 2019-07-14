@@ -46,8 +46,12 @@ class SimConfiguration(object):
     by Dr. Bendeich.
     """
 
-    def __init__(self, configs: dict = None, compositions: list = None,
-                 debug: bool = False):
+    def __init__(
+        self,
+        configs: dict = None,
+        compositions: list = None,
+        debug: bool = False
+    ):
 
         if debug:
             with open(_TEST_CONFIGS) as config_f:
@@ -59,9 +63,10 @@ class SimConfiguration(object):
             self.comp = self.get_compositions(compositions)
 
         if configs is not None:
-            self.method = (Method.Li98
-                           if configs['method'] == 'Li98'
-                           else Method.Kirkaldy83)
+            self.method = (
+                Method.Li98
+                if configs['method'] == 'Li98' else Method.Kirkaldy83
+            )
 
             self.alloy = Alloy.parent
             if configs['alloy'] == 'mix':
@@ -84,7 +89,7 @@ class SimConfiguration(object):
             self.auto_austenite_calc = configs['auto_calculate_ae']
             self.ae1 = configs['ae1_temp']
             self.ae3 = configs['ae3_temp']
-            self.temp_peak = configs['start_temperature']
+            self.temp_peak = configs['start_temp']
             self.cct_cooling_rate = configs['cct_cooling_rate']
 
             self.ae_check = False
@@ -96,7 +101,7 @@ class SimConfiguration(object):
         if self.auto_austenite_calc:
             self.auto_ae1_ae3()
         if self.auto_xfe_calc:
-            self.xfe_method2()
+            self.auto_xfe()
 
     def auto_ms_bs(self) -> None:
         """
@@ -111,12 +116,10 @@ class SimConfiguration(object):
         # validate the Austenite values have been generated and it will not
         # crash the application
         self.ae_check = True
-        self.ae1, self.ae3 = self.calc_ae1_ae3()
+        self.ae1, self.ae3 = self.calc_ae1_ae3(self.comp)
 
-    # TODO(andrew@neuraldev.io): need to implement this as xfe_method2() will
-    #  need to be refactored to become a static method.
     def auto_xfe(self) -> None:
-        pass
+        self.xfe, self.ceut = self.xfe_method2(self.comp, self.ae1, self.cf)
 
     @staticmethod
     def get_compositions(comp_list: list = None) -> np.ndarray:
@@ -131,13 +134,13 @@ class SimConfiguration(object):
         Returns:
             A structured numpy.ndarray with the weights and names.
         """
-        comp = np.zeros(len(comp_list),
-                        dtype=[
-                            ('idx', np.int),
-                            ('name', 'U20'),
-                            ('symbol', 'U2'),
-                            ('weight', np.float64)
-                        ])
+        comp = np.zeros(
+            len(comp_list),
+            dtype=[
+                ('idx', np.int), ('name', 'U20'), ('symbol', 'U2'),
+                ('weight', np.float64)
+            ]
+        )
         # iterate over lists at once and store them in the np.ndarray
         for i, e in enumerate(comp_list):
             comp[i] = (i, e['name'], e['symbol'], e['weight'])
@@ -160,13 +163,16 @@ class SimConfiguration(object):
 
         if method == Method.Li98:
             # Eqn [24] in paper. Li modified from Kirkaldy.
-            return (637.0 - (58 * c) - (35 * mn) -
-                    (15 * ni) - (34 * cr) - (41 * mo))
+            return (
+                637.0 - (58 * c) - (35 * mn) - (15 * ni) - (34 * cr) -
+                (41 * mo)
+            )
 
         if method == Method.Kirkaldy83:
             # Eqn [30] in Kirkaldy defined 1983 paper
-            return (656 - (58 * c) - (35 * mn) -
-                    (15 * ni) - (34 * cr) - (41 * mo))
+            return (
+                656 - (58 * c) - (35 * mn) - (15 * ni) - (34 * cr) - (41 * mo)
+            )
 
         return -1
 
@@ -189,25 +195,30 @@ class SimConfiguration(object):
 
         if method == Method.Li98:
             # Eqn [25] in paper by Kung and Raymond
-            return (539 - (423 * c) - (30.4 * mn) - (17.7 * ni) -
-                    (12.1 * cr) - (7.5 * mo) + (10.0 * co) - (7.5 * si))
+            return (
+                539 - (423 * c) - (30.4 * mn) - (17.7 * ni) - (12.1 * cr) -
+                (7.5 * mo) + (10.0 * co) - (7.5 * si)
+            )
 
         if method == Method.Kirkaldy83:
             # Eqn [31] in Kirkaldy 1983 paper
-            return (561 - (474 * c) - (33.0 * mn) -
-                    (17.0 * ni) - (17.0 * cr) - (21.0 * mo))
+            return (
+                561 - (474 * c) - (33.0 * mn) - (17.0 * ni) - (17.0 * cr) -
+                (21.0 * mo)
+            )
 
         return -1
 
-    def calc_ae1_ae3(self) -> (np.float, np.float):
-        c = self.comp[self.comp['name'] == 'carbon']['weight'][0]
-        ni = self.comp[self.comp['name'] == 'nickel']['weight'][0]
-        si = self.comp[self.comp['name'] == 'silicon']['weight'][0]
-        wx = self.comp[self.comp['name'] == 'tungsten']['weight'][0]
-        mn = self.comp[self.comp['name'] == 'manganese']['weight'][0]
-        cr = self.comp[self.comp['name'] == 'chromium']['weight'][0]
-        asx = self.comp[self.comp['name'] == 'arsenic']['weight'][0]
-        mo = self.comp[self.comp['name'] == 'molybdenum']['weight'][0]
+    @staticmethod
+    def calc_ae1_ae3(comp: np.ndarray = None) -> (np.float, np.float):
+        c = comp[comp['name'] == 'carbon']['weight'][0]
+        ni = comp[comp['name'] == 'nickel']['weight'][0]
+        si = comp[comp['name'] == 'silicon']['weight'][0]
+        wx = comp[comp['name'] == 'tungsten']['weight'][0]
+        mn = comp[comp['name'] == 'manganese']['weight'][0]
+        cr = comp[comp['name'] == 'chromium']['weight'][0]
+        asx = comp[comp['name'] == 'arsenic']['weight'][0]
+        mo = comp[comp['name'] == 'molybdenum']['weight'][0]
         # Do the calculations
         # 1. Equations of Andrews (1965)
         ae1 = (
@@ -230,10 +241,13 @@ class SimConfiguration(object):
 
         # find the Ae3 temperature at the alloy Carbon content Using
         # Ortho-equilibrium method
-        ae3 = ae3_single_carbon(self.comp.copy(), c)
+        ae3 = ae3_single_carbon(comp.copy(), c)
         return ae1, ae3 - 273
 
-    def xfe_method2(self) -> None:
+    @staticmethod
+    def xfe_method2(
+        comp: np.ndarray = None, ae1: np.float = None, cf: np.float = None
+    ) -> (np.float, np.float):
         """Second method for estimating Xfe using parra-equilibrium methodology
         to predict  the Ae3 values with increasing carbon content. To find
         the intercept with Ae1 (from simplified method) to determine the
@@ -245,7 +259,7 @@ class SimConfiguration(object):
         Returns:
 
         """
-        wt = self.comp.copy()
+        wt = comp.copy()
 
         # now let's get onto the main routine
 
@@ -260,23 +274,27 @@ class SimConfiguration(object):
         # UPDATE wt, Results to CALL Ae3MultiC(wt, Results)
         ae3_multi_carbon(wt, results_mat)
 
-        # TODO: We may or may not implement the Ae3 plot but we can if we want
+        # TODO(andrew@neuraldev.io): We may or may not implement the Ae3
+        #  plot but we can if we want
         #    to. -- WE ARE GOING TO DO PLOT
         # We can view the Ae3 plot with a call to the following
         # CALL Ae3Plot(results_mat, self.ae1, wt_c)
 
+        ceut = 0.0
         # Find the Ae3-Ae1 intercept Carbon content (Eutectic composition
-        if self.ae1 > 0:
+        if ae1 > 0:
             for i in range(1000):
-                if results_mat[i, 1] <= self.ae1:
-                    self.ceut = results_mat[i, 0]
+                if results_mat[i, 1] <= ae1:
+                    ceut = results_mat[i, 0]
                     break
 
         # Now calculate the important bit the Xfe equilibrium phase fraction
         # of Ferrite
-        tie_length = self.ceut - self.cf
+        tie_length = ceut - cf
         lever1 = tie_length - wt_c
-        self.xfe = lever1 / tie_length
+        xfe = lever1 / tie_length
+
+        return xfe, ceut
 
     @staticmethod
     def _pretty_str_tables(comp: np.ndarray) -> PrettyTable:

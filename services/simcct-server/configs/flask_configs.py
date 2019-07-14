@@ -19,7 +19,6 @@ __date__ = '2019.07.09'
 Just some configuration settings for the SimCCT Flask Server.
 """
 
-
 import os
 
 

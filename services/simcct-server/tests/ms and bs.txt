@@ -1,0 +1,8 @@
+Li{
+    ms_temp: 464,
+    bs_temp: 563
+} 
+Kirk{
+    ms_temp: 478,
+    bs_temp: 566
+}

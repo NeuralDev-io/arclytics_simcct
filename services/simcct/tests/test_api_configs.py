@@ -22,7 +22,7 @@ This module tests the configurations are as we expect them.
 import os
 import unittest
 
-from flask import current_app, session
+from flask import current_app
 from flask_testing import TestCase
 
 from sim_app.app import create_app, mongo, sess
@@ -45,6 +45,9 @@ class TestDevelopmentConfig(TestCase):
         self.assertTrue(app.config['MONGO_DBNAME'] == 'arc_dev')
         self.assertTrue(app.config['REDIS_DB'] == 1)
         self.assertEqual(mongo.db.name, 'arc_dev')
+        # This is very stupid I know, but I can't find another way.
+        redis = app.config['SESSION_REDIS']
+        self.assertEqual(int(str(redis)[56:57]), 1)
 
 
 class TestTestingConfig(TestCase):
@@ -61,9 +64,11 @@ class TestTestingConfig(TestCase):
         self.assertTrue(app.config['TESTING'])
         self.assertFalse(app.config['PRESERVE_CONTEXT_ON_EXCEPTION'])
         self.assertTrue(app.config['MONGO_DBNAME'] == 'arc_test')
+        self.assertEqual(mongo.db.name, 'arc_test')
         self.assertTrue(app.config['REDIS_DB'] == 15)
         self.assertTrue(app.config['SESSION_REDIS'])
-        self.assertEqual(mongo.db.name, 'arc_test')
+        redis = app.config['SESSION_REDIS']
+        self.assertEqual(int(str(redis)[56:58]), 15)
 
 
 class TestProductionConfig(TestCase):
@@ -81,6 +86,8 @@ class TestProductionConfig(TestCase):
         self.assertTrue(app.config['MONGO_DBNAME'] == 'arclytics')
         self.assertTrue(app.config['REDIS_DB'] == 0)
         self.assertEqual(mongo.db.name, 'arclytics')
+        redis = app.config['SESSION_REDIS']
+        self.assertEqual(int(str(redis)[56:57]), 0)
 
 
 if __name__ == '__main__':

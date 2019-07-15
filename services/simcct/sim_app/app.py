@@ -27,7 +27,7 @@ from datetime import datetime
 import numpy as np
 from dotenv import load_dotenv
 from bson import ObjectId
-from flask import Flask
+from flask import Flask, g
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 from flask_restful import Api

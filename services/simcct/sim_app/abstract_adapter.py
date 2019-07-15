@@ -35,6 +35,9 @@ class AlloyAbstract(object):
     def create(self, instance):
         return self.client.create(instance)
 
+    def create_many(self, instance_list):
+        return self.client.create_many(instance_list)
+
     def update(self, param, instance):
         return self.client.update(param, instance)
 

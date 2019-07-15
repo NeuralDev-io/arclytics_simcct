@@ -27,9 +27,8 @@ from datetime import datetime
 import numpy as np
 from dotenv import load_dotenv
 from bson import ObjectId
-from flask import Flask, g
+from flask import Flask
 from flask_cors import CORS
-from flask_pymongo import PyMongo
 from flask_restful import Api
 from flask_session import Session as FlaskSession
 
@@ -72,7 +71,6 @@ DATE_FMT = '%Y-%m-%d'
 # Some Flask extensions
 cors = CORS()
 sess = FlaskSession()
-mongo = PyMongo()
 
 
 def create_app(script_info=None) -> Flask:
@@ -98,7 +96,6 @@ def create_app(script_info=None) -> Flask:
     cors.init_app(app)
     # Flask-Session and Redis
     sess.init_app(app)
-    mongo.init_app(app)
 
     from sim_app.resources.session import session_blueprint
     api = Api(session_blueprint)
@@ -114,11 +111,12 @@ def create_app(script_info=None) -> Flask:
     # Importing within Flask app context scope because trying to init the
     # the MongoAlloys adapter and the database before mongo.init_app(app)
     # will raise all sorts of import issues.
-    from sim_app.resources.alloys import Alloys
+    from sim_app.resources.alloys import AlloysList, Alloys
 
     api.add_resource(Session, '/session')
     api.add_resource(UsersPing, '/users/ping')
-    api.add_resource(Alloys, '/alloys')
+    api.add_resource(Alloys, '/alloys/<alloy_id>')
+    api.add_resource(AlloysList, '/alloys')
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects
@@ -127,6 +125,6 @@ def create_app(script_info=None) -> Flask:
     # Shell context for Flask CLI
     @app.shell_context_processor
     def ctx():
-        return {'app': app, 'mongo': mongo}
+        return {'app': app}
 
     return app

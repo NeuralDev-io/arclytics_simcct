@@ -25,7 +25,7 @@ import unittest
 from flask import current_app
 from flask_testing import TestCase
 
-from sim_app.app import create_app, mongo, sess
+from sim_app.app import create_app, sess
 
 app = create_app()
 
@@ -33,7 +33,6 @@ app = create_app()
 class TestDevelopmentConfig(TestCase):
     def create_app(self):
         app.config.from_object('configs.flask_conf.DevelopmentConfig')
-        mongo.init_app(app)
         sess.init_app(app)
         return app
 
@@ -44,7 +43,6 @@ class TestDevelopmentConfig(TestCase):
         self.assertFalse(current_app is None)
         self.assertTrue(app.config['MONGO_DBNAME'] == 'arc_dev')
         self.assertTrue(app.config['REDIS_DB'] == 1)
-        self.assertEqual(mongo.db.name, 'arc_dev')
         # This is very stupid I know, but I can't find another way.
         redis = app.config['SESSION_REDIS']
         self.assertEqual(int(str(redis)[56:57]), 1)
@@ -53,7 +51,6 @@ class TestDevelopmentConfig(TestCase):
 class TestTestingConfig(TestCase):
     def create_app(self):
         app.config.from_object('configs.flask_conf.TestingConfig')
-        mongo.init_app(app)
         sess.init_app(app)
         return app
 
@@ -64,7 +61,6 @@ class TestTestingConfig(TestCase):
         self.assertTrue(app.config['TESTING'])
         self.assertFalse(app.config['PRESERVE_CONTEXT_ON_EXCEPTION'])
         self.assertTrue(app.config['MONGO_DBNAME'] == 'arc_test')
-        self.assertEqual(mongo.db.name, 'arc_test')
         self.assertTrue(app.config['REDIS_DB'] == 15)
         self.assertTrue(app.config['SESSION_REDIS'])
         redis = app.config['SESSION_REDIS']
@@ -74,7 +70,6 @@ class TestTestingConfig(TestCase):
 class TestProductionConfig(TestCase):
     def create_app(self):
         app.config.from_object('configs.flask_conf.ProductionConfig')
-        mongo.init_app(app)
         sess.init_app(app)
         return app
 
@@ -85,7 +80,6 @@ class TestProductionConfig(TestCase):
         self.assertFalse(app.config['TESTING'])
         self.assertTrue(app.config['MONGO_DBNAME'] == 'arclytics')
         self.assertTrue(app.config['REDIS_DB'] == 0)
-        self.assertEqual(mongo.db.name, 'arclytics')
         redis = app.config['SESSION_REDIS']
         self.assertEqual(int(str(redis)[56:57]), 0)
 

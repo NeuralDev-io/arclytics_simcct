@@ -19,9 +19,8 @@ __date__ = '2019.07.14'
 This module contains the MongoDB mapper for the Alloy schema and document.
 """
 
-from pymongo import ASCENDING
-
-from sim_app.app import mongo
+import os
+from pymongo import ASCENDING, MongoClient
 
 COLLECTION_NAME = 'alloys'
 
@@ -32,7 +31,13 @@ class MongoAlloys(object):
     """
 
     def __init__(self):
-        self.db = mongo.db
+        mongo_client = MongoClient(
+            host=os.environ.get('MONGO_HOST'),
+            port=int(os.environ.get('MONGO_PORT'))
+        )
+        # TODO(andrew@neuraldev.io): Try to fix this to dynamically change under
+        #  testing conditions rather than setting the database permanently.
+        self.db = mongo_client['arc_dev']
         # We create an index to avoid duplicates
         self.db.alloys.create_index([('name', ASCENDING)], unique=True)
 
@@ -44,6 +49,9 @@ class MongoAlloys(object):
 
     def create(self, instance: dict):
         return self.db.alloys.insert_one(instance).inserted_id
+
+    def create_many(self, instance_list: list):
+        return self.db.alloys.insert_many(instance_list).inserted_ids
 
     def update(self, query_selector, instance):
         return (

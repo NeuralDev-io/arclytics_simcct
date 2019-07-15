@@ -107,4 +107,3 @@ class ConfigurationsSchema(Schema):
         #  - RAISE: Raise a validationError if there are any
         # unknown = EXCLUDE
         pass
-

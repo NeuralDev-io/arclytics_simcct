@@ -59,8 +59,10 @@ cli = FlaskGroup(create_app=create_app)
 
 @cli.command('seed_db')
 def seed_alloy_db():
-    client = MongoClient(host=os.environ.get('MONGO_HOST'),
-                         port=int(os.environ.get('MONGO_PORT')))
+    client = MongoClient(
+        host=os.environ.get('MONGO_HOST'),
+        port=int(os.environ.get('MONGO_PORT'))
+    )
     db = client['arc_dev']
     path = Path(BASE_DIR) / 'seed_alloy_data.json'
     if os.path.isfile(path):
@@ -77,8 +79,10 @@ def seed_alloy_db():
 
 @cli.command('flush')
 def flush():
-    client = MongoClient(host=os.environ.get('MONGO_HOST'),
-                         port=int(os.environ.get('MONGO_PORT')))
+    client = MongoClient(
+        host=os.environ.get('MONGO_HOST'),
+        port=int(os.environ.get('MONGO_PORT'))
+    )
     client.drop_database('arc')
     client.drop_database('arc-dev')
     client.drop_database('arc-test')

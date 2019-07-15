@@ -2,9 +2,9 @@
 # -----------------------------------------------------------------------------
 # arclytics_sim
 # alloys.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
@@ -46,8 +46,9 @@ class MongoAlloys(object):
         return self.db.alloys.insert_one(instance).inserted_id
 
     def update(self, query_selector, instance):
-        return (self.db.alloys.replace_one(query_selector, instance)
-                .modified_count)
+        return (
+            self.db.alloys.replace_one(query_selector, instance).modified_count
+        )
 
     def delete(self, query_selector):
         return self.db.alloys.delete_one(query_selector).deleted_count

@@ -2,9 +2,9 @@
 # -----------------------------------------------------------------------------
 # arclytics_sim
 # test_api_alloys.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __copyright__ = 'Copyright (C) 2019, NeuralDev'
@@ -43,10 +43,12 @@ class TestAlloyService(BaseTestCase):
         with app.test_client() as client:
             res = client.post(
                 '/alloys',
-                data=json.dumps({
-                    'name': 'Alloy-1',
-                    'compositions': test_json['compositions']
-                }),
+                data=json.dumps(
+                    {
+                        'name': 'Alloy-1',
+                        'compositions': test_json['compositions']
+                    }
+                ),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -60,10 +62,7 @@ class TestAlloyService(BaseTestCase):
         """Ensure we can get all alloys."""
 
         with app.test_client() as client:
-            res = client.get(
-                '/alloys',
-                content_type='application/json'
-            )
+            res = client.get('/alloys', content_type='application/json')
             data = json.loads(res.data.decode())
 
             self.assertEqual(res.status_code, 200)

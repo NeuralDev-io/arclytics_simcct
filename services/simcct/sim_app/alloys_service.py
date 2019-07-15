@@ -2,9 +2,9 @@
 # -----------------------------------------------------------------------------
 # arclytics_sim
 # alloys.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
@@ -59,4 +59,3 @@ class AlloysService(object):
 
     def dump(self, data):
         return AlloySchema(exclude=['_id']).dump(data)
-

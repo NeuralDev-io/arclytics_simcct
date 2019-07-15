@@ -2,9 +2,9 @@
 # -----------------------------------------------------------------------------
 # arclytics_sim
 # alloys.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
@@ -28,12 +28,10 @@ from sim_app.alloys_service import AlloysService
 
 alloys_blueprint = Blueprint('alloys', __name__)
 
-
 schema = AlloySchema()
 
 
 class Alloys(Resource):
-
     def post(self):
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 

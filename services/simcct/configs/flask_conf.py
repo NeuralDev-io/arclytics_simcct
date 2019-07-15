@@ -20,9 +20,8 @@ Just some configuration settings for the SimCCT Flask Server.
 """
 
 import os
-
 import redis
-from flask import g
+
 
 class BaseConfig:
     """Base configuration"""

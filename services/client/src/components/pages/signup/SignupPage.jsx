@@ -84,7 +84,6 @@ class SignupPage extends Component {
                           value={values.firstName}
                           placeholder="First Name"
                           length="long"
-                         
                         />
                         <h6 className={styles.errors}>{errors.firstName && touched.firstName && errors.firstName}</h6>             
                   

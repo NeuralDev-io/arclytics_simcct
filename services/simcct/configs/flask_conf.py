@@ -43,8 +43,6 @@ class DevelopmentConfig(BaseConfig):
     """Development configuration"""
 
     MONGO_DBNAME = 'arc_dev'
-    MONGO_BASE_URI = os.environ.get('MONGO_URI')
-    MONGO_URI = f'{MONGO_BASE_URI}/{MONGO_DBNAME}'
 
     REDIS_DB = 1
     redis_client_dev = redis.Redis(
@@ -59,8 +57,6 @@ class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
     MONGO_DBNAME = 'arc_test'
-    MONGO_BASE_URI = os.environ.get('MONGO_URI')
-    MONGO_URI = f'{MONGO_BASE_URI}/{MONGO_DBNAME}'
 
     SESSION_PERMANENT = False
     REDIS_DB = 15
@@ -75,8 +71,6 @@ class TestingConfig(BaseConfig):
 class ProductionConfig(BaseConfig):
     """Production configuration"""
     MONGO_DBNAME = 'arclytics'
-    MONGO_BASE_URI = os.environ.get('MONGO_URI')
-    MONGO_URI = f'{MONGO_BASE_URI}/{MONGO_DBNAME}'
 
     REDIS_DB = 0
     redis_client_prod = redis.Redis(

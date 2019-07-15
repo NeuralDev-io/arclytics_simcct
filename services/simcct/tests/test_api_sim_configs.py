@@ -19,11 +19,9 @@ __date__ = '2019.07.13'
 {Description}
 """
 
-import os
 import json
 import unittest
 import numpy as np
-import requests
 from pathlib import Path
 
 from bson import ObjectId

@@ -20,31 +20,35 @@ This module is the base TestCase so that we can inherit from it and the settings
 for testing that are initialised in create_app() -- interface by Flask-Testing.
 """
 
-from flask_testing import TestCase
+import os
 
-from sim_app.app import create_app, mongo, sess
+from flask_testing import TestCase
+from pymongo import MongoClient
+from redis import Redis
+
+from sim_app.app import create_app
 
 app = create_app()
 
 
 class BaseTestCase(TestCase):
-    redis = None
-
     def create_app(self):
         app.config.from_object('configs.flask_conf.TestingConfig')
-        sess.init_app(app)
-        mongo.init_app(app)
-        self.assertEqual(mongo.db.name, 'arc_test')
         return app
 
     @classmethod
     def tearDownClass(cls) -> None:
-        redis = app.config['SESSION_REDIS']
+        """Clean up logic for the test suite declared in the test module."""
+        # Executed after all tests in one test run.
+        redis = Redis(
+            host=os.environ.get('REDIS_HOST'),
+            port=int(os.environ.get('REDIS_PORT')),
+            db=15
+        )
         redis.flushall()
         redis.flushdb()
-        mongo.cx.drop_database('arc_test')
-
-    # def tearDown(self) -> None:
-    #     self.redis.flushall()
-    #     self.redis.flushdb()
-    #     mongo.drop_databases('arc_test')
+        client = MongoClient(
+            host=os.environ.get('MONGO_HOST'),
+            port=int(os.environ.get('MONGO_PORT'))
+        )
+        client.drop_database('arc_test')

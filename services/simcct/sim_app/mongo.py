@@ -19,9 +19,9 @@ __date__ = '2019.07.14'
 This module contains the MongoDB mapper for the Alloy schema and document.
 """
 
-import os
+from pymongo import ASCENDING
 
-from pymongo import MongoClient, ASCENDING
+from sim_app.app import mongo
 
 COLLECTION_NAME = 'alloys'
 
@@ -32,13 +32,7 @@ class MongoAlloys(object):
     """
 
     def __init__(self):
-        mongo_client = MongoClient(
-            host=os.environ.get('MONGO_HOST'),
-            port=int(os.environ.get('MONGO_PORT'))
-        )
-        # TODO(andrew@neuraldev.io): Figure out how to set the db dynamically
-        #  as trying to use app.config does not work in this case.
-        self.db = mongo_client['arc-dev']
+        self.db = mongo.db
         # We create an index to avoid duplicates
         self.db.alloys.create_index([('name', ASCENDING)], unique=True)
 

@@ -7,41 +7,42 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
-__copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
+__license__ = 'TBA'
+__version__ = '0.2.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = '{dev_status}'
 __date__ = '2019.07.12'
 """test_api_base.py: 
 
-{Description}
+This module is the base TestCase so that we can inherit from it and the settings
+for testing that are initialised in create_app() -- interface by Flask-Testing.
 """
 
 import os
 
 import redis
-from flask_session import Session
 from flask_testing import TestCase
 
-from sim_api import create_app
+from sim_app.app import create_app, mongo, sess
 
 app = create_app()
-sess = Session()
 
 
 class BaseTestCase(TestCase):
-    redis = None
-    host = os.environ.get('REDIS_HOST')
-    port = int(os.environ.get('REDIS_PORT'))
-    db = int(app.config['REDIS_DB'])
-
     def create_app(self):
-        app.config.from_object('configs.flask_configs.TestingConfig')
-        self.redis = redis.Redis(host=self.host, port=self.port, db=self.db)
-        self.redis.client_setname('arc_sim_redis_testing')
+        app.config.from_object('configs.flask_conf.TestingConfig')
+
+        self.redis = redis.Redis(
+            host=os.environ.get('REDIS_HOST'),
+            port=int(os.environ.get('REDIS_PORT')),
+            db=app.config['REDIS_DB']
+        )
+        app.config['SESSION_REDIS'] = self.redis
+        sess.init_app(app)
+        mongo.init_app(app)
+        self.assertEqual(mongo.db.name, 'arc_test')
         return app
 
     def tearDown(self) -> None:

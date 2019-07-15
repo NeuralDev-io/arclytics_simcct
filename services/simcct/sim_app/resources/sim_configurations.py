@@ -27,10 +27,10 @@ import numpy as np
 from flask import Blueprint, session, request, jsonify
 from marshmallow import ValidationError
 
-from sim_api.schemas import CompositionSchema
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
-from sim_api.middleware import token_required
+from sim_app.middleware import token_required
+from sim_app.schemas import CompositionSchema
 
 configs_blueprint = Blueprint('configs', __name__)
 

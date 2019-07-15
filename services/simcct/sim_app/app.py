@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# __init__.py
+# app.py
 #
 # Attributions:
 # [1]
@@ -9,12 +9,12 @@
 __author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['']
 __license__ = 'TBA'
-__version__ = '0.1.0'
+__version__ = '0.5.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.09'
-"""__init__.py:
+"""app.py:
 
 This is the entrypoint to our SimCCT Flask API server.
 """
@@ -24,19 +24,16 @@ import json
 import sys
 from datetime import datetime
 
-import redis
 import numpy as np
 from dotenv import load_dotenv
 from bson import ObjectId
 from flask import Flask
 from flask_cors import CORS
+from flask_pymongo import PyMongo
 from flask_restful import Api
 from flask_session import Session as FlaskSession
-from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
 
-from sim_api.resources.session import Session, UsersPing
-from sim_api.resources.alloys import Alloys
+from sim_app.resources.session import Session, UsersPing
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -75,67 +72,50 @@ DATE_FMT = '%Y-%m-%d'
 # Some Flask extensions
 cors = CORS()
 sess = FlaskSession()
+mongo = PyMongo()
 
 
 def create_app(script_info=None) -> Flask:
-    """Default Flask method to start the Flask server through the script."""
+    """Default Flask method to create a Flask app and its context. It sets
+    the configurations first and then initialises the extensions to other
+    required libraries to be used in the application.
 
-    # instantiate the application
+    Args:
+        script_info: None
+
+    Returns:
+        A Flask app object.
+    """
+
+    # Instantiate the application
     app = Flask(__name__)
 
     # ========== # CONFIGURATIONS # ========== #
     app_settings = os.getenv('APP_SETTINGS')
     app.config.from_object(app_settings)
 
-    # ========== # CONNECT TO DATABASE # ========== #
-    # Mongo Client interface with PyMongo
-    app.config['MONGO_HOST'] = os.environ.get('MONGO_HOST', '')
-    app.config['MONGO_PORT'] = os.environ.get('MONGO_PORT', 27017)
-    # app.config['MONGO_USER'] = os.environ.get('MONGODB_USER', '')
-    # stored in .env
-    # app.config['MONGO_PASSWORD'] = os.environ.get('MONGODB_PASSWORD', None)
-    # stored in .env
-
-    # Connect to the Mongo Client
-    # TODO(andrew@neuraldev.io): Need to set the password in production
-    # mongo_client = MongoClient(
-    #     host=app.config['MONGO_HOST'], port=int(app.config['MONGO_PORT'])
-    # )
-    # try:
-    #     mongo_client.admin.command('ismaster')
-    # except ConnectionFailure as e:
-    #     print('[DEBUG] Unable to Connect to MongoDB')
-
-    # Redis Client
-    # TODO(andrew@neuraldev.io): Need to set the password in production
-    redis_client = redis.Redis(
-        host=os.environ.get('REDIS_HOST'),
-        port=int(os.environ.get('REDIS_PORT')),
-        db=int(app.config['REDIS_DB'])
-    )
-
     # ========== # INIT FLASK EXTENSIONS # ========== #
     cors.init_app(app)
-
     # Flask-Session and Redis
-    app.config['SESSION_TYPE'] = 'redis'
-    app.config['SESSION_REDIS'] = redis_client
-    app.config['SESSION_USER_SIGNER'] = True
-    app.config['SESSION_PERMANENT'] = True
-    app.config['SESSION_KEY_PREFIX'] = 'session:'
     sess.init_app(app)
+    mongo.init_app(app)
 
-    from sim_api.resources.session import session_blueprint
+    from sim_app.resources.session import session_blueprint
     api = Api(session_blueprint)
 
     # Register blueprints
     app.register_blueprint(session_blueprint)
-    from sim_api.resources.sim_configurations import configs_blueprint
+    from sim_app.resources.sim_configurations import configs_blueprint
     app.register_blueprint(configs_blueprint)
-    from sim_api.resources.alloys import alloys_blueprint
-    app.register_blueprint(alloys_blueprint)
+    # from sim_app.resources.alloys import alloys_blueprint
+    # app.register_blueprint(alloys_blueprint)
 
     # ========== # API ROUTES # ========== #
+    # Importing within Flask app context scope because trying to init the
+    # the MongoAlloys adapter and the database before mongo.init_app(app)
+    # will raise all sorts of import issues.
+    from sim_app.resources.alloys import Alloys
+
     api.add_resource(Session, '/session')
     api.add_resource(UsersPing, '/users/ping')
     api.add_resource(Alloys, '/alloys')
@@ -147,6 +127,6 @@ def create_app(script_info=None) -> Flask:
     # Shell context for Flask CLI
     @app.shell_context_processor
     def ctx():
-        return {'app': app}
+        return {'app': app, 'mongo': mongo}
 
     return app

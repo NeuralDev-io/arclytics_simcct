@@ -27,9 +27,9 @@ from pathlib import Path
 from bson import ObjectId
 from flask import current_app as app
 
-from sim_api import BASE_DIR
+from sim_app.app import BASE_DIR
 from tests.test_api_base import BaseTestCase
-from sim_api.schemas import ElementSchema
+from sim_app.schemas import ElementSchema
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 

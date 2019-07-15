@@ -23,8 +23,8 @@ from flask import Blueprint, request, json
 from flask_restful import Resource
 from marshmallow import ValidationError
 
-from sim_api.schemas import AlloySchema
-from sim_api.alloys_service import AlloysService
+from sim_app.schemas import AlloySchema
+from sim_app.alloys_service import AlloysService
 
 alloys_blueprint = Blueprint('alloys', __name__)
 

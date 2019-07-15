@@ -124,10 +124,10 @@ def async_register_session(user: User = None,
         auth_token: a stringified type of the User's JWT token.
 
     Returns:
-        The response from the simcct-server.
+        The response from the simcct server.
     """
 
-    # We now need to send a request to the simcct-server to initiate
+    # We now need to send a request to the simcct server to initiate
     # a session as a server-side store to save the last compositions
     # TODO(andrew@neuraldev.io): need to also set last configurations.
     simcct_host = os.environ.get('SIMCCT_HOST', None)
@@ -142,7 +142,7 @@ def async_register_session(user: User = None,
     if isinstance(user, User):
         user_id = user.id
 
-        # We get the configurations if None, otherwise simcct-server is
+        # We get the configurations if None, otherwise simcct server is
         # expecting an empty dict.
 
         if user.last_configuration is not None:
@@ -215,7 +215,7 @@ def login() -> Tuple[dict, int]:
             user.last_login = datetime.utcnow()
             user.save()
 
-            # We will register the session for the user to the simcct-server
+            # We will register the session for the user to the simcct server
             # in the background so as not to slow the login process down.
             thr = Thread(
                 target=async_register_session, args=[user,

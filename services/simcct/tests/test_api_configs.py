@@ -7,33 +7,34 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
-__copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
+__license__ = 'TBA'
+__version__ = '0.2.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = '{dev_status}'
+__status__ = 'development'
 __date__ = '2019.07.12'
 """test_api_configs.py: 
 
-{Description}
+This module tests the configurations are as we expect them. 
 """
 
 import os
 import unittest
 
-from flask import current_app
+from flask import current_app, session
 from flask_testing import TestCase
 
-from sim_api import create_app
+from sim_app.app import create_app, mongo, sess
 
 app = create_app()
 
 
 class TestDevelopmentConfig(TestCase):
     def create_app(self):
-        app.config.from_object('configs.flask_configs.DevelopmentConfig')
+        app.config.from_object('configs.flask_conf.DevelopmentConfig')
+        mongo.init_app(app)
+        sess.init_app(app)
         return app
 
     def test_app_is_development(self):
@@ -43,11 +44,14 @@ class TestDevelopmentConfig(TestCase):
         self.assertFalse(current_app is None)
         self.assertTrue(app.config['MONGO_DBNAME'] == 'arc_dev')
         self.assertTrue(app.config['REDIS_DB'] == 1)
+        self.assertEqual(mongo.db.name, 'arc_dev')
 
 
 class TestTestingConfig(TestCase):
     def create_app(self):
-        app.config.from_object('configs.flask_configs.TestingConfig')
+        app.config.from_object('configs.flask_conf.TestingConfig')
+        mongo.init_app(app)
+        sess.init_app(app)
         return app
 
     def test_app_is_testing(self):
@@ -58,11 +62,15 @@ class TestTestingConfig(TestCase):
         self.assertFalse(app.config['PRESERVE_CONTEXT_ON_EXCEPTION'])
         self.assertTrue(app.config['MONGO_DBNAME'] == 'arc_test')
         self.assertTrue(app.config['REDIS_DB'] == 15)
+        self.assertTrue(app.config['SESSION_REDIS'])
+        self.assertEqual(mongo.db.name, 'arc_test')
 
 
 class TestProductionConfig(TestCase):
     def create_app(self):
-        app.config.from_object('configs.flask_configs.ProductionConfig')
+        app.config.from_object('configs.flask_conf.ProductionConfig')
+        mongo.init_app(app)
+        sess.init_app(app)
         return app
 
     def test_app_is_production(self):
@@ -72,6 +80,7 @@ class TestProductionConfig(TestCase):
         self.assertFalse(app.config['TESTING'])
         self.assertTrue(app.config['MONGO_DBNAME'] == 'arclytics')
         self.assertTrue(app.config['REDIS_DB'] == 0)
+        self.assertEqual(mongo.db.name, 'arclytics')
 
 
 if __name__ == '__main__':

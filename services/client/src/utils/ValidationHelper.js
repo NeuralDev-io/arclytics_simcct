@@ -53,7 +53,7 @@ export const signupValidation = values => {
     if (!password) {
       errors.password = 'Required'
     } else if (password.length < 6 || password.length > 254) {
-      errors.password = 'Password must be more than 6 characters'
+      errors.password = 'Password must contain at least 6 characters'
     }
   
     if (!passwordConfirmed) {

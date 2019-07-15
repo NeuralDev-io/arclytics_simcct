@@ -2,20 +2,16 @@
 // @import "../../../styles/_typography.scss";
 // @import "src/assets/background.png";
  
-$bg-img: url('../../../assets/bg-image.png');
+$bg-img: url('../../../assets/background_img-min.png');
+@import '../../../styles/colors_light';
 
 .outer{
     width: 100vw;
     height: 100vh;
-    background: $bg-img no-repeat center center fixed;
-    background-size: cover;
-    // background-image: $bg-img;
-    padding-top: 8.0632rem;
-    // background-repeat: no-repeat;
-    // background-position: right -120% bottom -120px;
-    // background-color: #F6F6F6;
-    // background-size: cover;
-    overflow:hidden;
+    padding-top: 8rem;
+    background: $n0 $bg-img no-repeat center center fixed;
+    background-size: 135%;
+    background-position: 43.484375rem;
 }
 
 .form{
@@ -23,8 +19,15 @@ $bg-img: url('../../../assets/bg-image.png');
     width: 23.75rem;
 }
 
-.logo{
+
+.logoContainer{
     margin-bottom: 7.624375rem;
+}
+
+.logo{
+    height: 3.750625rem;
+    margin-right: 1.5rem;
+    float:left;
 }
 
 .signUp{
@@ -60,10 +63,10 @@ $bg-img: url('../../../assets/bg-image.png');
 
 
 .signIn{
-    height: 2.5rem;
-    color: #299D67;
+    color: $ag500;
+    text-decoration: none;
 }
 
 .errors{
-    color:red;
+    color: $r400;
 }

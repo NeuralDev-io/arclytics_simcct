@@ -14,6 +14,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
+import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { signup } from '../../../utils/AuthenticationHelper'
 import { signupValidation } from '../../../utils/ValidationHelper'
 
@@ -33,7 +34,11 @@ class SignupPage extends Component {
     return (
       <div className={styles.outer}>
         <div className={styles.form}>
-          <div className={styles.logo}><h3> ARCLYTICS </h3> </div>
+          
+          <div className={styles.logoContainer}>
+            <Logo className={styles.logo}/>
+            <h3> ARCLYTICS </h3> 
+          </div>
           <div className={styles.signUp}> <h3> Sign Up </h3> </div>
           <Formik
               initialValues={{ 
@@ -45,7 +50,7 @@ class SignupPage extends Component {
                 passwordConfirmed: '',
               }}
               validate={signupValidation}
-              onSubmit={async (values, { setSubmitting, setStatus }) => {
+              onSubmit={async (values, { setSubmitting, setErrors,  setStatus }) => {
                 setSubmitting(true)
                 const promise = new Promise((resolve, reject) => {
                   signup(values, resolve, reject)
@@ -56,7 +61,19 @@ class SignupPage extends Component {
                   setSubmitting(false)
                 })
                 .catch(err => {
-                  setStatus({ message: err})
+                  if (err === "This user already exists."){
+                    setErrors({
+                      email: "This email already exists"
+                    })
+                  } else {
+                    setErrors({
+                      firstName: "Invalid first name",
+                      lastName: "Invalid last name",
+                      email: "Invalid email",
+                      password: "Password must contain at least 6 characters",
+                      confirmPassword: "Passwords do not match"
+                    })
+                  }   
                   setSubmitting(false)
                 })
               }}
@@ -69,8 +86,7 @@ class SignupPage extends Component {
                 handleBlur,
                 handleSubmit,
                 setFieldValue,
-                isSubmitting,
-                submitForm
+                isSubmitting
               }) => (
                 <form onSubmit={handleSubmit}>
                   <div>
@@ -111,6 +127,7 @@ class SignupPage extends Component {
                         value={values.email}
                         placeholder="Email"
                         length="stretch"
+
                       />
                       <h6 className={styles.errors}>{errors.email && touched.email && errors.email}</h6>
                     </div>
@@ -140,14 +157,13 @@ class SignupPage extends Component {
                     </div> 
                   </div>
                   <div className={styles.signUpButton}>
-                    <h6 className={styles.errors}>{status && status.message && status.message}</h6>
                     <Button name="SIGN UP" appearance="default" type="submit" length="small" disabled={isSubmitting}> SIGNUP </Button>
                   </div>
                 </form>
               )}
             </Formik>
           <div>
-            <h6> Already have an account? <a href="localhost:signin" className={styles.signIn}> Sign in </a> </h6>
+            <h6> Already have an account? <a href="http://localhost:3000/signin" className={styles.signIn}> Sign in </a> </h6>
           </div>
         </div>
       </div>

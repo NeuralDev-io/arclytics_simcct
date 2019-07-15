@@ -1,11 +1,12 @@
-$bg-img: url('../../../assets/bg-image-min.png');
+$bg-img: url('../../../assets/background_img-min.png');
+@import '../../../styles/colors_light';
 
 .outer{
     height:100vh;
     width:100vw;
     padding-top: 8rem;
-    background: #F6F6F6 $bg-img no-repeat center center fixed;
-    background-size: cover;
+    background: $n0 $bg-img no-repeat center center fixed;
+    background-size: 135%;
     background-position:  43.484375rem;
 }
 
@@ -19,7 +20,6 @@ $bg-img: url('../../../assets/bg-image-min.png');
     height: 3.750625rem;
     margin-right: 1.5rem;
     float:left;
-    // width: 20px;
 }
 
 .logoContainer{
@@ -46,13 +46,13 @@ $bg-img: url('../../../assets/bg-image-min.png');
 
 .help{
     float:right;
-    color:#299D67;
+    color:$ag500;
     margin-bottom: 3rem;
     margin-right: 0.774375rem;
 }
 
 .createAccount{
-    color:#299D67;
+    color:$ag500;
     text-decoration: none;
 }
 
@@ -60,5 +60,5 @@ $bg-img: url('../../../assets/bg-image-min.png');
     margin-top: 5.1825rem;
 }
 .errors{
-    color: #D54E4E;
+    color: $r400;
 }

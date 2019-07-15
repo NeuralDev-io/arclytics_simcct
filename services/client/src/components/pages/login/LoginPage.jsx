@@ -44,7 +44,7 @@ class LoginPage extends Component {
                 .catch(err => {
                   console.log(err) // for debug only
                     setErrors({ 
-                      email: "Email is invalid",
+                      email: "Invalid email",
                       password: "Password is invalid"
                     })          
                   setSubmitting(false)

@@ -62,16 +62,14 @@ def seed_alloy_db():
     client = MongoClient(host=os.environ.get('MONGO_HOST'),
                          port=int(os.environ.get('MONGO_PORT')))
     db = client['arc_dev']
-    path = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+    path = Path(BASE_DIR) / 'seed_alloy_data.json'
     if os.path.isfile(path):
         with open(path) as f:
-            data = json.load(f)
-
-    comp = data['compositions']
+            json_data = json.load(f)
 
     from sim_app.schemas import AlloySchema
-    data = AlloySchema().load({'name': 'Alloy-1', 'compositions': comp})
-    db.alloys.insert_one(data)
+    data = AlloySchema(many=True).load(json_data['alloys'])
+    db.alloys.insert_many(data)
     import pprint
     for alloy in db.alloys.find():
         pprint.pprint(alloy)
@@ -81,9 +79,6 @@ def seed_alloy_db():
 def flush():
     client = MongoClient(host=os.environ.get('MONGO_HOST'),
                          port=int(os.environ.get('MONGO_PORT')))
-    client['arc'].drop_collection('alloys')
-    client['arc_dev'].drop_collection('alloys')
-    client['arc_test'].drop_collection('alloys')
     client.drop_database('arc')
     client.drop_database('arc-dev')
     client.drop_database('arc-test')

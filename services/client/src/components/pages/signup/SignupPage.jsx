@@ -56,11 +56,13 @@ class SignupPage extends Component {
                   signup(values, resolve, reject)
                 })
                 promise.then(data => {
+                  //If response is successful 
                   localStorage.setItem('token', data.token)
                   this.props.history.push('/')
                   setSubmitting(false)
                 })
                 .catch(err => {
+                  //If response is unsuccessful
                   if (err === "This user already exists."){
                     setErrors({
                       email: "This email already exists"

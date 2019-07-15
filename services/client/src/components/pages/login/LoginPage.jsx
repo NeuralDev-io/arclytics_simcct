@@ -37,12 +37,13 @@ class LoginPage extends Component {
                   login(values, resolve, reject)
                 })
                 promise.then(data => {
+                  // If response is successful 
                   localStorage.setItem('token', data.token)
                   this.props.history.push('/')
                   setSubmitting(false)
                 })
                 .catch(err => {
-                  console.log(err) // for debug only
+                  //If response is unsuccessful
                     setErrors({ 
                       email: "Invalid email",
                       password: "Password is invalid"

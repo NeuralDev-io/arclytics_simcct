@@ -26,7 +26,7 @@ export const login = async (values, resolve, reject) => {
       resolve(res.json())
     }
     else if (res.status === 404){
-      console.log("work")
+      //return an error message as string
       res.json().then(object => reject(object.message))
     }
   })
@@ -54,6 +54,7 @@ export const signup = async (values, resolve, reject) => {
         resolve(res.json())
       }
       else if (res.status === 400){
+        //return an error message as string
         res.json().then(object => reject(object.message))
       }
     })

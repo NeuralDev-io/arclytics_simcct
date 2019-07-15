@@ -11,6 +11,24 @@
  * @author Arvy Salazar
  * @github Xaraox
  */
+export const loginValidation = values => {
+  const { email, password } = values
+  let errors = {}
+  if (!email) {
+    errors.email = 'Required'
+  } else if (
+    !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
+  ) {
+    errors.email = 'Email is invalid'
+  }
+  if (!password) {
+    errors.password = 'Required'
+  } else if (password.length < 6 || password.length > 20) {
+    errors.password = 'Password is invalid'
+  }
+  return errors
+}
+
 export const signupValidation = values => {
     const {
       email, firstName, lastName, password, passwordConfirmed

@@ -11,6 +11,29 @@
  * @author Arvy Salazar
  * @github Xaraox
  */
+
+export const login = async (values, resolve, reject) => {
+  fetch('http://localhost:8000/auth/login', {
+    method: 'POST',
+    mode: 'cors',
+    headers: {
+      "content-Type": "application/json"
+    },
+    body: JSON.stringify(values)
+  })
+  .then(res => {
+    if (res.status === 200){
+      resolve(res.json())
+    }
+    else if (res.status === 404){
+      console.log("work")
+      res.json().then(object => reject(object.message))
+    }
+  })
+  .catch(err => console.log(err))
+}
+
+
 export const signup = async (values, resolve, reject) => {
     const { email, password, firstName, lastName } = values
     fetch('http://localhost:8000/auth/register', {

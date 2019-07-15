@@ -1,17 +1,29 @@
+$bg-img: url('../../../assets/bg-image-min.png');
 
 .outer{
     height:100vh;
     width:100vw;
+    padding-top: 8rem;
+    background: #F6F6F6 $bg-img no-repeat center center fixed;
+    background-size: cover;
+    background-position:  43.484375rem;
 }
 
+
 .form{
-    margin-top: 8.25rem;
     margin-left: 11.25rem;
     width: 23.75rem;
 }
 
 .logo{
-    margin-bottom: 10.375px;
+    height: 3.750625rem;
+    margin-right: 1.5rem;
+    float:left;
+    // width: 20px;
+}
+
+.logoContainer{
+    margin-bottom: 7.624375rem;
 }
 
 .header{
@@ -20,11 +32,12 @@
 
 .email{
     margin-bottom: 3.84375rem;
-
+    height:2.25rem;
 }
 
 .password{
     margin-bottom: 1.625rem;
+    height:2.25rem;
 }
 
 .signIn{
@@ -45,4 +58,7 @@
 
 .clear{
     margin-top: 5.1825rem;
+}
+.errors{
+    color: #D54E4E;
 }

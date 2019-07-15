@@ -1,0 +1,384 @@
+{
+	"alloys": [
+		{
+			"name": "330M_Alloy1",
+			"compositions": [
+				{
+					"name": "carbon",
+					"symbol": "cx",
+					"weight": 0.3
+				},
+				{
+					"name": "managanese",
+					"symbol": "mn",
+					"weight": 0.78
+				},
+				{
+					"name": "silicon",
+					"symbol": "si",
+					"weight": 1.6
+                },
+                {
+                    "name": "nickle",
+                    "symbol": "ni",
+                    "weight": 1.9
+                },
+                {
+                    "name": "chrome",
+                    "symbol": "cr",
+                    "weight": 0.91
+                },
+                {
+                    "name": "molybdenum",
+                    "symbol": "mo",
+                    "weight": 0.39
+                },
+                {
+                    "name": "cobalt",
+                    "symbol": "co",
+                    "weight": 0.0
+                },
+                {
+                    "name": "aluminium",
+                    "symbol": "al",
+                    "weight": 0.0
+                },
+                {
+                    "name": "copper",
+                    "symbol": "cu",
+                    "weight": 0.0
+                },
+                {
+                    "name": "arsenic",
+                    "symbol": "as",
+                    "weight": 0.0
+                },
+                {
+                    "name": "titanium",
+                    "symbol": "ti",
+                    "weight": 0.0
+                },
+                {
+                    "name": "vanadium",
+                    "symbol": "vx",
+                    "weight": 0.08
+                },
+                {
+                    "name": "tungsten",
+                    "symbol": "wx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "sulphur",
+                    "symbol": "sx",
+                    "weight": 0.003
+                },
+                {
+                    "name": "nitrogen",
+                    "symbol": "nx",
+                    "weight": 0.011
+                },
+                {
+                    "name": "niobium",
+                    "symbol": "nb",
+                    "weight": 0.0
+                },
+                {
+                    "name": "boron",
+                    "symbol": "bx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "phosphurus",
+                    "symbol": "px",
+                    "weight": 0.007
+                }
+			]
+		},
+		{
+			"name": "300M_Alloy2",
+            "compositions": [
+				{
+					"name": "carbon",
+					"symbol": "cx",
+					"weight": 0.044
+				},
+				{
+					"name": "managanese",
+					"symbol": "mn",
+					"weight": 1.73
+				},
+				{
+					"name": "silicon",
+					"symbol": "si",
+					"weight": 0.22
+                },
+                {
+                    "name": "nickle",
+                    "symbol": "ni",
+                    "weight": 0.0
+                },
+                {
+                    "name": "chrome",
+                    "symbol": "cr",
+                    "weight": 0.0
+                },
+                {
+                    "name": "molybdenum",
+                    "symbol": "mo",
+                    "weight": 0.26
+                },
+                {
+                    "name": "cobalt",
+                    "symbol": "co",
+                    "weight": 0.0
+                },
+                {
+                    "name": "aluminium",
+                    "symbol": "al",
+                    "weight": 0.0
+                },
+                {
+                    "name": "copper",
+                    "symbol": "cu",
+                    "weight": 0.0
+                },
+                {
+                    "name": "arsenic",
+                    "symbol": "as",
+                    "weight": 0.0
+                },
+                {
+                    "name": "titanium",
+                    "symbol": "ti",
+                    "weight": 0.0
+                },
+                {
+                    "name": "vanadium",
+                    "symbol": "vx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "tungsten",
+                    "symbol": "wx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "sulphur",
+                    "symbol": "sx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "nitrogen",
+                    "symbol": "nx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "niobium",
+                    "symbol": "nb",
+                    "weight": 0.0
+                },
+                {
+                    "name": "boron",
+                    "symbol": "bx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "phosphurus",
+                    "symbol": "px",
+                    "weight": 0.0
+                }
+			]
+		},
+		{
+			"name": "Bohemen_Alloy1",
+            "compositions": [
+				{
+					"name": "carbon",
+					"symbol": "cx",
+					"weight": 0.69
+				},
+				{
+					"name": "managanese",
+					"symbol": "mn",
+					"weight": 0.61
+				},
+				{
+					"name": "silicon",
+					"symbol": "si",
+					"weight": 0.03
+                },
+                {
+                    "name": "nickle",
+                    "symbol": "ni",
+                    "weight": 0.2
+                },
+                {
+                    "name": "chrome",
+                    "symbol": "cr",
+                    "weight": 0.3
+                },
+                {
+                    "name": "molybdenum",
+                    "symbol": "mo",
+                    "weight": 0.0
+                },
+                {
+                    "name": "cobalt",
+                    "symbol": "co",
+                    "weight": 0.0
+                },
+                {
+                    "name": "aluminium",
+                    "symbol": "al",
+                    "weight": 0.0
+                },
+                {
+                    "name": "copper",
+                    "symbol": "cu",
+                    "weight": 0.23
+                },
+                {
+                    "name": "arsenic",
+                    "symbol": "as",
+                    "weight": 0.0
+                },
+                {
+                    "name": "titanium",
+                    "symbol": "ti",
+                    "weight": 0.0
+                },
+                {
+                    "name": "vanadium",
+                    "symbol": "vx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "tungsten",
+                    "symbol": "wx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "sulphur",
+                    "symbol": "sx",
+                    "weight": 0.04
+                },
+                {
+                    "name": "nitrogen",
+                    "symbol": "nx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "niobium",
+                    "symbol": "nb",
+                    "weight": 0.0
+                },
+                {
+                    "name": "boron",
+                    "symbol": "bx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "phosphurus",
+                    "symbol": "px",
+                    "weight": 0.012
+                }
+			]
+        },
+        {
+			"name": "Bohemen_Alloy2",
+            "compositions": [
+				{
+					"name": "carbon",
+					"symbol": "cx",
+					"weight": 0.044
+				},
+				{
+					"name": "managanese",
+					"symbol": "mn",
+					"weight": 1.73
+				},
+				{
+					"name": "silicon",
+					"symbol": "si",
+					"weight": 0.22
+                },
+                {
+                    "name": "nickle",
+                    "symbol": "ni",
+                    "weight": 0.0
+                },
+                {
+                    "name": "chrome",
+                    "symbol": "cr",
+                    "weight": 0.0
+                },
+                {
+                    "name": "molybdenum",
+                    "symbol": "mo",
+                    "weight": 0.26
+                },
+                {
+                    "name": "cobalt",
+                    "symbol": "co",
+                    "weight": 0.0
+                },
+                {
+                    "name": "aluminium",
+                    "symbol": "al",
+                    "weight": 0.0
+                },
+                {
+                    "name": "copper",
+                    "symbol": "cu",
+                    "weight": 0.0
+                },
+                {
+                    "name": "arsenic",
+                    "symbol": "as",
+                    "weight": 0.0
+                },
+                {
+                    "name": "titanium",
+                    "symbol": "ti",
+                    "weight": 0.0
+                },
+                {
+                    "name": "vanadium",
+                    "symbol": "vx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "tungsten",
+                    "symbol": "wx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "sulphur",
+                    "symbol": "sx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "nitrogen",
+                    "symbol": "nx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "niobium",
+                    "symbol": "nb",
+                    "weight": 0.0
+                },
+                {
+                    "name": "boron",
+                    "symbol": "bx",
+                    "weight": 0.0
+                },
+                {
+                    "name": "phosphurus",
+                    "symbol": "px",
+                    "weight": 0.0
+                }
+			]
+		}	
+	]
+}

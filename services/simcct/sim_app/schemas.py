@@ -17,7 +17,7 @@ __date__ = '2019.07.09'
 """schemas.py: 
 
 These describe the schema required for the configurations and compositions
-that will be received by the simcct-server as request body data. They will
+that will be received by the simcct server as request body data. They will
 be used to validate the post data is correct before adding to any DB.
 """
 

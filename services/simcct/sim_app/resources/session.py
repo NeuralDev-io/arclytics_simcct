@@ -28,8 +28,8 @@ from flask import Blueprint, session, request
 from flask_restful import Resource
 from bson import ObjectId
 
-from sim_api.schemas import (ConfigurationsSchema, CompositionSchema)
-from sim_api.middleware import token_required_restful
+from sim_app.schemas import (ConfigurationsSchema, CompositionSchema)
+from sim_app.middleware import token_required_restful
 
 session_blueprint = Blueprint('session', __name__)
 

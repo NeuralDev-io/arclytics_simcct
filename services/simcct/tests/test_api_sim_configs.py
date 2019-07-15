@@ -29,7 +29,7 @@ from pathlib import Path
 from bson import ObjectId
 from flask import session, current_app
 
-from sim_api import BASE_DIR
+from sim_app.app import BASE_DIR
 from tests.test_api_base import BaseTestCase
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'

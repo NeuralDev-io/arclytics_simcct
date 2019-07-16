@@ -20,9 +20,11 @@ pipelines:
             - pip3 install --quiet --cache-dir ~/.pip3/cache --upgrade pip
             - pip3 install --quiet --cache-dir ~/.pip3/cache docker-compose==1.24.0
             - docker-compose -v
-            - docker-compose up -d --build
+            - docker-compose up -d --build simcct users-server redis mongodb client
             # This should start the test runner for the API server
-            - docker-compose exec -T users-server python manage.py test_coverage
+#            - ./run_tests.sh -c -t server
+            - docker-compose exec -T users-server python manage.py test
+            - docker-compose exec -T simcct python manage.py test
             - docker-compose down
 
 definitions:

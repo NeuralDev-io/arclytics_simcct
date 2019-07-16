@@ -1,0 +1,1445 @@
+openapi: 3.0.2
+info:
+  version: 0.2.0
+  title: "Arclytics Sim API"
+  description: "Swagger spec for documenting the users and simulation service"
+
+servers:
+  - description: "Users Service Flask Server"
+    url: 'http://localhost:8000'
+  - description: "SimCCT Service Flask Server"
+    url: 'http://localhost:8001'
+
+paths:
+  /ping:
+    get:
+      summary: "Just a sanity check"
+      tags:
+        - Users
+      responses:
+        '200':
+          description: "You are not crazy."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: "The status of `success` or `fail`."
+                  message:
+                    type: string
+                    description: "The message response"
+              example:
+                status: "success"
+                message: "pong!"
+  /users:
+    get:
+      summary: "Returns all users"
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "A list of User objects"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+                example:
+                  - _id: "5d2339db2d789ae1a9f15a9e"
+                    email: "iron_man@avengers.io"
+                    first_name: "Tony"
+                    last_name: "Stark"
+                    active: true
+                    admin: true
+                    created: '2019-07-08T12:40:55.948000+00:00'
+                    last_updated: '2019-07-08T12:40:55.948000+00:00'
+                    last_login: '2019-07-08T12:40:59.168000+00:00'
+                    profile: None
+                  - _id: "5d2339db2d789ae1a9f15a9f"
+                    email: "captain_america@avengers.io"
+                    first_name: "Steve"
+                    last_name: "Rogers"
+                    active: false
+                    admin: false
+                    created: '2019-07-08T12:40:55.948000+00:00'
+                    last_updated: '2019-07-08T12:40:55.948000+00:00'
+                    last_login: None
+                    profile: None
+                  - _id: "5d2339db2d789ae1a9f15aa0"
+                    email: "black_widow@avengers.io"
+                    first_name: "Natasha"
+                    last_name: "Romanoff"
+                    active: false
+                    admin: false
+                    verified: true
+                    created: '2019-07-08T12:40:55.948000+00:00'
+                    last_updated: '2019-07-08T12:40:55.948000+00:00'
+                    last_login: None
+                    profile: None
+        '400':
+          description: "The request parameters are bad."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                    example: "fail"
+                  message:
+                    type: string
+                    format: string
+                    example: "Provide a valid JWT auth token."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Not Logged In':
+                  value:
+                    status: "fail"
+                    message: "Admin must sign in again."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        '403':
+          description: "Unauthorized access to endpoint."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
+  '/users/{id}':
+    get:
+      summary: "Returns a user based on a single user ID"
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          description: "ID of user to fetch"
+          required: true
+          schema:
+            type: string
+            format: bytes
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Returns the user object successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                    example: "success"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '400':
+          description: "The request parameters are bad."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                    example: "fail"
+                  message:
+                    type: string
+                    format: string
+                    example: "Provide a valid JWT auth token."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Not Logged In':
+                  value:
+                    status: "fail"
+                    message: "User must sign in again."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+  /auth/register:
+    post:
+      summary: "Register and create a new user"
+      tags:
+        - Auth
+      requestBody:
+        description: "User details to add"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+              required:
+                - email
+                - password
+                - first_name
+                - last_name
+            examples:
+              'Thor':
+                value:
+                  email: "thor@avengers.io"
+                  first_name: "Thor"
+                  last_name: "Odinson"
+                  password: "StrongestAvenger"
+      responses:
+        '200':
+          description: "The user has been successfully created and you get an ID back."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "User has been registered"
+                  token:
+                    type: string
+                    format: byte
+                    example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjI1OTAzOTYsImlhdCI6MTU2MjU5MDM5MSwic3ViIjoiNWQyMzNjYjcxODE3YjIwNzU5NjZkNWJiIn0.SNRHYOgw2jAkIVWkuWA0a_PXu9S_QGcb2W7wrvXlqQk"
+        '400':
+          description: "Invalid payload in request body."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Bad Request Body':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Email':
+                  value:
+                    status: "fail"
+                    message: "A user account must have an email."
+                'No Password':
+                  value:
+                    status: "fail"
+                    message: "A user account must have a password."
+                'Invalid Password':
+                  value:
+                    status: "fail"
+                    message: "The password is invalid."
+                'Duplicate User':
+                  value:
+                    status: "fail"
+                    message: "This user already exists."
+                'Validation Error on Backend':
+                  value:
+                    status: "fail"
+                    message: "This user cannot be validated."
+                'Unique Consistency Error':
+                  value:
+                    status: "fail"
+                    message: "The user details already exists."
+
+  /auth/login:
+    post:
+      summary: "Logs a user in"
+      tags:
+        - Auth
+      requestBody:
+        description: "User to log in"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+            example:
+              email: tony@avengers.io
+              password: IAmIronMan
+      responses:
+        '200':
+          description: "Successfully logged in"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    format: bytes
+                  message:
+                    type: string
+                    format: string
+              example:
+                status: "fail"
+                message: "User does not exist."
+        default:
+          description: "Something went wrong with validating details."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                value:
+                  status: "fail"
+                  message: "Email or password combination incorrect."
+  /auth/status:
+    get:
+      summary: "Returns the logged in user's status"
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Response status and the user details."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/User'
+              example:
+                status: "success"
+                data:
+                  _id: 5d2340060f8b5fa4a8daca91
+                  email: scarlet_witch@avengers.io
+                  first_name: Wanda
+                  last_name: Maximoff
+                  active: true
+                  admin: false
+                  verified: false
+                  created: '2019-07-08T13:07:16.080000+00:00'
+                  last_updated: '2019-07-08T13:07:16.080000+00:00'
+                  last_login: '2019-07-08T13:07:18.042000+00:00'
+                  profile: None
+        '400':
+          description: "Bad request body provided with no JSON Web Token."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Non Active User':
+                  value:
+                    status: "fail"
+                    message: "This user does not exist."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+  /auth/logout:
+    get:
+      summary: "Logs a user out"
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Successfully logged out"
+
+  /users/ping:
+    servers:
+      - url: http://localhost:8001
+    get:
+      summary: "Just a sanity check that simcct server can sanely connect to users-server."
+      tags:
+        - Sessions
+      responses:
+        '200':
+          description: "You are not crazy."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: "The status of `success` or `fail`."
+                  message:
+                    type: string
+                    description: "The message response"
+              example:
+                status: "success"
+                message: "pong!"
+
+  /alloys:
+    servers:
+      - url: http://localhost:8001
+    post:
+      summary: "Create a new alloy and store it in the Alloys database."
+      tags:
+        - Alloys
+      requestBody:
+        description: "The alloy to be added."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Alloy'
+            examples:
+              'Arc Stark':
+                value:
+                  name: "Arc_Stark"
+                  compositions:
+                    - name: "palladium"
+                      symbol: "pd"
+                      weight: 0.05
+                    - name: "vibranium"
+                      symbol: "vb"
+                      weight: 0.5
+                    - name: "carbon"
+                      symbol: "cx"
+                      weight: 0.2
+              'Wakanda Shield':
+                value:
+                  name: "Wakandan_Shield"
+                  compositions:
+                    - name: "vibranium"
+                      symbol: "vb"
+                      weight: 2.0
+                    - name: "carbon"
+                      symbol: "cx"
+                      weight: 1.0
+      responses:
+        '201':
+          description: "An alloy has been successfully created and stored in the database."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: "The status of `success` or `fail`."
+                  _id:
+                    type: string
+                    format: byte
+                    description: "The ObjectId primary key of the Alloy in the database."
+              example:
+                status: "success"
+                _id: "5d2345560f8b5fa4a8daca89"
+        '400':
+          description: "An invalid payload has been sent."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Invalid Alloy payload schema':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                    errors:
+                      compositions:
+                        - "Missing data for required field."
+        '412':
+          description: "The name is not a unique value."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                - status: "fail"
+                  message: "Alloy already exists."
+    get:
+      summary: "The full list of Alloys from the database."
+      tags:
+        - Alloys
+      responses:
+        '200':
+          description: "The request has been successful and there is data to respond with."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  alloys:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alloy'
+                    example:
+                      - _id: "5d2d81cff091de1cf091674b"
+                        name: "Arc_Stark"
+                        compositions:
+                          - name: "palladium"
+                            symbol: "pd"
+                            weight: 0.05
+                          - name: "vibranium"
+                            symbol: "vb"
+                            weight: 0.5
+                          - name: "carbon"
+                            symbol: "cx"
+                            weight: 0.2
+                      - _id: "5d2d811b88a3fafd802ca7cd"
+                        name: "Wakandan_Shield"
+                        compositions:
+                          - name: "vibranium"
+                            symbol: "vb"
+                            weight: 2.0
+                          - name: "carbon"
+                            symbol: "cx"
+                            weight: 1.0
+        '400':
+          description: "An invalid payload has been sent."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Invalid ObjectId"
+        '404':
+          description: "No content found in database."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Empty."
+  /alloys/{id}:
+    servers:
+      - url: http://localhost:8001
+    get:
+      summary: "Get a single alloy from the Alloys database."
+      tags:
+        - Alloys
+      parameters:
+        - name: id
+          in: path
+          description: "An ObjectId of an existing Alloy in the database."
+          required: true
+          schema:
+            type: string
+            format: bytes
+      responses:
+        '200':
+          description: "The request has been successful."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/Alloy'
+        '400':
+          description: "Invalid payload sent in the request body."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Invalid ObjectId"
+        '404':
+          description: "Cannot find an existing alloy with that ID."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Alloy not found."
+    put:
+      summary: "Update a single existing Alloy."
+      tags:
+        - Alloys
+      requestBody:
+        description: "The alloy to be added."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Alloy'
+            examples:
+              'Arc Stark':
+                value:
+                  _id: "5d2d81cff091de1cf091674b"
+                  name: "Arc_Stark"
+                  compositions:
+                    - name: "palladium"
+                      symbol: "pd"
+                      weight: 0.0
+                    - name: "vibranium"
+                      symbol: "vb"
+                      weight: 0.8
+                    - name: "carbon"
+                      symbol: "cx"
+                      weight: 0.3
+                    - name: "carbonadium"
+                      symbol: "cb"
+                      weight: 0.001
+      parameters:
+        - name: id
+          in: path
+          description: "An ObjectId of an existing Alloy in the database."
+          required: true
+          schema:
+            type: string
+            format: bytes
+      responses:
+        '202':
+          description: "The request was successful and the updated Alloy is returned."
+          content:
+            application/json:
+              schema:
+                properties:
+                  _id:
+                    type: string
+                    format: byte
+                    example: "5d2d81cff091de1cf091674b"
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/Alloy'
+              example:
+                status: "success"
+                data:
+                  name: "Arc_Stark"
+                  compositions:
+                    - name: "palladium"
+                      symbol: "pd"
+                      weight: 0.0
+                    - name: "vibranium"
+                      symbol: "vb"
+                      weight: 0.8
+                    - name: "carbon"
+                      symbol: "cx"
+                      weight: 0.3
+                    - name: "carbonadium"
+                      symbol: "cb"
+                      weight: 0.001
+        '400':
+          description: "An invalid payload has been sent."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty JSON':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Bad ID in Parameters':
+                  value:
+                    status: "fail"
+                    message: "Invalid ObjectId."
+                'Not Valid Alloy JSON':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                    errors:
+                      compositions:
+                        - "Missing data for required field."
+        '404':
+          description: "Cannot find an existing alloy so no content returned."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Alloy not found."
+    delete:
+      summary: "Delete a single alloy by ID."
+      tags:
+        - Alloys
+      parameters:
+        - name: id
+          in: path
+          description: "An ObjectId of an existing Alloy in the database."
+          required: true
+          schema:
+            type: string
+            format: bytes
+      responses:
+        '202':
+          description: "Your request was successfully completed."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+        '400':
+          description: "An invalid request parameter has been sent."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Invalid ObjectId."
+        '404':
+          description: "No existing alloy to delete."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Alloy not found."
+
+  /configs/method/update:
+    servers:
+      - url: http://localhost:8001
+    post:
+      summary: "Update the method used in the Session store of the current user."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  enum: ['Li98', 'Kirkaldy83']
+            examples:
+              Kirkaldy83:
+                value:
+                  method: "Kirkaldy83"
+              Li98:
+                value:
+                  method: "Li98"
+      tags:
+        - Configurations
+      responses:
+        '200':
+          description: "Method changed successfully for the current user."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                message: "Changed to Kirkaldy83 method."
+        '400':
+          description: 'Invalid payload sent in the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Method Key':
+                  value:
+                    status: "fail"
+                    message: "No method was provided."
+                'Bad Method Type':
+                  value:
+                    status: "fail"
+                    message: "Invalid method provided (must be Li98 or Kirkaldy83)"
+        '401':
+          description: "Unauthorized access to the endpoint."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Token':
+                  value:
+                    status: "fail"
+                    message: "No valid Authorization in header."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid JWT token in header."
+        '404':
+          description: "Cannot find a current Session store for the user."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "No previous configurations was set."
+  /configs/comp/update:
+    servers:
+      - url: http://localhost:8001
+    post:
+      summary: "Update the Alloy compositions in Session store for the user."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                alloy_type:
+                  type: string
+                  format: string
+                  enum: ["parent", "weld", "mix"]
+                alloy:
+                  $ref: '#/components/schemas/Alloy'
+            examples:
+              'Arc_Stark':
+                value:
+                  alloy_type: "parent"
+                  alloy:
+                    name: "Arc_Stark"
+                    compositions:
+                      - name: "vibranium"
+                        symbol: "vb"
+                        weight: 0.3
+                      - name: "paladium"
+                        symbol: "pd"
+                        weight: 0.001
+                      - name: "adamantium"
+                        symbol: "am"
+                        weight: 0.2
+                      - name: "carbonadium"
+                        symbol: "cb"
+                        weight: 0.002
+              'Wakandan_Shield':
+                value:
+                  alloy_type: "weld"
+                  alloy:
+                    name: "Wakanda_Shield"
+                    compositions:
+                      - name: "vibranium"
+                        symbol: "vb"
+                        weight: 12.0
+                      - name: "adamantium"
+                        symbol: "am"
+                        weight: 1.5
+                      - name: "carbonadium"
+                        symbol: "cb"
+                        weight: 0.2
+      tags:
+        - Configurations
+      responses:
+        '200':
+          description: "The request was success fully completed meaning the Session store has been updated with the new
+          alloy compositions and if any limit values need to be auto calculated, the system will do so and return the
+          newly updated values in a `data` object."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Auto Calculate':
+                  value:
+                    status: "success"
+                    message: "Compositions updated."
+                'Auto Calculate All Limits':
+                  value:
+                    status: "success"
+                    message: "Compositions and other values updated."
+                    data:
+                      ms_temp: 464.1960
+                      bs_temp: 563.2380
+                      ae1_temp: 700.90196
+                      ae3_temp: 845.83796
+                      xfe_value: 0.9462
+                      ceut_value: 0.83
+                      cf_value: 0.012
+                'Auto Calculate MS/BS Only':
+                  value:
+                    status: "success"
+                    message: "Compositions and other values updated."
+                    data:
+                      ms_temp: 464.1960
+                      bs_temp: 563.2380
+                'Auto Calculate Ae Only':
+                  value:
+                    status: "success"
+                    message: "Compositions and other values updated."
+                    data:
+                      ae1_temp: 700.90196
+                      ae3_temp: 845.83796
+                'Auto Calculate Xfe Only':
+                  value:
+                    status: "success"
+                    message: "Compositions and other values updated."
+                    data:
+                      xfe_value: 0.9462
+                      ceut_value: 0.83
+                      cf_value: 0.012
+        '400':
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Alloy Compositions':
+                  value:
+                    status: "fail"
+                    message: "No composition list was provided."
+                'Invalid Alloy':
+                  value:
+                    status: "fail"
+                    message: "Alloy failed schema validation."
+                    errors:
+                      compositions:
+                        - "Not a valid list."
+                'Ae Check Fail':
+                  value:
+                    status: "fail"
+                    message: "Ae1 must be more than zero to find the Equilibrium Phase Fraction"
+        '401':
+          description: "Unauthorized access to the endpoint."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Token':
+                  value:
+                    status: "fail"
+                    message: "No valid Authorization in header."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid JWT token in header."
+  /configs/auto/ms-bs:
+    servers:
+      - url: http://localhost:8001
+    post:
+      summary: "Update the auto calculate for MS and BS and return the new values."
+      tags:
+        - Configurations
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "The auto calculate for MS and BS store has been updated and returned."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                data:
+                  ms_temp: 464.1960
+                  bs_temp: 563.2380
+        '400':
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'False Auto Calculate Bool':
+                  value:
+                    status: "fail"
+                    message: "Post data auto calculate for MS or BS is false."
+                'No Transformation Method':
+                  value:
+                    status: "fail"
+                    message: "You must provide a transformation method."
+        '401':
+          description: "Unauthorized access to the endpoint."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Token':
+                  value:
+                    status: "fail"
+                    message: "No valid Authorization in header."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid JWT token in header."
+        '418':
+          description: "Well, something went wrong with the calculations."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Something went with the MS and BS calculations."
+  /configs/auto/ae:
+    servers:
+      - url: http://localhost:8001
+    post:
+      summary: "Update the auto calculate for Ae1 and Ae3 and return the new values."
+      tags:
+        - Configurations
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "The auto calculate for MS and BS store has been updated and returned."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                data:
+                  ae1_temp: 700.9019
+                  ae3_temp: 845.8379
+        '400':
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'False Auto Calculate Bool':
+                  value:
+                    status: "fail"
+                    message: "Auto calculate for Austenite is false."
+        '401':
+          description: "Unauthorized access to the endpoint."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Token':
+                  value:
+                    status: "fail"
+                    message: "No valid Authorization in header."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid JWT token in header."
+  /configs/auto/xfe:
+    servers:
+      - url: http://localhost:8001
+    post:
+      summary: "Update the auto calculate for Ae1 and Ae3 and return the new values."
+      tags:
+        - Configurations
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "The auto calculate for Equilibrium Phase Fractions (Xfe, Ceut, Cf) store has
+          been updated and returned."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                data:
+                  xfe_value: 0.9462
+                  ceut_value: 0.83
+                  cf_value: 0.012
+        '400':
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'False Auto Calculate Bool':
+                  value:
+                    status: "fail"
+                    message: "Auto calculate for Equilibrium Phase is false."
+                'No Ae Check':
+                  value:
+                    status: "fail"
+                    message: "Ae1 must be more than zero to find the Equilibrium Phase Fraction."
+        '401':
+          description: "Unauthorized access to the endpoint."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Token':
+                  value:
+                    status: "fail"
+                    message: "No valid Authorization in header."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid JWT token in header."
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+
+  schemas:
+    User:
+      properties:
+        _id:
+          type: string
+          format: byte
+          readOnly: true
+          uniqueItems: true
+        email:
+          type: string
+          format: email
+          uniqueItems: true
+          example: "iron_man@avengers.io"
+        password:
+          type: string
+          format: password
+          minLength: 6
+          maxLength: 255
+          uniqueItems: false
+          writeOnly: true
+        first_name:
+          type: string
+          maxLength: 255
+          example: "Tony"
+        last_name:
+          type: string
+          maxLength: 255
+          example: "Stark"
+        user_type:
+          type: string
+          format: int32
+          maxLength: 1
+          example: "2"
+          default: "2"
+        active:
+          type: boolean
+          readOnly: true
+          default: true
+        admin:
+          type: boolean
+          default: false
+        created:
+          type: string
+          format: date-time
+        verified:
+          type: boolean
+          default: false
+        last_updated:
+          type: string
+          format: date-time
+        last_login:
+          type: string
+          format: date-time
+        profile:
+          $ref: '#/components/schemas/UserProfile'
+        admin_profile:
+          $ref: '#/components/schemas/AdminProfile'
+      required:
+        - email
+        - password
+        - first_name
+        - last_name
+    UserProfile:
+      type: object
+      properties:
+        aim:
+          description: "What sentence best describes you?"
+          type: string
+          format: string
+        highest_education:
+          description: "What is the highest level of education have you studied?"
+          type: string
+          format: string
+        sci_tech_exp:
+          description: "What is your experience with scientific software?"
+          type: string
+          format: string
+        phase_transform_exp:
+          description: "What is your experience with solid-state phse transformation?"
+          type: string
+          format: string
+    AdminProfile:
+      properties:
+        mobile_number:
+          type: string
+          format: string
+          maxLength: 10
+          minLength: 10
+        position:
+          type: string
+          format: string
+    Response:
+      properties:
+        status:
+          type: string
+          format: string
+          example:
+            - "fail"
+            - "success"
+        message:
+          type: string
+          format: string
+    Configuration:
+      type: object
+      properties:
+        method:
+          description: "A string that is a choice of either of the following enums [Li98 | Kirkaldy83]"
+          type: string
+          format: string
+          enum:
+            - "Li98"
+            - "Kirkaldy83"
+        alloy:
+          description: "A string that is a choice of either of the following enums [parent | weld | mix]"
+          type: string
+          format: string
+          enum:
+            - "parent"
+            - "weld"
+            - "mix"
+        grain_size_type:
+          description: "A string that is a choice of either of the following enums [ASTM | diam]"
+          type: string
+          format: string
+          enum:
+            - "ASTM"
+            - "diam"
+        gran_size:
+          type: number
+          format: double
+        nucleation_start:
+          type: number
+          format: double
+        nucleation_finish:
+          type: number
+          format: double
+          maximum: 99.99999999
+        auto_calculate_xfe:
+          type: boolean
+          default: false
+        xfe_value:
+          type: number
+          format: double
+        cf_value:
+          type: number
+          format: double
+        ceut_value:
+          type: number
+          format: double
+        auto_calculate_ms_bs:
+          type: boolean
+          default: false
+        transformation_method:
+          description: "A string that is a choice of either of the following enums [Li98 | Kirkaldy83]"
+          type: string
+          format: string
+          enum:
+            - "Li98"
+            - "Kirkaldy83"
+        ms_temp:
+          type: number
+          format: double
+        ms_undercool:
+          type: number
+          format: double
+        bs_temp:
+          type: number
+          format: double
+        auto_calculate_ae:
+          type: boolean
+          default: false
+        ae1_temp:
+          type: number
+          format: double
+        ae3_temp:
+          type: number
+          format: double
+        start_temp:
+          type: integer
+        cct_cooling_rate:
+          type: integer
+    Element:
+      type: object
+      properties:
+        name:
+          description: "A lowercase full name of the element."
+          type: string
+          format: string
+        symbol:
+          description: "A 2-character lowercase symbol for the name of the element. Note if the periodic symbol is 1
+           letter, add an 'x' at the end of the character (i.e. carbon, c becomes cx)."
+          type: string
+          format: string
+          maxLength: 2
+        weight:
+          description: "The weight of the element in the alloy."
+          type: number
+          format: double
+      example:
+        - name: "vibranium"
+          symbol: "vb"
+          weight: 0.3
+        - name: "carbon"
+          symbol: "cx"
+          weight: 0.044
+        - name: "iron"
+          symbol: "fe"
+          weight: 0.001
+      required:
+        - name
+        - symbol
+        - weight
+    Alloy:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: byte
+          description: "The ObjectId of the alloy in the database."
+          example: '5d2d811b88a3fafd802ca7d1'
+        name:
+          type: string
+          format: string
+          description: "The unique name of the element."
+          uniqueItems: true
+          example: Arc_Stark
+        compositions:
+          description: "A list of the elements that make up the composition of the alloy."
+          type: array
+          items:
+            $ref: '#/components/schemas/Element'
+          example:
+            - name: "carbon"
+              symbol: "cx"
+              weight: 0.044
+            - name: "vibranium"
+              symbol: "vb"
+              weight: 0.3
+            - name: "palladium"
+              symbol: "pd"
+              weight: 0.001
+      required:
+        - name
+        - compositions
+
+tags:
+  - name: Users
+    description: "Endpoints for users and admins."
+  - name: Auth
+    description: "Endpoints for Authentication and Authorization."
+  - name: Sessions
+    description: "Endpoints that manage sessions."
+  - name: Alloys
+    description: "Endpoints that expose the full CRUD interface for Alloys."
+  - name: Configurations
+    description: "Endpoints that update the Session store of the user's configurations."

@@ -17,7 +17,7 @@ def read_csv(csv_file_name: str) -> str:
     with open(csv_file_name, 'r') as fin:
         return fin.readlines()
 
-def create_output(lines: str) -> {}:
+def create_output(lines: str) -> dict:
     """Read a list of lines from SSTP csv and create a dictionary
     to be dumped into json file.
     """

@@ -2,9 +2,9 @@
 # -----------------------------------------------------------------------------
 # arclytics_sim
 # alloys.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
@@ -20,8 +20,7 @@ This module contains the MongoDB mapper for the Alloy schema and document.
 """
 
 import os
-
-from pymongo import MongoClient, ASCENDING
+from pymongo import ASCENDING, MongoClient
 
 COLLECTION_NAME = 'alloys'
 
@@ -36,9 +35,9 @@ class MongoAlloys(object):
             host=os.environ.get('MONGO_HOST'),
             port=int(os.environ.get('MONGO_PORT'))
         )
-        # TODO(andrew@neuraldev.io): Figure out how to set the db dynamically
-        #  as trying to use app.config does not work in this case.
-        self.db = mongo_client['arc-dev']
+        # TODO(andrew@neuraldev.io): Try to fix this to dynamically change under
+        #  testing conditions rather than setting the database permanently.
+        self.db = mongo_client['arc_dev']
         # We create an index to avoid duplicates
         self.db.alloys.create_index([('name', ASCENDING)], unique=True)
 
@@ -51,9 +50,13 @@ class MongoAlloys(object):
     def create(self, instance: dict):
         return self.db.alloys.insert_one(instance).inserted_id
 
+    def create_many(self, instance_list: list):
+        return self.db.alloys.insert_many(instance_list).inserted_ids
+
     def update(self, query_selector, instance):
-        return (self.db.alloys.replace_one(query_selector, instance)
-                .modified_count)
+        return (
+            self.db.alloys.replace_one(query_selector, instance).modified_count
+        )
 
     def delete(self, query_selector):
         return self.db.alloys.delete_one(query_selector).deleted_count

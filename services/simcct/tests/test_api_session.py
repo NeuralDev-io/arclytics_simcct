@@ -7,7 +7,6 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
-__copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
 __license__ = '{license}'
 __version__ = '{mayor}.{minor}.{rel}'
@@ -28,8 +27,8 @@ from pathlib import Path
 from bson import ObjectId
 from flask import current_app, session
 
-from sim_api import BASE_DIR
-from tests.test_api_base import BaseTestCase, app
+from sim_app.app import BASE_DIR
+from tests.test_api_base import BaseTestCase
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 
@@ -98,7 +97,6 @@ class TestSessionService(BaseTestCase):
 
     def test_login_session_empty_post_data(self):
         with self.app.test_client() as client:
-
             login_res = client.post(
                 '/session',
                 data=json.dumps({}),
@@ -214,8 +212,10 @@ class TestSessionService(BaseTestCase):
                         '_id': str(_id),
                         'last_configurations': configs,
                         'last_compositions': {
-                            'comp': []
-                        }
+                            'alloy': {
+                                'name': '',
+                                'compositions': []
+                            }}
                     }
                 ),
                 headers={'Authorization': f'Bearer {token}'},
@@ -248,8 +248,10 @@ class TestSessionService(BaseTestCase):
                         'token': token,
                         'last_configurations': {},
                         'last_compositions': {
-                            'comp': [e1, e2, e3]
-                        }
+                            'alloy': {
+                                'name': 'Random',
+                                'compositions': [e1, e2, e3]
+                            }}
                     }
                 ),
                 headers={'Authorization': f'Bearer {token}'},
@@ -258,14 +260,17 @@ class TestSessionService(BaseTestCase):
             data = json.loads(login_res.data.decode())
             self.assertTrue(data['status'] == 'success')
             self.assertEqual(data['message'], 'User session initiated.')
-            comp_store = session.get(f'{str(token)}:compositions')
-            self.assertTrue(comp_store['comp'])
-            self.assertEqual(comp_store['comp'][0]['name'], e1['name'])
-            self.assertEqual(comp_store['comp'][0]['symbol'], e1['symbol'])
-            self.assertEqual(comp_store['comp'][0]['weight'], e1['weight'])
-            self.assertEqual(comp_store['comp'][1]['name'], e2['name'])
-            self.assertEqual(comp_store['comp'][1]['symbol'], e2['symbol'])
-            self.assertEqual(comp_store['comp'][1]['weight'], e2['weight'])
-            self.assertEqual(comp_store['comp'][2]['name'], e3['name'])
-            self.assertEqual(comp_store['comp'][2]['symbol'], e3['symbol'])
-            self.assertEqual(comp_store['comp'][2]['weight'], e3['weight'])
+            comp_store = session.get(f'{str(token)}:alloy')
+            self.assertTrue(comp_store['compositions'])
+            stored_elem1 = comp_store['compositions'][0]
+            stored_elem2 = comp_store['compositions'][1]
+            stored_elem3 = comp_store['compositions'][2]
+            self.assertEqual(stored_elem1['name'], e1['name'])
+            self.assertEqual(stored_elem1['symbol'], e1['symbol'])
+            self.assertEqual(stored_elem1['weight'], e1['weight'])
+            self.assertEqual(stored_elem2['name'], e2['name'])
+            self.assertEqual(stored_elem2['symbol'], e2['symbol'])
+            self.assertEqual(stored_elem2['weight'], e2['weight'])
+            self.assertEqual(stored_elem3['name'], e3['name'])
+            self.assertEqual(stored_elem3['symbol'], e3['symbol'])
+            self.assertEqual(stored_elem3['weight'], e3['weight'])

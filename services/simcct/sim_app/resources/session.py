@@ -9,7 +9,7 @@
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
-__version__ = '0.1.0'
+__version__ = '0.3.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
@@ -20,7 +20,6 @@ This module defines the resources for session management.
 """
 
 import os
-import json
 
 import requests
 from marshmallow import ValidationError
@@ -28,8 +27,8 @@ from flask import Blueprint, session, request
 from flask_restful import Resource
 from bson import ObjectId
 
-from sim_api.schemas import (ConfigurationsSchema, CompositionSchema)
-from sim_api.middleware import token_required_restful
+from sim_app.schemas import (ConfigurationsSchema, AlloySchema)
+from sim_app.middleware import token_required_restful
 
 session_blueprint = Blueprint('session', __name__)
 
@@ -54,7 +53,6 @@ class Session(Resource):
             return response, 401
 
         # TODO(andrew@neuraldev.io): Need to do some validation for some fields
-        # NOTE:
         #  - Need to validate the auto_calculate bools
         #  - Need to ensure the method is provided.
         #  - Need to ensure the transformation_method is also provided if the
@@ -67,7 +65,7 @@ class Session(Resource):
             try:
                 configs = ConfigurationsSchema().load(user_configs)
             except ValidationError as e:
-                response['errors'] = e
+                response['errors'] = e.messages
         else:
             configs = {
                 'method': 'Li98',
@@ -94,42 +92,32 @@ class Session(Resource):
 
         # TODO(andrew@neuraldev.io): If auto_calculate on any of these are true
         #  we have to ensure there are at least the necessary elements.
-        # NOTE:
         #  - get_bs() --> carbon, manganese, ni, chromium, molybdenum
         #  - get_ms() --> carbon, manganese, nickel, chromium, molybdenum,
         #                 cobalt, silicon
         #  - xfe_method2() --> carbon and iron
         #  - calc_ae1_ae3() --> carbon, nickel, silicon, tungsten, manganese,
         #                       manganese, chromium, arsenic, molybdenum
-        comp_obj = {'comp': []}
+        comp_obj = None
         if user_comp:
+            user_alloy = user_comp['alloy']
             try:
-                # TODO(andrew@neuraldev.io): You may want to use ElementSchema
-                #  to validate that each element in the list is correct.
-                comp_obj = CompositionSchema().load(user_comp)
+                # ElementSchema also validates each element because it is nested
+                comp_obj = AlloySchema().load(user_alloy)
             except ValidationError as e:
-                response['errors'] = e
+                response['errors'] = e.messages
                 return response, 400
 
-        session[f'{session.sid}:user'] = user_id
-        session[f'{session.sid}:token'] = token
+        session['user'] = user_id
+        session['token'] = token
         session[f'{token}:configurations'] = configs
-        session[f'{token}:compositions'] = comp_obj
+        session[f'{token}:alloy'] = comp_obj
 
         response['status'] = 'success'
         response['message'] = 'User session initiated.'
         response['session_id'] = session.sid
 
         return response, 201
-
-    # TODO(andrew@neuraldev.io): Not really sure what I want to do with this
-    # def get(self):
-    #     response = {
-    #         'status': 'success',
-    #         'session_id': session.sid
-    #     }
-    #
-    #     return response, 200
 
 
 class UsersPing(Resource):

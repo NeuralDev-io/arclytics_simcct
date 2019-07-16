@@ -5,11 +5,9 @@
 #
 # Attributions:
 # [1]
-# TODO:
-#  - Write a middleware token_required() decorator method to refactor.
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
+__credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'TBA'
 __version__ = '0.1.0'
 __maintainer__ = 'Andrew Che'
@@ -27,10 +25,10 @@ import numpy as np
 from flask import Blueprint, session, request, jsonify
 from marshmallow import ValidationError
 
-from sim_api.schemas import CompositionSchema
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
-from sim_api.middleware import token_required
+from sim_app.middleware import token_required
+from sim_app.schemas import AlloySchema
 
 configs_blueprint = Blueprint('configs', __name__)
 
@@ -100,22 +98,23 @@ def composition_change(token):
     if not post_data:
         return jsonify(response), 400
     # Extract the method from the post request body
-    comp = post_data.get('compositions', None)
+    comp = post_data.get('alloy', None)
+    alloy_type = post_data.get('alloy_type', None)
 
     if not comp:
         response['message'] = 'No composition list was provided.'
         return jsonify(response), 400
 
     try:
-        comp_obj = CompositionSchema().load(comp)
+        comp_obj = AlloySchema().load(comp)
     except ValidationError as e:
         response['errors'] = e.messages
-        response['bad_data'] = e.data
+        response['message'] = 'Alloy failed schema validation.'
         return jsonify(response), 400
 
-    session[f'{token}:compositions'] = comp_obj
+    session[f'{token}:alloy'] = comp_obj
+    session[f'{token}:configurations']['alloy'] = alloy_type
 
-    # TODO: Update the MS/BS, Ae, and Xfe values if the auto calculate is True
     session_configs = session.get(f'{token}:configurations')
 
     # Well, if we don't need to auto calculate anything, let's get out of here
@@ -128,7 +127,9 @@ def composition_change(token):
         response['message'] = 'Compositions updated.'
         return jsonify(response), 200
 
-    comp_list = session.get(f'{token}:compositions')['comp']
+    # Since we do need to calculate, must get the compositions first in
+    # numpy.ndarray structured format and type
+    comp_list = session.get(f'{token}:alloy')['compositions']
     comp_np_arr = SimConfig.get_compositions(comp_list)
 
     # We need to store some results so let's prepare an empty dict
@@ -178,7 +179,7 @@ def composition_change(token):
         response['data']['ceut_value'] = ceut
         response['data']['cf_value'] = float(cf)
 
-    session[f'{token}:compositions'] = session_configs
+    session[f'{token}:configurations'] = session_configs
 
     response['status'] = 'success'
     return jsonify(response), 200
@@ -232,7 +233,7 @@ def auto_calculate_ms_bs(token):
     session_configs['auto_calculate_ms_bs'] = True
     session_configs['transformation_method'] = _transformation_method.name
 
-    comp_list = session.get(f'{token}:compositions')['comp']
+    comp_list = session.get(f'{token}:alloy')['compositions']
     comp_np_arr = SimConfig.get_compositions(comp_list)
 
     ms_temp = SimConfig.get_ms(method=_transformation_method, comp=comp_np_arr)
@@ -291,7 +292,7 @@ def auto_calculate_ae(token):
     session_configs = session.get(f'{token}:configurations')
     session_configs['auto_calculate_ae'] = True
 
-    comp_list = session.get(f'{token}:compositions')['comp']
+    comp_list = session.get(f'{token}:alloy')['compositions']
     comp_np_arr = SimConfig.get_compositions(comp_list)
 
     ae1, ae3 = SimConfig.calc_ae1_ae3(comp_np_arr)
@@ -342,7 +343,7 @@ def auto_calculate_xfe(token):
     session_configs = session.get(f'{token}:configurations')
     session_configs['auto_calculate_xfe'] = True
 
-    comp_list = session.get(f'{token}:compositions')['comp']
+    comp_list = session.get(f'{token}:alloy')['compositions']
     comp_np_arr = SimConfig.get_compositions(comp_list)
 
     # TODO(andrew@neuraldev.io): We need to do an Ae check here because this

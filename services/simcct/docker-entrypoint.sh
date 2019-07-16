@@ -52,16 +52,14 @@ done
 echo "$TITLE"
 echo "$TIME_STAMP"
 echo "ENVIRONMENT VARIABLES:"
-echo "FLASK_APP: SimCCT Service"
+echo "FLASK_APP: sim_app/app.py"
 echo "FLASK_ENV: $FLASK_ENV"
 echo "APP_SETTINGS: $APP_SETTINGS"
 echo "Starting Flask server..."
 echo ""
 
-# if [ $WSGI == ""]; then
-#     exit
 if  [ "$WSGI" == "gunicorn" ] ; then
-    gunicorn -b $HOST:$PORT api.__init__:app
+    gunicorn -b $HOST:$PORT sim_app.app:app
 else
     python manage.py run -h $HOST -p $PORT
 fi

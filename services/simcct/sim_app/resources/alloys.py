@@ -5,6 +5,10 @@
 #
 # Attributions:
 # [1]
+# TODO:
+#  - (andrew@neuraldev.io) Try to not use Flask RESTfil resources and instead
+#    use just Flask API decorators so that the AlloysService doesn't get
+#    instantiated until it's
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
@@ -37,6 +41,13 @@ class AlloysList(Resource):
     """The resource of endpoints for retrieving an alloy list and creating."""
 
     def post(self):
+        """Exposes the POST method for `/alloys` to allow creating an alloy.
+        The request must also include a request body of data that will need to
+        comply to the schema.
+
+        Returns:
+            A Response object as a dict and a status code as an int.
+        """
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
         if not request.get_json():
@@ -63,10 +74,17 @@ class AlloysList(Resource):
         return response, 201
 
     def get(self):
+        """Exposes the GET method for `/alloys` to retrieve a list of alloys in
+        the database.
+
+        Returns:
+            A Response object with a response dict and status code as int.
+        """
         response = {'status': 'fail', 'message': 'Empty.'}
 
         alloys = AlloysService().find_all_alloys()
 
+        # No point returning data if there is none to return.
         if len(alloys) == 0:
             return response, 404
 
@@ -78,6 +96,15 @@ class AlloysList(Resource):
 
 class Alloys(Resource):
     def get(self, alloy_id):
+        """Allows the GET method with `/alloys/{id}` as an endpoint to get
+        a single alloy from the database.
+
+        Args:
+            alloy_id: A valid ObjectId string that will be checked.
+
+        Returns:
+            A Response object consisting of a dict and status code as an int.
+        """
         response = {'status': 'fail', 'message': 'Invalid ObjectId.'}
 
         # Verify the request params is a valid ObjectId to use
@@ -86,8 +113,10 @@ class Alloys(Resource):
 
         alloy = AlloysService().find_alloy(ObjectId(alloy_id))
 
+        # The service will return True or False based on successfully finding
+        # an alloy.
         if not alloy:
-            response['message'] = 'Alloy not found.'
+            response['message'] = 'Alloys not found.'
             return response, 404
 
         response['status'] = 'success'
@@ -96,6 +125,15 @@ class Alloys(Resource):
         return response, 200
 
     def put(self, alloy_id):
+        """Exposes the PUT method for `/alloys` to update an existing alloy by
+        user of replacing the old one.
+
+        Args:
+            alloy_id: A valid ObjectId string that will be checked.
+
+        Returns:
+            A Response object consisting of a dict and status code as an int.
+        """
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
         if not request.get_json():
@@ -115,6 +153,8 @@ class Alloys(Resource):
 
         good = AlloysService().update_alloy(ObjectId(alloy_id), put_data)
 
+        # The service will return True or False based on successfully updating
+        # an alloy.
         if not good:
             response['message'] = 'Alloy not found.'
             return response, 404
@@ -127,6 +167,15 @@ class Alloys(Resource):
         return response, 202
 
     def delete(self, alloy_id):
+        """Exposes the DELETE method on `/alloys/{id}` to delete an existing
+        alloy in the database.
+
+        Args:
+            alloy_id: A valid ObjectId string that will be checked.
+
+        Returns:
+            A Response object consisting of a dict and status code as an int.
+        """
         response = {'status': 'fail', 'message': 'Invalid ObjectId.'}
 
         # Verify the request params is a valid ObjectId to use

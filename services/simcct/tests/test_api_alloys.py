@@ -120,6 +120,8 @@ class TestAlloyService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'Invalid payload.')
             self.assertTrue(data['errors'])
+            err = {'compositions': ['Missing data for required field.']}
+            self.assertEqual(data['errors'], err)
 
     def test_create_duplicate_name_alloy(self):
         """Ensure we can't create a duplicate alloy."""

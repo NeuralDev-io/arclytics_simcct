@@ -12,6 +12,8 @@ pipelines:
           caches:
             - pip3
             - docker
+            - node
+            - pip
           script:
             - apk add --quiet py3-pip bash python3 python3-dev
             - apk add --quiet build-base libffi-dev openssl-dev libgcc

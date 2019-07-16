@@ -33,8 +33,7 @@ class SignupPage extends Component {
   render() {
     return (
       <div className={styles.outer}>
-        <div className={styles.form}>
-          
+        <div className={styles.form}> 
           <div className={styles.logoContainer}>
             <Logo className={styles.logo}/>
             <h3> ARCLYTICS </h3> 

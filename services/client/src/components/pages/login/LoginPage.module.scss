@@ -5,11 +5,19 @@ $bg-img: url('../../../assets/background_img-min.png');
     height:100vh;
     width:100vw;
     padding-top: 8rem;
+    padding-bottom: 8rem;
     background: $n0 $bg-img no-repeat center center fixed;
     background-size: 135%;
     background-position:  43.484375rem;
 }
 
+@media only screen and (max-height: 830px) {
+    .outer{
+      width: 100%;
+      height: 100%;
+    }
+  }
+  
 
 .form{
     margin-left: 11.25rem;

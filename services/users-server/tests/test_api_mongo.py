@@ -7,7 +7,7 @@
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
-__copyright__ = 'Copyright (C) 2019, NeuralDev'
+
 __credits__ = ['']
 __license__ = '{license}'
 __version__ = '{mayor}.{minor}.{rel}'
@@ -26,8 +26,8 @@ import pymongo
 from mongoengine.connection import get_db, get_connection
 
 from tests.test_api_base import BaseTestCase, app
-from api.mongodb import MongoSingleton
-from api import get_flask_mongo, set_flask_mongo, init_db
+from users_api.mongodb import MongoSingleton
+from users_api import get_flask_mongo, set_flask_mongo, init_db
 
 
 class TestMongoSingleton(BaseTestCase):

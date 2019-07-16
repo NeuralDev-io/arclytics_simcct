@@ -9,7 +9,7 @@
 					"weight": 0.3
 				},
 				{
-					"name": "managanese",
+					"name": "manganese",
 					"symbol": "mn",
 					"weight": 0.78
 				},
@@ -89,7 +89,7 @@
                     "weight": 0.0
                 },
                 {
-                    "name": "phosphurus",
+                    "name": "phosphorous",
                     "symbol": "px",
                     "weight": 0.007
                 }

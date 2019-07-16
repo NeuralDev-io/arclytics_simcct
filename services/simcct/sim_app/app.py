@@ -104,8 +104,8 @@ def create_app(script_info=None) -> Flask:
     app.register_blueprint(session_blueprint)
     from sim_app.resources.sim_configurations import configs_blueprint
     app.register_blueprint(configs_blueprint)
-    # from sim_app.resources.alloys import alloys_blueprint
-    # app.register_blueprint(alloys_blueprint)
+    from sim_app.resources.alloys import alloys_blueprint
+    app.register_blueprint(alloys_blueprint)
 
     # ========== # API ROUTES # ========== #
     # Importing within Flask app context scope because trying to init the

@@ -9,7 +9,7 @@
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
-__version__ = '0.1.0'
+__version__ = '0.3.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
@@ -20,7 +20,6 @@ This module defines the resources for session management.
 """
 
 import os
-import json
 
 import requests
 from marshmallow import ValidationError
@@ -54,7 +53,6 @@ class Session(Resource):
             return response, 401
 
         # TODO(andrew@neuraldev.io): Need to do some validation for some fields
-        # NOTE:
         #  - Need to validate the auto_calculate bools
         #  - Need to ensure the method is provided.
         #  - Need to ensure the transformation_method is also provided if the
@@ -94,7 +92,6 @@ class Session(Resource):
 
         # TODO(andrew@neuraldev.io): If auto_calculate on any of these are true
         #  we have to ensure there are at least the necessary elements.
-        # NOTE:
         #  - get_bs() --> carbon, manganese, ni, chromium, molybdenum
         #  - get_ms() --> carbon, manganese, nickel, chromium, molybdenum,
         #                 cobalt, silicon
@@ -104,15 +101,14 @@ class Session(Resource):
         comp_obj = {'comp': []}
         if user_comp:
             try:
-                # TODO(andrew@neuraldev.io): You may want to use ElementSchema
-                #  to validate that each element in the list is correct.
+                # ElementSchema also validates each element because it is nested
                 comp_obj = CompositionSchema().load(user_comp)
             except ValidationError as e:
                 response['errors'] = e
                 return response, 400
 
-        session[f'{session.sid}:user'] = user_id
-        session[f'{session.sid}:token'] = token
+        session['user'] = user_id
+        session['token'] = token
         session[f'{token}:configurations'] = configs
         session[f'{token}:compositions'] = comp_obj
 
@@ -121,15 +117,6 @@ class Session(Resource):
         response['session_id'] = session.sid
 
         return response, 201
-
-    # TODO(andrew@neuraldev.io): Not really sure what I want to do with this
-    # def get(self):
-    #     response = {
-    #         'status': 'success',
-    #         'session_id': session.sid
-    #     }
-    #
-    #     return response, 200
 
 
 class UsersPing(Resource):

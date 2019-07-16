@@ -48,11 +48,6 @@ class AlloySchema(Schema):
     compositions = fields.List(fields.Nested(ElementSchema), required=True)
 
 
-# TODO(andrew@neuraldev.io -- soon): Change this to Alloy Schema
-class CompositionSchema(Schema):
-    comp = fields.List(fields.Nested(ElementSchema), required=True)
-
-
 class ConfigurationsSchema(Schema):
     method = fields.Str(
         default='Li98',

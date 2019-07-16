@@ -128,15 +128,14 @@ def async_register_session(user: User = None,
     """
 
     # We now need to send a request to the simcct server to initiate
-    # a session as a server-side store to save the last compositions
-    # TODO(andrew@neuraldev.io): need to also set last configurations.
+    # a session as a server-side store to save the last compositions/configs
     simcct_host = os.environ.get('SIMCCT_HOST', None)
     # Using the `json` param tells requests to serialize the dict to
     # JSON and write the correct MIME type ('application/json') in
     # header.
 
-    last_configs = {}
-    last_compositions = {'comp': []}
+    last_configs = None
+    last_compositions = None
     user_id = ''
 
     if isinstance(user, User):
@@ -149,7 +148,8 @@ def async_register_session(user: User = None,
             last_configs = user.last_configuration.to_dict()
 
         if user.last_compositions is not None:
-            last_compositions['comp'] = user.last_compositions
+            last_compositions['alloy'] = user.last_compositions
+            last_compositions['alloy_type'] = user.last_configuration['alloy']
 
     resp = requests.post(
         url=f'http://{simcct_host}/session',

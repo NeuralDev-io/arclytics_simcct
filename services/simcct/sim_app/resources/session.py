@@ -27,7 +27,7 @@ from flask import Blueprint, session, request
 from flask_restful import Resource
 from bson import ObjectId
 
-from sim_app.schemas import (ConfigurationsSchema, CompositionSchema)
+from sim_app.schemas import (ConfigurationsSchema, AlloySchema)
 from sim_app.middleware import token_required_restful
 
 session_blueprint = Blueprint('session', __name__)
@@ -65,7 +65,7 @@ class Session(Resource):
             try:
                 configs = ConfigurationsSchema().load(user_configs)
             except ValidationError as e:
-                response['errors'] = e
+                response['errors'] = e.messages
         else:
             configs = {
                 'method': 'Li98',
@@ -98,19 +98,20 @@ class Session(Resource):
         #  - xfe_method2() --> carbon and iron
         #  - calc_ae1_ae3() --> carbon, nickel, silicon, tungsten, manganese,
         #                       manganese, chromium, arsenic, molybdenum
-        comp_obj = {'comp': []}
+        comp_obj = None
         if user_comp:
+            user_alloy = user_comp['alloy']
             try:
                 # ElementSchema also validates each element because it is nested
-                comp_obj = CompositionSchema().load(user_comp)
+                comp_obj = AlloySchema().load(user_alloy)
             except ValidationError as e:
-                response['errors'] = e
+                response['errors'] = e.messages
                 return response, 400
 
         session['user'] = user_id
         session['token'] = token
         session[f'{token}:configurations'] = configs
-        session[f'{token}:compositions'] = comp_obj
+        session[f'{token}:alloy'] = comp_obj
 
         response['status'] = 'success'
         response['message'] = 'User session initiated.'

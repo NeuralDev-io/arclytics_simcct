@@ -121,7 +121,7 @@ class AlloysService(object):
     @staticmethod
     def dump(data: dict) -> dict:
         """A simple method to validate the Python dict to our schema."""
-        return AlloySchema(exclude=['_id']).dump(data)
+        return AlloySchema().dump(data)
 
     @staticmethod
     def load(data: Union[list, dict], many=False) -> dict:

@@ -198,7 +198,9 @@ class TestAlloyService(BaseTestCase):
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
             self.assertTrue(data['data'])
+            alloy_data['_id'] = data['data']['_id']
             self.assertEqual(data['data'], schema.dump(alloy_data))
+            print(data['data'])
 
     def test_get_single_alloy_non_existing(self):
         with app.test_client() as client:
@@ -249,6 +251,7 @@ class TestAlloyService(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assertEqual(res.status_code, 202)
             self.assertEqual(data['status'], 'success')
+            alloy_data['_id'] = data['data']['_id']
             self.assertEqual(data['data'], schema.dump(alloy_data))
 
     def test_update_alloy_validation_error(self):

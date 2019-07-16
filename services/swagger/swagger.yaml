@@ -469,6 +469,7 @@ paths:
             examples:
               'Arc Stark':
                 value:
+                  _id: 5d2d81cff091de1cf091674b
                   name: Arc_Stark
                   compositions:
                     - name: palladium
@@ -482,6 +483,7 @@ paths:
                       weight: 0.2
               'Wakanda Shield':
                 value:
+                  _id: 5d2d811b88a3fafd802ca7cd
                   name: Wakandan_Shield
                   compositions:
                     - name: vibranium
@@ -555,7 +557,8 @@ paths:
                     items:
                       $ref: '#/components/schemas/Alloy'
                     example:
-                      - name: Arc_Stark
+                      - _id: 5d2d81cff091de1cf091674b
+                        name: Arc_Stark
                         compositions:
                           - name: palladium
                             symbol: pd
@@ -566,7 +569,8 @@ paths:
                           - name: carbon
                             symbol: cx
                             weight: 0.2
-                      - name: Wakandan_Shield
+                      - _id: 5d2d811b88a3fafd802ca7cd
+                        name: Wakandan_Shield
                         compositions:
                           - name: vibranium
                             symbol: vb
@@ -614,6 +618,10 @@ paths:
               schema:
                 type: object
                 properties:
+                  _id:
+                    type: string
+                    format: byte
+                    example: 5d2d81cff091de1cf091674b
                   status:
                     type: string
                     example: success
@@ -651,6 +659,7 @@ paths:
             examples:
               'Arc Stark':
                 value:
+                  _id: 5d2d81cff091de1cf091674b
                   name: Arc_Stark
                   compositions:
                     - name: palladium
@@ -680,6 +689,10 @@ paths:
             application/json:
               schema:
                 properties:
+                  _id:
+                    type: string
+                    format: byte
+                    example: 5d2d81cff091de1cf091674b
                   status:
                     type: string
                     example: success
@@ -993,6 +1006,11 @@ components:
     Alloy:
       type: object
       properties:
+        _id:
+          type: string
+          format: byte
+          description: The ObjectId of the alloy in the database.
+          example: '5d2d811b88a3fafd802ca7d1'
         name:
           type: string
           format: string

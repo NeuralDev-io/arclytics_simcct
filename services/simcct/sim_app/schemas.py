@@ -23,7 +23,11 @@ be used to validate the post data is correct before adding to any DB.
 
 import enum
 
+from bson import ObjectId
 from marshmallow import Schema, fields
+
+
+Schema.TYPE_MAPPING[ObjectId] = fields.String
 
 
 class AlloyOption(enum.Enum):
@@ -39,6 +43,7 @@ class ElementSchema(Schema):
 
 
 class AlloySchema(Schema):
+    _id = fields.Str()
     name = fields.Str(required=True)
     compositions = fields.List(fields.Nested(ElementSchema), required=True)
 

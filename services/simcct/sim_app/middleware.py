@@ -7,13 +7,12 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
-__copyright__ = 'Copyright (C) 2019, NeuralDev'
 __credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
+__license__ = 'TBA'
+__version__ = '0.8.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = '{dev_status}'
+__status__ = 'development'
 __date__ = '2019.07.14'
 """middleware.py: 
 

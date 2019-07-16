@@ -36,7 +36,6 @@
 #  the file handler
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
-__copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
 __credits__ = []
 __license__ = 'MIT'
 __version__ = '1.0.0'

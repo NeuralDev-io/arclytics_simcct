@@ -7,7 +7,7 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Arvy Salazar <@Xaraox>', 'Andrew Che <@codeninja55>']
-__copyright__ = 'Copyright (C) 2019, NeuralDev'
+
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'TBA'
 __version__ = '0.3.0'

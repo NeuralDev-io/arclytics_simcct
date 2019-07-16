@@ -454,6 +454,307 @@ paths:
                 status: success
                 message: pong!
 
+  /alloys:
+    post:
+      summary: Create a new alloy and store it in the Alloys database.
+      tags:
+        - Alloys
+      requestBody:
+        description: The alloy to be added.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Alloy'
+            examples:
+              'Arc Stark':
+                value:
+                  name: Arc_Stark
+                  compositions:
+                    - name: palladium
+                      symbol: pd
+                      weight: 0.05
+                    - name: vibranium
+                      symbol: vb
+                      weight: 0.5
+                    - name: carbon
+                      symbol: cx
+                      weight: 0.2
+              'Wakanda Shield':
+                value:
+                  name: Wakandan_Shield
+                  compositions:
+                    - name: vibranium
+                      symbol: vb
+                      weight: 2.0
+                    - name: carbon
+                      symbol: cx
+                      weight: 1.0
+      responses:
+        '201':
+          description: An alloy has been successfully created and stored in the database.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: The status of `success` or `fail`.
+                  _id:
+                    type: string
+                    format: byte
+                    description: The ObjectId primary key of the Alloy in the database.
+              example:
+                status: success
+                _id: 5d2345560f8b5fa4a8daca89
+        '400':
+          description: An invalid payload has been sent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty payload':
+                  value:
+                    status: fail
+                    message: Invalid payload.
+                'Invalid Alloy payload schema':
+                  value:
+                    status: fail
+                    message: Invalid payload.
+                    errors:
+                      compositions:
+                        - Missing data for required field.
+        '412':
+          description: The name is not a unique value.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                - status: fail
+                  message: Alloy already exists.
+    get:
+      summary: The full list of Alloys from the database.
+      tags:
+        - Alloys
+      responses:
+        '200':
+          description: The request has been successful and there is data to respond with.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  alloys:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alloy'
+                    example:
+                      - name: Arc_Stark
+                        compositions:
+                          - name: palladium
+                            symbol: pd
+                            weight: 0.05
+                          - name: vibranium
+                            symbol: vb
+                            weight: 0.5
+                          - name: carbon
+                            symbol: cx
+                            weight: 0.2
+                      - name: Wakandan_Shield
+                        compositions:
+                          - name: vibranium
+                            symbol: vb
+                            weight: 2.0
+                          - name: carbon
+                            symbol: cx
+                            weight: 1.0
+        '400':
+          description: An invalid payload has been sent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: fail
+                message: Invalid ObjectId
+        '404':
+          description: No content found in database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: fail
+                message: Alloys not found.
+
+  /alloys/{id}:
+    get:
+      summary: Get a single alloy from the Alloys database.
+      tags:
+        - Alloys
+      parameters:
+        - name: id
+          in: path
+          description: An ObjectId of an existing Alloy in the database.
+          required: true
+          schema:
+            type: string
+            format: bytes
+      responses:
+        '200':
+          description: The request has been successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Alloy'
+    put:
+      summary: Update a single existing Alloy.
+      tags:
+        - Alloys
+      requestBody:
+        description: The alloy to be added.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Alloy'
+            examples:
+              'Arc Stark':
+                value:
+                  name: Arc_Stark
+                  compositions:
+                    - name: palladium
+                      symbol: pd
+                      weight: 0.0
+                    - name: vibranium
+                      symbol: vb
+                      weight: 0.8
+                    - name: carbon
+                      symbol: cx
+                      weight: 0.3
+                    - name: carbonadium
+                      symbol: cb
+                      weight: 0.001
+      parameters:
+        - name: id
+          in: path
+          description: An ObjectId of an existing Alloy in the database.
+          required: true
+          schema:
+            type: string
+            format: bytes
+      responses:
+        '202':
+          description: The request was successful and the updated Alloy is returned.
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/Alloy'
+              example:
+                status: success
+                data:
+                  name: Arc_Stark
+                  compositions:
+                    - name: palladium
+                      symbol: pd
+                      weight: 0.0
+                    - name: vibranium
+                      symbol: vb
+                      weight: 0.8
+                    - name: carbon
+                      symbol: cx
+                      weight: 0.3
+                    - name: carbonadium
+                      symbol: cb
+                      weight: 0.001
+        '400':
+          description: An invalid payload has been sent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty JSON':
+                  value:
+                    status: fail
+                    message: Invalid payload.
+                'Bad ID in Parameters':
+                  value:
+                    status: fail
+                    message: Invalid ObjectId.
+                'Not Valid Alloy JSON':
+                  value:
+                    status: fail
+                    message: Invalid payload.
+                    errors:
+                      compositions:
+                        - Missing data for required field.
+        '404':
+          description: Cannot find an existing alloy so no content returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: fail
+                message: Alloy not found.
+    delete:
+      summary: Delete a single alloy by ID.
+      tags:
+        - Alloys
+      parameters:
+        - name: id
+          in: path
+          description: An ObjectId of an existing Alloy in the database.
+          required: true
+          schema:
+            type: string
+            format: bytes
+      responses:
+        '202':
+          description: Your request was successfully completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: success
+        '400':
+          description: An invalid request parameter has been sent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: fail
+                message: Invalid ObjectId.
+        '404':
+          description: No existing alloy to delete.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: fail
+                message: Alloy not found.
+
 components:
   securitySchemes:
     bearerAuth:
@@ -642,6 +943,7 @@ components:
           type: integer
         cct_cooling_rate:
           type: integer
+    # TODO: Fix the examples
     Element:
       type: object
       properties:
@@ -649,54 +951,38 @@ components:
           description: A lowercase full name of the element.
           type: string
           format: string
-          example:
-            - carbon
-            - manganese
-            - silicon
-            - nickel
-            - chromium
-            - molybdenum
-            - aluminium
-            - copper
-            - tungsten
-            - iron
+          example: carbon
         symbol:
           description: "A 2-character lowercase symbol for the name of the element. Note if the periodic symbol is 1
            letter, add an 'x' at the end of the character (i.e. carbon, c becomes cx)."
           type: string
           format: string
           maxLength: 2
-          example:
-            - cx
-            - mn
-            - si
-            - ni
-            - cr
-            - mo
-            - al
-            - cu
-            - wx
-            - fe
+          example: cx
         weight:
           description: The weight of the element in the alloy.
           type: number
           format: double
-          example:
-            - 0.044
-            - 1.73
-            - 0.22
-            - 0.0
-            - 0.0
-            - 0.26
-            - 0.0
-            - 0.0
-            - 0.0
-            - 0.0
+          example: 0.044
     Compositions:
       type: object
       properties:
         comp:
           description: A list of element objects as the composition.
+          type: array
+          items:
+            $ref: '#/components/schemas/Element'
+    Alloy:
+      type: object
+      properties:
+        name:
+          type: string
+          format: string
+          description: The unique name of the element.
+          uniqueItems: true
+          example: Arc_Stark
+        compositions:
+          description: A list of the elements that make up the composition of the alloy.
           type: array
           items:
             $ref: '#/components/schemas/Element'
@@ -708,3 +994,5 @@ tags:
     description: Endpoints for Authentication and Authorization.
   - name: Sessions
     description: Endpoints that manage sessions.
+  - name: Alloys
+    description: Endpoints that expose the full CRUD interface for Alloys.

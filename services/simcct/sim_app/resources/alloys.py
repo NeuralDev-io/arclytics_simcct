@@ -116,7 +116,7 @@ class Alloys(Resource):
         # The service will return True or False based on successfully finding
         # an alloy.
         if not alloy:
-            response['message'] = 'Alloys not found.'
+            response['message'] = 'Alloy not found.'
             return response, 404
 
         response['status'] = 'success'

@@ -430,6 +430,8 @@ paths:
           description: "Successfully logged out"
 
   /users/ping:
+    servers:
+      - url: http://localhost:8001
     get:
       summary: "Just a sanity check that simcct server can sanely connect to users-server."
       tags:
@@ -453,6 +455,8 @@ paths:
                 message: "pong!"
 
   /alloys:
+    servers:
+      - url: http://localhost:8001
     post:
       summary: "Create a new alloy and store it in the Alloys database."
       tags:
@@ -467,7 +471,6 @@ paths:
             examples:
               'Arc Stark':
                 value:
-                  _id: "5d2d81cff091de1cf091674b"
                   name: "Arc_Stark"
                   compositions:
                     - name: "palladium"
@@ -481,7 +484,6 @@ paths:
                       weight: 0.2
               'Wakanda Shield':
                 value:
-                  _id: "5d2d811b88a3fafd802ca7cd"
                   name: "Wakandan_Shield"
                   compositions:
                     - name: "vibranium"
@@ -595,6 +597,8 @@ paths:
                 status: "fail"
                 message: "Empty."
   /alloys/{id}:
+    servers:
+      - url: http://localhost:8001
     get:
       summary: "Get a single alloy from the Alloys database."
       tags:
@@ -780,6 +784,8 @@ paths:
                 message: "Alloy not found."
 
   /configs/method/update:
+    servers:
+      - url: http://localhost:8001
     post:
       summary: "Update the method used in the Session store of the current user."
       security:
@@ -857,6 +863,8 @@ paths:
                 status: "fail"
                 message: "No previous configurations was set."
   /configs/comp/update:
+    servers:
+      - url: http://localhost:8001
     post:
       summary: "Update the Alloy compositions in Session store for the user."
       security:
@@ -1000,6 +1008,8 @@ paths:
                     status: "fail"
                     message: "Invalid JWT token in header."
   /configs/auto/ms-bs:
+    servers:
+      - url: http://localhost:8001
     post:
       summary: "Update the auto calculate for MS and BS and return the new values."
       tags:
@@ -1062,6 +1072,8 @@ paths:
                 status: "fail"
                 message: "Something went with the MS and BS calculations."
   /configs/auto/ae:
+    servers:
+      - url: http://localhost:8001
     post:
       summary: "Update the auto calculate for Ae1 and Ae3 and return the new values."
       tags:
@@ -1111,6 +1123,8 @@ paths:
                     status: "fail"
                     message: "Invalid JWT token in header."
   /configs/auto/xfe:
+    servers:
+      - url: http://localhost:8001
     post:
       summary: "Update the auto calculate for Ae1 and Ae3 and return the new values."
       tags:

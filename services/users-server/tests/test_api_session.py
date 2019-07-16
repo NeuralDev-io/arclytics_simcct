@@ -38,7 +38,7 @@ class TestSimCCTSession(BaseTestCase):
 
     def test_register_session_with_login(self):
         """
-        Ensure we are properly registered with simcct-server using the async
+        Ensure we are properly registered with simcct server using the async
         register method so we can get an appropriate response.
         """
         peter = User(

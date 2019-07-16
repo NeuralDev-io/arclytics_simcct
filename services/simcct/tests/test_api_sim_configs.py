@@ -19,18 +19,17 @@ __date__ = '2019.07.13'
 {Description}
 """
 
-import os
 import json
 import unittest
 import numpy as np
-import requests
 from pathlib import Path
 
 from bson import ObjectId
 from flask import session, current_app
 
-from sim_api import BASE_DIR
+from sim_app.app import BASE_DIR
 from tests.test_api_base import BaseTestCase
+from sim_app.schemas import AlloySchema
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 
@@ -46,7 +45,14 @@ class TestSimConfigurations(BaseTestCase):
             test_json = json.load(f)
 
         configs = test_json['configurations']
-        comp = {'comp': test_json['compositions']}
+        alloy = AlloySchema().load({
+                'name': 'Arc_Stark',
+                'compositions': test_json['compositions']
+        })
+        comp = {
+            'alloy': alloy,
+            'alloy_type': 'parent'
+        }
 
         token = 'ABCDEFGHIJKLMOPQRSTUVWXYZ123'
         _id = ObjectId()
@@ -64,10 +70,10 @@ class TestSimConfigurations(BaseTestCase):
             content_type='application/json'
         )
         data = json.loads(sess_res.data.decode())
-        session_store = session.get(f'{token}:compositions')
+        session_store = session.get(f'{token}:alloy')
         self.assertEqual(data['status'], 'success')
         self.assertTrue(sess_res.status_code == 201)
-        self.assertEqual(comp, session_store)
+        self.assertEqual(comp['alloy'], session_store)
 
         return configs, comp, token
 
@@ -77,11 +83,11 @@ class TestSimConfigurations(BaseTestCase):
             configs, comp, token = self.login_client(client)
 
             new_comp = comp
-            new_comp['comp'][0]['weight'] = 0.050
+            new_comp['alloy']['compositions'][0]['weight'] = 0.050
 
             res = client.post(
                 '/configs/comp/update',
-                data=json.dumps({'compositions': new_comp}),
+                data=json.dumps(new_comp),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -90,54 +96,36 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['message'], 'Compositions updated.')
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
-            session_comp = session.get(f'{token}:compositions')
-            self.assertEqual(session_comp, new_comp)
+            session_comp = session.get(f'{token}:alloy')
+            self.assertEqual(session_comp, new_comp['alloy'])
 
-    def test_on_compositions_change_invalid_comp_schema(self):
-        """Ensure if we send a bad compositions schema we get errors."""
+    def test_on_comp_change_invalid_comp_schema(self):
+        """Ensure if we send a bad alloy schema we get errors."""
         with current_app.test_client() as client:
             configs, comp, token = self.login_client(client)
-            _id = ObjectId()
-            sess_res = client.post(
-                '/session',
-                data=json.dumps(
-                    {
-                        '_id': str(_id),
-                        'last_configurations': configs,
-                        'last_compositions': comp
-                    }
-                ),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(sess_res.data.decode())
-            session_store = session.get(f'{token}:compositions')
-            self.assertEqual(data['status'], 'success')
-            self.assertTrue(sess_res.status_code == 201)
-            self.assertEqual(comp, session_store)
 
-            new_comp = comp
-            new_comp['comp'][0]['weight'] = 0.050
+            new_comp = {
+                    'alloy': {'name': 'Bad_Alloy', 'compositions': 'hello'},
+                    'alloy_type': 'parent'
+            }
 
             res = client.post(
                 '/configs/comp/update',
-                data=json.dumps({'compositions': {
-                    'comp': new_comp
-                }}),
+                data=json.dumps(new_comp),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
 
-            self.assertEqual(data['message'], 'Invalid payload.')
+            self.assertEqual(data['message'],
+                             'Alloy failed schema validation.')
             self.assert400(res)
             self.assertEqual(data['status'], 'fail')
             self.assertTrue(data['errors'])
-            self.assertTrue(data['bad_data'])
-            session_comp = session.get(f'{token}:compositions')
+            session_comp = session.get(f'{token}:alloy')
             self.assertNotEqual(session_comp, new_comp)
 
-    def test_on_composition_change_auto_update_temps(self):
+    def test_on_comp_change_auto_update_temps(self):
         """Ensure if we update compositions schema we also auto update."""
         with current_app.test_client() as client:
             configs, comp, token = self.login_client(client)
@@ -179,12 +167,12 @@ class TestSimConfigurations(BaseTestCase):
             # Now we change the compositions and make sure it's all updated
             # with the composition change
             new_comp = comp
-            new_comp['comp'][0]['weight'] = 0.050
-            new_comp['comp'][1]['weight'] = 1.6
+            new_comp['alloy']['compositions'][0]['weight'] = 0.050
+            new_comp['alloy']['compositions'][1]['weight'] = 1.6
 
             res = client.post(
                 '/configs/comp/update',
-                data=json.dumps({'compositions': new_comp}),
+                data=json.dumps(new_comp),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -518,7 +506,7 @@ class TestSimConfigurations(BaseTestCase):
         with current_app.test_client() as client:
             configs, comp, token = self.login_client(client)
 
-            prev_sess_comp = session.get(f'{token}:compositions')
+            prev_sess_comp = session.get(f'{token}:alloy')
             res = client.post(
                 '/configs/comp/update',
                 data=json.dumps({'compositions': []}),
@@ -532,7 +520,7 @@ class TestSimConfigurations(BaseTestCase):
             )
             self.assert400(res)
             self.assertEqual(data['status'], 'fail')
-            after_sess_comp = session.get(f'{token}:compositions')
+            after_sess_comp = session.get(f'{token}:alloy')
             self.assertEqual(prev_sess_comp, after_sess_comp)
 
     def test_on_comp_change_no_ae_check(self):
@@ -573,13 +561,14 @@ class TestSimConfigurations(BaseTestCase):
             # Now we change the compositions and make sure it's all updated
             # with the composition change
             new_comp = comp
-            new_comp['comp'][0]['weight'] = 0.050
-            new_comp['comp'][1]['weight'] = 0.3
-            new_comp['comp'][2]['weight'] = 1.6
+            alloy_comp = new_comp['alloy']
+            alloy_comp['compositions'][0]['weight'] = 0.050
+            alloy_comp['compositions'][1]['weight'] = 0.3
+            alloy_comp['compositions'][2]['weight'] = 1.6
 
             res = client.post(
                 '/configs/comp/update',
-                data=json.dumps({'compositions': new_comp}),
+                data=json.dumps(new_comp),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -617,12 +606,12 @@ class TestSimConfigurations(BaseTestCase):
             # Now we change the compositions and make sure it's all updated
             # with the composition change
             new_comp = comp
-            new_comp['comp'][0]['weight'] = 0.05
-            new_comp['comp'][1]['weight'] = 1.6
+            new_comp['alloy']['compositions'][0]['weight'] = 0.05
+            new_comp['alloy']['compositions'][1]['weight'] = 1.6
 
             res = client.post(
                 '/configs/comp/update',
-                data=json.dumps({'compositions': new_comp}),
+                data=json.dumps(new_comp),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )

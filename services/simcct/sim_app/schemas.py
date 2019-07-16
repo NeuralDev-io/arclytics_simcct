@@ -17,13 +17,17 @@ __date__ = '2019.07.09'
 """schemas.py: 
 
 These describe the schema required for the configurations and compositions
-that will be received by the simcct-server as request body data. They will
+that will be received by the simcct server as request body data. They will
 be used to validate the post data is correct before adding to any DB.
 """
 
 import enum
 
+from bson import ObjectId
 from marshmallow import Schema, fields
+
+
+Schema.TYPE_MAPPING[ObjectId] = fields.String
 
 
 class AlloyOption(enum.Enum):
@@ -39,13 +43,9 @@ class ElementSchema(Schema):
 
 
 class AlloySchema(Schema):
+    _id = fields.Str()
     name = fields.Str(required=True)
     compositions = fields.List(fields.Nested(ElementSchema), required=True)
-
-
-# TODO(andrew@neuraldev.io -- soon): Change this to Alloy Schema
-class CompositionSchema(Schema):
-    comp = fields.List(fields.Nested(ElementSchema), required=True)
 
 
 class ConfigurationsSchema(Schema):
@@ -107,4 +107,3 @@ class ConfigurationsSchema(Schema):
         #  - RAISE: Raise a validationError if there are any
         # unknown = EXCLUDE
         pass
-

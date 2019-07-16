@@ -20,6 +20,3 @@ This module defines the schemas for the Users and other necessary JSON data that
 is passed to the users-server. 
 """
 
-from marshmallow import Schema, fields, pre_load, validate
-
-# class

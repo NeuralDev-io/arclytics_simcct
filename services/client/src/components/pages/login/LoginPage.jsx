@@ -1,3 +1,10 @@
+/**
+ * Login Page
+ *
+ * @version 0.0.0
+ * @author Arvy Salazar
+ * @github Xaraox
+ */
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'

@@ -591,7 +591,7 @@ paths:
                 $ref: '#/components/schemas/Response'
               example:
                 status: fail
-                message: Alloys not found.
+                message: Empty.
 
   /alloys/{id}:
     get:
@@ -619,6 +619,24 @@ paths:
                     example: success
                   data:
                     $ref: '#/components/schemas/Alloy'
+        '400':
+          description: Invalid payload sent in the request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: fail
+                message: Invalid ObjectId
+        '404':
+          description: Cannot find an existing alloy with that ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: fail
+                message: Alloy not found.
     put:
       summary: Update a single existing Alloy.
       tags:

@@ -155,9 +155,12 @@ def async_register_session(user: User = None,
         url=f'http://{simcct_host}/session',
         json={
             '_id': str(user_id),
-            'token': auth_token,
             'last_configurations': last_configs,
             'last_compositions': last_compositions
+        },
+        headers={
+            'Authorization': f'Bearer {auth_token}',
+            'Content-type': 'application/json'
         }
     )
     # Because this method is in an async state, we want to know if our request

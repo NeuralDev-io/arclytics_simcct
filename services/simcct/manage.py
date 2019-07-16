@@ -84,8 +84,8 @@ def flush():
         port=int(os.environ.get('MONGO_PORT'))
     )
     client.drop_database('arc')
-    client.drop_database('arc-dev')
-    client.drop_database('arc-test')
+    client.drop_database('arc_dev')
+    client.drop_database('arc_test')
 
 
 @cli.command()

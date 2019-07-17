@@ -222,3 +222,4 @@ typings/
 *.db
 services/server/htmlcov/
 !services/swagger/dist/
+\.vscode/

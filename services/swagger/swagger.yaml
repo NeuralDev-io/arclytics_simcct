@@ -4,11 +4,13 @@ info:
   title: "Arclytics Sim API"
   description: "Swagger spec for documenting the users and simulation service"
 
+
 servers:
   - description: "Users Service Flask Server"
     url: 'http://localhost:8000'
   - description: "SimCCT Service Flask Server"
     url: 'http://localhost:8001'
+
 
 paths:
   /ping:
@@ -876,6 +878,68 @@ paths:
               example:
                 status: "fail"
                 message: "No previous configurations was set."
+  /configs/update:
+    servers:
+      - url: http://localhost:8001
+    put:
+      summary: "Update the Session store of the configurations for the current user."
+      tags:
+        - Configurations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configurations'
+            examples:
+              'Valid Configurations':
+                value:
+                  grain_size_type: "ASTM"
+                  grain_size: 8.0
+                  nucleation_start: 1.0
+                  nucleation_finish: 99.90
+                  start_temp: 900
+                  cct_cooling_rate: 10
+              'Invalid Configurations':
+                value:
+                  grain_size_type: "ASTM"
+                  grain_size: 8.0
+                  start_temp: 900
+                  cct_cooling_rate: 10
+      responses:
+        '204':
+          description: "The configurations were updated successfully and no content returned."
+        '400':
+          description: 'Invalid payload sent in the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Invalid Paylod':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                    errors:
+                      nucleation_start:
+                        - "Missing data for required field."
+                      nucleation_finish:
+                        - "Missing data for required field."
+        '404':
+          description: "No content can be found to update."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "No previous session configurations was set."
   /configs/comp/update:
     servers:
       - url: http://localhost:8001
@@ -1098,6 +1162,57 @@ paths:
               example:
                 status: "fail"
                 message: "Something went with the MS and BS calculations."
+  /configs/update/ms-bs:
+    servers:
+      - url: http://localhost:8001
+    put:
+      summary: "We update the server session store of MS and BS"
+      tags:
+        - Configurations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ms_temp:
+                  type: number
+                  format: float
+                  example: 464.1960
+                bs_temp:
+                  type: number
+                  format: float
+                  example: 563.2380
+      responses:
+        '204':
+          description: "The BS and MS temperatures were updated and no content returned."
+        '400':
+          description: "An invalid payload was sent in the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Missing MS':
+                  value:
+                    status: "fail"
+                    message: "MS temperature is required."
+                'Missing BS':
+                  value:
+                    status: "fail"
+                    message: "BS temperature is required."
+        '404':
+          description: "No previous session configurations was found for the user."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "No previous session configurations was set."
   /configs/auto/ae:
     servers:
       - url: http://localhost:8001
@@ -1158,6 +1273,57 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
+  /configs/update/ae:
+    servers:
+      - url: http://localhost:8001
+    put:
+      summary: "We update the server session store of Ae1 and Ae3"
+      tags:
+        - Configurations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ae1_temp:
+                  type: number
+                  format: float
+                  example: 700.9020
+                ae3_temp:
+                  type: number
+                  format: float
+                  example: 845.8380
+      responses:
+        '204':
+          description: "The Ae1 and Ae3 temperatures were updated and no content returned."
+        '400':
+          description: "An invalid payload was sent in the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Missing Ae1':
+                  value:
+                    status: "fail"
+                    message: "Ae1 temperature is required."
+                'Missing Ae3':
+                  value:
+                    status: "fail"
+                    message: "Ae3 temperature is required."
+        '404':
+          description: "No previous session configurations was found for the user."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "No previous session configurations was set."
   /configs/auto/xfe:
     servers:
       - url: http://localhost:8001
@@ -1224,11 +1390,11 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
-  /configs/update:
+  /configs/update/xfe:
     servers:
       - url: http://localhost:8001
     put:
-      summary: "Update the Session store of the configurations for the current user."
+      summary: "We update the server session store of Xfe, Cf and Ceut"
       tags:
         - Configurations
       security:
@@ -1238,25 +1404,51 @@ paths:
         content:
           application/json:
             schema:
-                $ref: '#/components/schemas/Configurations'
-            examples:
-              'Valid Configurations':
-                value:
-                  grain_size_type: "ASTM"
-                  grain_size: 8.0
-                  nucleation_start: 1.0
-                  nucleation_finish: 99.90
-                  start_temp: 900
-                  cct_cooling_rate: 10
-              'Invalid Configurations':
-                value:
-                  grain_size_type: "ASTM"
-                  grain_size: 8.0
-                  start_temp: 900
-                  cct_cooling_rate: 10
+              type: object
+              properties:
+                xfe_value:
+                  type: number
+                  format: float
+                  example: 0.9462
+                cf_value:
+                  type: number
+                  format: float
+                  example: 0.012
+                ceut_value:
+                  type: number
+                  format: float
+                  example: 0.83
       responses:
         '204':
-          description: "The configurations were updated successfully and no content returned."
+          description: "The Xfe, Cf and Ceut values were updated and no content returned."
+        '400':
+          description: "An invalid payload was sent in the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Missing Xfe':
+                  value:
+                    status: "fail"
+                    message: "Xfe value is required."
+                'Missing Cf':
+                  value:
+                    status: "fail"
+                    message: "Cf value is required."
+                'Missing Ceut':
+                  value:
+                    status: "fail"
+                    message: "Ceut value is required."
+        '404':
+          description: "No previous session configurations was found for the user."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "No previous session configurations was set."
 
 
 components:
@@ -1507,6 +1699,7 @@ components:
       required:
         - name
         - compositions
+
 
 tags:
   - name: Users

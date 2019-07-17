@@ -749,18 +749,33 @@ class TestSimConfigurations(BaseTestCase):
             configs, comp, token = self.login_client(client)
             # Since login stores the configs already, we need to make some
             # changes to see if it updates.
-            configs['start_temp'] = 901
+            non_limit_configs = {
+                'grain_size_type': configs['grain_size_type'],
+                'grain_size': configs['grain_size'],
+                'nucleation_start': configs['nucleation_start'],
+                'nucleation_finish': configs['nucleation_finish'],
+                'start_temp': 901,
+                'cct_cooling_rate': configs['cct_cooling_rate']
+            }
 
             res = client.put(
                 '/configs/update',
-                data=json.dumps(configs),
+                data=json.dumps(non_limit_configs),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             self.assertEqual(res.status_code, 204)
             self.assertFalse(res.data)
             session_store = session.get(f'{token}:configurations')
-            self.assertEqual(configs, session_store)
+            sess_non_limit_configs = {
+                'grain_size_type': session_store['grain_size_type'],
+                'grain_size': session_store['grain_size'],
+                'nucleation_start': session_store['nucleation_start'],
+                'nucleation_finish': session_store['nucleation_finish'],
+                'start_temp': session_store['start_temp'],
+                'cct_cooling_rate': session_store['cct_cooling_rate']
+            }
+            self.assertEqual(non_limit_configs, sess_non_limit_configs)
 
     def test_on_configs_change_empty_json(self):
         """Ensure that if we send an empty JSON we get an error."""

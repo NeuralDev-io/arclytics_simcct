@@ -243,6 +243,8 @@ def logout(resp) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
     response = {'status': 'success', 'message': 'Successfully logged out.'}
 
+    # TODO(andrew@neuraldev.io): Delete the session
+
     return jsonify(response), 200
 
 

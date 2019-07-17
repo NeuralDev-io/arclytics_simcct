@@ -28,9 +28,36 @@ from marshmallow import ValidationError
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
 from sim_app.middleware import token_required
-from sim_app.schemas import AlloySchema
+from sim_app.schemas import AlloySchema, ConfigurationsSchema
 
 configs_blueprint = Blueprint('configs', __name__)
+
+
+@configs_blueprint.route(rule='/configs/update', methods=['PUT'])
+@token_required
+def update_configurations(token):
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    post_data = request.get_json()
+    if not post_data:
+        return jsonify(response), 400
+
+    # We store it as a full object as we expect it to match the schema
+    session_configs = session.get(f'{token}:configurations')
+    if session_configs is None:
+        response['message'] = 'No previous session configurations was set.'
+        return jsonify(response), 404
+
+    # validate the configurations again
+    try:
+        configs = ConfigurationsSchema().load(post_data)
+    except ValidationError as e:
+        response['errors'] = e.messages
+        return jsonify(response), 400
+
+    session[f'{token}:configurations'] = configs
+
+    return jsonify(response), 204
 
 
 @configs_blueprint.route(rule='/configs/method/update', methods=['POST'])

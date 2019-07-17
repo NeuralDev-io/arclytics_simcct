@@ -95,10 +95,11 @@ class ConfigurationsSchema(Schema):
     auto_calculate_ae = fields.Boolean(default=False, required=True)
     ae1_temp = fields.Float(required=False)
     ae3_temp = fields.Float(required=False)
-    start_temp = fields.Int()
+    start_temp = fields.Int(required=True)
     cct_cooling_rate = fields.Int()
 
     class Meta:
+        # TODO(andrew@neuraldev.io): Figure out what to do with these?
         # By default, load will raise a ValidationError if it encounters a key
         # with no matching Field in the schema.
         # MODIFIED BEHAVIOUR:

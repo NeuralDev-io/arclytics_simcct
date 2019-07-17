@@ -35,7 +35,7 @@ def authenticate(f):
             'message': 'Provide a valid JWT auth token.'
         }
         # get auth token
-        auth_header = request.headers.get('Authorization', '')
+        auth_header = request.headers.get('Authorization', None)
 
         if not auth_header:
             return jsonify(response), 400

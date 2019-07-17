@@ -8,16 +8,10 @@
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = '{dev_status}'
 __date__ = '2019.07.12'
-"""test_api_session.py: 
-
-{Description}
-"""
 
 import os
 import json
@@ -39,8 +33,8 @@ class TestSessionService(BaseTestCase):
 
     def test_session_user_ping(self):
         """Just a sanity check test that there is connection to users-server."""
-        with self.client:
-            res = self.client.get('/users/ping')
+        with current_app.test_client() as client:
+            res = client.get('/users/ping', content_type='application/json')
             data = json.loads(res.data.decode())
             self.assertEqual(res.status_code, 200)
             self.assertEqual(data['message'], 'pong')
@@ -81,7 +75,7 @@ class TestSessionService(BaseTestCase):
                 test_json = json.load(f)
 
             login_res = client.post(
-                '/session',
+                '/session/login',
                 data=json.dumps(
                     {
                         '_id': user_id,
@@ -98,7 +92,7 @@ class TestSessionService(BaseTestCase):
     def test_login_session_empty_post_data(self):
         with self.app.test_client() as client:
             login_res = client.post(
-                '/session',
+                '/session/login',
                 data=json.dumps({}),
                 headers={'Authorization': f'Bearer JustATest!'},
                 content_type='application/json'
@@ -112,7 +106,7 @@ class TestSessionService(BaseTestCase):
         with self.app.test_client() as client:
             token = 'TESTTESTTEST!'
             login_res = client.post(
-                '/session',
+                '/session/login',
                 data=json.dumps({'token': 'ThisWontBeRead'}),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
@@ -127,7 +121,7 @@ class TestSessionService(BaseTestCase):
     def test_login_session_invalid_objectid_user_id(self):
         with self.app.test_client() as client:
             login_res = client.post(
-                '/session',
+                '/session/login',
                 data=json.dumps({'_id': 'NotAValidObjectIdType'}),
                 headers={'Authorization': f'Bearer JustATest!'},
                 content_type='application/json'
@@ -143,7 +137,7 @@ class TestSessionService(BaseTestCase):
         with self.app.test_client() as client:
             _id = ObjectId()
             login_res = client.post(
-                '/session',
+                '/session/login',
                 data=json.dumps({'_id': str(_id)}),
                 headers={'Authorization': f'Bearer '},
                 content_type='application/json'
@@ -161,7 +155,7 @@ class TestSessionService(BaseTestCase):
         token = 'ThisIsOnlyATestingToken'
         with current_app.test_client() as client:
             login_res = client.post(
-                '/session',
+                '/session/login',
                 data=json.dumps({
                     '_id': str(_id),
                 }),
@@ -173,6 +167,56 @@ class TestSessionService(BaseTestCase):
             self.assertEqual(data['message'], 'User session initiated.')
             sess_saved = session.get(f'{str(token)}:configurations')
             self.assertEqual(sess_saved['method'], 'Li98')
+
+    def test_login_user_with_invalid_configurations(self):
+        """Ensure that if a user has an invalid config it fails."""
+        _id = ObjectId()
+
+        # Missing method and alloy which are both required.
+        configs = {
+            'grain_size': 8.0,
+            'grain_size_type': 'ASTM',
+            'nucleation_start': 1.0,
+            'nucleation_finish': 99.9,
+            'auto_calculate_xfe': True,
+            'xfe_value': 0.0,
+            'cf_value': 0.012,
+            'ceut_value': 0.762,
+            'auto_calculate_ms_bs': True,
+            'transformation_method': 'Li98',
+            'ms_temp': 0.0,
+            'bs_temp': 0.0,
+            'auto_calculate_ae': True,
+            'ae1_temp': 0.0,
+            'ae3_temp': 0.0,
+            'start_temp': 900.0,
+            'cct_cooling_rate': 10
+        }
+        token = 'ThisIsOnlyATestingToken'
+
+        with current_app.test_client() as client:
+            login_res = client.post(
+                '/session/login',
+                data=json.dumps(
+                    {
+                        '_id': str(_id),
+                        'last_configurations': configs,
+                        'last_compositions': {
+                            'alloy': {
+                                'name': '',
+                                'compositions': []
+                            }}
+                    }
+                ),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            self.assert400(login_res)
+            data = json.loads(login_res.data.decode())
+            self.assertTrue(data['status'] == 'fail')
+            self.assertEqual(data['message'], 'Invalid payload.')
+            sess_saved = session.get(f'{str(token)}:configurations')
+            self.assertFalse(sess_saved)
 
     def test_login_user_with_configurations(self):
         """Ensure that if a user has an appropriate last_configurations then
@@ -205,7 +249,7 @@ class TestSessionService(BaseTestCase):
 
         with current_app.test_client() as client:
             login_res = client.post(
-                '/session',
+                '/session/login',
                 data=json.dumps(
                     {
                         '_id': str(_id),
@@ -230,6 +274,59 @@ class TestSessionService(BaseTestCase):
             self.assertEqual(sess_saved['grain_size'], 8.0)
             self.assertEqual(sess_saved['auto_calculate_ms_bs'], True)
 
+    def test_login_user_with_invalid_compositions(self):
+        """Ensure if the comp is invalid it fails."""
+        _id = ObjectId()
+        configs = {
+            'method': 'Li98',
+            'alloy': 'parent',
+            'grain_size': 8.0,
+            'grain_size_type': 'ASTM',
+            'nucleation_start': 1.0,
+            'nucleation_finish': 99.9,
+            'auto_calculate_xfe': True,
+            'xfe_value': 0.0,
+            'cf_value': 0.012,
+            'ceut_value': 0.762,
+            'auto_calculate_ms_bs': True,
+            'transformation_method': 'Li98',
+            'ms_temp': 0.0,
+            'bs_temp': 0.0,
+            'auto_calculate_ae': True,
+            'ae1_temp': 0.0,
+            'ae3_temp': 0.0,
+            'start_temp': 900.0,
+            'cct_cooling_rate': 10
+        }
+        e1 = {'name': 'carbon', 'weight': 0.044}
+        e2 = {'name': 'manganese', 'weight': 1.73}
+        token = 'ThisIsOnlyATestingToken'
+
+        with current_app.test_client() as client:
+            login_res = client.post(
+                '/session/login',
+                data=json.dumps(
+                    {
+                        '_id': str(_id),
+                        'token': token,
+                        'last_configurations': configs,
+                        'last_compositions': {
+                            'alloy': {
+                                'name': 'Random',
+                                'compositions': [e1, e2]
+                            }}
+                    }
+                ),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            self.assert400(login_res)
+            data = json.loads(login_res.data.decode())
+            self.assertTrue(data['status'] == 'fail')
+            self.assertEqual(data['message'], 'Invalid payload.')
+            comp_store = session.get(f'{str(token)}:alloy')
+            self.assertIsNone(comp_store)
+
     def test_login_user_with_compositions(self):
         """Ensure if the user a last_compositions it is added to Redis store."""
         _id = ObjectId()
@@ -240,7 +337,7 @@ class TestSessionService(BaseTestCase):
 
         with current_app.test_client() as client:
             login_res = client.post(
-                '/session',
+                '/session/login',
                 data=json.dumps(
                     {
                         '_id': str(_id),

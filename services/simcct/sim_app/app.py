@@ -32,8 +32,6 @@ from flask_cors import CORS
 from flask_restful import Api
 from flask_session import Session as FlaskSession
 
-from sim_app.resources.session import Session, UsersPing
-
 
 class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""
@@ -115,8 +113,6 @@ def create_app(script_info=None) -> Flask:
     # will raise all sorts of import issues.
     from sim_app.resources.alloys import AlloysList, Alloys
 
-    api.add_resource(Session, '/session')
-    api.add_resource(UsersPing, '/users/ping')
     api.add_resource(Alloys, '/alloys/<alloy_id>')
     api.add_resource(AlloysList, '/alloys')
 

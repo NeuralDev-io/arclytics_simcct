@@ -151,7 +151,7 @@ def async_register_session(user: User = None,
             last_compositions['alloy_type'] = user.last_configuration['alloy']
 
     resp = requests.post(
-        url=f'http://{simcct_host}/session',
+        url=f'http://{simcct_host}/session/login',
         json={
             '_id': str(user_id),
             'last_configurations': last_configs,

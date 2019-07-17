@@ -469,3 +469,13 @@
     }
   }
 }
+
+.ReactTable.rt-hide-divider {
+  border-bottom: none;
+
+  .rt-body {
+    .rt-tr-group {
+      border-bottom: none;
+    }
+  }
+}

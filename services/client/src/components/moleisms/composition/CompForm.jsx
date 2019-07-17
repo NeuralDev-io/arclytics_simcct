@@ -32,7 +32,7 @@ class CompForm extends Component {
     return (
       <form className={styles.form}>
         <div className={styles.selectInline}>
-          <h6 className={styles.heading}>Select alloy</h6>
+          <h6>Select alloy</h6>
           <Select
             name="alloy"
             placeholder="Choose alloy"

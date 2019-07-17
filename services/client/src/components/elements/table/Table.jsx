@@ -20,21 +20,27 @@ import './Table.scss'
 
 // TODO: add custom pagination component
 const Table = (props) => {
-  const { hideDivider = false, ...otherProps } = props
+  const {
+    hideDivider = false,
+    condensed = false,
+    ...otherProps
+  } = props
   return (
     <ReactTable
       {...otherProps}
-      className={hideDivider ? 'rt-hide-divider' : ''}
+      className={`${hideDivider ? 'rt-hide-divider' : ''} ${condensed ? 'condensed' : ''}`}
     />
   )
 }
 
 Table.propTypes = {
   hideDivider: PropTypes.bool,
+  condensed: PropTypes.bool,
 }
 
 Table.defaultProps = {
   hideDivider: false,
+  condensed: false,
 }
 
 export default Table

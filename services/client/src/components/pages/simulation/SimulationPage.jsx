@@ -89,7 +89,6 @@ class SimulationPage extends Component {
       }
     } else { // weight of an element is changed
       this.setState((prevState) => {
-        console.log(name, value)
         const idx = prevState.compositions.findIndex(elem => elem.name === name)
         const newComp = [...prevState.compositions]
         if (idx !== undefined) {

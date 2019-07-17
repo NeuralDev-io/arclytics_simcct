@@ -435,6 +435,8 @@
       .rt-th {
         @extend .text--sub2;
         padding: 0;
+        text-align: left;
+        border: none;
         
         .rt-resizable-header-content {
           text-align: left;

@@ -38,6 +38,7 @@ const CompTable = (props) => {
       pageSize={data.length}
       showPageSizeOptions={false}
       showPagination={false}
+      resizable={false}
       hideDivider
       condensed
     />

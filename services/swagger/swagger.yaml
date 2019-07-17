@@ -12,6 +12,8 @@ servers:
 
 paths:
   /ping:
+    servers:
+      - url: http://localhost:8000
     get:
       summary: "Just a sanity check"
       tags:
@@ -34,6 +36,8 @@ paths:
                 status: "success"
                 message: "pong!"
   /users:
+    servers:
+      - url: http://localhost:8000
     get:
       summary: "Returns all users"
       tags:
@@ -139,6 +143,8 @@ paths:
                     status: "fail"
                     message: "Not authorized."
   '/users/{id}':
+    servers:
+      - url: http://localhost:8000
     get:
       summary: "Returns a user based on a single user ID"
       tags:
@@ -211,6 +217,8 @@ paths:
                     status: "fail"
                     message: "Invalid token. Please log in again."
   /auth/register:
+    servers:
+      - url: http://localhost:8000
     post:
       summary: "Register and create a new user"
       tags:
@@ -298,6 +306,8 @@ paths:
                     message: "The user details already exists."
 
   /auth/login:
+    servers:
+      - url: http://localhost:8000
     post:
       summary: "Logs a user in"
       tags:
@@ -348,6 +358,8 @@ paths:
                   status: "fail"
                   message: "Email or password combination incorrect."
   /auth/status:
+    servers:
+      - url: http://localhost:8000
     get:
       summary: "Returns the logged in user's status"
       tags:
@@ -419,6 +431,8 @@ paths:
                     status: "fail"
                     message: "Invalid token. Please log in again."
   /auth/logout:
+    servers:
+      - url: http://localhost:8000
     get:
       summary: "Logs a user out"
       tags:
@@ -1016,6 +1030,19 @@ paths:
         - Configurations
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                transformation_method:
+                  type: boolean
+                  enum: ['Li98', 'Kirkaldy83']
+                  example: "Li98"
+                auto_calculate_ms_bs:
+                  type: string
+                  example: true
       responses:
         '200':
           description: "The auto calculate for MS and BS store has been updated and returned."
@@ -1080,6 +1107,15 @@ paths:
         - Configurations
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                auto_calculate_ae:
+                  type: boolean
+                  example: true
       responses:
         '200':
           description: "The auto calculate for MS and BS store has been updated and returned."
@@ -1131,6 +1167,15 @@ paths:
         - Configurations
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                auto_calculate_xfe:
+                  type: boolean
+                  example: true
       responses:
         '200':
           description: "The auto calculate for Equilibrium Phase Fractions (Xfe, Ceut, Cf) store has
@@ -1179,6 +1224,40 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
+  /configs/update:
+    servers:
+      - url: http://localhost:8001
+    put:
+      summary: "Update the Session store of the configurations for the current user."
+      tags:
+        - Configurations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/Configurations'
+            examples:
+              'Valid Configurations':
+                value:
+                  grain_size_type: "ASTM"
+                  grain_size: 8.0
+                  nucleation_start: 1.0
+                  nucleation_finish: 99.90
+                  start_temp: 900
+                  cct_cooling_rate: 10
+              'Invalid Configurations':
+                value:
+                  grain_size_type: "ASTM"
+                  grain_size: 8.0
+                  start_temp: 900
+                  cct_cooling_rate: 10
+      responses:
+        '204':
+          description: "The configurations were updated successfully and no content returned."
+
 
 components:
   securitySchemes:
@@ -1289,7 +1368,7 @@ components:
         message:
           type: string
           format: string
-    Configuration:
+    Configurations:
       type: object
       properties:
         method:

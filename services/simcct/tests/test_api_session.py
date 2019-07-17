@@ -194,7 +194,6 @@ class TestSessionService(BaseTestCase):
             'auto_calculate_ms_bs': True,
             'transformation_method': 'Li98',
             'ms_temp': 0.0,
-            'ms_undercool': 100.0,
             'bs_temp': 0.0,
             'auto_calculate_ae': True,
             'ae1_temp': 0.0,

@@ -137,7 +137,6 @@ class Configuration(EmbeddedDocument):
     auto_calculate_ms_bs = BooleanField(default=False)
     transformation_method = StringField(default='Li98')
     ms_temp = FloatField()
-    ms_undercool = FloatField()
     bs_temp = FloatField()
     auto_calculate_ae = BooleanField(default=False)
     ae1_temp = FloatField()
@@ -164,7 +163,6 @@ class Configuration(EmbeddedDocument):
             'cf_value': self.cf_value,
             'ceut_value': self.ceut_value,
             'ms_temp': self.ms_temp,
-            'ms_undercool': self.ms_undercool,
             'bs_temp': self.bs_temp,
             'ae1_temp': self.ae1_temp,
             'ae3_temp': self.ae3_temp,

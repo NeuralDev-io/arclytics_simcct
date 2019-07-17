@@ -1428,9 +1428,6 @@ components:
         ms_temp:
           type: number
           format: double
-        ms_undercool:
-          type: number
-          format: double
         bs_temp:
           type: number
           format: double

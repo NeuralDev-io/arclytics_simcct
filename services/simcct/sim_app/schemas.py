@@ -90,7 +90,6 @@ class ConfigurationsSchema(Schema):
         }
     )
     ms_temp = fields.Float(required=False)
-    ms_undercool = fields.Float(required=False)
     bs_temp = fields.Float(required=False)
     auto_calculate_ae = fields.Boolean(default=False, required=True)
     ae1_temp = fields.Float(required=False)

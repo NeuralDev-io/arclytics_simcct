@@ -449,7 +449,10 @@
       border-bottom: 1px solid $n50;
   
       .rt-tr {
-  
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
         .rt-td {
           padding: 0;
         }
@@ -473,9 +476,20 @@
 .ReactTable.rt-hide-divider {
   border-bottom: none;
 
-  .rt-body {
+  .rt-tbody {
     .rt-tr-group {
       border-bottom: none;
     }
+  }
+}
+
+.ReactTable.condensed {
+  .rt-tbody {
+    .rt-tr-group {
+      padding: .5rem;
+    }
+  }
+  .rt-thead {
+    margin-bottom: .5rem;
   }
 }

@@ -25,8 +25,8 @@ from flask import Blueprint
 from flask_restful import Resource, Api
 
 from logger.arc_logger import AppLogger
-from users_api.models.models import User
-from users_api.middleware import login_required, authenticate_admin
+from users_app.models import User
+from users_app.middleware import login_required, authenticate_admin
 
 users_blueprint = Blueprint('users', __name__)
 api = Api(users_blueprint)
@@ -115,5 +115,5 @@ class Users(Resource):
 # ========== # RESOURCE ROUTES # ========== #
 api.add_resource(PingTest, '/ping')
 api.add_resource(UsersList, '/users')
-# users_api.add_resource(AdminCreate, '/users/register_admin')
+# users_app.add_resource(AdminCreate, '/users/register_admin')
 api.add_resource(Users, '/users/<user_id>')

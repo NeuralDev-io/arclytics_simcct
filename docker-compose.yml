@@ -17,7 +17,7 @@ services:
       - 8000
     environment:
       - FLASK_ENV=development
-      - APP_SETTINGS=users_api.config.DevelopmentConfig
+      - APP_SETTINGS=users_app.config.DevelopmentConfig
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - MONGO_URI=mongodb://mongodb:27017

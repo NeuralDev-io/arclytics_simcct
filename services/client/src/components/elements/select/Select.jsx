@@ -51,7 +51,7 @@ const Select = (props) => {
       borderColor: colours.n10,
       borderWidth: 1,
       padding: '0 .25rem 0 .55rem',
-      height: '2.5rem',
+      height: '2.25rem',
       cursor: state.isDisabled ? 'not-allowed' : 'pointer',
 
       '&:hover': {
@@ -62,8 +62,15 @@ const Select = (props) => {
     valueContainer: () => ({
       padding: 0,
     }),
-    indicatorContainer: () => ({
-      padding: 0,
+    dropdownIndicator: provided => ({
+      ...provided,
+      height: '1.25rem',
+      padding: '0 .5rem',
+    }),
+    clearIndicator: provided => ({
+      ...provided,
+      height: '1.25rem',
+      padding: '0 .5rem',
     }),
     singleValue: (provided, state) => ({
       ...provided,

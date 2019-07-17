@@ -52,6 +52,7 @@ const Select = (props) => {
       borderWidth: 1,
       padding: '0 .25rem 0 .55rem',
       height: '2.25rem',
+      minHeight: 'initial',
       cursor: state.isDisabled ? 'not-allowed' : 'pointer',
 
       '&:hover': {

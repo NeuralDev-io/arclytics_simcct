@@ -29,7 +29,7 @@ from flask import session, current_app
 
 from sim_app.app import BASE_DIR
 from tests.test_api_base import BaseTestCase
-from sim_app.schemas import AlloySchema
+from sim_app.schemas import AlloySchema, ConfigurationsSchema
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 
@@ -44,7 +44,7 @@ class TestSimConfigurations(BaseTestCase):
         with open(_TEST_CONFIGS_PATH, 'r') as f:
             test_json = json.load(f)
 
-        configs = test_json['configurations']
+        configs = ConfigurationsSchema().load(test_json['configurations'])
         alloy = AlloySchema().load({
                 'name': 'Arc_Stark',
                 'compositions': test_json['compositions']
@@ -366,7 +366,6 @@ class TestSimConfigurations(BaseTestCase):
     def test_configurations_no_auth_header(self):
         """Ensure it fails with no header."""
         with current_app.test_client() as client:
-            token = 'EncodedHelloWorld!'
             method = 'Kirkaldy83'
             res = client.post(
                 '/configs/method/update',
@@ -743,6 +742,60 @@ class TestSimConfigurations(BaseTestCase):
             )
             self.assertEqual(data['status'], 'fail')
             self.assertFalse(sess_store['auto_calculate_xfe'])
+
+    def test_on_configs_change(self):
+        """Ensure that if we send new configurations we store it in session."""
+        with current_app.test_client() as client:
+            configs, comp, token = self.login_client(client)
+            # Since login stores the configs already, we need to make some
+            # changes to see if it updates.
+            configs['start_temp'] = 901
+
+            res = client.put(
+                '/configs/update',
+                data=json.dumps(configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            self.assertEqual(res.status_code, 204)
+            self.assertFalse(res.data)
+            session_store = session.get(f'{token}:configurations')
+            self.assertEqual(configs, session_store)
+
+    def test_on_configs_change_empty_json(self):
+        """Ensure that if we send an empty JSON we get an error."""
+        with current_app.test_client() as client:
+            configs, comp, token = self.login_client(client)
+            res = client.put(
+                '/configs/update',
+                data=json.dumps({}),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assert400(res)
+            self.assertEqual(data['message'], 'Invalid payload.')
+            self.assertEqual(data['status'], 'fail')
+
+    def test_on_configs_change_before_login(self):
+        """Ensure if the user has not logged in, they have no previous store."""
+        with open(_TEST_CONFIGS_PATH, 'r') as f:
+            test_json = json.load(f)
+
+        configs = test_json['configurations']
+        token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123'
+        configs.pop('nucleation_start')
+        configs.pop('nucleation_finish')
+
+        with current_app.test_client() as client:
+            res = client.put(
+                '/configs/update',
+                data=json.dumps(configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            self.assert404(res)
+            # TODO: CURRENTLY HERE
 
 
 if __name__ == '__main__':

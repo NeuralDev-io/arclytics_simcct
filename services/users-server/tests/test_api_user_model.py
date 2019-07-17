@@ -26,11 +26,11 @@ import unittest
 from pathlib import Path
 
 from bson.son import SON
-from mongoengine import Document, StringField, EmailField, BooleanField
+from mongoengine import Document, EmailField, BooleanField
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from tests.test_api_base import BaseTestCase
-from users_api.models.models import (
+from users_app.models import (
     User, PasswordValidationError, USERS, Configuration, Element, Compositions
 )
 

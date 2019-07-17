@@ -33,7 +33,7 @@ from mongoengine import (
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
-from users_api import bcrypt, JSONEncoder
+from users_app import bcrypt, JSONEncoder
 
 logger = AppLogger(__name__)
 # User type choices
@@ -175,7 +175,7 @@ class Configuration(EmbeddedDocument):
     @queryset_manager
     def as_dict(cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
-        `users_api.models.Configuration` Documents instead of a QuerySet.
+        `users_app.models.Configuration` Documents instead of a QuerySet.
 
         Usage:
             config_list = Configuration.as_dict()
@@ -366,7 +366,7 @@ class User(Document):
     @queryset_manager
     def as_dict(cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
-        `users_api.models.Users` Documents instead of a QuerySet.
+        `users_app.models.Users` Documents instead of a QuerySet.
 
         Usage:
             users_list = User.as_dict()

@@ -35,7 +35,7 @@ class App extends Component {
               accessor: "lastName"
             }
           ]}
-          defaultPageSize={data.length}
+          pageSize={data.length}
           showPageSizeOptions={false}
           showPagination={false}
           className="-highlight"

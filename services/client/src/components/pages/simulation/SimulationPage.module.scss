@@ -1,8 +1,12 @@
 @import '../../../styles/colors_light';
 
 .compSidebar {
-  width: 25vw;
+  width: 27vw;
   height: 100vh;
-  min-width: 26.875rem;
   margin-left: 4rem;
+  position: fixed;
+
+  @media screen and (max-width: 1720px) {
+    width: 430px;
+  }
 }

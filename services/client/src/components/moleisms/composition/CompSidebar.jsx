@@ -17,7 +17,7 @@ class CompSidebar extends Component {
     return (
       <div className={styles.sidebar}>
         <div>
-          <h3>Composition</h3>
+          <h4>Composition</h4>
           <CompForm
             values={values}
             onChange={onChange}

@@ -8,7 +8,7 @@ import styles from './CompForm.module.scss'
 
 class CompForm extends Component {
   componentDidMount = () => {
-    const { alloys, getAlloys } = this.props
+    const { alloys, getAlloys } = this.props // eslint-disable-line
     if (!alloys || alloys.length === 0) {
       getAlloys()
     }
@@ -31,19 +31,21 @@ class CompForm extends Component {
 
     return (
       <form className={styles.form}>
-        <h6 className={styles.heading}>Alloy</h6>
-        <Select
-          name="alloy"
-          placeholder="Choose alloy"
-          options={alloyOptions}
-          value={
-            alloyOptions[alloyOptions.findIndex(o => o.value === values.alloy)]
-            || null
-          }
-          length="long"
-          onChange={val => onChange('alloy', val)}
-          className={styles.select}
-        />
+        <div className={styles.selectInline}>
+          <h6 className={styles.heading}>Select alloy</h6>
+          <Select
+            name="alloy"
+            placeholder="Choose alloy"
+            options={alloyOptions}
+            value={
+              alloyOptions[alloyOptions.findIndex(o => o.value === values.alloy)]
+              || null
+            }
+            length="long"
+            onChange={val => onChange('alloy', val)}
+            className={styles.select}
+          />
+        </div>
         <h6 className={styles.heading}>Alloy 1</h6>
         <Select
           name="alloyComp"

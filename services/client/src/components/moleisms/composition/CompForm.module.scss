@@ -1,4 +1,5 @@
 .form {
+  flex-shrink: 0;
   .heading {
     margin-bottom: .75rem;
   }
@@ -6,4 +7,6 @@
   .select {
     margin-bottom: 1rem;
   }
+
+  margin-bottom: 2rem;
 }

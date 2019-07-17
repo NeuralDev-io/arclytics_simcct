@@ -16,9 +16,15 @@ __status__ = 'development'
 __date__ = '2019.07.17'
 """simulation.py: 
 
-{Description}
+This module defines and implements the endpoints for CCT and TTT simulations.
 """
 
-import os
+from flask import Blueprint, json, jsonify
 
-# 
+sim_blueprint = Blueprint('simulation', __name__)
+
+
+@sim_blueprint.route('/simulate', methods=['POST'])
+def simulate():
+    pass
+

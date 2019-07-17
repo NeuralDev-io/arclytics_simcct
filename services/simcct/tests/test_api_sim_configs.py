@@ -794,8 +794,34 @@ class TestSimConfigurations(BaseTestCase):
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
+            data = json.loads(res.data.decode())
             self.assert404(res)
-            # TODO: CURRENTLY HERE
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'],
+                             'No previous session configurations was set.')
+
+    def test_on_configs_invalid_schema_configs(self):
+        """Ensure if we send invalid data we get an error response."""
+        with current_app.test_client() as client:
+            configs, comp, token = self.login_client(client)
+            configs.pop('nucleation_finish')
+            configs.pop('nucleation_start')
+            res = client.put(
+                '/configs/update',
+                data=json.dumps(configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assert400(res)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'Invalid payload.')
+            errors = {
+                'nucleation_finish': ['Missing data for required field.'],
+                'nucleation_start': ['Missing data for required field.']
+            }
+            self.assertTrue(data['errors'])
+            self.assertEqual(data['errors'], errors)
 
 
 if __name__ == '__main__':

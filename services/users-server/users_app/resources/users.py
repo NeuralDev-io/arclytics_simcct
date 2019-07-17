@@ -51,7 +51,7 @@ class UsersList(Resource):
         """Get all users only available to admins."""
         user_list = User.as_dict
         response = {'status': 'success', 'data': {'users': user_list}}
-        return response, 200, {'content-type': 'application/json'}
+        return response, 200, {'Content-type': 'application/json'}
 
 
 # TODO(andrew@neuraldev.io -- Sprint 6)
@@ -109,7 +109,7 @@ class Users(Resource):
         # decorator
         user = User.objects.get(id=user_id)
         response = {'status': 'success', 'data': user.to_dict()}
-        return response, 200, {'content-type': 'application/json'}
+        return response, 200, {'Content-type': 'application/json'}
 
 
 # ========== # RESOURCE ROUTES # ========== #

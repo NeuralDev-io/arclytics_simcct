@@ -107,3 +107,12 @@ class ConfigurationsSchema(Schema):
         #  - RAISE: Raise a validationError if there are any
         # unknown = EXCLUDE
         pass
+
+
+class NonLimitConfigsSchema(Schema):
+    grain_size_type = fields.Str(required=True, default='ASTM')
+    grain_size = fields.Float(required=True)
+    nucleation_start = fields.Float(required=True)
+    nucleation_finish = fields.Float(required=True)
+    start_temp = fields.Int(required=True)
+    cct_cooling_rate = fields.Int(required=True)

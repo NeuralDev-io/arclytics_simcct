@@ -274,13 +274,6 @@ def auto_calculate_ms_bs(token):
     ms_temp = SimConfig.get_ms(method=_transformation_method, comp=comp_np_arr)
     bs_temp = SimConfig.get_bs(method=_transformation_method, comp=comp_np_arr)
 
-    if ms_temp == -1 or bs_temp == -1:
-        response['message'] = (
-            'Something went wrong with the MS and BS '
-            'calculations'
-        )
-        return jsonify(response), 418
-
     # Save the new calculated BS and MS to the Session store
     session_configs['ms_temp'] = ms_temp
     session_configs['bs_temp'] = bs_temp

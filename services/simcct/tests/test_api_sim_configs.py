@@ -6,18 +6,11 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.1.0'
+__author__ = ['Andrew Che <@codeninja55>']
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.13'
-"""test_api_sim_configs.py:
-
-{Description}
-"""
 
 import json
 import unittest
@@ -58,7 +51,7 @@ class TestSimConfigurations(BaseTestCase):
         _id = ObjectId()
 
         sess_res = client.post(
-            '/session',
+            '/session/login',
             data=json.dumps(
                 {
                     '_id': str(_id),
@@ -837,6 +830,312 @@ class TestSimConfigurations(BaseTestCase):
             }
             self.assertTrue(data['errors'])
             self.assertEqual(data['errors'], errors)
+
+    def test_update_ms_bs_empty_payload(self):
+        """Ensure an empty payload does not pass."""
+        with current_app.test_client() as client:
+            res = client.put(
+                '/configs/update/ms-bs',
+                data=json.dumps({}),
+                headers={'Authorization': f'Bearer abcde'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(res.status_code, 400)
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(data['message'], 'Invalid payload.')
+
+    def test_update_ms_bs_missing_ms_payload(self):
+        """Ensure an missing ms_temp payload does not pass."""
+        with current_app.test_client() as client:
+            _, _, token = self.login_client(client)
+            non_limit_configs = {'bs_temp': 563.238}
+
+            res = client.put(
+                '/configs/update/ms-bs',
+                data=json.dumps(non_limit_configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(res.status_code, 400)
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(data['message'], 'MS temperature is required.')
+
+    def test_update_ms_bs_missing_bs_payload(self):
+        """Ensure an missing bs_temp payload does not pass."""
+        with current_app.test_client() as client:
+            _, _, token = self.login_client(client)
+            non_limit_configs = {'ms_temp': 563.238}
+
+            res = client.put(
+                '/configs/update/ms-bs',
+                data=json.dumps(non_limit_configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(res.status_code, 400)
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(data['message'], 'BS temperature is required.')
+
+    def test_update_ms_bs_no_prev_configs(self):
+        """Ensure an missing bs_temp payload does not pass."""
+        with current_app.test_client() as client:
+            # We don't login to set the previous configs
+            # _, _, token = self.login_client(client)
+            non_limit_configs = {
+                'ms_temp': 464.196,
+                'bs_temp': 563.238
+            }
+
+            token = 'BoGuSToKeN'
+            res = client.put(
+                '/configs/update/ms-bs',
+                data=json.dumps(non_limit_configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assert404(res)
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(data['message'],
+                              'No previous session configurations was set.')
+
+    def test_update_ms_bs(self):
+        """Ensure a valid payload of MS and BS will do just as we expect."""
+        with current_app.test_client() as client:
+            _, _, token = self.login_client(client)
+            non_limit_configs = {
+                'ms_temp': 464.196,
+                'bs_temp': 563.238
+            }
+
+            res = client.put(
+                '/configs/update/ms-bs',
+                data=json.dumps(non_limit_configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            self.assertEqual(res.status_code, 204)
+            self.assertFalse(res.data)
+            sess = session.get(f'{token}:configurations')
+            self.assertEquals(sess['ms_temp'], non_limit_configs['ms_temp'])
+            self.assertEquals(sess['bs_temp'], non_limit_configs['bs_temp'])
+
+    def test_update_ae_empty_payload(self):
+        """Ensure an empty payload does not pass."""
+        with current_app.test_client() as client:
+            res = client.put(
+                '/configs/update/ae',
+                data=json.dumps({}),
+                headers={'Authorization': f'Bearer abcde'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(res.status_code, 400)
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(data['message'], 'Invalid payload.')
+
+    def test_update_ae_missing_ae1_payload(self):
+        """Ensure an missing ms_temp payload does not pass."""
+        with current_app.test_client() as client:
+            _, _, token = self.login_client(client)
+            non_limit_configs = {'ae3_temp': 700.902,}
+
+            res = client.put(
+                '/configs/update/ae',
+                data=json.dumps(non_limit_configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(res.status_code, 400)
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(data['message'], 'Ae1 temperature is required.')
+
+    def test_update_ae_missing_ae3_payload(self):
+        """Ensure an missing bs_temp payload does not pass."""
+        with current_app.test_client() as client:
+            _, _, token = self.login_client(client)
+            non_limit_configs = {'ae1_temp': 700.902,}
+
+            res = client.put(
+                '/configs/update/ae',
+                data=json.dumps(non_limit_configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(res.status_code, 400)
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(data['message'], 'Ae3 temperature is required.')
+
+    def test_update_ae_no_prev_configs(self):
+        """Ensure an missing bs_temp payload does not pass."""
+        with current_app.test_client() as client:
+            # We don't login to set the previous configs
+            # _, _, token = self.login_client(client)
+            non_limit_configs = {
+                'ae1_temp': 700.902,
+                'ae3_temp': 845.838
+            }
+
+            token = 'BoGuSToKeN'
+            res = client.put(
+                '/configs/update/ae',
+                data=json.dumps(non_limit_configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assert404(res)
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(data['message'],
+                              'No previous session configurations was set.')
+
+    def test_update_ae(self):
+        """Ensure a valid payload of MS and BS will do just as we expect."""
+        with current_app.test_client() as client:
+            _, _, token = self.login_client(client)
+            non_limit_configs = {
+                'ae1_temp': 700.902,
+                'ae3_temp': 845.838
+            }
+
+            res = client.put(
+                '/configs/update/ae',
+                data=json.dumps(non_limit_configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            self.assertEqual(res.status_code, 204)
+            self.assertFalse(res.data)
+            sess = session.get(f'{token}:configurations')
+            self.assertEquals(sess['ae1_temp'], non_limit_configs['ae1_temp'])
+            self.assertEquals(sess['ae3_temp'], non_limit_configs['ae3_temp'])
+
+    def test_update_xfe_empty_payload(self):
+        """Ensure an empty payload does not pass."""
+        with current_app.test_client() as client:
+            res = client.put(
+                '/configs/update/xfe',
+                data=json.dumps({}),
+                headers={'Authorization': 'Bearer Bogus'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(res.status_code, 400)
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(data['message'], 'Invalid payload.')
+
+    def test_update_xfe_missing_xfe_payload(self):
+        """Ensure an missing xfe_value payload does not pass."""
+        with current_app.test_client() as client:
+            _, _, token = self.login_client(client)
+            non_limit_configs = {
+                'cf_value': 0.012,
+                'ceut_value': 0.83
+            }
+
+            res = client.put(
+                '/configs/update/xfe',
+                data=json.dumps(non_limit_configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(res.status_code, 400)
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(data['message'], 'Xfe value is required.')
+
+    def test_update_xfe_missing_cf_payload(self):
+        """Ensure an missing cf_value payload does not pass."""
+        with current_app.test_client() as client:
+            _, _, token = self.login_client(client)
+            non_limit_configs = {
+                'xfe_value': 0.9462,
+                'ceut_value': 0.83
+            }
+
+            res = client.put(
+                '/configs/update/xfe',
+                data=json.dumps(non_limit_configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(res.status_code, 400)
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(data['message'], 'Cf value is required.')
+
+    def test_update_xfe_missing_ceut_payload(self):
+        """Ensure an missing ceut_value payload does not pass."""
+        with current_app.test_client() as client:
+            _, _, token = self.login_client(client)
+            non_limit_configs = {
+                'xfe_value': 0.9462,
+                'cf_value': 0.012,
+            }
+
+            res = client.put(
+                '/configs/update/xfe',
+                data=json.dumps(non_limit_configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(res.status_code, 400)
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(data['message'], 'Ceut value is required.')
+
+    def test_update_xfe_no_prev_configs(self):
+        """Ensure if no prev. configs. were set it fails."""
+        with current_app.test_client() as client:
+            # We don't login to set the previous configs
+            # _, _, token = self.login_client(client)
+            non_limit_configs = {
+                'xfe_value': 0.9462,
+                'cf_value': 0.012,
+                'ceut_value': 0.83
+            }
+
+            token = 'BoGuSToKeN'
+            res = client.put(
+                '/configs/update/xfe',
+                data=json.dumps(non_limit_configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assert404(res)
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(data['message'],
+                              'No previous session configurations was set.')
+
+    def test_update_xfe(self):
+        """Ensure a valid payload of Xfe, Cf and Ceut will do as we expect."""
+        with current_app.test_client() as client:
+            _, _, token = self.login_client(client)
+            non_limit_configs = {
+                'xfe_value': 0.9462,
+                'cf_value': 0.012,
+                'ceut_value': 0.83
+            }
+
+            res = client.put(
+                '/configs/update/xfe',
+                data=json.dumps(non_limit_configs),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            self.assertEqual(res.status_code, 204)
+            self.assertFalse(res.data)
+            sess = session.get(f'{token}:configurations')
+            self.assertEquals(sess['xfe_value'], non_limit_configs['xfe_value'])
+            self.assertEquals(sess['cf_value'], non_limit_configs['cf_value'])
+            self.assertEquals(sess['ceut_value'],
+                              non_limit_configs['ceut_value'])
 
 
 if __name__ == '__main__':

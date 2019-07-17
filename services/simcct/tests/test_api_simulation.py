@@ -54,7 +54,7 @@ class TestSimulationService(BaseTestCase):
         _id = ObjectId()
 
         sess_res = client.post(
-            '/session',
+            '/session/login',
             data=json.dumps(
                 {
                     '_id': str(_id),

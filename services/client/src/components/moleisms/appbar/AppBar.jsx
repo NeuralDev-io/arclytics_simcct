@@ -5,6 +5,7 @@ import HelpIcon from 'react-feather/dist/icons/help-circle'
 import UserIcon from 'react-feather/dist/icons/user'
 import LogOutIcon from 'react-feather/dist/icons/log-out'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
+import { logout } from '../../../utils/AuthenticationHelper'
 
 import styles from './AppBar.module.scss'
 
@@ -22,6 +23,7 @@ const AppBar = (props) => {
         <LogOutIcon
           className={styles.navIcon}
           onClick={() => {
+            logout()
             localStorage.removeItem('token')
             redirect('/signin')
           }}

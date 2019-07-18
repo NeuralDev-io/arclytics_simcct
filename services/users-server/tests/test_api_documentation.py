@@ -13,9 +13,7 @@ import users_app
 
 class TestScriptDocumentation(unittest.TestCase):
     def test_models_script(self):
-        self.assertIn(
-            'Andrew Che <@codeninja55>', users_app.models.__author__
-        )
+        self.assertIn('Andrew Che <@codeninja55>', users_app.models.__author__)
         self.assertEqual('2019.07.03', users_app.models.__date__)
 
     def test_mongodb_script(self):

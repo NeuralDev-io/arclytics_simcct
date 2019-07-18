@@ -19,4 +19,3 @@ __date__ = '2019.07.11'
 This module defines the schemas for the Users and other necessary JSON data that
 is passed to the users-server. 
 """
-

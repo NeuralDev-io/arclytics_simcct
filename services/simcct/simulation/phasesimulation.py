@@ -54,7 +54,7 @@ class PhaseSimulation(object):
 
             self.configs = sim_configs
             # TODO: Which one of the alloy types for PWD
-            self.comp = None
+            self.comp = sim_configs.comp.copy()
 
             self.start_percent = sim_configs.nuc_start
             self.finish_percent = sim_configs.nuc_finish
@@ -63,8 +63,8 @@ class PhaseSimulation(object):
                 # logger.debug("Start or Finish percent must be a fraction.")
                 print("Start or Finish percent must be a fraction.")
 
-            self.ms = sim_configs.ms_temp
-            self.bs = sim_configs.bs_temp
+            self.ms = round(sim_configs.ms_temp)
+            self.bs = round(sim_configs.bs_temp)
             self.g = sim_configs.grain_size
 
             # if not sim_configs.ae_check:
@@ -73,7 +73,7 @@ class PhaseSimulation(object):
             #         "Ae3) are required. "
             #     )
 
-            self.ae1 = sim_configs.ae1
+            self.ae1 = round(sim_configs.ae1)
             self.ae3 = sim_configs.ae3
             self.xfe = sim_configs.xfe
 

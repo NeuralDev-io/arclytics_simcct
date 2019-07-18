@@ -53,6 +53,9 @@ class SimulationPage extends Component {
   }
 
   componentDidMount = () => {
+    if (!localStorage.getItem('token')) {
+      this.props.history.push('/signin') // eslint-disable-line
+    }
   }
 
   handleCompChange = (name, value) => {

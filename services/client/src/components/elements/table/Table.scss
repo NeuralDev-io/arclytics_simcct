@@ -370,7 +370,7 @@
   top: 50%;
   -webkit-transform: translate(-50%, calc(-50% + 3rem));
   transform: translate(-50%, calc(-50% + 3rem));
-  background: rgba(255, 255, 255, 0.8);
+  background: transparent;
   transition: all 0.3s ease;
   z-index: 1;
   pointer-events: none;

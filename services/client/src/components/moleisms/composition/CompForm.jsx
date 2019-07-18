@@ -31,7 +31,7 @@ class CompForm extends Component {
 
     return (
       <form className={styles.form}>
-        <div className={styles.selectInline}>
+        <div className="input-row">
           <h6>Select alloy</h6>
           <Select
             name="alloy"
@@ -43,22 +43,23 @@ class CompForm extends Component {
             }
             length="long"
             onChange={val => onChange('alloy', val)}
+          />
+        </div>
+        <div className="input-col">
+          <h6>Alloy 1</h6>
+          <Select
+            name="alloyComp"
+            placeholder="Choose composition"
+            options={compOptions}
+            value={
+              compOptions[compOptions.findIndex(c => c.value === values.composition)]
+              || null
+            }
+            length="stretch"
+            onChange={val => onChange('composition', val)}
             className={styles.select}
           />
         </div>
-        <h6 className={styles.heading}>Alloy 1</h6>
-        <Select
-          name="alloyComp"
-          placeholder="Choose composition"
-          options={compOptions}
-          value={
-            compOptions[compOptions.findIndex(c => c.value === values.composition)]
-            || null
-          }
-          length="stretch"
-          onChange={val => onChange('composition', val)}
-          className={styles.select}
-        />
       </form>
     )
   }

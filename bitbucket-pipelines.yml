@@ -12,22 +12,19 @@ pipelines:
           caches:
             - pip3
             - docker
+            - node
+            - pip
           script:
-            - mkdir -p ~/.pip3/cache
             - apk add --quiet py3-pip bash python3 python3-dev
             - apk add --quiet build-base libffi-dev openssl-dev libgcc
-            - python3 --version
             - pip3 install --quiet --cache-dir ~/.pip3/cache --upgrade pip
-            - pip3 -V
-            - pip3 install --quiet --cache-dir ~/.pip3/cache -r ./services/server/requirements.txt
-            - export PYTHONPATH=$PYTHONPATH:./services/server/:./services/server/simulation/
-            - cd ./services/server
-            - python3 -m unittest tests/test_simulation.py  # Run specific Phase Simulation tests only
             - pip3 install --quiet --cache-dir ~/.pip3/cache docker-compose==1.24.0
             - docker-compose -v
-            - cd ../../
-            - docker-compose up -d --build
-            - docker-compose exec -T server python manage.py test  # This should start the test runner for the API server
+            - docker-compose up -d --build simcct users-server redis mongodb client
+            # This should start the test runner for the API server
+#            - ./run_tests.sh -c -t server
+            - docker-compose exec -T users-server python manage.py test
+            - docker-compose exec -T simcct python manage.py test
             - docker-compose down
 
 definitions:

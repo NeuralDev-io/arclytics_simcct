@@ -14,12 +14,11 @@ __status__ = '{dev_status}'
 __date__ = '2019.07.12'
 
 import os
-import json
 import requests
 from pathlib import Path
 
 from bson import ObjectId
-from flask import current_app, session
+from flask import current_app, session, json
 
 from sim_app.app import BASE_DIR
 from tests.test_api_base import BaseTestCase
@@ -54,7 +53,7 @@ class TestSessionService(BaseTestCase):
             }
         )
         data = resp.json()
-        token = data['token']
+        token = data.get('token')
         self.assertEqual(data['status'], 'success')
         self.assertEqual(data['message'], 'User has been registered.')
         self.assertTrue(token)
@@ -79,7 +78,13 @@ class TestSessionService(BaseTestCase):
                 data=json.dumps(
                     {
                         '_id': user_id,
-                        'last_configurations': test_json['configurations']
+                        'last_configurations': test_json['configurations'],
+                        'last_compositions': {
+                            'alloy': {
+                                'name': 'Arc_Stark',
+                                'compositions': test_json['compositions']
+                            }
+                        }
                     }
                 ),
                 headers={'Authorization': f'Bearer {token}'},
@@ -370,3 +375,72 @@ class TestSessionService(BaseTestCase):
             self.assertEqual(stored_elem3['name'], e3['name'])
             self.assertEqual(stored_elem3['symbol'], e3['symbol'])
             self.assertEqual(stored_elem3['weight'], e3['weight'])
+
+    def test_logout_user(self):
+        resp = requests.post(
+            url=f'{self.base_url}/auth/register',
+            json={
+                'email': 'jane@culver.edu.us',
+                'first_name': 'Jane',
+                'last_name': 'Foster',
+                'password': 'IDumpedThor'
+            }
+        )
+        data = resp.json()
+        token = data.get('token')
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['message'], 'User has been registered.')
+        self.assertTrue(token)
+
+        user_resp = requests.get(
+            f'{self.base_url}/auth/status',
+            headers={
+                'Content-type': 'application/json',
+                'Authorization': f'Bearer {token}'
+            }
+        )
+        data = user_resp.json()
+        self.assertEqual(data['status'], 'success')
+        user_id = data.get('data')['_id']
+
+        with open(_TEST_CONFIGS_PATH, 'r') as f:
+            test_json = json.load(f)
+
+        with self.app.test_client() as client:
+            login_res = client.post(
+                '/session/login',
+                data=json.dumps(
+                    {
+                        '_id': user_id,
+                        'last_configurations': test_json['configurations'],
+                        'last_compositions': {
+                            'alloy': {
+                                'name': 'Arc_Stark',
+                                'compositions': test_json['compositions']
+                            }
+                        }
+                    }
+                ),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(login_res.data.decode())
+            self.assertTrue(data['status'] == 'success')
+            self.assertEqual(data['message'], 'User session initiated.')
+            self.assertEqual(session.get('token'), token)
+            self.assertEqual(session.get('user'), user_id)
+            self.assertTrue(session.get(f'{token}:configurations'))
+            self.assertTrue(session.get(f'{token}:alloy'))
+
+            logout_res = client.get(
+                '/session/logout',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(logout_res.data.decode())
+            self.assert200(logout_res)
+            self.assertEqual(data['status'], 'success')
+            self.assertFalse(session.get('token') == token)
+            self.assertIsNone(session.get('user'))
+            self.assertIsNone(session.get(f'{token}:configurations'))
+            self.assertIsNone(session.get(f'{token}:alloy'))

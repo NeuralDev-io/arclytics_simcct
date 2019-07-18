@@ -34,7 +34,7 @@ const Checkbox = (props) => {
       <input
         type="checkbox"
         name={name}
-        onChange={onChange}
+        onChange={e => onChange(e.target.checked)}
         disabled={isDisabled}
         checked={isChecked}
       />

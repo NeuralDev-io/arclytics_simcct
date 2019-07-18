@@ -15,6 +15,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import CompSidebar from '../../moleisms/composition'
+import ConfigForm from '../../moleisms/sim-configs'
 
 import styles from './SimulationPage.module.scss'
 
@@ -104,11 +105,39 @@ class SimulationPage extends Component {
     }
   }
 
+  handleConfigChange = (name, value) => {
+    if (name === 'method' || name === 'grain_size_type' || name === 'transformation_method') {
+      // check if new value is null (select option was cleared)
+      if (value === null) {
+        this.setState(prevState => ({
+          configurations: {
+            ...prevState.configurations,
+            [name]: '',
+          },
+        }))
+      } else {
+        this.setState(prevState => ({
+          configurations: {
+            ...prevState.configurations,
+            [name]: value.value,
+          },
+        }))
+      }
+    } else {
+      this.setState(prevState => ({
+        configurations: {
+          ...prevState.configurations,
+          [name]: value,
+        },
+      }))
+    }
+  }
+
   render() {
     const { configurations, compositions, composition } = this.state
 
     return (
-      <div className={styles.outer}>
+      <React.Fragment>
         <div className={styles.compSidebar}>
           <CompSidebar
             values={{
@@ -119,7 +148,14 @@ class SimulationPage extends Component {
             onChange={this.handleCompChange}
           />
         </div>
-      </div>
+        <div className={styles.main}>
+          <h3>Configurations</h3>
+          <ConfigForm
+            values={configurations}
+            onChange={this.handleConfigChange}
+          />
+        </div>
+      </React.Fragment>
     )
   }
 }

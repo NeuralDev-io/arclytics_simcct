@@ -17,6 +17,7 @@ import { connect } from 'react-redux'
 import Button from '../../elements/button'
 import CompSidebar from '../../moleisms/composition'
 import ConfigForm from '../../moleisms/sim-configs'
+import { updateComp, updateConfig } from '../../../utils/sim/SessionConfigs'
 
 import styles from './SimulationPage.module.scss'
 
@@ -62,21 +63,12 @@ class SimulationPage extends Component {
     const { alloys } = this.props
 
     if (name === 'alloy') { // alloy type is changed
-      if (value === null) {
-        this.setState(prevState => ({
-          configurations: {
-            ...prevState.configurations,
-            alloy: '',
-          },
-        }))
-      } else {
-        this.setState(prevState => ({
-          configurations: {
-            ...prevState.configurations,
-            alloy: value.value,
-          },
-        }))
-      }
+      this.setState(prevState => ({
+        configurations: {
+          ...prevState.configurations,
+          alloy: value.value,
+        },
+      }))
     } else if (name === 'composition') { // composition is changed
       if (value === null) {
         // clear all elements

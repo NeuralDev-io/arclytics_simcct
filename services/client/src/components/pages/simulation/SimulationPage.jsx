@@ -14,6 +14,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import Button from '../../elements/button'
 import CompSidebar from '../../moleisms/composition'
 import ConfigForm from '../../moleisms/sim-configs'
 
@@ -23,6 +24,7 @@ class SimulationPage extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      displayConfig: true,
       configurations: {
         method: 'Li98',
         alloy: 'parent',
@@ -134,7 +136,7 @@ class SimulationPage extends Component {
   }
 
   render() {
-    const { configurations, compositions, composition } = this.state
+    const { displayConfig, configurations, compositions, composition } = this.state
 
     return (
       <React.Fragment>
@@ -149,11 +151,23 @@ class SimulationPage extends Component {
           />
         </div>
         <div className={styles.main}>
-          <h3>Configurations</h3>
-          <ConfigForm
-            values={configurations}
-            onChange={this.handleConfigChange}
-          />
+          <header>
+            <h3>Configurations</h3>
+            <Button
+              appearance="text"
+              onClick={() => this.setState(prevState => ({
+                displayConfig: !prevState.displayConfig,
+              }))}
+            >
+              {displayConfig ? 'Collapse' : 'Expand'}
+            </Button>
+          </header>
+          <div style={{ display: displayConfig ? 'block' : 'none' }}>
+            <ConfigForm
+              values={configurations}
+              onChange={this.handleConfigChange}
+            />
+          </div>
         </div>
       </React.Fragment>
     )

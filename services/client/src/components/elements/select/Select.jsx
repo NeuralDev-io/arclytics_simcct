@@ -38,7 +38,7 @@ const Select = (props) => {
     container: provided => ({
       ...provided,
       width: (() => {
-        if (length === 'short') return '6.5rem'
+        if (length === 'short') return '7rem'
         if (length === 'long') return '10rem'
         if (length === 'stretch') return '100%'
         return '7.5rem'

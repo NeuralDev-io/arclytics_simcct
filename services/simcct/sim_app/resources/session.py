@@ -127,7 +127,7 @@ def session_logout(token):
         token: a valid JWT token associated with the user.
 
     Returns:
-
+        A JSON response and a status code.
     """
     response = {'status': 'fail', 'message': 'Invalid session.'}
     sess_token = session.get('token')

@@ -18,6 +18,7 @@ import Button from '../../elements/button'
 import CompSidebar from '../../moleisms/composition'
 import ConfigForm from '../../moleisms/sim-configs'
 import { updateComp, updateConfig } from '../../../utils/sim/SessionConfigs'
+import { runSim } from '../../../state/ducks/sim/actions'
 
 import styles from './SimulationPage.module.scss'
 
@@ -137,6 +138,9 @@ class SimulationPage extends Component {
       compositions,
       composition,
     } = this.state
+    const {
+      runSim,
+    } = this.props
 
     return (
       <React.Fragment>
@@ -148,10 +152,13 @@ class SimulationPage extends Component {
               compositions,
             }}
             onChange={this.handleCompChange}
-            onSimulate={() => console.log({
-              configurations,
-              compositions,
-            })}
+            onSimulate={() => {
+              console.log({
+                configurations,
+                compositions,
+              })
+              runSim()
+            }}
           />
         </div>
         <div className={styles.main}>
@@ -196,4 +203,8 @@ const mapStateToProps = state => ({
   alloys: state.alloys.list,
 })
 
-export default connect(mapStateToProps, {})(SimulationPage)
+const mapDispatchToProps = {
+  runSim,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(SimulationPage)

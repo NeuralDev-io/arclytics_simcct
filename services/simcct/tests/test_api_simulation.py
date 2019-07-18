@@ -208,6 +208,21 @@ class TestSimulationService(BaseTestCase):
                 len(data['data']['CCT']['martensite']['temp'])
             )
 
+    def test_simulate_plotting(self):
+        with app.test_client() as client:
+            self.login_client(client)
+
+            res = client.get(
+                '/simulate',
+                headers={'Authorization': f'Bearer {self.token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assert200(res)
+            self.assertTrue(data['data'])
+
+            
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -40,7 +40,7 @@ def session_login(token):
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
     if not post_data:
-        return jsonify(response), 400, {'Content-type': 'application/json'}
+        return jsonify(response), 400
 
     user_id = post_data.get('_id', None)
     user_configs = post_data.get('last_configurations', None)
@@ -48,7 +48,7 @@ def session_login(token):
 
     if not ObjectId.is_valid(user_id):
         response['message'] = 'User ObjectId must be provided.'
-        return jsonify(response), 401, {'Content-type': 'application/json'}
+        return jsonify(response), 401
 
     # TODO(andrew@neuraldev.io): Need to do some validation for some fields
     #  - Need to validate the auto_calculate bools
@@ -63,7 +63,7 @@ def session_login(token):
             configs = ConfigurationsSchema().load(user_configs)
         except ValidationError as e:
             response['errors'] = e.messages
-            return jsonify(response), 400, {'Content-type': 'application/json'}
+            return jsonify(response), 400
     else:
         configs = {
             'method': 'Li98',
@@ -97,13 +97,13 @@ def session_login(token):
     #                       manganese, chromium, arsenic, molybdenum
     comp_obj = None
     if user_comp:
-        user_alloy = user_comp['alloy']
+        user_alloy = user_comp.get('alloy')
         try:
             # ElementSchema also validates each element because it is nested
             comp_obj = AlloySchema().load(user_alloy)
         except ValidationError as e:
             response['errors'] = e.messages
-            return jsonify(response), 400, {'Content-type': 'application/json'}
+            return jsonify(response), 400
 
     session['user'] = user_id
     session['token'] = token
@@ -114,13 +114,34 @@ def session_login(token):
     response['message'] = 'User session initiated.'
     response['session_id'] = session.sid
 
-    return jsonify(response), 201, {'Content-type': 'application/json'}
+    return jsonify(response), 201
 
 
 @session_blueprint.route('/session/logout', methods=['GET'])
 @token_required
 def session_logout(token):
-    pass
+    """We need to destroy the Session store of the user's configurations and
+    other storage matters if the user has logged out from the users-server.
+
+    Args:
+        token: a valid JWT token associated with the user.
+
+    Returns:
+        A JSON response and a status code.
+    """
+    response = {'status': 'fail', 'message': 'Invalid session.'}
+    sess_token = session.get('token')
+    if token != sess_token:
+        return jsonify(response), 401
+
+    session.pop('user')
+    session.pop('token')
+    session.pop(f'{token}:configurations')
+    session.pop(f'{token}:alloy')
+
+    response['status'] = 'success'
+    response.pop('message')
+    return jsonify(response), 200
 
 
 @session_blueprint.route('/users/ping', methods=['GET'])

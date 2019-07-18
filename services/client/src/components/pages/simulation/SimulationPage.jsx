@@ -15,6 +15,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Button from '../../elements/button'
+import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
 import ConfigForm from '../../moleisms/sim-configs'
 import { updateComp, updateConfig } from '../../../utils/sim/SessionConfigs'
@@ -144,6 +145,7 @@ class SimulationPage extends Component {
 
     return (
       <React.Fragment>
+        <AppBar active="sim" redirect={this.props.history.push} /> {/* eslint-disable-line */} 
         <div className={styles.compSidebar}>
           <CompSidebar
             values={{

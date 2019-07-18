@@ -3,20 +3,24 @@ import {
 } from './types'
 
 export const getAlloys = () => (dispatch) => {
-  // api call
-  const alloys = [
-    {
-      name: 'Stainless steel',
-      compositions: [
-        { name: 'Carbon', symbol: 'C', weight: 0.004 },
-        { name: 'Mag', symbol: 'Mg', weight: 0.004 },
-      ],
+  fetch('http://localhost:8001/alloys', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
-  ]
-  dispatch({
-    type: GET_ALLOYS,
-    payload: alloys,
   })
+    .then(res => res.json())
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'success') {
+        dispatch({
+          type: GET_ALLOYS,
+          payload: data.alloys,
+        })
+      }
+    })
+    .catch(err => console.log(err))
 }
 
 export const getAlloy = alloyId => (dispatch) => {

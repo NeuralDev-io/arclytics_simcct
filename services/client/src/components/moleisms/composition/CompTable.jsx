@@ -41,9 +41,9 @@ const CompTable = (props) => {
     <Table
       data={data}
       columns={columns}
-      pageSize={data.length}
+      defaultPageSize={7}
       showPageSizeOptions={false}
-      showPagination={false}
+      showPagination={data.length !== 0}
       resizable={false}
       hideDivider
       condensed

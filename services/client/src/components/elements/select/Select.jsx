@@ -31,6 +31,7 @@ const Select = (props) => {
     defaultValue,
     value,
     onChange,
+    ...other
   } = props
   const classname = `${styles.select} ${length === 'default' ? '' : styles[length]} ${className || ''}`
 
@@ -95,7 +96,6 @@ const Select = (props) => {
     <ReactSelect
       className={classname}
       name={name}
-      isClearable
       placeholder={placeholder}
       options={options}
       defaultValue={defaultValue}
@@ -112,6 +112,7 @@ const Select = (props) => {
           primary25: colours.ag50,
         },
       })}
+      {...other}
     />
   )
 }

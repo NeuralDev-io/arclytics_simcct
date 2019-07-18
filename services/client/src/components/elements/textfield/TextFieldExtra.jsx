@@ -11,7 +11,7 @@ const TextFieldExtra = (props) => {
     className,
     ...other
   } = props
-  const classname = `${prefix !== '' && styles.withPrefix} ${suffix !== '' && styles.withSuffix}`
+  const classname = `${prefix !== '' && styles.withPrefix} ${suffix !== '' && styles.withSuffix} ${className}`
 
   return (
     <div className={styles.inputContainer}>

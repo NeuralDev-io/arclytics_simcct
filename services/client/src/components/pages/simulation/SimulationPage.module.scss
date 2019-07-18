@@ -21,7 +21,13 @@
     width: calc(100% - calc(4rem + 430px));
   }
 
-  h3 {
-    margin-bottom: 1.5rem;
+  header {
+    display: flex;
+    flex-direction: row;
+    
+    h3 {
+      margin-bottom: 1.5rem;
+      margin-right: 1rem;
+    }
   }
 }

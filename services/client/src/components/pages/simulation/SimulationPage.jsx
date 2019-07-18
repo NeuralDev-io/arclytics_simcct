@@ -32,16 +32,16 @@ class SimulationPage extends Component {
         grain_size: 8.0,
         nucleation_start: 1.0,
         nucleation_finish: 99.9,
-        auto_calculate_xfe: true,
+        auto_calculate_xfe: false,
         xfe_value: 0.0,
         cf_value: 0.012,
         ceut_value: 0.762,
-        auto_calculate_ms_bs: true,
+        auto_calculate_ms_bs: false,
         transformation_method: 'Li98',
         ms_temp: 0.0,
         ms_undercool: 100.0,
         bs_temp: 0.0,
-        auto_calculate_ae: true,
+        auto_calculate_ae: false,
         ae1_temp: 0.0,
         ae3_temp: 0.0,
         start_temp: 900,
@@ -136,7 +136,12 @@ class SimulationPage extends Component {
   }
 
   render() {
-    const { displayConfig, configurations, compositions, composition } = this.state
+    const {
+      displayConfig,
+      configurations,
+      compositions,
+      composition,
+    } = this.state
 
     return (
       <React.Fragment>
@@ -148,6 +153,10 @@ class SimulationPage extends Component {
               compositions,
             }}
             onChange={this.handleCompChange}
+            onSimulate={() => console.log({
+              configurations,
+              compositions,
+            })}
           />
         </div>
         <div className={styles.main}>

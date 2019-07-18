@@ -3,16 +3,22 @@ import PropTypes from 'prop-types'
 import Table from '../../elements/table'
 import TextField from '../../elements/textfield'
 
+import styles from './CompTable.module.scss'
+
 const CompTable = (props) => {
   const { data = [], onChange } = props
   const columns = [
     {
       Header: 'Elements',
       accessor: 'name',
+      width: 100,
     },
     {
       Header: '',
       accessor: 'symbol',
+      // eslint-disable-next-line
+      Cell: ({ value }) => (<span className={styles.symbol}>{value}</span>),
+      width: 40,
     },
     {
       Header: 'Weight (Alloy 1)',

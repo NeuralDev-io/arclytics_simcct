@@ -58,6 +58,7 @@ class CompForm extends Component {
             length="stretch"
             onChange={val => onChange('composition', val)}
             className={styles.select}
+            isClearable
           />
         </div>
       </form>

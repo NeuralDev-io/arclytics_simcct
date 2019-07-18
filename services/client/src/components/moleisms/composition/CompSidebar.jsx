@@ -12,6 +12,7 @@ class CompSidebar extends Component {
     const {
       values,
       onChange,
+      onSimulate,
     } = this.props
 
     return (
@@ -28,7 +29,7 @@ class CompSidebar extends Component {
           />
         </div>
         <Button
-          onClick={() => console.log("ran")}
+          onClick={onSimulate}
           length="long"
           className={styles.btn}
         >
@@ -52,6 +53,7 @@ CompSidebar.propTypes = {
     })),
   }).isRequired,
   onChange: PropTypes.func.isRequired,
+  onSimulate: PropTypes.func.isRequired,
 }
 
 export default CompSidebar

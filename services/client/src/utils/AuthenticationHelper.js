@@ -60,3 +60,17 @@ export const signup = async (values, resolve, reject) => {
     })
     .catch(err => console.log(err))
 }
+
+export const logout = () => {
+  fetch('http://localhost:8000/auth/logout', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  })
+    .then((res) => {
+      if (res.status !== 400) throw new Error(res.json().then(r => r.message))
+    })
+    .catch(err => console.log(err))
+}

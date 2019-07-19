@@ -38,14 +38,13 @@ class TestSimConfigurations(BaseTestCase):
             test_json = json.load(f)
 
         configs = ConfigurationsSchema().load(test_json['configurations'])
-        alloy = AlloySchema().load({
+        alloy = AlloySchema().load(
+            {
                 'name': 'Arc_Stark',
                 'compositions': test_json['compositions']
-        })
-        comp = {
-            'alloy': alloy,
-            'alloy_type': 'parent'
-        }
+            }
+        )
+        comp = {'alloy': alloy, 'alloy_type': 'parent'}
 
         token = 'ABCDEFGHIJKLMOPQRSTUVWXYZ123'
         _id = ObjectId()
@@ -98,8 +97,11 @@ class TestSimConfigurations(BaseTestCase):
             configs, comp, token = self.login_client(client)
 
             new_comp = {
-                    'alloy': {'name': 'Bad_Alloy', 'compositions': 'hello'},
-                    'alloy_type': 'parent'
+                'alloy': {
+                    'name': 'Bad_Alloy',
+                    'compositions': 'hello'
+                },
+                'alloy_type': 'parent'
             }
 
             res = client.post(
@@ -110,8 +112,9 @@ class TestSimConfigurations(BaseTestCase):
             )
             data = json.loads(res.data.decode())
 
-            self.assertEqual(data['message'],
-                             'Alloy failed schema validation.')
+            self.assertEqual(
+                data['message'], 'Alloy failed schema validation.'
+            )
             self.assert400(res)
             self.assertEqual(data['status'], 'fail')
             self.assertTrue(data['errors'])
@@ -805,8 +808,9 @@ class TestSimConfigurations(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assert404(res)
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'],
-                             'No previous session configurations was set.')
+            self.assertEqual(
+                data['message'], 'No previous session configurations was set.'
+            )
 
     def test_on_configs_invalid_schema_configs(self):
         """Ensure if we send invalid data we get an error response."""
@@ -884,10 +888,7 @@ class TestSimConfigurations(BaseTestCase):
         with current_app.test_client() as client:
             # We don't login to set the previous configs
             # _, _, token = self.login_client(client)
-            non_limit_configs = {
-                'ms_temp': 464.196,
-                'bs_temp': 563.238
-            }
+            non_limit_configs = {'ms_temp': 464.196, 'bs_temp': 563.238}
 
             token = 'BoGuSToKeN'
             res = client.put(
@@ -899,17 +900,15 @@ class TestSimConfigurations(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assert404(res)
             self.assertEquals(data['status'], 'fail')
-            self.assertEquals(data['message'],
-                              'No previous session configurations was set.')
+            self.assertEquals(
+                data['message'], 'No previous session configurations was set.'
+            )
 
     def test_update_ms_bs(self):
         """Ensure a valid payload of MS and BS will do just as we expect."""
         with current_app.test_client() as client:
             _, _, token = self.login_client(client)
-            non_limit_configs = {
-                'ms_temp': 464.196,
-                'bs_temp': 563.238
-            }
+            non_limit_configs = {'ms_temp': 464.196, 'bs_temp': 563.238}
 
             res = client.put(
                 '/configs/update/ms-bs',
@@ -941,7 +940,9 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure an missing ms_temp payload does not pass."""
         with current_app.test_client() as client:
             _, _, token = self.login_client(client)
-            non_limit_configs = {'ae3_temp': 700.902,}
+            non_limit_configs = {
+                'ae3_temp': 700.902,
+            }
 
             res = client.put(
                 '/configs/update/ae',
@@ -958,7 +959,9 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure an missing bs_temp payload does not pass."""
         with current_app.test_client() as client:
             _, _, token = self.login_client(client)
-            non_limit_configs = {'ae1_temp': 700.902,}
+            non_limit_configs = {
+                'ae1_temp': 700.902,
+            }
 
             res = client.put(
                 '/configs/update/ae',
@@ -976,10 +979,7 @@ class TestSimConfigurations(BaseTestCase):
         with current_app.test_client() as client:
             # We don't login to set the previous configs
             # _, _, token = self.login_client(client)
-            non_limit_configs = {
-                'ae1_temp': 700.902,
-                'ae3_temp': 845.838
-            }
+            non_limit_configs = {'ae1_temp': 700.902, 'ae3_temp': 845.838}
 
             token = 'BoGuSToKeN'
             res = client.put(
@@ -991,17 +991,15 @@ class TestSimConfigurations(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assert404(res)
             self.assertEquals(data['status'], 'fail')
-            self.assertEquals(data['message'],
-                              'No previous session configurations was set.')
+            self.assertEquals(
+                data['message'], 'No previous session configurations was set.'
+            )
 
     def test_update_ae(self):
         """Ensure a valid payload of MS and BS will do just as we expect."""
         with current_app.test_client() as client:
             _, _, token = self.login_client(client)
-            non_limit_configs = {
-                'ae1_temp': 700.902,
-                'ae3_temp': 845.838
-            }
+            non_limit_configs = {'ae1_temp': 700.902, 'ae3_temp': 845.838}
 
             res = client.put(
                 '/configs/update/ae',
@@ -1033,10 +1031,7 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure an missing xfe_value payload does not pass."""
         with current_app.test_client() as client:
             _, _, token = self.login_client(client)
-            non_limit_configs = {
-                'cf_value': 0.012,
-                'ceut_value': 0.83
-            }
+            non_limit_configs = {'cf_value': 0.012, 'ceut_value': 0.83}
 
             res = client.put(
                 '/configs/update/xfe',
@@ -1053,10 +1048,7 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure an missing cf_value payload does not pass."""
         with current_app.test_client() as client:
             _, _, token = self.login_client(client)
-            non_limit_configs = {
-                'xfe_value': 0.9462,
-                'ceut_value': 0.83
-            }
+            non_limit_configs = {'xfe_value': 0.9462, 'ceut_value': 0.83}
 
             res = client.put(
                 '/configs/update/xfe',
@@ -1110,8 +1102,9 @@ class TestSimConfigurations(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assert404(res)
             self.assertEquals(data['status'], 'fail')
-            self.assertEquals(data['message'],
-                              'No previous session configurations was set.')
+            self.assertEquals(
+                data['message'], 'No previous session configurations was set.'
+            )
 
     def test_update_xfe(self):
         """Ensure a valid payload of Xfe, Cf and Ceut will do as we expect."""
@@ -1132,10 +1125,13 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(res.status_code, 204)
             self.assertFalse(res.data)
             sess = session.get(f'{token}:configurations')
-            self.assertEquals(sess['xfe_value'], non_limit_configs['xfe_value'])
+            self.assertEquals(
+                sess['xfe_value'], non_limit_configs['xfe_value']
+            )
             self.assertEquals(sess['cf_value'], non_limit_configs['cf_value'])
-            self.assertEquals(sess['ceut_value'],
-                              non_limit_configs['ceut_value'])
+            self.assertEquals(
+                sess['ceut_value'], non_limit_configs['ceut_value']
+            )
 
 
 if __name__ == '__main__':

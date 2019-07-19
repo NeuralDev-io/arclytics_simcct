@@ -35,10 +35,10 @@ from sim_app.app import create_app
 COV = coverage.coverage(
     branch=True,
     include=[
+        'sim_app/schemas.py',
         'sim_app/resources/*',
         'sim_app/alloys/*',
         'sim_app/alloys_service.py',
-        'sim_app/schemas.py',
         'sim_app/middleware.py',
     ],
     omit=[
@@ -102,7 +102,7 @@ def test():
 def cov():
     """Runs the unit tests with coverage."""
     tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
-    result = unittest.TextTestRunner(verbosity=4).run(tests)
+    result = unittest.TextTestRunner(verbosity=3).run(tests)
     if result.wasSuccessful():
         COV.stop()
         COV.save()

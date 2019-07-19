@@ -26,11 +26,11 @@ import unittest
 from pathlib import Path
 
 from bson.son import SON
-from mongoengine import Document, StringField, EmailField, BooleanField
+from mongoengine import Document, EmailField, BooleanField
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from tests.test_api_base import BaseTestCase
-from users_api.models.models import (
+from users_app.models import (
     User, PasswordValidationError, USERS, Configuration, Element, Compositions
 )
 
@@ -93,7 +93,6 @@ class TestUserModel(BaseTestCase):
         self.assertEqual(user.last_configuration.grain_size_type, 'ASTM')
         self.assertEqual(user.last_configuration.nucleation_start, 1.0)
         self.assertEqual(user.last_configuration.nucleation_finish, 99.9)
-        self.assertEqual(user.last_configuration.ms_undercool, 100.0)
         self.assertEqual(user.last_configuration.start_temp, 900)
         self.assertEqual(user.last_configuration.cct_cooling_rate, 10)
 

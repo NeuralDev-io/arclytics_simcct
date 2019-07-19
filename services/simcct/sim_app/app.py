@@ -32,8 +32,6 @@ from flask_cors import CORS
 from flask_restful import Api
 from flask_session import Session as FlaskSession
 
-from sim_app.resources.session import Session, UsersPing
-
 
 class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""
@@ -89,7 +87,7 @@ def create_app(script_info=None) -> Flask:
     app = Flask(__name__)
 
     # ========== # CONFIGURATIONS # ========== #
-    app_settings = os.getenv('APP_SETTINGS')
+    app_settings = os.environ.get('APP_SETTINGS', None)
     app.config.from_object(app_settings)
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
@@ -106,6 +104,8 @@ def create_app(script_info=None) -> Flask:
     app.register_blueprint(configs_blueprint)
     from sim_app.resources.alloys import alloys_blueprint
     app.register_blueprint(alloys_blueprint)
+    from sim_app.resources.simulation import sim_blueprint
+    app.register_blueprint(sim_blueprint)
 
     # ========== # API ROUTES # ========== #
     # Importing within Flask app context scope because trying to init the
@@ -113,8 +113,6 @@ def create_app(script_info=None) -> Flask:
     # will raise all sorts of import issues.
     from sim_app.resources.alloys import AlloysList, Alloys
 
-    api.add_resource(Session, '/session')
-    api.add_resource(UsersPing, '/users/ping')
     api.add_resource(Alloys, '/alloys/<alloy_id>')
     api.add_resource(AlloysList, '/alloys')
 

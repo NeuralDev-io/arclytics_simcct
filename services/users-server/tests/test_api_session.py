@@ -24,8 +24,8 @@ import json
 import unittest
 from pathlib import Path
 
-from users_api.models.models import User, Configuration
-from users_api.resources.auth import (
+from users_app.models import User, Configuration
+from users_app.resources.auth import (
     async_register_session, SessionValidationError
 )
 from tests.test_api_base import BaseTestCase

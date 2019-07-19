@@ -26,7 +26,6 @@ import enum
 from bson import ObjectId
 from marshmallow import Schema, fields
 
-
 Schema.TYPE_MAPPING[ObjectId] = fields.String
 
 
@@ -90,15 +89,15 @@ class ConfigurationsSchema(Schema):
         }
     )
     ms_temp = fields.Float(required=False)
-    ms_undercool = fields.Float(required=False)
     bs_temp = fields.Float(required=False)
     auto_calculate_ae = fields.Boolean(default=False, required=True)
     ae1_temp = fields.Float(required=False)
     ae3_temp = fields.Float(required=False)
-    start_temp = fields.Int()
+    start_temp = fields.Int(required=True)
     cct_cooling_rate = fields.Int()
 
     class Meta:
+        # TODO(andrew@neuraldev.io): Figure out what to do with these?
         # By default, load will raise a ValidationError if it encounters a key
         # with no matching Field in the schema.
         # MODIFIED BEHAVIOUR:
@@ -107,3 +106,12 @@ class ConfigurationsSchema(Schema):
         #  - RAISE: Raise a validationError if there are any
         # unknown = EXCLUDE
         pass
+
+
+class NonLimitConfigsSchema(Schema):
+    grain_size_type = fields.Str(required=True, default='ASTM')
+    grain_size = fields.Float(required=True)
+    nucleation_start = fields.Float(required=True)
+    nucleation_finish = fields.Float(required=True)
+    start_temp = fields.Int(required=True)
+    cct_cooling_rate = fields.Int(required=True)

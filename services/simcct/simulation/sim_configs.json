@@ -13,7 +13,6 @@
 		"auto_calculate_ms_bs": false,
 		"transformation_method": "Li98",
 		"ms_temp": 0.0,
-		"ms_undercool": 100.0,
 		"bs_temp": 0.0,
 		"auto_calculate_ae": false,
 		"ae1_temp": 0.0,

@@ -18,6 +18,7 @@ import unittest
 from pathlib import Path
 
 from bson import ObjectId
+from pymongo import MongoClient
 from flask import current_app, session, json
 
 from sim_app.app import BASE_DIR
@@ -29,10 +30,13 @@ _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 class TestSessionService(BaseTestCase):
     users_host = os.environ.get('USERS_HOST')
     base_url = f'http://{users_host}'
+    _id = None
 
     @classmethod
     def setUpClass(cls) -> None:
-        """"""
+        """We just set up Jane as a user in the database and then store her
+        credentials so we can use it later.
+        """
         resp = requests.post(
             url=f'{cls.base_url}/auth/register',
             json={
@@ -54,6 +58,19 @@ class TestSessionService(BaseTestCase):
         )
         data = user_resp.json()
         cls.user_id = data.get('data')['_id']
+        cls._id = cls.user_id
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """On finishing, we should delete Jane so she's not registered again."""
+        # We make a conn to Mongo
+        mongo = MongoClient(
+            host=os.environ.get('MONGO_HOST'),
+            port=int(os.environ.get('MONGO_PORT'))
+        )
+        # user = mongo['arc_dev'].users.find_one({'_id': ObjectId(cls._id)})
+        # And just delete Jane from the db
+        mongo.arc_dev.users.delete_one({'_id': ObjectId(cls._id)})
 
     def login_jane(self, client):
         with open(_TEST_CONFIGS_PATH, 'r') as f:
@@ -216,7 +233,8 @@ class TestSessionService(BaseTestCase):
                             'alloy': {
                                 'name': '',
                                 'compositions': []
-                            }}
+                            }
+                        }
                     }
                 ),
                 headers={'Authorization': f'Bearer {token}'},
@@ -266,7 +284,8 @@ class TestSessionService(BaseTestCase):
                             'alloy': {
                                 'name': '',
                                 'compositions': []
-                            }}
+                            }
+                        }
                     }
                 ),
                 headers={'Authorization': f'Bearer {self.token}'},
@@ -320,7 +339,8 @@ class TestSessionService(BaseTestCase):
                             'alloy': {
                                 'name': 'Random',
                                 'compositions': [e1, e2]
-                            }}
+                            }
+                        }
                     }
                 ),
                 headers={'Authorization': f'Bearer {self.token}'},
@@ -351,7 +371,8 @@ class TestSessionService(BaseTestCase):
                             'alloy': {
                                 'name': 'Random',
                                 'compositions': [e1, e2, e3]
-                            }}
+                            }
+                        }
                     }
                 ),
                 headers={'Authorization': f'Bearer {self.token}'},

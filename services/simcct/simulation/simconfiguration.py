@@ -95,6 +95,10 @@ class SimConfiguration(object):
             if self.ae1 > 0 and self.ae3 > 0:
                 self.ae_check = True
 
+        # FIXME(andrew@neuraldev.io): This is a bit redundant because the user
+        #  should have already either manually added these or done an auto
+        #  calculate but we are leaving it here for testing so remove it for
+        #  better efficiency in production.
         if self.auto_ms_bs_calc:
             self.auto_ms_bs()
         if self.auto_austenite_calc:

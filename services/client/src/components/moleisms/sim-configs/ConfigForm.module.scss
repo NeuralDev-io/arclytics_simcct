@@ -1,0 +1,96 @@
+.heading {
+  margin-bottom: .75rem;
+}
+
+.select {
+  margin-left: 1rem;
+}
+
+.first {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  margin-bottom: .5rem;
+
+  &>div:first-of-type {
+    margin-right: 3rem;
+  }
+
+  &>div {
+    margin-bottom: 1rem;
+  }
+}
+
+.second {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+
+  .configCol {
+    display: flex;
+    flex-flow: column;
+    align-items: flex-start;
+    margin-right: 2.5rem;
+
+    .configGroup {
+      margin-bottom: 1rem;
+
+      & > h5:first-child {
+        margin-bottom: 1rem;
+      }
+
+      & > h6 {
+        margin-bottom: .5rem;
+      }
+
+      & > div {
+        margin-bottom: .5rem;
+
+        &.firstColLabel > :first-child {
+          width: 8rem;
+        }
+      }
+
+      .splitCol {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        
+        & > div:first-child {
+          margin-right: 2rem;
+        }
+
+        & > div > div {
+          margin-bottom: .5rem;
+
+          &.secondColLabel > :first-child {
+            width: 1rem;
+          }
+
+          &.secondColSelect > :first-child {
+            width: 2.5rem;
+          }
+
+          &.thirdColLabel > :first-child {
+            width: 1rem;
+          }
+        }
+      }
+    }
+  }
+
+  .firstConfigCol {
+    margin-right: 3rem;
+  }
+}
+
+.longPadInput {
+  padding-right: 3.5rem;
+}
+
+.shortCheckbox {
+  width: 3rem;
+}

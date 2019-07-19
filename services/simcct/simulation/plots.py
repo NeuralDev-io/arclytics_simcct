@@ -20,6 +20,8 @@ __date__ = '2019.07.01'
 {Description}
 """
 
+from numpy import trim_zeros
+
 
 class Plots(object):
     """
@@ -48,13 +50,34 @@ class Plots(object):
         pearlite_completion, bainite_nucleation, bainite_completion, martensite
     ) -> None:
         self.cct = {
-            'ferrite_nucleation': ferrite_nucleation,
-            'ferrite_completion': ferrite_completion,
-            'pearlite_nucleation': pearlite_nucleation,
-            'pearlite_completion': pearlite_completion,
-            'bainite_nucleation': bainite_nucleation,
-            'bainite_completion': bainite_completion,
-            'martensite': martensite
+            'ferrite_nucleation': {
+                'time': trim_zeros(ferrite_nucleation[:, 0]).tolist(),
+                'temp': trim_zeros(ferrite_nucleation[:, 1]).tolist()
+            },
+            'ferrite_completion': {
+                'time': trim_zeros(ferrite_completion[:, 0]).tolist(),
+                'temp': trim_zeros(ferrite_completion[:, 1]).tolist()
+            },
+            'pearlite_nucleation': {
+                'time': trim_zeros(pearlite_nucleation[:, 0]).tolist(),
+                'temp': trim_zeros(pearlite_nucleation[:, 1]).tolist()
+            },
+            'pearlite_completion': {
+                'time': trim_zeros(pearlite_completion[:, 0]).tolist(),
+                'temp': trim_zeros(pearlite_completion[:, 1]).tolist()
+            },
+            'bainite_nucleation': {
+                'time': trim_zeros(bainite_nucleation[:, 0]).tolist(),
+                'temp': trim_zeros(bainite_nucleation[:, 1]).tolist()
+            },
+            'bainite_completion': {
+                'time': trim_zeros(bainite_completion[:, 0]).tolist(),
+                'temp': trim_zeros(bainite_completion[:, 1]).tolist()
+            },
+            'martensite': {
+                'time': martensite[:, 0].tolist(),
+                'temp': martensite[:, 1].tolist()
+            }
         }
 
     def set_ttt_plot_data(
@@ -62,13 +85,34 @@ class Plots(object):
         bainite_start, bainite_finish, martensite
     ) -> None:
         self.ttt = {
-            'ferrite_start': ferrite_start,
-            'ferrite_finish': ferrite_finish,
-            'pearlite_start': pearlite_start,
-            'pearlite_finish': pearlite_finish,
-            'bainite_start': bainite_start,
-            'bainite_finish': bainite_finish,
-            'martensite': martensite
+            'ferrite_start': {
+                'time': trim_zeros(ferrite_start[:, 0]).tolist(),
+                'temp': trim_zeros(ferrite_start[:, 1]).tolist()
+            },
+            'ferrite_finish': {
+                'time': trim_zeros(ferrite_finish[:, 0]).tolist(),
+                'temp': trim_zeros(ferrite_finish[:, 1]).tolist()
+            },
+            'pearlite_start': {
+                'time': trim_zeros(pearlite_start[:, 0]).tolist(),
+                'temp': trim_zeros(pearlite_start[:, 1]).tolist()
+            },
+            'pearlite_finish': {
+                'time': trim_zeros(pearlite_finish[:, 0]).tolist(),
+                'temp': trim_zeros(pearlite_finish[:, 1]).tolist()
+            },
+            'bainite_start': {
+                'time': trim_zeros(bainite_start[:, 0]).tolist(),
+                'temp': trim_zeros(bainite_start[:, 1]).tolist()
+            },
+            'bainite_finish': {
+                'time': trim_zeros(bainite_finish[:, 0]).tolist(),
+                'temp': trim_zeros(bainite_finish[:, 1]).tolist()
+            },
+            'martensite': {
+                'time': trim_zeros(martensite[:, 0]).tolist(),
+                'temp': trim_zeros(martensite[:, 1]).tolist()
+            }
         }
 
     def get_cct_plot_data(self) -> dict:

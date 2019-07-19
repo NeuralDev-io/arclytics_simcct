@@ -135,7 +135,7 @@ def async_register_session(user: User = None,
 
     last_configs = None
     last_compositions = None
-    user_id = ''
+    user_id = ''  # Just for printing SessionValidationError
 
     if isinstance(user, User):
         user_id = user.id

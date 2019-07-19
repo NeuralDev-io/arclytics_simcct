@@ -45,6 +45,7 @@ class DevelopmentConfig(BaseConfig):
     """Development configuration"""
 
     MONGO_DBNAME = 'arc_dev'
+    os.environ['MONGO_DBNAME'] = MONGO_DBNAME
 
     REDIS_DB = 1
     redis_client_dev = redis.Redis(

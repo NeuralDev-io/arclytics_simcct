@@ -31,6 +31,7 @@ const Select = (props) => {
     defaultValue,
     value,
     onChange,
+    ...other
   } = props
   const classname = `${styles.select} ${length === 'default' ? '' : styles[length]} ${className || ''}`
 
@@ -38,7 +39,7 @@ const Select = (props) => {
     container: provided => ({
       ...provided,
       width: (() => {
-        if (length === 'short') return '6.5rem'
+        if (length === 'short') return '7rem'
         if (length === 'long') return '10rem'
         if (length === 'stretch') return '100%'
         return '7.5rem'
@@ -51,7 +52,8 @@ const Select = (props) => {
       borderColor: colours.n10,
       borderWidth: 1,
       padding: '0 .25rem 0 .55rem',
-      height: '2.5rem',
+      height: '2.25rem',
+      minHeight: 'initial',
       cursor: state.isDisabled ? 'not-allowed' : 'pointer',
 
       '&:hover': {
@@ -62,8 +64,15 @@ const Select = (props) => {
     valueContainer: () => ({
       padding: 0,
     }),
-    indicatorContainer: () => ({
-      padding: 0,
+    dropdownIndicator: provided => ({
+      ...provided,
+      height: '1.25rem',
+      padding: '0 .5rem',
+    }),
+    clearIndicator: provided => ({
+      ...provided,
+      height: '1.25rem',
+      padding: '0 .5rem',
     }),
     singleValue: (provided, state) => ({
       ...provided,
@@ -87,7 +96,6 @@ const Select = (props) => {
     <ReactSelect
       className={classname}
       name={name}
-      isClearable
       placeholder={placeholder}
       options={options}
       defaultValue={defaultValue}
@@ -104,6 +112,7 @@ const Select = (props) => {
           primary25: colours.ag50,
         },
       })}
+      {...other}
     />
   )
 }

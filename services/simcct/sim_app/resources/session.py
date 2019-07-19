@@ -156,7 +156,7 @@ def ping_users_server():
     url = f'http://{users_server}/ping'
     res = requests.get(url)
     return (
-        jsonify(res.json()),
-        res.status_code,
-        {'Content-type': 'application/json'}
+        jsonify(res.json()), res.status_code, {
+            'Content-type': 'application/json'
+        }
     )

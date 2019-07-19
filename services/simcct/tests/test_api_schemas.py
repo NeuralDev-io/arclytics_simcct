@@ -23,9 +23,7 @@ from marshmallow import ValidationError
 from sim_app.app import BASE_DIR
 from tests.test_api_base import BaseTestCase
 from sim_app.schemas import (
-    AlloySchema,
-    ConfigurationsSchema,
-    NonLimitConfigsSchema
+    AlloySchema, ConfigurationsSchema, NonLimitConfigsSchema
 )
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
@@ -41,10 +39,7 @@ class TestSchemas(BaseTestCase):
             'name': 'Arc_Stark',
             'compositions': test_json['compositions']
         }
-        comp = {
-            'alloy': alloy,
-            'alloy_type': 'parent'
-        }
+        comp = {'alloy': alloy, 'alloy_type': 'parent'}
 
         return test_json['configurations'], comp
 
@@ -89,8 +84,7 @@ class TestSchemas(BaseTestCase):
                 ConfigurationsSchema().load(json.loads(json_configs))
             except ValidationError as e:
                 self.assertEquals(
-                    e.messages,
-                    {'grain_size': ['Not a valid number.']}
+                    e.messages, {'grain_size': ['Not a valid number.']}
                 )
                 raise ValidationError(e.messages)
 
@@ -106,4 +100,4 @@ class TestSchemas(BaseTestCase):
 if __name__ == '__main__':
     unittest.main()
 
-# 
+#

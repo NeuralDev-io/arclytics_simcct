@@ -18,6 +18,7 @@ import Button from '../../elements/button'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
 import ConfigForm from '../../moleisms/sim-configs'
+import { TTT } from '../../moleisms/charts'
 import { updateComp, updateConfig } from '../../../utils/sim/SessionConfigs'
 import { runSim } from '../../../state/ducks/sim/actions'
 
@@ -180,6 +181,10 @@ class SimulationPage extends Component {
               values={configurations}
               onChange={this.handleConfigChange}
             />
+          </div>
+          <div className={styles.ttt}>
+            <h3>Time temperature transformations</h3>
+            <TTT />
           </div>
         </div>
       </React.Fragment>

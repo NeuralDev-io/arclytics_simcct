@@ -33,7 +33,7 @@ from mongoengine import (
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
-from users_api import bcrypt, JSONEncoder
+from users_app import bcrypt, JSONEncoder
 
 logger = AppLogger(__name__)
 # User type choices
@@ -137,7 +137,6 @@ class Configuration(EmbeddedDocument):
     auto_calculate_ms_bs = BooleanField(default=False)
     transformation_method = StringField(default='Li98')
     ms_temp = FloatField()
-    ms_undercool = FloatField()
     bs_temp = FloatField()
     auto_calculate_ae = BooleanField(default=False)
     ae1_temp = FloatField()
@@ -164,7 +163,6 @@ class Configuration(EmbeddedDocument):
             'cf_value': self.cf_value,
             'ceut_value': self.ceut_value,
             'ms_temp': self.ms_temp,
-            'ms_undercool': self.ms_undercool,
             'bs_temp': self.bs_temp,
             'ae1_temp': self.ae1_temp,
             'ae3_temp': self.ae3_temp,
@@ -175,7 +173,7 @@ class Configuration(EmbeddedDocument):
     @queryset_manager
     def as_dict(cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
-        `users_api.models.Configuration` Documents instead of a QuerySet.
+        `users_app.models.Configuration` Documents instead of a QuerySet.
 
         Usage:
             config_list = Configuration.as_dict()
@@ -366,7 +364,7 @@ class User(Document):
     @queryset_manager
     def as_dict(cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
-        `users_api.models.Users` Documents instead of a QuerySet.
+        `users_app.models.Users` Documents instead of a QuerySet.
 
         Usage:
             users_list = User.as_dict()

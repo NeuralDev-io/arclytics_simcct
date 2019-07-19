@@ -28,6 +28,8 @@ class BaseConfig:
     TESTING = False
     SECRET_KEY = os.environ.get('SECRET_KEY')
 
+    os.environ['MONGO_DBNAME'] = 'arc_dev'
+
     MONGO_HOST = os.environ.get('MONGO_HOST')
     MONGO_PORT = os.environ.get('MONGO_PORT')
     MONGO_USER = os.environ.get('MONGODB_USER')
@@ -57,6 +59,7 @@ class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
     MONGO_DBNAME = 'arc_test'
+    os.environ['MONGO_DBNAME'] = MONGO_DBNAME
 
     SESSION_PERMANENT = False
     REDIS_DB = 15
@@ -71,7 +74,8 @@ class TestingConfig(BaseConfig):
 class ProductionConfig(BaseConfig):
     """Production configuration"""
     MONGO_DBNAME = 'arclytics'
-
+    # TODO(andrew@neuraldev.io): Ensure the database changes over during
+    #  production mode.
     REDIS_DB = 0
     redis_client_prod = redis.Redis(
         host=os.environ.get('REDIS_HOST'),

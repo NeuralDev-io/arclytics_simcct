@@ -28,7 +28,7 @@ from flask import current_app
 
 from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
-from users_api.models.models import User
+from users_app.models import User
 
 logger = AppLogger(__name__)
 

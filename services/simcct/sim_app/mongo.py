@@ -37,7 +37,8 @@ class MongoAlloys(object):
         )
         # TODO(andrew@neuraldev.io): Try to fix this to dynamically change under
         #  testing conditions rather than setting the database permanently.
-        self.db = mongo_client['arc_dev']
+        db_name = os.environ.get('MONGO_DBNAME', 'arc_dev')
+        self.db = mongo_client[db_name]  # mongo_client.arc_test.alloys
         # We create an index to avoid duplicates
         self.db.alloys.create_index([('name', ASCENDING)], unique=True)
 

@@ -45,5 +45,5 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 #ENTRYPOINT ["/docker-entrypoint.sh", "-S", "gunicorn"]
 
 # uncomment to run server manually
-#CMD ["gunicorn", "-b", "0.0.0.0:8000", "users_api.app:app"]
+#CMD ["gunicorn", "-b", "0.0.0.0:8000", "users_app.app:app"]
 #CMD ["python", "manage.py", "run", "-h", "0.0.0.0", "-p", "8000"]

@@ -36,7 +36,7 @@ from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_marshmallow import Marshmallow
 
-from users_api.mongodb import MongoSingleton
+from users_app.mongodb import MongoSingleton
 from configs.settings import DEFAULT_LOGGER
 
 
@@ -153,9 +153,9 @@ def create_app(script_info=None) -> Flask:
     ma.init_app(app)
 
     # Register blueprints
-    from users_api.resources.users import users_blueprint
+    from users_app.resources.users import users_blueprint
     app.register_blueprint(users_blueprint)
-    from users_api.resources.auth import auth_blueprint
+    from users_app.resources.auth import auth_blueprint
     app.register_blueprint(auth_blueprint)
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and

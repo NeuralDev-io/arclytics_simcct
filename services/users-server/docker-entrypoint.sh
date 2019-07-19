@@ -61,7 +61,7 @@ echo ""
 # if [ $WSGI == ""]; then
 #     exit
 if [ "$WSGI" == "gunicorn" ]; then
-    gunicorn -b $HOST:$PORT api.__init__:app
+    gunicorn -b $HOST:$PORT users_app.__init__:app
 else
     python manage.py run -h $HOST -p $PORT
 fi

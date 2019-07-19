@@ -28,12 +28,14 @@ from redis import Redis
 
 from sim_app.app import create_app
 
-app = create_app()
-
 
 class BaseTestCase(TestCase):
     def create_app(self):
+        os.environ['APP_SETTINGS'] = 'configs.flask_conf.TestingConfig'
+        app = create_app()
+
         app.config.from_object('configs.flask_conf.TestingConfig')
+
         return app
 
     @classmethod

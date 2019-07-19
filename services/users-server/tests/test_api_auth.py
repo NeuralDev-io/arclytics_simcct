@@ -24,7 +24,7 @@ import unittest
 
 from flask import current_app
 
-from users_api.models.models import User
+from users_app.models import User
 from tests.test_api_base import BaseTestCase
 
 

@@ -31,21 +31,21 @@ from flask.cli import FlaskGroup
 from prettytable import PrettyTable
 import coverage
 
-from users_api import create_app, get_flask_mongo
-from users_api.models.models import User
+from users_app import create_app, get_flask_mongo
+from users_app.models import User
 
 COV = coverage.coverage(
     branch=True,
     include=[
-        'users_api/models/models.py',
-        'users_api/resources/users.py',
-        'users_api/resources/auth.py',
-        'users_api/middleware.py',
-        'users_api/mongodb.py',
+        'users_app/models/models.py',
+        'users_app/resources/users.py',
+        'users_app/resources/auth.py',
+        'users_app/middleware.py',
+        'users_app/mongodb.py',
     ],
     omit=[
-        'users_api/__init__.py'
-        'users_api/config.py',
+        'users_app/__init__.py'
+        'users_app/config.py',
         'tests/*',
         'configs/*',
         'data/*',

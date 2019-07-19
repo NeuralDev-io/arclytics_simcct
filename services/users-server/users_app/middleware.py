@@ -24,7 +24,7 @@ from functools import wraps
 from bson import ObjectId
 from flask import request, jsonify
 
-from users_api.models.models import User
+from users_app.models import User
 
 
 def authenticate(f):
@@ -35,7 +35,7 @@ def authenticate(f):
             'message': 'Provide a valid JWT auth token.'
         }
         # get auth token
-        auth_header = request.headers.get('Authorization', '')
+        auth_header = request.headers.get('Authorization', None)
 
         if not auth_header:
             return jsonify(response), 400

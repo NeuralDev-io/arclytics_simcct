@@ -4,6 +4,7 @@ import { Route, Switch } from 'react-router-dom'
 import store from './state/store'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
+import SimulationPage from './components/pages/simulation'
 
 import './App.scss'
 
@@ -19,6 +20,11 @@ function App() {
           <Route
             path="/signup"
             render={props => <SignupPage {...props} />}
+          />
+          <Route
+            exact
+            path="/"
+            render={props => <SimulationPage {...props} />}
           />
         </Switch>
       </div>

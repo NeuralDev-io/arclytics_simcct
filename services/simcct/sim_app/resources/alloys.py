@@ -30,6 +30,9 @@ from marshmallow import ValidationError
 
 from sim_app.schemas import AlloySchema
 from sim_app.alloys_service import AlloysService
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
 
 alloys_blueprint = Blueprint('alloys', __name__)
 
@@ -80,9 +83,12 @@ class AlloysList(Resource):
         Returns:
             A Response object with a response dict and status code as int.
         """
-        response = {'status': 'fail', 'message': 'Empty.'}
+        response = {'status': 'fail',
+                    'message': 'Empty.'}
 
         alloys = AlloysService().find_all_alloys()
+        logger.debug(AlloysService().client.client.db)
+        logger.debug(alloys)
 
         # No point returning data if there is none to return.
         if len(alloys) == 0:

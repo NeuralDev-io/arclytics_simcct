@@ -1,0 +1,21 @@
+.input-row {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  justify-content: flex-start;
+
+  &>:first-child {
+    margin-right: 1.5rem;
+  }
+}
+
+.input-col {
+  display: flex;
+  flex-flow: column;
+  align-items: left;
+  justify-content: flex-start;
+
+  &>:first-child {
+    margin-bottom: .5rem;
+  }
+}

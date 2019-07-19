@@ -71,6 +71,7 @@ def seed_alloy_db():
 
     from sim_app.schemas import AlloySchema
     data = AlloySchema(many=True).load(json_data['alloys'])
+    print(db)  # Check the correct database -- arc_dev
     db.alloys.insert_many(data)
     import pprint
     for alloy in db.alloys.find():

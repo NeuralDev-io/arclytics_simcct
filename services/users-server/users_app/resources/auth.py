@@ -241,11 +241,10 @@ def login() -> Tuple[dict, int]:
 @authenticate
 def logout(resp) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
-    response = {'status': 'success', 'message': 'Successfully logged out.'}
 
     # TODO(andrew@neuraldev.io): Delete the session
 
-    return jsonify(response), 200
+    return jsonify({}), 204
 
 
 @auth_blueprint.route('/auth/status', methods=['GET'])

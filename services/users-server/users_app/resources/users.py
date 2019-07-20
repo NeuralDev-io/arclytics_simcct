@@ -21,37 +21,61 @@ This file defines all the API resource routes and controller definitions using
 the Flask Resource inheritance model.
 """
 
-from flask import Blueprint
-from flask_restful import Resource, Api
+from typing import Tuple
+
+from flask import Blueprint, jsonify
+#from flask_restful import Resource, Api
 
 from logger.arc_logger import AppLogger
 from users_app.models import User
 from users_app.middleware import login_required, authenticate_admin
 
 users_blueprint = Blueprint('users', __name__)
-api = Api(users_blueprint)
+#api = Api(users_blueprint)
 
 logger = AppLogger(__name__)
 
+@users_blueprint.route(rule='/ping', methods=['GET'])
+def ping_test() -> dict:
+    """A simple resource for sanity checking that the server is working."""
+    response = {'status': 'success', 'message': 'pong'}
+    return jsonify(response)
+
+
+@users_blueprint.route(rule='/users', methods=['GET'])
+@authenticate_admin
+def user_list() -> Tuple[dict, int]:
+    """Get all users only available to admins."""
+    user_list = User.as_dict
+    response = {'status': 'success', 'data': {'users': user_list}}
+    return jsonify(response), 200
+
+
+@users_blueprint.route(rule='/users/<user_id>', methods=['GET'])
+@login_required
+def user(user_id) -> Tuple[dict, int]:
+    user = User.objects.get(id=user_id)
+    response = {'status': 'success', 'data': user.to_dict()}
+    return jsonify(response), 200
 
 # ========== # RESOURCE DEFINITIONS # ========== #
-class PingTest(Resource):
-    """A simple resource for sanity checking that the server is working."""
+# class PingTest(Resource):
+#     """A simple resource for sanity checking that the server is working."""
+#
+#     def get(self):
+#         return {'status': 'success', 'message': 'pong'}
 
-    def get(self):
-        return {'status': 'success', 'message': 'pong'}
 
-
-class UsersList(Resource):
-    """Route for Users for Create and Retrieve List."""
-
-    method_decorators = {'get': [authenticate_admin]}
-
-    def get(self, resp):
-        """Get all users only available to admins."""
-        user_list = User.as_dict
-        response = {'status': 'success', 'data': {'users': user_list}}
-        return response, 200, {'Content-type': 'application/json'}
+# class UsersList(Resource):
+#     """Route for Users for Create and Retrieve List."""
+#
+#     method_decorators = {'get': [authenticate_admin]}
+#
+#     def get(self, resp):
+#         """Get all users only available to admins."""
+#         user_list = User.as_dict
+#         response = {'status': 'success', 'data': {'users': user_list}}
+#         return response, 200, {'Content-type': 'application/json'}
 
 
 # TODO(andrew@neuraldev.io -- Sprint 6)
@@ -92,28 +116,28 @@ class UsersList(Resource):
 #     return response, 200
 
 
-class Users(Resource):
-    """Resource for User Retrieve and Update."""
-
-    method_decorators = {'get': [login_required], 'update': [login_required]}
-
-    def get(self, user_id):
-        """Get a single user detail with query parameter as user_id."""
-
-        # Validation check fo ObjectId done in authenticate_restful decorator
-        # if not ObjectId.is_valid(user_id):
-        #     response['message'] = 'Invalid bson.ObjectId type.'
-        #     return response, 404
-
-        # Validation check for User exists done in authenticate_restful
-        # decorator
-        user = User.objects.get(id=user_id)
-        response = {'status': 'success', 'data': user.to_dict()}
-        return response, 200, {'Content-type': 'application/json'}
+# class Users(Resource):
+#     """Resource for User Retrieve and Update."""
+#
+#     method_decorators = {'get': [login_required], 'update': [login_required]}
+#
+#     def get(self, user_id):
+#         """Get a single user detail with query parameter as user_id."""
+#
+#         # Validation check fo ObjectId done in authenticate_restful decorator
+#         # if not ObjectId.is_valid(user_id):
+#         #     response['message'] = 'Invalid bson.ObjectId type.'
+#         #     return response, 404
+#
+#         # Validation check for User exists done in authenticate_restful
+#         # decorator
+#         user = User.objects.get(id=user_id)
+#         response = {'status': 'success', 'data': user.to_dict()}
+#         return response, 200, {'Content-type': 'application/json'}
 
 
 # ========== # RESOURCE ROUTES # ========== #
-api.add_resource(PingTest, '/ping')
-api.add_resource(UsersList, '/users')
-# users_app.add_resource(AdminCreate, '/users/register_admin')
-api.add_resource(Users, '/users/<user_id>')
+# api.add_resource(PingTest, '/ping')
+# api.add_resource(UsersList, '/users')
+# # users_app.add_resource(AdminCreate, '/users/register_admin')
+# api.add_resource(Users, '/users/<user_id>')

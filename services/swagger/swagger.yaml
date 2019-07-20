@@ -218,6 +218,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
+
   /auth/register:
     servers:
       - url: http://localhost:8000
@@ -247,12 +248,42 @@ paths:
                 - first_name
                 - last_name
             examples:
+              'Tony Stark':
+                value:
+                  email: "iron_man@avengers.io"
+                  first_name: "Tony"
+                  last_name: "Stark"
+                  password: "IAmIronMan"
+              'Steve Rogers':
+                value:
+                  email: "captain_america@avengers.io"
+                  first_name: "Steve"
+                  last_name: "Rogers"
+                  password: "ICanDoThisAllDay"
+              'Natasha Romanoff':
+                value:
+                  email: "black_widow@marvel.io"
+                  first_name: "Natasha"
+                  last_name: "Romanoff"
+                  password: "RedInMyLedger"
               'Thor':
                 value:
                   email: "thor@avengers.io"
                   first_name: "Thor"
                   last_name: "Odinson"
                   password: "StrongestAvenger"
+              'Clint Barton':
+                value:
+                  email: "hawkeye@avengers.io"
+                  first_name: "Clint"
+                  last_name: "Barton"
+                  password: "BowAndArrows"
+              'Peter Parker':
+                value:
+                  email: "spidey@avengers.io"
+                  password: "PeterTingle!"
+                  first_name: "Peter"
+                  last_name: "Parker"
       responses:
         '200':
           description: "The user has been successfully created and you get an ID back."
@@ -306,7 +337,6 @@ paths:
                   value:
                     status: "fail"
                     message: "The user details already exists."
-
   /auth/login:
     servers:
       - url: http://localhost:8000
@@ -329,9 +359,35 @@ paths:
               required:
                 - email
                 - password
-            example:
-              email: tony@avengers.io
-              password: IAmIronMan
+            examples:
+              'Tony Stark':
+                value:
+                  email: "tony@avengers.io"
+                  password: "IAmIronMan"
+              'Steve Rogers':
+                value:
+                  email: "captain_america@avengers.io"
+                  password: "ICanDoThisAllDay"
+              'Natasha Romanoff':
+                value:
+                  email: "black_widow@marvel.io"
+                  password: "RedInMyLedger"
+              'Bruce Banner':
+                value:
+                  email: "hulk@avengers.io"
+                  password: "HulkSmash"
+              'Thor Odinson':
+                value:
+                  email: "thor@avengers.io"
+                  password: "StrongestAvenger"
+              'Clint Barton':
+                value:
+                  email: "hawkeye@avengers.io"
+                  password: "BowAndArrows"
+              'Peter Parker':
+                value:
+                  email: "spidey@avengers.io"
+                  password: "PeterTingle!"
       responses:
         '200':
           description: "Successfully logged in"
@@ -349,16 +405,44 @@ paths:
               example:
                 status: "fail"
                 message: "User does not exist."
-        default:
-          description: "Something went wrong with validating details."
+        '400':
+          description: "An invalid payload has been sent in the request."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
-              example:
-                value:
-                  status: "fail"
-                  message: "Email or password combination incorrect."
+              examples:
+                'Empty payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Email payload':
+                  value:
+                    status: "fail"
+                    message: "You must provide an email."
+                'No Password payload':
+                  value:
+                    status: "fail"
+                    message: "You must provide a password."
+                'Invalid Password Length':
+                  value:
+                    status: "fail"
+                    message: "Email or password combination incorrect."
+        '404':
+          description: "The user does not exist."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+                'Incorrect Password':
+                  value:
+                    status: "fail"
+                    message: "Email or password combination incorrect."
   /auth/status:
     servers:
       - url: http://localhost:8000
@@ -384,10 +468,10 @@ paths:
               example:
                 status: "success"
                 data:
-                  _id: 5d2340060f8b5fa4a8daca91
-                  email: scarlet_witch@avengers.io
-                  first_name: Wanda
-                  last_name: Maximoff
+                  _id: "5d2340060f8b5fa4a8daca91"
+                  email: "scarlet_witch@avengers.io"
+                  first_name: "Wanda"
+                  last_name: "Maximoff"
                   active: true
                   admin: false
                   verified: false
@@ -442,8 +526,45 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        '204':
           description: "Successfully logged out"
+        '400':
+          description: "Bad request body provided with no JSON Web Token."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Non Active User':
+                  value:
+                    status: "fail"
+                    message: "This user does not exist."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
 
   /users/ping:
     servers:
@@ -487,27 +608,44 @@ paths:
             examples:
               'Arc Stark':
                 value:
-                  name: "Arc_Stark"
+                  name: "330M Alloy1"
                   compositions:
-                    - name: "palladium"
-                      symbol: "pd"
-                      weight: 0.05
-                    - name: "vibranium"
-                      symbol: "vb"
-                      weight: 0.5
-                    - name: "carbon"
-                      symbol: "cx"
-                      weight: 0.2
-              'Wakanda Shield':
-                value:
-                  name: "Wakandan_Shield"
-                  compositions:
-                    - name: "vibranium"
-                      symbol: "vb"
-                      weight: 2.0
-                    - name: "carbon"
-                      symbol: "cx"
-                      weight: 1.0
+                    - symbol: "C"
+                      weight: 0.3
+                    - symbol: "M"
+                      weight: 0.78
+                    - symbol: "Si"
+                      weight: 1.6
+                    - symbol: "Ni"
+                      weight: 1.9
+                    - symbol: "Cr"
+                      weight: 0.91
+                    - symbol: "Mo"
+                      weight: 0.39
+                    - symbol: "Co"
+                      weight: 0.0
+                    - symbol: "Al"
+                      weight: 0.0
+                    - symbol: "Cu"
+                      weight: 0.0
+                    - symbol: "As"
+                      weight: 0.0
+                    - symbol: "Ti"
+                      weight: 0.0
+                    - symbol: "V"
+                      weight: 0.08
+                    - symbol: "W"
+                      weight: 0.0
+                    - symbol: "S"
+                      weight: 0.003
+                    - symbol: "N"
+                      weight: 0.011
+                    - symbol: "Nb"
+                      weight: 0.0
+                    - symbol: "B"
+                      weight: 0.0
+                    - symbol: "P"
+                      weight: 0.007
       responses:
         '201':
           description: "An alloy has been successfully created and stored in the database."
@@ -551,8 +689,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               example:
-                - status: "fail"
-                  message: "Alloy already exists."
+                status: "fail"
+                message: "Alloy already exists."
     get:
       summary: "The full list of Alloys from the database."
       tags:
@@ -574,26 +712,44 @@ paths:
                       $ref: '#/components/schemas/Alloy'
                     example:
                       - _id: "5d2d81cff091de1cf091674b"
-                        name: "Arc_Stark"
+                        name: "330M Alloy1"
                         compositions:
-                          - name: "palladium"
-                            symbol: "pd"
-                            weight: 0.05
-                          - name: "vibranium"
-                            symbol: "vb"
-                            weight: 0.5
-                          - name: "carbon"
-                            symbol: "cx"
-                            weight: 0.2
-                      - _id: "5d2d811b88a3fafd802ca7cd"
-                        name: "Wakandan_Shield"
-                        compositions:
-                          - name: "vibranium"
-                            symbol: "vb"
-                            weight: 2.0
-                          - name: "carbon"
-                            symbol: "cx"
-                            weight: 1.0
+                          - symbol: "C"
+                            weight: 0.3
+                          - symbol: "M"
+                            weight: 0.78
+                          - symbol: "Si"
+                            weight: 1.6
+                          - symbol: "Ni"
+                            weight: 1.9
+                          - symbol: "Cr"
+                            weight: 0.91
+                          - symbol: "Mo"
+                            weight: 0.39
+                          - symbol: "Co"
+                            weight: 0.0
+                          - symbol: "Al"
+                            weight: 0.0
+                          - symbol: "Cu"
+                            weight: 0.0
+                          - symbol: "As"
+                            weight: 0.0
+                          - symbol: "Ti"
+                            weight: 0.0
+                          - symbol: "V"
+                            weight: 0.08
+                          - symbol: "W"
+                            weight: 0.0
+                          - symbol: "S"
+                            weight: 0.003
+                          - symbol: "N"
+                            weight: 0.011
+                          - symbol: "Nb"
+                            weight: 0.0
+                          - symbol: "B"
+                            weight: 0.0
+                          - symbol: "P"
+                            weight: 0.007
         '400':
           description: "An invalid payload has been sent."
           content:
@@ -673,20 +829,44 @@ paths:
               'Arc Stark':
                 value:
                   _id: "5d2d81cff091de1cf091674b"
-                  name: "Arc_Stark"
+                  name: "330M Alloy1"
                   compositions:
-                    - name: "palladium"
-                      symbol: "pd"
+                    - symbol: "C"
+                      weight: 0.31
+                    - symbol: "M"
+                      weight: 0.80
+                    - symbol: "Si"
+                      weight: 1.7
+                    - symbol: "Ni"
+                      weight: 1.9
+                    - symbol: "Cr"
+                      weight: 0.91
+                    - symbol: "Mo"
+                      weight: 0.39
+                    - symbol: "Co"
                       weight: 0.0
-                    - name: "vibranium"
-                      symbol: "vb"
-                      weight: 0.8
-                    - name: "carbon"
-                      symbol: "cx"
-                      weight: 0.3
-                    - name: "carbonadium"
-                      symbol: "cb"
-                      weight: 0.001
+                    - symbol: "Al"
+                      weight: 0.0
+                    - symbol: "Cu"
+                      weight: 0.0
+                    - symbol: "As"
+                      weight: 0.0
+                    - symbol: "Ti"
+                      weight: 0.0
+                    - symbol: "V"
+                      weight: 0.08
+                    - symbol: "W"
+                      weight: 0.0
+                    - symbol: "S"
+                      weight: 0.003
+                    - symbol: "N"
+                      weight: 0.011
+                    - symbol: "Nb"
+                      weight: 0.0
+                    - symbol: "B"
+                      weight: 0.0
+                    - symbol: "P"
+                      weight: 0.007
       parameters:
         - name: id
           in: path
@@ -714,20 +894,45 @@ paths:
               example:
                 status: "success"
                 data:
-                  name: "Arc_Stark"
+                  _id: "5d2d81cff091de1cf091674b"
+                  name: "330M Alloy1"
                   compositions:
-                    - name: "palladium"
-                      symbol: "pd"
+                    - symbol: "C"
+                      weight: 0.31
+                    - symbol: "M"
+                      weight: 0.80
+                    - symbol: "Si"
+                      weight: 1.7
+                    - symbol: "Ni"
+                      weight: 1.9
+                    - symbol: "Cr"
+                      weight: 0.91
+                    - symbol: "Mo"
+                      weight: 0.39
+                    - symbol: "Co"
                       weight: 0.0
-                    - name: "vibranium"
-                      symbol: "vb"
-                      weight: 0.8
-                    - name: "carbon"
-                      symbol: "cx"
-                      weight: 0.3
-                    - name: "carbonadium"
-                      symbol: "cb"
-                      weight: 0.001
+                    - symbol: "Al"
+                      weight: 0.0
+                    - symbol: "Cu"
+                      weight: 0.0
+                    - symbol: "As"
+                      weight: 0.0
+                    - symbol: "Ti"
+                      weight: 0.0
+                    - symbol: "V"
+                      weight: 0.08
+                    - symbol: "W"
+                      weight: 0.0
+                    - symbol: "S"
+                      weight: 0.003
+                    - symbol: "N"
+                      weight: 0.011
+                    - symbol: "Nb"
+                      weight: 0.0
+                    - symbol: "B"
+                      weight: 0.0
+                    - symbol: "P"
+                      weight: 0.007
         '400':
           description: "An invalid payload has been sent."
           content:
@@ -896,7 +1101,6 @@ paths:
             examples:
               'Valid Configurations':
                 value:
-                  grain_size_type: "ASTM"
                   grain_size: 8.0
                   nucleation_start: 1.0
                   nucleation_finish: 99.90
@@ -904,7 +1108,6 @@ paths:
                   cct_cooling_rate: 10
               'Invalid Configurations':
                 value:
-                  grain_size_type: "ASTM"
                   grain_size: 8.0
                   start_temp: 900
                   cct_cooling_rate: 10
@@ -965,35 +1168,44 @@ paths:
                 value:
                   alloy_type: "parent"
                   alloy:
-                    name: "Arc_Stark"
+                    name: "330M Alloy1"
                     compositions:
-                      - name: "vibranium"
-                        symbol: "vb"
+                      - symbol: "C"
                         weight: 0.3
-                      - name: "paladium"
-                        symbol: "pd"
-                        weight: 0.001
-                      - name: "adamantium"
-                        symbol: "am"
-                        weight: 0.2
-                      - name: "carbonadium"
-                        symbol: "cb"
-                        weight: 0.002
-              'Wakandan_Shield':
-                value:
-                  alloy_type: "weld"
-                  alloy:
-                    name: "Wakanda_Shield"
-                    compositions:
-                      - name: "vibranium"
-                        symbol: "vb"
-                        weight: 12.0
-                      - name: "adamantium"
-                        symbol: "am"
-                        weight: 1.5
-                      - name: "carbonadium"
-                        symbol: "cb"
-                        weight: 0.2
+                      - symbol: "M"
+                        weight: 0.78
+                      - symbol: "Si"
+                        weight: 1.6
+                      - symbol: "Ni"
+                        weight: 1.9
+                      - symbol: "Cr"
+                        weight: 0.91
+                      - symbol: "Mo"
+                        weight: 0.39
+                      - symbol: "Co"
+                        weight: 0.0
+                      - symbol: "Al"
+                        weight: 0.0
+                      - symbol: "Cu"
+                        weight: 0.0
+                      - symbol: "As"
+                        weight: 0.0
+                      - symbol: "Ti"
+                        weight: 0.0
+                      - symbol: "V"
+                        weight: 0.08
+                      - symbol: "W"
+                        weight: 0.0
+                      - symbol: "S"
+                        weight: 0.003
+                      - symbol: "N"
+                        weight: 0.011
+                      - symbol: "Nb"
+                        weight: 0.0
+                      - symbol: "B"
+                        weight: 0.0
+                      - symbol: "P"
+                        weight: 0.007
       tags:
         - Configurations
       responses:
@@ -1016,19 +1228,23 @@ paths:
                     message: "Compositions and other values updated."
                     data:
                       ms_temp: 464.1960
+                      ms_rate_param: 0.0207
                       bs_temp: 563.2380
                       ae1_temp: 700.90196
                       ae3_temp: 845.83796
-                      xfe_value: 0.9462
-                      ceut_value: 0.83
-                      cf_value: 0.012
-                'Auto Calculate MS/BS Only':
+                'Auto Calculate BS Only':
+                  value:
+                    status: "success"
+                    message: "Compositions and other values updated."
+                    data:
+                      bs_temp: 563.2380
+                'Auto Calculate MS Only':
                   value:
                     status: "success"
                     message: "Compositions and other values updated."
                     data:
                       ms_temp: 464.1960
-                      bs_temp: 563.2380
+                      ms_rate_param: 0.0207
                 'Auto Calculate Ae Only':
                   value:
                     status: "success"
@@ -1036,14 +1252,6 @@ paths:
                     data:
                       ae1_temp: 700.90196
                       ae3_temp: 845.83796
-                'Auto Calculate Xfe Only':
-                  value:
-                    status: "success"
-                    message: "Compositions and other values updated."
-                    data:
-                      xfe_value: 0.9462
-                      ceut_value: 0.83
-                      cf_value: 0.012
         '400':
           description: "An invalid payload has been sent with the request."
           content:
@@ -1085,11 +1293,11 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
-  /configs/auto/ms-bs:
+  /configs/auto/ms:
     servers:
       - url: http://localhost:8001
     post:
-      summary: "Update the auto calculate for MS and BS and return the new values."
+      summary: "Update the auto calculate for MS and return the new values."
       tags:
         - Configurations
       security:
@@ -1100,16 +1308,12 @@ paths:
           application/json:
             schema:
               properties:
-                transformation_method:
-                  type: boolean
-                  enum: ['Li98', 'Kirkaldy83']
-                  example: "Li98"
-                auto_calculate_ms_bs:
+                auto_calculate_ms:
                   type: string
                   example: true
       responses:
         '200':
-          description: "The auto calculate for MS and BS store has been updated and returned."
+          description: "The auto calculate for MS store has been updated and returned."
           content:
             application/json:
               schema:
@@ -1118,7 +1322,7 @@ paths:
                 status: "success"
                 data:
                   ms_temp: 464.1960
-                  bs_temp: 563.2380
+                  ms_rate_param: 0.0207
         '400':
           description: "An invalid payload has been sent with the request."
           content:
@@ -1133,11 +1337,7 @@ paths:
                 'False Auto Calculate Bool':
                   value:
                     status: "fail"
-                    message: "Post data auto calculate for MS or BS is false."
-                'No Transformation Method':
-                  value:
-                    status: "fail"
-                    message: "You must provide a transformation method."
+                    message: "Post data auto calculate for MS is false."
         '401':
           description: "Unauthorized access to the endpoint."
           content:
@@ -1153,20 +1353,70 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
-        '418':
-          description: "Well, something went wrong with the calculations."
+  /configs/auto/bs:
+    servers:
+      - url: http://localhost:8001
+    post:
+      summary: "Update the auto calculate for BS and return the new values."
+      tags:
+        - Configurations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                auto_calculate_bs:
+                  type: string
+                  example: true
+      responses:
+        '200':
+          description: "The auto calculate for BS store has been updated and returned."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               example:
-                status: "fail"
-                message: "Something went with the MS and BS calculations."
+                status: "success"
+                data:
+                  bs_temp: 563.2380
+        '400':
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'False Auto Calculate Bool':
+                  value:
+                    status: "fail"
+                    message: "Post data auto calculate for BS is false."
+        '401':
+          description: "Unauthorized access to the endpoint."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Token':
+                  value:
+                    status: "fail"
+                    message: "No valid Authorization in header."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid JWT token in header."
   /configs/update/ms-bs:
     servers:
       - url: http://localhost:8001
     put:
-      summary: "We update the server session store of MS and BS"
+      summary: "We update the server session store of MS, MS Rate Parameter and BS"
       tags:
         - Configurations
       security:
@@ -1178,17 +1428,33 @@ paths:
             schema:
               type: object
               properties:
+                auto_calculate_ms:
+                  type: boolean
+                  example: false
+                auto_calculate_bs:
+                  type: boolean
+                  example: false
                 ms_temp:
                   type: number
                   format: float
                   example: 464.1960
+                ms_rate_param:
+                  type: number
+                  format: float
+                  example: 0.0207
                 bs_temp:
                   type: number
                   format: float
                   example: 563.2380
       responses:
-        '204':
-          description: "The BS and MS temperatures were updated and no content returned."
+        '202':
+          description: "The BS, MS and MS Rate Parameter temperatures were updated and no content returned."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
         '400':
           description: "An invalid payload was sent in the request."
           content:
@@ -1289,6 +1555,9 @@ paths:
             schema:
               type: object
               properties:
+                auto_calculate_ae:
+                  type: boolean
+                  example: false
                 ae1_temp:
                   type: number
                   format: float
@@ -1298,8 +1567,14 @@ paths:
                   format: float
                   example: 845.8380
       responses:
-        '204':
-          description: "The Ae1 and Ae3 temperatures were updated and no content returned."
+        '202':
+          description: "The Ae1 and Ae3 temperatures were updated."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
         '400':
           description: "An invalid payload was sent in the request."
           content:
@@ -1324,131 +1599,6 @@ paths:
               example:
                 status: "fail"
                 message: "No previous session configurations was set."
-  /configs/auto/xfe:
-    servers:
-      - url: http://localhost:8001
-    post:
-      summary: "Update the auto calculate for Ae1 and Ae3 and return the new values."
-      tags:
-        - Configurations
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              properties:
-                auto_calculate_xfe:
-                  type: boolean
-                  example: true
-      responses:
-        '200':
-          description: "The auto calculate for Equilibrium Phase Fractions (Xfe, Ceut, Cf) store has
-          been updated and returned."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "success"
-                data:
-                  xfe_value: 0.9462
-                  ceut_value: 0.83
-                  cf_value: 0.012
-        '400':
-          description: "An invalid payload has been sent with the request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Empty payload':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'False Auto Calculate Bool':
-                  value:
-                    status: "fail"
-                    message: "Auto calculate for Equilibrium Phase is false."
-                'No Ae Check':
-                  value:
-                    status: "fail"
-                    message: "Ae1 must be more than zero to find the Equilibrium Phase Fraction."
-        '401':
-          description: "Unauthorized access to the endpoint."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Token':
-                  value:
-                    status: "fail"
-                    message: "No valid Authorization in header."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid JWT token in header."
-  /configs/update/xfe:
-    servers:
-      - url: http://localhost:8001
-    put:
-      summary: "We update the server session store of Xfe, Cf and Ceut"
-      tags:
-        - Configurations
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                xfe_value:
-                  type: number
-                  format: float
-                  example: 0.9462
-                cf_value:
-                  type: number
-                  format: float
-                  example: 0.012
-                ceut_value:
-                  type: number
-                  format: float
-                  example: 0.83
-      responses:
-        '204':
-          description: "The Xfe, Cf and Ceut values were updated and no content returned."
-        '400':
-          description: "An invalid payload was sent in the request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Missing Xfe':
-                  value:
-                    status: "fail"
-                    message: "Xfe value is required."
-                'Missing Cf':
-                  value:
-                    status: "fail"
-                    message: "Cf value is required."
-                'Missing Ceut':
-                  value:
-                    status: "fail"
-                    message: "Ceut value is required."
-        '404':
-          description: "No previous session configurations was found for the user."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "No previous session configurations was set."
 
 
 components:
@@ -1459,6 +1609,69 @@ components:
 
 
   schemas:
+    Full_User_Schema:
+      properties:
+        _id:
+          type: string
+          format: byte
+          readOnly: true
+          uniqueItems: true
+        email:
+          type: string
+          format: email
+          uniqueItems: true
+          example: "iron_man@avengers.io"
+        password:
+          type: string
+          format: password
+          minLength: 6
+          maxLength: 255
+          uniqueItems: false
+          writeOnly: true
+        first_name:
+          type: string
+          maxLength: 255
+          example: "Tony"
+        last_name:
+          type: string
+          maxLength: 255
+          example: "Stark"
+        active:
+          type: boolean
+          readOnly: true
+          default: true
+        admin:
+          type: boolean
+          default: false
+        created:
+          type: string
+          format: date-time
+        verified:
+          type: boolean
+          default: false
+        last_updated:
+          type: string
+          format: date-time
+        last_login:
+          type: string
+          format: date-time
+        saved_configurations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Configurations'
+        alloys:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alloy'
+        profile:
+          $ref: '#/components/schemas/UserProfile'
+        admin_profile:
+          $ref: '#/components/schemas/AdminProfile'
+      required:
+        - email
+        - password
+        - first_name
+        - last_name
     User:
       properties:
         _id:
@@ -1486,12 +1699,6 @@ components:
           type: string
           maxLength: 255
           example: "Stark"
-        user_type:
-          type: string
-          format: int32
-          maxLength: 1
-          example: "2"
-          default: "2"
         active:
           type: boolean
           readOnly: true
@@ -1549,6 +1756,9 @@ components:
         position:
           type: string
           format: string
+        verified:
+          type: boolean
+          default: false
     Response:
       properties:
         status:
@@ -1567,85 +1777,74 @@ components:
           description: "A string that is a choice of either of the following enums [Li98 | Kirkaldy83]"
           type: string
           format: string
-          enum:
+          example:
             - "Li98"
             - "Kirkaldy83"
-        alloy:
+        alloy_type:
           description: "A string that is a choice of either of the following enums [parent | weld | mix]"
           type: string
           format: string
-          enum:
+          example:
             - "parent"
             - "weld"
             - "mix"
-        grain_size_type:
-          description: "A string that is a choice of either of the following enums [ASTM | diam]"
-          type: string
-          format: string
-          enum:
-            - "ASTM"
-            - "diam"
         gran_size:
           type: number
-          format: double
+          format: float
         nucleation_start:
           type: number
-          format: double
+          format: float
         nucleation_finish:
           type: number
-          format: double
+          format: float
           maximum: 99.99999999
-        auto_calculate_xfe:
+        auto_calculate_ms:
           type: boolean
-          default: false
-        xfe_value:
-          type: number
-          format: double
-        cf_value:
-          type: number
-          format: double
-        ceut_value:
-          type: number
-          format: double
-        auto_calculate_ms_bs:
-          type: boolean
-          default: false
-        transformation_method:
-          description: "A string that is a choice of either of the following enums [Li98 | Kirkaldy83]"
-          type: string
-          format: string
-          enum:
-            - "Li98"
-            - "Kirkaldy83"
+          default: true
         ms_temp:
           type: number
-          format: double
+          format: float
+        ms_rate_param:
+          type: number
+          format: float
+        auto_calculate_bs:
+          type: boolean
+          default: true
         bs_temp:
           type: number
-          format: double
+          format: float
         auto_calculate_ae:
           type: boolean
-          default: false
+          default: true
         ae1_temp:
           type: number
-          format: double
+          format: float
         ae3_temp:
           type: number
-          format: double
+          format: float
         start_temp:
           type: integer
         cct_cooling_rate:
           type: integer
+      required:
+        - method
+        - alloy_type
+        - grain_size
+        - nucleation_start
+        - nucleation_finish
+        - ms_temp
+        - ms_rate_param
+        - bs_temp
+        - ae1_temp
+        - ae3_temp
+        - start_temp
+        - cct_cooling_rate
     Element:
       type: object
       properties:
-        name:
-          description: "A lowercase full name of the element."
-          type: string
-          format: string
         symbol:
-          description: "A 2-character lowercase symbol for the name of the element. Note if the periodic symbol is 1
-           letter, add an 'x' at the end of the character (i.e. carbon, c becomes cx)."
+          description: "A 1 or 2-character Atomic symbol for the name of the element with the first letter
+          always capitalized as it is in the Periodic table."
           type: string
           format: string
           maxLength: 2
@@ -1654,17 +1853,11 @@ components:
           type: number
           format: double
       example:
-        - name: "vibranium"
-          symbol: "vb"
-          weight: 0.3
-        - name: "carbon"
-          symbol: "cx"
+        - symbol: "C"
           weight: 0.044
-        - name: "iron"
-          symbol: "fe"
+        - symbol: "Fe"
           weight: 0.001
       required:
-        - name
         - symbol
         - weight
     Alloy:
@@ -1680,22 +1873,49 @@ components:
           format: string
           description: "The unique name of the element."
           uniqueItems: true
-          example: Arc_Stark
+          example: "Bohemen Alloy1"
         compositions:
           description: "A list of the elements that make up the composition of the alloy."
           type: array
           items:
             $ref: '#/components/schemas/Element'
           example:
-            - name: "carbon"
-              symbol: "cx"
-              weight: 0.044
-            - name: "vibranium"
-              symbol: "vb"
+            - symbol: "C"
+              weight: 0.69
+            - symbol: "Mn"
+              weight: 0.61
+            - symbol: "Si"
+              weight: 0.03
+            - symbol: "Ni"
+              weight: 0.2
+            - symbol: "Cr"
               weight: 0.3
-            - name: "palladium"
-              symbol: "pd"
-              weight: 0.001
+            - symbol: "Mo"
+              weight: 0.0
+            - symbol: "Co"
+              weight: 0.0
+            - symbol: "Al"
+              weight: 0.0
+            - symbol: "Cu"
+              weight: 0.23
+            - symbol: "As"
+              weight: 0.0
+            - symbol: "Ti"
+              weight: 0.0
+            - symbol: "V"
+              weight: 0.0
+            - symbol: "W"
+              weight: 0.0
+            - symbol: "S"
+              weight: 0.04
+            - symbol: "N"
+              weight: 0.0
+            - symbol: "Nb"
+              weight: 0.0
+            - symbol: "B"
+              weight: 0.0
+            - symbol: "P"
+              weight: 0.012
       required:
         - name
         - compositions

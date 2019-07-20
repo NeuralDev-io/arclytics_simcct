@@ -59,3 +59,27 @@ Length of the button. Default is `default`.
 
 #### `onClick`: func
 
+
+
+#### `IconComponent`: node
+
+To add icon to button.
+
+Example
+
+```react
+import React from 'react'
+import DisapproveIcon from './icons'
+import Button from '.../button'
+...
+
+export MyComponent = () => (
+  <Button
+    appearance="dangerous"
+    onClick={() => console.log("danger!")}
+    IconComponent={props => <DisapproveIcon {...props} />}
+  />
+)
+```
+
+Note that `props` has to be passed in for the icon to be styled properly.

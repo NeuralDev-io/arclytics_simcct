@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  version: 0.2.0
+  version: 0.4.0
   title: "Arclytics Sim API"
   description: "Swagger spec for documenting the users and simulation service"
 
@@ -54,7 +54,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
+                  $ref: '#/components/schemas/User Profile'
                 example:
                   - _id: "5d2339db2d789ae1a9f15a9e"
                     email: "iron_man@avengers.io"
@@ -144,21 +144,13 @@ paths:
                   value:
                     status: "fail"
                     message: "Not authorized."
-  '/users/{id}':
+  /user:
     servers:
       - url: http://localhost:8000
     get:
       summary: "Returns a user based on a single user ID"
       tags:
         - Users
-      parameters:
-        - name: id
-          in: path
-          description: "ID of user to fetch"
-          required: true
-          schema:
-            type: string
-            format: bytes
       security:
         - bearerAuth: []
       responses:
@@ -176,7 +168,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/User'
+                      $ref: '#/components/schemas/User Profile'
         '400':
           description: "The request parameters are bad."
           content:
@@ -218,6 +210,103 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
+    put:
+      summary: "Update the User's details."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: ""
+  /user/last:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "Returns the user's last Alloy and Configurations used, and CCT/TTT results (if any)"
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Successfully returned the user's last Alloy and Configurations used."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      last_alloy:
+                        $ref: '#/components/schemas/Alloy'
+                      last_configurations:
+                        $ref: '#/components/schemas/Configurations'
+                      last_results:
+                        type: object
+                        nullable: true
+                        anyOf:
+                          - $ref: '#/components/schemas/Graphs'
+              examples:
+                'Valid':
+                  value:
+                    status: success
+                    data:
+                      last_alloy: '#/components/examples/alloyExample'
+                      last_configurations: '#/components/examples/configurationsExample'
+                      last_results: null
+  /user/alloys:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "We get the list of User's alloys stored in their document."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Return the User's Alloys database successfully."
+  /user/profile:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "Retrieve only enough information about the user for their profile."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Return the User's profile successfully."
+  /user/configurations:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "Retrieve the list of Configurations saved in the User's document."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: ""
+  /user/graphs:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "Retrieve the list of Graphs saved in the User's document."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: ""
 
   /auth/register:
     servers:
@@ -404,7 +493,8 @@ paths:
                     format: string
               example:
                 status: "fail"
-                message: "User does not exist."
+                message: "Successfully logged in."
+                token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjI1OTAzOTYsImlhdCI6MTU2MjU5MDM5MSwic3ViIjoiNWQyMzNjYjcxODE3YjIwNzU5NjZkNWJiIn0.SNRHYOgw2jAkIVWkuWA0a_PXu9S_QGcb2W7wrvXlqQk"
         '400':
           description: "An invalid payload has been sent in the request."
           content:
@@ -454,7 +544,7 @@ paths:
         - bearerAuth: []
       responses:
         '200':
-          description: "Response status and the user details."
+          description: "The user's token is currently valid."
           content:
             application/json:
               schema:
@@ -463,22 +553,9 @@ paths:
                   status:
                     type: string
                     example: "success"
-                  data:
-                    $ref: '#/components/schemas/User'
-              example:
-                status: "success"
-                data:
-                  _id: "5d2340060f8b5fa4a8daca91"
-                  email: "scarlet_witch@avengers.io"
-                  first_name: "Wanda"
-                  last_name: "Maximoff"
-                  active: true
-                  admin: false
-                  verified: false
-                  created: '2019-07-08T13:07:16.080000+00:00'
-                  last_updated: '2019-07-08T13:07:16.080000+00:00'
-                  last_login: '2019-07-08T13:07:18.042000+00:00'
-                  profile: None
+                  message:
+                    type: string
+                    example: "Token valid."
         '400':
           description: "Bad request body provided with no JSON Web Token."
           content:
@@ -504,14 +581,14 @@ paths:
                     type: string
                     format: string
               examples:
-                'Non Active User':
-                  value:
-                    status: "fail"
-                    message: "This user does not exist."
                 'Expired Token':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
+                'Non Active User':
+                  value:
+                    status: "fail"
+                    message: "This user does not exist."
                 'Invalid Token':
                   value:
                     status: "fail"
@@ -1606,10 +1683,9 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-
-
   schemas:
-    Full_User_Schema:
+    'User':
+      description: "A document type as the complete User schema with all values."
       properties:
         _id:
           type: string
@@ -1655,16 +1731,22 @@ components:
         last_login:
           type: string
           format: date-time
-        saved_configurations:
+        saved_simulations:
           type: array
           items:
-            $ref: '#/components/schemas/Configurations'
-        alloys:
+            $ref: '#/components/schemas/Saved Simulation'
+        saved_alloys:
           type: array
           items:
             $ref: '#/components/schemas/Alloy'
+        last_configurations:
+          $ref: '#/components/schemas/Configurations'
+        last_alloy:
+          $ref: '#/components/schemas/Alloy'
+        last_results:
+          $ref: '#/components/schemas/Graphs'
         profile:
-          $ref: '#/components/schemas/UserProfile'
+          $ref: '#/components/schemas/Profile'
         admin_profile:
           $ref: '#/components/schemas/AdminProfile'
       required:
@@ -1672,7 +1754,9 @@ components:
         - password
         - first_name
         - last_name
-    User:
+    'User Profile':
+      description: "The schema that represents a subset of the fields returned so it can be displayed
+      as a User profile without the other additional settings."
       properties:
         _id:
           type: string
@@ -1719,7 +1803,7 @@ components:
           type: string
           format: date-time
         profile:
-          $ref: '#/components/schemas/UserProfile'
+          $ref: '#/components/schemas/Profile'
         admin_profile:
           $ref: '#/components/schemas/AdminProfile'
       required:
@@ -1727,7 +1811,8 @@ components:
         - password
         - first_name
         - last_name
-    UserProfile:
+    Profile:
+      description: "An embedded document representing the additional User profile information."
       type: object
       properties:
         aim:
@@ -1771,24 +1856,27 @@ components:
           type: string
           format: string
     Configurations:
+      description: "An embedded document type that represents all the configurations required
+      to generate a CCT or TTT graph."
       type: object
       properties:
+        is_valid:
+          description: "Whether the configurations have been validated."
+          type: boolean
+          default: false
+          example: true
         method:
           description: "A string that is a choice of either of the following enums [Li98 | Kirkaldy83]"
           type: string
           format: string
-          example:
-            - "Li98"
-            - "Kirkaldy83"
+          example: "Li98"
         alloy_type:
           description: "A string that is a choice of either of the following enums [parent | weld | mix]"
           type: string
           format: string
-          example:
-            - "parent"
-            - "weld"
-            - "mix"
+          example: "parent"
         gran_size:
+          description: "The ASTM value for grain size always."
           type: number
           format: float
         nucleation_start:
@@ -1827,6 +1915,7 @@ components:
         cct_cooling_rate:
           type: integer
       required:
+        - is_valid
         - method
         - alloy_type
         - grain_size
@@ -1839,7 +1928,59 @@ components:
         - ae3_temp
         - start_temp
         - cct_cooling_rate
+    'Invalid Configurations':
+      description: "An embedded Configuration object that has not been validated."
+      type: object
+      properties:
+        is_valid:
+          description: "Whether the configurations have been validated."
+          type: boolean
+          default: false
+        method:
+          description: "A string that is a choice of either of the following enums [Li98 | Kirkaldy83]"
+          type: string
+          format: string
+          example:
+            - "Li98"
+            - "Kirkaldy83"
+        alloy_type:
+          description: "A string that is a choice of either of the following enums [parent | weld | mix]"
+          type: string
+          format: string
+          example:
+            - "parent"
+            - "weld"
+            - "mix"
+        gran_size:
+          type: string
+        nucleation_start:
+          type: string
+        nucleation_finish:
+          type: string
+        auto_calculate_ms:
+          type: boolean
+          default: true
+        ms_temp:
+          type: string
+        ms_rate_param:
+          type: number
+        auto_calculate_bs:
+          type: boolean
+        bs_temp:
+          type: string
+        auto_calculate_ae:
+          type: boolean
+          default: true
+        ae1_temp:
+          type: string
+        ae3_temp:
+          type: string
+        start_temp:
+          type: string
+        cct_cooling_rate:
+          type: string
     Element:
+      description: "An object type representing an Element with it's symbol and weight."
       type: object
       properties:
         symbol:
@@ -1861,6 +2002,8 @@ components:
         - symbol
         - weight
     Alloy:
+      description: "A document type representing an alloy with a name and its compositions
+      as a list of Element schemas."
       type: object
       properties:
         _id:
@@ -1871,7 +2014,7 @@ components:
         name:
           type: string
           format: string
-          description: "The unique name of the element."
+          description: "The unique name of the Alloy."
           uniqueItems: true
           example: "Bohemen Alloy1"
         compositions:
@@ -1919,8 +2062,169 @@ components:
       required:
         - name
         - compositions
-
-
+    Graphs:
+      description: "An object to store the CCT and TTT graphs data to be used for plotting."
+      type: object
+      properties:
+        _id:
+          type: string
+          format: byte
+        TTT:
+          type: object
+          properties:
+            ferrite_start:
+              type: array
+              items:
+                - type: number
+                  format: float
+            ferrite_finish:
+              type: array
+              items:
+                - type: number
+                  format: float
+            pearlite_start:
+              type: array
+              items:
+                - type: number
+                  format: float
+            pearlite_finish:
+              type: array
+              items:
+                - type: number
+                  format: float
+            bainite_start:
+              type: array
+              items:
+                - type: number
+                  format: float
+            bainite_finish:
+              type: array
+              items:
+                - type: number
+                  format: float
+            martensite:
+              type: array
+              items:
+                - type: number
+                  format: float
+        CCT:
+          type: object
+          properties:
+            ferrite_nucleation:
+              type: array
+              items:
+                - type: number
+                  format: float
+            ferrite_completion:
+              type: array
+              items:
+                - type: number
+                  format: float
+            pearlite_nucleation:
+              type: array
+              items:
+                - type: number
+                  format: float
+            pearlite_completion:
+              type: array
+              items:
+                - type: number
+                  format: float
+            bainite_nucleation:
+              type: array
+              items:
+                - type: number
+                  format: float
+            bainite_completion:
+              type: array
+              items:
+                - type: number
+                  format: float
+            martensite:
+              type: array
+              items:
+                - type: number
+                  format: float
+    'Saved Simulation':
+      description: "An embedded document type that stores a saved configuration (valid or invalid) and
+      results (if valid), and a reference to the alloy used via ObjectId."
+      type: object
+      properties:
+        _id:
+          type: string
+          format: byte
+        configurations:
+          anyOf:
+            - $ref: '#/components/schemas/Configurations'
+            - $ref: '#/components/schemas/Invalid Configurations'
+        alloy:
+          description: "An ObjectId reference field to the alloy used."
+          type: string
+          format: byte
+        result:
+          $ref: '#/components/schemas/Graphs'
+  examples:
+    configurationsExample:
+      summary: "A valid Configurations example."
+      value:
+        is_valid: true
+        method: "Li98"
+        alloy_type: "parent"
+        gran_size: 8.0
+        nucleation_start: 1.0
+        nucleation_finish: 99.90
+        auto_calculate_ms: true
+        ms_temp:
+        ms_rate_param:
+        auto_calculate_bs:
+        bs_temp:
+        auto_calculate_ae:
+        ae1_temp:
+        ae3_temp:
+        start_temp:
+        cct_cooling_rate:
+    alloyExample:
+      summary: "Bohemen Alloy1 example."
+      value:
+        _id: "5d2d811b88a3fafd802ca7d1"
+        name: "Bohemen Alloy1"
+        compositions:
+          - symbol: "C"
+            weight: 0.69
+          - symbol: "Mn"
+            weight: 0.61
+          - symbol: "Si"
+            weight: 0.03
+          - symbol: "Ni"
+            weight: 0.2
+          - symbol: "Cr"
+            weight: 0.3
+          - symbol: "Mo"
+            weight: 0.0
+          - symbol: "Co"
+            weight: 0.0
+          - symbol: "Al"
+            weight: 0.0
+          - symbol: "Cu"
+            weight: 0.23
+          - symbol: "As"
+            weight: 0.0
+          - symbol: "Ti"
+            weight: 0.0
+          - symbol: "V"
+            weight: 0.0
+          - symbol: "W"
+            weight: 0.0
+          - symbol: "S"
+            weight: 0.04
+          - symbol: "N"
+            weight: 0.0
+          - symbol: "Nb"
+            weight: 0.0
+          - symbol: "B"
+            weight: 0.0
+          - symbol: "P"
+            weight: 0.012
 tags:
   - name: Users
     description: "Endpoints for users and admins."
@@ -1932,3 +2236,5 @@ tags:
     description: "Endpoints that expose the full CRUD interface for Alloys."
   - name: Configurations
     description: "Endpoints that update the Session store of the user's configurations."
+  - name: Simulation
+    description: Endpoints that manage simulation activities.

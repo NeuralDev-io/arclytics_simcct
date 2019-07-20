@@ -360,6 +360,8 @@ class User(Document):
 
         if self.last_updated is None:
             self.last_updated = self.created
+        else:
+            self.last_updated = datetime.utcnow()
 
     @queryset_manager
     def as_dict(cls, queryset) -> list:

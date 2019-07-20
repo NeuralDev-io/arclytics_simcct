@@ -218,7 +218,7 @@ paths:
         - bearerAuth: []
       responses:
         '200':
-          description: ""
+          description: "User has been updated successfully and the new user details have been returned."
   /user/last:
     servers:
       - url: http://localhost:8000
@@ -271,6 +271,22 @@ paths:
       responses:
         '200':
           description: "Return the User's Alloys database successfully."
+    post:
+      summary: "Save an alloy to the User's database."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "The alloy to save."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Alloy'
+      responses:
+        '201':
+          description: "The Alloy has been saved to the User's Alloys database."
   /user/profile:
     servers:
       - url: http://localhost:8000
@@ -283,6 +299,44 @@ paths:
       responses:
         '200':
           description: "Return the User's profile successfully."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User Profile'
+    post:
+      summary: "Create the User's profile details the first time they complete it."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "User details to add"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Profile'
+      responses:
+        '201':
+          description: "The User's profile has been successfully saved."
+    put:
+      summary: "Update the User's profile details."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "User details to add"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Profile'
+      responses:
+        '204':
+          description: "The user's profile has been updated and no response has been returned."
+        '400':
+          description: "An invalid payload has been sent with the request."
   /user/configurations:
     servers:
       - url: http://localhost:8000
@@ -642,6 +696,29 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
+
+  /user/disable:
+    servers:
+      - url: http://localhost:8000
+    put:
+      summary: "Disable a User's account if an Admin has requested."
+      security:
+        - bearerAuth: []
+      tags:
+        - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  format: byte
+      responses:
+        '200':
+          description: "The user has been successfully disabled."
 
   /users/ping:
     servers:
@@ -1677,6 +1754,53 @@ paths:
                 status: "fail"
                 message: "No previous session configurations was set."
 
+  /simulate:
+    servers:
+      - url: http://localhost:8001
+    get:
+      summary: "Run the simulation and get the results back."
+      security:
+        - bearerAuth: []
+      tags:
+        - Simulation
+      responses:
+        '200':
+          description: "The CCT and TTT simulations have been completed and the Graphs result returned."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Graphs'
+        '401':
+          description: "An invalid request header has been sent."
+  /simulate/save:
+    servers:
+      - url: http://localhost:8001
+    put:
+      summary: "Save a valid simulation and the current Graphs result to the User's document."
+      security:
+        - bearerAuth: []
+      tags:
+        - Simulation
+      responses:
+        '201':
+          description: "A new Saved Simulation has been made."
+    post:
+      summary: "Save an invalid simulation data to the User's document."
+      security:
+        - bearerAuth: []
+      tags:
+        - Simulation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Invalid Configurations'
+      responses:
+        '201':
+          description: "The invalid simulation has been saved successfully."
+
+
 
 components:
   securitySchemes:
@@ -2225,11 +2349,15 @@ components:
             weight: 0.0
           - symbol: "P"
             weight: 0.012
+
+
 tags:
   - name: Users
     description: "Endpoints for users and admins."
   - name: Auth
     description: "Endpoints for Authentication and Authorization."
+  - name: Admin
+    description: Endpoints that are used by an Administrator.
   - name: Sessions
     description: "Endpoints that manage sessions."
   - name: Alloys

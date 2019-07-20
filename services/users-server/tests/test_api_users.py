@@ -115,7 +115,7 @@ class TestUserService(BaseTestCase):
 
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 401)
-            self.assertEqual(data['message'], 'User must sign in again.')
+            self.assertEqual(data['message'], 'This user does not exist.')
             self.assertEqual('fail', data['status'])
 
     def test_single_user_invalid_id(self):

@@ -62,38 +62,6 @@ def authenticate(f):
     return decorated_func
 
 
-def login_required(f):
-    @wraps(f)
-    def decorated_func(*args, **kwargs):
-        response = {
-            'status': 'fail',
-            'message': 'Provide a valid JWT auth token.'
-        }
-
-        auth_header = request.headers.get('Authorization', '')
-
-        if not auth_header:
-            return response, 400
-
-        # auth_header = 'Bearer {token}'
-        auth_token = auth_header.split(' ')[1]
-
-        resp = User.decode_auth_token(auth_token=auth_token)
-
-        if not isinstance(resp, ObjectId):
-            response['message'] = resp
-            return response, 401
-
-        user = User.objects.get(id=resp)
-        if not user.active:
-            response['message'] = 'User must sign in again.'
-            return response, 401
-
-        return f(*args, **kwargs)
-
-    return decorated_func
-
-
 def authenticate_admin(f):
     @wraps(f)
     def decorated_func(*args, **kwargs):
@@ -105,7 +73,7 @@ def authenticate_admin(f):
         auth_header = request.headers.get('Authorization', '')
 
         if not auth_header:
-            return response, 400
+            return jsonify(response), 400
 
         # auth_header = 'Bearer token'
         auth_token = auth_header.split(' ')[1]
@@ -114,16 +82,16 @@ def authenticate_admin(f):
 
         if isinstance(resp, str):
             response['message'] = resp
-            return response, 401
+            return jsonify(response), 401
 
         admin = User.objects.get(id=resp)
         if not admin or not admin.is_admin:
             response['message'] = 'Not authorized.'
-            return response, 403
+            return jsonify(response), 403
 
         if not admin.active:
             response['message'] = 'Admin must sign in again.'
-            return response, 401
+            return jsonify(response), 401
 
         return f(resp, *args, **kwargs)
 

@@ -24,14 +24,12 @@ the Flask Resource inheritance model.
 from typing import Tuple
 
 from flask import Blueprint, jsonify
-#from flask_restful import Resource, Api
 
 from logger.arc_logger import AppLogger
 from users_app.models import User
-from users_app.middleware import login_required, authenticate_admin
+from users_app.middleware import authenticate, authenticate_admin
 
 users_blueprint = Blueprint('users', __name__)
-#api = Api(users_blueprint)
 
 logger = AppLogger(__name__)
 
@@ -44,7 +42,7 @@ def ping_test() -> dict:
 
 @users_blueprint.route(rule='/users', methods=['GET'])
 @authenticate_admin
-def user_list() -> Tuple[dict, int]:
+def user_list(resp) -> Tuple[dict, int]:
     """Get all users only available to admins."""
     user_list = User.as_dict
     response = {'status': 'success', 'data': {'users': user_list}}
@@ -52,30 +50,11 @@ def user_list() -> Tuple[dict, int]:
 
 
 @users_blueprint.route(rule='/users/<user_id>', methods=['GET'])
-@login_required
-def user(user_id) -> Tuple[dict, int]:
+@authenticate
+def user(resp, user_id) -> Tuple[dict, int]:
     user = User.objects.get(id=user_id)
     response = {'status': 'success', 'data': user.to_dict()}
     return jsonify(response), 200
-
-# ========== # RESOURCE DEFINITIONS # ========== #
-# class PingTest(Resource):
-#     """A simple resource for sanity checking that the server is working."""
-#
-#     def get(self):
-#         return {'status': 'success', 'message': 'pong'}
-
-
-# class UsersList(Resource):
-#     """Route for Users for Create and Retrieve List."""
-#
-#     method_decorators = {'get': [authenticate_admin]}
-#
-#     def get(self, resp):
-#         """Get all users only available to admins."""
-#         user_list = User.as_dict
-#         response = {'status': 'success', 'data': {'users': user_list}}
-#         return response, 200, {'Content-type': 'application/json'}
 
 
 # TODO(andrew@neuraldev.io -- Sprint 6)
@@ -115,6 +94,25 @@ def user(user_id) -> Tuple[dict, int]:
 #     response['message'] = '{} was made an administrator'.format(user.email)
 #     return response, 200
 
+
+# ========== # RESOURCE DEFINITIONS # ========== #
+# class PingTest(Resource):
+#     """A simple resource for sanity checking that the server is working."""
+#
+#     def get(self):
+#         return {'status': 'success', 'message': 'pong'}
+
+
+# class UsersList(Resource):
+#     """Route for Users for Create and Retrieve List."""
+#
+#     method_decorators = {'get': [authenticate_admin]}
+#
+#     def get(self, resp):
+#         """Get all users only available to admins."""
+#         user_list = User.as_dict
+#         response = {'status': 'success', 'data': {'users': user_list}}
+#         return response, 200, {'Content-type': 'application/json'}
 
 # class Users(Resource):
 #     """Resource for User Retrieve and Update."""

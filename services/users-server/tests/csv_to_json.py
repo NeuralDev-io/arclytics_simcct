@@ -5,17 +5,31 @@ the SSTP program and writes the file's data to a JSON file.
 import json
 import argparse
 
-parser = argparse.ArgumentParser(description='Convert SSTP results CSV to JSON')
-parser.add_argument('-i', dest='input_file', type=str, metavar='',
-                    help='Name of input SSTP CSV file')
-parser.add_argument('-o', dest='output_file', type=str, metavar='',
-                    help='Name of output JSON file')
+parser = argparse.ArgumentParser(
+    description='Convert SSTP results CSV to JSON'
+)
+parser.add_argument(
+    '-i',
+    dest='input_file',
+    type=str,
+    metavar='',
+    help='Name of input SSTP CSV file'
+)
+parser.add_argument(
+    '-o',
+    dest='output_file',
+    type=str,
+    metavar='',
+    help='Name of output JSON file'
+)
 args = parser.parse_args()
+
 
 def read_csv(csv_file_name: str) -> str:
     """Read the SSTP csv file and return a list of the lines from the file."""
     with open(csv_file_name, 'r') as fin:
         return fin.readlines()
+
 
 def create_output(lines: str) -> dict:
     """Read a list of lines from SSTP csv and create a dictionary
@@ -114,7 +128,7 @@ def create_output(lines: str) -> dict:
     line_num += 6
 
     # Add all time/temp data to time/temp lists within cct dictionaries
-    while lines[line_num][0] != ' ' and line_num < (len(lines)-1):
+    while lines[line_num][0] != ' ' and line_num < (len(lines) - 1):
         line = lines[line_num].split(", ")
         cct_ferrite_nuc['time'].append(line[0])
         cct_ferrite_nuc['temp'].append(line[1])
@@ -143,10 +157,12 @@ def create_output(lines: str) -> dict:
 
     return output
 
+
 def write_json(output: {}, file_name: str):
     """Dump data dictionary into output file in json format."""
     with open(file_name, 'w') as fout:
         json.dump(output, fout)
+
 
 def main():
     if args.input_file:
@@ -160,6 +176,7 @@ def main():
     else:
         json_file_name = input("Enter output file name: ")
         write_json(output, json_file_name)
+
 
 if __name__ == '__main__':
     main()

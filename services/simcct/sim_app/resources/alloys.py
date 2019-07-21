@@ -83,8 +83,7 @@ class AlloysList(Resource):
         Returns:
             A Response object with a response dict and status code as int.
         """
-        response = {'status': 'fail',
-                    'message': 'Empty.'}
+        response = {'status': 'fail', 'message': 'Empty.'}
 
         alloys = AlloysService().find_all_alloys()
         logger.debug(AlloysService().client.client.db)

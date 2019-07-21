@@ -186,13 +186,11 @@ class Configuration(EmbeddedDocument):
 
 
 class Element(EmbeddedDocument):
-    name = StringField()
     symbol = StringField(max_length=2)
     weight = FloatField()
 
     def to_dict(self):
         return {
-            'name': self.name,
             'symbol': self.symbol,
             'weight': self.weight
         }
@@ -256,6 +254,8 @@ class User(Document):
             rounds=current_app.config.get('BCRYPT_LOG_ROUNDS')
         ).decode()
 
+    # TODO(andrew@neuraldev.io): Implement one of these just for the Profile
+    #  and another one for all user details.
     def to_dict(self) -> dict:
         """Simple Document.User helper method to get a Python dict back."""
         last_login = None

@@ -243,6 +243,11 @@ def auto_calculate_ms(token):
     session_configs['auto_calculate_ms'] = True
 
     comp_list = session.get(f'{token}:alloy')['compositions']
+
+    if comp_list is None:
+        response['message'] = 'User has not set an Alloy.'
+        return jsonify(response), 400
+
     comp_np_arr = SimConfig.get_compositions(comp_list)
 
     ms_temp = SimConfig.get_ms(method=_transformation_method, comp=comp_np_arr)
@@ -291,6 +296,11 @@ def auto_calculate_bs(token):
     session_configs['auto_calculate_bs'] = True
 
     comp_list = session.get(f'{token}:alloy')['compositions']
+
+    if comp_list is None:
+        response['message'] = 'User has not set an Alloy.'
+        return jsonify(response), 400
+
     comp_np_arr = SimConfig.get_compositions(comp_list)
 
     bs_temp = SimConfig.get_bs(method=_transformation_method, comp=comp_np_arr)
@@ -378,6 +388,11 @@ def auto_calculate_ae(token):
     session_configs['auto_calculate_ae'] = True
 
     comp_list = session.get(f'{token}:alloy')['compositions']
+
+    if comp_list is None:
+        response['message'] = 'User has not set an Alloy.'
+        return jsonify(response), 400
+
     comp_np_arr = SimConfig.get_compositions(comp_list)
 
     ae1, ae3 = SimConfig.calc_ae1_ae3(comp_np_arr)

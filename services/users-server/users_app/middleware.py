@@ -47,6 +47,7 @@ def authenticate(f):
         # exception
         resp = User.decode_auth_token(auth_token=auth_token)
 
+        # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):
             response['message'] = resp
             return jsonify(response), 401
@@ -94,5 +95,41 @@ def authenticate_admin(f):
             return jsonify(response), 401
 
         return f(resp, *args, **kwargs)
+
+    return decorated_func
+
+
+def logout_authenticate(f):
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        response = {
+            'status': 'fail',
+            'message': 'Provide a valid JWT auth token.'
+        }
+        # get auth token
+        auth_header = request.headers.get('Authorization', None)
+
+        if not auth_header:
+            return jsonify(response), 400
+
+        # auth_header = 'Bearer token'
+        auth_token = auth_header.split(' ')[1]
+
+        # Decode either returns bson.ObjectId if successful or a string from an
+        # exception
+        resp = User.decode_auth_token(auth_token=auth_token)
+
+        # Either returns an ObjectId User ID or a string response.
+        if not isinstance(resp, ObjectId):
+            response['message'] = resp
+            return jsonify(response), 401
+
+        # Validate the user is active
+        user = User.objects.get(id=resp)
+        if not user or not user.active:
+            response['message'] = 'This user does not exist.'
+            return jsonify(response), 401
+
+        return f(resp, auth_token, *args, **kwargs)
 
     return decorated_func

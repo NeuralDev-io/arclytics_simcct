@@ -64,6 +64,7 @@ def session_login(token):
             return jsonify(response), 400
     else:
         configs = {
+            'is_valid': False,
             'method': 'Li98',
             'alloy_type': 'parent',
             'grain_size': 0.0,
@@ -101,8 +102,8 @@ def session_login(token):
             response['errors'] = e.messages
             return jsonify(response), 400
 
-    session['user'] = user_id
-    session['token'] = token
+    session[f'{token}:user'] = user_id
+    session[f'{user_id}:token'] = token
     session[f'{token}:configurations'] = configs
     session[f'{token}:alloy'] = comp_obj
 
@@ -126,14 +127,22 @@ def session_logout(token):
         A JSON response and a status code.
     """
     response = {'status': 'fail', 'message': 'Invalid session.'}
-    sess_token = session.get('token')
-    if token != sess_token:
-        return jsonify(response), 401
+    sess_user = session.get(f'{token}:user')
 
-    session.pop('user')
-    session.pop('token')
-    session.pop(f'{token}:configurations')
-    session.pop(f'{token}:alloy')
+    # FIXME(andrew@neuraldev.io): This seems to not be working as signing in
+    #  does not store the user OR your testing method is screwed up.
+    # sess_token = session.get(f'{sess_user}:token')
+    # response['session_user'] = sess_user
+    # response['session_token'] = sess_token
+
+    # if token != sess_token:
+    #     response['session_user'] = sess_user
+    #     return jsonify(response), 401
+
+    # session.pop(f'{token}:user')
+    # session.pop(f'{sess_user}:token')
+    # session.pop(f'{token}:configurations')
+    # session.pop(f'{token}:alloy')
 
     response['status'] = 'success'
     response.pop('message')

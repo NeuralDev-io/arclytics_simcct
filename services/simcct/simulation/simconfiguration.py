@@ -95,18 +95,22 @@ class SimConfiguration(object):
             #  we can probably do this in the background.
             # We need Xfe in simulation calculations and we have defined a cf
             # that is set to 0.012 because that's what Dr. Bendeich thinks works
-            self.xfe, self.ceut = self.xfe_method2(self.comp, self.ae1)
 
-        # FIXME(andrew@neuraldev.io): This is a bit redundant because the user
-        #  should have already either manually added these or done an auto
-        #  calculate but we are leaving it here for testing so remove it for
-        #  better efficiency in production.
-        if self.auto_calc_ms:
-            self.auto_ms()
-        if self.auto_calc_bs:
-            self.auto_bs()
-        if self.auto_calc_ae:
-            self.auto_ae1_ae3()
+            # FIXME(andrew@neuraldev.io): This is a bit redundant because
+            #  the user
+            #  should have already either manually added these or done an
+            #  auto
+            #  calculate but we are leaving it here for testing so remove
+            #  it for
+            #  better efficiency in production.
+            if self.auto_calc_ms:
+                self.auto_ms()
+            if self.auto_calc_bs:
+                self.auto_bs()
+            if self.auto_calc_ae:
+                self.auto_ae1_ae3()
+
+            self.xfe, self.ceut = self.xfe_method2(self.comp, self.ae1)
 
     def auto_ms(self) -> None:
         """
@@ -151,7 +155,8 @@ class SimConfiguration(object):
             # Using the PeriodicTable 1-to-1 mapping validates that the name is
             # exactly as we expect it. Will raise a NotImplementedError
             # exception if symbol names don't match.
-            comp[i] = (i, PeriodicTable[s].name, e['weight'])
+            # comp[i] = (i, PeriodicTable[s].name, e['weight'])
+            comp[i] = (i, e['symbol'], e['weight'])
         return comp
 
     @staticmethod
@@ -292,7 +297,7 @@ class SimConfiguration(object):
         results_mat = np.zeros((1000, 22), dtype=np.float64)
         # reserve the initial carbon wt% as the main routine is passing back
         # another value despite being set "ByVal"
-        wt_c = wt['weight'][wt['symbol'] == PeriodicTable.C]
+        wt_c = wt['weight'][wt['symbol'] == PeriodicTable.C.name][0]
 
         # Find Ae3 for array of Carbon contents form 0.00 to 0.96 wt%
         # UPDATE wt, Results to CALL Ae3MultiC(wt, Results)
@@ -343,8 +348,8 @@ PHASE SIMULATION CONFIGURATIONS
 {:30}{}
 {:30}{}
 Transformation Definitions:
-  {:28}{:.4f} %
-  {:28}{:.4f} %
+  {:28}{:.4f}
+  {:28}{:.4f}
 Grain Size:
   {:28}{:6.4f}
 Transformation Temp. Limits:

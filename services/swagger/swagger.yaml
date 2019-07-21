@@ -1732,6 +1732,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Graphs'
+        '400':
+          description: "An invalid request has been made."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Ae1 and Ae3 value cannot be less than 0.0."
         '401':
           description: "An invalid request header has been sent."
   /simulate/save:

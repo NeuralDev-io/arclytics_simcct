@@ -130,7 +130,7 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray,
         # GC: Molar free energy change for ferrite/austenite transformation
         # for carbon (cal/mol). (Li thesis p.146)
         if temp > 0:
-            g, temp = dg_fit(g, temp)
+            g, temp = dg_fit(temp)
         else:
             # logger.error("Negative temperature determined for Ae3.")
             print("Negative temperature determined for Ae3.")
@@ -378,8 +378,7 @@ def tzero2(wt_c: float) -> float:
     return 1115 - 154 * wt_c + 17.5 * math.pow((1.2 - wt_c), 7.5)  # in C
 
 
-# TODO: possible to declare dg inside function and just return it
-def dg_fit(dg: float, t: float) -> (float, float):
+def dg_fit(t: float) -> (float, float):
     # Linear fits between 'Delta G' (Gibbs free energy change) values in
     # table V (last column) by Kaufman "Refractory Materials" vol.4, 19,
     # 1970. Data for BCC (alpha) -> FCC (gamma) Iron
@@ -472,7 +471,6 @@ def dg_fit(dg: float, t: float) -> (float, float):
     return dg, t
 
 
-# TODO: possible to declare dh inside and just return it
 def dh_fit(t: float) -> (float, float):
     # linear fits between 'Delta H' (enthalpy difference) values in table V (
     # 2nd last column) by Kaufman "Refractory Materials" vol.4, 19,
@@ -562,7 +560,6 @@ def dh_fit(t: float) -> (float, float):
     return dh, t
 
 
-# TODO: These are both constants. Question: do they ever change?
 def eta2li96() -> np.ndarray:
     """Set coefficients for the calculation of interaction coefficients for each alloying element with carbon
     (E1i alpha or Delta phase). Values set in Li thesis (p.150, table 3.6, 1st column (E1i(alpha)) values
@@ -669,7 +666,6 @@ def eta2li96() -> np.ndarray:
     return b_mat
 
 
-# TODO: These are both constants. Question: do they ever change?
 def dgi22() -> np.ndarray:
     """
     Data for alloying element free energy changes (DELTA G(I)) [Ferrite-Austenite transformation]

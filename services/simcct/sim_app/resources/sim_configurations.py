@@ -361,6 +361,7 @@ def update_ms_bs(token):
     session_configs['ms_temp'] = ms_temp
     session_configs['ms_rate_param'] = ms_rate_param
     session_configs['bs_temp'] = bs_temp
+    session[f'{token}:configurations'] = session_configs
 
     return jsonify({}), 204
 

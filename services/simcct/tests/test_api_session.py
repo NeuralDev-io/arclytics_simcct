@@ -94,8 +94,8 @@ class TestSessionService(BaseTestCase):
             content_type='application/json'
         )
         data = json.loads(login_res.data.decode())
-        self.assertTrue(data['status'] == 'success')
         self.assertEqual(data['message'], 'User session initiated.')
+        self.assertEqual(data['status'], 'success')
         self.assertEqual(session.get('token'), self.token)
         self.assertEqual(session.get('user'), self.user_id)
         self.assertTrue(session.get(f'{self.token}:configurations'))
@@ -252,19 +252,16 @@ class TestSessionService(BaseTestCase):
         it is set appropriately.
         """
         configs = {
+            'is_valid': True,
             'method': 'Li98',
-            'alloy': 'parent',
+            'alloy_type': 'parent',
             'grain_size': 8.0,
-            'grain_size_type': 'ASTM',
             'nucleation_start': 1.0,
             'nucleation_finish': 99.9,
-            'auto_calculate_xfe': True,
-            'xfe_value': 0.0,
-            'cf_value': 0.012,
-            'ceut_value': 0.762,
-            'auto_calculate_ms_bs': True,
-            'transformation_method': 'Li98',
+            'auto_calculate_ms': True,
             'ms_temp': 0.0,
+            'ms_rate_param': 0.0168,
+            'auto_calculate_bs': True,
             'bs_temp': 0.0,
             'auto_calculate_ae': True,
             'ae1_temp': 0.0,
@@ -296,27 +293,25 @@ class TestSessionService(BaseTestCase):
             self.assertEqual(data['message'], 'User session initiated.')
             sess_saved = session.get(f'{str(self.token)}:configurations')
             self.assertEqual(sess_saved['method'], 'Li98')
-            self.assertEqual(sess_saved['alloy'], 'parent')
-            self.assertEqual(sess_saved['grain_size_type'], 'ASTM')
+            self.assertEqual(sess_saved['alloy_type'], 'parent')
             self.assertEqual(sess_saved['grain_size'], 8.0)
-            self.assertEqual(sess_saved['auto_calculate_ms_bs'], True)
+            self.assertEqual(sess_saved['auto_calculate_ms'], True)
+            self.assertEqual(sess_saved['auto_calculate_bs'], True)
+            self.assertEqual(sess_saved['auto_calculate_ae'], True)
 
     def test_login_user_with_invalid_compositions(self):
         """Ensure if the comp is invalid it fails."""
         configs = {
+            'is_valid': True,
             'method': 'Li98',
-            'alloy': 'parent',
+            'alloy_type': 'parent',
             'grain_size': 8.0,
-            'grain_size_type': 'ASTM',
             'nucleation_start': 1.0,
             'nucleation_finish': 99.9,
-            'auto_calculate_xfe': True,
-            'xfe_value': 0.0,
-            'cf_value': 0.012,
-            'ceut_value': 0.762,
-            'auto_calculate_ms_bs': True,
-            'transformation_method': 'Li98',
+            'auto_calculate_ms': True,
             'ms_temp': 0.0,
+            'ms_rate_param': 0.0168,
+            'auto_calculate_bs': True,
             'bs_temp': 0.0,
             'auto_calculate_ae': True,
             'ae1_temp': 0.0,
@@ -355,9 +350,9 @@ class TestSessionService(BaseTestCase):
 
     def test_login_user_with_compositions(self):
         """Ensure if the user a last_compositions it is added to Redis store."""
-        e1 = {'name': 'carbon', 'symbol': 'cx', 'weight': 0.044}
-        e2 = {'name': 'manganese', 'symbol': 'mn', 'weight': 1.73}
-        e3 = {'name': 'silicon', 'symbol': 'si', 'weight': 0.22}
+        e1 = {'symbol': 'C', 'weight': 0.044}
+        e2 = {'symbol': 'Mn', 'weight': 1.73}
+        e3 = {'symbol': 'Si', 'weight': 0.22}
 
         with current_app.test_client() as client:
             login_res = client.post(
@@ -386,13 +381,10 @@ class TestSessionService(BaseTestCase):
             stored_elem1 = comp_store['compositions'][0]
             stored_elem2 = comp_store['compositions'][1]
             stored_elem3 = comp_store['compositions'][2]
-            self.assertEqual(stored_elem1['name'], e1['name'])
             self.assertEqual(stored_elem1['symbol'], e1['symbol'])
             self.assertEqual(stored_elem1['weight'], e1['weight'])
-            self.assertEqual(stored_elem2['name'], e2['name'])
             self.assertEqual(stored_elem2['symbol'], e2['symbol'])
             self.assertEqual(stored_elem2['weight'], e2['weight'])
-            self.assertEqual(stored_elem3['name'], e3['name'])
             self.assertEqual(stored_elem3['symbol'], e3['symbol'])
             self.assertEqual(stored_elem3['weight'], e3['weight'])
 

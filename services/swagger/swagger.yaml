@@ -1475,21 +1475,6 @@ paths:
                 data:
                   ms_temp: 464.1960
                   ms_rate_param: 0.0207
-        '400':
-          description: "An invalid payload has been sent with the request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Empty payload':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'False Auto Calculate Bool':
-                  value:
-                    status: "fail"
-                    message: "Post data auto calculate for MS is false."
         '401':
           description: "Unauthorized access to the endpoint."
           content:
@@ -1525,21 +1510,6 @@ paths:
                 status: "success"
                 data:
                   bs_temp: 563.2380
-        '400':
-          description: "An invalid payload has been sent with the request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Empty payload':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'False Auto Calculate Bool':
-                  value:
-                    status: "fail"
-                    message: "Post data auto calculate for BS is false."
         '401':
           description: "Unauthorized access to the endpoint."
           content:
@@ -1631,15 +1601,6 @@ paths:
         - Configurations
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              properties:
-                auto_calculate_ae:
-                  type: boolean
-                  example: true
       responses:
         '200':
           description: "The auto calculate for MS and BS store has been updated and returned."
@@ -1652,21 +1613,6 @@ paths:
                 data:
                   ae1_temp: 700.9019
                   ae3_temp: 845.8379
-        '400':
-          description: "An invalid payload has been sent with the request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Empty payload':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'False Auto Calculate Bool':
-                  value:
-                    status: "fail"
-                    message: "Auto calculate for Austenite is false."
         '401':
           description: "Unauthorized access to the endpoint."
           content:
@@ -1764,7 +1710,7 @@ paths:
   /simulate/save:
     servers:
       - url: http://localhost:8001
-    put:
+    get:
       summary: "Save a valid simulation and the current Graphs result to the User's document."
       security:
         - bearerAuth: []
@@ -2075,7 +2021,7 @@ components:
         ms_temp:
           type: string
         ms_rate_param:
-          type: number
+          type: string
         auto_calculate_bs:
           type: boolean
         bs_temp:
@@ -2286,15 +2232,15 @@ components:
         nucleation_start: 1.0
         nucleation_finish: 99.90
         auto_calculate_ms: true
-        ms_temp:
-        ms_rate_param:
-        auto_calculate_bs:
-        bs_temp:
-        auto_calculate_ae:
-        ae1_temp:
-        ae3_temp:
-        start_temp:
-        cct_cooling_rate:
+        ms_temp: 477.5940
+        ms_rate_param: 0.0168
+        auto_calculate_bs: true
+        bs_temp: 563.2380
+        auto_calculate_ae: true
+        ae1_temp: 700.90196
+        ae3_temp: 845.83796
+        start_temp: 900
+        cct_cooling_rate: 10
     alloyExample:
       summary: "Bohemen Alloy1 example."
       value:

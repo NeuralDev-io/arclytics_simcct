@@ -25,10 +25,10 @@ import unittest
 from pathlib import Path
 
 from users_api.models.models import User, Configuration
-from users_api.resources.auth import (async_register_session,
-                                      SessionValidationError)
+from users_api.resources.auth import (
+    async_register_session, SessionValidationError
+)
 from tests.test_api_base import BaseTestCase
-
 
 _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 
@@ -38,7 +38,7 @@ class TestSimCCTSession(BaseTestCase):
 
     def test_register_session_with_login(self):
         """
-        Ensure we are properly registered with simcct-server using the async
+        Ensure we are properly registered with simcct server using the async
         register method so we can get an appropriate response.
         """
         peter = User(
@@ -65,9 +65,7 @@ class TestSimCCTSession(BaseTestCase):
         peter.set_password('SpideySenses')
         peter.save()
         tony = User(
-            email='tony@avengers.io',
-            first_name='Tony',
-            last_name='Stark'
+            email='tony@avengers.io', first_name='Tony', last_name='Stark'
         )
         tony.set_password('IAmIronMan')
         tony.save()
@@ -85,9 +83,7 @@ class TestSimCCTSession(BaseTestCase):
 
     def test_register_session_invalid_json_no_id(self):
         tony = User(
-            email='tony@avengers.io',
-            first_name='Tony',
-            last_name='Stark'
+            email='tony@avengers.io', first_name='Tony', last_name='Stark'
         )
         tony.set_password('IAmIronMan')
         tony.save()
@@ -99,9 +95,7 @@ class TestSimCCTSession(BaseTestCase):
 
     def test_register_session_invalid_json_no_token(self):
         tony = User(
-            email='tony@avengers.io',
-            first_name='Tony',
-            last_name='Stark'
+            email='tony@avengers.io', first_name='Tony', last_name='Stark'
         )
         tony.set_password('IAmIronMan')
         tony.save()
@@ -111,9 +105,7 @@ class TestSimCCTSession(BaseTestCase):
 
     def test_register_session_valid_configs(self):
         jane = User(
-            email='jane@culver.edu.us',
-            first_name='Jane',
-            last_name='Foster'
+            email='jane@culver.edu.us', first_name='Jane', last_name='Foster'
         )
         jane.set_password('LadyAether')
         jane.save()

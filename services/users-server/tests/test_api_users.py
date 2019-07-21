@@ -7,7 +7,7 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
-__copyright__ = 'Copyright (C) 2019, NeuralDev'
+
 __credits__ = ['']
 __license__ = 'TBA'
 __version__ = '0.1.0'
@@ -227,9 +227,7 @@ class TestUserService(BaseTestCase):
 
     def test_get_all_users_expired_token(self):
         thor = User(
-            email='thor@avengers.io',
-            first_name='Thor',
-            last_name='Odinson'
+            email='thor@avengers.io', first_name='Thor', last_name='Odinson'
         )
         thor.set_password('StrongestAvenger')
         thor.is_admin = True
@@ -273,9 +271,7 @@ class TestUserService(BaseTestCase):
         tony.verified = True
         tony.save()
         steve = User(
-            email='steve@avengers.io',
-            first_name='Steve',
-            last_name='Rogers'
+            email='steve@avengers.io', first_name='Steve', last_name='Rogers'
         )
         steve.set_password('ICanDoThisAllDay')
         steve.save()
@@ -291,10 +287,12 @@ class TestUserService(BaseTestCase):
         with self.client:
             resp_login = self.client.post(
                 '/auth/login',
-                data=json.dumps({
-                    'email': 'tony@starkindustries.com',
-                    'password': 'IAmTheRealIronMan'
-                }),
+                data=json.dumps(
+                    {
+                        'email': 'tony@starkindustries.com',
+                        'password': 'IAmTheRealIronMan'
+                    }
+                ),
                 content_type='application/json'
             )
             token = json.loads(resp_login.data.decode())['token']

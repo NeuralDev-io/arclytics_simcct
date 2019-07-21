@@ -7,7 +7,7 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
-__copyright__ = 'Copyright (C) 2019, NeuralDev'
+
 __credits__ = ['']
 __license__ = 'TBA'
 __version__ = '0.1.0'
@@ -50,12 +50,7 @@ class UsersList(Resource):
     def get(self, resp):
         """Get all users only available to admins."""
         user_list = User.as_dict
-        response = {
-            'status': 'success',
-            'data': {
-                'users': user_list
-            }
-        }
+        response = {'status': 'success', 'data': {'users': user_list}}
         return response, 200, {'content-type': 'application/json'}
 
 
@@ -100,10 +95,7 @@ class UsersList(Resource):
 class Users(Resource):
     """Resource for User Retrieve and Update."""
 
-    method_decorators = {
-        'get': [login_required],
-        'update': [login_required]
-    }
+    method_decorators = {'get': [login_required], 'update': [login_required]}
 
     def get(self, user_id):
         """Get a single user detail with query parameter as user_id."""
@@ -116,10 +108,7 @@ class Users(Resource):
         # Validation check for User exists done in authenticate_restful
         # decorator
         user = User.objects.get(id=user_id)
-        response = {
-            'status': 'success',
-            'data': user.to_dict()
-        }
+        response = {'status': 'success', 'data': user.to_dict()}
         return response, 200, {'content-type': 'application/json'}
 
 

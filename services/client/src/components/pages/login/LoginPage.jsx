@@ -1,3 +1,10 @@
+/**
+ * Login Page
+ *
+ * @version 0.0.0
+ * @author Arvy Salazar
+ * @github Xaraox
+ */
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
@@ -12,58 +19,55 @@ import styles from './LoginPage.module.scss'
 
 class LoginPage extends Component {
   componentDidMount = () => {
-    if (localStorage.getItem("token"))
-    this.props.history.push('/')
+    if (localStorage.getItem('token')) this.props.history.push('/')
   }
 
   render() {
     return (
       <div className={styles.outer}>
-        <div className={styles.background}> 
-          <div className={styles.form}>
-            <div className={styles.logoContainer}>
-              <Logo  className={styles.logo} />
-              <h3>ARCLYTICS</h3>  
-            </div>
-            <div className={styles.header}> 
-              <h2> Sign in to your account  </h2>
-            </div>
-            <Formik
-              initialValues={{ email: '', password: '' }}
-              validate={loginValidation}
-              onSubmit={(values, { setSubmitting, setStatus, setErrors }) => {
-                setSubmitting(true)
-                const promise = new Promise((resolve, reject) => {
-                  login(values, resolve, reject)
-                })
-                promise.then(data => {
-                  // If response is successful 
-                  localStorage.setItem('token', data.token)
-                  this.props.history.push('/')
+        <div className={styles.form}>
+          <div className={styles.logoContainer}>
+            <Logo className={styles.logo} />
+            <h3>ARCLYTICS</h3>
+          </div>
+          <div className={styles.header}>
+            <h3> Sign in to your account  </h3>
+          </div>
+          <Formik
+            initialValues={{ email: '', password: '' }}
+            validate={loginValidation}
+            onSubmit={(values, { setSubmitting, setErrors }) => {
+              setSubmitting(true)
+              const promise = new Promise((resolve, reject) => {
+                login(values, resolve, reject)
+              })
+              promise.then((data) => {
+                // If response is successful
+                localStorage.setItem('token', data.token)
+                this.props.history.push('/')
+                setSubmitting(false)
+              })
+                .catch((err) => {
+                // If response is unsuccessful
+                  console.log(err)
+                  setErrors({
+                    email: 'Invalid email',
+                    password: 'Password is invalid',
+                  })
                   setSubmitting(false)
                 })
-                .catch(err => {
-                  //If response is unsuccessful
-                    setErrors({ 
-                      email: "Invalid email",
-                      password: "Password is invalid"
-                    })          
-                  setSubmitting(false)
-                })
-              }}
-            >
-              {({
-                values,
-                errors,
-                status,
-                touched,
-                setErrors,
-                setStatus,
-                handleSubmit,
-                setFieldValue,
-                isSubmitting
-              }) => (
-                <form onSubmit={handleSubmit} >
+            }}
+          >
+            {({
+              values,
+              errors,
+              touched,
+              handleSubmit,
+              setFieldValue,
+              isSubmitting,
+            }) => (
+              <div className={styles.formContainer}>
+                <form onSubmit={handleSubmit}>
                   <div>
                     <div className={styles.email}>
                       <TextField
@@ -74,33 +78,50 @@ class LoginPage extends Component {
                         placeholder="Email"
                         length="stretch"
                       />
-                      <h6 className={styles.errors}>{errors.email && touched.email && errors.email}</h6>
+                      <h6 className={styles.errors}>
+                        {errors.email && touched.email && errors.email}
+                      </h6>
                     </div>
 
-                    <div className = {styles.password}> 
-                    <TextField
-                      type="password"
-                      name="password"
-                      onChange={e => setFieldValue('password', e)}
-                      value={values.password}
-                      placeholder="Password"
-                      length="stretch"
-                    />
-                    <h6 className={styles.errors}>{errors.password && touched.password && errors.password}</h6>
+                    <div className={styles.password}>
+                      <TextField
+                        type="password"
+                        name="password"
+                        onChange={e => setFieldValue('password', e)}
+                        value={values.password}
+                        placeholder="Password"
+                        length="stretch"
+                      />
+                      <h6 className={styles.errors}>
+                        {errors.password && touched.password && errors.password}
+                      </h6>
                     </div>
 
                     <div>
-                      <a href="http://localhost:3000/signup">  <h6 className={styles.help}>Trouble signing in?</h6> </a>  
-                    </div>       
+                      <a href="http://localhost:3000/signup">
+                        {' '}
+                        <h6 className={styles.help}>Trouble signing in?</h6>
+                        {' '}
+                      </a>
+                    </div>
                     <div className={styles.clear}>
-                      <Button className={styles.signIn} name="SIGN IN" type="submit" length="long" isSubmitting={isSubmitting}>SIGN IN</Button> 
-                      <h6> Don't have an account?  <a className={styles.createAccount} href="http://localhost:3000/signup"> Sign up </a> </h6> 
-                    </div>          
+                      <Button className={styles.signIn} name="SIGN IN" type="submit" length="long" isSubmitting={isSubmitting}>
+                        SIGN IN
+                      </Button>
+                      <h6>
+                        {' '}
+                        Don&apos;t have an account?
+                        <a className={styles.createAccount} href="http://localhost:3000/signup">
+                            Sign up
+                        </a>
+                        {' '}
+                      </h6>
+                    </div>
                   </div>
                 </form>
-              )}
-            </Formik>
-          </div>
+              </div>
+            )}
+          </Formik>
         </div>
       </div>
     )
@@ -116,4 +137,3 @@ const mapDispatchToProps = {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoginPage)
-

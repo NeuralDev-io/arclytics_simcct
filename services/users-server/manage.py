@@ -8,7 +8,7 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
-__copyright__ = 'Copyright (C) 2019, NeuralDev'
+
 __credits__ = ['']
 __license__ = 'TBA'
 __version__ = '0.1.0'
@@ -91,7 +91,7 @@ def seed_user_db():
     from mongoengine.connection import get_db
     db = get_db('default')
 
-    path = Path(BASE_DIR) / 'data' / 'seed_user_data.json'
+    path = Path(BASE_DIR) / 'seed_user_data.json'
     if os.path.isfile(path):
         with open(path) as f:
             data = json.load(f)
@@ -108,8 +108,7 @@ def seed_user_db():
         new_user.save()
         tbl.add_row(
             (
-                str(i + 1),
-                u['email'],
+                str(i + 1), u['email'],
                 '{} {}'.format(u['first_name'], u['last_name'])
             )
         )

@@ -131,11 +131,7 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client:
             response = self.client.post(
                 '/auth/register',
-                data=json.dumps(
-                    {
-                        'email': 'test@yahoo.com'
-                    }
-                ),
+                data=json.dumps({'email': 'test@yahoo.com'}),
                 content_type='application/json',
             )
             data = json.loads(response.data.decode())
@@ -173,9 +169,7 @@ class TestAuthEndpoints(BaseTestCase):
             peter.set_password('SpideySenses')
             peter.save()
             tony = User(
-                email='tony@avengers.io',
-                first_name='Tony',
-                last_name='Stark'
+                email='tony@avengers.io', first_name='Tony', last_name='Stark'
             )
             tony.set_password('IAmIronMan')
             tony.save()
@@ -241,11 +235,7 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client:
             resp_1 = self.client.post(
                 '/auth/login',
-                data=json.dumps(
-                    {
-                        'password': 'test123'
-                    }
-                ),
+                data=json.dumps({'password': 'test123'}),
                 content_type='application/json'
             )
             data = json.loads(resp_1.data.decode())
@@ -528,9 +518,7 @@ class TestAuthEndpoints(BaseTestCase):
                 }
             )
             data = json.loads(response.data.decode())
-            self.assertEqual(
-                'This user does not exist.', data['message']
-            )
+            self.assertEqual('This user does not exist.', data['message'])
             self.assertEqual('fail', data['status'])
             self.assertEqual(response.status_code, 401)
 
@@ -562,9 +550,7 @@ class TestAuthEndpoints(BaseTestCase):
             )
             data = json.loads(response.data.decode())
             self.assertTrue(data['status'] == 'fail')
-            self.assertTrue(
-                data['message'] == 'This user does not exist.'
-            )
+            self.assertTrue(data['message'] == 'This user does not exist.')
             self.assertEqual(response.status_code, 401)
 
 

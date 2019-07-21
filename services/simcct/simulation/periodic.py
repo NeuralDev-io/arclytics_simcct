@@ -2,9 +2,9 @@
 # -----------------------------------------------------------------------------
 # arclytics_sim
 # periodic.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>', 'Arvy Salazar <@Xaraox>']
 __credits__ = ['']
@@ -27,8 +27,9 @@ import prettytable
 
 class Element(object):
     """Simple element object to store as value in the Periodic Table enum."""
+
     def __init__(
-            self, atomic_num: int, name: str, symbol: str, atomic_mass: float
+        self, atomic_num: int, name: str, symbol: str, atomic_mass: float
     ):
         self.atomic_num = atomic_num
         self.name = name
@@ -40,9 +41,7 @@ class Element(object):
 
     def __str__(self):
         return '{:3.1f}: {:14} | {}'.format(
-            self.atomic_num,
-            self.get_full_name(),
-            self.atomic_mass
+            self.atomic_num, self.get_full_name(), self.atomic_mass
         )
 
 
@@ -73,7 +72,7 @@ class PeriodicTable(enum.Enum):
     Ni = Element(28, 'Nickel', 'Ni', 58.845)
     Cu = Element(29, 'Copper', 'Cu', 63.546)
     Zn = Element(30, 'Zinc', 'Zn', 65.38)
-    Ga = Element(31, 'Gallium','Ga',69.723) 
+    Ga = Element(31, 'Gallium', 'Ga', 69.723)
     Ge = Element(32, 'Germanium', 'Ge', 72.630)
     As = Element(33, 'Arsenic', 'As', 74.922)
     Se = Element(34, 'Selenium', 'Se', 78.971)
@@ -140,7 +139,7 @@ class PeriodicTable(enum.Enum):
     Am = Element(95, 'Americium', 'Am', 243.0)
     Cm = Element(96, 'Curium', 'Cm', 247.0)
     Bk = Element(97, 'Berkelium', 'Bk', 247.0)
-    Cf = Element(98, 'Californium', 'Cf',251.0)
+    Cf = Element(98, 'Californium', 'Cf', 251.0)
     Es = Element(99, 'Einsteinium', 'Es', 252.0)
     Fm = Element(100, 'Fermium', 'Fm', 257.0)
     Md = Element(101, 'Mendelevium', 'Md', 258.0)
@@ -165,15 +164,14 @@ class PeriodicTable(enum.Enum):
 
 if __name__ == '__main__':
     # USAGE: Run Python periodic.py to see the full Periodic Table printed.
-    table = prettytable.PrettyTable(
-        ['Atom #', 'Name (Symbol)', 'Atomic Mass']
-    )
+    table = prettytable.PrettyTable(['Atom #', 'Name (Symbol)', 'Atomic Mass'])
     for elem in PeriodicTable:
-        table.add_row([
-            elem.value.atomic_num,
-            elem.value.get_full_name(),
-            elem.value.atomic_mass
-        ])
+        table.add_row(
+            [
+                elem.value.atomic_num,
+                elem.value.get_full_name(), elem.value.atomic_mass
+            ]
+        )
     table.align['Atom #'] = 'c'
     table.align['Name (Symbol)'] = 'l'
     table.align['Atomic Mass'] = 'l'

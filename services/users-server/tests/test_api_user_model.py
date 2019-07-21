@@ -33,6 +33,7 @@ from tests.test_api_base import BaseTestCase
 from users_app.models import (
     User, PasswordValidationError, USERS, Configuration, Element, Compositions
 )
+from simulation.periodic import PeriodicTable as PT
 
 _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 
@@ -111,9 +112,9 @@ class TestUserModel(BaseTestCase):
         user.last_compositions = comp
         user.cascade_save()
 
-        self.assertEqual(user.last_compositions.comp[0]['name'], 'carbon')
+        self.assertEqual(user.last_compositions.comp[0]['symbol'], PT.C.name)
         self.assertEqual(user.last_compositions.comp[0]['weight'], 0.044)
-        self.assertEqual(user.last_compositions.comp[1]['name'], 'manganese')
+        self.assertEqual(user.last_compositions.comp[1]['symbol'], PT.Mn.name)
         self.assertEqual(user.last_compositions.comp[1]['weight'], 1.73)
 
     def test_add_compositions_from_json(self):
@@ -135,14 +136,11 @@ class TestUserModel(BaseTestCase):
         user.last_compositions = new_comp_inst
         user.cascade_save()
 
-        self.assertEqual(user.last_compositions.comp[0]['name'], 'carbon')
-        self.assertEqual(user.last_compositions.comp[0]['symbol'], 'cx')
+        self.assertEqual(user.last_compositions.comp[0]['symbol'], PT.C.name)
         self.assertEqual(user.last_compositions.comp[0]['weight'], 0.044)
-        self.assertEqual(user.last_compositions.comp[1]['name'], 'manganese')
-        self.assertEqual(user.last_compositions.comp[1]['symbol'], 'mn')
+        self.assertEqual(user.last_compositions.comp[1]['symbol'], PT.Mn.name)
         self.assertEqual(user.last_compositions.comp[1]['weight'], 1.73)
-        self.assertEqual(user.last_compositions.comp[2]['name'], 'silicon')
-        self.assertEqual(user.last_compositions.comp[2]['symbol'], 'si')
+        self.assertEqual(user.last_compositions.comp[2]['symbol'], PT.Si.name)
         self.assertEqual(user.last_compositions.comp[2]['weight'], 0.22)
 
     def test_email_validation(self):

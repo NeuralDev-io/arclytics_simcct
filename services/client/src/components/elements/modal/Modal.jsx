@@ -7,13 +7,16 @@ const Modal = (props) =>{
     const {
         show = false,
         className,
-        children
+        children,
+        clicked
     } = props
     
-    const classname = `${styles.default} ${show ? styles.show: ''} --text-btn ${className || ''}`
+    const classname = `${styles.default} ${show ? styles.show: ''} ${className || ''}`
 
     return(
-        <div className={styles.Backdrop}>
+        <div>
+            {/* TODO: (arvy@neuraldev.io) Since there are tutorials later on might want to change the backdrop as another component */}
+            {show ? (<div className={styles.Backdrop} onClick={clicked}></div>) : ('')}
             <div className={classname} show={show}>
                 {children}
             </div>
@@ -22,8 +25,14 @@ const Modal = (props) =>{
 }
 
 Modal.propTypes = {
-    show: PropTypes.node.isRequired,
-    children: PropTypes.node.isRequired
+    show: PropTypes.bool,
+    className: PropTypes.node.isString,
+    children: PropTypes.node,
+    clicked: PropTypes.func
+}
+
+Modal.defaultProps = {
+    show: false,
 }
   
 export default Modal; 

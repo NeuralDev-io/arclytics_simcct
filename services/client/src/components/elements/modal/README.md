@@ -6,13 +6,13 @@
 
 ```react
 import React, { Component } from 'react'
-import Select from '~/components/elements/select'
+import Modal from '~/components/elements/modal'
 
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state{
-      show: world;
+    this.state = {
+      show: false
     }
   }
 
@@ -21,10 +21,12 @@ class App extends Component {
   }
 
   render() {
-    <Modal show={this.state.show} clicked={this.handleChange} >
-      <button onClick={this.handleChange}>Close</button>
-    </Modal>
+    <div>
+      <Modal show={this.state.show} clicked={this.handleChange} >
+          <button onClick={this.handleChange}>Close</button>
+      </Modal>
       <button onClick={this.handleChange}> Open </button>
+    </div>
   }
 }
 ```

@@ -26,7 +26,7 @@ const Modal = (props) =>{
 
 Modal.propTypes = {
     show: PropTypes.bool,
-    className: PropTypes.node.isString,
+    className: PropTypes.string,
     children: PropTypes.node,
     clicked: PropTypes.func
 }

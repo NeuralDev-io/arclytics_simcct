@@ -28,6 +28,7 @@ import math
 import numpy as np
 # from logger.arc_logger import AppLogger
 from simulation.utilities import linear_fit
+from simulation.periodic import PeriodicTable as PT
 
 # logger = AppLogger(__name__)
 
@@ -46,10 +47,10 @@ def ae3_single_carbon(wt_comp: np.ndarray, wt_c: float) -> float:
 
     # Reset wt% carbon in array to zero (this will be updated below within
     # the main loop to match C)
-    wt_comp['weight'][wt_comp['name'] == 'carbon'] = 0.0
+    wt_comp['weight'][wt_comp['symbol'] == PT.C.name] = 0.0
     # Reset wt% Fe (Iron) in array to zero (this will be updated below within
     # the main loop)
-    wt_comp['weight'][wt_comp['name'] == 'iron'] = 0.0
+    wt_comp['weight'][wt_comp['symbol'] == PT.Fe.name] = 0.0
 
     # This should actually update ai_vect and the return value to parent is ae3
     ae3, t0 = ae3_set_carbon(t0, ai_vect, wt_comp, wt_c)
@@ -70,8 +71,6 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray,
 
     """
 
-    temp = np.float64(0.0)  # this ensures its type is float64
-
     # add the wt%s to find the total (without C and Fe which update with each
     # increment in the loop)
     # this is only for everything except carbon and iron but we already set
@@ -80,9 +79,9 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray,
 
     # add the current Carbon wt% to the total for this iteration
     wt_pc = wt_pc + c
-    wt_mat['weight'][wt_mat['name'] == 'iron'
-                     ] = 100 - wt_pc  # wt% Fe by difference
-    wt_mat['weight'][wt_mat['name'] == 'carbon'] = c
+    # wt% Fe by difference
+    wt_mat['weight'][wt_mat['symbol'] == PT.Fe.name] = 100 - wt_pc
+    wt_mat['weight'][wt_mat['symbol'] == PT.C.name] = c
 
     # Now convert to mole fraction for updated composition with this iteration
     # TODO:
@@ -114,9 +113,8 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray,
 
     # TODO: This can be declared dynamically
     a_vect = np.zeros(20, dtype=np.float64)
-    z = np.float64(
-        1.0
-    )  # Initialise before next while loop, just to get it going
+    # Initialise before next while loop, just to get it going
+    z = np.float64(1.0)
     # Counter to determine and exit if non convergence occurs
     ctr = 0
 
@@ -195,9 +193,9 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray,
                 # Interaction coefficients for all alloying elements (each in
                 # turn with M) with carbon for Gamma (austenite) phase .p.150
                 # Li thesis (2nd column)
-                p = np.float64(
-                    b_mat[m, 4] + b_mat[m, 5] / temp
-                )  # TODO: seems unused
+                # p = np.float64(
+                #     b_mat[m, 4] + b_mat[m, 5] / temp
+                # )  # TODO: seems unused
                 e_aust1i = np.float64(b_mat[m, 4] + b_mat[m, 5] / temp)
                 e_aust11 = np.float64(8910 / temp)  # Bhadeshia code
 
@@ -289,24 +287,77 @@ def convert_wt_2_mol(wt: np.ndarray) -> (np.ndarray, np.array):
     d_vect[-1] = 100.0 - d_vect[-1]  # find wt% Fe by difference
     d_vect[-1] = d_vect[-1] / 55.84  # Fe, calculate moles Fe if 100 g of alloy
 
-    d_vect[0] = wt['weight'][wt['symbol'] == 'cx'].item() / 12.0115  # Carbon
-    d_vect[1] = wt['weight'][wt['symbol'] == 'mn'][0] / 54.94  # Manganese
-    d_vect[2] = wt['weight'][wt['symbol'] == 'si'][0] / 28.09  # Silicon
-    d_vect[3] = wt['weight'][wt['symbol'] == 'ni'][0] / 58.71  # Nickel
-    d_vect[4] = wt['weight'][wt['symbol'] == 'cr'][0] / 52.0  # Chromium
-    d_vect[5] = wt['weight'][wt['symbol'] == 'mo'][0] / 95.94  # Molybdenum
-    d_vect[6] = wt['weight'][wt['symbol'] == 'co'][0] / 58.94  # Cobalt
-    d_vect[7] = wt['weight'][wt['symbol'] == 'al'][0] / 26.9815  # Aluminium
-    d_vect[8] = wt['weight'][wt['symbol'] == 'cu'][0] / 63.546  # Copper
-    d_vect[9] = wt['weight'][wt['symbol'] == 'as'][0] / 74.9216  # Arsenic
-    d_vect[10] = wt['weight'][wt['symbol'] == 'ti'][0] / 47.867  # Titanium
-    d_vect[11] = wt['weight'][wt['symbol'] == 'vx'][0] / 50.9415  # Vanadium
-    d_vect[12] = wt['weight'][wt['symbol'] == 'wx'][0] / 183.85  # Tungsten
-    d_vect[13] = wt['weight'][wt['symbol'] == 'sx'][0] / 32.065  # Sulphur
-    d_vect[14] = wt['weight'][wt['symbol'] == 'nx'][0] / 14.0067  # Nitrogen
-    d_vect[15] = wt['weight'][wt['symbol'] == 'nb'][0] / 92.9064  # Niobium
-    d_vect[16] = wt['weight'][wt['symbol'] == 'bx'][0] / 10.811  # Boron
-    d_vect[17] = wt['weight'][wt['symbol'] == 'px'][0] / 30.9738  # Phosphorous
+    d_vect[0] = (
+        wt['weight'][wt['symbol'] == PT.C.name].item() / PT.C.value.atomic_mass
+    )
+    # Manganese
+    d_vect[1] = (
+        wt['weight'][wt['symbol'] == PT.Mn.name][0] / PT.Mn.value.atomic_mass
+    )
+    # Silicon
+    d_vect[2] = (
+        wt['weight'][wt['symbol'] == PT.Si.name][0] / PT.Si.value.atomic_mass
+    )
+    # Nickel
+    d_vect[3] = (
+        wt['weight'][wt['symbol'] == PT.Ni.name][0] / PT.Ni.value.atomic_mass
+    )
+    # Chromium
+    d_vect[4] = (
+        wt['weight'][wt['symbol'] == PT.Cr.name][0] / PT.Cr.value.atomic_mass
+    )
+    # Molybdenum
+    d_vect[5] = (
+        wt['weight'][wt['symbol'] == PT.Mo.name][0] / PT.Mo.value.atomic_mass
+    )
+    # Cobalt
+    d_vect[6] = (
+        wt['weight'][wt['symbol'] == PT.Co.name][0] / PT.Co.value.atomic_mass
+    )
+    # Aluminium
+    d_vect[7] = (
+        wt['weight'][wt['symbol'] == PT.Al.name][0] / PT.Al.value.atomic_mass
+    )
+    # Copper
+    d_vect[8] = (
+        wt['weight'][wt['symbol'] == PT.Cu.name][0] / PT.Cu.value.atomic_mass
+    )
+    # Arsenic
+    d_vect[9] = (
+        wt['weight'][wt['symbol'] == PT.As.name][0] / PT.As.value.atomic_mass
+    )
+    # Titanium
+    d_vect[10] = (
+        wt['weight'][wt['symbol'] == PT.Ti.name][0] / PT.Ti.value.atomic_mass
+    )
+    # Vanadium
+    d_vect[11] = (
+        wt['weight'][wt['symbol'] == PT.V.name][0] / PT.V.value.atomic_mass
+    )
+    # Tungsten
+    d_vect[12] = (
+        wt['weight'][wt['symbol'] == PT.W.name][0] / PT.W.value.atomic_mass
+    )
+    # Sulphur
+    d_vect[13] = (
+        wt['weight'][wt['symbol'] == PT.S.name][0] / PT.S.value.atomic_mass
+    )
+    # Nitrogen
+    d_vect[14] = (
+        wt['weight'][wt['symbol'] == PT.N.name][0] / PT.N.value.atomic_mass
+    )
+    # Niobium
+    d_vect[15] = (
+        wt['weight'][wt['symbol'] == PT.Nb.name][0] / PT.Nb.value.atomic_mass
+    )
+    # Boron
+    d_vect[16] = (
+        wt['weight'][wt['symbol'] == PT.B.name][0] / PT.B.value.atomic_mass
+    )
+    # Phosphorous
+    d_vect[17] = (
+        wt['weight'][wt['symbol'] == PT.P.name][0] / PT.P.value.atomic_mass
+    )
 
     b1 = np.sum(d_vect).astype(np.float64).item()
 
@@ -781,17 +832,16 @@ def ae3_multi_carbon(wt: np.ndarray,
     # Only passing in the original wt% alloys
     # (note: C and Fe will be overwritten below for each iteration of the main
     # loop)
-    ae3 = np.float64(0)
     t0 = np.float64(0)  # Ae3 value without alloying elements (just Carbon)
     ai_vect = np.zeros(20, dtype=np.float64)
     c = np.float64(0)  # initiate carbon content as 0.00 %
 
     # reset wt% carbon in array to zero (this will be iterated below within
     # the main loop)
-    wt['weight'][wt['name'] == 'carbon'] = 0.0
+    wt['weight'][wt['symbol'] == PT.C.name] = 0.0
     # reset wt% Fe (Iron) in array to zero (this will be updated below within
     # the main loop)
-    wt['weight'][wt['name'] == 'iron'] = 0.0
+    wt['weight'][wt['symbol'] == PT.Fe.name] = 0.0
 
     # ========= # MAIN LOOP - iterates Carbon from 0.00 to 0.96 wt% # ======== #
     for m in range(0, 97):

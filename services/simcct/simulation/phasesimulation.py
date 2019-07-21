@@ -27,12 +27,10 @@ import enum
 
 import numpy as np
 
-# from logger.arc_logger import AppLogger
 from simulation.utilities import Method, sort_ccr
 from simulation.simconfiguration import SimConfiguration
 from simulation.plots import Plots
-
-# logger = AppLogger(__name__)
+from simulation.periodic import PeriodicTable as PT
 
 
 class Phase(enum.Enum):
@@ -48,9 +46,9 @@ class PhaseSimulation(object):
     def __init__(self, sim_configs: SimConfiguration = None, debug=False):
         if sim_configs is not None:
 
+            # FIXME(andrew@neuraldev.io): Do this more nicely
             if not sim_configs.ae_check:
-                # logger.error("No Ae1 and Ae3 value has been provided.")
-                print("No Ae1 and Ae3 value has been provided.")
+                raise Exception('No Ae1 and Ae3 value has been provided.')
 
             self.configs = sim_configs
             # TODO: Which one of the alloy types for PWD
@@ -372,14 +370,6 @@ class PhaseSimulation(object):
                 # this to the previous total for the relevant phases when the
                 # total is 1.0 nucleation has occurred.
 
-                # NOTE: The original code never actually runs into this
-                #  condition. Inserted code for temperature dependant
-                #  equilibrium phase fraction (Xfe) IF
-                #  Form1CheckXFEtempDepend is True CALL EquilibriumXFE(XFE,
-                #  TempCurr, Ae3, Ae1) IF XFE < 0 then SET XFE to 0.01 CALL
-                #  VolPhantomFrac2(Integral2, Method, XStartPercent,
-                #  XFinishPercent, XFE, XBr) FI
-
                 # =============== # Look for FERRITE START # =============== #
                 if not stop_f:
                     torr_f = self.__torr_calc2(
@@ -533,6 +523,10 @@ class PhaseSimulation(object):
 
         return self.plots_data.get_cct_plot_data()
 
+    # TODO(andrew@neuraldev.io): Plot the user cooling curve on the graphs.
+    def user_cooling_curve(self):
+        pass
+
     @staticmethod
     def __sigmoid2(x) -> np.float64:
         return np.float64(
@@ -551,12 +545,12 @@ class PhaseSimulation(object):
 
     def __imoid_prime2(self, x: float) -> np.float64:
         """This is the specific Kirkaldy implementation for I(X) used in the
-        "slugish" Kinetic Bainite reaction rate. """
-        c = self.comp['weight'][self.comp['name'] == 'carbon'][0]
-        ni = self.comp['weight'][self.comp['name'] == 'nickel'][0]
-        cr = self.comp['weight'][self.comp['name'] == 'chromium'][0]
-        mo = self.comp['weight'][self.comp['name'] == 'molybdenum'][0]
-        mn = self.comp['weight'][self.comp['name'] == 'manganese'][0]
+        "sluggish" Kinetic Bainite reaction rate. """
+        c = self.comp['weight'][self.comp['symbol'] == PT.C.name][0]
+        ni = self.comp['weight'][self.comp['symbol'] == PT.Ni.name][0]
+        cr = self.comp['weight'][self.comp['symbol'] == PT.Cr.name][0]
+        mo = self.comp['weight'][self.comp['symbol'] == PT.Mo.name][0]
+        mn = self.comp['weight'][self.comp['symbol'] == PT.Mn.name][0]
 
         numerator = np.float64(
             math.exp(
@@ -616,8 +610,6 @@ class PhaseSimulation(object):
         Returns:
 
         """
-        # FIXME Check if err and nn are needed to be returned somewhere in
-        #  the code as they are passed by reference.
         n = 0
         # Adjustable parameters
         mmax = 256
@@ -870,7 +862,7 @@ class PhaseSimulation(object):
         R_GAS = 1.985
 
         wt = self.comp
-        c = wt['weight'][wt['name'] == 'carbon'][0]
+        c = wt['weight'][wt['name'] == PT.C.name][0]
         mn = wt['weight'][wt['name'] == 'manganese'][0]
         si = wt['weight'][wt['name'] == 'silicon'][0]
         mo = wt['weight'][wt['name'] == 'molybdenum'][0]

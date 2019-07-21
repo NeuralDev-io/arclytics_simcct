@@ -202,17 +202,14 @@ class TestSessionService(BaseTestCase):
 
         # Missing method and alloy which are both required.
         configs = {
+            'is_valid': True,
             'grain_size': 8.0,
-            'grain_size_type': 'ASTM',
             'nucleation_start': 1.0,
             'nucleation_finish': 99.9,
-            'auto_calculate_xfe': True,
-            'xfe_value': 0.0,
-            'cf_value': 0.012,
-            'ceut_value': 0.762,
-            'auto_calculate_ms_bs': True,
-            'transformation_method': 'Li98',
+            'auto_calculate_ms': True,
+            'auto_calculate_bs': True,
             'ms_temp': 0.0,
+            'ms_rate_param': 0.0168,
             'bs_temp': 0.0,
             'auto_calculate_ae': True,
             'ae1_temp': 0.0,

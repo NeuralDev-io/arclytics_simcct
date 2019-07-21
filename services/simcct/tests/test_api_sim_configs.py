@@ -79,17 +79,22 @@ class TestSimConfigurations(BaseTestCase):
 
             client.put(
                 '/configs/update/ms-bs',
-                data=json.dumps({
-                    'ms_temp': 464.196,
-                    'ms_rate_param': 0.0168,
-                    'bs_temp': 563.238
-                }),
+                data=json.dumps(
+                    {
+                        'ms_temp': 464.196,
+                        'ms_rate_param': 0.0168,
+                        'bs_temp': 563.238
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             client.put(
                 '/configs/update/ae',
-                data=json.dumps({'ae1_temp': 700.902, 'ae3_temp': 845.838}),
+                data=json.dumps({
+                    'ae1_temp': 700.902,
+                    'ae3_temp': 845.838
+                }),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -208,15 +213,17 @@ class TestSimConfigurations(BaseTestCase):
             ae3_temp = 847.103836
 
             self.assertAlmostEqual(data['data']['ms_temp'], ms_temp, 4)
-            self.assertAlmostEqual(data['data']['ms_rate_param'],
-                                   ms_rate_param, 4)
+            self.assertAlmostEqual(
+                data['data']['ms_rate_param'], ms_rate_param, 4
+            )
             self.assertAlmostEqual(data['data']['bs_temp'], bs_temp, 2)
             self.assertAlmostEqual(data['data']['ae1_temp'], ae1_temp, 4)
             self.assertAlmostEqual(data['data']['ae3_temp'], ae3_temp, 4)
             sess_store = session.get(f'{token}:configurations')
             self.assertAlmostEqual(sess_store['ms_temp'], ms_temp, 4)
-            self.assertAlmostEqual(sess_store['ms_rate_param'],
-                                   ms_rate_param, 4)
+            self.assertAlmostEqual(
+                sess_store['ms_rate_param'], ms_rate_param, 4
+            )
             self.assertAlmostEqual(sess_store['bs_temp'], bs_temp, 2)
             self.assertAlmostEqual(sess_store['ae1_temp'], ae1_temp, 4)
             self.assertAlmostEqual(sess_store['ae3_temp'], ae3_temp, 4)
@@ -472,7 +479,6 @@ class TestSimConfigurations(BaseTestCase):
     #         )
     #
     #         sess_store = session.get(f'{token}:configurations')
-    #         self.assertFalse(sess_store['auto_calculate_xfe'])
     #         self.assertTrue(sess_store['auto_calculate_ae'])
     #         self.assertFalse(sess_store['auto_calculate_ms_bs'])
     #

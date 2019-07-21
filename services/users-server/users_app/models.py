@@ -124,19 +124,16 @@ class AdminProfile(EmbeddedDocument):
 
 
 class Configuration(EmbeddedDocument):
+    is_valid = BooleanField()
     method = StringField(default='Li98')
-    alloy = StringField(default='parent')
+    alloy_type = StringField(default='parent')
     grain_size = FloatField(default=0.0)
-    grain_size_type = StringField(default='ASTM')
     nucleation_start = FloatField(default=1.0)
     nucleation_finish = FloatField(default=99.9)
-    auto_calculate_xfe = BooleanField(default=False)
-    xfe_value = FloatField()
-    cf_value = FloatField()
-    ceut_value = FloatField()
-    auto_calculate_ms_bs = BooleanField(default=False)
-    transformation_method = StringField(default='Li98')
+    auto_calculate_ms = BooleanField(default=False)
     ms_temp = FloatField()
+    ms_rate_param = FloatField()
+    auto_calculate_bs = BooleanField(default=False)
     bs_temp = FloatField()
     auto_calculate_ae = BooleanField(default=False)
     ae1_temp = FloatField()
@@ -149,20 +146,17 @@ class Configuration(EmbeddedDocument):
         Simple EmbeddedDocument.Configuration helper method to get a Python dict
         """
         return {
+            'is_valid': self.is_valid,
             'method': self.method,
-            'alloy': self.alloy,
-            'grain_size_type': self.grain_size_type,
+            'alloy_type': self.alloy_type,
             'grain_size': self.grain_size,
             'nucleation_start': self.nucleation_start,
             'nucleation_finish': self.nucleation_finish,
-            'auto_calculate_xfe': self.auto_calculate_xfe,
-            'auto_calculate_ms_bs': self.auto_calculate_ms_bs,
-            'transformation_method': self.transformation_method,
+            'auto_calculate_ms': self.auto_calculate_ms,
+            'auto_calculate_bs': self.auto_calculate_bs,
             'auto_calculate_ae': self.auto_calculate_ae,
-            'xfe_value': self.xfe_value,
-            'cf_value': self.cf_value,
-            'ceut_value': self.ceut_value,
             'ms_temp': self.ms_temp,
+            'ms_rate_param': self.ms_rate_param,
             'bs_temp': self.bs_temp,
             'ae1_temp': self.ae1_temp,
             'ae3_temp': self.ae3_temp,

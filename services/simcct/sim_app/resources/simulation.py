@@ -44,6 +44,10 @@ def simulate(token):
         response['message'] = 'No previous session alloy was set.'
         return jsonify(response), 404
 
+    if session_configs['ae1_temp'] < 0.0 or session_configs['ae3_temp'] < 0.0:
+        response['message'] = 'Ae1 and Ae3 value cannot be less than 0.0.'
+        return jsonify(response), 400
+
     # No we can do the calculations for CCT and TTT
     # FIXME(andrew@neuraldev.io): Note the auto calc is still being checked
     #  inside the SimConfiguration instance and recalculated. Find a better

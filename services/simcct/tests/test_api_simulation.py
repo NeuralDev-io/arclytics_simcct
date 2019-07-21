@@ -83,9 +83,6 @@ class TestSimulationService(BaseTestCase):
             test_json = json.load(f)
 
         configs = ConfigurationsSchema().load(test_json['configurations'])
-        configs['auto_calculate_ms_bs'] = True
-        configs['auto_calculate_ae'] = True
-        configs['auto_calculate_xfe'] = True
 
         alloy = AlloySchema().load(
             {
@@ -165,48 +162,55 @@ class TestSimulationService(BaseTestCase):
                 data['message'], 'No previous session alloy was set.'
             )
 
-    # def test_simulate_with_login(self):
-    #     with app.test_client() as client:
-    #         self.login_client(client)
-    #
-    #         res = client.get(
-    #             '/simulate',
-    #             headers={'Authorization': f'Bearer {self.token}'},
-    #             content_type='application/json'
-    #         )
-    #         data = json.loads(res.data.decode())
-    #         self.assert200(res)
-    #         self.assertEqual(data['status'], 'success')
-    #         self.assertFalse(data.get('message', None))
-    #         self.assertTrue(data['data'])
-    #         self.assertEqual(
-    #             len(data['data']['CCT']['ferrite_nucleation']['time']),
-    #             len(data['data']['CCT']['ferrite_nucleation']['temp'])
-    #         )
-    #         self.assertEqual(
-    #             len(data['data']['CCT']['ferrite_completion']['time']),
-    #             len(data['data']['CCT']['ferrite_completion']['temp'])
-    #         )
-    #         self.assertEqual(
-    #             len(data['data']['CCT']['pearlite_nucleation']['time']),
-    #             len(data['data']['CCT']['pearlite_nucleation']['temp'])
-    #         )
-    #         self.assertEqual(
-    #             len(data['data']['CCT']['pearlite_completion']['time']),
-    #             len(data['data']['CCT']['pearlite_completion']['temp'])
-    #         )
-    #         self.assertEqual(
-    #             len(data['data']['CCT']['bainite_nucleation']['time']),
-    #             len(data['data']['CCT']['bainite_nucleation']['temp'])
-    #         )
-    #         self.assertEqual(
-    #             len(data['data']['CCT']['bainite_completion']['time']),
-    #             len(data['data']['CCT']['bainite_completion']['temp'])
-    #         )
-    #         self.assertEqual(
-    #             len(data['data']['CCT']['martensite']['time']),
-    #             len(data['data']['CCT']['martensite']['temp'])
-    #         )
+    def test_simulate_with_login(self):
+        with app.test_client() as client:
+            self.login_client(client)
+
+            res = client.get(
+                '/configs/auto/ae',
+                headers={'Authorization': f'Bearer {self.token}'},
+                content_type='application/json'
+            )
+            self.assert200(res)
+
+            res = client.get(
+                '/simulate',
+                headers={'Authorization': f'Bearer {self.token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assert200(res)
+            self.assertEqual(data['status'], 'success')
+            self.assertFalse(data.get('message', None))
+            self.assertTrue(data['data'])
+            self.assertEqual(
+                len(data['data']['CCT']['ferrite_nucleation']['time']),
+                len(data['data']['CCT']['ferrite_nucleation']['temp'])
+            )
+            self.assertEqual(
+                len(data['data']['CCT']['ferrite_completion']['time']),
+                len(data['data']['CCT']['ferrite_completion']['temp'])
+            )
+            self.assertEqual(
+                len(data['data']['CCT']['pearlite_nucleation']['time']),
+                len(data['data']['CCT']['pearlite_nucleation']['temp'])
+            )
+            self.assertEqual(
+                len(data['data']['CCT']['pearlite_completion']['time']),
+                len(data['data']['CCT']['pearlite_completion']['temp'])
+            )
+            self.assertEqual(
+                len(data['data']['CCT']['bainite_nucleation']['time']),
+                len(data['data']['CCT']['bainite_nucleation']['temp'])
+            )
+            self.assertEqual(
+                len(data['data']['CCT']['bainite_completion']['time']),
+                len(data['data']['CCT']['bainite_completion']['temp'])
+            )
+            self.assertEqual(
+                len(data['data']['CCT']['martensite']['time']),
+                len(data['data']['CCT']['martensite']['temp'])
+            )
 
     # def test_simulate_plotting(self):
     #     with app.test_client() as client:

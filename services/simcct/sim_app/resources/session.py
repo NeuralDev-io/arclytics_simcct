@@ -53,8 +53,6 @@ def session_login(token):
     # TODO(andrew@neuraldev.io): Need to do some validation for some fields
     #  - Need to validate the auto_calculate bools
     #  - Need to ensure the method is provided.
-    #  - Need to ensure the transformation_method is also provided if the
-    #    auto_calculate_ms_bs is true
     #  - Need to ensure there is a value for ae1 and ae3 if
     #    auto_calculate_ae is not true
 
@@ -91,6 +89,8 @@ def session_login(token):
     #  - xfe_method2() --> carbon and iron
     #  - calc_ae1_ae3() --> carbon, nickel, silicon, tungsten, manganese,
     #                       manganese, chromium, arsenic, molybdenum
+    #  - _torr_calc2() --> carbon, manganese, silicon, molybdenum, nickel,
+    #                      chromium
     comp_obj = None
     if user_comp:
         user_alloy = user_comp.get('alloy')

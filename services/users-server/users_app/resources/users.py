@@ -101,11 +101,12 @@ def confirm_email(token):
         return jsonify(response), 400
 
     user = User.objects.get(email=email)
+
     user.verified = True
 
     response['status'] = 'success'
     response.pop('message')
-    return redirect('http://localhost:3000/signin'), 202
+    return redirect('http://localhost:3000/signin', code=302)
 
 
 # TODO(andrew@neuraldev.io -- Sprint 6)

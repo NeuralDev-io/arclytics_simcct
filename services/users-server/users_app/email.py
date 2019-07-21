@@ -45,8 +45,8 @@ def send_email(to, subject, template, **kwargs):
         A Python Threading Thread so we can collect it for return messages.
     """
     msg = Message(
-        subject='{} {}'.format(
-            current_app.config['MAIL_SUBJECT_PREFIX'], subject
+        subject=(
+            current_app.config['MAIL_SUBJECT_PREFIX'] + ' ' + subject
         ),
         recipients=[to],
         html=template

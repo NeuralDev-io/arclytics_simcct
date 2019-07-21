@@ -22,6 +22,7 @@ login, and logout.
 
 import os
 import requests
+import json
 from datetime import datetime
 from typing import Tuple, Optional
 from threading import Thread
@@ -47,6 +48,16 @@ class SessionValidationError(Exception):
 
     def __init__(self, msg: str):
         super(SessionValidationError, self).__init__(msg)
+
+
+class SimCCTBadServerLogout(Exception):
+    """
+    A custom exception to be raised by a synchronous call to logout on the
+    SimCCT server if the response is not what we are expecting.
+    """
+
+    def __init__(self, msg:str):
+        super(SimCCTBadServerLogout, self).__init__(msg)
 
 
 @auth_blueprint.route(rule='/auth/register', methods=['POST'])
@@ -241,7 +252,25 @@ def login() -> Tuple[dict, int]:
 @authenticate
 def logout(resp) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
+
     response = {'status': 'success', 'message': 'Successfully logged out.'}
+
+    simcct_host = os.environ.get('SIMCCT_HOST', None)
+
+    simcct_resp = requests.get(
+        url=f'http://{simcct_host}/session/logout',
+        headers={
+            'Authorization': 'Bearer {token}'.format(token=resp),
+            'Content-type': 'application/json'
+        }
+    )
+
+    if simcct_resp.json().get('status', 'fail') == 'fail':
+        user = User.objects.get(id=resp)
+        raise SimCCTBadServerLogout(
+            f'Unable to logout the user_id: {user.id} from the SimCCT server'
+        )
+
 
     # TODO(andrew@neuraldev.io): Delete the session
 

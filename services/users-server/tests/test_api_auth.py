@@ -26,6 +26,7 @@ from flask import current_app
 
 from users_app.models import User
 from tests.test_api_base import BaseTestCase
+from users_app.resources.auth import SimCCTBadServerLogout
 
 
 class TestAuthEndpoints(BaseTestCase):
@@ -414,34 +415,19 @@ class TestAuthEndpoints(BaseTestCase):
                     'Authorization': 'Bearer {token}'.format(token=token)
                 }
             )
-            data = json.loads(response.data.decode())
-            self.assertEqual('fail', data['status'])
-            self.assertEqual(
-                'Signature expired. Please login again.', data['message']
-            )
-            self.assertEqual(response.status_code, 401)
+            self.assertRaises(SimCCTBadServerLogout)
 
     def test_invalid_logout(self):
         with self.client:
             response = self.client.get(
                 '/auth/logout', headers={'Authorization': 'Bearer invalid'}
             )
-            data = json.loads(response.data.decode())
-            self.assertTrue(data['status'] == 'fail')
-            self.assertEqual(
-                'Invalid token. Please log in again.', data['message']
-            )
-            self.assertEqual(response.status_code, 401)
+            self.assertRaises(SimCCTBadServerLogout)
 
     def test_invalid_auth_header(self):
         with self.client:
             response = self.client.get('/auth/logout', headers={})
-            data = json.loads(response.data.decode())
-            self.assertTrue(data['status'] == 'fail')
-            self.assertEqual(
-                'Provide a valid JWT auth token.', data['message']
-            )
-            self.assertEqual(response.status_code, 400)
+            self.assertRaises(SimCCTBadServerLogout)
 
     def test_user_status(self):
 
@@ -552,7 +538,6 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertTrue(data['status'] == 'fail')
             self.assertTrue(data['message'] == 'This user does not exist.')
             self.assertEqual(response.status_code, 401)
-
 
 if __name__ == '__main__':
     unittest.main()

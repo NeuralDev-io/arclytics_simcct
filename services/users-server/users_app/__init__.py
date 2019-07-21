@@ -35,6 +35,7 @@ from mongoengine.connection import (
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_marshmallow import Marshmallow
+from flask_mail import Mail
 
 from users_app.mongodb import MongoSingleton
 from configs.settings import DEFAULT_LOGGER
@@ -61,6 +62,7 @@ _mongo_client = None
 cors = CORS()
 bcrypt = Bcrypt()
 ma = Marshmallow()
+mail = Mail()
 
 
 def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
@@ -151,6 +153,7 @@ def create_app(script_info=None) -> Flask:
     cors.init_app(app)
     bcrypt.init_app(app)
     ma.init_app(app)
+    mail.init_app(app)
 
     # Register blueprints
     from users_app.resources.users import users_blueprint

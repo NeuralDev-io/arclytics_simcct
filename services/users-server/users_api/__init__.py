@@ -29,8 +29,9 @@ from bson import ObjectId
 
 from flask import Flask
 from mongoengine import connect
-from mongoengine.connection import (disconnect_all, get_connection, get_db,
-                                    MongoEngineConnectionError)
+from mongoengine.connection import (
+    disconnect_all, get_connection, get_db, MongoEngineConnectionError
+)
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_marshmallow import Marshmallow

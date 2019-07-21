@@ -22,17 +22,17 @@ users-server() {
     echo "# ======================================================================== #"
 }
 
-# Run only the simcct-server tests
-simcct-server() {
+# Run only the simcct server tests
+simcct() {
     echo ""
     echo "# ==================== # RUNNING SIMCCT-SERVER TESTS # ==================== #"
     echo "# Beginning ${test_type_title} for SimCCT-Server"
     echo ""
     docker-compose exec users-server python manage.py flush
     if [[ ${tty} == 1 ]]; then
-        docker-compose exec -T simcct-server python manage.py "${test_type}"
+        docker-compose exec -T simcct python manage.py "${test_type}"
     else
-        docker-compose exec simcct-server python manage.py "${test_type}"
+        docker-compose exec simcct python manage.py "${test_type}"
     fi
     echo ""
     echo "# Finishing ${test_type_title} for SimCCT-Server"
@@ -42,7 +42,7 @@ simcct-server() {
 # Run server-side tests
 server() {
   users-server
-  simcct-server
+  simcct
 }
 
 client() {
@@ -52,7 +52,7 @@ client() {
 # run all tests
 all() {
   users-server
-  simcct-server
+  simcct
   # client
   # e2e
 }
@@ -73,7 +73,7 @@ Commands:
   server           Run the server-side unit tests.
   client           Run the client-side unit tests.
   users-server     Run only the users-server tests.
-  simcct-server    Run only the simcct-serve tests.
+  simcct           Run only the simcct tests.
    """
 }
 
@@ -95,27 +95,27 @@ run() {
         else
             users-server
         fi
-    elif [[ "${type}" == "simcct-server" ]]; then
+    elif [[ "${type}" == "simcct" ]]; then
         if [[ ${build} == 1 ]]; then
-            docker-compose up -d --build users-server simcct-server mongodb redis
+            docker-compose up -d --build users-server simcct mongodb redis
             simcct-server
             docker-compose down
         else
-            simcct-server
+            simcct
         fi
     elif [[ "${type}" == "client" ]]; then
         if [[ ${build} == 1 ]]; then
-            docker-compose up -d --build users-server simcct-server mongodb redis client
+            docker-compose up -d --build users-server simcct mongodb redis client
             client
             docker-compose down
         fi
     elif [[ "${type}" == "e2e" ]]; then
         if [[ ${build} == 1 ]]; then
-            docker-compose up -d --build users-server simcct-server mongodb redis client
+            docker-compose up -d --build users-server simcct mongodb redis client
         fi
     elif [[ "${type}" == "all" ]]; then
         if [[ ${build} == 1 ]]; then
-            docker-compose up -d --build users-server simcct-server mongodb redis client
+            docker-compose up -d --build users-server simcct mongodb redis client
             all
             docker-compose down
         else

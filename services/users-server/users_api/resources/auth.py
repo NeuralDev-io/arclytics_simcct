@@ -45,6 +45,7 @@ class SessionValidationError(Exception):
     A custom exception to be raised by a threaded async call to register if
     the response is not what we are expecting.
     """
+
     def __init__(self, msg: str):
         super(SessionValidationError, self).__init__(msg)
 
@@ -84,9 +85,7 @@ def register_user() -> Tuple[dict, int]:
     # Create a Mongo User object if one doesn't exists
     if not User.objects(email=email):
         new_user = User(
-            email=email,
-            first_name=first_name,
-            last_name=last_name
+            email=email, first_name=first_name, last_name=last_name
         )
         # ensure we set an encrypted password.
         new_user.set_password(raw_password=password)
@@ -125,36 +124,45 @@ def async_register_session(user: User = None,
         auth_token: a stringified type of the User's JWT token.
 
     Returns:
-        The response from the simcct-server.
+        The response from the simcct server.
     """
 
-    # We now need to send a request to the simcct-server to initiate
-    # a session as a server-side store to save the last compositions
-    # TODO(andrew@neuraldev.io): need to also set last configurations.
+    # We now need to send a request to the simcct server to initiate
+    # a session as a server-side store to save the last compositions/configs
     simcct_host = os.environ.get('SIMCCT_HOST', None)
     # Using the `json` param tells requests to serialize the dict to
     # JSON and write the correct MIME type ('application/json') in
     # header.
 
-    last_configs = {}
+    last_configs = None
+    last_compositions = None
     user_id = ''
 
     if isinstance(user, User):
         user_id = user.id
 
-        # We get the configurations if None, otherwise simcct-server is
+        # We get the configurations if None, otherwise simcct server is
         # expecting an empty dict.
 
         if user.last_configuration is not None:
             last_configs = user.last_configuration.to_dict()
 
+        if user.last_compositions is not None:
+            last_compositions['alloy'] = user.last_compositions
+            last_compositions['alloy_type'] = user.last_configuration['alloy']
+
     resp = requests.post(
         url=f'http://{simcct_host}/session',
         json={
             '_id': str(user_id),
-            'token': auth_token,
-            'last_configurations': last_configs
-        })
+            'last_configurations': last_configs,
+            'last_compositions': last_compositions
+        },
+        headers={
+            'Authorization': f'Bearer {auth_token}',
+            'Content-type': 'application/json'
+        }
+    )
     # Because this method is in an async state, we want to know if our request
     # to the other side has failed by raising an exception.
     if resp.json().get('status') == 'fail':
@@ -210,10 +218,12 @@ def login() -> Tuple[dict, int]:
             user.last_login = datetime.utcnow()
             user.save()
 
-            # We will register the session for the user to the simcct-server
+            # We will register the session for the user to the simcct server
             # in the background so as not to slow the login process down.
-            thr = Thread(target=async_register_session,
-                         args=[user, str(auth_token)])
+            thr = Thread(
+                target=async_register_session, args=[user,
+                                                     str(auth_token)]
+            )
             thr.start()
             # Leave this here -- create a queue for responses
             # thr.join()
@@ -242,8 +252,5 @@ def logout(resp) -> Tuple[dict, int]:
 def get_user_status(resp) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     user = User.objects.get(id=resp)
-    response = {
-        'status': 'success',
-        'data': user.to_dict()
-    }
+    response = {'status': 'success', 'data': user.to_dict()}
     return jsonify(response), 200

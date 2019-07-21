@@ -166,6 +166,7 @@ class TestSimulationService(BaseTestCase):
         with app.test_client() as client:
             self.login_client(client)
 
+            # MUST have AE and MS/BS > 0.0 before we can run simulate
             res = client.get(
                 '/configs/auto/ae',
                 headers={'Authorization': f'Bearer {self.token}'},
@@ -173,6 +174,21 @@ class TestSimulationService(BaseTestCase):
             )
             self.assert200(res)
 
+            res = client.get(
+                '/configs/auto/ms',
+                headers={'Authorization': f'Bearer {self.token}'},
+                content_type='application/json'
+            )
+            self.assert200(res)
+
+            res = client.get(
+                '/configs/auto/bs',
+                headers={'Authorization': f'Bearer {self.token}'},
+                content_type='application/json'
+            )
+            self.assert200(res)
+
+            # Now we can run
             res = client.get(
                 '/simulate',
                 headers={'Authorization': f'Bearer {self.token}'},

@@ -92,7 +92,7 @@ class PhaseSimulation(object):
             self.bs = round(sim_configs.bs_temp)
             self.ae1 = round(sim_configs.ae1)
 
-    def ttt(self) -> dict:
+    def ttt(self) -> None:
         integrated2_mat = np.zeros((4, 11), dtype=np.float64)
 
         self._vol_phantom_frac2(integrated2_mat)
@@ -186,9 +186,7 @@ class PhaseSimulation(object):
             martensite=msf_mat
         )
 
-        return self.plots_data.get_ttt_plot_data()
-
-    def cct(self) -> dict:
+    def cct(self) -> None:
         # Can be used for any cooling path new routine to simplify iterative
         # routines using any of the methods coded in. Should be much simpler
         # to code and follow and only needs to be done once not repeated for
@@ -501,8 +499,6 @@ class PhaseSimulation(object):
             bainite_completion=cct_record_b_end_mat,
             martensite=cct_record_m_mat
         )
-
-        return self.plots_data.get_cct_plot_data()
 
     # TODO(andrew@neuraldev.io): Plot the user cooling curve on the graphs.
     def user_cooling_curve(self):

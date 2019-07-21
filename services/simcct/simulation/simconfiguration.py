@@ -96,21 +96,14 @@ class SimConfiguration(object):
             # We need Xfe in simulation calculations and we have defined a cf
             # that is set to 0.012 because that's what Dr. Bendeich thinks works
 
-            # FIXME(andrew@neuraldev.io): This is a bit redundant because
-            #  the user
-            #  should have already either manually added these or done an
-            #  auto
-            #  calculate but we are leaving it here for testing so remove
-            #  it for
-            #  better efficiency in production.
-            if self.auto_calc_ms:
-                self.auto_ms()
-            if self.auto_calc_bs:
-                self.auto_bs()
-            if self.auto_calc_ae:
-                self.auto_ae1_ae3()
-
             self.xfe, self.ceut = self.xfe_method2(self.comp, self.ae1)
+
+        # FIXME(andrew@neuraldev.io): This needs to be better implemented to
+        #  raise errors.
+        if self.ae1 < 0.0 or self.ae3 < 0.0:
+            raise Exception('Ae1 and Ae3 temperatures not yet set.')
+        if self.ms_temp < 0.0 or self.bs_temp < 0.0:
+            raise Exception('MS and BS temperatures not yet set.')
 
     def auto_ms(self) -> None:
         """

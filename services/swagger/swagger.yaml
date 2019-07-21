@@ -1738,9 +1738,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "Ae1 and Ae3 value cannot be less than 0.0."
+              examples:
+                'Ae Errors':
+                  value:
+                    status: "fail"
+                    message: "Ae1 and Ae3 value cannot be less than 0.0."
+                'MS/BS Errors':
+                  value:
+                    status: "fail"
+                    message: "MS and BS value cannot be less than 0.0."
         '401':
           description: "An invalid request header has been sent."
   /simulate/save:

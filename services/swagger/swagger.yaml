@@ -1475,6 +1475,15 @@ paths:
                 data:
                   ms_temp: 464.1960
                   ms_rate_param: 0.0207
+        '400':
+          description: "An invalid request has been made."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "User has not set an Alloy."
         '401':
           description: "Unauthorized access to the endpoint."
           content:
@@ -1510,6 +1519,15 @@ paths:
                 status: "success"
                 data:
                   bs_temp: 563.2380
+        '400':
+          description: "An invalid request has been made."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "User has not set an Alloy."
         '401':
           description: "Unauthorized access to the endpoint."
           content:
@@ -1613,6 +1631,15 @@ paths:
                 data:
                   ae1_temp: 700.9019
                   ae3_temp: 845.8379
+        '400':
+          description: "An invalid request has been made."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "User has not set an Alloy."
         '401':
           description: "Unauthorized access to the endpoint."
           content:

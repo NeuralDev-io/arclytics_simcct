@@ -265,7 +265,7 @@ def logout(resp) -> Tuple[dict, int]:
         }
     )
 
-    if simcct_resp.json().get('status') == 'fail':
+    if simcct_resp.json().get('status', 'fail') == 'fail':
         user = User.objects.get(id=resp)
         raise SimCCTBadServerLogout(
             f'Unable to logout the user_id: {user.id} from the SimCCT server'

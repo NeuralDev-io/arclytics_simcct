@@ -373,23 +373,19 @@ class TestAuthEndpoints(BaseTestCase):
             )
             # valid token logout
             token = json.loads(resp_login.data.decode())['token']
-            try:
-                response = self.client.get(
-                    '/auth/logout',
-                    headers={
-                        'Authorization': 'Bearer {token}'.format(token=token)
-                    }
-                )
-                data = json.loads(response.data.decode())
-                self.assertIn(
-                    'success',
-                    data['status'],
-                )
-                self.assertIn('Successfully logged out.', data['message'])
-                self.assertEqual(response.status_code, 200)
-            except SimCCTBadServerLogout:
-                # TODO(davidmatthews1004@gmail.com): Handle exception
-                pass
+            response = self.client.get(
+                '/auth/logout',
+                headers={
+                    'Authorization': 'Bearer {token}'.format(token=token)
+                }
+            )
+            data = json.loads(response.data.decode())
+            self.assertIn(
+                'success',
+                data['status'],
+            )
+            self.assertIn('Successfully logged out.', data['message'])
+            self.assertEqual(response.status_code, 200)
 
     def test_invalid_logout_expired_token(self):
         user = User(
@@ -413,55 +409,25 @@ class TestAuthEndpoints(BaseTestCase):
             )
             # invalid token logout
             token = json.loads(resp_login.data.decode())['token']
-            try:
-                response = self.client.get(
-                    '/auth/logout',
-                    headers={
-                        'Authorization': 'Bearer {token}'.format(token=token)
-                    }
-                )
-                data = json.loads(response.data.decode())
-                self.assertEqual('fail', data['status'])
-                self.assertEqual(
-                    'Signature expired. Please login again.', data['message']
-                )
-                self.assertEqual(response.status_code, 401)
-            except SimCCTBadServerLogout:
-                # TODO(davidmatthews1004@gmail.com): Handle exception
-                pass
-
+            response = self.client.get(
+                '/auth/logout',
+                headers={
+                    'Authorization': 'Bearer {token}'.format(token=token)
+                }
+            )
+            self.assertRaises(SimCCTBadServerLogout)
 
     def test_invalid_logout(self):
         with self.client:
-            try:
-                response = self.client.get(
-                    '/auth/logout', headers={'Authorization': 'Bearer invalid'}
-                )
-                data = json.loads(response.data.decode())
-                self.assertTrue(data['status'] == 'fail')
-                self.assertEqual(
-                    'Invalid token. Please log in again.', data['message']
-                )
-                self.assertEqual(response.status_code, 401)
-            except SimCCTBadServerLogout:
-                # TODO(davidmatthews1004@gmail.com): Handle exception
-                pass
-
+            response = self.client.get(
+                '/auth/logout', headers={'Authorization': 'Bearer invalid'}
+            )
+            self.assertRaises(SimCCTBadServerLogout)
 
     def test_invalid_auth_header(self):
         with self.client:
-            try:
-                response = self.client.get('/auth/logout', headers={})
-                data = json.loads(response.data.decode())
-                self.assertTrue(data['status'] == 'fail')
-                self.assertEqual(
-                    'Provide a valid JWT auth token.', data['message']
-                )
-                self.assertEqual(response.status_code, 400)
-            except SimCCTBadServerLogout:
-                # TODO(davidmatthews1004@gmail.com): Handle exception
-                pass
-
+            response = self.client.get('/auth/logout', headers={})
+            self.assertRaises(SimCCTBadServerLogout)
 
     def test_user_status(self):
 
@@ -531,21 +497,16 @@ class TestAuthEndpoints(BaseTestCase):
                 content_type='application/json'
             )
             token = json.loads(resp_login.data.decode())['token']
-            try:
-                response = self.client.get(
-                    '/auth/logout',
-                    headers={
-                        'Authorization': 'Bearer {token}'.format(token=token)
-                    }
-                )
-                data = json.loads(response.data.decode())
-                self.assertEqual('This user does not exist.', data['message'])
-                self.assertEqual('fail', data['status'])
-                self.assertEqual(response.status_code, 401)
-            except SimCCTBadServerLogout:
-                # TODO(davidmatthews1004@gmail.com): Handle exception
-                pass
-
+            response = self.client.get(
+                '/auth/logout',
+                headers={
+                    'Authorization': 'Bearer {token}'.format(token=token)
+                }
+            )
+            data = json.loads(response.data.decode())
+            self.assertEqual('This user does not exist.', data['message'])
+            self.assertEqual('fail', data['status'])
+            self.assertEqual(response.status_code, 401)
 
     def test_invalid_status_inactive(self):
         """Ensure if user is not active they can't get a status."""
@@ -577,7 +538,6 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertTrue(data['status'] == 'fail')
             self.assertTrue(data['message'] == 'This user does not exist.')
             self.assertEqual(response.status_code, 401)
-
 
 if __name__ == '__main__':
     unittest.main()

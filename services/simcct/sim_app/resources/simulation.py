@@ -48,13 +48,17 @@ def simulate(token):
 
     # We need to validate ae1, ae3, ms, and bs temperatures because if we do
     # the calculations for CCT/TTT will cause many problems.
-    if (not session_configs['ae1_temp'] > 0.0
-            or not session_configs['ae3_temp'] > 0.0):
+    if (
+        not session_configs['ae1_temp'] > 0.0
+        or not session_configs['ae3_temp'] > 0.0
+    ):
         response['message'] = 'Ae1 and Ae3 value cannot be less than 0.0.'
         return jsonify(response), 400
 
-    if (not session_configs['ms_temp'] > 0.0
-            or not session_configs['bs_temp'] > 0.0):
+    if (
+        not session_configs['ms_temp'] > 0.0
+        or not session_configs['bs_temp'] > 0.0
+    ):
         response['message'] = 'MS and BS value cannot be less than 0.0.'
         return jsonify(response), 400
 

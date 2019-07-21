@@ -373,6 +373,7 @@ class TestAuthEndpoints(BaseTestCase):
             )
             # valid token logout
             token = json.loads(resp_login.data.decode())['token']
+
             response = self.client.get(
                 '/auth/logout',
                 headers={
@@ -385,7 +386,7 @@ class TestAuthEndpoints(BaseTestCase):
                 data['status'],
             )
             self.assertIn('Successfully logged out.', data['message'])
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, 202)
 
     def test_invalid_logout_expired_token(self):
         user = User(

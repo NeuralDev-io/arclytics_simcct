@@ -190,10 +190,7 @@ class Element(EmbeddedDocument):
     weight = FloatField()
 
     def to_dict(self):
-        return {
-            'symbol': self.symbol,
-            'weight': self.weight
-        }
+        return {'symbol': self.symbol, 'weight': self.weight}
 
     def __str__(self):
         return self.to_json()

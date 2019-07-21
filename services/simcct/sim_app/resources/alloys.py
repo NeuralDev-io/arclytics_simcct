@@ -86,8 +86,6 @@ class AlloysList(Resource):
         response = {'status': 'fail', 'message': 'Empty.'}
 
         alloys = AlloysService().find_all_alloys()
-        logger.debug(AlloysService().client.client.db)
-        logger.debug(alloys)
 
         # No point returning data if there is none to return.
         if len(alloys) == 0:

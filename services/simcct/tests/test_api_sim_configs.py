@@ -77,7 +77,7 @@ class TestSimConfigurations(BaseTestCase):
             new_comp = comp
             new_comp['alloy']['compositions'][0]['weight'] = 0.050
 
-            res = client.post(
+            res = client.put(
                 '/configs/comp/update',
                 data=json.dumps(new_comp),
                 headers={'Authorization': f'Bearer {token}'},
@@ -99,7 +99,7 @@ class TestSimConfigurations(BaseTestCase):
             new_comp = {
                 'alloy': {
                     'name': 'Bad_Alloy',
-                    'compositions': 'hello'
+                    'compositions': 'It has stuff inside'
                 },
                 'alloy_type': 'parent'
             }
@@ -127,26 +127,18 @@ class TestSimConfigurations(BaseTestCase):
             configs, comp, token = self.login_client(client)
 
             # We need to make auto_calculate true by using the endpoints
-            client.post(
-                '/configs/auto/ms-bs',
-                data=json.dumps(
-                    {
-                        'auto_calculate_ms_bs': True,
-                        'transformation_method': 'Li98'
-                    }
-                ),
+            client.get(
+                '/configs/auto/ms',
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
-            client.post(
+            client.get(
                 '/configs/auto/ae',
-                data=json.dumps({'auto_calculate_ae': True}),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
-            client.post(
-                '/configs/auto/xfe',
-                data=json.dumps({'auto_calculate_xfe': True}),
+            client.get(
+                '/configs/auto/bs',
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -1012,7 +1004,6 @@ class TestSimConfigurations(BaseTestCase):
             sess = session.get(f'{token}:configurations')
             self.assertEquals(sess['ae1_temp'], non_limit_configs['ae1_temp'])
             self.assertEquals(sess['ae3_temp'], non_limit_configs['ae3_temp'])
-
 
 
 if __name__ == '__main__':

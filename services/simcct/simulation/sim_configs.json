@@ -1,5 +1,6 @@
 {
 	"configurations": {
+		"is_valid": true,
 		"method": "Li98",
 		"alloy": "parent",
 		"grain_size": 8.0,

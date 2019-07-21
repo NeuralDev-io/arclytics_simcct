@@ -49,10 +49,10 @@ def user_list(resp) -> Tuple[dict, int]:
     return jsonify(response), 200
 
 
-@users_blueprint.route(rule='/users/<user_id>', methods=['GET'])
+@users_blueprint.route(rule='/user', methods=['GET'])
 @authenticate
-def user(resp, user_id) -> Tuple[dict, int]:
-    user = User.objects.get(id=user_id)
+def user(resp) -> Tuple[dict, int]:
+    user = User.objects.get(id=resp)
     response = {'status': 'success', 'data': user.to_dict()}
     return jsonify(response), 200
 

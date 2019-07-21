@@ -68,7 +68,7 @@ class TestUserService(BaseTestCase):
             token = json.loads(resp_login.data.decode())['token']
 
             resp = self.client.get(
-                '/users/{user_id}'.format(user_id=tony.id),
+                '/user',
                 content_type='application/json',
                 headers={'Authorization': 'Bearer {}'.format(token)}
             )
@@ -108,7 +108,7 @@ class TestUserService(BaseTestCase):
             tony.save()
 
             resp = self.client.get(
-                '/users/{user_id}'.format(user_id=tony.id),
+                '/user',
                 content_type='application/json',
                 headers={'Authorization': 'Bearer {}'.format(token)}
             )
@@ -121,7 +121,7 @@ class TestUserService(BaseTestCase):
     def test_single_user_invalid_id(self):
         """Ensure error is thrown if an id is not provided."""
         with self.client:
-            response = self.client.get('/users/blah')
+            response = self.client.get('/user')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 400)
             self.assertIn('Provide a valid JWT auth token.', data['message'])
@@ -131,7 +131,7 @@ class TestUserService(BaseTestCase):
         """Ensure error is thrown if the id does not exist."""
         with self.client:
             _id = ObjectId()
-            response = self.client.get(f'/users/{_id}')
+            response = self.client.get('/user')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 400)
             self.assertIn('Provide a valid JWT auth token.', data['message'])
@@ -160,7 +160,7 @@ class TestUserService(BaseTestCase):
             # invalid token logout
             token = json.loads(resp_login.data.decode())['token']
             response = self.client.get(
-                '/users/{}'.format(tony.id),
+                '/user'.format(tony.id),
                 headers={
                     'Authorization': 'Bearer {token}'.format(token=token)
                 }

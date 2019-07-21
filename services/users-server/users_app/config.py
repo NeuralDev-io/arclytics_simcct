@@ -28,8 +28,18 @@ class BaseConfig:
     TESTING = False
     BCRYPT_LOG_ROUNDS = 13
     SECRET_KEY = os.environ.get('SECRET_KEY', '')
+    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', '')
     TOKEN_EXPIRATION_DAYS = 30
     TOKEN_EXPIRATION_SECONDS = 0
+
+    # Flask Email
+    MAIL_SUBJECT_PREFIX = '[Arclytics]'
+    MAIL_DEFAULT_SENDER = 'Arclytics Team <admin@neuraldev.io>'
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', None)
+    MAIL_PORT = os.environ.get('MAIL_PORT', None)
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
 
 
 class DevelopmentConfig(BaseConfig):

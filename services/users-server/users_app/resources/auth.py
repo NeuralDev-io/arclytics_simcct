@@ -33,6 +33,7 @@ from users_app.models import User
 from users_app import bcrypt
 from logger.arc_logger import AppLogger
 from users_app.middleware import authenticate, logout_authenticate
+from users_app.token import generate_confirmation_token
 
 logger = AppLogger(__name__)
 
@@ -107,6 +108,9 @@ def register_user() -> Tuple[dict, int]:
 
         # generate auth token
         auth_token = new_user.encode_auth_token(new_user.id)
+        # generate the confirmation token
+        confirmation_token = generate_confirmation_token(email)
+
         response['status'] = 'success'
         response['message'] = 'User has been registered.'
         response['token'] = auth_token.decode()

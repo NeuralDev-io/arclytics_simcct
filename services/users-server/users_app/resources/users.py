@@ -23,11 +23,15 @@ the Flask Resource inheritance model.
 
 from typing import Tuple
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, render_template, request, redirect
 
 from logger.arc_logger import AppLogger
 from users_app.models import User
 from users_app.middleware import authenticate, authenticate_admin
+from users_app.token import (
+    confirm_token, generate_confirmation_token, generate_url
+)
+from users_app.email import send_email
 
 users_blueprint = Blueprint('users', __name__)
 
@@ -56,6 +60,52 @@ def user(resp) -> Tuple[dict, int]:
     user = User.objects.get(id=resp)
     response = {'status': 'success', 'data': user.to_dict()}
     return jsonify(response), 200
+
+
+@users_blueprint.route('/test/send', methods=['POST'])
+def test_email_send():
+
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    post_data = request.get_json()
+
+    if not post_data:
+        return jsonify(), 400
+
+    email = post_data.get('email', None)
+
+    if not email:
+        response['message'] = 'No email.'
+
+    token = generate_confirmation_token(email)
+    confirm_url = generate_url('users.confirm_email', token)
+    send_email(
+        to=email,
+        subject='Please Confirm Your Email',
+        template=render_template(
+            'activate.html',
+            confirm_url=confirm_url
+        )
+    )
+
+    return jsonify({'status': 'success'}), 202
+
+
+@users_blueprint.route('/confirm/<token>', methods=['GET'])
+def confirm_email(token):
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    try:
+        email = confirm_token(token)
+    except Exception as e:
+        return jsonify(response), 400
+
+    user = User.objects.get(email=email)
+    user.verified = True
+
+    response['status'] = 'success'
+    response.pop('message')
+    return redirect('http://localhost:3000/signin'), 202
 
 
 # TODO(andrew@neuraldev.io -- Sprint 6)

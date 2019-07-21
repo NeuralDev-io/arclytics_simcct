@@ -10,35 +10,35 @@ import Select from '~/components/elements/select'
 
 class App extends Component {
   constructor(props) {
-    
+    super(props)
+    this.state{
+      show: world;
+    }
   }
 
-  handleChange = (val) => {
-    this.setState({
-      selected: val,
-    })
+  handleChange = () => {
+    this.state.show ? this.setState({show: false}) : this.setState({show: true}) 
   }
 
   render() {
-    const { colourOptions, selected } = this.state
-    return (
-      <div>
-        <Select
-          name="colour"
-          placeholder="Choose colour"
-          options={colourOptions}
-          value={selected}
-          length="long"
-          onChange={val => this.handleChange(val)}
-        />
-      </div>
-    )
+    <Modal show={this.state.show} clicked={this.handleChange} >
+      <button onClick={this.handleChange}>Close</button>
+    </Modal>
+      <button onClick={this.handleChange}> Open </button>
   }
 }
 ```
 
 ## Props
 
-#### `name` : string (required)
+#### `show` : bool (isRequired)
 
-Name of select element.
+Boolean variable to show or hide modal.
+
+#### `className` : string
+
+Name of className
+
+#### `clicked` : func
+
+For when the user clicks on the backdrop to exit the modal. 

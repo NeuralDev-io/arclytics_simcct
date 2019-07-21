@@ -287,6 +287,7 @@ def convert_wt_2_mol(wt: np.ndarray) -> (np.ndarray, np.array):
     d_vect[-1] = 100.0 - d_vect[-1]  # find wt% Fe by difference
     d_vect[-1] = d_vect[-1] / 55.84  # Fe, calculate moles Fe if 100 g of alloy
 
+    # Carbon
     d_vect[0] = (
         wt['weight'][wt['symbol'] == PT.C.name].item() / PT.C.value.atomic_mass
     )

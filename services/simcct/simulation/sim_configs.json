@@ -2,7 +2,7 @@
 	"configurations": {
 		"is_valid": true,
 		"method": "Li98",
-		"alloy": "parent",
+		"alloy_type": "parent",
 		"grain_size": 8.0,
 		"nucleation_start": 1.0,
 		"nucleation_finish": 99.9,

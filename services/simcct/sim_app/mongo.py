@@ -44,7 +44,6 @@ class MongoAlloys(object):
         self.db.alloys.create_index([('name', ASCENDING)], unique=True)
 
     def find_all(self):
-        print(self.db)
         return self.db.alloys.find()
 
     def find(self, query_selector: dict):

@@ -67,11 +67,11 @@ class SimConfiguration(object):
                 if configs['method'] == 'Li98' else Method.Kirkaldy83
             )
 
-            self.alloy = Alloy.parent
-            if configs['alloy'] == 'mix':
-                self.alloy = Alloy.mix
-            elif configs['alloy'] == 'weld':
-                self.alloy = Alloy.weld
+            self.alloy_type = Alloy.parent
+            if configs['alloy_type'] == 'mix':
+                self.alloy_type = Alloy.mix
+            elif configs['alloy_type'] == 'weld':
+                self.alloy_type = Alloy.weld
 
             self.nuc_start = configs['nucleation_start'] / 100
             self.nuc_finish = configs['nucleation_finish'] / 100
@@ -236,16 +236,17 @@ class SimConfiguration(object):
         c = comp[comp['symbol'] == PeriodicTable.C.name]['weight'][0]
         ni = comp[comp['symbol'] == PeriodicTable.Ni.name]['weight'][0]
         si = comp[comp['symbol'] == PeriodicTable.Si.name]['weight'][0]
-        wx = comp[comp['symbol'] == PeriodicTable.W.name]['weight'][0]
+        w = comp[comp['symbol'] == PeriodicTable.W.name]['weight'][0]
         mn = comp[comp['symbol'] == PeriodicTable.Mn.name]['weight'][0]
         cr = comp[comp['symbol'] == PeriodicTable.Cr.name]['weight'][0]
-        asx = comp[comp['symbol'] == PeriodicTable.As.name]['weight'][0]
+        # `as` is a keyword you can't use so must use `_as`
+        _as = comp[comp['symbol'] == PeriodicTable.As.name]['weight'][0]
         mo = comp[comp['symbol'] == PeriodicTable.Mo.name]['weight'][0]
         # Do the calculations
         # 1. Equations of Andrews (1965)
         ae1 = (
-            723.0 - (16.9 * ni) + (29.1 * si) + (6.38 * wx) - (10.7 * mn) +
-            (16.9 * cr) + (290 * asx)
+            723.0 - (16.9 * ni) + (29.1 * si) + (6.38 * w) - (10.7 * mn) +
+            (16.9 * cr) + (290 * _as)
         ) / 3.0
 
         # 2. Equations of Eldis (in Barralis, 1982): 1/3 due to averaging
@@ -291,7 +292,7 @@ class SimConfiguration(object):
         results_mat = np.zeros((1000, 22), dtype=np.float64)
         # reserve the initial carbon wt% as the main routine is passing back
         # another value despite being set "ByVal"
-        wt_c = wt['weight'][wt['symbol'] == PeriodicTable.C][0]
+        wt_c = wt['weight'][wt['symbol'] == PeriodicTable.C]
 
         # Find Ae3 for array of Carbon contents form 0.00 to 0.96 wt%
         # UPDATE wt, Results to CALL Ae3MultiC(wt, Results)
@@ -361,7 +362,7 @@ Parent:
 {}
 -------------------------------------------------
         """.format(
-            'Method:', self.method.name, 'Alloy:', self.alloy.name,
+            'Method:', self.method.name, 'Alloy:', self.alloy_type.name,
             'Nucleation Start:', self.nuc_start, 'Nucleation End:',
             self.nuc_finish, 'Value: ', self.grain_size, 'Auto Calculate:',
             self.auto_calc_ms, 'MS Temperature:', self.ms_temp,

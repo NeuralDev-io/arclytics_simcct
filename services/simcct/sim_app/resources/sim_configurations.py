@@ -116,7 +116,7 @@ def method_change(token):
     return jsonify(response), 200
 
 
-@configs_blueprint.route(rule='/configs/comp/update', methods=['POST'])
+@configs_blueprint.route(rule='/configs/comp/update', methods=['PUT'])
 @token_required
 def composition_change(token):
     """This POST endpoint simply updates the `compositions` in the session
@@ -329,10 +329,6 @@ def update_ms_bs(token):
     bs_temp = post_data.get('bs_temp', None)
     ms_rate_param = post_data.get('ms_rate_param', None)
 
-    if not ms_rate_param:
-        response['message'] = 'MS Rate Parameter temperature is required.'
-        return jsonify(response), 400
-
     if not ms_temp:
         response['message'] = 'MS temperature is required.'
         return jsonify(response), 400
@@ -341,11 +337,17 @@ def update_ms_bs(token):
         response['message'] = 'BS temperature is required.'
         return jsonify(response), 400
 
+    if not ms_rate_param:
+        response['message'] = 'MS Rate Parameter temperature is required.'
+        return jsonify(response), 400
+
     session_configs = session.get(f'{token}:configurations')
     if session_configs is None:
         response['message'] = 'No previous session configurations was set.'
         return jsonify(response), 404
 
+    session_configs['auto_calculate_ms'] = False
+    session_configs['auto_calculate_bs'] = False
     session_configs['ms_temp'] = ms_temp
     session_configs['ms_rate_param'] = ms_rate_param
     session_configs['bs_temp'] = bs_temp
@@ -427,6 +429,7 @@ def update_ae(token):
         response['message'] = 'No previous session configurations was set.'
         return jsonify(response), 404
 
+    session_configs['auto_calculate_ae'] = False
     session_configs['ae1_temp'] = ae1_temp
     session_configs['ae3_temp'] = ae3_temp
 

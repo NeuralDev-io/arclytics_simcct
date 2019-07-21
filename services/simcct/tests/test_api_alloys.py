@@ -55,7 +55,6 @@ class TestAlloyService(BaseTestCase):
             data = AlloySchema(many=True).load(json_data['alloys'])
             created_id_list = MongoAlloys().create_many(data)
             alloys_num = len(created_id_list)
-            print(created_id_list)
         else:
             alloys_num = len([alloy for alloy in db.alloys.find()])
 

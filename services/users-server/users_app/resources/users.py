@@ -33,6 +33,7 @@ users_blueprint = Blueprint('users', __name__)
 
 logger = AppLogger(__name__)
 
+
 @users_blueprint.route(rule='/ping', methods=['GET'])
 def ping_test() -> dict:
     """A simple resource for sanity checking that the server is working."""

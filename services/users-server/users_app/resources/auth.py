@@ -56,7 +56,7 @@ class SimCCTBadServerLogout(Exception):
     SimCCT server if the response is not what we are expecting.
     """
 
-    def __init__(self, msg:str):
+    def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
 
 
@@ -270,7 +270,6 @@ def logout(resp) -> Tuple[dict, int]:
         raise SimCCTBadServerLogout(
             f'Unable to logout the user_id: {user.id} from the SimCCT server'
         )
-
 
     # TODO(andrew@neuraldev.io): Delete the session
 

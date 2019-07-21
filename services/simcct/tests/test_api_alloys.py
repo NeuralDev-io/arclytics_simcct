@@ -46,8 +46,10 @@ class TestAlloyService(BaseTestCase):
         with open(path) as f:
             json_data = json.load(f)
 
-        conn = MongoClient(host=os.environ.get('MONGO_HOST'),
-                           port=int(os.environ.get('MONGO_PORT')))
+        conn = MongoClient(
+            host=os.environ.get('MONGO_HOST'),
+            port=int(os.environ.get('MONGO_PORT'))
+        )
         db = conn['arc_dev']
 
         alloys_num = 0

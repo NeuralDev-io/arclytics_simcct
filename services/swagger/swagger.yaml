@@ -1161,7 +1161,7 @@ paths:
   /configs/method/update:
     servers:
       - url: http://localhost:8001
-    post:
+    put:
       summary: "Update the method used in the Session store of the current user."
       security:
         - bearerAuth: []
@@ -1266,8 +1266,15 @@ paths:
                   start_temp: 900
                   cct_cooling_rate: 10
       responses:
-        '204':
+        '202':
           description: "The configurations were updated successfully and no content returned."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                message: "Setup configurations values have been updated."
         '400':
           description: 'Invalid payload sent in the request.'
           content:
@@ -1300,7 +1307,7 @@ paths:
   /configs/comp/update:
     servers:
       - url: http://localhost:8001
-    post:
+    put:
       summary: "Update the Alloy compositions in Session store for the user."
       security:
         - bearerAuth: []
@@ -1450,21 +1457,12 @@ paths:
   /configs/auto/ms:
     servers:
       - url: http://localhost:8001
-    post:
-      summary: "Update the auto calculate for MS and return the new values."
+    get:
+      summary: "Update the auto calculate for MS and MS Rate Parameter and return the new values."
       tags:
         - Configurations
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              properties:
-                auto_calculate_ms:
-                  type: string
-                  example: true
       responses:
         '200':
           description: "The auto calculate for MS store has been updated and returned."
@@ -1510,21 +1508,12 @@ paths:
   /configs/auto/bs:
     servers:
       - url: http://localhost:8001
-    post:
+    get:
       summary: "Update the auto calculate for BS and return the new values."
       tags:
         - Configurations
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              properties:
-                auto_calculate_bs:
-                  type: string
-                  example: true
       responses:
         '200':
           description: "The auto calculate for BS store has been updated and returned."
@@ -1636,7 +1625,7 @@ paths:
   /configs/auto/ae:
     servers:
       - url: http://localhost:8001
-    post:
+    get:
       summary: "Update the auto calculate for Ae1 and Ae3 and return the new values."
       tags:
         - Configurations
@@ -1799,7 +1788,6 @@ paths:
       responses:
         '201':
           description: "The invalid simulation has been saved successfully."
-
 
 
 components:

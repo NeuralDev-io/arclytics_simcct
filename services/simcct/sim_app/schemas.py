@@ -36,7 +36,6 @@ class AlloyOption(enum.Enum):
 
 
 class ElementSchema(Schema):
-    name = fields.Str(required=True)
     symbol = fields.Str(required=True)
     weight = fields.Float(required=True)
 
@@ -48,6 +47,7 @@ class AlloySchema(Schema):
 
 
 class ConfigurationsSchema(Schema):
+    is_valid = fields.Boolean(default=False)
     method = fields.Str(
         default='Li98',
         required=True,
@@ -69,26 +69,13 @@ class ConfigurationsSchema(Schema):
         }
     )
     # TODO(andrew@neuraldev.io -- Sprint 6): do error messages on all these
-    grain_size_type = fields.Str(required=True, default='ASTM')
     grain_size = fields.Float(required=True)
     nucleation_start = fields.Float(required=True)
     nucleation_finish = fields.Float(required=True)
-    auto_calculate_xfe = fields.Boolean(default=False, required=True)
-    xfe_value = fields.Float(required=False)
-    cf_value = fields.Float(required=False)
-    ceut_value = fields.Float(required=False)
-    auto_calculate_ms_bs = fields.Boolean(default=False, required=True)
-    transformation_method = fields.Str(
-        default='Li98',
-        required=True,
-        allow_none=False,
-        data_key='transformation_method',
-        error_messages={
-            'null': 'A method must be provided to calculate MS and BS.',
-            'required': 'A method is required to calculate MS and BS.'
-        }
-    )
+    auto_calculate_ms = fields.Boolean(default=False, required=True)
     ms_temp = fields.Float(required=False)
+    ms_rate_param = fields.Float(required=True)
+    auto_calculate_bs = fields.Boolean(default=False, required=True)
     bs_temp = fields.Float(required=False)
     auto_calculate_ae = fields.Boolean(default=False, required=True)
     ae1_temp = fields.Float(required=False)
@@ -109,7 +96,6 @@ class ConfigurationsSchema(Schema):
 
 
 class NonLimitConfigsSchema(Schema):
-    grain_size_type = fields.Str(required=True, default='ASTM')
     grain_size = fields.Float(required=True)
     nucleation_start = fields.Float(required=True)
     nucleation_finish = fields.Float(required=True)

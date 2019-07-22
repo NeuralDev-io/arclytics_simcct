@@ -29,7 +29,7 @@ from threading import Thread
 from flask import Blueprint, jsonify, request
 from mongoengine.errors import ValidationError, NotUniqueError
 
-from users_app.models import User
+from users_app.models import User, UserProfile
 from users_app import bcrypt
 from logger.arc_logger import AppLogger
 from users_app.middleware import authenticate, logout_authenticate
@@ -99,6 +99,7 @@ def register_user() -> Tuple[dict, int]:
         )
         # ensure we set an encrypted password.
         new_user.set_password(raw_password=password)
+        new_user.profile = None
     else:
         response['message'] = 'This user already exists.'
         return jsonify(response), 400

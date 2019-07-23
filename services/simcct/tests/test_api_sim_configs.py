@@ -38,14 +38,13 @@ class TestSimConfigurations(BaseTestCase):
             test_json = json.load(f)
 
         configs = ConfigurationsSchema().load(test_json['configurations'])
-        alloy = AlloySchema().load({
+        alloy = AlloySchema().load(
+            {
                 'name': 'Arc_Stark',
                 'compositions': test_json['compositions']
-        })
-        comp = {
-            'alloy': alloy,
-            'alloy_type': 'parent'
-        }
+            }
+        )
+        comp = {'alloy': alloy, 'alloy_type': 'parent'}
 
         token = 'ABCDEFGHIJKLMOPQRSTUVWXYZ123'
         _id = ObjectId()
@@ -75,10 +74,44 @@ class TestSimConfigurations(BaseTestCase):
         with current_app.test_client() as client:
             configs, comp, token = self.login_client(client)
 
+            # By default the auto calculate bools are all true so we need to
+            # set them to false to get this working.
+
+            client.put(
+                '/configs/update/ms-bs',
+                data=json.dumps(
+                    {
+                        'ms_temp': 464.196,
+                        'ms_rate_param': 0.0168,
+                        'bs_temp': 563.238
+                    }
+                ),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            client.put(
+                '/configs/update/ae',
+                data=json.dumps({
+                    'ae1_temp': 700.902,
+                    'ae3_temp': 845.838
+                }),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            self.assertFalse(
+                session[f'{token}:configurations']['auto_calculate_ms']
+            )
+            self.assertFalse(
+                session[f'{token}:configurations']['auto_calculate_bs']
+            )
+            self.assertFalse(
+                session[f'{token}:configurations']['auto_calculate_ae']
+            )
+
             new_comp = comp
             new_comp['alloy']['compositions'][0]['weight'] = 0.050
 
-            res = client.post(
+            res = client.put(
                 '/configs/comp/update',
                 data=json.dumps(new_comp),
                 headers={'Authorization': f'Bearer {token}'},
@@ -98,11 +131,14 @@ class TestSimConfigurations(BaseTestCase):
             configs, comp, token = self.login_client(client)
 
             new_comp = {
-                    'alloy': {'name': 'Bad_Alloy', 'compositions': 'hello'},
-                    'alloy_type': 'parent'
+                'alloy': {
+                    'name': 'Bad_Alloy',
+                    'compositions': 'It has stuff inside'
+                },
+                'alloy_type': 'parent'
             }
 
-            res = client.post(
+            res = client.put(
                 '/configs/comp/update',
                 data=json.dumps(new_comp),
                 headers={'Authorization': f'Bearer {token}'},
@@ -110,8 +146,9 @@ class TestSimConfigurations(BaseTestCase):
             )
             data = json.loads(res.data.decode())
 
-            self.assertEqual(data['message'],
-                             'Alloy failed schema validation.')
+            self.assertEqual(
+                data['message'], 'Alloy failed schema validation.'
+            )
             self.assert400(res)
             self.assertEqual(data['status'], 'fail')
             self.assertTrue(data['errors'])
@@ -124,38 +161,28 @@ class TestSimConfigurations(BaseTestCase):
             configs, comp, token = self.login_client(client)
 
             # We need to make auto_calculate true by using the endpoints
-            client.post(
-                '/configs/auto/ms-bs',
-                data=json.dumps(
-                    {
-                        'auto_calculate_ms_bs': True,
-                        'transformation_method': 'Li98'
-                    }
-                ),
+            client.get(
+                '/configs/auto/ms',
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
-            client.post(
+            client.get(
                 '/configs/auto/ae',
-                data=json.dumps({'auto_calculate_ae': True}),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
-            client.post(
-                '/configs/auto/xfe',
-                data=json.dumps({'auto_calculate_xfe': True}),
+            client.get(
+                '/configs/auto/bs',
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
 
             sess_store = session.get(f'{token}:configurations')
             self.assertAlmostEqual(sess_store['ms_temp'], 464.1960, 4)
+            self.assertAlmostEqual(sess_store['ms_rate_param'], 0.02069, 4)
             self.assertAlmostEqual(sess_store['bs_temp'], 563.2380, 4)
             self.assertAlmostEqual(sess_store['ae1_temp'], 700.90196, 4)
-            self.assertAlmostEqual(sess_store['ae3_temp'], 845.83796, 4)
-            self.assertAlmostEqual(sess_store['cf_value'], 0.012, 3)
-            self.assertAlmostEqual(sess_store['ceut_value'], 0.8300, 4)
-            self.assertAlmostEqual(sess_store['xfe_value'], 0.9462, 4)
+            self.assertAlmostEqual(sess_store['ae3_temp'], 845.83721, 4)
 
             # Now we change the compositions and make sure it's all updated
             # with the composition change
@@ -163,7 +190,7 @@ class TestSimConfigurations(BaseTestCase):
             new_comp['alloy']['compositions'][0]['weight'] = 0.050
             new_comp['alloy']['compositions'][1]['weight'] = 1.6
 
-            res = client.post(
+            res = client.put(
                 '/configs/comp/update',
                 data=json.dumps(new_comp),
                 headers={'Authorization': f'Bearer {token}'},
@@ -180,27 +207,26 @@ class TestSimConfigurations(BaseTestCase):
 
             # ANSTO SimCCT results
             ms_temp = 465.6100
+            ms_rate_param = 0.02069
             bs_temp = 567.44
             ae1_temp = 702.7388
-            ae3_temp = 847.10445
-            ceut_value = 0.8300
-            xfe_value = 0.93888
+            ae3_temp = 847.103836
 
             self.assertAlmostEqual(data['data']['ms_temp'], ms_temp, 4)
+            self.assertAlmostEqual(
+                data['data']['ms_rate_param'], ms_rate_param, 4
+            )
             self.assertAlmostEqual(data['data']['bs_temp'], bs_temp, 2)
             self.assertAlmostEqual(data['data']['ae1_temp'], ae1_temp, 4)
             self.assertAlmostEqual(data['data']['ae3_temp'], ae3_temp, 4)
-            self.assertAlmostEqual(data['data']['cf_value'], 0.012, 3)
-            self.assertAlmostEqual(data['data']['ceut_value'], ceut_value, 4)
-            self.assertAlmostEqual(data['data']['xfe_value'], xfe_value, 4)
             sess_store = session.get(f'{token}:configurations')
             self.assertAlmostEqual(sess_store['ms_temp'], ms_temp, 4)
+            self.assertAlmostEqual(
+                sess_store['ms_rate_param'], ms_rate_param, 4
+            )
             self.assertAlmostEqual(sess_store['bs_temp'], bs_temp, 2)
             self.assertAlmostEqual(sess_store['ae1_temp'], ae1_temp, 4)
             self.assertAlmostEqual(sess_store['ae3_temp'], ae3_temp, 4)
-            self.assertAlmostEqual(sess_store['cf_value'], 0.012, 3)
-            self.assertAlmostEqual(sess_store['ceut_value'], ceut_value, 4)
-            self.assertAlmostEqual(sess_store['xfe_value'], xfe_value, 4)
 
     def test_on_method_change(self):
         """Ensure we can change the method in the session store."""
@@ -208,7 +234,7 @@ class TestSimConfigurations(BaseTestCase):
             configs, comp, token = self.login_client(client)
 
             method = 'Kirkaldy83'
-            res = client.post(
+            res = client.put(
                 '/configs/method/update',
                 data=json.dumps({'method': method}),
                 headers={'Authorization': f'Bearer {token}'},
@@ -223,7 +249,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(session_store['method'], 'Kirkaldy83')
 
             method = 'Li98'
-            res = client.post(
+            res = client.put(
                 '/configs/method/update',
                 data=json.dumps({'method': method}),
                 headers={'Authorization': f'Bearer {token}'},
@@ -237,21 +263,13 @@ class TestSimConfigurations(BaseTestCase):
             self.assert200(res)
             self.assertEqual(session_store['method'], method)
 
-    def test_auto_update_ms_bs(self):
-        """Ensure we get the correct calculations for MS and BS given the
-        testing configs and the testing compositions.
-        """
+    def test_auto_update_ms(self):
+        """Ensure we get the correct calculations for MS given the alloy."""
         with current_app.test_client() as client:
             configs, comp, token = self.login_client(client)
 
-            res = client.post(
-                '/configs/auto/ms-bs',
-                data=json.dumps(
-                    {
-                        'auto_calculate_ms_bs': True,
-                        'transformation_method': 'Li98'
-                    }
-                ),
+            res = client.get(
+                '/configs/auto/ms',
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -259,13 +277,32 @@ class TestSimConfigurations(BaseTestCase):
             sess_store = session[f'{token}:configurations']
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
-            self.assertTrue(sess_store['auto_calculate_ms_bs'])
+            self.assertTrue(sess_store['auto_calculate_ms'])
             ms_temp = np.float32(data['data']['ms_temp'])
-            bs_temp = np.float32(data['data']['bs_temp'])
+            ms_rate_param = np.float32(data['data']['ms_rate_param'])
             self.assertAlmostEqual(sess_store['ms_temp'], 464.1960, 4)
-            self.assertAlmostEqual(sess_store['bs_temp'], 563.2380, 4)
+            self.assertAlmostEqual(sess_store['ms_rate_param'], 0.020691, 4)
             self.assertAlmostEqual(ms_temp, 464.1960, 4)
-            self.assertAlmostEqual(bs_temp, 563.2380, 4)
+            self.assertAlmostEqual(ms_rate_param, 0.020691, 4)
+
+    def test_auto_update_bs(self):
+        """Ensure we get the correct calculations for BS given the alloy."""
+        with current_app.test_client() as client:
+            configs, comp, token = self.login_client(client)
+
+            res = client.get(
+                '/configs/auto/bs',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            sess_store = session[f'{token}:configurations']
+            self.assert200(res)
+            self.assertEqual(data['status'], 'success')
+            self.assertTrue(sess_store['auto_calculate_bs'])
+            ms_temp = np.float32(data['data']['bs_temp'])
+            self.assertAlmostEqual(sess_store['bs_temp'], 563.2380, 4)
+            self.assertAlmostEqual(ms_temp, 563.2380, 4)
 
     def test_auto_update_ae(self):
         """Ensure we get the correct calculations for Ae1 and Ae3 given the
@@ -274,7 +311,7 @@ class TestSimConfigurations(BaseTestCase):
         with current_app.test_client() as client:
             configs, comp, token = self.login_client(client)
 
-            res = client.post(
+            res = client.get(
                 '/configs/auto/ae',
                 data=json.dumps({'auto_calculate_ae': True}),
                 headers={'Authorization': f'Bearer {token}'},
@@ -287,80 +324,16 @@ class TestSimConfigurations(BaseTestCase):
             self.assertTrue(sess_store['auto_calculate_ae'])
             ae1 = np.float64(data['data']['ae1_temp'])
             ae3 = np.float64(data['data']['ae3_temp'])
-            self.assertAlmostEqual(sess_store['ae1_temp'], 700.901962962963, 8)
-            self.assertAlmostEqual(sess_store['ae3_temp'], 845.837961185399, 8)
-            self.assertAlmostEqual(ae1, 700.90196296296301, 8)
-            self.assertAlmostEqual(ae3, 845.83796118539999, 8)
-
-    def test_auto_update_xfe_bad_ae1(self):
-        with current_app.test_client() as client:
-            configs, comp, token = self.login_client(client)
-
-            res = client.post(
-                '/configs/auto/xfe',
-                data=json.dumps(
-                    {
-                        'auto_calculate_xfe': True,
-                        'compositions': comp
-                    }
-                ),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-
-            data = json.loads(res.data.decode())
-            self.assertEqual(data['status'], 'fail')
-            msg = (
-                'Ae1 must be more than zero to find the Equilibrium Phase '
-                'Fraction.'
-            )
-            self.assertEqual(data['message'], msg)
-
-    def test_auto_update_xfe(self):
-        """Ensure we get the correct calculations for Xfe given the testing
-        configs and the testing compositions.
-        """
-        with current_app.test_client() as client:
-            configs, comp, token = self.login_client(client)
-            # We need to update Ae1 and Ae3 first before we can properly get
-            # the results for Xfe
-            res = client.post(
-                '/configs/auto/ae',
-                data=json.dumps({'auto_calculate_ae': True}),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(data['status'], 'success')
-            self.assertTrue(res.status_code == 200)
-
-            # Now we can test Xfe
-            res = client.post(
-                '/configs/auto/xfe',
-                data=json.dumps({'auto_calculate_xfe': True}),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            sess_store = session[f'{token}:configurations']
-            self.assert200(res)
-            self.assertEqual(data['status'], 'success')
-            self.assertTrue(sess_store['auto_calculate_xfe'])
-            xfe = np.float64(data['data']['xfe_value'])
-            cf = np.float64(data['data']['cf_value'])
-            ceut = np.float64(data['data']['ceut_value'])
-            self.assertAlmostEqual(cf, 0.012, 3)
-            self.assertAlmostEqual(sess_store['cf_value'], 0.012, 3)
-            self.assertAlmostEqual(ceut, 0.8300, 4)
-            self.assertAlmostEqual(sess_store['ceut_value'], 0.8300, 4)
-            self.assertAlmostEqual(xfe, 0.94621026894865523, 8)
-            self.assertAlmostEqual(sess_store['xfe_value'], 0.94621026895, 8)
+            self.assertAlmostEqual(sess_store['ae1_temp'], 700.90196, 4)
+            self.assertAlmostEqual(sess_store['ae3_temp'], 845.83721, 4)
+            self.assertAlmostEqual(ae1, 700.90196, 4)
+            self.assertAlmostEqual(ae3, 845.83721, 4)
 
     def test_configurations_no_auth_header(self):
         """Ensure it fails with no header."""
         with current_app.test_client() as client:
             method = 'Kirkaldy83'
-            res = client.post(
+            res = client.put(
                 '/configs/method/update',
                 data=json.dumps({'method': method}),
                 content_type='application/json'
@@ -377,7 +350,7 @@ class TestSimConfigurations(BaseTestCase):
         with current_app.test_client() as client:
             token = 'EncodedHelloWorld!'
             method = 'Kirkaldy83'
-            res = client.post(
+            res = client.put(
                 '/configs/method/update',
                 data=json.dumps({'method': method}),
                 headers={'Authorization': 'Bearer '},
@@ -392,7 +365,7 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure you miss 100% of the shots you don't take."""
         with current_app.test_client() as client:
             token = 'EncodedHelloWorld!'
-            res = client.post(
+            res = client.put(
                 '/configs/method/update',
                 data=json.dumps({}),
                 headers={'Authorization': f'Bearer {token}'},
@@ -403,7 +376,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['message'], 'Invalid payload.')
             self.assertEqual(data['status'], 'fail')
 
-            res = client.post(
+            res = client.put(
                 '/configs/comp/update',
                 data=json.dumps({}),
                 headers={'Authorization': f'Bearer {token}'},
@@ -414,30 +387,8 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['message'], 'Invalid payload.')
             self.assertEqual(data['status'], 'fail')
 
-            res = client.post(
-                '/configs/auto/ms-bs',
-                data=json.dumps({}),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assert400(res)
-            self.assertEqual(data['message'], 'Invalid payload.')
-            self.assertEqual(data['status'], 'fail')
-
-            res = client.post(
-                '/configs/auto/ae',
-                data=json.dumps({}),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assert400(res)
-            self.assertEqual(data['message'], 'Invalid payload.')
-            self.assertEqual(data['status'], 'fail')
-
-            res = client.post(
-                '/configs/auto/xfe',
+            res = client.put(
+                '/configs/update',
                 data=json.dumps({}),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
@@ -450,7 +401,7 @@ class TestSimConfigurations(BaseTestCase):
     def test_on_method_change_no_method_payload(self):
         with current_app.test_client() as client:
             token = 'EncodedHelloWorld!'
-            res = client.post(
+            res = client.put(
                 '/configs/method/update',
                 data=json.dumps({'method': ''}),
                 headers={'Authorization': f'Bearer {token}'},
@@ -464,7 +415,7 @@ class TestSimConfigurations(BaseTestCase):
     def test_on_method_change_incorrect_method_payload(self):
         with current_app.test_client() as client:
             token = 'EncodedHelloWorld!'
-            res = client.post(
+            res = client.put(
                 '/configs/method/update',
                 data=json.dumps({'method': 'AndrewMethod!'}),
                 headers={'Authorization': f'Bearer {token}'},
@@ -481,7 +432,7 @@ class TestSimConfigurations(BaseTestCase):
     def test_on_method_change_empty_session_store(self):
         with current_app.test_client() as client:
             token = 'EncodedHelloWorld!'
-            res = client.post(
+            res = client.put(
                 '/configs/method/update',
                 data=json.dumps({'method': 'Kirkaldy83'}),
                 headers={'Authorization': f'Bearer {token}'},
@@ -499,7 +450,7 @@ class TestSimConfigurations(BaseTestCase):
             configs, comp, token = self.login_client(client)
 
             prev_sess_comp = session.get(f'{token}:alloy')
-            res = client.post(
+            res = client.put(
                 '/configs/comp/update',
                 data=json.dumps({'compositions': []}),
                 headers={'Authorization': f'Bearer {token}'},
@@ -515,155 +466,66 @@ class TestSimConfigurations(BaseTestCase):
             after_sess_comp = session.get(f'{token}:alloy')
             self.assertEqual(prev_sess_comp, after_sess_comp)
 
-    def test_on_comp_change_no_ae_check(self):
-        with current_app.test_client() as client:
-            configs, comp, token = self.login_client(client)
+    # def test_on_comp_change_only_auto_ms_bs(self):
+    #     with current_app.test_client() as client:
+    #         configs, comp, token = self.login_client(client)
+    #
+    #         # We need to make auto_calculate true by using the endpoints
+    #         client.put(
+    #             '/configs/auto/ae',
+    #             data=json.dumps({'auto_calculate_ae': True}),
+    #             headers={'Authorization': f'Bearer {token}'},
+    #             content_type='application/json'
+    #         )
+    #
+    #         sess_store = session.get(f'{token}:configurations')
+    #         self.assertTrue(sess_store['auto_calculate_ae'])
+    #         self.assertFalse(sess_store['auto_calculate_ms_bs'])
+    #
+    #         # Now we change the compositions and make sure it's all updated
+    #         # with the composition change
+    #         new_comp = comp
+    #         new_comp['alloy']['compositions'][0]['weight'] = 0.05
+    #         new_comp['alloy']['compositions'][1]['weight'] = 1.6
+    #
+    #         res = client.put(
+    #             '/configs/comp/update',
+    #             data=json.dumps(new_comp),
+    #             headers={'Authorization': f'Bearer {token}'},
+    #             content_type='application/json'
+    #         )
+    #         data = json.loads(res.data.decode())
+    #         sess_store = session.get(f'{token}:configurations')
+    #
+    #         self.assertEqual(
+    #             data['message'], 'Compositions and other values updated.'
+    #         )
+    #         self.assert200(res)
+    #         self.assertEqual(data['status'], 'success')
+    #         self.assertTrue(data['data'])
+    #         self.assertAlmostEqual(sess_store['ae1_temp'], 702.7388, 4)
+    #         self.assertAlmostEqual(sess_store['ae3_temp'], 847.10445, 4)
+    #         with self.assertRaises(KeyError):
+    #             self.assertFalse(data['data']['ms_temp'])
+    #             self.assertFalse(data['data']['bs_temp'])
 
-            # We need to make auto_calculate true by using the endpoints
-            client.post(
-                '/configs/auto/ms-bs',
-                data=json.dumps(
-                    {
-                        'auto_calculate_ms_bs': True,
-                        'transformation_method': 'Kirkaldy83'
-                    }
-                ),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-
-            client.post(
-                '/configs/auto/xfe',
-                data=json.dumps({'auto_calculate_xfe': True}),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-
-            session[f'{token}:configurations']['auto_calculate_xfe'] = True
-
-            sess_store = session.get(f'{token}:configurations')
-            self.assertTrue(sess_store['auto_calculate_xfe'])
-            self.assertTrue(sess_store['auto_calculate_ms_bs'])
-            self.assertFalse(sess_store['auto_calculate_ae'])
-            self.assertAlmostEqual(sess_store['ms_temp'], 477.59400, 4)
-            self.assertAlmostEqual(sess_store['bs_temp'], 582.2380, 4)
-            self.assertEqual(sess_store['ae1_temp'], 0.0)
-            self.assertEqual(sess_store['ae3_temp'], 0.0)
-
-            # Now we change the compositions and make sure it's all updated
-            # with the composition change
-            new_comp = comp
-            alloy_comp = new_comp['alloy']
-            alloy_comp['compositions'][0]['weight'] = 0.050
-            alloy_comp['compositions'][1]['weight'] = 0.3
-            alloy_comp['compositions'][2]['weight'] = 1.6
-
-            res = client.post(
-                '/configs/comp/update',
-                data=json.dumps(new_comp),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            sess_store = session.get(f'{token}:configurations')
-
-            self.assertTrue(sess_store['auto_calculate_xfe'])
-            self.assertEqual(
-                data['message'], (
-                    'Ae1 must be more than zero to find the '
-                    'Equilibrium Phase Fraction.'
-                )
-            )
-            self.assert400(res)
-            self.assertEqual(data['status'], 'fail')
-            self.assertTrue(data['data'])
-
-    def test_on_comp_change_only_auto_ms_bs(self):
-        with current_app.test_client() as client:
-            configs, comp, token = self.login_client(client)
-
-            # We need to make auto_calculate true by using the endpoints
-            client.post(
-                '/configs/auto/ae',
-                data=json.dumps({'auto_calculate_ae': True}),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-
-            sess_store = session.get(f'{token}:configurations')
-            self.assertFalse(sess_store['auto_calculate_xfe'])
-            self.assertTrue(sess_store['auto_calculate_ae'])
-            self.assertFalse(sess_store['auto_calculate_ms_bs'])
-
-            # Now we change the compositions and make sure it's all updated
-            # with the composition change
-            new_comp = comp
-            new_comp['alloy']['compositions'][0]['weight'] = 0.05
-            new_comp['alloy']['compositions'][1]['weight'] = 1.6
-
-            res = client.post(
-                '/configs/comp/update',
-                data=json.dumps(new_comp),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            sess_store = session.get(f'{token}:configurations')
-
-            self.assertEqual(
-                data['message'], 'Compositions and other values updated.'
-            )
-            self.assert200(res)
-            self.assertEqual(data['status'], 'success')
-            self.assertTrue(data['data'])
-            self.assertAlmostEqual(sess_store['ae1_temp'], 702.7388, 4)
-            self.assertAlmostEqual(sess_store['ae3_temp'], 847.10445, 4)
-            with self.assertRaises(KeyError):
-                self.assertFalse(data['data']['ms_temp'])
-                self.assertFalse(data['data']['bs_temp'])
-
-    def test_auto_update_ms_bs_no_method_provided(self):
-        """Ensure we get the correct calculations for MS and BS given the
-        testing configs and the testing compositions.
-        """
-        with current_app.test_client() as client:
-            configs, comp, token = self.login_client(client)
-
-            res = client.post(
-                '/configs/auto/ms-bs',
-                data=json.dumps(
-                    {
-                        'auto_calculate_ms_bs': True,
-                        'transformation_method': ''
-                    }
-                ),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            sess_store = session[f'{token}:configurations']
-            self.assertEqual(
-                data['message'], 'You must provide a transformation method.'
-            )
-            self.assert400(res)
-            self.assertEqual(data['status'], 'fail')
-            self.assertFalse(sess_store['auto_calculate_ms_bs'])
-
-    def test_auto_update_ms_bs_kirkaldy_method(self):
+    def test_auto_update_ms_kirkaldy_method(self):
         """Ensure we get the correct calculations for MS and BS given Kirkaldy83
         method testing configs and the testing compositions.
         """
         with current_app.test_client() as client:
             configs, comp, token = self.login_client(client)
 
-            res = client.post(
-                '/configs/auto/ms-bs',
-                data=json.dumps(
-                    {
-                        'auto_calculate_ms_bs': True,
-                        'transformation_method': 'Kirkaldy83'
-                    }
-                ),
+            res_method_update = client.put(
+                'configs/method/update',
+                data=json.dumps({'method': 'Kirkaldy83'}),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            self.assert200(res_method_update)
+
+            res = client.get(
+                '/configs/auto/ms',
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -671,70 +533,42 @@ class TestSimConfigurations(BaseTestCase):
             sess_store = session[f'{token}:configurations']
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
-            self.assertTrue(sess_store['auto_calculate_ms_bs'])
+            self.assertTrue(sess_store['auto_calculate_ms'])
             ms_temp = np.float32(data['data']['ms_temp'])
-            bs_temp = np.float32(data['data']['bs_temp'])
+            ms_rate_param = np.float32(data['data']['ms_rate_param'])
             self.assertAlmostEqual(sess_store['ms_temp'], 477.5940, 4)
-            self.assertAlmostEqual(sess_store['bs_temp'], 582.2380, 3)
+            self.assertAlmostEqual(sess_store['ms_rate_param'], 0.02069, 4)
             self.assertAlmostEqual(ms_temp, 477.5940, 4)
-            self.assertAlmostEqual(bs_temp, 582.2380, 4)
+            self.assertAlmostEqual(ms_rate_param, 0.02069, 4)
 
-    def test_auto_update_bad_json_false(self):
-        """Testing sending False for auto calculate."""
+    def test_auto_update_bs_kirkaldy_method(self):
+        """Ensure we get the correct calculations for BS given Kirkaldy83
+        method testing configs and the testing compositions.
+        """
         with current_app.test_client() as client:
             configs, comp, token = self.login_client(client)
-            res = client.post(
-                '/configs/auto/ms-bs',
-                data=json.dumps({
-                    'auto_calculate_ms_bs': False,
-                }),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            sess_store = session[f'{token}:configurations']
-            self.assert400(res)
-            self.assertEqual(
-                data['message'],
-                'Post data auto calculate for MS or BS is false.'
-            )
-            self.assertEqual(data['status'], 'fail')
-            self.assertFalse(sess_store['auto_calculate_ms_bs'])
 
-            res = client.post(
-                '/configs/auto/ae',
-                data=json.dumps({
-                    'auto_calculate_ae': False,
-                }),
+            res_method_update = client.put(
+                'configs/method/update',
+                data=json.dumps({'method': 'Kirkaldy83'}),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
-            data = json.loads(res.data.decode())
-            sess_store = session[f'{token}:configurations']
-            self.assert400(res)
-            self.assertEqual(
-                data['message'], 'Auto calculate for Austenite is false.'
-            )
-            self.assertEqual(data['status'], 'fail')
-            self.assertFalse(sess_store['auto_calculate_ae'])
+            self.assert200(res_method_update)
 
-            res = client.post(
-                '/configs/auto/xfe',
-                data=json.dumps({
-                    'auto_calculate_xfe': False,
-                }),
+            res = client.get(
+                '/configs/auto/bs',
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             sess_store = session[f'{token}:configurations']
-            self.assert400(res)
-            self.assertEqual(
-                data['message'],
-                'Auto calculate for Equilibrium Phase is false.'
-            )
-            self.assertEqual(data['status'], 'fail')
-            self.assertFalse(sess_store['auto_calculate_xfe'])
+            self.assert200(res)
+            self.assertEqual(data['status'], 'success')
+            self.assertTrue(sess_store['auto_calculate_bs'])
+            bs_temp = np.float32(data['data']['bs_temp'])
+            self.assertAlmostEqual(sess_store['bs_temp'], 565.738, 3)
+            self.assertAlmostEqual(bs_temp, 565.738, 4)
 
     def test_on_configs_change(self):
         """Ensure that if we send new configurations we store it in session."""
@@ -743,7 +577,6 @@ class TestSimConfigurations(BaseTestCase):
             # Since login stores the configs already, we need to make some
             # changes to see if it updates.
             non_limit_configs = {
-                'grain_size_type': configs['grain_size_type'],
                 'grain_size': configs['grain_size'],
                 'nucleation_start': configs['nucleation_start'],
                 'nucleation_finish': configs['nucleation_finish'],
@@ -757,11 +590,11 @@ class TestSimConfigurations(BaseTestCase):
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
-            self.assertEqual(res.status_code, 204)
-            self.assertFalse(res.data)
+            self.assertEqual(res.status_code, 202)
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'success')
             session_store = session.get(f'{token}:configurations')
             sess_non_limit_configs = {
-                'grain_size_type': session_store['grain_size_type'],
                 'grain_size': session_store['grain_size'],
                 'nucleation_start': session_store['nucleation_start'],
                 'nucleation_finish': session_store['nucleation_finish'],
@@ -805,8 +638,9 @@ class TestSimConfigurations(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assert404(res)
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'],
-                             'No previous session configurations was set.')
+            self.assertEqual(
+                data['message'], 'No previous session configurations was set.'
+            )
 
     def test_on_configs_invalid_schema_configs(self):
         """Ensure if we send invalid data we get an error response."""
@@ -866,7 +700,7 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure an missing bs_temp payload does not pass."""
         with current_app.test_client() as client:
             _, _, token = self.login_client(client)
-            non_limit_configs = {'ms_temp': 563.238}
+            non_limit_configs = {'ms_temp': 563.238, 'ms_rate_param': 0.0168}
 
             res = client.put(
                 '/configs/update/ms-bs',
@@ -880,12 +714,13 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEquals(data['message'], 'BS temperature is required.')
 
     def test_update_ms_bs_no_prev_configs(self):
-        """Ensure an missing bs_temp payload does not pass."""
+        """Ensure if there is no prev. configs payload does not pass."""
         with current_app.test_client() as client:
             # We don't login to set the previous configs
             # _, _, token = self.login_client(client)
             non_limit_configs = {
                 'ms_temp': 464.196,
+                'ms_rate_param': 0.0168,
                 'bs_temp': 563.238
             }
 
@@ -899,29 +734,32 @@ class TestSimConfigurations(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assert404(res)
             self.assertEquals(data['status'], 'fail')
-            self.assertEquals(data['message'],
-                              'No previous session configurations was set.')
+            self.assertEquals(
+                data['message'], 'No previous session configurations was set.'
+            )
 
     def test_update_ms_bs(self):
         """Ensure a valid payload of MS and BS will do just as we expect."""
         with current_app.test_client() as client:
             _, _, token = self.login_client(client)
-            non_limit_configs = {
+            configs = {
                 'ms_temp': 464.196,
+                'ms_rate_param': 0.0168,
                 'bs_temp': 563.238
             }
 
             res = client.put(
                 '/configs/update/ms-bs',
-                data=json.dumps(non_limit_configs),
+                data=json.dumps(configs),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             self.assertEqual(res.status_code, 204)
             self.assertFalse(res.data)
             sess = session.get(f'{token}:configurations')
-            self.assertEquals(sess['ms_temp'], non_limit_configs['ms_temp'])
-            self.assertEquals(sess['bs_temp'], non_limit_configs['bs_temp'])
+            self.assertEquals(sess['ms_temp'], configs['ms_temp'])
+            self.assertEquals(sess['ms_rate_param'], configs['ms_rate_param'])
+            self.assertEquals(sess['bs_temp'], configs['bs_temp'])
 
     def test_update_ae_empty_payload(self):
         """Ensure an empty payload does not pass."""
@@ -941,7 +779,9 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure an missing ms_temp payload does not pass."""
         with current_app.test_client() as client:
             _, _, token = self.login_client(client)
-            non_limit_configs = {'ae3_temp': 700.902,}
+            non_limit_configs = {
+                'ae3_temp': 700.902,
+            }
 
             res = client.put(
                 '/configs/update/ae',
@@ -958,7 +798,9 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure an missing bs_temp payload does not pass."""
         with current_app.test_client() as client:
             _, _, token = self.login_client(client)
-            non_limit_configs = {'ae1_temp': 700.902,}
+            non_limit_configs = {
+                'ae1_temp': 700.902,
+            }
 
             res = client.put(
                 '/configs/update/ae',
@@ -976,10 +818,7 @@ class TestSimConfigurations(BaseTestCase):
         with current_app.test_client() as client:
             # We don't login to set the previous configs
             # _, _, token = self.login_client(client)
-            non_limit_configs = {
-                'ae1_temp': 700.902,
-                'ae3_temp': 845.838
-            }
+            non_limit_configs = {'ae1_temp': 700.902, 'ae3_temp': 845.838}
 
             token = 'BoGuSToKeN'
             res = client.put(
@@ -991,151 +830,27 @@ class TestSimConfigurations(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assert404(res)
             self.assertEquals(data['status'], 'fail')
-            self.assertEquals(data['message'],
-                              'No previous session configurations was set.')
+            self.assertEquals(
+                data['message'], 'No previous session configurations was set.'
+            )
 
     def test_update_ae(self):
         """Ensure a valid payload of MS and BS will do just as we expect."""
         with current_app.test_client() as client:
             _, _, token = self.login_client(client)
-            non_limit_configs = {
-                'ae1_temp': 700.902,
-                'ae3_temp': 845.838
-            }
+            new_ae = {'ae1_temp': 700.902, 'ae3_temp': 845.838}
 
             res = client.put(
                 '/configs/update/ae',
-                data=json.dumps(non_limit_configs),
+                data=json.dumps(new_ae),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             self.assertEqual(res.status_code, 204)
             self.assertFalse(res.data)
             sess = session.get(f'{token}:configurations')
-            self.assertEquals(sess['ae1_temp'], non_limit_configs['ae1_temp'])
-            self.assertEquals(sess['ae3_temp'], non_limit_configs['ae3_temp'])
-
-    def test_update_xfe_empty_payload(self):
-        """Ensure an empty payload does not pass."""
-        with current_app.test_client() as client:
-            res = client.put(
-                '/configs/update/xfe',
-                data=json.dumps({}),
-                headers={'Authorization': 'Bearer Bogus'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(res.status_code, 400)
-            self.assertEquals(data['status'], 'fail')
-            self.assertEquals(data['message'], 'Invalid payload.')
-
-    def test_update_xfe_missing_xfe_payload(self):
-        """Ensure an missing xfe_value payload does not pass."""
-        with current_app.test_client() as client:
-            _, _, token = self.login_client(client)
-            non_limit_configs = {
-                'cf_value': 0.012,
-                'ceut_value': 0.83
-            }
-
-            res = client.put(
-                '/configs/update/xfe',
-                data=json.dumps(non_limit_configs),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(res.status_code, 400)
-            self.assertEquals(data['status'], 'fail')
-            self.assertEquals(data['message'], 'Xfe value is required.')
-
-    def test_update_xfe_missing_cf_payload(self):
-        """Ensure an missing cf_value payload does not pass."""
-        with current_app.test_client() as client:
-            _, _, token = self.login_client(client)
-            non_limit_configs = {
-                'xfe_value': 0.9462,
-                'ceut_value': 0.83
-            }
-
-            res = client.put(
-                '/configs/update/xfe',
-                data=json.dumps(non_limit_configs),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(res.status_code, 400)
-            self.assertEquals(data['status'], 'fail')
-            self.assertEquals(data['message'], 'Cf value is required.')
-
-    def test_update_xfe_missing_ceut_payload(self):
-        """Ensure an missing ceut_value payload does not pass."""
-        with current_app.test_client() as client:
-            _, _, token = self.login_client(client)
-            non_limit_configs = {
-                'xfe_value': 0.9462,
-                'cf_value': 0.012,
-            }
-
-            res = client.put(
-                '/configs/update/xfe',
-                data=json.dumps(non_limit_configs),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(res.status_code, 400)
-            self.assertEquals(data['status'], 'fail')
-            self.assertEquals(data['message'], 'Ceut value is required.')
-
-    def test_update_xfe_no_prev_configs(self):
-        """Ensure if no prev. configs. were set it fails."""
-        with current_app.test_client() as client:
-            # We don't login to set the previous configs
-            # _, _, token = self.login_client(client)
-            non_limit_configs = {
-                'xfe_value': 0.9462,
-                'cf_value': 0.012,
-                'ceut_value': 0.83
-            }
-
-            token = 'BoGuSToKeN'
-            res = client.put(
-                '/configs/update/xfe',
-                data=json.dumps(non_limit_configs),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assert404(res)
-            self.assertEquals(data['status'], 'fail')
-            self.assertEquals(data['message'],
-                              'No previous session configurations was set.')
-
-    def test_update_xfe(self):
-        """Ensure a valid payload of Xfe, Cf and Ceut will do as we expect."""
-        with current_app.test_client() as client:
-            _, _, token = self.login_client(client)
-            non_limit_configs = {
-                'xfe_value': 0.9462,
-                'cf_value': 0.012,
-                'ceut_value': 0.83
-            }
-
-            res = client.put(
-                '/configs/update/xfe',
-                data=json.dumps(non_limit_configs),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            self.assertEqual(res.status_code, 204)
-            self.assertFalse(res.data)
-            sess = session.get(f'{token}:configurations')
-            self.assertEquals(sess['xfe_value'], non_limit_configs['xfe_value'])
-            self.assertEquals(sess['cf_value'], non_limit_configs['cf_value'])
-            self.assertEquals(sess['ceut_value'],
-                              non_limit_configs['ceut_value'])
+            self.assertEquals(sess['ae1_temp'], new_ae['ae1_temp'])
+            self.assertEquals(sess['ae3_temp'], new_ae['ae3_temp'])
 
 
 if __name__ == '__main__':

@@ -28,9 +28,8 @@ import numpy as np
 from prettytable import PrettyTable
 
 from simulation.utilities import Method, Alloy
-from simulation.ae3_utilities import (
-    ae3_single_carbon, convert_wt_2_mol, ae3_multi_carbon
-)
+from simulation.ae3_utilities import ae3_single_carbon, ae3_multi_carbon
+from simulation.periodic import PeriodicTable
 
 BASE = os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
@@ -68,24 +67,21 @@ class SimConfiguration(object):
                 if configs['method'] == 'Li98' else Method.Kirkaldy83
             )
 
-            self.alloy = Alloy.parent
-            if configs['alloy'] == 'mix':
-                self.alloy = Alloy.mix
-            elif configs['alloy'] == 'weld':
-                self.alloy = Alloy.weld
+            self.alloy_type = Alloy.parent
+            if configs['alloy_type'] == 'mix':
+                self.alloy_type = Alloy.mix
+            elif configs['alloy_type'] == 'weld':
+                self.alloy_type = Alloy.weld
 
             self.nuc_start = configs['nucleation_start'] / 100
             self.nuc_finish = configs['nucleation_finish'] / 100
-            self.grain_type = configs['grain_size_type']
             self.grain_size = configs['grain_size']
-            self.auto_xfe_calc = configs['auto_calculate_xfe']
-            self.xfe = configs['xfe_value']
-            self.cf = configs['cf_value']
-            self.ceut = configs['ceut_value']
-            self.auto_ms_bs_calc = configs['auto_calculate_ms_bs']
+            self.auto_calc_ms = configs['auto_calculate_ms']
             self.ms_temp = configs['ms_temp']
+            self.ms_rate_param = configs['ms_rate_param']
+            self.auto_calc_bs = configs['auto_calculate_bs']
             self.bs_temp = configs['bs_temp']
-            self.auto_austenite_calc = configs['auto_calculate_ae']
+            self.auto_calc_ae = configs['auto_calculate_ae']
             self.ae1 = configs['ae1_temp']
             self.ae3 = configs['ae3_temp']
             self.temp_peak = configs['start_temp']
@@ -95,20 +91,32 @@ class SimConfiguration(object):
             if self.ae1 > 0 and self.ae3 > 0:
                 self.ae_check = True
 
-        if self.auto_ms_bs_calc:
-            self.auto_ms_bs()
-        if self.auto_austenite_calc:
-            self.auto_ae1_ae3()
-        if self.auto_xfe_calc:
-            self.auto_xfe()
+            # FIXME(andrew@neuraldev.io): If the Alloy compositions change,
+            #  we can probably do this in the background.
+            # We need Xfe in simulation calculations and we have defined a cf
+            # that is set to 0.012 because that's what Dr. Bendeich thinks works
 
-    def auto_ms_bs(self) -> None:
+            self.xfe, self.ceut = self.xfe_method2(self.comp, self.ae1)
+
+        # FIXME(andrew@neuraldev.io): This needs to be better implemented to
+        #  raise errors.
+        if self.ae1 < 0.0 or self.ae3 < 0.0:
+            raise Exception('Ae1 and Ae3 temperatures not yet set.')
+        if self.ms_temp < 0.0 or self.bs_temp < 0.0:
+            raise Exception('MS and BS temperatures not yet set.')
+
+    def auto_ms(self) -> None:
         """
-        We simply store the class variables bs_temp and ms_temp by doing
-        the calculations.
+        We simply store the class variables ms_temp by doing the calculations.
+        """
+        self.ms_temp = self.get_ms(self.method, self.comp)
+        self.ms_rate_param = self.get_ms_alpha(self.comp)
+
+    def auto_bs(self) -> None:
+        """
+        We simply store the class variables bs_temp by doing the calculations.
         """
         self.bs_temp = self.get_bs(self.method, self.comp)
-        self.ms_temp = self.get_ms(self.method, self.comp)
 
     def auto_ae1_ae3(self) -> None:
         """Calculate the austenite values based on composition automatically."""
@@ -116,9 +124,6 @@ class SimConfiguration(object):
         # crash the application
         self.ae_check = True
         self.ae1, self.ae3 = self.calc_ae1_ae3(self.comp)
-
-    def auto_xfe(self) -> None:
-        self.xfe, self.ceut = self.xfe_method2(self.comp, self.ae1, self.cf)
 
     @staticmethod
     def get_compositions(comp_list: list = None) -> np.ndarray:
@@ -135,14 +140,16 @@ class SimConfiguration(object):
         """
         comp = np.zeros(
             len(comp_list),
-            dtype=[
-                ('idx', np.int), ('name', 'U20'), ('symbol', 'U2'),
-                ('weight', np.float64)
-            ]
+            dtype=[('idx', np.int), ('symbol', 'U2'), ('weight', np.float64)]
         )
         # iterate over lists at once and store them in the np.ndarray
         for i, e in enumerate(comp_list):
-            comp[i] = (i, e['name'], e['symbol'], e['weight'])
+            s = e['symbol']
+            # Using the PeriodicTable 1-to-1 mapping validates that the name is
+            # exactly as we expect it. Will raise a NotImplementedError
+            # exception if symbol names don't match.
+            # comp[i] = (i, PeriodicTable[s].name, e['weight'])
+            comp[i] = (i, e['symbol'], e['weight'])
         return comp
 
     @staticmethod
@@ -154,26 +161,26 @@ class SimConfiguration(object):
         # TODO(andrew@neuraldev.io -- Sprint 6): Do some validation for these
         #  and return a tuple instead (float, error)
         # ensure we are getting the value and not the list by using index 0
-        c = comp[comp['name'] == 'carbon']['weight'][0]
-        mn = comp[comp['name'] == 'manganese']['weight'][0]
-        ni = comp[comp['name'] == 'nickel']['weight'][0]
-        cr = comp[comp['name'] == 'chromium']['weight'][0]
-        mo = comp[comp['name'] == 'molybdenum']['weight'][0]
+        c = comp[comp['symbol'] == PeriodicTable.C.name]['weight'][0]
+        mn = comp[comp['symbol'] == PeriodicTable.Mn.name]['weight'][0]
+        ni = comp[comp['symbol'] == PeriodicTable.Ni.name]['weight'][0]
+        cr = comp[comp['symbol'] == PeriodicTable.Cr.name]['weight'][0]
+        mo = comp[comp['symbol'] == PeriodicTable.Mo.name]['weight'][0]
+        si = comp[comp['symbol'] == PeriodicTable.Si.name]['weight'][0]
 
-        if method == Method.Li98:
-            # Eqn [24] in paper. Li modified from Kirkaldy.
-            return (
-                637.0 - (58 * c) - (35 * mn) - (15 * ni) - (34 * cr) -
-                (41 * mo)
-            )
+        if method != Method.Li98 and method != Method.Kirkaldy83:
+            return -1
 
         if method == Method.Kirkaldy83:
             # Eqn [30] in Kirkaldy defined 1983 paper
             return (
-                656 - (58 * c) - (35 * mn) - (15 * ni) - (34 * cr) - (41 * mo)
+                656 - (58 * c) - (35 * mn) - (75 * si) - (15 * ni) -
+                (34 * cr) - (41 * mo)
             )
 
-        return -1
+        # By default, we return Method.Li98
+        # Eqn [24] in paper. Li modified from Kirkaldy.
+        return 637.0 - (58 * c) - (35 * mn) - (15 * ni) - (34 * cr) - (41 * mo)
 
     @staticmethod
     def get_ms(method: Method = None, comp: np.ndarray = None) -> float:
@@ -184,20 +191,16 @@ class SimConfiguration(object):
         # TODO(andrew@neuraldev.io -- Sprint 6): Do some validation for these
         #  and return a tuple instead (float, error)
         # ensure we are getting the value and not the list by using index 0
-        c = comp[comp['name'] == 'carbon']['weight'][0]
-        mn = comp[comp['name'] == 'manganese']['weight'][0]
-        ni = comp[comp['name'] == 'nickel']['weight'][0]
-        cr = comp[comp['name'] == 'chromium']['weight'][0]
-        mo = comp[comp['name'] == 'molybdenum']['weight'][0]
-        co = comp[comp['name'] == 'cobalt']['weight'][0]
-        si = comp[comp['name'] == 'silicon']['weight'][0]
+        c = comp[comp['symbol'] == PeriodicTable.C.name]['weight'][0]
+        mn = comp[comp['symbol'] == PeriodicTable.Mn.name]['weight'][0]
+        ni = comp[comp['symbol'] == PeriodicTable.Ni.name]['weight'][0]
+        cr = comp[comp['symbol'] == PeriodicTable.Cr.name]['weight'][0]
+        mo = comp[comp['symbol'] == PeriodicTable.Mo.name]['weight'][0]
+        co = comp[comp['symbol'] == PeriodicTable.Co.name]['weight'][0]
+        si = comp[comp['symbol'] == PeriodicTable.Si.name]['weight'][0]
 
-        if method == Method.Li98:
-            # Eqn [25] in paper by Kung and Raymond
-            return (
-                539 - (423 * c) - (30.4 * mn) - (17.7 * ni) - (12.1 * cr) -
-                (7.5 * mo) + (10.0 * co) - (7.5 * si)
-            )
+        if method != Method.Li98 and method != Method.Kirkaldy83:
+            return -1
 
         if method == Method.Kirkaldy83:
             # Eqn [31] in Kirkaldy 1983 paper
@@ -206,23 +209,42 @@ class SimConfiguration(object):
                 (21.0 * mo)
             )
 
-        return -1
+        # By default we return Method.Li98
+        # Eqn [25] in paper by Kung and Raymond
+        return (
+            539 - (423 * c) - (30.4 * mn) - (17.7 * ni) - (12.1 * cr) -
+            (7.5 * mo) + (10.0 * co) - (7.5 * si)
+        )
+
+    @staticmethod
+    def get_ms_alpha(comp: np.ndarray = None) -> float:
+        c = comp['weight'][comp['symbol'] == PeriodicTable.C.name][0]
+        mn = comp['weight'][comp['symbol'] == PeriodicTable.Mn.name][0]
+        ni = comp['weight'][comp['symbol'] == PeriodicTable.Ni.name][0]
+        cr = comp['weight'][comp['symbol'] == PeriodicTable.Cr.name][0]
+        mo = comp['weight'][comp['symbol'] == PeriodicTable.Mo.name][0]
+
+        return (
+            0.0224 - (0.0107 * c) - (0.0007 * mn) - (0.00005 * ni) -
+            (0.00012 * cr) - (0.0001 * mo)
+        )
 
     @staticmethod
     def calc_ae1_ae3(comp: np.ndarray = None) -> (np.float, np.float):
-        c = comp[comp['name'] == 'carbon']['weight'][0]
-        ni = comp[comp['name'] == 'nickel']['weight'][0]
-        si = comp[comp['name'] == 'silicon']['weight'][0]
-        wx = comp[comp['name'] == 'tungsten']['weight'][0]
-        mn = comp[comp['name'] == 'manganese']['weight'][0]
-        cr = comp[comp['name'] == 'chromium']['weight'][0]
-        asx = comp[comp['name'] == 'arsenic']['weight'][0]
-        mo = comp[comp['name'] == 'molybdenum']['weight'][0]
+        c = comp[comp['symbol'] == PeriodicTable.C.name]['weight'][0]
+        ni = comp[comp['symbol'] == PeriodicTable.Ni.name]['weight'][0]
+        si = comp[comp['symbol'] == PeriodicTable.Si.name]['weight'][0]
+        w = comp[comp['symbol'] == PeriodicTable.W.name]['weight'][0]
+        mn = comp[comp['symbol'] == PeriodicTable.Mn.name]['weight'][0]
+        cr = comp[comp['symbol'] == PeriodicTable.Cr.name]['weight'][0]
+        # `as` is a keyword you can't use so must use `_as`
+        _as = comp[comp['symbol'] == PeriodicTable.As.name]['weight'][0]
+        mo = comp[comp['symbol'] == PeriodicTable.Mo.name]['weight'][0]
         # Do the calculations
         # 1. Equations of Andrews (1965)
         ae1 = (
-            723.0 - (16.9 * ni) + (29.1 * si) + (6.38 * wx) - (10.7 * mn) +
-            (16.9 * cr) + (290 * asx)
+            723.0 - (16.9 * ni) + (29.1 * si) + (6.38 * w) - (10.7 * mn) +
+            (16.9 * cr) + (290 * _as)
         ) / 3.0
 
         # 2. Equations of Eldis (in Barralis, 1982): 1/3 due to averaging
@@ -243,9 +265,10 @@ class SimConfiguration(object):
         ae3 = ae3_single_carbon(comp.copy(), c)
         return ae1, ae3 - 273
 
+    # TODO: Confirm with Dr. Bendeich if cf = 0.012 is the number he wants.
     @staticmethod
     def xfe_method2(
-        comp: np.ndarray = None, ae1: np.float = None, cf: np.float = None
+        comp: np.ndarray = None, ae1: np.float = None, cf: np.float = 0.012
     ) -> (np.float, np.float):
         """Second method for estimating Xfe using parra-equilibrium methodology
         to predict  the Ae3 values with increasing carbon content. To find
@@ -267,7 +290,7 @@ class SimConfiguration(object):
         results_mat = np.zeros((1000, 22), dtype=np.float64)
         # reserve the initial carbon wt% as the main routine is passing back
         # another value despite being set "ByVal"
-        wt_c = wt['weight'][wt['name'] == 'carbon'][0]
+        wt_c = wt['weight'][wt['symbol'] == PeriodicTable.C.name][0]
 
         # Find Ae3 for array of Carbon contents form 0.00 to 0.96 wt%
         # UPDATE wt, Results to CALL Ae3MultiC(wt, Results)
@@ -303,7 +326,6 @@ class SimConfiguration(object):
         for row in comp:
             table.add_row(row)
         # table.set_style(MSWORD_FRIENDLY)
-        table.align['name'] = 'l'
         table.align['symbol'] = 'l'
         table.align['weight'] = 'r'
 
@@ -319,19 +341,14 @@ PHASE SIMULATION CONFIGURATIONS
 {:30}{}
 {:30}{}
 Transformation Definitions:
-  {:28}{:.4f} %
-  {:28}{:.4f} %
-Grain Size:
-  {:28}{:8}
-  {:28}{:6.4f}
-Equilibrium Phase Fractions:
-  {:28}{}
   {:28}{:.4f}
-  {:28}{:.4f} (weight %)
-  {:28}{:.4f} (weight %)
+  {:28}{:.4f}
+Grain Size:
+  {:28}{:6.4f}
 Transformation Temp. Limits:
   {:28}{}
   {:28}{:.4f}
+  {:28}{}
   {:28}{:.4f}
 Austenite Limits: 
   {:28}{}
@@ -343,12 +360,11 @@ Parent:
 {}
 -------------------------------------------------
         """.format(
-            'Method:', self.method.name, 'Alloy:', self.alloy.name,
+            'Method:', self.method.name, 'Alloy:', self.alloy_type.name,
             'Nucleation Start:', self.nuc_start, 'Nucleation End:',
-            self.nuc_finish, 'Type:', self.grain_type, 'Value: ',
-            self.grain_size, 'Auto Calculate:', self.auto_xfe_calc, 'Xfe:',
-            self.xfe, 'Cf:', self.cf, 'Ceut:', self.ceut, 'Auto Calculate:',
-            self.auto_ms_bs_calc, 'MS Temperature:', self.ms_temp,
-            'BS Temperature: ', self.bs_temp, 'Auto Calculate:',
-            self.auto_austenite_calc, 'Ae1:', self.ae1, 'Ae3:', self.ae3, comp_
+            self.nuc_finish, 'Value: ', self.grain_size, 'Auto Calculate:',
+            self.auto_calc_ms, 'MS Temperature:', self.ms_temp,
+            'Auto Calculate:', self.auto_calc_bs, 'BS Temperature: ',
+            self.bs_temp, 'Auto Calculate:', self.auto_calc_ae, 'Ae1:',
+            self.ae1, 'Ae3:', self.ae3, comp_
         )

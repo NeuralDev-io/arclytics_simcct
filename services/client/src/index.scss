@@ -2,3 +2,9 @@
 @import './styles/typography';
 @import './styles/animation';
 @import './styles/layout';
+@import './styles/form';
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}

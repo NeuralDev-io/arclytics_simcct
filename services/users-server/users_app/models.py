@@ -77,17 +77,20 @@ class UserProfile(EmbeddedDocument):
     aim = StringField(
         help_text='What sentence best describes you?',
         required=False,
-        default=None
+        default=None,
+        null=True
     )
     highest_education = StringField(
         help_text='What is the highest level of education have you studied?',
         required=False,
-        default=None
+        default=None,
+        null=True
     )
     sci_tech_exp = StringField(
         help_text='What is your experience with scientific software?',
         required=False,
-        default=None
+        default=None,
+        null=True
     )
     phase_transform_exp = StringField(
         help_text=(
@@ -95,7 +98,8 @@ class UserProfile(EmbeddedDocument):
             'transformation?'
         ),
         required=False,
-        default=None
+        default=None,
+        null=True
     )
 
     def to_dict(self) -> dict:

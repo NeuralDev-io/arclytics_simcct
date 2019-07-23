@@ -6,11 +6,11 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
+__author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@davidjmatthews>']
 
 __credits__ = ['']
 __license__ = 'TBA'
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
@@ -340,26 +340,28 @@ class TestUserService(BaseTestCase):
                 '/user/updateprofile',
                 data=json.dumps(
                     {
-                        'aim' : 'Redeem my father.',
-                        'highest_education' : 'Graduated Dagobah Highschool.',
-                        'sci_text_exp' : 'Limited.',
-                        'phase_transform_exp' : 'Limited'
+                        'aim': 'Redeem my father.',
+                        'highest_education': 'Graduated Dagobah Highschool.',
+                        'sci_text_exp': 'Limited.',
+                        'phase_transform_exp': 'Limited'
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type = 'application/json'
+                content_type='application/json'
             )
 
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
-            # TODO(davidmatthews1004@gmail.com -- Spring 6)
-            # Need to validate that the profile data has been stored in the
-            # database without using the get method.
-            # Currently unsure how to do that.
-            # I have queried the database whilst this test has run (using
-            # time.sleep() and the data is being saved but I need to find a
-            # way to do this within the unitteset.
+
+            updated_user = User.objects.get(email=luke.email)
+            profile_obj = json.loads(updated_user.profile.to_json())
+            self.assertEqual(profile_obj['aim'], 'Redeem my father.')
+            self.assertEqual(profile_obj['highest_education'],
+                             'Graduated Dagobah Highschool.')
+            # Because you we spelt the key wrong -- "sci_text_exp"
+            self.assertEqual(profile_obj['sci_tech_exp'], None)
+            self.assertEqual(profile_obj['phase_transform_exp'], 'Limited.')
 
     def test_update_user_profile_no_data(self):
         """
@@ -440,6 +442,8 @@ class TestUserService(BaseTestCase):
             # TODO(davidmatthews1004@gmail.com -- Spring 6)
             # Need to validate that the profile data has been stored in the
             # database without using the get method.
+            # TODO(andrew@neuraldev.io): Message to David:
+            #  follow the code from above in the first User Profile test.
 
     def test_view_user_profile(self):
         """
@@ -666,6 +670,7 @@ class TestUserService(BaseTestCase):
                 data['data']['highest_education'], 'Jedi Council Member'
             )
             self.assertEqual(data['data']['sci_tech_exp'], 'Limited')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -32,7 +32,7 @@ from mongoengine.errors import ValidationError, NotUniqueError
 from users_app.models import User
 from users_app import bcrypt
 from logger.arc_logger import AppLogger
-from users_app.middleware import authenticate
+from users_app.middleware import authenticate, logout_authenticate
 
 logger = AppLogger(__name__)
 
@@ -47,6 +47,16 @@ class SessionValidationError(Exception):
 
     def __init__(self, msg: str):
         super(SessionValidationError, self).__init__(msg)
+
+
+class SimCCTBadServerLogout(Exception):
+    """
+    A custom exception to be raised by a synchronous call to logout on the
+    SimCCT server if the response is not what we are expecting.
+    """
+
+    def __init__(self, msg: str):
+        super(SimCCTBadServerLogout, self).__init__(msg)
 
 
 @auth_blueprint.route(rule='/auth/register', methods=['POST'])
@@ -135,7 +145,7 @@ def async_register_session(user: User = None,
 
     last_configs = None
     last_compositions = None
-    user_id = ''
+    user_id = ''  # Just for printing SessionValidationError
 
     if isinstance(user, User):
         user_id = user.id
@@ -215,13 +225,16 @@ def login() -> Tuple[dict, int]:
         if auth_token:
             # Let's save some stats for later
             user.last_login = datetime.utcnow()
+
+            # TODO(andrew@neuraldev.io): Save the users' login location
+
             user.save()
 
             # We will register the session for the user to the simcct server
             # in the background so as not to slow the login process down.
             thr = Thread(
-                target=async_register_session, args=[user,
-                                                     str(auth_token)]
+                target=async_register_session,
+                args=[user, str(auth_token.decode())]
             )
             thr.start()
             # Leave this here -- create a queue for responses
@@ -238,20 +251,38 @@ def login() -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])
-@authenticate
-def logout(resp) -> Tuple[dict, int]:
+@logout_authenticate
+def logout(user_id, token) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
+    # FIXME(andrew@neuraldev.io): There seems to be a huge issue with this
+    #  as in testing, or possibly even live, there seems to be no cross-server
+    #  session storage of the user.
+
     response = {'status': 'success', 'message': 'Successfully logged out.'}
 
-    # TODO(andrew@neuraldev.io): Delete the session
+    simcct_host = os.environ.get('SIMCCT_HOST', None)
 
-    return jsonify(response), 200
+    simcct_resp = requests.get(
+        url=f'http://{simcct_host}/session/logout',
+        headers={
+            'Authorization': 'Bearer {token}'.format(token=token),
+            'Content-type': 'application/json'
+        }
+    )
+
+    # print(simcct_resp)
+    if simcct_resp.json().get('status', 'fail') == 'fail':
+        raise SimCCTBadServerLogout(
+            f'Unable to logout the user_id: {user_id} from the SimCCT server'
+        )
+
+    return jsonify(response), 202
 
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
 @authenticate
-def get_user_status(resp) -> Tuple[dict, int]:
+def get_user_status(user_id) -> Tuple[dict, int]:
     """Get the current session status of the user."""
-    user = User.objects.get(id=resp)
+    user = User.objects.get(id=user_id)
     response = {'status': 'success', 'data': user.to_dict()}
     return jsonify(response), 200

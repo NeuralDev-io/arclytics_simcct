@@ -30,6 +30,9 @@ from marshmallow import ValidationError
 
 from sim_app.schemas import AlloySchema
 from sim_app.alloys_service import AlloysService
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
 
 alloys_blueprint = Blueprint('alloys', __name__)
 

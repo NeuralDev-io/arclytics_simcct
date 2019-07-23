@@ -53,8 +53,6 @@ def session_login(token):
     # TODO(andrew@neuraldev.io): Need to do some validation for some fields
     #  - Need to validate the auto_calculate bools
     #  - Need to ensure the method is provided.
-    #  - Need to ensure the transformation_method is also provided if the
-    #    auto_calculate_ms_bs is true
     #  - Need to ensure there is a value for ae1 and ae3 if
     #    auto_calculate_ae is not true
 
@@ -66,19 +64,16 @@ def session_login(token):
             return jsonify(response), 400
     else:
         configs = {
+            'is_valid': False,
             'method': 'Li98',
-            'alloy': 'parent',
-            'grain_size_type': 'ASTM',
+            'alloy_type': 'parent',
             'grain_size': 0.0,
             'nucleation_start': 1.0,
             'nucleation_finish': 99.90,
-            'auto_calculate_xfe': True,
-            'xfe_value': 0.0,
-            'cf_value': 0.0,
-            'ceut_value': 0.0,
-            'auto_calculate_ms_bs': True,
-            'transformation_method': 'Li98',
+            'auto_calculate_ms': True,
             'ms_temp': 0.0,
+            'ms_rate_param': 0.0,
+            'auto_calculate_bs': True,
             'bs_temp': 0.0,
             'auto_calculate_ae': True,
             'ae1_temp': 0.0,
@@ -95,6 +90,8 @@ def session_login(token):
     #  - xfe_method2() --> carbon and iron
     #  - calc_ae1_ae3() --> carbon, nickel, silicon, tungsten, manganese,
     #                       manganese, chromium, arsenic, molybdenum
+    #  - _torr_calc2() --> carbon, manganese, silicon, molybdenum, nickel,
+    #                      chromium
     comp_obj = None
     if user_comp:
         user_alloy = user_comp.get('alloy')
@@ -105,8 +102,8 @@ def session_login(token):
             response['errors'] = e.messages
             return jsonify(response), 400
 
-    session['user'] = user_id
-    session['token'] = token
+    session[f'{token}:user'] = user_id
+    session[f'{user_id}:token'] = token
     session[f'{token}:configurations'] = configs
     session[f'{token}:alloy'] = comp_obj
 
@@ -130,14 +127,22 @@ def session_logout(token):
         A JSON response and a status code.
     """
     response = {'status': 'fail', 'message': 'Invalid session.'}
-    sess_token = session.get('token')
-    if token != sess_token:
-        return jsonify(response), 401
+    sess_user = session.get(f'{token}:user')
 
-    session.pop('user')
-    session.pop('token')
-    session.pop(f'{token}:configurations')
-    session.pop(f'{token}:alloy')
+    # FIXME(andrew@neuraldev.io): This seems to not be working as signing in
+    #  does not store the user OR your testing method is screwed up.
+    # sess_token = session.get(f'{sess_user}:token')
+    # response['session_user'] = sess_user
+    # response['session_token'] = sess_token
+
+    # if token != sess_token:
+    #     response['session_user'] = sess_user
+    #     return jsonify(response), 401
+
+    # session.pop(f'{token}:user')
+    # session.pop(f'{sess_user}:token')
+    # session.pop(f'{token}:configurations')
+    # session.pop(f'{token}:alloy')
 
     response['status'] = 'success'
     response.pop('message')
@@ -156,7 +161,7 @@ def ping_users_server():
     url = f'http://{users_server}/ping'
     res = requests.get(url)
     return (
-        jsonify(res.json()),
-        res.status_code,
-        {'Content-type': 'application/json'}
+        jsonify(res.json()), res.status_code, {
+            'Content-type': 'application/json'
+        }
     )

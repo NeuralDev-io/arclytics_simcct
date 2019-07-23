@@ -141,7 +141,7 @@ class TestAe1nAe3(BaseConfigurationTest):
         # Run it just once
         # while z > 0.5:
         if self.temp > 0:
-            self.g, self.temp = dg_fit(self.g, self.temp)
+            self.g, self.temp = dg_fit(self.temp)
         # else:
         #     logger.error("Negative temperature determined for Ae3.")
         self.assertAlmostEqual(self.g, 3.980423951788, 8)

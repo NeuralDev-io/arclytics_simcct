@@ -1,0 +1,37 @@
+@import '../../../styles/colors_light';
+
+.compSidebar {
+  width: 27vw;
+  height: 100vh;
+  margin-left: 4rem;
+  position: fixed;
+
+  @media screen and (max-width: 1720px) {
+    width: 430px;
+  }
+}
+
+.main {
+  margin-left: calc(4rem + 27vw);
+  width: calc(100% - calc(4rem + 27vw));
+  padding: 2.5rem 0rem 2.5rem 2.5rem;
+
+  @media screen and (max-width: 1720px) {
+    margin-left: calc(4rem + 430px);
+    width: calc(100% - calc(4rem + 430px));
+  }
+
+  header {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 1.5rem;
+    
+    h3 {
+      margin-right: 1rem;
+    }
+  }
+
+  .ttt {
+    width: 60%;
+  }
+}

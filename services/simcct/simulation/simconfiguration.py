@@ -84,7 +84,6 @@ class SimConfiguration(object):
             self.ceut = configs['ceut_value']
             self.auto_ms_bs_calc = configs['auto_calculate_ms_bs']
             self.ms_temp = configs['ms_temp']
-            self.ms_undercool = configs['ms_undercool']
             self.bs_temp = configs['bs_temp']
             self.auto_austenite_calc = configs['auto_calculate_ae']
             self.ae1 = configs['ae1_temp']
@@ -96,6 +95,10 @@ class SimConfiguration(object):
             if self.ae1 > 0 and self.ae3 > 0:
                 self.ae_check = True
 
+        # FIXME(andrew@neuraldev.io): This is a bit redundant because the user
+        #  should have already either manually added these or done an auto
+        #  calculate but we are leaving it here for testing so remove it for
+        #  better efficiency in production.
         if self.auto_ms_bs_calc:
             self.auto_ms_bs()
         if self.auto_austenite_calc:
@@ -334,7 +337,6 @@ Transformation Temp. Limits:
   {:28}{}
   {:28}{:.4f}
   {:28}{:.4f}
-  {:28}{:.4f}
 Austenite Limits: 
   {:28}{}
   {:28}{:.4f}
@@ -351,7 +353,6 @@ Parent:
             self.grain_size, 'Auto Calculate:', self.auto_xfe_calc, 'Xfe:',
             self.xfe, 'Cf:', self.cf, 'Ceut:', self.ceut, 'Auto Calculate:',
             self.auto_ms_bs_calc, 'MS Temperature:', self.ms_temp,
-            'MS Undercool: ', self.ms_undercool, 'BS Temperature: ',
-            self.bs_temp, 'Auto Calculate:', self.auto_austenite_calc, 'Ae1:',
-            self.ae1, 'Ae3:', self.ae3, comp_
+            'BS Temperature: ', self.bs_temp, 'Auto Calculate:',
+            self.auto_austenite_calc, 'Ae1:', self.ae1, 'Ae3:', self.ae3, comp_
         )

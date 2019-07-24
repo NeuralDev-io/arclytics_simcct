@@ -2,3 +2,13 @@
 @import './styles/typography';
 @import './styles/animation';
 @import './styles/layout';
+@import './styles/form';
+
+html {
+  background-color: $n0;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}

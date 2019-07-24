@@ -1,0 +1,8 @@
+.form {
+  flex-shrink: 0;
+  margin-bottom: 2rem;
+
+  & > div:first-child {
+    margin-bottom: 1rem;
+  }
+}

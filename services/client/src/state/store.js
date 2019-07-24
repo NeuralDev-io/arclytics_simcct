@@ -14,7 +14,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   ...reducers,
-  user: persistReducer(persistConfig, myPersistReducer),
+  persist: persistReducer(persistConfig, myPersistReducer),
 })
 
 const initialState = {}

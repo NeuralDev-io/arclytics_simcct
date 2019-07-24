@@ -36,6 +36,7 @@ from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_marshmallow import Marshmallow
 from flask_mail import Mail
+from flask_restful import Api
 
 from users_app.mongodb import MongoSingleton
 from configs.settings import DEFAULT_LOGGER
@@ -63,6 +64,7 @@ cors = CORS()
 bcrypt = Bcrypt()
 ma = Marshmallow()
 mail = Mail()
+api = Api()
 
 
 def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
@@ -160,6 +162,9 @@ def create_app(script_info=None) -> Flask:
     app.register_blueprint(users_blueprint)
     from users_app.resources.auth import auth_blueprint
     app.register_blueprint(auth_blueprint)
+
+    # Define Api to be imported
+    api.init_app(app)
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects

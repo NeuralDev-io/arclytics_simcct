@@ -29,7 +29,7 @@ from flask import current_app
 
 from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
-from users_app.models import User
+from users_app.models import User, UserProfile, AdminProfile
 
 logger = AppLogger(__name__)
 
@@ -311,6 +311,374 @@ class TestUserService(BaseTestCase):
             self.assertFalse(data['data']['users'][1]['admin'])
             self.assertIn('success', data['status'])
 
+    def test_put_user(self):
+        obiwan = User(
+            email='obiwan@kenobi.io',
+            first_name='Obi Wan',
+            last_name = 'kenobi'
+        )
+        obiwan.set_password('HelloThere')
+        obiwan.save()
+
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'obiwan@kenobi.io',
+                        'password': 'HelloThere'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+
+            resp = self.client.put(
+                '/user',
+                data=json.dumps(
+                    {
+                        'first_name': 'Obi-Wan',
+                        'last_name': 'Kenobi',
+                        'aim': 'Train Skywalkers.',
+                        'highest_education': 'Jedi Council Member.',
+                        'sci_tech_exp': 'Flying is for Droids.',
+                        'phase_transform_exp': 'Prequels.'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+
+            updated_user = User.objects.get(email=obiwan.email)
+            self.assertEqual(updated_user['first_name'], 'Obi-Wan')
+            self.assertEqual(updated_user['last_name'], 'Kenobi')
+            self.assertEqual(
+                updated_user['profile']['aim'], 'Train Skywalkers.'
+            )
+            self.assertEqual(
+                updated_user['profile']['highest_education'],
+                'Jedi Council Member.'
+            )
+            self.assertEqual(
+                updated_user['profile']['sci_tech_exp'], 'Flying is for Droids.'
+            )
+            self.assertEqual(
+                updated_user['profile']['phase_transform_exp'], 'Prequels.'
+            )
+
+    def test_put_admin_user(self):
+        yoda = User(
+            email='yoda@jedi.io',
+            first_name='Yoda',
+            last_name='Smith'
+        )
+        yoda.set_password('DoOrDoNot')
+        yoda.is_admin = True
+        yoda.save()
+
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'yoda@jedi.io',
+                        'password': 'DoOrDoNot'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+
+            resp = self.client.put(
+                '/user',
+                data=json.dumps(
+                    {
+                        'first_name': 'Yoda',
+                        'last_name': 'Smith',
+                        'aim': 'Pass on what I have learned.',
+                        'highest_education': 'Jedi Temple Professor.',
+                        'sci_tech_exp': 'Much to learn, I still have.',
+                        'phase_transform_exp': 'I am a puppet.',
+                        'mobile_number': '1234567890',
+                        'position': 'Grand Jedi Master.'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+
+            updated_user = User.objects.get(email=yoda.email)
+            self.assertEqual(updated_user['first_name'], 'Yoda')
+            self.assertEqual(updated_user['last_name'], 'Smith')
+            self.assertEqual(
+                updated_user['profile']['aim'], 'Pass on what I have learned.'
+            )
+            self.assertEqual(
+                updated_user['profile']['highest_education'],
+                'Jedi Temple Professor.'
+            )
+            self.assertEqual(
+                updated_user['profile']['sci_tech_exp'],
+                'Much to learn, I still have.'
+            )
+            self.assertEqual(
+                updated_user['profile']['phase_transform_exp'],
+                'I am a puppet.'
+            )
+            self.assertEqual(
+                updated_user['admin_profile']['mobile_number'],
+                '1234567890'
+            )
+            self.assertEqual(
+                updated_user['admin_profile']['position'],
+                'Grand Jedi Master.'
+            )
+
+    def test_put_user_partial(self):
+        sheev = User(
+            email='sheev@palpatine.io',
+            first_name='Sheev',
+            last_name='Palpatine'
+        )
+        sheev.set_password('IAmTheSenate')
+        sheev.save()
+
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'sheev@palpatine.io',
+                        'password': 'IAmTheSenate'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+
+            resp = self.client.put(
+                '/user',
+                data=json.dumps(
+                    {
+                        'first_name': 'Emperor',
+                        'aim': 'Rule the Galaxy.',
+                        'phase_transform_exp': 'Sith Lord.',
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+
+            updated_user = User.objects.get(email=sheev.email)
+            self.assertEqual(updated_user['first_name'], 'Emperor')
+            self.assertEqual(updated_user['last_name'], 'Palpatine')
+            self.assertEqual(updated_user['profile']['aim'], 'Rule the Galaxy.')
+            self.assertEqual(updated_user['profile']['highest_education'], None)
+            self.assertEqual(updated_user['profile']['sci_tech_exp'], None)
+            self.assertEqual(
+                updated_user['profile']['phase_transform_exp'], 'Sith Lord.'
+            )
+
+    def test_put_user_no_data(self):
+        maul = User(
+            email='maul@sith.io',
+            first_name='Darth',
+            last_name='Maul'
+        )
+        maul.set_password('AtLastWeWillHaveRevenge')
+        maul.save()
+
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'maul@sith.io',
+                        'password': 'AtLastWeWillHaveRevenge'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+
+            resp = self.client.put(
+                '/user',
+                data=json.dumps(''),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'Invalid payload.')
+
+    def test_put_user_existing_profile(self):
+        ahsoka = User(
+            email='ahsoka@tano.io',
+            first_name='Ahsoka',
+            last_name='tano'
+        )
+        ahsoka.set_password('IAmNoJedi')
+        profile = UserProfile(
+            aim='Protect my Master',
+            highest_education='Jedi Knight',
+            sci_tech_exp='Great',
+            phase_transform_exp='Less Great'
+        )
+        ahsoka.profile = profile
+        ahsoka.save()
+
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'ahsoka@tano.io',
+                        'password': 'IAmNoJedi'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+
+            resp = self.client.put(
+                '/user',
+                data=json.dumps(
+                    {
+                        'last_name': 'Tano',
+                        'aim': 'Follow the will of the force.',
+                        'highest_education': 'Rogue.',
+                        'sci_tech_exp': 'Greater.',
+                        'phase_transform_exp': 'Great.',
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+
+            updated_user = User.objects.get(email=ahsoka.email)
+            self.assertEqual(updated_user['first_name'], 'Ahsoka')
+            self.assertEqual(updated_user['last_name'], 'Tano')
+            self.assertEqual(
+                updated_user['profile']['aim'], 'Follow the will of the force.'
+            )
+            self.assertEqual(
+                updated_user['profile']['highest_education'], 'Rogue.'
+            )
+            self.assertEqual(
+                updated_user['profile']['sci_tech_exp'], 'Greater.'
+            )
+            self.assertEqual(
+                updated_user['profile']['phase_transform_exp'], 'Great.'
+            )
+
+    def test_put_admin_existing_admin_profile(self):
+        rex = User(
+            email='rex@clone.io',
+            first_name='Rex',
+            last_name='Republic'
+        )
+        rex.set_password('ExperienceOutranksEverything')
+        profile = UserProfile(
+            aim='Serve the Republic',
+            highest_education='Clone Captain',
+            sci_tech_exp='Limited',
+            phase_transform_exp='Limited'
+        )
+        rex.profile = profile
+        rex.is_admin = True
+        admin_profile = AdminProfile(
+            mobile_number='0987654321',
+            position='Captain'
+        )
+        rex.admin_profile = admin_profile
+        rex.save()
+
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'rex@clone.io',
+                        'password': 'ExperienceOutranksEverything'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+
+            resp = self.client.put(
+                '/user',
+                data=json.dumps(
+                    {
+                        'mobile_number': '1234567890',
+                        'position': 'Discharged.'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+
+            updated_user = User.objects.get(email=rex.email)
+            self.assertEqual(updated_user['first_name'], 'Rex')
+            self.assertEqual(updated_user['last_name'], 'Republic')
+            self.assertEqual(
+                updated_user['admin_profile']['mobile_number'],
+                '1234567890'
+            )
+            self.assertEqual(
+                updated_user['admin_profile']['position'],
+                'Discharged.'
+            )
+
+    # def test_get_user_last_alloy(self):
+    #     fives = User(
+    #         email='fives@clone.io',
+    #         first_name='Five',
+    #         last_name='Republic'
+    #     )
+    #     #TODO(davidmatthews1004@gmail.com) waiting for Alloy embedded doc
+    #     fives.set_password('NotJustAnotherNumber')
+    #     fives.save()
+    #
+    #     with self.client:
+    #         resp_login = self.client.post(
+    #             '/auth/login',
+    #             data=json.dumps(
+    #                 {
+    #                     'email': 'fives@clone.io',
+    #                     'password': 'NotJustAnotherNumber'
+    #                 }
+    #             ),
+    #             content_type='application/json'
+    #         )
+    #         token = json.loads(resp_login.data.decode())['token']
+    #
+    #         resp = self.client.get(
+    #             '/user/last',
+    #             content_type='application/json',
+    #             headers={'Authorization': 'Bearer {}'.format(token)}
+    #         )
+    #         data = json.loads(resp.data.decode())
+    #         self.assertEqual(resp.status_code, 200)
+    #         self.assertEqual(data['status'], 'success')
+    #         # TODO(davidmatthews1004@gmail.com) add last_alloy tests.
+
     def test_update_user_profile(self):
         """
         Ensure a user profile can be updated if all fields are provided.
@@ -336,14 +704,14 @@ class TestUserService(BaseTestCase):
             )
             token = json.loads(resp_login.data.decode())['token']
 
-            resp = self.client.post(
-                '/user/updateprofile',
+            resp = self.client.put(
+                '/user/profile',
                 data=json.dumps(
                     {
                         'aim': 'Redeem my father.',
                         'highest_education': 'Graduated Dagobah Highschool.',
-                        'sci_text_exp': 'Limited.',
-                        'phase_transform_exp': 'Limited'
+                        'sci_tech_exp': 'Limited.',
+                        'phase_transform_exp': 'Limited.'
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -359,8 +727,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(profile_obj['aim'], 'Redeem my father.')
             self.assertEqual(profile_obj['highest_education'],
                              'Graduated Dagobah Highschool.')
-            # Because you we spelt the key wrong -- "sci_text_exp"
-            self.assertEqual(profile_obj['sci_tech_exp'], None)
+            self.assertEqual(profile_obj['sci_tech_exp'], 'Limited.')
             self.assertEqual(profile_obj['phase_transform_exp'], 'Limited.')
 
     def test_update_user_profile_no_data(self):
@@ -388,8 +755,8 @@ class TestUserService(BaseTestCase):
             )
             token = json.loads(resp_login.data.decode())['token']
 
-            resp = self.client.post(
-                '/user/updateprofile',
+            resp = self.client.put(
+                '/user/profile',
                 data=json.dumps(''),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type = 'application/json'
@@ -425,8 +792,8 @@ class TestUserService(BaseTestCase):
             )
             token = json.loads(resp_login.data.decode())['token']
 
-            resp = self.client.post(
-                '/user/updateprofile',
+            resp = self.client.put(
+                '/user/profile',
                 data=json.dumps(
                     {
                         'aim': 'Pay Jabba.',
@@ -437,65 +804,16 @@ class TestUserService(BaseTestCase):
                 content_type = 'application/json'
             )
 
-            # data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 200)
-            # TODO(davidmatthews1004@gmail.com -- Spring 6)
-            # Need to validate that the profile data has been stored in the
-            # database without using the get method.
-            # TODO(andrew@neuraldev.io): Message to David:
-            #  follow the code from above in the first User Profile test.
-
-    def test_view_user_profile(self):
-        """
-        Ensure a user can view their own profile information.
-        """
-        obiwan = User(
-            email='obiwan@jedi.io',
-            first_name='Obiwan',
-            last_name='Kenobi'
-        )
-        obiwan.set_password('HelloThere')
-        obiwan.save()
-
-        with self.client:
-            resp_login = self.client.post(
-                '/auth/login',
-                data=json.dumps(
-                    {
-                        'email': 'obiwan@jedi.io',
-                        'password': 'HelloThere'
-                    }
-                ),
-                content_type='application/json'
-            )
-            token = json.loads(resp_login.data.decode())['token']
-
-            resp_update = self.client.post(
-                '/user/updateprofile',
-                data=json.dumps(
-                    {
-                        'aim': 'Protect the Skywalker twins.',
-                        'highest_education': 'Jedi Council Member',
-                        'sci_text_exp': 'Flying is for droids.',
-                        'phase_transform_exp': 'Limited'
-                    }
-                ),
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-
-            resp = self.client.get(
-                '/user/viewprofile',
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
-            self.assertEqual(
-                data['data']['aim'], 'Protect the Skywalker twins.'
-            )
+
+            updated_user = User.objects.get(email=han.email)
+            profile_obj = json.loads(updated_user.profile.to_json())
+            self.assertEqual(profile_obj['aim'], 'Pay Jabba.')
+            self.assertEqual(profile_obj['phase_transform_exp'], 'Limited')
+            self.assertEqual(profile_obj['highest_education'], None)
+            self.assertEqual(profile_obj['sci_tech_exp'], None)
 
     def test_update_user_profile_two_partial_data(self):
         """
@@ -523,8 +841,8 @@ class TestUserService(BaseTestCase):
             )
             token = json.loads(resp_login.data.decode())['token']
 
-            resp_1 = self.client.post(
-                '/user/updateprofile',
+            resp_1 = self.client.put(
+                '/user/profile',
                 data=json.dumps(
                     {
                         'aim' : 'Defeat the Empire',
@@ -535,8 +853,8 @@ class TestUserService(BaseTestCase):
                 content_type = 'application/json'
             )
 
-            resp_2 = self.client.post(
-                '/user/updateprofile',
+            resp_2 = self.client.put(
+                '/user/profile',
                 data=json.dumps(
                     {
                         'highest_education' : 'University of Alderaan',
@@ -547,60 +865,22 @@ class TestUserService(BaseTestCase):
                 content_type='application/json'
             )
 
-            resp = self.client.get(
-                '/user/viewprofile',
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-
-            data = json.loads(resp.data.decode())
+            data_1 = json.loads(resp_1.data.decode())
             self.assertEqual(resp_1.status_code, 200)
+            self.assertEqual(data_1['status'], 'success')
+
+            data_2 = json.loads(resp_2.data.decode())
             self.assertEqual(resp_2.status_code, 200)
-            self.assertEqual(resp.status_code, 200)
-            self.assertEqual(data['status'], 'success')
-            self.assertEqual(data['data']['aim'], 'Defeat the Empire')
-            self.assertEqual(data['data']['phase_transform_exp'], 'Expert')
+            self.assertEqual(data_2['status'], 'success')
+
+            updated_user = User.objects.get(email=leia.email)
+            profile_obj = json.loads(updated_user.profile.to_json())
+            self.assertEqual(profile_obj['aim'], 'Defeat the Empire')
+            self.assertEqual(profile_obj['phase_transform_exp'], 'Expert')
             self.assertEqual(
-                data['data']['highest_education'], 'University of Alderaan'
+                profile_obj['highest_education'], 'University of Alderaan'
             )
-            self.assertEqual(data['data']['sci_tech_exp'], 'Expert')
-
-    def test_view_user_profile_none(self):
-        """
-        Ensure view profile request fails if a user profile has not been set
-        yet.
-        """
-        yoda = User(
-            email='yoda@jedi.io',
-            first_name='Yoda',
-            last_name='NoLastName'
-        )
-        yoda.set_password('DoOrDoNot')
-        yoda.save()
-
-        with self.client:
-            resp_login = self.client.post(
-                '/auth/login',
-                data=json.dumps(
-                    {
-                        'email': 'yoda@jedi.io',
-                        'password': 'DoOrDoNot'
-                    }
-                ),
-                content_type='application/json'
-            )
-            token = json.loads(resp_login.data.decode())['token']
-
-            resp = self.client.get(
-                '/user/viewprofile',
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-
-            data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 400)
-            self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'User Profile not set yet.')
+            self.assertEqual(profile_obj['sci_tech_exp'], 'Expert')
 
     def test_update_user_profile_override(self):
         """
@@ -627,8 +907,8 @@ class TestUserService(BaseTestCase):
             )
             token = json.loads(resp_login.data.decode())['token']
 
-            resp_1 = self.client.post(
-                '/user/updateprofile',
+            resp_1 = self.client.put(
+                '/user/profile',
                 data=json.dumps(
                     {
                         'aim' : 'Stop the Sif from returning.',
@@ -641,8 +921,8 @@ class TestUserService(BaseTestCase):
                 content_type='application/json'
             )
 
-            resp_2 = self.client.post(
-                '/user/updateprofile',
+            resp_2 = self.client.put(
+                '/user/profile',
                 data=json.dumps(
                     {
                         'aim': 'Stop the Sith from returning.',
@@ -653,23 +933,24 @@ class TestUserService(BaseTestCase):
                 content_type='application/json'
             )
 
-            resp = self.client.get(
-                '/user/viewprofile',
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-
-            data = json.loads(resp.data.decode())
+            data_1 = json.loads(resp_1.data.decode())
             self.assertEqual(resp_1.status_code, 200)
+            self.assertEqual(data_1['status'], 'success')
+
+            data_2 = json.loads(resp_2.data.decode())
             self.assertEqual(resp_2.status_code, 200)
-            self.assertEqual(resp.status_code, 200)
-            self.assertEqual(data['status'], 'success')
-            # self.assertEqual(data['data']['aim'], 'Stop the Sith from returning.')
-            self.assertEqual(data['data']['phase_transform_exp'], 'Limited')
+            self.assertEqual(data_2['status'], 'success')
+
+            updated_user = User.objects.get(email=mace.email)
+            profile_obj = json.loads(updated_user.profile.to_json())
             self.assertEqual(
-                data['data']['highest_education'], 'Jedi Council Member'
+                profile_obj['aim'], 'Stop the Sith from returning.'
             )
-            self.assertEqual(data['data']['sci_tech_exp'], 'Limited')
+            self.assertEqual(profile_obj['phase_transform_exp'], 'Limited')
+            self.assertEqual(
+                profile_obj['highest_education'], 'Jedi Council Member'
+            )
+            self.assertEqual(profile_obj['sci_tech_exp'], 'Limited')
 
 
 if __name__ == '__main__':

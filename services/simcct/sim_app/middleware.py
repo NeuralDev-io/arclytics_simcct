@@ -45,6 +45,8 @@ def token_required(f):
 
         # TODO(andrew@neuraldev.io -- Sprint 6): Find a way to validate this is
         #  is a valid token for a user.
+        #  - We can check the session store to confirm if the token is valid
+        #    for a user.
 
         return f(token, *args, **kwargs)
 

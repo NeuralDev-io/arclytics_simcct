@@ -28,9 +28,44 @@ from marshmallow import ValidationError
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
 from sim_app.middleware import token_required
-from sim_app.schemas import AlloySchema
+from sim_app.schemas import (
+    AlloySchema, ConfigurationsSchema, NonLimitConfigsSchema
+)
 
 configs_blueprint = Blueprint('configs', __name__)
+
+
+@configs_blueprint.route(rule='/configs/update', methods=['PUT'])
+@token_required
+def update_configurations(token):
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    post_data = request.get_json()
+    if not post_data:
+        return jsonify(response), 400
+
+    session_configs = session.get(f'{token}:configurations')
+    if session_configs is None:
+        response['message'] = 'No previous session configurations was set.'
+        return jsonify(response), 404
+
+    # validate the configurations again
+    try:
+        configs = NonLimitConfigsSchema().load(post_data)
+    except ValidationError as e:
+        response['errors'] = e.messages
+        return jsonify(response), 400
+
+    sess_store = session.get(f'{token}:configurations')
+    sess_store['grain_size_type'] = configs['grain_size_type']
+    sess_store['grain_size'] = configs['grain_size']
+    sess_store['nucleation_start'] = configs['nucleation_start']
+    sess_store['nucleation_finish'] = configs['nucleation_finish']
+    sess_store['start_temp'] = configs['start_temp']
+    sess_store['cct_cooling_rate'] = configs['cct_cooling_rate']
+    session[f'{token}:configurations'] = sess_store
+
+    return jsonify({}), 204
 
 
 @configs_blueprint.route(rule='/configs/method/update', methods=['POST'])
@@ -239,13 +274,6 @@ def auto_calculate_ms_bs(token):
     ms_temp = SimConfig.get_ms(method=_transformation_method, comp=comp_np_arr)
     bs_temp = SimConfig.get_bs(method=_transformation_method, comp=comp_np_arr)
 
-    if ms_temp == -1 or bs_temp == -1:
-        response['message'] = (
-            'Something went wrong with the MS and BS '
-            'calculations'
-        )
-        return jsonify(response), 418
-
     # Save the new calculated BS and MS to the Session store
     session_configs['ms_temp'] = ms_temp
     session_configs['bs_temp'] = bs_temp
@@ -256,6 +284,47 @@ def auto_calculate_ms_bs(token):
     response['data'] = {'ms_temp': ms_temp, 'bs_temp': bs_temp}
 
     return jsonify(response), 200
+
+
+@configs_blueprint.route(rule='/configs/update/ms-bs', methods=['PUT'])
+@token_required
+def update_ms_bs(token):
+    """If the user manually updates the MS and BS temperatures in the client,
+    we receive those and update the session cache.
+
+    Args:
+        token: a valid JWT token.
+
+    Returns:
+        Only the 204 status code with no response body.
+    """
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    post_data = request.get_json()
+    if not post_data:
+        return jsonify(response), 400
+
+    # Let's do some validation of those arguments we really need.
+    ms_temp = post_data.get('ms_temp', None)
+    bs_temp = post_data.get('bs_temp', None)
+
+    if not ms_temp:
+        response['message'] = 'MS temperature is required.'
+        return jsonify(response), 400
+
+    if not bs_temp:
+        response['message'] = 'BS temperature is required.'
+        return jsonify(response), 400
+
+    session_configs = session.get(f'{token}:configurations')
+    if session_configs is None:
+        response['message'] = 'No previous session configurations was set.'
+        return jsonify(response), 404
+
+    session_configs['ms_temp'] = ms_temp
+    session_configs['bs_temp'] = bs_temp
+
+    return jsonify({}), 204
 
 
 @configs_blueprint.route(rule='/configs/auto/ae', methods=['POST'])
@@ -307,6 +376,47 @@ def auto_calculate_ae(token):
     response['data'] = {'ae1_temp': ae1, 'ae3_temp': ae3}
 
     return jsonify(response), 200
+
+
+@configs_blueprint.route(rule='/configs/update/ae', methods=['PUT'])
+@token_required
+def update_ae(token):
+    """If the user manually updates the Ae1 and Ae3 temperatures in the client,
+        we receive those and update the session cache.
+
+    Args:
+        token: a valid JWT token.
+
+    Returns:
+        Only the 204 status code with no response body.
+    """
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    post_data = request.get_json()
+    if not post_data:
+        return jsonify(response), 400
+
+    # Let's do some validation of those arguments we really need.
+    ae1_temp = post_data.get('ae1_temp', None)
+    ae3_temp = post_data.get('ae3_temp', None)
+
+    if not ae1_temp:
+        response['message'] = 'Ae1 temperature is required.'
+        return jsonify(response), 400
+
+    if not ae3_temp:
+        response['message'] = 'Ae3 temperature is required.'
+        return jsonify(response), 400
+
+    session_configs = session.get(f'{token}:configurations')
+    if session_configs is None:
+        response['message'] = 'No previous session configurations was set.'
+        return jsonify(response), 404
+
+    session_configs['ae1_temp'] = ae1_temp
+    session_configs['ae3_temp'] = ae3_temp
+
+    return jsonify({}), 204
 
 
 @configs_blueprint.route(rule='/configs/auto/xfe', methods=['POST'])
@@ -371,3 +481,50 @@ def auto_calculate_xfe(token):
     response['data'] = {'xfe_value': xfe, 'cf_value': cf, 'ceut_value': ceut}
 
     return jsonify(response), 200
+
+
+@configs_blueprint.route(rule='/configs/update/xfe', methods=['PUT'])
+@token_required
+def update_xfe(token):
+    """If the user manually updates the Xfe, Cf and Ceut temperatures in the
+    client, we receive those and update the session cache.
+
+    Args:
+        token: a valid JWT token.
+
+    Returns:
+        Only the 204 status code with no response body.
+    """
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    post_data = request.get_json()
+    if not post_data:
+        return jsonify(response), 400
+
+    # Let's do some validation of those arguments we really need.
+    xfe_value = post_data.get('xfe_value', None)
+    cf_value = post_data.get('cf_value', None)
+    ceut_value = post_data.get('ceut_value', None)
+
+    if not xfe_value:
+        response['message'] = 'Xfe value is required.'
+        return jsonify(response), 400
+
+    if not cf_value:
+        response['message'] = 'Cf value is required.'
+        return jsonify(response), 400
+
+    if not ceut_value:
+        response['message'] = 'Ceut value is required.'
+        return jsonify(response), 400
+
+    session_configs = session.get(f'{token}:configurations')
+    if session_configs is None:
+        response['message'] = 'No previous session configurations was set.'
+        return jsonify(response), 404
+
+    session_configs['xfe_value'] = xfe_value
+    session_configs['cf_value'] = cf_value
+    session_configs['ceut_value'] = ceut_value
+
+    return jsonify({}), 204

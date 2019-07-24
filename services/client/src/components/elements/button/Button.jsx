@@ -17,13 +17,13 @@ import { InlineSpinner } from '../spinner'
 
 import styles from './Button.module.scss'
 
-// TODO: Add styling support for buttons with icons
 const Button = (props) => {
   const {
     type = 'button',
     appearance = 'default',
     length = 'default',
     isDisabled = false,
+    IconComponent = null,
     className,
     isLoading,
     onClick,
@@ -34,11 +34,18 @@ const Button = (props) => {
   return (
     // eslint-disable-next-line react/button-has-type
     <button className={classname} onClick={onClick} type={type} disabled={isDisabled}>
-      {
-        isLoading
-          ? <InlineSpinner />
-          : children
-      }
+      {(() => {
+        if (isLoading) return <InlineSpinner />
+        if (IconComponent !== null) {
+          return (
+            <React.Fragment>
+              <IconComponent className={styles.icon} />
+              {children}
+            </React.Fragment>
+          )
+        }
+        return children
+      })()}
     </button>
   )
 }
@@ -54,6 +61,7 @@ Button.propTypes = {
   /* length?: "default" | "short" | "long" */
   length: PropTypes.string,
   onClick: PropTypes.func.isRequired,
+  IconComponent: PropTypes.node,
 }
 
 Button.defaultProps = {
@@ -63,6 +71,7 @@ Button.defaultProps = {
   appearance: 'default',
   length: 'default',
   isDisabled: false,
+  IconComponent: null,
 }
 
 export default Button

@@ -29,11 +29,10 @@ from threading import Thread
 from flask import Blueprint, jsonify, request
 from mongoengine.errors import ValidationError, NotUniqueError
 
-from users_api.models.models import User
-from users_api import bcrypt
+from users_app.models import User
+from users_app import bcrypt
 from logger.arc_logger import AppLogger
-from users_api.middleware import authenticate
-from users_api.models.models import SimpleUTC
+from users_app.middleware import authenticate
 
 logger = AppLogger(__name__)
 
@@ -120,7 +119,7 @@ def async_register_session(user: User = None,
     down. Although you may need to be careful about tracking down bugs.
 
     Args:
-        user: the `users_api.models.User` to create a session for.
+        user: the `users_app.models.User` to create a session for.
         auth_token: a stringified type of the User's JWT token.
 
     Returns:
@@ -136,7 +135,7 @@ def async_register_session(user: User = None,
 
     last_configs = None
     last_compositions = None
-    user_id = ''
+    user_id = ''  # Just for printing SessionValidationError
 
     if isinstance(user, User):
         user_id = user.id
@@ -152,7 +151,7 @@ def async_register_session(user: User = None,
             last_compositions['alloy_type'] = user.last_configuration['alloy']
 
     resp = requests.post(
-        url=f'http://{simcct_host}/session',
+        url=f'http://{simcct_host}/session/login',
         json={
             '_id': str(user_id),
             'last_configurations': last_configs,
@@ -243,6 +242,8 @@ def login() -> Tuple[dict, int]:
 def logout(resp) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
     response = {'status': 'success', 'message': 'Successfully logged out.'}
+
+    # TODO(andrew@neuraldev.io): Delete the session
 
     return jsonify(response), 200
 

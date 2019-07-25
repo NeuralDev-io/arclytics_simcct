@@ -102,7 +102,7 @@ class TestSessionService(BaseTestCase):
         self.assertTrue(session.get(f'{self.token}:alloy'))
 
     def test_session_user_ping(self):
-        """Just a sanity check test that there is connection to users-server."""
+        """Just a sanity check test that there is connection to users."""
         with current_app.test_client() as client:
             res = client.get('/users/ping', content_type='application/json')
             data = json.loads(res.data.decode())
@@ -112,7 +112,7 @@ class TestSessionService(BaseTestCase):
 
     def test_session_post(self):
         """Ensure we can use the requests library to make registration/login
-        to the users-server and get the correct responses.
+        to the users and get the correct responses.
         """
         with self.app.test_client() as client:
             # Made a helper method that was being reused which does the test for

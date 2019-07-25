@@ -117,7 +117,7 @@ def session_login(token):
 @token_required
 def session_logout(token):
     """We need to destroy the Session store of the user's configurations and
-    other storage matters if the user has logged out from the users-server.
+    other storage matters if the user has logged out from the users.
 
     Args:
         token: a valid JWT token associated with the user.
@@ -152,7 +152,7 @@ def session_logout(token):
 def ping_users_server():
     """
     This is just a sanity check to ensure we can connect from this server to
-    the users-server through Docker just fine.
+    the users through Docker just fine.
     """
     users_server = os.environ.get('USERS_HOST', None)
     # We use the built-in DNS server of Docker to resolve the correct

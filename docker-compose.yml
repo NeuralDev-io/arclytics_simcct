@@ -147,13 +147,5 @@ services:
     environment:
       - URL=swagger.yaml
 
-  swagger-editor:
-    image: swaggerapi/swagger-editor
-    container_name: swagger-editor
-    ports:
-      - 80:8080
-    expose:
-      - 80
-
 networks:
   host:

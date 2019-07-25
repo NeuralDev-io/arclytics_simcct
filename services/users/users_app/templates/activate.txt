@@ -1,6 +1,6 @@
 Welcome to Arclytics Sim!
 
-Dear {{ user_name }}}</p>
+Dear {{ user_name }}
 
 To activate your Arclytics Sim account please verify the email address
 you provided during registration by clicking the link below or by entering

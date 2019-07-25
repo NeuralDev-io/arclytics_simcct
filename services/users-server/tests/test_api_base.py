@@ -33,7 +33,7 @@ app = create_app()
 
 class BaseTestCase(TestCase):
     def create_app(self):
-        app.config.from_object('users_app.config.TestingConfig')
+        app.config.from_object('users_app.flask_conf.TestingConfig')
         self.db = init_db(app)
         set_flask_mongo(self.db)
         return app

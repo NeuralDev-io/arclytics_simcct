@@ -160,9 +160,10 @@ def async_register_session(user: User = None,
         if user.last_configuration is not None:
             last_configs = user.last_configuration.to_dict()
 
+        # TODO(andrew@neuraldev.io): Change this to match new schema
         if user.last_compositions is not None:
             last_compositions['alloy'] = user.last_compositions
-            last_compositions['alloy_type'] = user.last_configuration['alloy']
+            last_compositions['alloy_type'] = 'parent'
 
     resp = requests.post(
         url=f'http://{simcct_host}/session/login',

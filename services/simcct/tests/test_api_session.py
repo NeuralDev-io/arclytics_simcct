@@ -251,7 +251,6 @@ class TestSessionService(BaseTestCase):
         configs = {
             'is_valid': True,
             'method': 'Li98',
-            'alloy_type': 'parent',
             'grain_size': 8.0,
             'nucleation_start': 1.0,
             'nucleation_finish': 99.9,
@@ -290,7 +289,6 @@ class TestSessionService(BaseTestCase):
             self.assertEqual(data['message'], 'User session initiated.')
             sess_saved = session.get(f'{str(self.token)}:configurations')
             self.assertEqual(sess_saved['method'], 'Li98')
-            self.assertEqual(sess_saved['alloy_type'], 'parent')
             self.assertEqual(sess_saved['grain_size'], 8.0)
             self.assertEqual(sess_saved['auto_calculate_ms'], True)
             self.assertEqual(sess_saved['auto_calculate_bs'], True)
@@ -301,7 +299,6 @@ class TestSessionService(BaseTestCase):
         configs = {
             'is_valid': True,
             'method': 'Li98',
-            'alloy_type': 'parent',
             'grain_size': 8.0,
             'nucleation_start': 1.0,
             'nucleation_finish': 99.9,

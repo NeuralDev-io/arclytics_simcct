@@ -19,17 +19,14 @@ __date__ = '2019.07.22'
 {Description}
 """
 
-from threading import Thread
-
-from flask import current_app
+from flask import current_app as app
 from flask_mail import Message
 
-from users_app import mail
+from users_app.extensions import mail
 
 
-def send_async_email(app, msg) -> None:
-    with app.app_context():
-        mail.send(msg)
+def send_async_email(msg) -> None:
+    mail.send(msg)
 
 
 def send_email(to, subject, template, **kwargs):
@@ -44,10 +41,9 @@ def send_email(to, subject, template, **kwargs):
     Returns:
         A Python Threading Thread so we can collect it for return messages.
     """
+    subject = '{} {}'.format(app.config['MAIL_SUBJECT_PREFIX'], subject)
     msg = Message(
-        subject=(
-            current_app.config['MAIL_SUBJECT_PREFIX'] + ' ' + subject
-        ),
+        subject=subject,
         recipients=[to],
         html=template
     )

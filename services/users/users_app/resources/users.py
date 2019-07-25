@@ -62,52 +62,6 @@ def user(resp) -> Tuple[dict, int]:
     return jsonify(response), 200
 
 
-@users_blueprint.route('/test/send', methods=['POST'])
-def test_email_send():
-
-    response = {'status': 'fail', 'message': 'Invalid payload.'}
-
-    post_data = request.get_json()
-
-    if not post_data:
-        return jsonify(), 400
-
-    email = post_data.get('email', None)
-
-    if not email:
-        response['message'] = 'No email.'
-
-    token = generate_confirmation_token(email)
-    confirm_url = generate_url('users.confirm_email', token)
-
-    from celery_runner import celery
-    task = celery.send_task(
-        'tasks.send_email',
-        kwargs={
-            'to':
-            email,
-            'subject_suffix':
-            'Please Confirm Your Email',
-            'html_template':
-            render_template(
-                'activate.html',
-                confirm_url=confirm_url,
-                user_name='Andrew Che'
-            ),
-            'text_template':
-            render_template(
-                'activate.txt',
-                confirm_url=confirm_url,
-                user_name='Andrew Che'
-            )
-        }
-    )
-    result = celery.AsyncResult(task.id)
-    print(result)
-
-    return jsonify({'status': 'success', 'task_id': task.id}), 202
-
-
 @users_blueprint.route('/confirm/<token>', methods=['GET'])
 def confirm_email(token):
     response = {'status': 'fail', 'message': 'Invalid payload.'}

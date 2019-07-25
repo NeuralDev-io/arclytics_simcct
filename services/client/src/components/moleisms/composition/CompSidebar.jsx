@@ -24,7 +24,7 @@ class CompSidebar extends Component {
             onChange={onChange}
           />
           <CompTable
-            data={values.compositions}
+            data={[]}
           />
         </div>
         <Button
@@ -41,15 +41,41 @@ class CompSidebar extends Component {
 
 CompSidebar.propTypes = {
   values: PropTypes.shape({
-    alloy: PropTypes.string,
-    compositions: PropTypes.arrayOf(PropTypes.shape({
+    alloyOption: PropTypes.string,
+    parent: PropTypes.shape({
       name: PropTypes.string,
-      symbol: PropTypes.string,
-      weight: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number,
-      ]),
-    })),
+      compositions: PropTypes.arrayOf(PropTypes.shape({
+        symbol: PropTypes.string,
+        weight: PropTypes.oneOfType([
+          PropTypes.string,
+          PropTypes.number,
+        ]),
+      })),
+    }),
+    weld: PropTypes.shape({
+      name: PropTypes.string,
+      compositions: PropTypes.arrayOf(PropTypes.shape({
+        symbol: PropTypes.string,
+        weight: PropTypes.oneOfType([
+          PropTypes.string,
+          PropTypes.number,
+        ]),
+      })),
+    }),
+    mix: PropTypes.shape({
+      name: PropTypes.string,
+      compositions: PropTypes.arrayOf(PropTypes.shape({
+        symbol: PropTypes.string,
+        weight: PropTypes.oneOfType([
+          PropTypes.string,
+          PropTypes.number,
+        ]),
+      })),
+    }),
+    dialution: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+    ]),
   }).isRequired,
   onChange: PropTypes.func.isRequired,
   onSimulate: PropTypes.func.isRequired,

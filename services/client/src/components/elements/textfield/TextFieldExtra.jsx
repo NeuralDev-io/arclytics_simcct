@@ -6,6 +6,7 @@ import styles from './TextFieldExtra.module.scss'
 
 const TextFieldExtra = (props) => {
   const {
+    length = 'default',
     prefix,
     suffix,
     className,
@@ -14,7 +15,7 @@ const TextFieldExtra = (props) => {
   const classname = `${prefix !== '' && styles.withPrefix} ${suffix !== '' && styles.withSuffix} ${className}`
 
   return (
-    <div className={styles.inputContainer}>
+    <div className={`${styles.inputContainer} ${styles[length]}`}>
       {prefix !== '' && <span className={styles.prefix}>{prefix}</span>}
       <TextField
         {...other}
@@ -26,12 +27,14 @@ const TextFieldExtra = (props) => {
 }
 
 TextFieldExtra.propTypes = {
+  length: PropTypes.string,
   prefix: PropTypes.string,
   suffix: PropTypes.string,
   className: PropTypes.string,
 }
 
 TextFieldExtra.defaultProps = {
+  length: 'default',
   prefix: '',
   suffix: '',
   className: '',

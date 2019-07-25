@@ -28,14 +28,16 @@ from typing import Tuple, Optional
 from threading import Thread
 
 from celery.states import PENDING
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify, request, render_template, redirect
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from users_app.models import User
 from users_app.extensions import bcrypt
 from logger.arc_logger import AppLogger
 from users_app.middleware import authenticate, logout_authenticate
-from users_app.token import generate_confirmation_token, generate_url
+from users_app.token import (
+    generate_confirmation_token, generate_url, confirm_token
+)
 
 logger = AppLogger(__name__)
 
@@ -60,6 +62,25 @@ class SimCCTBadServerLogout(Exception):
 
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
+
+
+@auth_blueprint.route('/confirm/<token>', methods=['GET'])
+def confirm_email(token):
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    try:
+        email = confirm_token(token)
+    except Exception as e:
+        return jsonify(response), 400
+
+    user = User.objects.get(email=email)
+
+    user.verified = True
+
+    response['status'] = 'success'
+    response.pop('message')
+    client_host = os.environ.get('CLIENT_HOST')
+    return redirect('http://localhost:3000/signin', code=302)
 
 
 @auth_blueprint.route(rule='/auth/register', methods=['POST'])
@@ -110,7 +131,7 @@ def register_user() -> Tuple[dict, int]:
         auth_token = new_user.encode_auth_token(new_user.id)
         # generate the confirmation token for verifying email
         confirmation_token = generate_confirmation_token(email)
-        confirm_url = generate_url('users.confirm_email', confirmation_token)
+        confirm_url = generate_url('auth.confirm_email', confirmation_token)
 
         from celery_runner import celery
         task = celery.send_task(

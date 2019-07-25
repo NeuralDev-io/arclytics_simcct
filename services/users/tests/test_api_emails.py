@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# test_emails.py
+# test_api_emails.py
 #
 # Attributions:
 # [1]
@@ -12,7 +12,7 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.23'
-"""test_emails.py: 
+"""test_api_emails.py: 
 
 {Description}
 """
@@ -55,8 +55,8 @@ class MyTestCase(BaseTestCase):
     def test_generate_url(self):
         """Ensure generate_url behaves as expected."""
         token = generate_confirmation_token('dummy@email.com')
-        url = generate_url('users.confirm_email', token)
-        url_token = url.split('=')[1]
+        url = generate_url('auth.confirm_email', token)
+        url_token = url.split('/')[4]
         self.assertEqual(token, url_token)
         email = confirm_token(url_token)
         self.assertEqual(email, 'dummy@email.com')

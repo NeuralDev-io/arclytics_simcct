@@ -14,6 +14,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
+import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
 import Button from '../../elements/button'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
@@ -172,6 +174,11 @@ class SimulationPage extends Component {
               onClick={() => this.setState(prevState => ({
                 displayConfig: !prevState.displayConfig,
               }))}
+              IconComponent={props => (
+                displayConfig
+                  ? <ChevronUpIcon {...props} />
+                  : <ChevronDownIcon {...props} />
+              )}
             >
               {displayConfig ? 'Collapse' : 'Expand'}
             </Button>

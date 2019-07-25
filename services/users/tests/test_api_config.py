@@ -26,14 +26,14 @@ import unittest
 from flask import current_app
 from flask_testing import TestCase
 
-from users_app import create_app
+from users_app.app import create_app
 
 app = create_app()
 
 
 class TestDevelopmentConfig(TestCase):
     def create_app(self):
-        app.config.from_object('users_app.config.DevelopmentConfig')
+        app.config.from_object('users_app.flask_conf.DevelopmentConfig')
         return app
 
     def test_app_is_development(self):
@@ -49,7 +49,7 @@ class TestDevelopmentConfig(TestCase):
 
 class TestTestingConfig(TestCase):
     def create_app(self):
-        app.config.from_object('users_app.config.TestingConfig')
+        app.config.from_object('users_app.flask_conf.TestingConfig')
         return app
 
     def test_app_is_testing(self):
@@ -66,7 +66,7 @@ class TestTestingConfig(TestCase):
 
 class TestProductionConfig(TestCase):
     def create_app(self):
-        app.config.from_object('users_app.config.ProductionConfig')
+        app.config.from_object('users_app.flask_conf.ProductionConfig')
         return app
 
     def test_app_is_production(self):

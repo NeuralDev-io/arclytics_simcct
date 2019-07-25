@@ -84,11 +84,21 @@ def test_email_send():
     task = celery.send_task(
         'tasks.send_email',
         kwargs={
-            'to': email,
-            'subject_suffix': 'Please Confirm Your Email',
-            'html_template': render_template(
+            'to':
+            email,
+            'subject_suffix':
+            'Please Confirm Your Email',
+            'html_template':
+            render_template(
                 'activate.html',
-                confirm_url=confirm_url
+                confirm_url=confirm_url,
+                user_name='Andrew Che'
+            ),
+            'text_template':
+            render_template(
+                'activate.txt',
+                confirm_url=confirm_url,
+                user_name='Andrew Che'
             )
         }
     )

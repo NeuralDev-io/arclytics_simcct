@@ -26,18 +26,22 @@ from celery_worker import celery
 
 
 @celery.task()
-def add_together(a, b):
-    return a + b
+def log(msg: str):
+    """Just a simple task to test if we send a message we receive it back."""
+    return msg
 
 
 @celery.task()
-def send_email(to: str, subject_suffix: str, html_template, **kwargs):
+def send_email(
+    to: str, subject_suffix: str, html_template, text_template, **kwargs
+) -> None:
     """A task to send an email.
 
     Args:
         to: A string of the email that it is being sent to.
         subject_suffix: A subject_suffix as a message.
-        html_template: A Flask rendered HTML template of the email body.
+        html_template: A Flask Jinja2 rendered HTML template of the email body.
+        text_template: A Flask Jinja2 rendered text template.
         **kwargs:
 
     Returns:
@@ -47,6 +51,7 @@ def send_email(to: str, subject_suffix: str, html_template, **kwargs):
     msg = Message(
         subject=subject,
         recipients=[to],
-        html=html_template
+        html=html_template,
+        body=text_template
     )
     mail.send(msg)

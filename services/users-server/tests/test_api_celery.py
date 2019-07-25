@@ -27,7 +27,7 @@ from flask import current_app as app
 from tests.test_api_base import BaseTestCase
 
 
-class MyTestCase(BaseTestCase):
+class TestCeleryRequest(BaseTestCase):
     def test_celery_request(self):
         """Ensure we get the expected results from our test."""
         with app.test_client() as client:
@@ -42,5 +42,3 @@ class MyTestCase(BaseTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-# 

@@ -26,10 +26,8 @@ import os
 class BaseConfig:
     """Base configuration"""
     TESTING = False
-    SECRET_KEY = 'HAIL HYDRA'
-    SECURITY_PASSWORD_SALT = 'DEVELOPMENT SALTING IS NOT SECURE'
-    TOKEN_EXPIRATION_DAYS = 30
-    TOKEN_EXPIRATION_SECONDS = 0
+    SECRET_KEY = os.environ.get('SECRET_KEY', '')
+    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', '')
 
     # Flask Email
     MAIL_SUBJECT_PREFIX = '[Arclytics]'
@@ -53,10 +51,6 @@ class DevelopmentConfig(BaseConfig):
 class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
-    MONGO_DBNAME = 'arc_test'
-    TOKEN_EXPIRATION_DAYS = 0
-    TOKEN_EXPIRATION_SECONDS = 5
-
     SESSION_PERMANENT = False
 
     # CELERY REDIS
@@ -64,8 +58,3 @@ class TestingConfig(BaseConfig):
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/14'
     CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/1'
-
-
-class ProductionConfig(BaseConfig):
-    """Production configuration"""
-    pass

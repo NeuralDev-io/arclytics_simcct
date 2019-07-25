@@ -46,7 +46,7 @@ services:
     environment:
       - C_FORCE_ROOT=true
       - FLASK_ENV=development
-      - APP_SETTINGS=worker_app.flask_conf.DevelopmentConfig
+      - APP_SETTINGS=flask_conf.DevelopmentConfig
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     depends_on:

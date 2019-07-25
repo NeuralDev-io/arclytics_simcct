@@ -21,17 +21,13 @@ This file defines all the API resource routes and controller definitions using
 the Flask Resource inheritance model.
 """
 
-import os
 from typing import Tuple
 
-from flask import Blueprint, jsonify, render_template, request, redirect
+from flask import Blueprint, jsonify
 
 from logger.arc_logger import AppLogger
 from users_app.models import User
 from users_app.middleware import authenticate, authenticate_admin
-from users_app.token import (
-    confirm_token, generate_confirmation_token, generate_url
-)
 
 users_blueprint = Blueprint('users', __name__)
 
@@ -59,34 +55,6 @@ def user_list(resp) -> Tuple[dict, int]:
 def user(resp) -> Tuple[dict, int]:
     user = User.objects.get(id=resp)
     response = {'status': 'success', 'data': user.to_dict()}
-    return jsonify(response), 200
-
-
-@users_blueprint.route('/confirm/<token>', methods=['GET'])
-def confirm_email(token):
-    response = {'status': 'fail', 'message': 'Invalid payload.'}
-
-    try:
-        email = confirm_token(token)
-    except Exception as e:
-        return jsonify(response), 400
-
-    user = User.objects.get(email=email)
-
-    user.verified = True
-
-    response['status'] = 'success'
-    response.pop('message')
-    client_host = os.environ.get('CLIENT_HOST')
-    return redirect(f'{client_host}/signin', code=302)
-
-
-@users_blueprint.route('/test/celery', methods=['GET'])
-def test_celery():
-    # prevents circular imports if we do it here instead of globally
-    from celery_runner import celery
-    result = celery.send_task('worker_app.tasks.add_together', args=[10, 20])
-    response = {'data': result.get()}
     return jsonify(response), 200
 
 

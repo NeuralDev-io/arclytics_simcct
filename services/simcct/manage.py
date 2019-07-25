@@ -42,7 +42,7 @@ COV = coverage.coverage(
         'sim_app/middleware.py',
     ],
     omit=[
-        'sim_app/__init__.py'
+        'sim_app/app.py'
         'tests/*',
         'configs/*',
         'logs/*',

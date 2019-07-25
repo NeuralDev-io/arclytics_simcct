@@ -3,33 +3,60 @@ version: '3.7'
 
 services:
 
-  users-server:
+  users:
     build:
-      context: services/users-server
+      context: ./services/users
       dockerfile: Dockerfile
     image: arc_sim_users_service:1.0
     container_name: arc-users
     volumes:  # used to mount the code into the container for live updates
-      - ./services/users-server:/usr/src/app
+      - ./services/users:/usr/src/app
     ports:
       - 8000:8000
     expose:
       - 8000
     environment:
       - FLASK_ENV=development
-      - APP_SETTINGS=users_app.config.DevelopmentConfig
+      - APP_SETTINGS=users_app.flask_conf.DevelopmentConfig
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - MONGO_URI=mongodb://mongodb:27017
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - SIMCCT_HOST=simcct:8001
+      - CLIENT_HOST=client:3000
     depends_on:
       - mongodb
+      - redis
+    networks:
+      - host
+
+  celery-worker:
+    build:
+      context: ./services/celery-worker
+      dockerfile: Dockerfile
+    image: arc_sim_celery_service:1.0
+    container_name: arc-celery
+    volumes:
+      - ./services/celery-worker:/usr/src/app
+    ports:
+      - 5555:5555  # Flower Web GUI management of Celery
+    expose:
+      - 5555
+    environment:
+      - C_FORCE_ROOT=true
+      - FLASK_ENV=development
+      - APP_SETTINGS=flask_conf.DevelopmentConfig
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
     networks:
       - host
 
   simcct:
     build:
-      context: services/simcct
+      context: ./services/simcct
       dockerfile: Dockerfile
     image: arc_simcct_service:1.0
     container_name: arc-simcct
@@ -45,7 +72,7 @@ services:
       - APP_SETTINGS=configs.flask_conf.DevelopmentConfig
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - USERS_HOST=users-server:8000
+      - USERS_HOST=users:8000
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - MONGO_URI=mongodb://mongodb:27017
@@ -58,7 +85,7 @@ services:
     build:
       context: ./services/redis
       dockerfile: Dockerfile
-    image: arc_sim_redis:0.1
+    image: arc_sim_redis:1.0
     restart: always
     container_name: arc-redis
     ports:
@@ -101,10 +128,12 @@ services:
     environment:
       - NODE_ENV=development
     depends_on:
-      - users-server
+      - users
       - mongodb
     links:
-      - users-server
+      - users
+    networks:
+      - host
 
   swagger:
     build:
@@ -120,14 +149,8 @@ services:
       - 3001
     environment:
       - URL=swagger.yaml
-
-  swagger-editor:
-    image: swaggerapi/swagger-editor
-    container_name: swagger-editor
-    ports:
-      - 80:8080
-    expose:
-      - 80
+    networks:
+      - host
 
 networks:
   host:

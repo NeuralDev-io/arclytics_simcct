@@ -22,17 +22,22 @@ login, and logout.
 
 import os
 import requests
+from socket import gaierror
 from datetime import datetime
 from typing import Tuple, Optional
 from threading import Thread
 
-from flask import Blueprint, jsonify, request
+from celery.states import PENDING
+from flask import Blueprint, jsonify, request, render_template, redirect
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from users_app.models import User
-from users_app import bcrypt
+from users_app.extensions import bcrypt
 from logger.arc_logger import AppLogger
 from users_app.middleware import authenticate, logout_authenticate
+from users_app.token import (
+    generate_confirmation_token, generate_url, confirm_token
+)
 
 logger = AppLogger(__name__)
 
@@ -57,6 +62,25 @@ class SimCCTBadServerLogout(Exception):
 
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
+
+
+@auth_blueprint.route('/confirm/<token>', methods=['GET'])
+def confirm_email(token):
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    try:
+        email = confirm_token(token)
+    except Exception as e:
+        return jsonify(response), 400
+
+    user = User.objects.get(email=email)
+
+    user.verified = True
+
+    response['status'] = 'success'
+    response.pop('message')
+    client_host = os.environ.get('CLIENT_HOST')
+    return redirect('http://localhost:3000/signin', code=302)
 
 
 @auth_blueprint.route(rule='/auth/register', methods=['POST'])
@@ -89,8 +113,6 @@ def register_user() -> Tuple[dict, int]:
         response['message'] = 'The password is invalid.'
         return jsonify(response), 400
 
-    # Validation checks
-
     # Create a Mongo User object if one doesn't exists
     if not User.objects(email=email):
         new_user = User(
@@ -107,9 +129,62 @@ def register_user() -> Tuple[dict, int]:
 
         # generate auth token
         auth_token = new_user.encode_auth_token(new_user.id)
+        # generate the confirmation token for verifying email
+        confirmation_token = generate_confirmation_token(email)
+        confirm_url = generate_url('auth.confirm_email', confirmation_token)
+
+        from celery_runner import celery
+        task = celery.send_task(
+            'tasks.send_email',
+            kwargs={
+                'to':
+                email,
+                'subject_suffix':
+                'Please Confirm Your Email',
+                'html_template':
+                render_template(
+                    'activate.html',
+                    confirm_url=confirm_url,
+                    user_name=f'{new_user.first_name} {new_user.last_name}'
+                ),
+                'text_template':
+                render_template(
+                    'activate.txt',
+                    confirm_url=confirm_url,
+                    user_name=f'{new_user.first_name} {new_user.last_name}'
+                )
+            }
+        )
+        # FIXME(andrew@neuraldev.io): Need to find a way to validate that it has
+        #  sent without waiting for the result.
+        task_status = celery.AsyncResult(task.id).state
+
+        while task_status == PENDING:
+            task_status = celery.AsyncResult(task.id).state
+        # The email tasks responds with a Tuple[bool, str]
+        res = celery.AsyncResult(task.id)
+
+        # Generic response regardless of email task working
         response['status'] = 'success'
-        response['message'] = 'User has been registered.'
         response['token'] = auth_token.decode()
+
+        if isinstance(res.result, gaierror):
+            response['error'] = 'Socket error.'
+            response['message'] = (
+                'User registered but registration '
+                'email failed.'
+            )
+            return jsonify(response), 201
+
+        if not res.result[0]:
+            response['error'] = res.result[1]
+            response['message'] = (
+                'User registered but registration '
+                'email failed.'
+            )
+            return jsonify(response), 201
+
+        response['message'] = 'User has been registered.'
         return jsonify(response), 201
 
     except ValidationError as e:
@@ -156,9 +231,10 @@ def async_register_session(user: User = None,
         if user.last_configuration is not None:
             last_configs = user.last_configuration.to_dict()
 
+        # TODO(andrew@neuraldev.io): Change this to match new schema
         if user.last_compositions is not None:
             last_compositions['alloy'] = user.last_compositions
-            last_compositions['alloy_type'] = user.last_configuration['alloy']
+            last_compositions['alloy_type'] = 'parent'
 
     resp = requests.post(
         url=f'http://{simcct_host}/session/login',

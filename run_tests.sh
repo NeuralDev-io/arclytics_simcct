@@ -6,42 +6,42 @@ tty=0
 test_type="test"
 test_type_title="Flask-Testing Unittests (without coverage)"
 
-# Run only the users-server tests
-users-server() {
+# Run only the users tests
+users() {
     echo ""
-    echo "# ==================== # RUNNING USERS-SERVER TESTS # ===================== #"
-    echo "# Beginning ${test_type_title} for Users-Server"
+    echo "# ==================== # RUNNING USERS SERVER TESTS # ===================== #"
+    echo "# Beginning ${test_type_title} for Users Server"
     echo ""
     if [[ ${tty} == 1 ]]; then
-        docker-compose exec -T users-server python manage.py "${test_type}"
+        docker-compose exec -T users python manage.py "${test_type}"
     else
-        docker-compose exec users-server python manage.py "${test_type}"
+        docker-compose exec users python manage.py "${test_type}"
     fi
     echo ""
-    echo "# Finishing ${test_type_title} for Users-Server"
+    echo "# Finishing ${test_type_title} for Users Server"
     echo "# ======================================================================== #"
 }
 
 # Run only the simcct server tests
 simcct() {
     echo ""
-    echo "# ==================== # RUNNING SIMCCT-SERVER TESTS # ==================== #"
-    echo "# Beginning ${test_type_title} for SimCCT-Server"
+    echo "# ==================== # RUNNING SIMCCT SERVER TESTS # ==================== #"
+    echo "# Beginning ${test_type_title} for SimCCT Server"
     echo ""
-    docker-compose exec users-server python manage.py flush
+    docker-compose exec users python manage.py flush
     if [[ ${tty} == 1 ]]; then
         docker-compose exec -T simcct python manage.py "${test_type}"
     else
         docker-compose exec simcct python manage.py "${test_type}"
     fi
     echo ""
-    echo "# Finishing ${test_type_title} for SimCCT-Server"
+    echo "# Finishing ${test_type_title} for SimCCT Server"
     echo "# ======================================================================== #"
 }
 
 # Run server-side tests
 server() {
-  users-server
+  users
   simcct
 }
 
@@ -51,7 +51,7 @@ client() {
 
 # run all tests
 all() {
-  users-server
+  users
   simcct
   # client
   # e2e
@@ -69,11 +69,11 @@ Options:
   -c, --coverage   Run the unit tests with coverage.
 
 Commands:
-  all              Run all unit tests for Arclytics Sim
-  server           Run the server-side unit tests.
-  client           Run the client-side unit tests.
-  users-server     Run only the users-server tests.
-  simcct           Run only the simcct tests.
+  all         Run all unit tests for Arclytics Sim
+  server      Run the server-side unit tests.
+  client      Run the client-side unit tests.
+  users       Run only the users tests.
+  simcct      Run only the simcct tests.
    """
 }
 
@@ -81,41 +81,41 @@ run() {
     ## run appropriate tests
     if [[ "${type}" == "server" ]]; then
         if [[ ${build} == 1 ]]; then
-            docker-compose up -d --build users-server simcct-server mongodb redis
+            docker-compose up -d --build users simcct mongodb redis
             server
             docker-compose down
         else
             server
         fi
-    elif [[ "${type}" == "users-server" ]]; then
+    elif [[ "${type}" == "users" ]]; then
         if [[ ${build} == 1 ]]; then
-            docker-compose up -d --build users-server simcct-server mongodb redis
-            users-server
+            docker-compose up -d --build users simcct mongodb redis
+            users
             docker-compose down
         else
-            users-server
+            users
         fi
     elif [[ "${type}" == "simcct" ]]; then
         if [[ ${build} == 1 ]]; then
-            docker-compose up -d --build users-server simcct mongodb redis
-            simcct-server
+            docker-compose up -d --build users simcct mongodb redis
+            simcct
             docker-compose down
         else
             simcct
         fi
     elif [[ "${type}" == "client" ]]; then
         if [[ ${build} == 1 ]]; then
-            docker-compose up -d --build users-server simcct mongodb redis client
+            docker-compose up -d --build users simcct mongodb redis client
             client
             docker-compose down
         fi
     elif [[ "${type}" == "e2e" ]]; then
         if [[ ${build} == 1 ]]; then
-            docker-compose up -d --build users-server simcct mongodb redis client
+            docker-compose up -d --build users simcct mongodb redis client
         fi
     elif [[ "${type}" == "all" ]]; then
         if [[ ${build} == 1 ]]; then
-            docker-compose up -d --build users-server simcct mongodb redis client
+            docker-compose up -d --build users simcct mongodb redis client
             all
             docker-compose down
         else

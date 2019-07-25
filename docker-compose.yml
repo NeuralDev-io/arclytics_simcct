@@ -31,6 +31,29 @@ services:
     networks:
       - host
 
+  celery-worker:
+    build:
+      context: services/celery-worker
+      dockerfile: Dockerfile
+    image: arc_sim_celery_service:1.0
+    container_name: arc-celery
+    volumes:
+      - ./services/celery-worker:/usr/src/app
+    ports:
+      - 5555:5555  # Flower Web GUI management of Celery
+    expose:
+      - 5555
+    environment:
+      - C_FORCE_ROOT=true
+      - FLASK_ENV=development
+      - APP_SETTINGS=worker_app.flask_conf.DevelopmentConfig
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - host
+
   simcct:
     build:
       context: services/simcct

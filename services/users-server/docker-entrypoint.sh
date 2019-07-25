@@ -58,10 +58,4 @@ echo "APP_SETTINGS: $APP_SETTINGS"
 echo "Starting Flask server..."
 echo ""
 
-# if [ $WSGI == ""]; then
-#     exit
-if [ "$WSGI" == "gunicorn" ]; then
-    gunicorn -b $HOST:$PORT users_app.__init__:app
-else
-    python manage.py run -h $HOST -p $PORT
-fi
+python manage.py run -h $HOST -p $PORT

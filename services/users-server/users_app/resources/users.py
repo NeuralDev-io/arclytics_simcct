@@ -114,9 +114,8 @@ def confirm_email(token):
 @users_blueprint.route('/test/celery', methods=['GET'])
 def test_celery():
     # prevents circular imports if we do it here instead of globally
-    from users_app.tasks import add_together
-    # result = add_together.delay(10, 20)
-    result = add_together.apply_async([10, 20])
+    from celery_runner import celery
+    result = celery.send_task('worker_app.tasks.add_together', args=[10, 20])
     response = {'data': result.get()}
     return jsonify(response), 200
 

@@ -2,5 +2,3 @@ env
 .dockerignore
 Dockerfile
 Dockerfile-prod
-/htmlcov/
-/logs/

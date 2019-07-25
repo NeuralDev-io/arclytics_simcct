@@ -26,7 +26,7 @@ import unittest
 from flask import current_app
 from flask_testing import TestCase
 
-from users_app import create_app
+from users_app.app import create_app
 
 app = create_app()
 

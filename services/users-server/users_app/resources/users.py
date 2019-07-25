@@ -21,6 +21,7 @@ This file defines all the API resource routes and controller definitions using
 the Flask Resource inheritance model.
 """
 
+import os
 from typing import Tuple
 
 from flask import Blueprint, jsonify, render_template, request, redirect
@@ -106,7 +107,18 @@ def confirm_email(token):
 
     response['status'] = 'success'
     response.pop('message')
-    return redirect('http://localhost:3000/signin', code=302)
+    client_host = os.environ.get('CLIENT_HOST')
+    return redirect(f'{client_host}/signin', code=302)
+
+
+@users_blueprint.route('/test/celery', methods=['GET'])
+def test_celery():
+    # prevents circular imports if we do it here instead of globally
+    from users_app.tasks import add_together
+    # result = add_together.delay(10, 20)
+    result = add_together.apply_async([10, 20])
+    response = {'data': result.get()}
+    return jsonify(response), 200
 
 
 # TODO(andrew@neuraldev.io -- Sprint 6)

@@ -30,7 +30,7 @@ from flask import Blueprint, jsonify, request
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from users_app.models import User
-from users_app import bcrypt
+from users_app.extensions import bcrypt
 from logger.arc_logger import AppLogger
 from users_app.middleware import authenticate, logout_authenticate
 from users_app.token import generate_confirmation_token

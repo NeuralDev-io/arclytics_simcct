@@ -17,13 +17,17 @@ services:
       - 8000
     environment:
       - FLASK_ENV=development
-      - APP_SETTINGS=users_app.config.DevelopmentConfig
+      - APP_SETTINGS=users_app.flask_conf.DevelopmentConfig
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - MONGO_URI=mongodb://mongodb:27017
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - SIMCCT_HOST=simcct:8001
+      - CLIENT_HOST=client:3000
     depends_on:
       - mongodb
+      - redis
     networks:
       - host
 
@@ -55,10 +59,7 @@ services:
       - host
 
   redis:
-    build:
-      context: ./services/redis
-      dockerfile: Dockerfile
-    image: arc_sim_redis:0.1
+    image: redis:5.0.5
     restart: always
     container_name: arc-redis
     ports:
@@ -105,6 +106,8 @@ services:
       - mongodb
     links:
       - users-server
+    networks:
+      - host
 
   swagger:
     build:

@@ -66,7 +66,6 @@ def session_login(token):
         configs = {
             'is_valid': False,
             'method': 'Li98',
-            'alloy_type': 'parent',
             'grain_size': 0.0,
             'nucleation_start': 1.0,
             'nucleation_finish': 99.90,

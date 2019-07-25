@@ -353,11 +353,10 @@ Parent:
 {}
 -------------------------------------------------
         """.format(
-            'Method:', self.method.name,
-            'Nucleation Start:', self.nuc_start, 'Nucleation End:',
-            self.nuc_finish, 'Value: ', self.grain_size, 'Auto Calculate:',
-            self.auto_calc_ms, 'MS Temperature:', self.ms_temp,
-            'Auto Calculate:', self.auto_calc_bs, 'BS Temperature: ',
-            self.bs_temp, 'Auto Calculate:', self.auto_calc_ae, 'Ae1:',
-            self.ae1, 'Ae3:', self.ae3, comp_
+            'Method:', self.method.name, 'Nucleation Start:', self.nuc_start,
+            'Nucleation End:', self.nuc_finish, 'Value: ', self.grain_size,
+            'Auto Calculate:', self.auto_calc_ms, 'MS Temperature:',
+            self.ms_temp, 'Auto Calculate:', self.auto_calc_bs,
+            'BS Temperature: ', self.bs_temp, 'Auto Calculate:',
+            self.auto_calc_ae, 'Ae1:', self.ae1, 'Ae3:', self.ae3, comp_
         )

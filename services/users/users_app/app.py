@@ -36,7 +36,6 @@ from users_app.mongodb import MongoSingleton
 from users_app.resources.users import users_blueprint
 from users_app.resources.auth import auth_blueprint
 
-
 # Instantiate the Mongo object to store a connection
 app_settings = os.getenv('APP_SETTINGS')
 _mongo_client = None

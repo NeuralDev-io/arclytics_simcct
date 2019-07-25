@@ -58,4 +58,4 @@ echo "APP_SETTINGS: $APP_SETTINGS"
 echo "Starting Flask server..."
 echo ""
 
-python manage.py run -h $HOST -p $PORT
+python manage.py run -h ${HOST} -p ${PORT}

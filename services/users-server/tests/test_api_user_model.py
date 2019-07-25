@@ -31,7 +31,7 @@ from mongoengine.errors import ValidationError, NotUniqueError
 
 from tests.test_api_base import BaseTestCase
 from users_app.models import (
-    User, PasswordValidationError, USERS, Configuration, Element, Compositions
+    User, PasswordValidationError, USERS, Configuration, Element, Alloy
 )
 
 _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
@@ -104,16 +104,18 @@ class TestUserModel(BaseTestCase):
 
         elem1 = Element(symbol='C', weight=0.044)
         elem2 = Element(symbol='Mn', weight=1.73)
-        comp = Compositions()
-        comp.comp.append(elem1)
-        comp.comp.append(elem2)
+        comp = Alloy()
+        comp.name = ('Selvigium')
+        comp.composition.append(elem1)
+        comp.composition.append(elem2)
         user.last_compositions = comp
         user.cascade_save()
 
-        self.assertEqual(user.last_compositions.comp[0]['symbol'], 'C')
-        self.assertEqual(user.last_compositions.comp[0]['weight'], 0.044)
-        self.assertEqual(user.last_compositions.comp[1]['symbol'], 'Mn')
-        self.assertEqual(user.last_compositions.comp[1]['weight'], 1.73)
+        self.assertEqual(user.last_compositions.name, 'Selvigium')
+        self.assertEqual(user.last_compositions.composition[0]['symbol'], 'C')
+        self.assertEqual(user.last_compositions.composition[0]['weight'], 0.044)
+        self.assertEqual(user.last_compositions.composition[1]['symbol'], 'Mn')
+        self.assertEqual(user.last_compositions.composition[1]['weight'], 1.73)
 
     def test_add_compositions_from_json(self):
         """Ensure we can loop a JSON-converted dict to create a compositions."""
@@ -126,20 +128,22 @@ class TestUserModel(BaseTestCase):
             test_json = json.load(f)
         test_comp = test_json['compositions']
 
-        new_comp_inst = Compositions()
+        new_comp_inst = Alloy()
+        new_comp_inst.name = ('Selvigium')
         for e in test_comp:
             elem_inst = Element(**e)
-            new_comp_inst.comp.append(elem_inst)
+            new_comp_inst.composition.append(elem_inst)
 
         user.last_compositions = new_comp_inst
         user.cascade_save()
 
-        self.assertEqual(user.last_compositions.comp[0]['symbol'], 'C')
-        self.assertEqual(user.last_compositions.comp[0]['weight'], 0.044)
-        self.assertEqual(user.last_compositions.comp[1]['symbol'], 'Mn')
-        self.assertEqual(user.last_compositions.comp[1]['weight'], 1.73)
-        self.assertEqual(user.last_compositions.comp[2]['symbol'], 'Si')
-        self.assertEqual(user.last_compositions.comp[2]['weight'], 0.22)
+        self.assertEqual(user.last_compositions.name, 'Selvigium')
+        self.assertEqual(user.last_compositions.composition[0]['symbol'], 'C')
+        self.assertEqual(user.last_compositions.composition[0]['weight'], 0.044)
+        self.assertEqual(user.last_compositions.composition[1]['symbol'], 'Mn')
+        self.assertEqual(user.last_compositions.composition[1]['weight'], 1.73)
+        self.assertEqual(user.last_compositions.composition[2]['symbol'], 'Si')
+        self.assertEqual(user.last_compositions.composition[2]['weight'], 0.22)
 
     def test_email_validation(self):
         user = User(

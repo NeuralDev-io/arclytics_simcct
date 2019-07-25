@@ -27,12 +27,12 @@ can be used to make a worker by running
 from celery import Celery
 from flask import Flask
 
-from users_app.app import create_app
+from worker_app.app import create_app
 
 
 # Define the modules that contain Celery tasks
 CELERY_TASK_LIST = [
-    'users_app.tasks',
+    'worker_app.tasks',
 ]
 
 

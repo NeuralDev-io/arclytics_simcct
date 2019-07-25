@@ -31,10 +31,6 @@ from users_app.app import create_app
 
 
 # Define the modules that contain Celery tasks
-CELERY_TASK_LIST = [
-    'users_app.tasks',
-]
-
 
 def make_celery(app: Flask = None) -> Celery:
     """This method is necessary for Celery to work within the right app context
@@ -54,8 +50,7 @@ def make_celery(app: Flask = None) -> Celery:
     celery: Celery = Celery(
         app.import_name,
         broker=app.config['CELERY_BROKER_URL'],
-        backend=app.config['CELERY_RESULT_BACKEND'],
-        include=CELERY_TASK_LIST
+        backend=app.config['CELERY_RESULT_BACKEND']
     )
     celery.conf.update(app.config)
 

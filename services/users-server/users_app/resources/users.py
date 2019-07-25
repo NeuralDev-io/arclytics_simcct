@@ -32,7 +32,6 @@ from users_app.middleware import authenticate, authenticate_admin
 from users_app.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
-from users_app.email import send_email
 
 users_blueprint = Blueprint('users', __name__)
 
@@ -80,16 +79,23 @@ def test_email_send():
 
     token = generate_confirmation_token(email)
     confirm_url = generate_url('users.confirm_email', token)
-    send_email(
-        to=email,
-        subject='Please Confirm Your Email',
-        template=render_template(
-            'activate.html',
-            confirm_url=confirm_url
-        )
-    )
 
-    return jsonify({'status': 'success'}), 202
+    from celery_runner import celery
+    task = celery.send_task(
+        'tasks.send_email',
+        kwargs={
+            'to': email,
+            'subject_suffix': 'Please Confirm Your Email',
+            'html_template': render_template(
+                'activate.html',
+                confirm_url=confirm_url
+            )
+        }
+    )
+    result = celery.AsyncResult(task.id)
+    print(result)
+
+    return jsonify({'status': 'success', 'task_id': task.id}), 202
 
 
 @users_blueprint.route('/confirm/<token>', methods=['GET'])

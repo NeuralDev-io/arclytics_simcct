@@ -58,16 +58,6 @@ class ConfigurationsSchema(Schema):
             'required': 'A method is required.'
         }
     )
-    alloy_type = fields.Str(
-        default=AlloyOption.parent.name,
-        required=True,
-        allow_none=False,
-        data_key='alloy_type',
-        error_messages={
-            'null': 'You must provide a method.',
-            'required': 'A method is required.'
-        }
-    )
     # TODO(andrew@neuraldev.io -- Sprint 6): do error messages on all these
     grain_size = fields.Float(required=True)
     nucleation_start = fields.Float(required=True)

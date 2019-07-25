@@ -1,5 +1,11 @@
 [
     {
+        "email": "andrew@codeninja55.me",
+        "password": "FineIllDoItMyself",
+        "first_name": "Andrew",
+        "last_name": "Che"
+    },
+    {
         "email": "iron_man@avengers.io",
         "password": "IAmIronMan",
         "first_name": "Tony",

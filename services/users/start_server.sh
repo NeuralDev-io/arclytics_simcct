@@ -7,7 +7,7 @@ RIGHT_NOW=$(date +"%x %r %Z")
 TIME_STAMP="Started on $RIGHT_NOW by $USER"
 
 ##### Setup some Flask Environment variables
-export FLASK_APP=api/__init__.py
+export FLASK_APP=api/app.py
 export FLASK_ENV=development
 export APP_SETTINGS=api.config.DevelopmentConfig
 

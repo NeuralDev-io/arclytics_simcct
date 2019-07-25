@@ -16,51 +16,29 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.06.04'
-"""__init__.py:
+"""app.py:
 
 This is the entrypoint to our Users Flask API server.
 """
 
-import datetime
-import decimal
 import os
-import json
-from bson import ObjectId
 
 from flask import Flask
 from mongoengine import connect
 from mongoengine.connection import (
     disconnect_all, get_connection, get_db, MongoEngineConnectionError
 )
-from flask_cors import CORS
-from flask_bcrypt import Bcrypt
-from flask_marshmallow import Marshmallow
 
-from users_app.mongodb import MongoSingleton
 from configs.settings import DEFAULT_LOGGER
-
-
-class JSONEncoder(json.JSONEncoder):
-    """Extends the json-encoder to properly convert dates and bson.ObjectId"""
-
-    def default(self, o):
-        if isinstance(o, ObjectId):
-            return str(o)
-        if isinstance(o, set):
-            return list(o)
-        if isinstance(o, datetime.datetime):
-            return str(o.isoformat())
-        if isinstance(o, decimal.Decimal):
-            return str(o)
-        return json.JSONEncoder.default(self, o)
-
+from users_app.utilities import JSONEncoder
+from users_app.extensions import cors, bcrypt, ma
+from users_app.mongodb import MongoSingleton
+from users_app.resources.users import users_blueprint
+from users_app.resources.auth import auth_blueprint
 
 # Instantiate the Mongo object to store a connection
+app_settings = os.getenv('APP_SETTINGS')
 _mongo_client = None
-# Some other extensions to Flask
-cors = CORS()
-bcrypt = Bcrypt()
-ma = Marshmallow()
 
 
 def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
@@ -115,22 +93,22 @@ def get_flask_mongo() -> any:
     return _mongo_client
 
 
-def create_app(script_info=None) -> Flask:
-    """
+def create_app(script_info=None, configs_path=app_settings) -> Flask:
+    """Create a Flask application using the app factory pattern.
 
     Args:
-        script_info:
+        configs_path: the path to the Configs file to build Flask from.
+        script_info: any additional information from the script running.
 
     Returns:
-
+        A Flask app instance.
     """
 
     # instantiate the application
     app = Flask(__name__)
 
     # Setup the configuration for Flask
-    app_settings = os.getenv('APP_SETTINGS')
-    app.config.from_object(app_settings)
+    app.config.from_object(configs_path)
 
     # ========== # CONNECT TO DATABASE # ========== #
     # Mongo Client interface with MongoEngine as Object Document Mapper (ODM)
@@ -142,21 +120,17 @@ def create_app(script_info=None) -> Flask:
     # app.config['MONGO_PASSWORD'] = os.environ.get('MONGODB_PASSWORD', None)
     # stored in .env
 
+    # ========== # FLASK BLUEPRINTS # ========== #
+    app.register_blueprint(users_blueprint)
+    app.register_blueprint(auth_blueprint)
+
     # Connect to the Mongo Client
     db = init_db(app)
     set_flask_mongo(db)
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
     # Set up Flask extensions
-    cors.init_app(app)
-    bcrypt.init_app(app)
-    ma.init_app(app)
-
-    # Register blueprints
-    from users_app.resources.users import users_blueprint
-    app.register_blueprint(users_blueprint)
-    from users_app.resources.auth import auth_blueprint
-    app.register_blueprint(auth_blueprint)
+    extensions(app)
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects
@@ -168,3 +142,21 @@ def create_app(script_info=None) -> Flask:
         return {'app': app, 'mongo': db}
 
     return app
+
+
+def extensions(app) -> None:
+    """Registers 0 or more extensions for Flask and then mutates the app
+    instance passed in.
+
+    Args:
+        app: A Flask app instance.
+
+    Returns:
+        None.
+    """
+    cors.init_app(app)
+    bcrypt.init_app(app)
+    ma.init_app(app)
+    # api.init_app(app)
+
+    return None

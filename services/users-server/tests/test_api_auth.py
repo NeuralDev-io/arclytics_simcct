@@ -464,17 +464,17 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertTrue(data['data']['active'] is True)
             self.assertEqual(resp_status.status_code, 200)
 
-    # def test_invalid_status(self):
-    #     with self.client:
-    #         response = self.client.get(
-    #             '/auth/status', headers={'Authorization': 'Bearer invalid'}
-    #         )
-    #         data = json.loads(response.data.decode())
-    #         self.assertEqual(
-    #             'Invalid token. Please log in again.', data['message']
-    #         )
-    #         self.assertEqual(data['status'], 'fail')
-    #         self.assertEqual(response.status_code, 401)
+    def test_invalid_status(self):
+        with self.client:
+            response = self.client.get(
+                '/auth/status', headers={'Authorization': 'Bearer invalid'}
+            )
+            data = json.loads(response.data.decode())
+            self.assertEqual(
+                'Invalid token. Please log in again.', data['message']
+            )
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(response.status_code, 401)
 
     def test_invalid_logout_inactive(self):
         """Ensure if user is not active, they cannot logout."""
@@ -509,36 +509,36 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual('fail', data['status'])
             self.assertEqual(response.status_code, 401)
 
-    # def test_invalid_status_inactive(self):
-    #     """Ensure if user is not active they can't get a status."""
-    #     user = User(
-    #         email='daredevil@marvel.io',
-    #         first_name='Matthew',
-    #         last_name='Murdock'
-    #     )
-    #     user.set_password('BlindLawyer')
-    #     user.active = False
-    #     user.save()
-    #     with self.client:
-    #         resp_login = self.client.post(
-    #             '/auth/login',
-    #             data=json.dumps(
-    #                 {
-    #                     'email': 'daredevil@marvel.io',
-    #                     'password': 'BlindLawyer'
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #         token = json.loads(resp_login.data.decode())['token']
-    #         response = self.client.get(
-    #             '/auth/status',
-    #             headers={'Authorization': 'Bearer {}'.format(token)}
-    #         )
-    #         data = json.loads(response.data.decode())
-    #         self.assertTrue(data['status'] == 'fail')
-    #         self.assertTrue(data['message'] == 'This user does not exist.')
-    #         self.assertEqual(response.status_code, 401)
+    def test_invalid_status_inactive(self):
+        """Ensure if user is not active they can't get a status."""
+        user = User(
+            email='daredevil@marvel.io',
+            first_name='Matthew',
+            last_name='Murdock'
+        )
+        user.set_password('BlindLawyer')
+        user.active = False
+        user.save()
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'daredevil@marvel.io',
+                        'password': 'BlindLawyer'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+            response = self.client.get(
+                '/auth/status',
+                headers={'Authorization': 'Bearer {}'.format(token)}
+            )
+            data = json.loads(response.data.decode())
+            self.assertTrue(data['status'] == 'fail')
+            self.assertTrue(data['message'] == 'This user does not exist.')
+            self.assertEqual(response.status_code, 401)
 
 
 if __name__ == '__main__':

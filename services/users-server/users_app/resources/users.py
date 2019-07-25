@@ -142,7 +142,7 @@ class SingleUser(Resource):
         return response, 200
 
 
-class UserLastAlloy(Resource):
+class UserLast(Resource):
     """Returns the user's Alloy and Configurations used, and CCT/TTT results
     (if any)
     """
@@ -153,9 +153,23 @@ class UserLastAlloy(Resource):
 
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
-        # TODO(davidmatthews1004gmail.com) waiting for Alloy embedded doc
-        response = {'status': 'fail', 'message': 'No alloy was found.'}
-        return response, 400
+        if not user.last_alloy:
+            response = {
+                'status': 'fail', 'message': 'No last composition was found.'
+            }
+            return response, 400
+        if not user.last_configuration:
+            response = {
+                'status': 'fail', 'message': 'No last configuration was found.'
+            }
+            return response, 400
+
+        response = {
+            'status': 'success',
+            'configuration': user.last_configuration.to_dict(),
+            'composition': user.last_alloy.to_dict()
+        }
+        return response, 200
 
 
 class UserAlloys(Resource):
@@ -168,24 +182,50 @@ class UserAlloys(Resource):
 
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
-        # TODO(davidmatthews1004gmail.com) this also needs tests
-        response = {'status': 'fail', 'message': 'No alloys found.'}
-        return response, 400
+        if not user.saved_alloys:
+            response = {'status': 'fail', 'message': 'No alloys found.'}
+            return response, 400
+        alloys = []
+        for a in user.saved_alloys:
+            alloys.append(
+                a.to_dict()
+            )
+        response = {
+            'status': 'success',
+            'alloys': alloys
+        }
+        return response, 200
 
     def post(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
-        # TODO(davidmatthews1004gmail.com) this also needs tests
-        response = {'status': 'fail', 'message': 'Alloy could not be saved.'}
-        return response, 400
+        data = request.get_json()
+        if not data:
+            response = {'status': 'fail', 'message': 'Invalid payload.'}
+            return response, 400
+        #TODO(davidmatthews1004@gmail.com)
 
 
-class UpdateUserProfile(Resource):
-    """"""
+class UserProfiles(Resource):
+    """Create/Retrieve/Update User's profile details"""
 
     method_decorators = {
-        'put': [authenticate]
-        # TODO(davidmatthews1004@gmail.com) get and post
+        'get': [authenticate],
+        'put': [authenticate],
+        'post': [authenticate]
     }
+
+    def get(self, resp) -> Tuple[dict, int]:
+        user = User.objects.get(id=resp)
+        response = {
+            'status': 'success',
+            'profile': {
+                'aim': user.profile.aim,
+                'highest_education': user.profile.highest_education,
+                'sci_tech_exp': user.profile.sci_tech_exp,
+                'phase_transform_exp': user.profile.phase_transform_exp
+            }
+        }
+        return response, 200
 
     def put(self, resp) -> Tuple[dict, int]:
         # Get put data
@@ -232,8 +272,70 @@ class UpdateUserProfile(Resource):
         response['message'] = f'Successfully updated User profile for {id}.'
         return response, 200
 
+    def post(self, resp) -> Tuple[dict, int]:
+        # Get post data
+        data = request.get_json()
 
-# TODO(davidmatthews1004@gmail.com) get /user/configurations
+        # Validating empty payload
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+        if not data:
+            return response, 400
+
+        # Extract the request body data
+        aim = data.get('aim', None)
+        highest_education = data.get('highest_education', None)
+        sci_tech_exp = data.get('sci_tech_exp', None)
+        phase_transform_exp = data.get('phase_transform_exp', None)
+
+        # Get the user
+        id = data.get('id')
+        user = User.objects.get(data.get(id))
+
+        if not aim:
+            response = {'status': 'fail', 'message': 'Missing aim.'}
+            return response, 400
+        if not highest_education:
+            response = {
+                'status': 'fail', 'message': 'Missing highest education.'
+            }
+            return response, 400
+        if not sci_tech_exp:
+            response = {
+                'status': 'fail',
+                'message': 'Missing science technology experience.'
+            }
+            return response, 400
+        if not phase_transform_exp:
+            response = {
+                'status': 'fail',
+                'message': 'Missing phase transformation experience.'
+            }
+            return response, 400
+
+        profile = UserProfile(
+            aim=aim, highest_education=highest_education,
+            sci_tech_exp=sci_tech_exp, phase_transform_exp=phase_transform_exp
+        )
+        user.profile = profile
+        user.save()
+
+        response['status'] = 'success'
+        response['message'] = f'Successfully updated User profile for {id}.'
+        return response, 200
+
+
+class UserConfigurations(Resource):
+    """Retrieve the list of configurations saved in the User's document"""
+
+    method_decorators = {
+        'get': [authenticate]
+    }
+
+    def get(self, resp) -> Tuple[dict, int]:
+        user = User.objects.get(id=resp)
+        response = {'status': 'success', 'message': 'fail'}
+        return response, 400
+        #TODO(davidmatthews1004@gmail.com)
 
 
 # TODO(davidmatthews1004@gmail.com) get /user/graphs
@@ -289,9 +391,10 @@ def confirm_email(token):
 api.add_resource(PingTest, '/ping')
 api.add_resource(UserList, '/users')
 api.add_resource(SingleUser, '/user')
-api.add_resource(UpdateUserProfile, '/user/profile')
-api.add_resource(UserLastAlloy, '/user/last')
+api.add_resource(UserProfiles, '/user/profile')
+api.add_resource(UserLast, '/user/last')
 api.add_resource(UserAlloys, '/user/alloys')
+api.add_resource(UserConfigurations, '/user/configurations')
 
 # TODO(andrew@neuraldev.io -- Sprint 6)
 # class AdminCreate(Resource):

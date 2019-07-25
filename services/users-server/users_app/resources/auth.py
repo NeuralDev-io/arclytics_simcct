@@ -32,7 +32,8 @@ from mongoengine.errors import ValidationError, NotUniqueError
 from users_app.models import User, UserProfile
 from users_app import bcrypt
 from logger.arc_logger import AppLogger
-from users_app.middleware import authenticate, logout_authenticate
+from users_app.middleware import authenticate, authenticate_flask, \
+    logout_authenticate
 from users_app.token import generate_confirmation_token
 
 logger = AppLogger(__name__)
@@ -149,7 +150,7 @@ def async_register_session(user: User = None,
     # header.
 
     last_configs = None
-    last_compositions = None
+    last_alloy = None
     user_id = ''  # Just for printing SessionValidationError
 
     if isinstance(user, User):
@@ -161,16 +162,16 @@ def async_register_session(user: User = None,
         if user.last_configuration is not None:
             last_configs = user.last_configuration.to_dict()
 
-        if user.last_compositions is not None:
-            last_compositions['alloy'] = user.last_compositions
-            last_compositions['alloy_type'] = user.last_configuration['alloy']
+        if user.last_alloy is not None:
+            last_alloy['alloy'] = user.last_alloy
+            last_alloy['alloy_type'] = user.last_configuration['alloy']
 
     resp = requests.post(
         url=f'http://{simcct_host}/session/login',
         json={
             '_id': str(user_id),
             'last_configurations': last_configs,
-            'last_compositions': last_compositions
+            'last_alloy': last_alloy
         },
         headers={
             'Authorization': f'Bearer {auth_token}',
@@ -285,7 +286,7 @@ def logout(user_id, token) -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
-@authenticate
+@authenticate_flask
 def get_user_status(user_id) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     user = User.objects.get(id=user_id)

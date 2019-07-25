@@ -21,23 +21,24 @@ __date__ = '2019.07.25'
 
 import unittest
 
-from flask import json
-from flask import current_app as app
+from celery.states import PENDING
 
 from tests.test_api_base import BaseTestCase
 
 
 class TestCeleryRequest(BaseTestCase):
-    def test_celery_request(self):
-        """Ensure we get the expected results from our test."""
-        with app.test_client() as client:
-            res = client.get(
-                '/test/celery',
-                content_type='application/json'
-            )
-            self.assert200(res)
-            data = json.loads(res.data.decode())
-            self.assertEqual(data['data'], 30)
+    def test_celery_tasks(self):
+        """Ensure we can send a task to Celery worker and get the result."""
+        from celery_runner import celery
+        task = celery.send_task(
+            'tasks.log', args=['Hello from the other side!'], kwargs={}
+        )
+        self.assertTrue(task.id)
+        task_state = celery.AsyncResult(task.id).state
+        while task_state == PENDING:
+            task_state = celery.AsyncResult(task.id).state
+        res = celery.AsyncResult(task.id)
+        self.assertEqual(res.result, 'Hello from the other side!')
 
 
 if __name__ == '__main__':

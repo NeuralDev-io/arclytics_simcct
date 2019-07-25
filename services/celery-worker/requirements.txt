@@ -1,6 +1,5 @@
 celery[redis]==4.3.0
 Flask==1.0.2
 flask-mail==0.9.1
-flower
 python-dotenv==0.10.3
 PyYAML==5.1

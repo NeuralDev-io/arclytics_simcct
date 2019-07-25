@@ -28,14 +28,12 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_mail import Mail
 
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 
 ENV_CONFIGS = os.path.join(BASE_DIR, '.env')
 if os.path.isfile(ENV_CONFIGS):
     load_dotenv(ENV_CONFIGS)
-
 
 # Define the modules that contain Celery tasks
 CELERY_TASK_LIST = [

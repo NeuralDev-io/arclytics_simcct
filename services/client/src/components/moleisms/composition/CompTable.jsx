@@ -1,12 +1,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Table from '../../elements/table'
-import TextField from '../../elements/textfield'
+import { UncontrolledTextField } from '../../elements/textfield'
 
 import styles from './CompTable.module.scss'
 
 const CompTable = (props) => {
-  const { data = [], onChange } = props
+  const { data = [] } = props
   const columns = [
     {
       Header: 'Elements',
@@ -26,10 +26,10 @@ const CompTable = (props) => {
       id: ({ row }) => row.name,
       // eslint-disable-next-line
       Cell: ({ row, value }) => (
-        <TextField
+        <UncontrolledTextField
           type="text"
           name={row.name} // eslint-disable-line
-          onChange={val => onChange(row.name, val)} // eslint-disable-line
+          onChange={val => console.log(val)} // eslint-disable-line
           value={value}
           length="short"
         />
@@ -59,8 +59,7 @@ CompTable.propTypes = {
       PropTypes.string,
       PropTypes.number,
     ]),
-  })),
-  onChange: PropTypes.func.isRequired,
+  }))
 }
 
 CompTable.defaultProps = {

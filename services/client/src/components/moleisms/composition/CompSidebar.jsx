@@ -25,7 +25,6 @@ class CompSidebar extends Component {
           />
           <CompTable
             data={values.compositions}
-            onChange={onChange}
           />
         </div>
         <Button

@@ -1,6 +1,6 @@
 FROM continuumio/miniconda3:4.6.14
 
-RUN conda install --yes --freeze-installed \
+RUN conda install --yes --freeze-installed -q \
     -c anaconda \
     python==3.7.3 \
     pip \
@@ -21,7 +21,7 @@ WORKDIR /usr/src/app
 
 # add and install requirements
 COPY ./requirements.txt /usr/src/app/requirements.txt
-RUN pip install -r requirements.txt
+RUN pip install --quiet -r requirements.txt
 
 # add docker-entrypoint.sh
 COPY ./docker-entrypoint.sh /usr/src/app/docker-entrypoint.sh

@@ -67,12 +67,6 @@ class SimConfiguration(object):
                 if configs['method'] == 'Li98' else Method.Kirkaldy83
             )
 
-            self.alloy_type = Alloy.parent
-            if configs['alloy_type'] == 'mix':
-                self.alloy_type = Alloy.mix
-            elif configs['alloy_type'] == 'weld':
-                self.alloy_type = Alloy.weld
-
             self.nuc_start = configs['nucleation_start'] / 100
             self.nuc_finish = configs['nucleation_finish'] / 100
             self.grain_size = configs['grain_size']
@@ -339,7 +333,6 @@ class SimConfiguration(object):
 PHASE SIMULATION CONFIGURATIONS
 -------------------------------------------------
 {:30}{}
-{:30}{}
 Transformation Definitions:
   {:28}{:.4f}
   {:28}{:.4f}
@@ -360,11 +353,10 @@ Parent:
 {}
 -------------------------------------------------
         """.format(
-            'Method:', self.method.name, 'Alloy:', self.alloy_type.name,
-            'Nucleation Start:', self.nuc_start, 'Nucleation End:',
-            self.nuc_finish, 'Value: ', self.grain_size, 'Auto Calculate:',
-            self.auto_calc_ms, 'MS Temperature:', self.ms_temp,
-            'Auto Calculate:', self.auto_calc_bs, 'BS Temperature: ',
-            self.bs_temp, 'Auto Calculate:', self.auto_calc_ae, 'Ae1:',
-            self.ae1, 'Ae3:', self.ae3, comp_
+            'Method:', self.method.name, 'Nucleation Start:', self.nuc_start,
+            'Nucleation End:', self.nuc_finish, 'Value: ', self.grain_size,
+            'Auto Calculate:', self.auto_calc_ms, 'MS Temperature:',
+            self.ms_temp, 'Auto Calculate:', self.auto_calc_bs,
+            'BS Temperature: ', self.bs_temp, 'Auto Calculate:',
+            self.auto_calc_ae, 'Ae1:', self.ae1, 'Ae3:', self.ae3, comp_
         )

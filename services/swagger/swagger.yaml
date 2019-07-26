@@ -724,7 +724,7 @@ paths:
     servers:
       - url: http://localhost:8001
     get:
-      summary: "Just a sanity check that simcct server can sanely connect to users-server."
+      summary: "Just a sanity check that simcct server can sanely connect to users."
       tags:
         - Sessions
       responses:

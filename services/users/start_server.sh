@@ -1,18 +1,15 @@
-#!/bin/sh
+#!/bin/bash
+set -e
 
 ##### Constants
-TITLE="Arclytics Sim Users Service Flask Server Information for $HOSTNAME"
+TITLE="Arclytics Flask Server Information for $HOSTNAME"
 RIGHT_NOW=$(date +"%x %r %Z")
 TIME_STAMP="Started on $RIGHT_NOW by $USER"
 
-##### Check if DB is up and running
-echo "Waiting for Mongo..."
-
-while ! nc -z mongodb 27017; do
-    sleep 0.1
-done
-
-echo "Mongo started."
+##### Setup some Flask Environment variables
+export FLASK_APP=api/app.py
+export FLASK_ENV=development
+export APP_SETTINGS=api.config.DevelopmentConfig
 
 ##### Check for positional arguments
 usage() {
@@ -49,10 +46,10 @@ while [ "$1" != "" ]; do
     shift
 done
 
-echo "$TITLE"
-echo "$TIME_STAMP"
+echo $TITLE
+echo $TIME_STAMP
 echo "ENVIRONMENT VARIABLES:"
-echo "FLASK_APP: Arclytics Sim Users Service"
+echo "FLASK_APP: $FLASK_APP"
 echo "FLASK_ENV: $FLASK_ENV"
 echo "APP_SETTINGS: $APP_SETTINGS"
 echo "Starting Flask server..."
@@ -61,7 +58,7 @@ echo ""
 # if [ $WSGI == ""]; then
 #     exit
 if [ "$WSGI" == "gunicorn" ]; then
-    gunicorn -b $HOST:$PORT users_app.__init__:app
+    gunicorn -b $HOST:$PORT api.__init__:app
 else
     python manage.py run -h $HOST -p $PORT
 fi

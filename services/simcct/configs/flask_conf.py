@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-import views, models, resources
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
-# config.py
+# flask_conf.py
 #
 # Attributions:
 # [1]

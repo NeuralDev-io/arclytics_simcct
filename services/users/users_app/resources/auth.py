@@ -29,6 +29,7 @@ from threading import Thread
 
 from celery.states import PENDING
 from email_validator import validate_email, EmailNotValidError
+from flask import current_app as app
 from flask import Blueprint, jsonify, request, render_template, redirect
 from mongoengine.errors import ValidationError, NotUniqueError
 
@@ -37,7 +38,7 @@ from users_app.extensions import bcrypt
 from logger.arc_logger import AppLogger
 from users_app.middleware import authenticate, logout_authenticate
 from users_app.token import (
-    generate_confirmation_token, generate_url, confirm_token
+    generate_confirmation_token, generate_url, confirm_token, URLTokenError
 )
 
 logger = AppLogger(__name__)
@@ -82,8 +83,11 @@ def confirm_email(token):
     # We must confirm the token by decoding it
     try:
         email = confirm_token(token)
+    except URLTokenError as e:
+        response['error'] = e
+        return jsonify(response), 400
     except Exception as e:
-        # This could mainly be due to the token being timed out after an hour
+        response['error'] = str(e)
         return jsonify(response), 400
 
     # We ensure there is a user for this email
@@ -342,12 +346,9 @@ def login() -> Tuple[dict, int]:
     return jsonify(response), 404
 
 
-@auth_blueprint.route('/auth/password/reset/', methods=['PUT'])
+@auth_blueprint.route('/auth/password/reset', methods=['PUT'])
 def reset_password():
-    response = {
-        'status': 'fail',
-        'message': 'Provide a valid JWT auth token.'
-    }
+    response = {'status': 'fail', 'message': 'Provide a valid JWT auth token.'}
 
     # get the auth token
     auth_header = request.headers.get('Authorization', None)
@@ -358,11 +359,11 @@ def reset_password():
 
     # Decode either returns bson.ObjectId if successful or a string from an
     # exception
-    user_id = User.decode_password_reset_token(auth_token=token)
+    resp_or_id = User.decode_password_reset_token(auth_token=token)
 
     # Either returns an ObjectId User ID or a string response.
-    if isinstance(user_id, str):
-        response['message'] = user_id
+    if isinstance(resp_or_id, str):
+        response['message'] = resp_or_id
         return jsonify(response), 401
 
     request_data = request.get_json()
@@ -387,7 +388,7 @@ def reset_password():
         return jsonify(response), 400
 
     # Validate the user is active
-    user = User.objects.get(id=user_id)
+    user = User.objects.get(id=resp_or_id)
     if not user or not user.active:
         response['message'] = 'User does not exist.'
         return jsonify(response), 401
@@ -403,12 +404,16 @@ def reset_password():
 
 @auth_blueprint.route('/auth/resetpassword/confirm/<token>', methods=['GET'])
 def confirm_reset_password(token):
-    response = {'status': 'fail', 'message': 'Invalid payload.'}
+    response = {'status': 'fail', 'message': 'Invalid token.'}
 
     # Decode the token from the email to the confirm it was the right one
     try:
         email = confirm_token(token)
+    except URLTokenError as e:
+        response['error'] = str(e)
+        return jsonify(response), 400
     except Exception as e:
+        response['error'] = str(e)
         return jsonify(response), 400
 
     # Confirm and validate that the user exists
@@ -418,17 +423,34 @@ def confirm_reset_password(token):
     # it as part of the next request
     jwt_token = user.encode_password_reset_token(user_id=user.id)
 
-    response['status'] = 'success'
-    response.pop('message')
+    # TODO(andrew@neuraldev.io): Ensure the link can be dynamic.
     client_host = os.environ.get('CLIENT_HOST')
-    return redirect(
-        f'http://localhost:3000/password/reset={jwt_token}',
-        code=302
+    # We can make our own redirect response by doing the following
+    custom_redir_response = app.response_class(
+        status=302,
+        mimetype='application/json'
     )
+    redirect_url = f'http://localhost:3000/password/reset={jwt_token}'
+    custom_redir_response.headers['Location'] = redirect_url
+    # Additionally, if we need to, we can attach the JWT token in the header
+    custom_redir_response.headers['Authorization'] = f'Bearer {jwt_token}'
+    return custom_redir_response
 
 
 @auth_blueprint.route('/auth/resetpassword', methods=['POST'])
-def reset_password_email():
+def reset_password_email() -> Tuple[dict, int]:
+    """This endpoint is to be used by the client-side browser to send the email
+    to the API server for validation with the user's details. It will only send
+    an email if the email has a registered user in the users collection and
+    will only send to the email of that user stored in their document. If all
+    validation is successful, a URL timed token will be generated and sent to
+    the user's email to click the link which will then validate the token
+    with another endpoint at `/auth/resetpassword/confirm/<token>`.
+
+    Returns:
+        A dict of of response messages converted to 'application/json' and a
+        HTML status code.
+    """
     post_data = request.get_json()
 
     # Validating empty payload
@@ -477,15 +499,19 @@ def reset_password_email():
     celery.send_task(
         'tasks.send_email',
         kwargs={
-            'to': user.email,
-            'subject_suffix': 'Reset your Arclytics Sim password',
-            'html_template': render_template(
+            'to':
+            user.email,
+            'subject_suffix':
+            'Reset your Arclytics Sim password',
+            'html_template':
+            render_template(
                 'reset_password.html',
                 reset_url=reset_url,
                 email=valid_email,
                 user_name=f'{user.first_name} {user.last_name}'
             ),
-            'text_template': render_template(
+            'text_template':
+            render_template(
                 'reset_password.txt',
                 reset_url=reset_url,
                 email=valid_email,

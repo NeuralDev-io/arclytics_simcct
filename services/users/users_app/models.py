@@ -345,12 +345,9 @@ class User(Document):
         """
         try:
             payload = {
-                'exp':
-                datetime.utcnow() + timedelta(minutes=30, seconds=0),
-                'iat':
-                datetime.utcnow(),
-                'sub':
-                user_id
+                'exp': datetime.utcnow() + timedelta(minutes=30, seconds=0),
+                'iat': datetime.utcnow(),
+                'sub': user_id
             }
 
             return jwt.encode(

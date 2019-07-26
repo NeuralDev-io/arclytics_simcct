@@ -66,19 +66,34 @@ class SimCCTBadServerLogout(Exception):
 
 @auth_blueprint.route('/confirm/<token>', methods=['GET'])
 def confirm_email(token):
+    """This endpoint simply just takes in the token that a user would send
+    from going to a link in their confirmation email and attaching the token
+    as part of the request parameter.
+
+    Args:
+        token: The valid URL Timed token.
+
+    Returns:
+
+    """
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+    # We must confirm the token by decoding it
     try:
         email = confirm_token(token)
     except Exception as e:
+        # This could mainly be due to the token being timed out after an hour
         return jsonify(response), 400
 
+    # We ensure there is a user for this email
     user = User.objects.get(email=email)
-
+    # And do the real work confirming their status
     user.verified = True
 
     response['status'] = 'success'
     response.pop('message')
+    # TODO(andrew@neuraldev.io): Need to check how to change this during
+    #  during production and using Ingress/Load balancing for Kubernetes
     client_host = os.environ.get('CLIENT_HOST')
     return redirect('http://localhost:3000/signin', code=302)
 

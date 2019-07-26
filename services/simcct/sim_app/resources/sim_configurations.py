@@ -135,7 +135,6 @@ def composition_change(token):
         return jsonify(response), 400
     # Extract the method from the post request body
     comp = post_data.get('alloy', None)
-    alloy_type = post_data.get('alloy_type', None)
 
     if not comp:
         response['message'] = 'No composition list was provided.'
@@ -149,7 +148,6 @@ def composition_change(token):
         return jsonify(response), 400
 
     session[f'{token}:alloy'] = comp_obj
-    session[f'{token}:configurations']['alloy'] = alloy_type
 
     session_configs = session.get(f'{token}:configurations')
 

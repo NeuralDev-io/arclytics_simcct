@@ -33,7 +33,8 @@ from mongoengine import (
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
-from users_app import bcrypt, JSONEncoder
+from users_app.extensions import bcrypt
+from users_app.utilities import JSONEncoder
 
 logger = AppLogger(__name__)
 # User type choices
@@ -130,7 +131,6 @@ class AdminProfile(EmbeddedDocument):
 class Configuration(EmbeddedDocument):
     is_valid = BooleanField()
     method = StringField(default='Li98')
-    alloy_type = StringField(default='parent')
     grain_size = FloatField(default=0.0)
     nucleation_start = FloatField(default=1.0)
     nucleation_finish = FloatField(default=99.9)
@@ -152,7 +152,6 @@ class Configuration(EmbeddedDocument):
         return {
             'is_valid': self.is_valid,
             'method': self.method,
-            'alloy_type': self.alloy_type,
             'grain_size': self.grain_size,
             'nucleation_start': self.nucleation_start,
             'nucleation_finish': self.nucleation_finish,
@@ -224,13 +223,6 @@ class User(Document):
     )
     first_name = StringField(required=True, max_length=255)
     last_name = StringField(required=True, max_length=255)
-    user_type = StringField(
-        required=False,
-        max_length=1,
-        null=False,
-        choices=USERS,
-        default=USERS[1][0]
-    )
     profile = EmbeddedDocumentField(document_type=UserProfile)
     admin_profile = EmbeddedDocumentField(document_type=AdminProfile)
 

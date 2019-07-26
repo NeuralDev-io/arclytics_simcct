@@ -28,6 +28,7 @@ from typing import Tuple, Optional
 from threading import Thread
 
 from celery.states import PENDING
+from email_validator import validate_email, EmailNotValidError
 from flask import Blueprint, jsonify, request, render_template, redirect
 from mongoengine.errors import ValidationError, NotUniqueError
 
@@ -339,6 +340,163 @@ def login() -> Tuple[dict, int]:
 
     response['message'] = 'Email or password combination incorrect.'
     return jsonify(response), 404
+
+
+@auth_blueprint.route('/auth/password/reset/', methods=['PUT'])
+def reset_password():
+    response = {
+        'status': 'fail',
+        'message': 'Provide a valid JWT auth token.'
+    }
+
+    # get the auth token
+    auth_header = request.headers.get('Authorization', None)
+    if not auth_header:
+        return jsonify(response), 400
+
+    token = auth_header.split(' ')[1]
+
+    # Decode either returns bson.ObjectId if successful or a string from an
+    # exception
+    user_id = User.decode_password_reset_token(auth_token=token)
+
+    # Either returns an ObjectId User ID or a string response.
+    if isinstance(user_id, str):
+        response['message'] = user_id
+        return jsonify(response), 401
+
+    request_data = request.get_json()
+    if not request_data:
+        response['message'] = 'Invalid payload.'
+        return jsonify(response), 400
+
+    # validate the passwords
+    password = request_data.get('password', None)
+    confirm_password = request_data.get('confirm_password', None)
+
+    if not password or not confirm_password:
+        response['message'] = 'Must provide a password and confirm password.'
+        return jsonify(response), 400
+
+    if len(str(password)) < 6 or len(str(password)) > 120:
+        response['message'] = 'The password is invalid.'
+        return jsonify(response), 400
+
+    if not password == confirm_password:
+        response['message'] = 'Passwords do not match.'
+        return jsonify(response), 400
+
+    # Validate the user is active
+    user = User.objects.get(id=user_id)
+    if not user or not user.active:
+        response['message'] = 'User does not exist.'
+        return jsonify(response), 401
+
+    # Well, they have passed every test
+    user.set_password(password)
+    user.save()
+
+    response['status'] = 'success'
+    response.pop('message')
+    return jsonify(response), 202
+
+
+@auth_blueprint.route('/auth/resetpassword/confirm/<token>', methods=['GET'])
+def confirm_reset_password(token):
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    # Decode the token from the email to the confirm it was the right one
+    try:
+        email = confirm_token(token)
+    except Exception as e:
+        return jsonify(response), 400
+
+    # Confirm and validate that the user exists
+    user = User.objects.get(email=email)
+
+    # We create a JWT token to send to the client-side so they can attach
+    # it as part of the next request
+    jwt_token = user.encode_password_reset_token(user_id=user.id)
+
+    response['status'] = 'success'
+    response.pop('message')
+    client_host = os.environ.get('CLIENT_HOST')
+    return redirect(
+        f'http://localhost:3000/password/reset={jwt_token}',
+        code=302
+    )
+
+
+@auth_blueprint.route('/auth/resetpassword', methods=['POST'])
+def reset_password_email():
+    post_data = request.get_json()
+
+    # Validating empty payload
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+    if not post_data:
+        return jsonify(response), 400
+
+    # Get the email from the client-side request body
+    post_email = post_data.get('email')
+
+    if not post_email:
+        return jsonify(response), 400
+
+    # Verify it is actually a valid email
+    try:
+        # validate and get info
+        v = validate_email(post_email)
+        # replace with normalized form
+        valid_email = v['email']
+    except EmailNotValidError as e:
+        # email is not valid, exception message is human-readable
+        response['error'] = str(e)
+        response['message'] = 'Invalid email.'
+        return jsonify(response), 400
+
+    # Verify the email matches a user in the database
+    if not User.objects(email=valid_email):
+        response['message'] = 'User does not exist.'
+        return jsonify(response), 404
+
+    # If there is a user with this email address, we must send to that email
+    user = User.objects.get(email=valid_email)
+
+    # Verify the user's account has been verified/confirmed
+    if not user.verified:
+        response['message'] = 'The user must verify their email.'
+        return jsonify(response), 401
+
+    # Generate the JWT token with the user id embedded
+    # Generate the password reset url to use another endpoint
+    reset_token = generate_confirmation_token(user.email)
+    reset_url = generate_url('auth.confirm_reset_password', reset_token)
+
+    # Send with the url to an email stored in the document of that user
+    from celery_runner import celery
+    celery.send_task(
+        'tasks.send_email',
+        kwargs={
+            'to': user.email,
+            'subject_suffix': 'Reset your Arclytics Sim password',
+            'html_template': render_template(
+                'reset_password.html',
+                reset_url=reset_url,
+                email=valid_email,
+                user_name=f'{user.first_name} {user.last_name}'
+            ),
+            'text_template': render_template(
+                'reset_password.txt',
+                reset_url=reset_url,
+                email=valid_email,
+                user_name=f'{user.first_name} {user.last_name}'
+            )
+        }
+    )
+
+    response['status'] = 'success'
+    response.pop('message')
+    return jsonify(response), 202
 
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])

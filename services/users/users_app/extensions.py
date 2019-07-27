@@ -29,4 +29,4 @@ from flask_restful import Api
 cors = CORS()
 bcrypt = Bcrypt()
 ma = Marshmallow()
-# api = Api()
+api = Api()

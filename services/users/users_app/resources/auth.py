@@ -31,10 +31,10 @@ from celery.states import PENDING
 from flask import Blueprint, jsonify, request, render_template, redirect
 from mongoengine.errors import ValidationError, NotUniqueError
 
-from users_app.models import User
+from users_app.models import User, AdminProfile
 from users_app.extensions import bcrypt
 from logger.arc_logger import AppLogger
-from users_app.middleware import authenticate, logout_authenticate
+from users_app.middleware import authenticate_flask, logout_authenticate
 from users_app.token import (
     generate_confirmation_token, generate_url, confirm_token
 )
@@ -76,6 +76,25 @@ def confirm_email(token):
     user = User.objects.get(email=email)
 
     user.verified = True
+
+    response['status'] = 'success'
+    response.pop('message')
+    client_host = os.environ.get('CLIENT_HOST')
+    return redirect('http://localhost:3000/signin', code=302)
+
+
+@auth_blueprint.route('/confirmadmin/<token>', methods=['GET'])
+def confirm_email_admin(token):
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    try:
+        email = confirm_token(token)
+    except Exception as e:
+        return jsonify(response), 400
+
+    user = User.objects.get(email=email)
+
+    user.admin_profile.verified = True
 
     response['status'] = 'success'
     response.pop('message')
@@ -219,7 +238,7 @@ def async_register_session(user: User = None,
     # header.
 
     last_configs = None
-    last_compositions = None
+    last_alloy = None
     user_id = ''  # Just for printing SessionValidationError
 
     if isinstance(user, User):
@@ -232,16 +251,16 @@ def async_register_session(user: User = None,
             last_configs = user.last_configuration.to_dict()
 
         # TODO(andrew@neuraldev.io): Change this to match new schema
-        if user.last_compositions is not None:
-            last_compositions['alloy'] = user.last_compositions
-            last_compositions['alloy_type'] = 'parent'
+        if user.last_alloy is not None:
+            last_alloy['alloy'] = user.last_alloy
+            last_alloy['alloy_type'] = 'parent'
 
     resp = requests.post(
         url=f'http://{simcct_host}/session/login',
         json={
             '_id': str(user_id),
             'last_configurations': last_configs,
-            'last_compositions': last_compositions
+            'last_alloy': last_alloy
         },
         headers={
             'Authorization': f'Bearer {auth_token}',
@@ -356,7 +375,7 @@ def logout(user_id, token) -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
-@authenticate
+@authenticate_flask
 def get_user_status(user_id) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     user = User.objects.get(id=user_id)

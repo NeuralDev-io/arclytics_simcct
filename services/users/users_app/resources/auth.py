@@ -433,7 +433,7 @@ def confirm_reset_password(token):
     redirect_url = f'http://localhost:3000/password/reset={jwt_token}'
     custom_redir_response.headers['Location'] = redirect_url
     # Additionally, if we need to, we can attach the JWT token in the header
-    custom_redir_response.headers['Authorization'] = f'Bearer {jwt_token}'
+    # custom_redir_response.headers['Authorization'] = f'Bearer {jwt_token}'
     return custom_redir_response
 
 

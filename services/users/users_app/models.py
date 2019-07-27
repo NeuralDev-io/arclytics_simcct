@@ -345,7 +345,7 @@ class User(Document):
         """
         try:
             payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=30, seconds=0),
+                'exp': datetime.utcnow() + timedelta(minutes=30),
                 'iat': datetime.utcnow(),
                 'sub': user_id
             }

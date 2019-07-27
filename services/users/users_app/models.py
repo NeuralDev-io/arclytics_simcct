@@ -356,6 +356,56 @@ class User(Document):
             # logger.error('Invalid token error.')
             return 'Invalid token. Please log in again.'
 
+    @staticmethod
+    def encode_password_reset_token(user_id: ObjectId) -> Union[bytes, None]:
+        """Encode a timed JWT token of 30 minutes to send to the client-side
+        so we can verify which user has requested to reset their password.
+
+        Args:
+            user_id: the valid ObjectId user id.
+
+        Returns:
+            A valid JWT token or None if there is any kind of generic exception.
+        """
+        try:
+            payload = {
+                'exp': datetime.utcnow() + timedelta(minutes=30),
+                'iat': datetime.utcnow(),
+                'sub': user_id
+            }
+
+            return jwt.encode(
+                payload=payload,
+                key=current_app.config.get('SECRET_KEY', None),
+                algorithm='HS256',
+                json_encoder=JSONEncoder
+            )
+        except Exception as e:
+            logger.error('Encode auth token error: {}'.format(e))
+            return None
+
+    @staticmethod
+    def decode_password_reset_token(auth_token: bytes) -> Union[ObjectId, str]:
+        """Decodes the JWT auth token for the password reset.
+
+        Args:
+            auth_token: a bytes type that was encoded by
+
+        Returns:
+            An ObjectId or string.
+        """
+        try:
+            payload = jwt.decode(
+                jwt=auth_token, key=current_app.config.get('SECRET_KEY', None)
+            )
+            return ObjectId(payload['sub'])
+        except jwt.ExpiredSignatureError as e:
+            # logger.error('Signature expired error.')
+            return 'Signature expired. Please get a new token.'
+        except jwt.InvalidTokenError as e:
+            # logger.error('Invalid token error.')
+            return 'Invalid token. Please get a new token.'
+
     # MongoEngine allows you to create custom cleaning rules for your documents
     # when calling save(). By providing a custom clean() method you can do
     # any pre validation / data cleaning. This might be useful if you want to

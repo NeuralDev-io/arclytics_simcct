@@ -257,6 +257,7 @@ class User(Document):
     last_login = DateTimeField()
     # Define the collection and indexing for this document
     meta = {'collection': 'users'}
+    account_disabled = BooleanField(default=False)
 
     def set_password(self, raw_password: str) -> None:
         """Helper utility method to save an encrypted password using the

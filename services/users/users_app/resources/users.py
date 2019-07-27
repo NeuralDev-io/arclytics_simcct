@@ -22,9 +22,10 @@ the Flask Resource inheritance model.
 """
 
 from typing import Tuple
+from socket import gaierror
 
 from celery.states import PENDING
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 from flask_restful import Resource
 
 from logger.arc_logger import AppLogger
@@ -372,6 +373,11 @@ class AdminCreate(Resource):
             return response, 201
 
         user = User.objects.get(email=email)
+
+        if user.is_admin:
+            response['message'] = 'User is already an Administrator.'
+            return response, 400
+
         user.is_admin = True
 
         try:
@@ -392,10 +398,92 @@ class AdminCreate(Resource):
                 kwargs={
                     'to': email,
                     'subject_suffix': 'Please Confirm You Are Now Admin',
+                    'html_template': render_template(
+                        'activate_admin.html',
+                        confirm_url=confirm_url,
+                        user_name=f'{user.first_name} {user.last_name}'
+                    )
                 }
             )
+            # FIXME(davidmatthews1004@gmail.com): Need to find a way to validate that it has
+            #  sent without waiting for the result.
+            task_status = celery.AsyncResult(task.id).state
 
-        response['message'] = '{} was made an administrator'.format(user.email)
+            while task_status == PENDING:
+                task_status = celery.AsyncResult(task.id).state
+            # The email tasks response with a Tuple[bool, str]
+            res = celery.AsyncResult(task.id)
+
+            # Generic response regardless of email task working
+            response['status'] = 'success'
+            response['token'] = auth_token.decode()
+
+            if isinstance(res.result, gaierror):
+                response['error'] = 'Socket error.'
+                response['message'] = (
+                    'Admin created but confirmation '
+                    'email failed.'
+                )
+                return jsonify(response), 201
+
+            if not res.result[0]:
+                response['error'] = res.result[1]
+                response['message'] = (
+                    'Admin created but confirmation '
+                    'email failed.'
+                )
+                return jsonify(response), 201
+
+            response['message'] = 'Admin has been created.'
+            return jsonify(response), 201
+
+        except ValidationError as e:
+            # logger.error('Validation Error: {}'.format(e))
+            response['message'] = 'The Admin cannot be created.'
+            return jsonify(response), 400
+        # I don't think this is is needed for this endpoint.
+        # except NotUniqueError as e:
+        #     # logger.error('Not Unique Error: {}'.format(e))
+        #     response['message'] = 'The users details already exists.'
+        #     return jsonify(response), 400
+
+
+class DisableAccount(Resource):
+    """Route for Admins to disable user accounts"""
+
+    method_decorators = {
+        'post': [authenticate_admin]
+    }
+
+    def post(self, resp):
+        post_data = request.get_json()
+
+        # Validating empty payload
+        response = {
+            'status': 'fail',
+            'message': 'User does not exist.'
+        }
+        if not post_data:
+            return response, 400
+
+        # Extract the request body data
+        email = post_data.get('email', '')
+
+        if not email:
+            response['message'] = 'Invalid email provided.'
+            return response, 400
+
+        # Validation checks
+        if not User.objects(email=email):
+            return response, 201
+
+        user = User.objects.get(email=email)
+        user.account_disabled = True
+        # TODO(davidmatthews1004@gmail.com) Kick user if they are currently logged in
+        user.save()
+
+        response['status'] = 'success'
+        response['message'] = f'The account for User {user.id} has been disabled.'
         return response, 200
 
 
@@ -406,3 +494,5 @@ api.add_resource(UserProfiles, '/user/profile')
 api.add_resource(UserLast, '/user/last')
 api.add_resource(UserAlloys, '/user/alloys')
 api.add_resource(UserConfigurations, '/user/configurations')
+# api.add_resource(AdminCreate, '/admincreate')
+api.add_resource(DisableAccount, '/disableaccount')

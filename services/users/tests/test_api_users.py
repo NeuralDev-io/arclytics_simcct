@@ -1393,5 +1393,147 @@ class TestUserService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'Missing aim.')
 
+    def test_disable_account(self):
+        kylo = User(
+            email='kylo@ren.com',
+            first_name='Kylo',
+            last_name='Ren'
+        )
+        kylo.set_password('LetStarWarsDie')
+        kylo.save()
+
+        vader = User(
+            email='vader@sith.com',
+            first_name='Darth',
+            last_name='Vader'
+        )
+        vader.set_password('AllTooEasy')
+        vader.is_admin= True
+        vader.save()
+
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'vader@sith.com',
+                        'password': 'AllTooEasy'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+
+            resp_disable = self.client.post(
+                '/disableaccount',
+                data=json.dumps(
+                    {
+                        'email': 'kylo@ren.com'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            resp_attempt_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'kylo@ren.com',
+                        'password': 'LetStarWarsDie'
+                    }
+                ),
+                content_type='application/json'
+            )
+
+            disable_data = json.loads(resp_disable.data.decode())
+            self.assertEqual(resp_disable.status_code, 200)
+            self.assertEqual(disable_data['status'], 'success')
+            self.assertEqual(
+                disable_data['message'],
+                f'The account for User {kylo.id} has been disabled.'
+            )
+
+            login_data = json.loads(resp_attempt_login.data.decode())
+            self.assertEqual(resp_attempt_login.status_code, 400)
+            self.assertEqual(login_data['status'], 'fail')
+            self.assertEqual(
+                login_data['message'], 'Your Account has been disabled.'
+            )
+
+    def test_disable_account_no_data(self):
+        jarjar = User(
+            first_name='Jar Jar',
+            last_name='Binks',
+            email='jarjar@binks.com'
+        )
+        jarjar.set_password('MeesaMakePassword')
+        jarjar.is_admin=True
+        jarjar.save()
+
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'jarjar@binks.com',
+                        'password': 'MeesaMakePassword'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+
+            resp = self.client.post(
+                '/disableaccount',
+                data=json.dumps(''),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'User does not exist.')
+
+    def test_disable_account_dne(self):
+        r2d2 = User(
+            first_name='R2',
+            last_name='D2',
+            email='r2d2@astromech.com'
+        )
+        r2d2.set_password('Weeeeeew')
+        r2d2.is_admin=True
+        r2d2.save()
+
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'r2d2@astromech.com',
+                        'password': 'Weeeeeew'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+
+            resp = self.client.post(
+                '/disableaccount',
+                data=json.dumps(
+                    {
+                        'email': 'c3p0@protocol.com'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 201)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'User does not exist.')
+
 if __name__ == '__main__':
     unittest.main()

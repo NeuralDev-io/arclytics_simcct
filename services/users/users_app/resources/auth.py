@@ -421,14 +421,13 @@ def confirm_reset_password(token):
 
     # We create a JWT token to send to the client-side so they can attach
     # it as part of the next request
-    jwt_token = user.encode_password_reset_token(user_id=user.id)
+    jwt_token = user.encode_password_reset_token(user_id=user.id).decode()
 
     # TODO(andrew@neuraldev.io): Ensure the link can be dynamic.
     client_host = os.environ.get('CLIENT_HOST')
     # We can make our own redirect response by doing the following
     custom_redir_response = app.response_class(
-        status=302,
-        mimetype='application/json'
+        status=302, mimetype='application/json'
     )
     redirect_url = f'http://localhost:3000/password/reset={jwt_token}'
     custom_redir_response.headers['Location'] = redirect_url

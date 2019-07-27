@@ -20,7 +20,6 @@ __date__ = '2019.07.25'
 """
 
 from flask_cors import CORS
-from flask_mail import Mail
 from flask_bcrypt import Bcrypt
 from flask_marshmallow import Marshmallow
 from flask_restful import Api

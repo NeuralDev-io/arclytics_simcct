@@ -119,13 +119,18 @@ class UserProfile(EmbeddedDocument):
 class AdminProfile(EmbeddedDocument):
     position = StringField(max_length=255, required=True)
     mobile_number = StringField(max_length=11, min_length=10)
+    verified = BooleanField(default=False)
 
     def to_dict(self) -> dict:
         """
         Simple EmbeddedDocument.AdminProfile helper method to get a
         Python dict back.
         """
-        return {'position': self.position, 'mobile_number': self.mobile_number}
+        return {
+            'position': self.position,
+            'mobile_number': self.mobile_number,
+            'verified': self.verified
+        }
 
 
 class Configuration(EmbeddedDocument):

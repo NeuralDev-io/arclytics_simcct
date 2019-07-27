@@ -663,7 +663,6 @@ class TestUserService(BaseTestCase):
         config = Configuration(
             is_valid=True,
             method='Li98',
-            alloy_type='parent',
             grain_size=0.0,
             nucleation_start=1.0,
             nucleation_finish=99.9,
@@ -804,7 +803,6 @@ class TestUserService(BaseTestCase):
         config = Configuration(
             is_valid=True,
             method='Li98',
-            alloy_type='parent',
             grain_size=0.0,
             nucleation_start=1.0,
             nucleation_finish=99.9,

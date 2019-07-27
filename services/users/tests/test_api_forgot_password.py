@@ -24,12 +24,32 @@ import unittest
 from flask import current_app as app
 from flask import json
 
+from users_app.extensions import bcrypt
 from users_app.models import User
 from tests.test_api_base import BaseTestCase
 from users_app.token import generate_url, generate_confirmation_token
 
 
 class MyTestCase(BaseTestCase):
+    def preprocess_reset_password(self, client):
+        # We do some setup first to get a valid token.
+        email = 'punisher@arclytics.neuraldev.io'
+        user = User(email=email, first_name='Frank', last_name='Castle')
+        user.set_password('IAmThePunisher!!!')
+        user.verified = True
+        user.save()
+
+        url_token = generate_confirmation_token(email)
+        reset_url = generate_url('auth.confirm_reset_password', url_token)
+
+        res = client.get(
+            reset_url,
+            content_type='application/json',
+        )
+        self.assertTrue(res.headers['Location'])
+        jwt_token = res.headers['Location'].split('=')[1]
+        return url_token, jwt_token, user
+
     def test_invalid_json_body_reset_password_email(self):
         """Ensure an empty request body fails during reset password."""
         with app.test_client() as client:
@@ -77,6 +97,7 @@ class MyTestCase(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
+            # This validation requires an internet access
             res = client.post(
                 '/auth/resetpassword',
                 data=json.dumps({'email': 'bademail@nodomain.random'}),
@@ -161,10 +182,7 @@ class MyTestCase(BaseTestCase):
         bad_token = 'test@test.com'
         reset_url = generate_url('auth.confirm_reset_password', bad_token)
         with app.test_client() as client:
-            res = client.get(
-                reset_url,
-                content_type='application/json'
-            )
+            res = client.get(reset_url, content_type='application/json')
             data = json.loads(res.data.decode())
             self.assertEqual(data['error'], 'Bad signature.')
             self.assertEqual(data['message'], 'Invalid token.')
@@ -201,7 +219,9 @@ class MyTestCase(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(data['message'], 'Provide a valid JWT auth token.')
+            self.assertEqual(
+                data['message'], 'Provide a valid JWT auth token.'
+            )
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
@@ -225,111 +245,151 @@ class MyTestCase(BaseTestCase):
     def test_reset_password_bad_json_data(self):
         """Ensure if we provide no json data we fail."""
         with app.test_client() as client:
-            # We do some setup first to get a valid token.
-            email = 'punisher@arclytics.neuraldev.io'
-            user = User(
-                email=email, first_name='Frank', last_name='Castle'
-            )
-            original_pw = 'IAmThePunisher!!!'
-            user.set_password(original_pw)
-            user.verified = True
-            user.save()
-
-            # url_token = generate_confirmation_token(email)
-            # reset_url = generate_url('auth.confirm_reset_password', url_token)
-
-            # Shouldn't need to do this but just testing something for now
-            # resp = client.post(
-            #     '/auth/resetpassword',
-            #     data=json.dumps({'email': user.email}),
-            #     content_type='application/json'
-            # )
-            # data = json.loads(resp.data.decode())
-            # print(data)
-
-            # res = client.get(
-            #     reset_url,
-            #     content_type='application/json',
-            # )
-            # print(res.headers)
-            # self.assertTrue(res.headers['Location'])
-            # b_token = res.headers['Location'].split('=')[1]
-            # str_token = str(b_token)
-            token = User.encode_password_reset_token(user.id)
-            print(token.__class__)
+            _, jwt_token, user = self.preprocess_reset_password(client)
 
             res = client.put(
                 '/auth/password/reset',
                 data=json.dumps({}),
-                headers={'Authorization': f'Bearer {token}'},
+                headers={'Authorization': f'Bearer {jwt_token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            print(data)
-            self.assertEqual(
-                data['message'], 'Invalid payload.'
-            )
+            self.assertEqual(data['message'], 'Invalid payload.')
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
+
+    def test_reset_pass_bad_password_request(self):
+        """Ensure we validate for bad passwords."""
+        with app.test_client() as client:
+            # We do some setup first to get a valid token.
+            _, jwt_token, user = self.preprocess_reset_password(client)
+
+            # Both requests have one or the other required request body
+            res1 = client.put(
+                '/auth/password/reset',
+                data=json.dumps({'password': 'IDontNeedToConfirm'}),
+                headers={'Authorization': f'Bearer {jwt_token}'},
+                content_type='application/json'
+            )
+            res2 = client.put(
+                '/auth/password/reset',
+                data=json.dumps({'confirm_password': 'IDontNeedToConfirm'}),
+                headers={'Authorization': f'Bearer {jwt_token}'},
+                content_type='application/json'
+            )
+            data1 = json.loads(res1.data.decode())
+            data2 = json.loads(res2.data.decode())
+            msg = 'Must provide a password and confirm password.'
+            self.assertEqual(data1['message'], msg)
+            self.assertEqual(data2['message'], msg)
+            self.assert400(res1)
+            self.assert400(res2)
+
+            res3 = client.put(
+                '/auth/password/reset',
+                data=json.dumps(
+                    {
+                        'password': 'short',
+                        'confirm_password': 'short'
+                    }
+                ),
+                headers={'Authorization': f'Bearer {jwt_token}'},
+                content_type='application/json'
+            )
+            data3 = json.loads(res3.data.decode())
+            self.assertEqual(data3['message'], 'The password is invalid.')
+            self.assert400(res3)
+
+    def test_reset_password_not_match_passwords(self):
+        """Ensure if the passwords are not the same it doesn't succeed."""
+        with app.test_client() as client:
+            _, jwt_token, user = self.preprocess_reset_password(client)
+
+            res = client.put(
+                '/auth/password/reset',
+                data=json.dumps(
+                    {
+                        'password': 'NewPassword',
+                        'confirm_password': 'NewPasword'
+                    }
+                ),
+                headers={'Authorization': f'Bearer {jwt_token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Passwords do not match.')
+            self.assert400(res)
+
+    def test_reset_password_not_active_user(self):
+        """Ensure if the user is not active they can't reset."""
+        with app.test_client() as client:
+            _, jwt_token, user = self.preprocess_reset_password(client)
+            user.active = False
+            user.save()
+
+            res = client.put(
+                '/auth/password/reset',
+                data=json.dumps(
+                    {
+                        'password': 'NewPassword',
+                        'confirm_password': 'NewPassword'
+                    }
+                ),
+                headers={'Authorization': f'Bearer {jwt_token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'User does not exist.')
+            self.assert401(res)
 
     def test_reset_password_success(self):
         """Ensure we go through the whole reset password correctly."""
         with app.test_client() as client:
             # We do some setup first to get a valid token.
-            email = 'punisher@marvel.io'
-            user = User(
-                email=email, first_name='Frank', last_name='Castle'
-            )
+            _, jwt_token, user = self.preprocess_reset_password(client)
             original_pw = 'IAmThePunisher!!!'
-            user.set_password(original_pw)
-            user.verified = True
-            user.save()
+            new_pw = 'IAmFrankCastelleone'
 
-            token = generate_confirmation_token(email)
-            reset_url = generate_url('auth.confirm_reset_password', token)
-
-            res = client.get(
-                reset_url,
-                content_type='application/json',
+            res = client.put(
+                '/auth/password/reset',
+                data=json.dumps(
+                    {
+                        'password': new_pw,
+                        'confirm_password': new_pw
+                    }
+                ),
+                headers={'Authorization': f'Bearer {jwt_token}'},
+                content_type='application/json'
             )
-            self.assertTrue(res.headers['Location'])
-            # Every redirect will be different.
-            token = res.headers['Location'].split('=')[1]
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 202)
+            user.reload()
+            self.assertFalse(
+                bcrypt.check_password_hash(user.password, original_pw)
+            )
+            self.assertTrue(bcrypt.check_password_hash(user.password, new_pw))
 
-            # res = client.put(
-            #     '/auth/password/reset',
-            #     data=json.dumps({}),
-            #     headers={'Authorization': f'Bearer {token}'},
-            #     content_type='application/json'
-            # )
-            # data = json.loads(res.data.decode())
+    def test_valid_reset_password(self):
+        """Ensure everything works correctly with sending a reset email."""
+        debug = True
+        test_email = (
+            'help@arclytics.neuraldev.io' if debug else 'andrew@codeninja55.me'
+        )
+        user = User(first_name='Andrew', last_name='Che', email=test_email)
+        user.set_password('IAmIronManJr')
+        user.verified = True
+        user.save()
 
-    # def test_valid_reset_password(self):
-    #     """Ensure everything works correctly with sending a reset email."""
-    #     debug = True
-    #     test_email = ('help@arclytics.neuraldev.io'
-    #                   if debug
-    #                   else 'andrew@codeninja55.me')
-    #     user = User(
-    #         first_name='Andrew',
-    #         last_name='Che',
-    #         email=test_email
-    #     )
-    #     user.set_password('IAmIronManJr')
-    #     user.verified = True
-    #     user.save()
-    #
-    #     with app.test_client() as client:
-    #         res = client.post(
-    #             '/auth/resetpassword',
-    #             data=json.dumps({
-    #                 'email': test_email
-    #             }),
-    #             content_type='application/json'
-    #         )
-    #         data = json.loads(res.data.decode())
-    #         self.assertEqual(res.status_code, 202)
-    #         self.assertEqual(data['status'], 'success')
+        with app.test_client() as client:
+            res = client.post(
+                '/auth/resetpassword',
+                data=json.dumps({'email': test_email}),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(res.status_code, 202)
+            self.assertEqual(data['status'], 'success')
 
 
 if __name__ == '__main__':

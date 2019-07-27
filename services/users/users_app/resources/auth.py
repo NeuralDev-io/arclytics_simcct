@@ -109,15 +109,19 @@ def confirm_email_admin(token):
 
     try:
         email = confirm_token(token)
+    except URLTokenError as e:
+        response['error'] = e
+        return jsonify(response), 400
     except Exception as e:
         return jsonify(response), 400
 
     user = User.objects.get(email=email)
-
     user.admin_profile.verified = True
 
     response['status'] = 'success'
     response.pop('message')
+    # TODO(davidmatthews1004@gmail.com): Need to check how to change this during
+    #  during production and using Ingress/Load balancing for Kubernetes
     client_host = os.environ.get('CLIENT_HOST')
     return redirect('http://localhost:3000/signin', code=302)
 
@@ -338,6 +342,10 @@ def login() -> Tuple[dict, int]:
     if bcrypt.check_password_hash(user.password, password):
         auth_token = user.encode_auth_token(user.id)
         if auth_token:
+            if user.account_disabled:
+                response['message']='Your Account has been disabled.'
+                return jsonify(response), 400
+
             # Let's save some stats for later
             user.last_login = datetime.utcnow()
 

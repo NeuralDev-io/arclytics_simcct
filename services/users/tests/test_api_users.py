@@ -315,9 +315,7 @@ class TestUserService(BaseTestCase):
     def test_put_user(self):
         """Test update user details"""
         obiwan = User(
-            email='obiwan@kenobi.io',
-            first_name='Obi Wan',
-            last_name = 'kenobi'
+            email='obiwan@kenobi.io', first_name='Obi Wan', last_name='kenobi'
         )
         obiwan.set_password('HelloThere')
         obiwan.save()
@@ -365,7 +363,8 @@ class TestUserService(BaseTestCase):
                 'Jedi Council Member.'
             )
             self.assertEqual(
-                updated_user['profile']['sci_tech_exp'], 'Flying is for Droids.'
+                updated_user['profile']['sci_tech_exp'],
+                'Flying is for Droids.'
             )
             self.assertEqual(
                 updated_user['profile']['phase_transform_exp'], 'Prequels.'
@@ -373,11 +372,7 @@ class TestUserService(BaseTestCase):
 
     def test_put_admin_user(self):
         """Test update admin user details"""
-        yoda = User(
-            email='yoda@jedi.io',
-            first_name='Yoda',
-            last_name='Smith'
-        )
+        yoda = User(email='yoda@jedi.io', first_name='Yoda', last_name='Smith')
         yoda.set_password('DoOrDoNot')
         yoda.is_admin = True
         yoda.save()
@@ -435,12 +430,10 @@ class TestUserService(BaseTestCase):
                 'I am a puppet.'
             )
             self.assertEqual(
-                updated_user['admin_profile']['mobile_number'],
-                '1234567890'
+                updated_user['admin_profile']['mobile_number'], '1234567890'
             )
             self.assertEqual(
-                updated_user['admin_profile']['position'],
-                'Grand Jedi Master.'
+                updated_user['admin_profile']['position'], 'Grand Jedi Master.'
             )
 
     def test_put_user_partial(self):
@@ -485,8 +478,12 @@ class TestUserService(BaseTestCase):
             updated_user = User.objects.get(email=sheev.email)
             self.assertEqual(updated_user['first_name'], 'Emperor')
             self.assertEqual(updated_user['last_name'], 'Palpatine')
-            self.assertEqual(updated_user['profile']['aim'], 'Rule the Galaxy.')
-            self.assertEqual(updated_user['profile']['highest_education'], None)
+            self.assertEqual(
+                updated_user['profile']['aim'], 'Rule the Galaxy.'
+            )
+            self.assertEqual(
+                updated_user['profile']['highest_education'], None
+            )
             self.assertEqual(updated_user['profile']['sci_tech_exp'], None)
             self.assertEqual(
                 updated_user['profile']['phase_transform_exp'], 'Sith Lord.'
@@ -494,11 +491,7 @@ class TestUserService(BaseTestCase):
 
     def test_put_user_no_data(self):
         """Try update a user without any data for the update"""
-        maul = User(
-            email='maul@sith.io',
-            first_name='Darth',
-            last_name='Maul'
-        )
+        maul = User(email='maul@sith.io', first_name='Darth', last_name='Maul')
         maul.set_password('AtLastWeWillHaveRevenge')
         maul.save()
 
@@ -529,9 +522,7 @@ class TestUserService(BaseTestCase):
     def test_put_user_existing_profile(self):
         """Test update user details if there is existing outdated data"""
         ahsoka = User(
-            email='ahsoka@tano.io',
-            first_name='Ahsoka',
-            last_name='tano'
+            email='ahsoka@tano.io', first_name='Ahsoka', last_name='tano'
         )
         ahsoka.set_password('IAmNoJedi')
         profile = UserProfile(
@@ -593,9 +584,7 @@ class TestUserService(BaseTestCase):
     def test_put_admin_existing_admin_profile(self):
         """Test update user details if there is existing outdated data"""
         rex = User(
-            email='rex@clone.io',
-            first_name='Rex',
-            last_name='Republic'
+            email='rex@clone.io', first_name='Rex', last_name='Republic'
         )
         rex.set_password('ExperienceOutranksEverything')
         profile = UserProfile(
@@ -607,8 +596,7 @@ class TestUserService(BaseTestCase):
         rex.profile = profile
         rex.is_admin = True
         admin_profile = AdminProfile(
-            mobile_number='0987654321',
-            position='Captain'
+            mobile_number='0987654321', position='Captain'
         )
         rex.admin_profile = admin_profile
         rex.save()
@@ -645,20 +633,16 @@ class TestUserService(BaseTestCase):
             self.assertEqual(updated_user['first_name'], 'Rex')
             self.assertEqual(updated_user['last_name'], 'Republic')
             self.assertEqual(
-                updated_user['admin_profile']['mobile_number'],
-                '1234567890'
+                updated_user['admin_profile']['mobile_number'], '1234567890'
             )
             self.assertEqual(
-                updated_user['admin_profile']['position'],
-                'Discharged.'
+                updated_user['admin_profile']['position'], 'Discharged.'
             )
 
     def test_get_user_last(self):
         """Test get the user's last used alloy and config"""
         fives = User(
-            email='fives@clone.io',
-            first_name='Five',
-            last_name='Republic'
+            email='fives@clone.io', first_name='Five', last_name='Republic'
         )
         config = Configuration(
             is_valid=True,
@@ -678,27 +662,13 @@ class TestUserService(BaseTestCase):
             cct_cooling_rate=1
         )
         fives.last_configuration = config
-        hydrogen = Element(
-            symbol='H',
-            weight=1.0
-        )
-        helium = Element(
-            symbol='He',
-            weight=4.0
-        )
-        lithium = Element(
-            symbol='Li',
-            weight=1.9
-        )
+        hydrogen = Element(symbol='H', weight=1.0)
+        helium = Element(symbol='He', weight=4.0)
+        lithium = Element(symbol='Li', weight=1.9)
         alloy = Alloy(
-            name='TestAlloy',
-            composition=[
-                hydrogen,
-                helium,
-                lithium
-            ]
+            name='TestAlloy', composition=[hydrogen, helium, lithium]
         )
-        fives.last_alloy=alloy
+        fives.last_alloy = alloy
         fives.set_password('NotJustAnotherNumber')
         fives.save()
 
@@ -740,29 +710,13 @@ class TestUserService(BaseTestCase):
     def test_get_user_last_no_last_config(self):
         """Test get last alloy and config with no config data"""
         bly = User(
-            email='bly@clone.io',
-            first_name='Bly',
-            last_name='Republic'
+            email='bly@clone.io', first_name='Bly', last_name='Republic'
         )
-        hydrogen = Element(
-            symbol='H',
-            weight=1.0
-        )
-        helium = Element(
-            symbol='He',
-            weight=4.0
-        )
-        lithium = Element(
-            symbol='Li',
-            weight=1.9
-        )
+        hydrogen = Element(symbol='H', weight=1.0)
+        helium = Element(symbol='He', weight=4.0)
+        lithium = Element(symbol='Li', weight=1.9)
         alloy = Alloy(
-            name='TestAlloy',
-            composition=[
-                hydrogen,
-                helium,
-                lithium
-            ]
+            name='TestAlloy', composition=[hydrogen, helium, lithium]
         )
         bly.last_alloy = alloy
         bly.set_password('IHateSecura')
@@ -796,9 +750,7 @@ class TestUserService(BaseTestCase):
     def test_get_user_last_no_alloy(self):
         """Test get last alloy and config with no alloy data"""
         cody = User(
-            email='cody@clone.io',
-            first_name='Cody',
-            last_name='Republic'
+            email='cody@clone.io', first_name='Cody', last_name='Republic'
         )
         config = Configuration(
             is_valid=True,
@@ -842,48 +794,22 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(
-                data['message'], 'No last composition was found.'
-            )
+            self.assertEqual(data['message'], 'No last composition was found.')
 
     def test_get_user_saved_alloys(self):
         """Test get user's list of saved alloys"""
         fox = User(
-            email='fox@clone.io',
-            first_name='Fox',
-            last_name='Republic'
+            email='fox@clone.io', first_name='Fox', last_name='Republic'
         )
-        hydrogen = Element(
-            symbol='H',
-            weight=1.0
-        )
-        helium = Element(
-            symbol='He',
-            weight=4.0
-        )
-        lithium = Element(
-            symbol='Li',
-            weight=1.9
-        )
-        berylium = Element(
-            symbol='Be',
-            weight=9.0
-        )
+        hydrogen = Element(symbol='H', weight=1.0)
+        helium = Element(symbol='He', weight=4.0)
+        lithium = Element(symbol='Li', weight=1.9)
+        berylium = Element(symbol='Be', weight=9.0)
         alloy1 = Alloy(
-            name='TestAlloy1',
-            composition=[
-                hydrogen,
-                helium,
-                lithium
-            ]
+            name='TestAlloy1', composition=[hydrogen, helium, lithium]
         )
         alloy2 = Alloy(
-            name='TestAlloy2',
-            composition=[
-                helium,
-                lithium,
-                berylium
-            ]
+            name='TestAlloy2', composition=[helium, lithium, berylium]
         )
         saved_alloys = [alloy1, alloy2]
         fox.saved_alloys = saved_alloys
@@ -911,15 +837,11 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
-            self.assertEqual(
-                data['alloys'][0]['name'], 'TestAlloy1'
-            )
+            self.assertEqual(data['alloys'][0]['name'], 'TestAlloy1')
             self.assertEqual(
                 data['alloys'][0]['composition'][0]['symbol'], 'H'
             )
-            self.assertEqual(
-                data['alloys'][1]['name'], 'TestAlloy2'
-            )
+            self.assertEqual(data['alloys'][1]['name'], 'TestAlloy2')
             self.assertEqual(
                 data['alloys'][1]['composition'][0]['symbol'], 'He'
             )
@@ -927,9 +849,7 @@ class TestUserService(BaseTestCase):
     def test_get_user_saved_alloys_no_alloys(self):
         """Test get user's list of alloys with no saved alloys"""
         wolffe = User(
-            email='wolffe@clone.io',
-            first_name='Wolffe',
-            last_name='Republic'
+            email='wolffe@clone.io', first_name='Wolffe', last_name='Republic'
         )
         wolffe.set_password('HaveWeGotAChance')
         wolffe.save()
@@ -960,9 +880,7 @@ class TestUserService(BaseTestCase):
     def test_get_user_profile(self):
         """Test get request on user profile"""
         gree = User(
-            email='gree@clone.io',
-            first_name= 'Gree',
-            last_name= 'Clone'
+            email='gree@clone.io', first_name='Gree', last_name='Clone'
         )
         gree.set_password('WhydYouDoIt')
         profile = UserProfile(
@@ -1048,8 +966,10 @@ class TestUserService(BaseTestCase):
             updated_user = User.objects.get(email=luke.email)
             profile_obj = json.loads(updated_user.profile.to_json())
             self.assertEqual(profile_obj['aim'], 'Redeem my father.')
-            self.assertEqual(profile_obj['highest_education'],
-                             'Graduated Dagobah Highschool.')
+            self.assertEqual(
+                profile_obj['highest_education'],
+                'Graduated Dagobah Highschool.'
+            )
             self.assertEqual(profile_obj['sci_tech_exp'], 'Limited.')
             self.assertEqual(profile_obj['phase_transform_exp'], 'Limited.')
 
@@ -1082,7 +1002,7 @@ class TestUserService(BaseTestCase):
                 '/user/profile',
                 data=json.dumps(''),
                 headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type = 'application/json'
+                content_type='application/json'
             )
 
             data = json.loads(resp.data.decode())
@@ -1094,11 +1014,7 @@ class TestUserService(BaseTestCase):
         """
         Ensure user profile can be updated even if not all fields are provided.
         """
-        han = User(
-            email='han@solo.io',
-            first_name='Han',
-            last_name='Solo'
-        )
+        han = User(email='han@solo.io', first_name='Han', last_name='Solo')
         han.set_password('BadFeelingAboutThis')
         han.save()
 
@@ -1124,7 +1040,7 @@ class TestUserService(BaseTestCase):
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type = 'application/json'
+                content_type='application/json'
             )
 
             data = json.loads(resp.data.decode())
@@ -1144,9 +1060,7 @@ class TestUserService(BaseTestCase):
         each update different parts of the profile.
         """
         leia = User(
-            email='leia@organa.io',
-            first_name='Leia',
-            last_name='Organa'
+            email='leia@organa.io', first_name='Leia', last_name='Organa'
         )
         leia.set_password('ShortForAStormtrooper')
         leia.save()
@@ -1168,20 +1082,20 @@ class TestUserService(BaseTestCase):
                 '/user/profile',
                 data=json.dumps(
                     {
-                        'aim' : 'Defeat the Empire',
+                        'aim': 'Defeat the Empire',
                         'phase_transform_exp': 'Expert'
                     }
                 ),
-                headers = {'Authorization': 'Bearer {}'.format(token)},
-                content_type = 'application/json'
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
             )
 
             resp_2 = self.client.put(
                 '/user/profile',
                 data=json.dumps(
                     {
-                        'highest_education' : 'University of Alderaan',
-                        'sci_tech_exp' : 'Expert'
+                        'highest_education': 'University of Alderaan',
+                        'sci_tech_exp': 'Expert'
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -1209,11 +1123,7 @@ class TestUserService(BaseTestCase):
         """
         Ensure updates to an existing user profile are successfull.
         """
-        mace = User(
-            email='mace@jedi.io',
-            first_name='Mace',
-            last_name='Windu'
-        )
+        mace = User(email='mace@jedi.io', first_name='Mace', last_name='Windu')
         mace.set_password('ThisPartysOver')
         mace.save()
 
@@ -1234,8 +1144,8 @@ class TestUserService(BaseTestCase):
                 '/user/profile',
                 data=json.dumps(
                     {
-                        'aim' : 'Stop the Sif from returning.',
-                        'highest_education' : 'Jedi Council Member',
+                        'aim': 'Stop the Sif from returning.',
+                        'highest_education': 'Jedi Council Member',
                         'sci_tech_exp': 'Limited',
                         'phase_transform_exp': 'Limted'
                     }
@@ -1277,9 +1187,7 @@ class TestUserService(BaseTestCase):
 
     def test_post_user_profile(self):
         jabba = User(
-            email='jabba@hutt.io',
-            first_name='Jabba',
-            last_name='The Hutt'
+            email='jabba@hutt.io', first_name='Jabba', last_name='The Hutt'
         )
         jabba.set_password('ThereWillBeNoBargain')
         jabba.save()
@@ -1314,8 +1222,9 @@ class TestUserService(BaseTestCase):
             updated_user = User.objects.get(email=jabba.email)
             profile_obj = json.loads(updated_user.profile.to_json())
             self.assertEqual(profile_obj['aim'], 'Find Han Solo.')
-            self.assertEqual(profile_obj['highest_education'],
-                             'Hutt school of fatness.')
+            self.assertEqual(
+                profile_obj['highest_education'], 'Hutt school of fatness.'
+            )
             self.assertEqual(profile_obj['sci_tech_exp'], 'PHD.')
             self.assertEqual(profile_obj['phase_transform_exp'], 'PHD.')
 
@@ -1354,11 +1263,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(data['message'], 'Invalid payload.')
 
     def test_post_user_profile_missing_data(self):
-        boba = User(
-            email='boba@fett.com',
-            first_name='Boba',
-            last_name='Fett'
-        )
+        boba = User(email='boba@fett.com', first_name='Boba', last_name='Fett')
         boba.set_password('NoGoodToMeDead')
         boba.save()
 
@@ -1394,21 +1299,15 @@ class TestUserService(BaseTestCase):
             self.assertEqual(data['message'], 'Missing aim.')
 
     def test_disable_account(self):
-        kylo = User(
-            email='kylo@ren.com',
-            first_name='Kylo',
-            last_name='Ren'
-        )
+        kylo = User(email='kylo@ren.com', first_name='Kylo', last_name='Ren')
         kylo.set_password('LetStarWarsDie')
         kylo.save()
 
         vader = User(
-            email='vader@sith.com',
-            first_name='Darth',
-            last_name='Vader'
+            email='vader@sith.com', first_name='Darth', last_name='Vader'
         )
         vader.set_password('AllTooEasy')
-        vader.is_admin= True
+        vader.is_admin = True
         vader.save()
 
         with self.client:
@@ -1426,11 +1325,7 @@ class TestUserService(BaseTestCase):
 
             resp_disable = self.client.post(
                 '/disableaccount',
-                data=json.dumps(
-                    {
-                        'email': 'kylo@ren.com'
-                    }
-                ),
+                data=json.dumps({'email': 'kylo@ren.com'}),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
@@ -1463,12 +1358,10 @@ class TestUserService(BaseTestCase):
 
     def test_disable_account_no_data(self):
         jarjar = User(
-            first_name='Jar Jar',
-            last_name='Binks',
-            email='jarjar@binks.com'
+            first_name='Jar Jar', last_name='Binks', email='jarjar@binks.com'
         )
         jarjar.set_password('MeesaMakePassword')
-        jarjar.is_admin=True
+        jarjar.is_admin = True
         jarjar.save()
 
         with self.client:
@@ -1498,12 +1391,10 @@ class TestUserService(BaseTestCase):
 
     def test_disable_account_dne(self):
         r2d2 = User(
-            first_name='R2',
-            last_name='D2',
-            email='r2d2@astromech.com'
+            first_name='R2', last_name='D2', email='r2d2@astromech.com'
         )
         r2d2.set_password('Weeeeeew')
-        r2d2.is_admin=True
+        r2d2.is_admin = True
         r2d2.save()
 
         with self.client:
@@ -1521,11 +1412,7 @@ class TestUserService(BaseTestCase):
 
             resp = self.client.post(
                 '/disableaccount',
-                data=json.dumps(
-                    {
-                        'email': 'c3p0@protocol.com'
-                    }
-                ),
+                data=json.dumps({'email': 'c3p0@protocol.com'}),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
@@ -1534,6 +1421,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(resp.status_code, 201)
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'User does not exist.')
+
 
 if __name__ == '__main__':
     unittest.main()

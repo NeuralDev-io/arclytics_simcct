@@ -52,9 +52,7 @@ class PingTest(Resource):
 class UserList(Resource):
     """Return all users (admin only)"""
 
-    method_decorators = {
-        'get': [authenticate_admin]
-    }
+    method_decorators = {'get': [authenticate_admin]}
 
     def get(self, resp) -> Tuple[dict, int]:
         """Get all users only available to admins."""
@@ -66,10 +64,7 @@ class UserList(Resource):
 class SingleUser(Resource):
     """Get/Put a single user's details."""
 
-    method_decorators = {
-        'get': [authenticate],
-        'put': [authenticate]
-    }
+    method_decorators = {'get': [authenticate], 'put': [authenticate]}
 
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
@@ -117,8 +112,10 @@ class SingleUser(Resource):
                 user.profile.phase_transform_exp = phase_transform_exp
         else:
             profile = UserProfile(
-                aim=aim, highest_education=highest_education,
-                sci_tech_exp=sci_tech_exp, phase_transform_exp=phase_transform_exp
+                aim=aim,
+                highest_education=highest_education,
+                sci_tech_exp=sci_tech_exp,
+                phase_transform_exp=phase_transform_exp
             )
             user.profile = profile
 
@@ -139,7 +136,8 @@ class SingleUser(Resource):
         user.save()
 
         response['status'] = 'success'
-        response['message'] = f'Successfully updated User details for {user.id}.'
+        response['message'
+                 ] = f'Successfully updated User details for {user.id}.'
         return response, 200
 
 
@@ -148,20 +146,20 @@ class UserLast(Resource):
     (if any)
     """
 
-    method_decorators = {
-        'get': [authenticate]
-    }
+    method_decorators = {'get': [authenticate]}
 
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
         if not user.last_alloy:
             response = {
-                'status': 'fail', 'message': 'No last composition was found.'
+                'status': 'fail',
+                'message': 'No last composition was found.'
             }
             return response, 400
         if not user.last_configuration:
             response = {
-                'status': 'fail', 'message': 'No last configuration was found.'
+                'status': 'fail',
+                'message': 'No last configuration was found.'
             }
             return response, 400
 
@@ -176,10 +174,7 @@ class UserLast(Resource):
 class UserAlloys(Resource):
     """We get the list of User's alloys stored in their document"""
 
-    method_decorators = {
-        'get': [authenticate],
-        'post': [authenticate]
-    }
+    method_decorators = {'get': [authenticate], 'post': [authenticate]}
 
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
@@ -188,13 +183,8 @@ class UserAlloys(Resource):
             return response, 400
         alloys = []
         for a in user.saved_alloys:
-            alloys.append(
-                a.to_dict()
-            )
-        response = {
-            'status': 'success',
-            'alloys': alloys
-        }
+            alloys.append(a.to_dict())
+        response = {'status': 'success', 'alloys': alloys}
         return response, 200
 
     def post(self, resp) -> Tuple[dict, int]:
@@ -253,7 +243,7 @@ class UserProfiles(Resource):
                 user.profile.aim = aim
 
             if highest_education:
-                 user.profile.highest_education = highest_education
+                user.profile.highest_education = highest_education
 
             if sci_tech_exp:
                 user.profile.sci_tech_exp = sci_tech_exp
@@ -262,8 +252,10 @@ class UserProfiles(Resource):
                 user.profile.phase_transform_exp = phase_transform_exp
         else:
             profile = UserProfile(
-                aim=aim, highest_education=highest_education,
-                sci_tech_exp=sci_tech_exp, phase_transform_exp=phase_transform_exp
+                aim=aim,
+                highest_education=highest_education,
+                sci_tech_exp=sci_tech_exp,
+                phase_transform_exp=phase_transform_exp
             )
             user.profile = profile
 
@@ -297,7 +289,8 @@ class UserProfiles(Resource):
             return response, 400
         if not highest_education:
             response = {
-                'status': 'fail', 'message': 'Missing highest education.'
+                'status': 'fail',
+                'message': 'Missing highest education.'
             }
             return response, 400
         if not sci_tech_exp:
@@ -314,8 +307,10 @@ class UserProfiles(Resource):
             return response, 400
 
         profile = UserProfile(
-            aim=aim, highest_education=highest_education,
-            sci_tech_exp=sci_tech_exp, phase_transform_exp=phase_transform_exp
+            aim=aim,
+            highest_education=highest_education,
+            sci_tech_exp=sci_tech_exp,
+            phase_transform_exp=phase_transform_exp
         )
         user.profile = profile
         user.save()
@@ -328,9 +323,7 @@ class UserProfiles(Resource):
 class UserConfigurations(Resource):
     """Retrieve the list of configurations saved in the User's document"""
 
-    method_decorators = {
-        'get': [authenticate]
-    }
+    method_decorators = {'get': [authenticate]}
 
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
@@ -345,19 +338,14 @@ class UserConfigurations(Resource):
 class AdminCreate(Resource):
     """Route for Users for Create Admin."""
 
-    method_decorators = {
-        'post': [authenticate_admin]
-    }
+    method_decorators = {'post': [authenticate_admin]}
 
     def post(self):
         """Make a user an administrator"""
         post_data = request.get_json()
 
         # Validating empty payload
-        response = {
-            'status': 'fail',
-            'message': 'User does not exist.'
-        }
+        response = {'status': 'fail', 'message': 'User does not exist.'}
         if not post_data:
             return response, 400
 
@@ -388,17 +376,19 @@ class AdminCreate(Resource):
             # generate the confirmation token for verifying email
             confirmation_token = generate_confirmation_token(email)
             confirm_url = generate_url(
-                'auth.confirm_email_admin',
-                confirmation_token
+                'auth.confirm_email_admin', confirmation_token
             )
 
             from celery_runner import celery
             task = celery.send_tassk(
                 'tasks.send_email',
                 kwargs={
-                    'to': email,
-                    'subject_suffix': 'Please Confirm You Are Now Admin',
-                    'html_template': render_template(
+                    'to':
+                    email,
+                    'subject_suffix':
+                    'Please Confirm You Are Now Admin',
+                    'html_template':
+                    render_template(
                         'activate_admin.html',
                         confirm_url=confirm_url,
                         user_name=f'{user.first_name} {user.last_name}'
@@ -451,18 +441,13 @@ class AdminCreate(Resource):
 class DisableAccount(Resource):
     """Route for Admins to disable user accounts"""
 
-    method_decorators = {
-        'post': [authenticate_admin]
-    }
+    method_decorators = {'post': [authenticate_admin]}
 
     def post(self, resp):
         post_data = request.get_json()
 
         # Validating empty payload
-        response = {
-            'status': 'fail',
-            'message': 'User does not exist.'
-        }
+        response = {'status': 'fail', 'message': 'User does not exist.'}
         if not post_data:
             return response, 400
 
@@ -483,7 +468,8 @@ class DisableAccount(Resource):
         user.save()
 
         response['status'] = 'success'
-        response['message'] = f'The account for User {user.id} has been disabled.'
+        response['message'
+                 ] = f'The account for User {user.id} has been disabled.'
         return response, 200
 
 

@@ -21,19 +21,24 @@ This file defines all the API resource routes and controller definitions using
 the Flask Resource inheritance model.
 """
 
+import os
+
 from typing import Tuple
 from socket import gaierror
 
 from celery.states import PENDING
+from email_validator import validate_email, EmailNotValidError
 from flask import Blueprint, jsonify, request, render_template
+from flask import current_app as app
 from flask_restful import Resource
+from mongoengine.errors import ValidationError
 
 from logger.arc_logger import AppLogger
 from users_app.models import User, UserProfile, AdminProfile
 from users_app.middleware import authenticate, authenticate_admin
 from users_app.extensions import api
 from users_app.token import (
-    generate_confirmation_token, generate_url, confirm_token
+    generate_confirmation_token, generate_url, confirm_token, URLTokenError
 )
 
 users_blueprint = Blueprint('users', __name__)
@@ -339,7 +344,15 @@ class UserConfigurations(Resource):
         #TODO(davidmatthews1004@gmail.com)
 
 
-# TODO(davidmatthews1004@gmail.com) get /user/graphs
+class UserGraphs(Resource):
+    """Retrieve the list of Graphs saved in the User's document."""
+
+    method_decorators = {
+        'get': [authenticate]
+    }
+
+    def get(self, resp) -> Tuple[dict, int]:
+        pass
 
 
 class AdminCreate(Resource):
@@ -349,7 +362,7 @@ class AdminCreate(Resource):
         'post': [authenticate_admin]
     }
 
-    def post(self):
+    def post(self, resp):
         """Make a user an administrator"""
         post_data = request.get_json()
 
@@ -368,84 +381,88 @@ class AdminCreate(Resource):
             response['message'] = 'Invalid email provided.'
             return response, 400
 
+        # Verify it is actually a valid email
+        try:
+            # validate and get info
+            v = validate_email(email)
+            # replace with normalized form
+            valid_email = v['email']
+        except EmailNotValidError as e:
+            # email is not valid, exception message is human-readable
+            response['error'] = str(e)
+            response['message'] = 'Invalid email.'
+            return response, 400
+
         # Validation checks
-        if not User.objects(email=email):
+        if not User.objects(email=valid_email):
             return response, 201
 
-        user = User.objects.get(email=email)
+        user = User.objects.get(email=valid_email)
+
+        if not user.verified:
+            response['message'] = 'The user must verify their email.'
+            return response, 401
 
         if user.is_admin:
             response['message'] = 'User is already an Administrator.'
             return response, 400
 
-        user.is_admin = True
+        admin_token = generate_confirmation_token(user.email)
+        admin_url = generate_url('users.confirm_create_admin', admin_token)
 
-        try:
-            user.save()
-
-            # generate auth token
-            auth_token = user.encode_auth_token(user.id)
-            # generate the confirmation token for verifying email
-            confirmation_token = generate_confirmation_token(email)
-            confirm_url = generate_url(
-                'auth.confirm_email_admin',
-                confirmation_token
-            )
-
-            from celery_runner import celery
-            task = celery.send_tassk(
-                'tasks.send_email',
-                kwargs={
-                    'to': email,
-                    'subject_suffix': 'Please Confirm You Are Now Admin',
-                    'html_template': render_template(
-                        'activate_admin.html',
-                        confirm_url=confirm_url,
-                        user_name=f'{user.first_name} {user.last_name}'
-                    )
-                }
-            )
-            # FIXME(davidmatthews1004@gmail.com): Need to find a way to validate that it has
-            #  sent without waiting for the result.
-            task_status = celery.AsyncResult(task.id).state
-
-            while task_status == PENDING:
-                task_status = celery.AsyncResult(task.id).state
-            # The email tasks response with a Tuple[bool, str]
-            res = celery.AsyncResult(task.id)
-
-            # Generic response regardless of email task working
-            response['status'] = 'success'
-            response['token'] = auth_token.decode()
-
-            if isinstance(res.result, gaierror):
-                response['error'] = 'Socket error.'
-                response['message'] = (
-                    'Admin created but confirmation '
-                    'email failed.'
+        from celery_runner import celery
+        celery.send_task(
+            'tasks.send_email',
+            kwargs={
+                'to': user.email,
+                'subject_suffix': 'Confirm you are an Admin',
+                'html_template': render_template(
+                    'activate_admin.html',
+                    admin_url=admin_url,
+                    email=valid_email,
+                    users_name=f'{user.first_name} {user.last_name}'
+                ),
+                'text_template': render_template(
+                    'activate_admin.txt',
+                    admin_url=admin_url,
+                    email=valid_email,
+                    users_name=f'{user.first_name} {user.last_name}'
                 )
-                return jsonify(response), 201
+            }
+        )
 
-            if not res.result[0]:
-                response['error'] = res.result[1]
-                response['message'] = (
-                    'Admin created but confirmation '
-                    'email failed.'
-                )
-                return jsonify(response), 201
+        response['status'] = 'success'
+        response.pop('message')
+        return response, 202
 
-            response['message'] = 'Admin has been created.'
-            return jsonify(response), 201
 
-        except ValidationError as e:
-            # logger.error('Validation Error: {}'.format(e))
-            response['message'] = 'The Admin cannot be created.'
-            return jsonify(response), 400
-        # I don't think this is is needed for this endpoint.
-        # except NotUniqueError as e:
-        #     # logger.error('Not Unique Error: {}'.format(e))
-        #     response['message'] = 'The users details already exists.'
-        #     return jsonify(response), 400
+@users_blueprint.route('/admincreate/confirm/<token>', methods=['GET'])
+def confirm_create_admin(token):
+    response = {'status': 'fail', 'message': 'Invalid token.'}
+
+    # Decode the token from the email to the confirm it was the right one
+    try:
+        email = confirm_token(token)
+    except URLTokenError as e:
+        response['error'] = str(e)
+        return jsonify(response), 400
+    except Exception as e:
+        response['error'] = str(e)
+        return jsonify(response), 400
+
+    # Confirm and validate that the user exists
+    user = User.objects.get(email=email)
+    user.is_admin = True
+
+    # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
+    client_host = os.environ.get('CLIENT_HOST')
+    # We can make our own redirect response by doing the following
+    custom_redir_response = app.response_class(
+        status=302, mimetype='application/json'
+    )
+    redirect_url = f'http://localhost:3000/signin'
+    custom_redir_response.headers['Location'] = redirect_url
+    return custom_redir_response
 
 
 class DisableAccount(Resource):
@@ -473,13 +490,24 @@ class DisableAccount(Resource):
             response['message'] = 'Invalid email provided.'
             return response, 400
 
+        # Verify it is actually a valid email
+        try:
+            # validate and get info
+            v = validate_email(email)
+            # replace with normalized form
+            valid_email = v['email']
+        except EmailNotValidError as e:
+            # email is not valid, exception message is human-readable
+            response['error'] = str(e)
+            response['message'] = 'Invalid email.'
+            return jsonify(response), 400
+
         # Validation checks
-        if not User.objects(email=email):
+        if not User.objects(email=valid_email):
             return response, 201
 
-        user = User.objects.get(email=email)
-        user.account_disabled = True
-        # TODO(davidmatthews1004@gmail.com) Kick user if they are currently logged in
+        user = User.objects.get(email=valid_email)
+        user.active = False
         user.save()
 
         response['status'] = 'success'
@@ -494,5 +522,6 @@ api.add_resource(UserProfiles, '/user/profile')
 api.add_resource(UserLast, '/user/last')
 api.add_resource(UserAlloys, '/user/alloys')
 api.add_resource(UserConfigurations, '/user/configurations')
-# api.add_resource(AdminCreate, '/admincreate')
-api.add_resource(DisableAccount, '/disableaccount')
+api.add_resource(AdminCreate, '/admincreate')
+api.add_resource(DisableAccount, '/user/disable')
+api.add_resource(UserGraphs, '/user/graphs')

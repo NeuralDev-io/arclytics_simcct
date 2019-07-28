@@ -485,7 +485,6 @@ class TestAuthEndpoints(BaseTestCase):
             last_name='Danvers'
         )
         user.set_password('OnlyHereBecauseOfFeminism')
-        user.active = False
         user.save()
         with self.client:
             resp_login = self.client.post(
@@ -499,6 +498,8 @@ class TestAuthEndpoints(BaseTestCase):
                 content_type='application/json'
             )
             token = json.loads(resp_login.data.decode())['token']
+            user.active = False
+            user.save()
             response = self.client.get(
                 '/auth/logout',
                 headers={
@@ -518,7 +519,6 @@ class TestAuthEndpoints(BaseTestCase):
             last_name='Murdock'
         )
         user.set_password('BlindLawyer')
-        user.active = False
         user.save()
         with self.client:
             resp_login = self.client.post(
@@ -532,6 +532,8 @@ class TestAuthEndpoints(BaseTestCase):
                 content_type='application/json'
             )
             token = json.loads(resp_login.data.decode())['token']
+            user.active = False
+            user.save()
             response = self.client.get(
                 '/auth/status',
                 headers={'Authorization': 'Bearer {}'.format(token)}

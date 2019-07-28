@@ -1208,7 +1208,7 @@ class TestUserService(BaseTestCase):
 
     def test_put_user_profile_override(self):
         """
-        Ensure updates to an existing user profile are successfull.
+        Ensure updates to an existing user profile are successful.
         """
         mace = User(
             email='mace@jedi.io',
@@ -1277,6 +1277,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(profile_obj['sci_tech_exp'], 'Limited')
 
     def test_post_user_profile(self):
+        """Test post to user profile is successful"""
         jabba = User(
             email='jabba@hutt.io',
             first_name='Jabba',
@@ -1321,6 +1322,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(profile_obj['phase_transform_exp'], 'PHD.')
 
     def test_post_user_profile_no_data(self):
+        """Test empty post is unsuccessful"""
         lando = User(
             email='lando@calrissian.io',
             first_name='Lando',
@@ -1355,6 +1357,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(data['message'], 'Invalid payload.')
 
     def test_post_user_profile_missing_data(self):
+        """Test incomplete post is unsuccessful"""
         boba = User(
             email='boba@fett.com',
             first_name='Boba',
@@ -1395,8 +1398,9 @@ class TestUserService(BaseTestCase):
             self.assertEqual(data['message'], 'Missing aim.')
 
     def test_disable_account(self):
+        """Test disable account is successful"""
         kylo = User(
-            email='kylo@ren.com',
+            email='kyloren@gmail.com',
             first_name='Kylo',
             last_name='Ren'
         )
@@ -1429,7 +1433,7 @@ class TestUserService(BaseTestCase):
                 '/user/disable',
                 data=json.dumps(
                     {
-                        'email': 'kylo@ren.com'
+                        'email': 'kyloren@gmail.com'
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -1440,7 +1444,7 @@ class TestUserService(BaseTestCase):
                 '/auth/login',
                 data=json.dumps(
                     {
-                        'email': 'kylo@ren.com',
+                        'email': 'kyloren@gmail.com',
                         'password': 'LetStarWarsDie'
                     }
                 ),
@@ -1463,6 +1467,7 @@ class TestUserService(BaseTestCase):
             )
 
     def test_disable_account_no_data(self):
+        """Test empty disable request is unsuccessful"""
         jarjar = User(
             first_name='Jar Jar',
             last_name='Binks',
@@ -1498,6 +1503,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(data['message'], 'User does not exist.')
 
     def test_disable_account_dne(self):
+        """Test disable non-existant account is unsuccessful."""
         r2d2 = User(
             first_name='R2',
             last_name='D2',
@@ -1537,6 +1543,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(data['message'], 'User does not exist.')
 
     def test_use_disable_account(self):
+        """Ensure a disabled user is not able to interact with the system."""
         grevious = User(
             first_name='General',
             last_name='Grevious',
@@ -1612,6 +1619,7 @@ class TestUserService(BaseTestCase):
             )
 
     def test_create_admin_success(self):
+        """Test create admin is successful"""
         quigon = User(
             first_name='Qui-Gon',
             last_name='Jinn',
@@ -1656,24 +1664,213 @@ class TestUserService(BaseTestCase):
             self.assertEqual(data['status'], 'success')
             self.assertEqual(resp.status_code, 202)
 
-    # def test_create_admin_successsful_redirect(self):
-    #     email = 'test@test.com'
-    #     user = User(email=email, first_name='Test', last_name='User')
-    #     user.set_password('Testing123')
-    #     user.save()
-    #     token = generate_confirmation_token(email)
-    #     admin_url = generate_url('users.confirm_create_admin', token)
-    #     with current_app.test_client() as client:
-    #         res = client.get(
-    #             admin_url,
-    #             content_type='application/json',
+    def test_create_admin_successful_redirect(self):
+        """Test admin creation confirmation is successful"""
+        email = 'test@test.com'
+        user = User(email=email, first_name='Test', last_name='User')
+        user.set_password('Testing123')
+        user.save()
+        token = generate_confirmation_token(email)
+        admin_url = generate_url('users.confirm_create_admin', token)
+        with current_app.test_client() as client:
+            res = client.get(
+                admin_url,
+                content_type='application/json',
+            )
+            self.assertEquals(res.status_code, 302)
+            # self.assertTrue(res.headers['Authorization'])
+            self.assertTrue(res.headers['Location'])
+            # Every redirect will be different.
+            redirect_url = f'http://localhost:3000/signin'
+            self.assertRedirects(res, redirect_url)
+
+    def test_create_admin_invalid_email(self):
+        """Test create admin with invalid email is unsuccessful"""
+        luke = User(
+            first_name='Luke',
+            last_name='Skywalker',
+            email="lukeskywalker@gmail.com"
+        )
+        luke.is_admin=True
+        luke.set_password('IAmAJediLikeMyFatherBeforeMe')
+        luke.save()
+
+        biggs = User(
+            first_name='Biggs',
+            last_name='Darklighter',
+            email='invalidbiggs@dot.com'
+        )
+        biggs.set_password('LukePullUp')
+        biggs.save()
+
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'lukeskywalker@gmail.com',
+                        'password': 'IAmAJediLikeMyFatherBeforeMe'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+            resp = self.client.post(
+                '/admincreate',
+                data=json.dumps(
+                    {
+                        'email': 'invalidbiggs@dot.com'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['message'], 'Invalid email.')
+
+    def test_create_unverified_admin(self):
+        """Test create admin from unverified user is unsuccessful"""
+        ackbar = User(
+            first_name='Admiral',
+            last_name='Ackbar',
+            email='admiralackbar@gmail.com'
+        )
+        ackbar.set_password('ITSATRAP')
+        ackbar.is_admin=True
+        ackbar.save()
+
+        jyn = User(
+            first_name='Jyn',
+            last_name='Erso',
+            email='stardust@gmail.com'
+        )
+        jyn.set_password('RebellionsAreBuiltOnHope')
+        jyn.save()
+
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'admiralackbar@gmail.com',
+                        'password': 'ITSATRAP'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+            resp = self.client.post(
+                '/admincreate',
+                data=json.dumps(
+                    {
+                        'email': 'stardust@gmail.com'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(resp.status_code, 401)
+            self.assertEqual(data['message'], 'The user must verify their email.')
+
+    def test_create_admin_already_admin(self):
+        """
+        Ensure an error comes up when trying to make an Admin an Admin
+        """
+        aayla = User(
+            first_name='Aayla',
+            last_name='Secura',
+            email='aaylasecura@gmail.com'
+        )
+        aayla.set_password('KilledByBly')
+        aayla.verified=True
+        aayla.is_admin=True
+        aayla.save()
+
+        luminara = User(
+            first_name='Luminara',
+            last_name='Unduli',
+            email='luminaraunduli@gmail.com'
+        )
+        luminara.set_password('DiesOffscreen')
+        luminara.verified=True
+        luminara.is_admin=True
+        luminara.save()
+
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'aaylasecura@gmail.com',
+                        'password': 'KilledByBly'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+            resp = self.client.post(
+                '/admincreate',
+                data=json.dumps(
+                    {
+                        'email': 'luminaraunduli@gmail.com'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(resp.status_code, 401)
+            self.assertEqual(data['message'], 'User is already an Administrator.')
+
+    # def test_create_admin_success_manual(self):
+    #     david = User(
+    #         first_name='David',
+    #         last_name='Matthews',
+    #         email="dgm999@uowmail.edu.au"
+    #     )
+    #     david.is_admin=True
+    #     david.set_password('DestroyTheSith')
+    #     david.save()
+    #
+    #     david2 = User(
+    #         first_name='Dave',
+    #         last_name='Matthews',
+    #         email='davidmatthews1004@gmail.com'
+    #     )
+    #     david2.verified=True
+    #     david2.set_password('OrDestroyTheJedi')
+    #     david2.save()
+    #
+    #     with self.client:
+    #         resp_login = self.client.post(
+    #             '/auth/login',
+    #             data=json.dumps(
+    #                 {
+    #                     'email': 'dgm999@uowmail.edu.au',
+    #                     'password': 'DestroyTheSith'
+    #                 }
+    #             ),
+    #             content_type='application/json'
     #         )
-    #         self.assertEquals(res.status_code, 302)
-    #         # self.assertTrue(res.headers['Authorization'])
-    #         self.assertTrue(res.headers['Location'])
-    #         # Every redirect will be different.
-    #         redirect_url = f'http://localhost:3000/signin'
-    #         self.assertRedirects(res, redirect_url)
+    #         token = json.loads(resp_login.data.decode())['token']
+    #         resp = self.client.post(
+    #             '/admincreate',
+    #             data=json.dumps(
+    #                 {
+    #                     'email': 'davidmatthews1004@gmail.com'
+    #                 }
+    #             ),
+    #             headers={'Authorization': 'Bearer {}'.format(token)},
+    #             content_type='application/json'
+    #         )
+    #         data = json.loads(resp.data.decode())
+    #         self.assertEqual(data['status'], 'success')
+    #         self.assertEqual(resp.status_code, 202)
 
 if __name__ == '__main__':
     unittest.main()

@@ -149,7 +149,8 @@ class SingleUser(Resource):
 
 
 class UserLast(Resource):
-    """Returns the user's Alloy and Configurations used, and CCT/TTT results
+    """
+    Returns the user's Alloy and Configurations used, and CCT/TTT results
     (if any)
     """
 
@@ -353,6 +354,7 @@ class UserGraphs(Resource):
 
     def get(self, resp) -> Tuple[dict, int]:
         pass
+        # TODO(davidmatthews1004@gmail.com)
 
 
 class AdminCreate(Resource):
@@ -405,7 +407,7 @@ class AdminCreate(Resource):
 
         if user.is_admin:
             response['message'] = 'User is already an Administrator.'
-            return response, 400
+            return response, 401
 
         admin_token = generate_confirmation_token(user.email)
         admin_url = generate_url('users.confirm_create_admin', admin_token)
@@ -453,6 +455,9 @@ def confirm_create_admin(token):
     # Confirm and validate that the user exists
     user = User.objects.get(email=email)
     user.is_admin = True
+    user.admin_profile = AdminProfile(
+        verified=True
+    )
 
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
     client_host = os.environ.get('CLIENT_HOST')
@@ -500,7 +505,7 @@ class DisableAccount(Resource):
             # email is not valid, exception message is human-readable
             response['error'] = str(e)
             response['message'] = 'Invalid email.'
-            return jsonify(response), 400
+            return response, 400
 
         # Validation checks
         if not User.objects(email=valid_email):

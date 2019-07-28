@@ -342,7 +342,7 @@ def login() -> Tuple[dict, int]:
     if bcrypt.check_password_hash(user.password, password):
         auth_token = user.encode_auth_token(user.id)
         if auth_token:
-            if user.account_disabled:
+            if not user.active:
                 response['message']='Your Account has been disabled.'
                 return jsonify(response), 400
 

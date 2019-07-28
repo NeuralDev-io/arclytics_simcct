@@ -31,6 +31,7 @@ from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
 from users_app.models import User, UserProfile, AdminProfile, Element, Alloy, \
     Configuration
+from users_app.token import generate_confirmation_token, generate_url
 
 logger = AppLogger(__name__)
 
@@ -1425,7 +1426,7 @@ class TestUserService(BaseTestCase):
             token = json.loads(resp_login.data.decode())['token']
 
             resp_disable = self.client.post(
-                '/disableaccount',
+                '/user/disable',
                 data=json.dumps(
                     {
                         'email': 'kylo@ren.com'
@@ -1485,7 +1486,7 @@ class TestUserService(BaseTestCase):
             token = json.loads(resp_login.data.decode())['token']
 
             resp = self.client.post(
-                '/disableaccount',
+                '/user/disable',
                 data=json.dumps(''),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
@@ -1520,7 +1521,7 @@ class TestUserService(BaseTestCase):
             token = json.loads(resp_login.data.decode())['token']
 
             resp = self.client.post(
-                '/disableaccount',
+                '/user/disable',
                 data=json.dumps(
                     {
                         'email': 'c3p0@protocol.com'
@@ -1534,6 +1535,145 @@ class TestUserService(BaseTestCase):
             self.assertEqual(resp.status_code, 201)
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'User does not exist.')
+
+    def test_use_disable_account(self):
+        grevious = User(
+            first_name='General',
+            last_name='Grevious',
+            email='grevious@separatists.com'
+        )
+        grevious.set_password('YouAreABoldOne')
+        grevious.is_admin=True
+        grevious.save()
+
+        droid = User(
+            first_name='Idiot',
+            last_name='Droid',
+            email='idiot@droids.com'
+        )
+        droid.set_password('ButIJustGotPromoted')
+        droid.save()
+
+        with self.client:
+            grevious_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'grevious@separatists.com',
+                        'password': 'YouAreABoldOne'
+                    }
+                ),
+                content_type='application/json'
+            )
+            grevious_token = json.loads(grevious_login.data.decode())['token']
+
+            droid_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'idiot@droids.com',
+                        'password': 'ButIJustGotPromoted'
+                    }
+                ),
+                content_type='application/json'
+            )
+            droid_token = json.loads(droid_login.data.decode())['token']
+
+            grevious_disable = self.client.post(
+                '/user/disable',
+                data=json.dumps(
+                    {
+                        'email': 'idiot@droids.com'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(grevious_token)},
+                content_type='application/json'
+            )
+
+            droid_action = self.client.get(
+                '/user',
+                headers={'Authorization': 'Bearer {}'.format(droid_token)},
+                content_type='application/json'
+            )
+
+            disable_data = json.loads(grevious_disable.data.decode())
+            self.assertEqual(grevious_disable.status_code, 200)
+            self.assertEqual(disable_data['status'], 'success')
+            self.assertEqual(
+                disable_data['message'],
+                f'The account for User {droid.id} has been disabled.'
+            )
+
+            action_data = json.loads(droid_action.data.decode())
+            self.assertEqual(droid_action.status_code, 401)
+            self.assertEqual(action_data['status'], 'fail')
+            self.assertEqual(
+                action_data['message'], 'This user does not exist.'
+            )
+
+    def test_create_admin_success(self):
+        quigon = User(
+            first_name='Qui-Gon',
+            last_name='Jinn',
+            email="quigon@jinn.com"
+        )
+        quigon.is_admin=True
+        quigon.set_password('ShortNegotiations')
+        quigon.save()
+
+        obiwan = User(
+            first_name='Obi-Wan',
+            last_name='Kenobi',
+            email='obiwan@kenobi.com'
+        )
+        obiwan.verified=True
+        obiwan.set_password('FromACertainPointOfView')
+        obiwan.save()
+
+        with self.client:
+            resp_login = self.client.post(
+                '/auth/login',
+                data=json.dumps(
+                    {
+                        'email': 'quigon@jinn.com',
+                        'password': 'ShortNegotiations'
+                    }
+                ),
+                content_type='application/json'
+            )
+            token = json.loads(resp_login.data.decode())['token']
+            resp = self.client.post(
+                '/admincreate',
+                data=json.dumps(
+                    {
+                        'email': 'obiwan@kenobi.com'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(resp.status_code, 202)
+
+    # def test_create_admin_successsful_redirect(self):
+    #     email = 'test@test.com'
+    #     user = User(email=email, first_name='Test', last_name='User')
+    #     user.set_password('Testing123')
+    #     user.save()
+    #     token = generate_confirmation_token(email)
+    #     admin_url = generate_url('users.confirm_create_admin', token)
+    #     with current_app.test_client() as client:
+    #         res = client.get(
+    #             admin_url,
+    #             content_type='application/json',
+    #         )
+    #         self.assertEquals(res.status_code, 302)
+    #         # self.assertTrue(res.headers['Authorization'])
+    #         self.assertTrue(res.headers['Location'])
+    #         # Every redirect will be different.
+    #         redirect_url = f'http://localhost:3000/signin'
+    #         self.assertRedirects(res, redirect_url)
 
 if __name__ == '__main__':
     unittest.main()

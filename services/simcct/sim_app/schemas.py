@@ -21,18 +21,11 @@ that will be received by the simcct server as request body data. They will
 be used to validate the post data is correct before adding to any DB.
 """
 
-import enum
-
 from bson import ObjectId
 from marshmallow import Schema, fields
+from marshmallow.validate import OneOf
 
 Schema.TYPE_MAPPING[ObjectId] = fields.String
-
-
-class AlloyOption(enum.Enum):
-    parent = 1
-    weld = 2
-    mix = 3
 
 
 class ElementSchema(Schema):
@@ -44,6 +37,22 @@ class AlloySchema(Schema):
     _id = fields.Str()
     name = fields.Str(required=True)
     compositions = fields.List(fields.Nested(ElementSchema), required=True)
+
+
+class AlloysSchema(Schema):
+    parent = fields.Nested(AlloySchema, allow_none=True)
+    weld = fields.Nested(AlloySchema, allow_none=True)
+    mix = fields.Nested(AlloySchema, allow_none=True)
+
+
+class AlloyStore(Schema):
+    alloy_option = fields.Str(
+        required=True, validate=OneOf(['single', 'both', 'mix'])
+    )
+    alloy_type = fields.Str(
+        required=True, validate=OneOf(['parent', 'weld', 'mix'])
+    )
+    alloys = fields.Nested(AlloysSchema, allow_none=True)
 
 
 class ConfigurationsSchema(Schema):

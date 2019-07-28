@@ -211,13 +211,16 @@ class Alloy(EmbeddedDocument):
     def to_dict(self):
         comp = []
         for e in self.composition:
-            comp.append(
-                {'symbol': e.symbol, 'weight': e.weight}
-            )
+            comp.append({'symbol': e.symbol, 'weight': e.weight})
         return {'name': self.name, 'composition': comp}
 
     def __str__(self):
         return self.to_json()
+
+
+class AlloyStore(EmbeddedDocument):
+    alloy_option = StringField()
+    # Alloy types ?????????
 
 
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
@@ -234,16 +237,16 @@ class User(Document):
     last_configuration = EmbeddedDocumentField(
         document_type=Configuration, default=None
     )
-    last_alloy = EmbeddedDocumentField(
-        document_type=Alloy, default=None
+
+    last_alloy = EmbeddedDocumentField(document_type=Alloy, default=None)
+    last_alloy_store = EmbeddedDocumentField(
+        document_type=AlloyStore, default=None
     )
 
     # TODO(andrew@neuraldev.io -- Sprint 6): Make these
     # saved_configurations = EmbeddedDocumentListField(
     # document_type=Configurations)
-    saved_alloys = EmbeddedDocumentListField(
-        document_type=Alloy, default=None
-    )
+    saved_alloys = EmbeddedDocumentListField(document_type=Alloy, default=None)
 
     # Some rather useful metadata information that's not core to the
     # definition of a user

@@ -28,6 +28,7 @@ from flask import Blueprint, request, json
 from flask_restful import Resource
 from marshmallow import ValidationError
 
+from sim_app.extensions import api
 from sim_app.schemas import AlloySchema
 from sim_app.alloys_service import AlloysService
 from logger.arc_logger import AppLogger
@@ -194,3 +195,7 @@ class Alloys(Resource):
         response['status'] = 'success'
         response.pop('message')
         return response, 202
+
+
+api.add_resource(Alloys, '/alloys/<alloy_id>')
+api.add_resource(AlloysList, '/alloys')

@@ -1970,11 +1970,6 @@ components:
           type: string
           format: string
           example: "Li98"
-        alloy_type:
-          description: "A string that is a choice of either of the following enums [parent | weld | mix]"
-          type: string
-          format: string
-          example: "parent"
         gran_size:
           description: "The ASTM value for grain size always."
           type: number
@@ -2162,6 +2157,22 @@ components:
       required:
         - name
         - compositions
+    'Session or Saved Alloy':
+      description: "This is the schema for the storage of an Alloy either in Session or Database Persistent storage."
+      type: object
+      properties:
+        alloy_option:
+          description: "A string that is the choice of either of the following enums [single | both | mix]"
+          type: string
+          format: string
+          example: "single"
+        alloy_type:
+          description: "A string that is a choice of either of the following enums [parent | weld | mix]"
+          type: string
+          format: string
+          example: "parent"
+        alloy:
+          $ref: '#/components/schemas/Alloy'
     Graphs:
       description: "An object to store the CCT and TTT graphs data to be used for plotting."
       type: object

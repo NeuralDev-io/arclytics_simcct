@@ -26,7 +26,7 @@ from users_app.token import (
 )
 
 
-class MyTestCase(BaseTestCase):
+class TestTokenURL(BaseTestCase):
     def test_verify_token(self):
         """Ensure that both confirm token encoding and decoding work."""
         token = generate_confirmation_token('dummy@email.com')

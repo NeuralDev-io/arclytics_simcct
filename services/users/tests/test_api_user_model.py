@@ -113,7 +113,9 @@ class TestUserModel(BaseTestCase):
 
         self.assertEqual(user.last_compositions.name, 'Selvigium')
         self.assertEqual(user.last_compositions.composition[0]['symbol'], 'C')
-        self.assertEqual(user.last_compositions.composition[0]['weight'], 0.044)
+        self.assertEqual(
+            user.last_compositions.composition[0]['weight'], 0.044
+        )
         self.assertEqual(user.last_compositions.composition[1]['symbol'], 'Mn')
         self.assertEqual(user.last_compositions.composition[1]['weight'], 1.73)
 
@@ -139,7 +141,9 @@ class TestUserModel(BaseTestCase):
 
         self.assertEqual(user.last_compositions.name, 'Selvigium')
         self.assertEqual(user.last_compositions.composition[0]['symbol'], 'C')
-        self.assertEqual(user.last_compositions.composition[0]['weight'], 0.044)
+        self.assertEqual(
+            user.last_compositions.composition[0]['weight'], 0.044
+        )
         self.assertEqual(user.last_compositions.composition[1]['symbol'], 'Mn')
         self.assertEqual(user.last_compositions.composition[1]['weight'], 1.73)
         self.assertEqual(user.last_compositions.composition[2]['symbol'], 'Si')

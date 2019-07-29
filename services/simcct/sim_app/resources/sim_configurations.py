@@ -28,7 +28,8 @@ from sim_app.extensions import api
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
 from sim_app.middleware import token_required_restful
-from sim_app.schemas import (AlloySchema, NonLimitConfigsSchema)
+from sim_app.schemas import (AlloySchema, AlloyStore, NonLimitConfigsSchema)
+from simulation.periodic import PeriodicTable as pt
 
 configs_blueprint = Blueprint('configs', __name__)
 
@@ -50,13 +51,13 @@ class Alloys(Resource):
         """
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        post_data = request.get_json()
-        if not post_data:
+        patch_data = request.get_json()
+        if not patch_data:
             return response, 400
         # Extract the method from the post request body
-        alloy_option = post_data.get('alloy_option', None)
-        alloy_type = post_data.get('alloy_type', None)
-        alloys = post_data.get('alloys', None)
+        alloy_option = patch_data.get('alloy_option', None)
+        alloy_type = patch_data.get('alloy_type', None)
+        alloy = patch_data.get('alloy', None)
 
         if not alloy_option:
             response['message'] = 'No alloy option was provided.'
@@ -76,40 +77,63 @@ class Alloys(Resource):
             response['message'] = 'No alloy type was provided.'
             return response, 400
 
-        alloy_store = {
-            'alloy_option': alloy_option,
-            'alloy_type': alloy_type,
-            'alloys': {}
-        }
-
-        if not alloys:
+        if not alloy:
             response['message'] = 'No alloys were provided.'
             return response, 400
 
+        # We get what's currently stored in the session and we update it
+        sess_alloy_store = session.get(f'{token}:alloy_store')
+        # NOTE: We don't need to validate this as we can just store a new
+        #  updated session
+        # if not sess_alloy_store:
+        #     response['message'] = 'No previous session initiated.'
+        #     return response, 400
+        # We just update the alloy_option straight up
+        sess_alloy_store['alloy_option'] = alloy_option
+
+        # Now we dig deeper into the object to update the elements and name
+        sess_alloys = sess_alloy_store['alloys']
+
         try:
             if alloy_option == 'single':
-                req_parent_alloy = alloys['parent']
-                parent_alloy = AlloySchema().load(req_parent_alloy)
-                alloy_store['alloys']['parent'] = parent_alloy
+                # In this situation, we will only use the parent alloy
+
+                # We first update the compositions of the alloy partially
+                req_parent_comp = alloy['compositions']
+                sess_parent_comp = sess_alloys['parent']['compositions']
+
+                # We first update the compositions of the alloy partially
+                if req_parent_comp:
+                    for elem in req_parent_comp:
+                        try:
+                            idx = pt[elem['symbol']].value.atomic_num
+                        except NotImplementedError as e:
+                            response['message'] = ('The symbol name used is '
+                                                   'incorrect.')
+                            return response, 400
+                        sess_parent_comp[idx] = elem
+
+                # We update the name if they're not the same
+                if not alloy['name'] == sess_alloys['parent']['name']:
+                    sess_alloys['parent']['name'] = alloy['name']
+                # Removing the other alloys if they exist
+                sess_alloy_store['alloys']['weld'] = None
+                sess_alloy_store['alloys']['mix'] = None
+
+                # Just quickly validate the alloy stored based on schema
+                sess_alloy_store = AlloyStore().load(sess_alloy_store)
             elif alloy_option == 'mix':
-                req_mix_alloy = alloys['mix']
-                mix_alloy = AlloySchema().load(req_mix_alloy)
-                alloy_store['alloys']['mix'] = mix_alloy
-                # TODO(andrew@neuraldev.io): How to remove the other alloys if
-                #  they are currently stored.
+                # TODO(andrew@neuraldev.io): Implement this.
+                pass
             else:
-                req_parent_alloy = alloys['parent']
-                req_weld_alloy = alloys['weld']
-                parent_alloy = AlloySchema().load(req_parent_alloy)
-                weld_alloy = AlloySchema().load(req_weld_alloy)
-                alloy_store['alloys']['parent'] = parent_alloy
-                alloy_store['alloys']['weld'] = weld_alloy
+                # TODO(andrew@neuraldev.io): Implement this.
+                pass
         except ValidationError as e:
             response['errors'] = e.messages
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
-        session[f'{token}:alloy_store'] = alloy_store
+        session[f'{token}:alloy_store'] = sess_alloy_store
 
         session_configs = session.get(f'{token}:configurations')
 

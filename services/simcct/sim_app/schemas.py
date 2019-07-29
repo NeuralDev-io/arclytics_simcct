@@ -39,20 +39,20 @@ class AlloySchema(Schema):
     compositions = fields.List(fields.Nested(ElementSchema), required=True)
 
 
-class AlloysSchema(Schema):
+class AlloysTypeSchema(Schema):
     parent = fields.Nested(AlloySchema, allow_none=True)
     weld = fields.Nested(AlloySchema, allow_none=True)
     mix = fields.Nested(AlloySchema, allow_none=True)
 
 
 class AlloyStore(Schema):
+    """This is the schema that defines how the Alloy is stored in the Session
+    and the User's Mongo Document.
+    """
     alloy_option = fields.Str(
         required=True, validate=OneOf(['single', 'both', 'mix'])
     )
-    alloy_type = fields.Str(
-        required=True, validate=OneOf(['parent', 'weld', 'mix'])
-    )
-    alloys = fields.Nested(AlloysSchema, allow_none=True)
+    alloys = fields.Nested(AlloysTypeSchema, allow_none=True)
 
 
 class ConfigurationsSchema(Schema):

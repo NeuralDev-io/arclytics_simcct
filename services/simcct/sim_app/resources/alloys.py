@@ -31,6 +31,7 @@ from marshmallow import ValidationError
 from sim_app.extensions import api
 from sim_app.schemas import AlloySchema
 from sim_app.alloys_service import AlloysService
+from simulation.periodic import PeriodicTable as pt
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -54,17 +55,31 @@ class AlloysList(Resource):
         """
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        if not request.get_json():
+        post_data = request.get_json()
+        if not post_data:
             return response, 400
+
+        # We use the atomic number of the element symbol which is mapped 1-to-1
+        # with the PeriodicTable enum.
+        comps = []
+        for el in post_data['compositions']:
+            try:
+                idx = pt[el['symbol']].value.atomic_num
+            except NotImplementedError as e:
+                response['message'] = 'The symbol name used is incorrect.'
+                return response, 400
+            comps[idx - 1] = el
+
+        post_data['compositions'] = comps
 
         # Extract the request data and validate it
         try:
-            post_data = schema.load(json.loads(request.data))
+            valid_data = schema.load(post_data)
         except ValidationError as e:
             response['errors'] = e.messages
             return response, 400
 
-        alloy = AlloysService().create_alloy(post_data)
+        alloy = AlloysService().create_alloy(valid_data)
 
         # create_alloy() will return a string on DuplicateKeyError meaning it
         # wasn't created.

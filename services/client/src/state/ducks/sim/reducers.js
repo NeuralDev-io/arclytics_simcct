@@ -9,7 +9,7 @@ const reducer = (state = initialState, action) => {
     case RUN_SIM:
       return {
         ...state,
-        ...action.payload,
+        results: action.payload,
       }
     default:
       return state

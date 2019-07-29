@@ -17,16 +17,15 @@ class CompSidebar extends Component {
 
     return (
       <div className={styles.sidebar}>
-        <div>
-          <h3>Composition</h3>
-          <CompForm
-            values={values}
-            onChange={onChange}
-          />
-          <CompTable
-            data={[]}
-          />
-        </div>
+        <h3>Composition</h3>
+        <CompForm
+          values={values}
+          onChange={onChange}
+        />
+        <CompTable
+          data={values}
+          onChange={onChange}
+        />
         <Button
           onClick={onSimulate}
           length="long"

@@ -33,7 +33,6 @@ class SimulationPage extends Component {
       displayConfig: true,
       configurations: {
         method: 'Li98',
-        alloy: 'parent',
         grain_size_type: 'ASTM',
         grain_size: 8.0,
         nucleation_start: 1.0,
@@ -55,6 +54,22 @@ class SimulationPage extends Component {
       },
       compositions: [],
       composition: '',
+      alloys: {
+        alloyOption: 'single',
+        parent: {
+          name: '',
+          compositions: [],
+        },
+        weld: {
+          name: '',
+          compositions: [],
+        },
+        mix: {
+          name: '',
+          compositions: [],
+        },
+        dialution: 0,
+      },
     }
   }
 
@@ -65,35 +80,53 @@ class SimulationPage extends Component {
   }
 
   handleCompChange = (name, value) => {
-    const { alloys } = this.props
+    const { alloyList } = this.props
 
-    if (name === 'alloy') { // alloy type is changed
+    if (name === 'alloyOption') { // alloy option is changed
       this.setState(prevState => ({
-        configurations: {
-          ...prevState.configurations,
-          alloy: value.value,
+        alloys: {
+          ...prevState.alloys,
+          alloyOption: value.value,
         },
       }))
-    } else if (name === 'composition') { // composition is changed
+    } else if (name === 'parent' || name === 'weld') { // alloy composition is changed
       if (value === null) {
         // clear all elements
-        this.setState({
-          composition: '',
-          compositions: [],
-        })
+        this.setState(prevState => ({
+          alloys: {
+            ...prevState.alloys,
+            parent: {
+              name: '',
+              compositions: [],
+            },
+          },
+        }))
       } else {
         // find composition and set to state
-        this.setState({
-          composition: value.value,
-          compositions: [
-            ...alloys[alloys.findIndex(a => a.name === value.value)].compositions,
-          ],
-        })
+        this.setState(prevState => ({
+          alloys: {
+            ...prevState.alloys,
+            [name]: {
+              name: value.value,
+              compositions: [
+                ...alloyList[alloyList.findIndex(a => a.name === value.value)].compositions,
+              ],
+            },
+          },
+        }))
       }
+    } else if (name === 'dialution') {
+      this.setState(prevState => ({
+        alloys: {
+          ...prevState.alloys,
+          dialution: value,
+        },
+      }))
     } else { // weight of an element is changed
+      const nameArr = name.split('_')
       this.setState((prevState) => {
-        const idx = prevState.compositions.findIndex(elem => elem.name === name)
-        const newComp = [...prevState.compositions]
+        const idx = prevState.alloys[nameArr[0]].compositions.findIndex(elem => elem.symbol === nameArr[1])
+        const newComp = [...prevState.alloys[nameArr[0]].compositions]
         if (idx !== undefined) {
           newComp[idx] = {
             ...newComp[idx],
@@ -101,7 +134,13 @@ class SimulationPage extends Component {
           }
         }
         return {
-          compositions: newComp,
+          alloys: {
+            ...prevState.alloys,
+            [nameArr[0]]: {
+              ...prevState.alloys[nameArr[0]],
+              compositions: newComp,
+            },
+          },
         }
       })
     }
@@ -139,8 +178,7 @@ class SimulationPage extends Component {
     const {
       displayConfig,
       configurations,
-      compositions,
-      composition,
+      alloys,
     } = this.state
     const {
       runSim,
@@ -151,16 +189,12 @@ class SimulationPage extends Component {
         <AppBar active="sim" redirect={this.props.history.push} /> {/* eslint-disable-line */} 
         <div className={styles.compSidebar}>
           <CompSidebar
-            values={{
-              alloy: configurations.alloy,
-              composition,
-              compositions,
-            }}
+            values={alloys}
             onChange={this.handleCompChange}
             onSimulate={() => {
               console.log({
                 configurations,
-                compositions,
+                alloys,
               })
               runSim()
             }}
@@ -200,7 +234,7 @@ class SimulationPage extends Component {
 }
 
 SimulationPage.propTypes = {
-  alloys: PropTypes.arrayOf(PropTypes.shape({
+  alloyList: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string,
     compositions: PropTypes.arrayOf(PropTypes.shape({
       name: PropTypes.string,
@@ -214,7 +248,7 @@ SimulationPage.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  alloys: state.alloys.list,
+  alloyList: state.alloys.list,
 })
 
 const mapDispatchToProps = {

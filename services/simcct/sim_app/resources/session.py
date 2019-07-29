@@ -26,7 +26,7 @@ from marshmallow import ValidationError
 from flask import Blueprint, session, request, jsonify
 from bson import ObjectId
 
-from sim_app.schemas import (ConfigurationsSchema, AlloySchema)
+from sim_app.schemas import (ConfigurationsSchema, AlloyStore)
 from sim_app.middleware import token_required
 
 session_blueprint = Blueprint('session', __name__)
@@ -42,9 +42,11 @@ def session_login(token):
     if not post_data:
         return jsonify(response), 400
 
+    # We take what's currently stored in the User's document and then we
+    # validate it.
     user_id = post_data.get('_id', None)
     user_configs = post_data.get('last_configurations', None)
-    user_comp = post_data.get('last_alloy', None)
+    user_alloy_store = post_data.get('last_alloy_store', None)
 
     if not ObjectId.is_valid(user_id):
         response['message'] = 'User ObjectId must be provided.'
@@ -91,20 +93,23 @@ def session_login(token):
     #                       manganese, chromium, arsenic, molybdenum
     #  - _torr_calc2() --> carbon, manganese, silicon, molybdenum, nickel,
     #                      chromium
-    comp_obj = None
-    if user_comp:
-        user_alloy = user_comp.get('alloy')
-        try:
-            # ElementSchema also validates each element because it is nested
-            comp_obj = AlloySchema().load(user_alloy)
-        except ValidationError as e:
-            response['errors'] = e.messages
-            return jsonify(response), 400
+    alloy_store = None
+    if user_alloy_store:
+        alloy_store = AlloyStore().load(user_alloy_store)
+    else:
+        alloy_store = {
+            'alloy_option': 'single',
+            'alloys': {
+                'parent': None,
+                'weld': None,
+                'mix': None
+            }
+        }
 
     session[f'{token}:user'] = user_id
     session[f'{user_id}:token'] = token
     session[f'{token}:configurations'] = configs
-    session[f'{token}:alloy'] = comp_obj
+    session[f'{token}:alloy_store'] = alloy_store
 
     response['status'] = 'success'
     response['message'] = 'User session initiated.'

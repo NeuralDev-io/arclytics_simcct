@@ -34,7 +34,7 @@ from simulation.periodic import PeriodicTable as PT
 configs_blueprint = Blueprint('configs', __name__)
 
 
-class Alloys(Resource):
+class AlloyStore(Resource):
     method_decorators = {
         'patch': [token_required_restful],
     }
@@ -594,7 +594,7 @@ class Austenite(Resource):
         return {'status': 'success'}, 204
 
 
-api.add_resource(Alloys, '/alloys/update')
+api.add_resource(AlloyStore, '/alloys/update')
 api.add_resource(Configurations, '/configs/update')
 api.add_resource(ConfigsMethod, '/configs/method/update')
 api.add_resource(MartensiteStart, '/configs/ms')

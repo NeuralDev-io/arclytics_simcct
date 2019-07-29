@@ -29,7 +29,11 @@ from dotenv import load_dotenv
 from bson import ObjectId
 from flask import Flask
 
-from extensions import cors, api, session
+from sim_app.extensions import cors, api, session
+from sim_app.resources.session import session_blueprint
+from sim_app.resources.sim_configurations import configs_blueprint
+from sim_app.resources.alloys import alloys_blueprint
+from sim_app.resources.simulation import sim_blueprint
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -86,13 +90,9 @@ def create_app(script_info=None) -> Flask:
     app.config.from_object(app_settings)
 
     # Register blueprints
-    from sim_app.resources.session import session_blueprint
     app.register_blueprint(session_blueprint)
-    from sim_app.resources.sim_configurations import configs_blueprint
     app.register_blueprint(configs_blueprint)
-    from sim_app.resources.alloys import alloys_blueprint
     app.register_blueprint(alloys_blueprint)
-    from sim_app.resources.simulation import sim_blueprint
     app.register_blueprint(sim_blueprint)
 
     # ========== # INIT FLASK EXTENSIONS # ========== #

@@ -31,6 +31,7 @@ from marshmallow import ValidationError
 from sim_app.extensions import api
 from sim_app.schemas import AlloySchema
 from sim_app.alloys_service import AlloysService
+from simulation.periodic import PeriodicTable as pt
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -54,17 +55,31 @@ class AlloysList(Resource):
         """
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        if not request.get_json():
+        post_data = request.get_json()
+        if not post_data:
             return response, 400
+
+        # We use the atomic number of the element symbol which is mapped 1-to-1
+        # with the PeriodicTable enum.
+        comps = []
+        for el in post_data['compositions']:
+            try:
+                idx = pt[el['symbol']].value.atomic_num
+            except NotImplementedError as e:
+                response['message'] = 'The symbol name used is incorrect.'
+                return response, 400
+            comps[idx - 1] = el
+
+        post_data['compositions'] = comps
 
         # Extract the request data and validate it
         try:
-            post_data = schema.load(json.loads(request.data))
+            valid_data = schema.load(post_data)
         except ValidationError as e:
             response['errors'] = e.messages
             return response, 400
 
-        alloy = AlloysService().create_alloy(post_data)
+        alloy = AlloysService().create_alloy(valid_data)
 
         # create_alloy() will return a string on DuplicateKeyError meaning it
         # wasn't created.
@@ -125,6 +140,77 @@ class Alloys(Resource):
 
         response['status'] = 'success'
         response['data'] = alloy
+        response.pop('message')
+        return response, 200
+
+    def patch(self, alloy_id):
+        """Exposes the PATCH method for `/alloys` to update an existing alloy by
+        an admin to update the existing data.
+
+        Args:
+            alloy_id: A valid ObjectId string that will be checked.
+
+        Returns:
+            A Response object consisting of a dict and status code as
+            an int.
+        """
+
+        patch_data = request.get_json()
+
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+        if not patch_data:
+            return response, 400
+
+        # Verify the request params is a valid ObjectId to use
+        if not ObjectId.is_valid(alloy_id):
+            response['message'] = 'Invalid ObjectId.'
+            return response, 400
+
+        patch_name = patch_data.get('name', None)
+        patch_alloy = patch_data.get('compositions', None)
+
+        # First we update the compositions of the existing alloy if any.
+        existing_alloy = AlloysService().find_alloy(ObjectId(alloy_id))
+
+        if not existing_alloy:
+            response['message'] = 'Alloy not found.'
+            return response, 404
+
+        if patch_alloy:
+            existing_comp = existing_alloy['compositions']
+            # We use the atomic number of the element symbol which is mapped
+            # 1-to-1 with the PeriodicTable enum.
+            for el in patch_data['compositions']:
+                try:
+                    idx = pt[el['symbol']].value.atomic_num
+                except NotImplementedError as e:
+                    response['message'] = 'The symbol name used is incorrect.'
+                    return response, 400
+                existing_comp[idx - 1] = el
+
+        # update the name if a new one is provided
+        if not patch_name == existing_alloy['name']:
+            existing_alloy['name'] = patch_name
+
+        # Extract the request data and validate it
+        try:
+            valid_data = schema.load(existing_alloy)
+        except ValidationError as e:
+            response['errors'] = e.messages
+            return response, 400
+
+        good = AlloysService().update_alloy(ObjectId(alloy_id), valid_data)
+
+        # The service will return True or False based on successfully updating
+        # an alloy.
+        if not good:
+            response['message'] = 'Alloy not found.'
+            return response, 404
+
+        updated_alloy = AlloysService().find_alloy(ObjectId(alloy_id))
+
+        response['status'] = 'success'
+        response['data'] = updated_alloy
         response.pop('message')
         return response, 200
 

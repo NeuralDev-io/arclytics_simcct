@@ -28,8 +28,8 @@ from sim_app.extensions import api
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
 from sim_app.middleware import token_required_restful
-from sim_app.schemas import (AlloySchema, AlloyStore, NonLimitConfigsSchema)
-from simulation.periodic import PeriodicTable as pt
+from sim_app.schemas import AlloyStore, NonLimitConfigsSchema
+from simulation.periodic import PeriodicTable as PT
 
 configs_blueprint = Blueprint('configs', __name__)
 
@@ -77,8 +77,14 @@ class Alloys(Resource):
             response['message'] = 'No alloy type was provided.'
             return response, 400
 
+        if alloy_type not in ['parent', 'weld', 'mix']:
+            response['message'] = (
+                'Alloy type not one of ["parent" | "weld" | "mix"].'
+            )
+            return response, 400
+
         if not alloy:
-            response['message'] = 'No alloys were provided.'
+            response['message'] = 'No alloy was provided.'
             return response, 400
 
         # We get what's currently stored in the session and we update it
@@ -106,10 +112,12 @@ class Alloys(Resource):
                 if req_parent_comp:
                     for elem in req_parent_comp:
                         try:
-                            idx = pt[elem['symbol']].value.atomic_num
+                            idx = PT[elem['symbol']].value.atomic_num
                         except NotImplementedError as e:
-                            response['message'] = ('The symbol name used is '
-                                                   'incorrect.')
+                            response['message'] = (
+                                'The symbol name used is '
+                                'incorrect.'
+                            )
                             return response, 400
                         sess_parent_comp[idx] = elem
 
@@ -135,14 +143,13 @@ class Alloys(Resource):
 
         session[f'{token}:alloy_store'] = sess_alloy_store
 
-        session_configs = session.get(f'{token}:configurations')
+        sess_configs = session.get(f'{token}:configurations')
 
-        # Well, if we don't need to auto calculate anything, let's get out of
-        # here
+        # Well, if we don't need to auto calc. anything, let's get out of here
         if (
-            not session_configs['auto_calculate_ms']
-            and not session_configs['auto_calculate_bs']
-            and not session_configs['auto_calculate_ae']
+            not sess_configs['auto_calculate_ms']
+            and not sess_configs['auto_calculate_bs']
+            and not sess_configs['auto_calculate_ae']
         ):
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'
@@ -151,18 +158,17 @@ class Alloys(Resource):
         # Since we do need to calculate, must get the compositions first in
         # numpy.ndarray structured format and type
 
-        # We only ever want to update the transformation limits of either the
-        # parent or the mix because for the alloy option of both, we can only
-        # display one value in the client and it will, for now, always be
-        # parent
-        if alloy_option == 'single' or alloy_option == 'both':
-            comp_list = (
-                session.get(f'{token}:alloy_store')['parent']['compositions']
-            )
-        else:
-            comp_list = (
-                session.get(f'{token}:alloy_store')['mix']['compositions']
-            )
+        # We update the transformation limits based on which option is chosen
+        comp_list = []
+        if alloy_option == 'single':
+            comp_list = (sess_alloy_store['parent']['compositions'])
+
+        # TODO(andrew@neuraldev.io): Implement this.
+        # else:
+        # comp_list = (
+        #     sess_alloy_store['mix']['compositions']
+        # )
+        # pass
 
         comp_np_arr = SimConfig.get_compositions(comp_list)
 
@@ -170,43 +176,39 @@ class Alloys(Resource):
         response['message'] = 'Compositions and other values updated.'
         response['data'] = {}
 
+        # We need to convert them to our enums as required by the Sim package.
         method = Method.Li98
-        if session_configs['method'] == 'Kirkaldy83':
+        if sess_configs['method'] == 'Kirkaldy83':
             method = Method.Kirkaldy83
 
-        if session_configs['auto_calculate_ms']:
-            # We need to convert them to our enums as required by the
-            # calculations.
+        if sess_configs['auto_calculate_ms']:
 
             ms_temp = SimConfig.get_ms(method, comp=comp_np_arr)
             ms_rate_param = SimConfig.get_ms_alpha(comp=comp_np_arr)
 
-            session_configs['auto_calculate_ms'] = True
-            session_configs['ms_temp'] = ms_temp
-            session_configs['ms_rate_param'] = ms_rate_param
+            sess_configs['auto_calculate_ms'] = True
+            sess_configs['ms_temp'] = ms_temp
+            sess_configs['ms_rate_param'] = ms_rate_param
             response['data']['ms_temp'] = ms_temp
             response['data']['ms_rate_param'] = ms_rate_param
 
-        if session_configs['auto_calculate_bs']:
-            # We need to convert them to our enums as required by the
-            # calculations.
-
+        if sess_configs['auto_calculate_bs']:
             bs_temp = SimConfig.get_bs(method, comp=comp_np_arr)
 
-            session_configs['auto_calculate_bs'] = True
-            session_configs['bs_temp'] = bs_temp
+            sess_configs['auto_calculate_bs'] = True
+            sess_configs['bs_temp'] = bs_temp
             response['data']['bs_temp'] = bs_temp
 
-        if session_configs['auto_calculate_ae']:
+        if sess_configs['auto_calculate_ae']:
             ae1, ae3 = SimConfig.calc_ae1_ae3(comp_np_arr)
 
-            session_configs['auto_calculate_ae'] = True
-            session_configs['ae1_temp'] = ae1
-            session_configs['ae3_temp'] = ae3
+            sess_configs['auto_calculate_ae'] = True
+            sess_configs['ae1_temp'] = ae1
+            sess_configs['ae3_temp'] = ae3
             response['data']['ae1_temp'] = ae1
             response['data']['ae3_temp'] = ae3
 
-        session[f'{token}:configurations'] = session_configs
+        session[f'{token}:configurations'] = sess_configs
 
         response['status'] = 'success'
         return response, 200

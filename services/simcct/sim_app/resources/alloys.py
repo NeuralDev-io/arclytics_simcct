@@ -31,7 +31,7 @@ from marshmallow import ValidationError
 from sim_app.extensions import api
 from sim_app.schemas import AlloySchema
 from sim_app.alloys_service import AlloysService
-from simulation.periodic import PeriodicTable as pt
+from simulation.periodic import PeriodicTable as PT
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -64,7 +64,7 @@ class AlloysList(Resource):
         comps = []
         for el in post_data['compositions']:
             try:
-                idx = pt[el['symbol']].value.atomic_num
+                idx = PT[el['symbol']].value.atomic_num
             except NotImplementedError as e:
                 response['message'] = 'The symbol name used is incorrect.'
                 return response, 400
@@ -182,7 +182,7 @@ class Alloys(Resource):
             # 1-to-1 with the PeriodicTable enum.
             for el in patch_data['compositions']:
                 try:
-                    idx = pt[el['symbol']].value.atomic_num
+                    idx = PT[el['symbol']].value.atomic_num
                 except NotImplementedError as e:
                     response['message'] = 'The symbol name used is incorrect.'
                     return response, 400

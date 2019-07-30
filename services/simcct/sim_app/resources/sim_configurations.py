@@ -28,7 +28,7 @@ from sim_app.extensions import api
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
 from sim_app.middleware import token_required_restful
-from sim_app.schemas import AlloyStore, NonLimitConfigsSchema
+from sim_app.schemas import AlloyStore, SetupConfigsSchema
 from simulation.periodic import PeriodicTable as PT
 
 configs_blueprint = Blueprint('configs', __name__)
@@ -55,6 +55,12 @@ class AlloyStore(Resource):
         if not patch_data:
             return response, 400
         # Extract the method from the post request body
+        # REQUEST BODY SHOULD BE
+        # {
+        #     "alloy_option": "single",
+        #     "alloy_type": "parent",
+        #     "alloy": [{"symbol": "C", "weight": 1}, ...]
+        # }
         alloy_option = patch_data.get('alloy_option', None)
         alloy_type = patch_data.get('alloy_type', None)
         alloy = patch_data.get('alloy', None)
@@ -64,7 +70,9 @@ class AlloyStore(Resource):
             return response, 400
 
         # We have a couple of ways the Alloy is stored in both Session and
-        # Database based on what is available with the alloy_option.
+        # Database based on what is available with the alloy_option and
+        # alloy_type. From the client, we expect these two keys to at the
+        # very least be in the request body. Otherwise we won't do anything.
         if alloy_option not in ['single', 'both', 'mix']:
             response['message'] = (
                 'Alloy option not one of '
@@ -72,7 +80,6 @@ class AlloyStore(Resource):
             )
             return response, 400
 
-        # We need the alloy_type before we can add it to the
         if not alloy_type or not isinstance(alloy_type, str):
             response['message'] = 'No alloy type was provided.'
             return response, 400
@@ -87,13 +94,18 @@ class AlloyStore(Resource):
             response['message'] = 'No alloy was provided.'
             return response, 400
 
+        # The alloy might be provided but if it's got no valid keys, we need to
+        # check that
+        if not alloy.get('name', None) and not alloy.get('compositions', None):
+            response['message'] = 'No key in the alloy was provided.'
+            return response, 400
+
         # We get what's currently stored in the session and we update it
         sess_alloy_store = session.get(f'{token}:alloy_store')
-        # NOTE: We don't need to validate this as we can just store a new
-        #  updated session
-        # if not sess_alloy_store:
-        #     response['message'] = 'No previous session initiated.'
-        #     return response, 400
+        # Basically, the user should have a session initiated from login
+        if not sess_alloy_store:
+            response['message'] = 'No previous session initiated.'
+            return response, 400
         # We just update the alloy_option straight up
         sess_alloy_store['alloy_option'] = alloy_option
 
@@ -105,7 +117,7 @@ class AlloyStore(Resource):
                 # In this situation, we will only use the parent alloy
 
                 # We first update the compositions of the alloy partially
-                req_parent_comp = alloy['compositions']
+                req_parent_comp = alloy.get('compositions', None)
                 sess_parent_comp = sess_alloys['parent']['compositions']
 
                 # We first update the compositions of the alloy partially
@@ -122,7 +134,7 @@ class AlloyStore(Resource):
                         sess_parent_comp[idx] = elem
 
                 # We update the name if they're not the same
-                if not alloy['name'] == sess_alloys['parent']['name']:
+                if not alloy.get('name', None) == sess_alloys['parent']['name']:
                     sess_alloys['parent']['name'] = alloy['name']
                 # Removing the other alloys if they exist
                 sess_alloy_store['alloys']['weld'] = None
@@ -229,30 +241,57 @@ class Configurations(Resource):
             A valid HTTP Response with application/json content.
         """
         response = {'status': 'fail', 'message': 'Invalid payload.'}
-        post_data = request.get_json()
-        if not post_data:
+        patch_data = request.get_json()
+        if not patch_data:
             return response, 400
 
-        session_configs = session.get(f'{token}:configurations')
-        if session_configs is None:
+        # First we need to make sure there are actually some changes to be made
+        # by ensuring the request body data has some keys that are valid.
+        valid_keys = [
+            'grain_size',
+            'nucleation_start',
+            'nucleation_finish',
+            'start_temp',
+            'cct_cooling_rate'
+        ]
+
+        # by default we will not change anything until we find at least 1 key
+        # in the request body that is a valid_key
+        is_update = False
+        for k in valid_keys:
+            if k in patch_data.keys():
+                is_update = True
+                break
+
+        if not is_update:
+            response['message'] = 'Payload does not have any valid keys.'
+            return response, 400
+
+        # If there are changes to be made, then we will get the session store.
+        sess_store = session.get(f'{token}:configurations')
+        if sess_store is None:
             response['message'] = 'No previous session configurations was set.'
             return response, 404
 
-        # validate the configurations again
-        try:
-            configs = NonLimitConfigsSchema().load(post_data)
-        except ValidationError as e:
-            response['errors'] = e.messages
-            return response, 400
+        grain_size = patch_data.get('grain_size', None)
+        if grain_size:
+            sess_store['grain_size'] = grain_size
+        nuc_start = patch_data.get('nucleation_start', None)
+        if nuc_start:
+            sess_store['nucleation_start'] = nuc_start
 
-        sess_store = session.get(f'{token}:configurations')
+        nuc_finish = patch_data.get('nucleation_finish', None)
+        if nuc_start:
+            sess_store['nucleation_finish'] = nuc_finish
 
-        # TODO(andrew): Turn this into a PATCH effect
-        sess_store['grain_size'] = configs['grain_size']
-        sess_store['nucleation_start'] = configs['nucleation_start']
-        sess_store['nucleation_finish'] = configs['nucleation_finish']
-        sess_store['start_temp'] = configs['start_temp']
-        sess_store['cct_cooling_rate'] = configs['cct_cooling_rate']
+        start_temp = patch_data.get('start_temp', None)
+        if start_temp:
+            sess_store['start_temp'] = start_temp
+
+        cct_cool_rate = patch_data.get('cct_cooling_rate', None)
+        if cct_cool_rate:
+            sess_store['cct_cooling_rate'] = cct_cool_rate
+
         session[f'{token}:configurations'] = sess_store
 
         response['status'] = 'success'
@@ -591,7 +630,7 @@ class Austenite(Resource):
         session_configs['ae1_temp'] = ae1_temp
         session_configs['ae3_temp'] = ae3_temp
 
-        return {'status': 'success'}, 204
+        return {'status': 'success'}, 202
 
 
 api.add_resource(AlloyStore, '/alloys/update')

@@ -275,16 +275,15 @@ def async_register_session(user: User = None,
             last_configs = user.last_configuration.to_dict()
 
         # TODO(andrew@neuraldev.io): Change this to match new schema
-        if user.last_alloy is not None:
-            last_alloy['alloy'] = user.last_alloy
-            last_alloy['alloy_type'] = 'parent'
+        if user.last_alloy_store is not None:
+            last_alloy = user.last_alloy_store.to_dict()
 
     resp = requests.post(
         url=f'http://{simcct_host}/session/login',
         json={
             '_id': str(user_id),
             'last_configurations': last_configs,
-            'last_alloy': last_alloy
+            'last_alloy_store': last_alloy
         },
         headers={
             'Authorization': f'Bearer {auth_token}',

@@ -2157,7 +2157,7 @@ components:
       required:
         - name
         - compositions
-    'Session or Saved Alloy':
+    'Alloy Store':
       description: "This is the schema for the storage of an Alloy either in Session or Database Persistent storage."
       type: object
       properties:
@@ -2166,13 +2166,15 @@ components:
           type: string
           format: string
           example: "single"
-        alloy_type:
-          description: "A string that is a choice of either of the following enums [parent | weld | mix]"
-          type: string
-          format: string
-          example: "parent"
-        alloy:
-          $ref: '#/components/schemas/Alloy'
+        alloys:
+          type: object
+          properties:
+            parent:
+              $ref: '#/components/schemas/Alloy'
+            weld:
+              $ref: '#/components/schemas/Alloy'
+            mix:
+              $ref: '#/components/schemas/Alloy'
     Graphs:
       description: "An object to store the CCT and TTT graphs data to be used for plotting."
       type: object

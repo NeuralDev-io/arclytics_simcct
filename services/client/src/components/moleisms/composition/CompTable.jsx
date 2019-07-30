@@ -74,7 +74,7 @@ class CompTable extends Component {
           <SelfControlledTextField
             type="text"
             name={`parent_${row.symbol}`} // eslint-disable-line
-            onChange={val => onChange(`parent_${row.symbol}`, val)} // eslint-disable-line
+            onBlur={e => onChange(`parent_${row.symbol}`, e.target.value)} // eslint-disable-line
             defaultValue={value || '0.0'}
             length="stretch"
             isDisabled={value === undefined}
@@ -89,7 +89,7 @@ class CompTable extends Component {
           <SelfControlledTextField
             type="text"
             name={`weld_${row.symbol}`} // eslint-disable-line
-            onChange={val => onChange(`weld_${row.symbol}`, val)} // eslint-disable-line
+            onBlur={e => onChange(`weld_${row.symbol}`, e.target.value)} // eslint-disable-line
             defaultValue={value || '0.0'}
             length="stretch"
             isDisabled={value === undefined}

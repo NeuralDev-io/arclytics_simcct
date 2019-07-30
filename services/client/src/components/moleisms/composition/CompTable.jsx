@@ -2,11 +2,15 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import withDimension from 'react-dimensions'
 import Table from '../../elements/table'
-import { UncontrolledTextField } from '../../elements/textfield'
+import { SelfControlledTextField } from '../../elements/textfield'
 
 import styles from './CompTable.module.scss'
 
 class CompTable extends Component {
+  updateComp = (name, value) => {
+
+  }
+
   render() {
     const { data, onChange, containerHeight } = this.props
     const {
@@ -67,11 +71,11 @@ class CompTable extends Component {
         accessor: 'parent',
         // eslint-disable-next-line
         Cell: ({ row, value }) => (
-          <UncontrolledTextField
+          <SelfControlledTextField
             type="text"
             name={`parent_${row.symbol}`} // eslint-disable-line
             onChange={val => onChange(`parent_${row.symbol}`, val)} // eslint-disable-line
-            value={value || '0.0'}
+            defaultValue={value || '0.0'}
             length="stretch"
             isDisabled={value === undefined}
           />
@@ -82,11 +86,11 @@ class CompTable extends Component {
         accessor: 'weld',
         // eslint-disable-next-line
         Cell: ({ row, value }) => (
-          <UncontrolledTextField
+          <SelfControlledTextField
             type="text"
             name={`weld_${row.symbol}`} // eslint-disable-line
             onChange={val => onChange(`weld_${row.symbol}`, val)} // eslint-disable-line
-            value={value || '0.0'}
+            defaultValue={value || '0.0'}
             length="stretch"
             isDisabled={value === undefined}
           />

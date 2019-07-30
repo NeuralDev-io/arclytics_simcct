@@ -5,7 +5,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
- * Uncontrolled text field component
+ * Self-controlled text field component
  *
  * @version 1.0.0
  * @author Dalton Le
@@ -16,11 +16,11 @@ import PropTypes from 'prop-types'
 import TextField from './TextField'
 
 // TODO: include validation
-class UncontrolledTextField extends Component {
+class SelfControlledTextField extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      value: props.value,
+      value: props.defaultValue,
     }
   }
 
@@ -33,6 +33,7 @@ class UncontrolledTextField extends Component {
   render() {
     const {
       onChange,
+      defaultValue,
       ...other
     } = this.props
     const { value } = this.state
@@ -42,22 +43,23 @@ class UncontrolledTextField extends Component {
         {...other}
         onChange={val => this.handleChange(val)}
         value={value}
+        defaultValue={defaultValue}
       />
     )
   }
 }
 
-UncontrolledTextField.propTypes = {
+SelfControlledTextField.propTypes = {
   onChange: PropTypes.func,
-  value: PropTypes.oneOfType([
+  defaultValue: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.number,
   ]),
 }
 
-UncontrolledTextField.defaultProps = {
+SelfControlledTextField.defaultProps = {
   onChange: () => {},
-  value: '',
+  defaultValue: '',
 }
 
-export default UncontrolledTextField
+export default SelfControlledTextField

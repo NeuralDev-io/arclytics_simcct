@@ -28,7 +28,7 @@ from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
     DateTimeField, EmbeddedDocumentField, IntField, FloatField, ListField,
-    EmbeddedDocumentListField, queryset_manager
+    DictField, EmbeddedDocumentListField, queryset_manager
 )
 from flask import current_app, json
 
@@ -218,9 +218,28 @@ class Alloy(EmbeddedDocument):
         return self.to_json()
 
 
+class AlloyType(EmbeddedDocument):
+    parent = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
+    weld = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
+    mix = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
+
+    def to_dict(self):
+        return {
+            'parent': self.parent.to_dict(),
+            'weld': self.weld.to_dict(),
+            'mix': self.mix.to_dict()
+        }
+
+
 class AlloyStore(EmbeddedDocument):
     alloy_option = StringField()
-    # Alloy types ?????????
+    alloys = EmbeddedDocumentField(document_type=AlloyType)
+
+    def to_dict(self):
+        return {
+            'alloy_option': self.alloy_option,
+            'alloys': self.alloys.to_dict()
+        }
 
 
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
@@ -238,7 +257,6 @@ class User(Document):
         document_type=Configuration, default=None
     )
 
-    last_alloy = EmbeddedDocumentField(document_type=Alloy, default=None)
     last_alloy_store = EmbeddedDocumentField(
         document_type=AlloyStore, default=None
     )

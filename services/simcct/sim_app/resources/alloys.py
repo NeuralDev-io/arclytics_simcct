@@ -38,9 +38,6 @@ logger = AppLogger(__name__)
 
 alloys_blueprint = Blueprint('alloys', __name__)
 
-# Just some shorthands to make it easier to read
-schema = AlloySchema()  # alloy schema instance
-
 
 class AlloysList(Resource):
     """The resource of endpoints for retrieving an alloy list and creating."""
@@ -59,25 +56,28 @@ class AlloysList(Resource):
         if not post_data:
             return response, 400
 
+        post_comps = post_data.get('compositions', None)
+
+        # We first validate it to make sure it's valid before we do any
+        # conversions below with the compositions
+        try:
+            valid_data = AlloySchema().load(post_data)
+        except ValidationError as e:
+            response['errors'] = e.messages
+            return response, 400
+
         # We use the atomic number of the element symbol which is mapped 1-to-1
         # with the PeriodicTable enum.
         comps = []
-        for el in post_data['compositions']:
+        for el in post_comps:
             try:
                 idx = PT[el['symbol']].value.atomic_num
             except NotImplementedError as e:
                 response['message'] = 'The symbol name used is incorrect.'
                 return response, 400
-            comps[idx - 1] = el
+            comps.insert(idx - 1, el)
 
         post_data['compositions'] = comps
-
-        # Extract the request data and validate it
-        try:
-            valid_data = schema.load(post_data)
-        except ValidationError as e:
-            response['errors'] = e.messages
-            return response, 400
 
         alloy = AlloysService().create_alloy(valid_data)
 
@@ -186,7 +186,7 @@ class Alloys(Resource):
                 except NotImplementedError as e:
                     response['message'] = 'The symbol name used is incorrect.'
                     return response, 400
-                existing_comp[idx - 1] = el
+                existing_comp.insert(idx - 1, el)
 
         # update the name if a new one is provided
         if not patch_name == existing_alloy['name']:
@@ -194,7 +194,7 @@ class Alloys(Resource):
 
         # Extract the request data and validate it
         try:
-            valid_data = schema.load(existing_alloy)
+            valid_data = AlloySchema().load(existing_alloy)
         except ValidationError as e:
             response['errors'] = e.messages
             return response, 400
@@ -236,7 +236,7 @@ class Alloys(Resource):
 
         # Extract the request data and validate it
         try:
-            put_data = schema.load(json.loads(request.data))
+            put_data = AlloySchema().load(json.loads(request.data))
         except ValidationError as e:
             response['errors'] = e.messages
             return response, 400

@@ -94,9 +94,9 @@ class ConfigurationsSchema(Schema):
         pass
 
 
-class NonLimitConfigsSchema(Schema):
-    grain_size = fields.Float(required=True)
-    nucleation_start = fields.Float(required=True)
-    nucleation_finish = fields.Float(required=True)
-    start_temp = fields.Int(required=True)
-    cct_cooling_rate = fields.Int(required=True)
+class SetupConfigsSchema(Schema):
+    grain_size = fields.Float()
+    nucleation_start = fields.Float()
+    nucleation_finish = fields.Float()
+    start_temp = fields.Int()
+    cct_cooling_rate = fields.Int()

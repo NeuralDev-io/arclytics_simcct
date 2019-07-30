@@ -21,45 +21,26 @@ microservice.
 """
 
 import jwt
-from datetime import datetime, tzinfo, timedelta
-from typing import Union, Optional
+from datetime import datetime, timedelta
+from typing import Union
 
 from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
-    DateTimeField, EmbeddedDocumentField, IntField, FloatField, ListField,
-    DictField, EmbeddedDocumentListField, queryset_manager
+    DateTimeField, EmbeddedDocumentField, IntField, FloatField, DictField,
+    EmbeddedDocumentListField, queryset_manager
 )
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
 from users_app.extensions import bcrypt
-from users_app.utilities import JSONEncoder
+from users_app.utilities import (
+    JSONEncoder, PeriodicTable, PasswordValidationError
+)
 
 logger = AppLogger(__name__)
 # User type choices
 USERS = (('1', 'ADMIN'), ('2', 'USER'))
-
-
-# ========== # UTILITIES # ========== #
-# TODO(andrew@neuraldev.io): move these to a separate file at some point.
-class PasswordValidationError(Exception):
-    """
-    Raises an Exception if now password was set before trying to save
-    the User model.
-    """
-
-    def __init__(self):
-        super(PasswordValidationError,
-              self).__init__('A password must be set before saving.')
-
-
-class SimpleUTC(tzinfo):
-    def tzname(self, dt: Optional[datetime]) -> Optional[str]:
-        return 'UTC'
-
-    def utcoffset(self, dt: Optional[datetime]) -> Optional[timedelta]:
-        return timedelta(0)
 
 
 # ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
@@ -140,15 +121,15 @@ class Configuration(EmbeddedDocument):
     nucleation_start = FloatField(default=1.0)
     nucleation_finish = FloatField(default=99.9)
     auto_calculate_ms = BooleanField(default=False)
-    ms_temp = FloatField()
-    ms_rate_param = FloatField()
+    ms_temp = FloatField(default=0.0)
+    ms_rate_param = FloatField(default=0.0)
     auto_calculate_bs = BooleanField(default=False)
     bs_temp = FloatField()
     auto_calculate_ae = BooleanField(default=False)
-    ae1_temp = FloatField()
-    ae3_temp = FloatField()
-    start_temp = FloatField()
-    cct_cooling_rate = IntField()
+    ae1_temp = FloatField(default=0.0)
+    ae3_temp = FloatField(default=0.0)
+    start_temp = IntField(default=900)
+    cct_cooling_rate = IntField(default=10)
 
     def to_dict(self) -> dict:
         """
@@ -193,26 +174,15 @@ class Configuration(EmbeddedDocument):
         return self.to_json()
 
 
-class Element(EmbeddedDocument):
-    symbol = StringField(max_length=2)
-    weight = FloatField()
-
-    def to_dict(self):
-        return {'symbol': self.symbol, 'weight': self.weight}
-
-    def __str__(self):
-        return self.to_json()
-
-
 class Alloy(EmbeddedDocument):
     name = StringField()
-    composition = ListField(EmbeddedDocumentField(document_type=Element))
+    # No Way for MongoEngine to embed a DictField() with reference to an
+    # embedded document but we always need to ensure this follows the schema
+    # of {"symbol": "C", "weight": 0.0}
+    compositions = DictField()
 
     def to_dict(self):
-        comp = []
-        for e in self.composition:
-            comp.append({'symbol': e.symbol, 'weight': e.weight})
-        return {'name': self.name, 'composition': comp}
+        return {'name': self.name, 'composition': self.compositions}
 
     def __str__(self):
         return self.to_json()
@@ -232,8 +202,8 @@ class AlloyType(EmbeddedDocument):
 
 
 class AlloyStore(EmbeddedDocument):
-    alloy_option = StringField()
-    alloys = EmbeddedDocumentField(document_type=AlloyType)
+    alloy_option = StringField(required=True)
+    alloys = EmbeddedDocumentField(document_type=AlloyType, required=True)
 
     def to_dict(self):
         return {

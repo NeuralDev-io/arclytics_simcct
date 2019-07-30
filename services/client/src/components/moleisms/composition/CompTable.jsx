@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import withDimension from 'react-dimensions'
 import Table from '../../elements/table'
@@ -6,115 +6,117 @@ import { UncontrolledTextField } from '../../elements/textfield'
 
 import styles from './CompTable.module.scss'
 
-const CompTable = (props) => {
-  const { data, onChange, containerHeight } = props
-  const {
-    alloyOption,
-    parent,
-    weld,
-  } = data
+class CompTable extends Component {
+  render() {
+    const { data, onChange, containerHeight } = this.props
+    const {
+      alloyOption,
+      parent,
+      weld,
+    } = data
 
-  let tableData = parent.compositions.map(elem => ({
-    symbol: elem.symbol,
-    parent: elem.weight,
-    weld: undefined,
-    mix: undefined,
-  }))
-  if (alloyOption === 'both' || alloyOption === 'mix') {
-    weld.compositions.forEach((elem) => {
-      const idx = tableData.findIndex(x => x.symbol === elem.symbol)
-      if (idx === -1) {
-        tableData.push({
-          symbol: elem.symbol,
-          parent: undefined,
-          weld: elem.weight,
-          mix: undefined,
-        })
-      } else {
-        tableData[idx] = {
-          ...tableData[idx],
-          weld: elem.weight,
+    let tableData = parent.compositions.map(elem => ({
+      symbol: elem.symbol,
+      parent: elem.weight,
+      weld: undefined,
+      mix: undefined,
+    }))
+    if (alloyOption === 'both' || alloyOption === 'mix') {
+      weld.compositions.forEach((elem) => {
+        const idx = tableData.findIndex(x => x.symbol === elem.symbol)
+        if (idx === -1) {
+          tableData.push({
+            symbol: elem.symbol,
+            parent: undefined,
+            weld: elem.weight,
+            mix: undefined,
+          })
+        } else {
+          tableData[idx] = {
+            ...tableData[idx],
+            weld: elem.weight,
+          }
         }
-      }
-    })
-  }
-  if (alloyOption === 'mix') {
-    const dialution = parseFloat(data.dialution)
-    tableData.forEach((elem, idx) => {
-      const parentVal = elem.parent ? parseFloat(elem.parent) : 0
-      const weldVal = elem.weld ? parseFloat(elem.weld) : 0
-      // calculate mix composition and round to 2 decimals
-      const mixVal = Math.round((dialution / 100 * weldVal
-        + (100 - dialution) / 100 * parentVal) * 100) / 100
-      tableData[idx] = {
-        ...elem,
-        mix: mixVal,
-      }
-    })
-  }
+      })
+    }
+    if (alloyOption === 'mix') {
+      const dialution = parseFloat(data.dialution)
+      tableData.forEach((elem, idx) => {
+        const parentVal = elem.parent ? parseFloat(elem.parent) : 0
+        const weldVal = elem.weld ? parseFloat(elem.weld) : 0
+        // calculate mix composition and round to 2 decimals
+        const mixVal = Math.round((dialution / 100 * weldVal
+          + (100 - dialution) / 100 * parentVal) * 100) / 100
+        tableData[idx] = {
+          ...elem,
+          mix: mixVal,
+        }
+      })
+    }
 
-  const columns = [
-    {
-      Header: 'Elements',
-      accessor: 'symbol',
-      // eslint-disable-next-line
-      Cell: ({ value }) => (<span className={styles.symbol}>{value}</span>),
-      width: 100,
-    },
-    {
-      Header: 'Alloy 1',
-      accessor: 'parent',
-      // eslint-disable-next-line
-      Cell: ({ row, value }) => (
-        <UncontrolledTextField
-          type="text"
-          name={`parent_${row.symbol}`} // eslint-disable-line
-          onChange={val => onChange(`parent_${row.symbol}`, val)} // eslint-disable-line
-          value={value || '0.0'}
-          length="stretch"
-          isDisabled={value === undefined}
-        />
-      ),
-    },
-    {
-      Header: 'Alloy 2',
-      accessor: 'weld',
-      // eslint-disable-next-line
-      Cell: ({ row, value }) => (
-        <UncontrolledTextField
-          type="text"
-          name={`weld_${row.symbol}`} // eslint-disable-line
-          onChange={val => onChange(`weld_${row.symbol}`, val)} // eslint-disable-line
-          value={value || '0.0'}
-          length="stretch"
-          isDisabled={value === undefined}
-        />
-      ),
-    },
-    {
-      Header: 'Mix',
-      accessor: 'mix',
-      // eslint-disable-next-line
-      Cell: ({ value }) => {
-        if (value === undefined) return <span className="text--disabled">0.0</span>
-        return <span>{value}</span>
+    const columns = [
+      {
+        Header: 'Elements',
+        accessor: 'symbol',
+        // eslint-disable-next-line
+        Cell: ({ value }) => (<span className={styles.symbol}>{value}</span>),
+        width: 100,
       },
-      width: 40,
-    },
-  ]
+      {
+        Header: 'Alloy 1',
+        accessor: 'parent',
+        // eslint-disable-next-line
+        Cell: ({ row, value }) => (
+          <UncontrolledTextField
+            type="text"
+            name={`parent_${row.symbol}`} // eslint-disable-line
+            onChange={val => onChange(`parent_${row.symbol}`, val)} // eslint-disable-line
+            value={value || '0.0'}
+            length="stretch"
+            isDisabled={value === undefined}
+          />
+        ),
+      },
+      {
+        Header: 'Alloy 2',
+        accessor: 'weld',
+        // eslint-disable-next-line
+        Cell: ({ row, value }) => (
+          <UncontrolledTextField
+            type="text"
+            name={`weld_${row.symbol}`} // eslint-disable-line
+            onChange={val => onChange(`weld_${row.symbol}`, val)} // eslint-disable-line
+            value={value || '0.0'}
+            length="stretch"
+            isDisabled={value === undefined}
+          />
+        ),
+      },
+      {
+        Header: 'Mix',
+        accessor: 'mix',
+        // eslint-disable-next-line
+        Cell: ({ value }) => {
+          if (value === undefined) return <span className="text--disabled">0.0</span>
+          return <span>{value}</span>
+        },
+        width: 40,
+      },
+    ]
 
-  return (
-    <Table
-      data={tableData}
-      columns={columns}
-      pageSize={Math.round((containerHeight - 72) / 56)}
-      showPageSizeOptions={false}
-      showPagination={tableData.length !== 0}
-      resizable={false}
-      hideDivider
-      condensed
-    />
-  )
+    return (
+      <Table
+        data={tableData}
+        columns={columns}
+        pageSize={Math.round((containerHeight - 72) / 56)}
+        showPageSizeOptions={false}
+        showPagination={tableData.length !== 0}
+        resizable={false}
+        hideDivider
+        condensed
+      />
+    )
+  }
 }
 
 CompTable.propTypes = {

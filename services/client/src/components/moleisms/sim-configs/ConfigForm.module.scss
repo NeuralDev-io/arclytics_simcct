@@ -10,80 +10,62 @@
   display: flex;
   flex-flow: row wrap;
   align-items: center;
-  margin-bottom: .5rem;
+  margin-bottom: 2rem;
 
   &>div:first-of-type {
     margin-right: 3rem;
   }
-
-  &>div {
-    margin-bottom: 1rem;
-  }
 }
 
 .second {
-  display: flex;
-  flex-flow: row wrap;
-  align-items: flex-start;
-  justify-content: flex-start;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 
-  .configCol {
+  & > h5 {
+    margin-bottom: 1rem;
+  }
+
+  .configRow {
     display: flex;
-    flex-flow: column;
-    align-items: flex-start;
-    margin-right: 2.5rem;
+    flex-flow: row wrap;
+    justify-content: flex-start;
 
-    .configGroup {
-      margin-bottom: 1rem;
+    & > div {
+      margin-right: 3rem;
+    }
 
-      & > h5:first-child {
-        margin-bottom: 1rem;
-      }
+    & > div > h6 {
+      margin-bottom: .75rem;
+    }
 
-      & > h6 {
-        margin-bottom: .5rem;
-      }
+    & > div > .configGroup {
+      display: flex;
+      flex-flow: row wrap;
+      align-items: center;
+      margin-bottom: .75rem; 
 
-      & > div {
-        margin-bottom: .5rem;
-
-        &.firstColLabel > :first-child {
-          width: 8rem;
-        }
-      }
-
-      .splitCol {
-        display: flex;
-        flex-direction: row;
-        align-items: flex-start;
-        margin-bottom: 1rem;
-        
-        & > div:first-child {
-          margin-right: 2rem;
-        }
-
-        & > div > div {
-          margin-bottom: .5rem;
-
-          &.secondColLabel > :first-child {
-            width: 1rem;
-          }
-
-          &.secondColSelect > :first-child {
-            width: 2.5rem;
-          }
-
-          &.thirdColLabel > :first-child {
-            width: 1rem;
-          }
-        }
+      & > div:first-of-type {
+        margin-right: 1.5rem;
       }
     }
   }
+}
 
-  .firstConfigCol {
-    margin-right: 3rem;
+.third {
+  margin-bottom: 1rem;
+
+  & > h5 {
+    margin-bottom: .75rem;
+  }
+
+  .configGroup {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    margin-bottom: .5rem;
+
+    & > div:first-of-type {
+      margin-right: 1.5rem;
+    }
   }
 }
 

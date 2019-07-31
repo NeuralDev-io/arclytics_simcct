@@ -2,7 +2,9 @@ import {
   RUN_SIM,
 } from './types'
 
-const initialState = {}
+const initialState = {
+  results: {},
+}
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {

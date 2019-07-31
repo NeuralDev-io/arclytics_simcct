@@ -58,13 +58,27 @@ class CompTable extends Component {
       })
     }
 
+    // calculate total weights
+    let parentTotal = 0
+    let weldTotal = 0
+    let mixTotal = 0
+    tableData.forEach((elem) => {
+      if (elem.parent) parentTotal += parseFloat(elem.parent)
+      if (elem.weld) weldTotal += parseFloat(elem.weld)
+      if (elem.mix) mixTotal += parseFloat(elem.mix)
+    })
+    parentTotal = Math.round(parentTotal * 100) / 100
+    weldTotal = Math.round(weldTotal * 100) / 100
+    mixTotal = Math.round(mixTotal * 100) / 100
+
     const columns = [
       {
         Header: 'Elements',
         accessor: 'symbol',
         // eslint-disable-next-line
         Cell: ({ value }) => (<span className={styles.symbol}>{value}</span>),
-        width: 100,
+        width: 80,
+        Footer: 'Total',
       },
       {
         Header: 'Alloy 1',
@@ -80,6 +94,7 @@ class CompTable extends Component {
             isDisabled={value === undefined}
           />
         ),
+        Footer: parentTotal,
       },
       {
         Header: 'Alloy 2',
@@ -95,6 +110,7 @@ class CompTable extends Component {
             isDisabled={value === undefined}
           />
         ),
+        Footer: weldTotal,
       },
       {
         Header: 'Mix',
@@ -105,6 +121,7 @@ class CompTable extends Component {
           return <span>{value}</span>
         },
         width: 40,
+        Footer: mixTotal,
       },
     ]
 
@@ -112,7 +129,7 @@ class CompTable extends Component {
       <Table
         data={tableData}
         columns={columns}
-        pageSize={Math.round((containerHeight - 72) / 56)}
+        pageSize={Math.round((containerHeight - 124) / 56)}
         showPageSizeOptions={false}
         showPagination={tableData.length !== 0}
         resizable={false}

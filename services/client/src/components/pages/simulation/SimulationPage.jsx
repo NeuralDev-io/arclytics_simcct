@@ -20,7 +20,7 @@ import Button from '../../elements/button'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
 import ConfigForm from '../../moleisms/sim-configs'
-import { TTT } from '../../moleisms/charts'
+import { TTT, CCT } from '../../moleisms/charts'
 import { updateComp, updateConfig } from '../../../utils/sim/SessionConfigs'
 import { runSim } from '../../../state/ducks/sim/actions'
 
@@ -255,15 +255,24 @@ class SimulationPage extends Component {
               {displayConfig ? 'Collapse' : 'Expand'}
             </Button>
           </header>
-          <div style={{ display: displayConfig ? 'block' : 'none' }}>
+          <div className={styles.configForm} style={{ display: displayConfig ? 'block' : 'none' }}>
             <ConfigForm
               values={configurations}
               onChange={this.handleConfigChange}
             />
           </div>
-          <div className={styles.ttt}>
-            <h3>Time temperature transformations</h3>
-            <TTT />
+          <div className={styles.results}>
+            <h3>Results</h3>
+            <div className={styles.charts}>
+              <div className={styles.line}>
+                <h5>TTT</h5>
+                <TTT />
+              </div>
+              <div className={styles.line}>
+                <h5>CCT</h5>
+                <CCT />
+              </div>
+            </div>
           </div>
         </div>
       </React.Fragment>

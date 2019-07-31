@@ -33,27 +33,27 @@ class SimulationPage extends Component {
       displayConfig: true,
       configurations: {
         method: 'Li98',
-        grain_size_type: 'ASTM',
-        grain_size: 8.0,
+        grain_size_ASTM: 8.0,
+        grain_size_diameter: 0.202,
         nucleation_start: 1.0,
         nucleation_finish: 99.9,
-        auto_calculate_xfe: false,
+        auto_calculate_xfe: true,
         xfe_value: 0.0,
         cf_value: 0.012,
         ceut_value: 0.762,
-        auto_calculate_ms_bs: false,
+        auto_calculate_bs: true,
+        auto_calculate_ms: true,
+        ms_rate: 5.378,
         transformation_method: 'Li98',
         ms_temp: 0.0,
         ms_undercool: 100.0,
         bs_temp: 0.0,
-        auto_calculate_ae: false,
+        auto_calculate_ae: true,
         ae1_temp: 0.0,
         ae3_temp: 0.0,
         start_temp: 900,
         cct_cooling_rate: 10,
       },
-      compositions: [],
-      composition: '',
       alloys: {
         alloyOption: 'single',
         parent: {
@@ -147,7 +147,7 @@ class SimulationPage extends Component {
   }
 
   handleConfigChange = (name, value) => {
-    if (name === 'method' || name === 'grain_size_type' || name === 'transformation_method') {
+    if (name === 'method' || name === 'transformation_method') {
       // check if new value is null (select option was cleared)
       if (value === null) {
         this.setState(prevState => ({
@@ -161,6 +161,44 @@ class SimulationPage extends Component {
           configurations: {
             ...prevState.configurations,
             [name]: value.value,
+          },
+        }))
+      }
+    } else if (name === 'grain_size_ASTM') {
+      if (value === '') {
+        this.setState(prevState => ({
+          configurations: {
+            ...prevState.configurations,
+            grain_size_ASTM: '',
+            grain_size_diameter: '',
+          },
+        }))
+      } else {
+        // do some calculation here to convert unit of grain size
+        this.setState(prevState => ({
+          configurations: {
+            ...prevState.configurations,
+            grain_size_ASTM: value,
+            grain_size_diameter: value,
+          },
+        }))
+      }
+    } else if (name === 'grain_size_diameter') {
+      if (value === '') {
+        this.setState(prevState => ({
+          configurations: {
+            ...prevState.configurations,
+            grain_size_ASTM: '',
+            grain_size_diameter: '',
+          },
+        }))
+      } else {
+        // do some calculation here to convert unit of grain size
+        this.setState(prevState => ({
+          configurations: {
+            ...prevState.configurations,
+            grain_size_ASTM: value,
+            grain_size_diameter: value,
           },
         }))
       }

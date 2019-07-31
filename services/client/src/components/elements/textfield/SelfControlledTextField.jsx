@@ -43,7 +43,6 @@ class SelfControlledTextField extends Component {
         {...other}
         onChange={val => this.handleChange(val)}
         value={value}
-        defaultValue={defaultValue}
       />
     )
   }

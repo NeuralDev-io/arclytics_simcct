@@ -368,8 +368,6 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  // -webkit-transform: translate(-50%, calc(-50% + 3rem));
-  // transform: translate(-50%, calc(-50% + 3rem));
   -webkit-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
   background: transparent;
@@ -436,7 +434,7 @@
   
       .rt-th {
         @extend .text--sub2;
-        padding: 0;
+        padding: 0 .25rem;
         text-align: left;
         border: none;
         
@@ -458,7 +456,7 @@
         align-items: center;
 
         .rt-td {
-          padding: 0;
+          padding: 0 .25rem;
         }
       }
     }
@@ -467,9 +465,11 @@
   .rt-tfoot {
     .rt-tr {
       padding: .5rem 1rem;
+      margin-top: .5rem;
 
       .rt-td {
-        padding: 0;
+        @extend .text--sub2;
+        padding: 0 .25rem;
       }
     }
   }

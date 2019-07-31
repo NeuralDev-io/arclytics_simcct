@@ -7,13 +7,10 @@
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
-
 __credits__ = ['']
 __license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = '{dev_status}'
 __date__ = '2019.07.05'
 """test_api_user_model.py: 
 
@@ -100,8 +97,7 @@ class TestUserModel(BaseTestCase):
         elem2 = Element(symbol='Mn', weight=1.73)
         comp = Alloy()
         comp.name = 'Selvigium'
-        comp['compositions'][pT.C.value] = elem1
-        comp['compositions'][pT.Mn.value] = elem2
+        comp['compositions'] = [elem1, elem2]
         alloy_store = {
             'alloy_option': 'single',
             'alloys': {
@@ -115,10 +111,10 @@ class TestUserModel(BaseTestCase):
 
         alloy = user.last_alloy_store['alloys']['parent']
         self.assertEqual(alloy['name'], 'Selvigium')
-        self.assertEqual(alloy['compositions'][pT.C.value]['symbol'], 'C')
-        self.assertEqual(alloy['compositions'][pT.C.value]['weight'], 0.044)
-        self.assertEqual(alloy['compositions'][pT.Mn.value]['symbol'], 'Mn')
-        self.assertEqual(alloy['compositions'][pT.Mn.value]['weight'], 1.73)
+        self.assertEqual(alloy['compositions'][0]['symbol'], 'C')
+        self.assertEqual(alloy['compositions'][0]['weight'], 0.044)
+        self.assertEqual(alloy['compositions'][1]['symbol'], 'Mn')
+        self.assertEqual(alloy['compositions'][1]['weight'], 1.73)
 
     def test_add_compositions_from_json(self):
         """Ensure we can loop a JSON-converted dict to create a compositions."""
@@ -129,13 +125,10 @@ class TestUserModel(BaseTestCase):
 
         with open(_TEST_CONFIGS_PATH, 'r') as f:
             test_json = json.load(f)
-        test_comp = test_json['compositions']
 
         new_comp_inst = Alloy()
         new_comp_inst.name = 'Selvigium'
-        for e in test_comp:
-            # elem_inst = Element(**e)
-            new_comp_inst['compositions'][pT[e['symbol']].value] = e
+        new_comp_inst.compositions = test_json['compositions']
 
         alloy_store = {
             'alloy_option': 'single',
@@ -151,12 +144,12 @@ class TestUserModel(BaseTestCase):
 
         comp = user.last_alloy_store['alloys']['parent']
         self.assertEqual(comp['name'], 'Selvigium')
-        self.assertEqual(comp['compositions'][pT.C.value]['symbol'], 'C')
-        self.assertEqual(comp['compositions'][pT.C.value]['weight'], 0.044)
-        self.assertEqual(comp['compositions'][pT.Mn.value]['symbol'], 'Mn')
-        self.assertEqual(comp['compositions'][pT.Mn.value]['weight'], 1.73)
-        self.assertEqual(comp['compositions'][pT.Si.value]['symbol'], 'Si')
-        self.assertEqual(comp['compositions'][pT.Si.value]['weight'], 0.22)
+        self.assertEqual(comp['compositions'][0]['symbol'], 'C')
+        self.assertEqual(comp['compositions'][0]['weight'], 0.044)
+        self.assertEqual(comp['compositions'][1]['symbol'], 'Mn')
+        self.assertEqual(comp['compositions'][1]['weight'], 1.73)
+        self.assertEqual(comp['compositions'][2]['symbol'], 'Si')
+        self.assertEqual(comp['compositions'][2]['weight'], 0.22)
 
     def test_email_validation(self):
         user = User(

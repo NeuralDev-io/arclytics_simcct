@@ -1,24 +1,24 @@
 @import '../../../styles/colors_light';
 
 .compSidebar {
-  width: 27vw;
+  width: 25vw;
   height: 100vh;
   margin-left: 4rem;
   position: fixed;
 
   @media screen and (max-width: 1720px) {
-    width: 430px;
+    width: 400px;
   }
 }
 
 .main {
-  margin-left: calc(4rem + 27vw);
-  width: calc(100% - calc(4rem + 27vw));
+  margin-left: calc(4rem + 25vw);
+  width: calc(100% - calc(4rem + 25vw));
   padding: 2.5rem 0rem 2.5rem 2.5rem;
 
   @media screen and (max-width: 1720px) {
-    margin-left: calc(4rem + 430px);
-    width: calc(100% - calc(4rem + 430px));
+    margin-left: calc(4rem + 400px);
+    width: calc(100% - calc(4rem + 400px));
   }
 
   header {

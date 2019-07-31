@@ -37,7 +37,7 @@ class Pagination extends React.Component {
       <div className={styles.pagination}>
         <div className={styles.pageNum}>
           <span className="text--sub2">
-            {startRow} - {endRow} of {data.length} {/* eslint-disable-line */}
+            {startRow}-{endRow} of {data.length} {/* eslint-disable-line */}
           </span>
         </div>
         <Button

@@ -1,11 +1,16 @@
 .wrapper {
   width: initial;
+  height: initial;
   min-width: 30rem;
   min-height: 20rem;
   max-height: 30rem;
   z-index: 1001;
+  position: relative;
 }
 
 .noData {
-  margin-bottom: 2rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }

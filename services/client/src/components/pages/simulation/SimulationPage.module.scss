@@ -36,7 +36,7 @@
   }
 
   .results {
-    // margin-top: 1rem;
+    margin-bottom: 2.5rem;
 
     & > h3 {
       margin-bottom: 1.5rem;
@@ -55,6 +55,17 @@
           margin-bottom: .5rem;
         }
       }
+    }
+  }
+
+  .custom {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    & > div {
+      flex-basis: 45%;
     }
   }
 }

@@ -19,7 +19,7 @@ import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
 import Button from '../../elements/button'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
-import ConfigForm from '../../moleisms/sim-configs'
+import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { TTT, CCT } from '../../moleisms/charts'
 import { updateComp, updateConfig } from '../../../utils/sim/SessionConfigs'
 import { runSim } from '../../../state/ducks/sim/actions'
@@ -31,6 +31,8 @@ class SimulationPage extends Component {
     super(props)
     this.state = {
       displayConfig: true,
+      displayProfile: true,
+      displayUserCurve: true,
       configurations: {
         method: 'Li98',
         grain_size_ASTM: 8.0,
@@ -202,6 +204,8 @@ class SimulationPage extends Component {
           },
         }))
       }
+    } else if (name === 'displayUserCurve') {
+      this.setState(prevState => ({ displayUserCurve: !prevState.displayUserCurve }))
     } else {
       this.setState(prevState => ({
         configurations: {
@@ -215,6 +219,8 @@ class SimulationPage extends Component {
   render() {
     const {
       displayConfig,
+      displayProfile,
+      displayUserCurve,
       configurations,
       alloys,
     } = this.state
@@ -239,7 +245,7 @@ class SimulationPage extends Component {
           />
         </div>
         <div className={styles.main}>
-          <header>
+          <header className={styles.config}>
             <h3>Configurations</h3>
             <Button
               appearance="text"
@@ -272,6 +278,39 @@ class SimulationPage extends Component {
                 <h5>CCT</h5>
                 <CCT />
               </div>
+            </div>
+          </div>
+          <div className={styles.custom}>
+            <div>
+              <header className={styles.profile}>
+                <h3>User profile</h3>
+                <Button
+                  appearance="text"
+                  onClick={() => this.setState(prevState => ({
+                    displayProfile: !prevState.displayProfile,
+                  }))}
+                  IconComponent={props => (
+                    displayProfile
+                      ? <ChevronUpIcon {...props} />
+                      : <ChevronDownIcon {...props} />
+                  )}
+                >
+                  {displayProfile ? 'Collapse' : 'Expand'}
+                </Button>
+              </header>
+              <div style={{ display: displayProfile ? 'block' : 'none' }}>
+                <UserProfileConfig
+                  values={{
+                    start_temp: configurations.start_temp,
+                    cct_cooling_rate: configurations.cct_cooling_rate,
+                    displayUserCurve,
+                  }}
+                  onChange={this.handleConfigChange}
+                />
+              </div>
+            </div>
+            <div>
+
             </div>
           </div>
         </div>

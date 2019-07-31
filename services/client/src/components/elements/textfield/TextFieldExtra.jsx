@@ -20,6 +20,7 @@ const TextFieldExtra = (props) => {
       <TextField
         {...other}
         className={classname}
+        length={length}
       />
       {suffix !== '' && <span className={styles.suffix}>{suffix}</span>}
     </div>

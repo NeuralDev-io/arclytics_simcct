@@ -9,7 +9,7 @@
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
@@ -45,14 +45,25 @@ class AlloysTypeSchema(Schema):
     mix = fields.Nested(AlloySchema, allow_none=True)
 
 
-class AlloyStore(Schema):
+class AlloyStoreRequestSchema(Schema):
+    """This is the schema that defines the request body for changing alloys."""
+    alloy_option = fields.Str(
+        required=True, validate=OneOf(['single', 'both', 'mix'])
+    )
+    alloy_type = fields.Str(
+        required=True, validate=OneOf(['parent', 'weld', 'mix'])
+    )
+    alloy = fields.Nested(AlloySchema, required=True)
+
+
+class AlloyStoreSchema(Schema):
     """This is the schema that defines how the Alloy is stored in the Session
     and the User's Mongo Document.
     """
     alloy_option = fields.Str(
         required=True, validate=OneOf(['single', 'both', 'mix'])
     )
-    alloys = fields.Nested(AlloysTypeSchema, allow_none=True)
+    alloys = fields.Nested(AlloysTypeSchema)
 
 
 class ConfigurationsSchema(Schema):
@@ -81,17 +92,6 @@ class ConfigurationsSchema(Schema):
     ae3_temp = fields.Float(required=False)
     start_temp = fields.Int(required=True)
     cct_cooling_rate = fields.Int()
-
-    class Meta:
-        # TODO(andrew@neuraldev.io): Figure out what to do with these?
-        # By default, load will raise a ValidationError if it encounters a key
-        # with no matching Field in the schema.
-        # MODIFIED BEHAVIOUR:
-        #  - EXCLUDE: exclude unknown fields
-        #  - INCLUDE: accept and include the unknown fields
-        #  - RAISE: Raise a validationError if there are any
-        # unknown = EXCLUDE
-        pass
 
 
 class SetupConfigsSchema(Schema):

@@ -431,6 +431,9 @@
   
     .rt-tr {
       padding: .5rem 1rem;
+
+      & > .rt-th:first-of-type { padding-left: 0; }
+      & > .rt-th:last-of-type { padding-right: 0; }
   
       .rt-th {
         @extend .text--sub2;
@@ -455,6 +458,9 @@
         flex-direction: row;
         align-items: center;
 
+        & > .rt-td:first-of-type { padding-left: 0; }
+        & > .rt-td:last-of-type { padding-right: 0; }
+
         .rt-td {
           padding: 0 .25rem;
         }
@@ -467,6 +473,9 @@
       padding: .5rem 1rem;
       margin-top: .5rem;
 
+      & > .rt-td:first-of-type { padding-left: 0; }
+      & > .rt-td:last-of-type { padding-right: 0; }
+      
       .rt-td {
         @extend .text--sub2;
         padding: 0 .25rem;

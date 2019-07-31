@@ -27,7 +27,7 @@ from typing import Union
 from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
-    DateTimeField, EmbeddedDocumentField, IntField, FloatField, DictField,
+    DateTimeField, EmbeddedDocumentField, IntField, FloatField, ListField,
     EmbeddedDocumentListField, queryset_manager
 )
 from flask import current_app, json
@@ -174,15 +174,26 @@ class Configuration(EmbeddedDocument):
         return self.to_json()
 
 
-class Alloy(EmbeddedDocument):
-    name = StringField()
-    # No Way for MongoEngine to embed a DictField() with reference to an
-    # embedded document but we always need to ensure this follows the schema
-    # of {"symbol": "C", "weight": 0.0}
-    compositions = DictField()
+class Element(EmbeddedDocument):
+    symbol = StringField(max_length=2)
+    weight = FloatField(default=0.0)
 
     def to_dict(self):
-        return {'name': self.name, 'composition': self.compositions}
+        return {'symbol': self.symbol, 'weight': self.weight}
+
+    def __str__(self):
+        return self.to_json()
+
+
+class Alloy(EmbeddedDocument):
+    name = StringField()
+    compositions = ListField(EmbeddedDocumentField(Element))
+
+    def to_dict(self):
+        comp = []
+        for e in self.compositions:
+            comp.append(e.to_dict())
+        return {'name': self.name, 'composition': comp}
 
     def __str__(self):
         return self.to_json()

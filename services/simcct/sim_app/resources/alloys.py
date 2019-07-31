@@ -31,7 +31,7 @@ from marshmallow import ValidationError
 from sim_app.extensions import api
 from sim_app.schemas import AlloySchema
 from sim_app.alloys_service import AlloysService
-from simulation.periodic import PeriodicTable as PT
+from simulation.periodic import PeriodicTable as pt
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -58,26 +58,17 @@ class AlloysList(Resource):
 
         post_comps = post_data.get('compositions', None)
 
-        # We first validate it to make sure it's valid before we do any
+        if not post_comps:
+            response['message'] = 'No compositions list were provided.'
+            return response, 400
+
+        # We validate it to make sure it's valid before we do any
         # conversions below with the compositions
         try:
             valid_data = AlloySchema().load(post_data)
         except ValidationError as e:
             response['errors'] = e.messages
             return response, 400
-
-        # We use the atomic number of the element symbol which is mapped 1-to-1
-        # with the PeriodicTable enum.
-        comps = []
-        for el in post_comps:
-            try:
-                idx = PT[el['symbol']].value.atomic_num
-            except NotImplementedError as e:
-                response['message'] = 'The symbol name used is incorrect.'
-                return response, 400
-            comps.insert(idx - 1, el)
-
-        post_data['compositions'] = comps
 
         alloy = AlloysService().create_alloy(valid_data)
 
@@ -166,6 +157,14 @@ class Alloys(Resource):
             response['message'] = 'Invalid ObjectId.'
             return response, 400
 
+        # Just validate the input schema first before we do anything else
+        try:
+            AlloySchema().load(patch_data)
+        except ValidationError as e:
+            response['message'] = 'Request data failed schema validation.'
+            response['errors'] = e.messages
+            return response, 400
+
         patch_name = patch_data.get('name', None)
         patch_alloy = patch_data.get('compositions', None)
 
@@ -177,24 +176,32 @@ class Alloys(Resource):
             return response, 404
 
         if patch_alloy:
-            existing_comp = existing_alloy['compositions']
-            # We use the atomic number of the element symbol which is mapped
-            # 1-to-1 with the PeriodicTable enum.
-            for el in patch_data['compositions']:
-                try:
-                    idx = PT[el['symbol']].value.atomic_num
-                except NotImplementedError as e:
-                    response['message'] = 'The symbol name used is incorrect.'
-                    return response, 400
-                existing_comp.insert(idx - 1, el)
+            existing_comp = existing_alloy.get('compositions')
+
+            # FIXME(andrew@neuraldev.io): This needs to be massively updated as
+            #  this is possible the slowest way possible to do this. One way
+            #  would be to make an Element class and override the comparison
+            #  of each class to only use the Symbol to compare to each other.
+            #  That way you can use the Python "for in" syntax without worries.
+            # Update the elements by search
+            for el in patch_data.get('compositions'):
+                exists = False
+                for i, ex_el in enumerate(existing_comp):
+                    if ex_el['symbol'] == el['symbol']:
+                        exists = True
+                        existing_comp[i] = el
+                        break
+                if not exists:
+                    existing_comp.append(el)
 
         # update the name if a new one is provided
         if not patch_name == existing_alloy['name']:
             existing_alloy['name'] = patch_name
 
-        # Extract the request data and validate it
+        # Ensure the newly saved alloy is valid
         try:
-            valid_data = AlloySchema().load(existing_alloy)
+            # Must remove ObjectId in data to pass
+            valid_data = AlloySchema(exclude=['_id']).load(existing_alloy)
         except ValidationError as e:
             response['errors'] = e.messages
             return response, 400
@@ -213,48 +220,6 @@ class Alloys(Resource):
         response['data'] = updated_alloy
         response.pop('message')
         return response, 200
-
-    def put(self, alloy_id):
-        """Exposes the PUT method for `/alloys` to update an existing alloy by
-        user of replacing the old one.
-
-        Args:
-            alloy_id: A valid ObjectId string that will be checked.
-
-        Returns:
-            A Response object consisting of a dict and status code as an int.
-        """
-        response = {'status': 'fail', 'message': 'Invalid payload.'}
-
-        if not request.get_json():
-            return response, 400
-
-        # Verify the request params is a valid ObjectId to use
-        if not ObjectId.is_valid(alloy_id):
-            response['message'] = 'Invalid ObjectId.'
-            return response, 400
-
-        # Extract the request data and validate it
-        try:
-            put_data = AlloySchema().load(json.loads(request.data))
-        except ValidationError as e:
-            response['errors'] = e.messages
-            return response, 400
-
-        good = AlloysService().update_alloy(ObjectId(alloy_id), put_data)
-
-        # The service will return True or False based on successfully updating
-        # an alloy.
-        if not good:
-            response['message'] = 'Alloy not found.'
-            return response, 404
-
-        updated_alloy = AlloysService().find_alloy(ObjectId(alloy_id))
-
-        response['status'] = 'success'
-        response['data'] = updated_alloy
-        response.pop('message')
-        return response, 202
 
     def delete(self, alloy_id):
         """Exposes the DELETE method on `/alloys/{id}` to delete an existing
@@ -283,5 +248,5 @@ class Alloys(Resource):
         return response, 202
 
 
-api.add_resource(Alloys, '/alloys/<alloy_id>')
-api.add_resource(AlloysList, '/alloys')
+api.add_resource(Alloys, '/global/alloys/<alloy_id>')
+api.add_resource(AlloysList, '/global/alloys')

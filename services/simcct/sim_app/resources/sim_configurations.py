@@ -28,7 +28,7 @@ from sim_app.extensions import api
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
 from sim_app.middleware import token_required_restful
-from sim_app.schemas import AlloyStore, SetupConfigsSchema
+from sim_app.schemas import AlloyStoreSchema, SetupConfigsSchema, AlloySchema
 from simulation.periodic import PeriodicTable as PT
 
 configs_blueprint = Blueprint('configs', __name__)
@@ -100,12 +100,21 @@ class AlloyStore(Resource):
             response['message'] = 'No key in the alloy was provided.'
             return response, 400
 
+        # Let's validate the Alloy follows our schema
+        try:
+            alloy = AlloySchema().load(alloy)
+        except ValidationError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Alloy failed schema validation.'
+            return response, 400
+
         # We get what's currently stored in the session and we update it
         sess_alloy_store = session.get(f'{token}:alloy_store')
         # Basically, the user should have a session initiated from login
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
             return response, 400
+
         # We just update the alloy_option straight up
         sess_alloy_store['alloy_option'] = alloy_option
 
@@ -120,18 +129,23 @@ class AlloyStore(Resource):
                 req_parent_comp = alloy.get('compositions', None)
                 sess_parent_comp = sess_alloys['parent']['compositions']
 
+                # FIXME(andrew@neuraldev.io): This needs to be massively
+                #  updated as this is possible the slowest way possible to do
+                #  this. One way would be to make an Element class and override
+                #  the comparison of each class to only use the Symbol to
+                #  compare to each other. That way you can use the Python
+                #  "for in" syntax without worries.
                 # We first update the compositions of the alloy partially
                 if req_parent_comp:
-                    for elem in req_parent_comp:
-                        try:
-                            idx = PT[elem['symbol']].value.atomic_num
-                        except NotImplementedError as e:
-                            response['message'] = (
-                                'The symbol name used is '
-                                'incorrect.'
-                            )
-                            return response, 400
-                        sess_parent_comp[idx] = elem
+                    for el in req_parent_comp:
+                        exists = False
+                        for i, ex_el in enumerate(sess_parent_comp):
+                            if ex_el['symbol'] == el['symbol']:
+                                exists = True
+                                sess_parent_comp[i] = el
+                                break
+                        if not exists:
+                            sess_parent_comp.append(el)
 
                 # We update the name if they're not the same
                 if not alloy.get('name', None) == sess_alloys['parent']['name']:
@@ -141,7 +155,7 @@ class AlloyStore(Resource):
                 sess_alloy_store['alloys']['mix'] = None
 
                 # Just quickly validate the alloy stored based on schema
-                sess_alloy_store = AlloyStore().load(sess_alloy_store)
+                sess_alloy_store = AlloyStoreSchema().load(sess_alloy_store)
             elif alloy_option == 'mix':
                 # TODO(andrew@neuraldev.io): Implement this.
                 pass
@@ -171,9 +185,9 @@ class AlloyStore(Resource):
         # numpy.ndarray structured format and type
 
         # We update the transformation limits based on which option is chosen
-        comp_list = []
+        comp_dict = {}
         if alloy_option == 'single':
-            comp_list = (sess_alloy_store['parent']['compositions'])
+            comp_dict = (sess_alloy_store['alloys']['parent']['compositions'])
 
         # TODO(andrew@neuraldev.io): Implement this.
         # else:
@@ -182,7 +196,7 @@ class AlloyStore(Resource):
         # )
         # pass
 
-        comp_np_arr = SimConfig.get_compositions(comp_list)
+        comp_np_arr = SimConfig.get_compositions(comp_dict)
 
         # We need to store some results so let's prepare an empty dict
         response['message'] = 'Compositions and other values updated.'
@@ -300,7 +314,7 @@ class Configurations(Resource):
 
 
 class ConfigsMethod(Resource):
-    method_decorators = {'patch': [token_required_restful]}
+    method_decorators = {'put': [token_required_restful]}
 
     def put(self, token):
         """This PUT endpoint simply updates the `method` for CCT and TTT
@@ -386,7 +400,12 @@ class MartensiteStart(Resource):
 
         # TODO(andrew@neuraldev.io): Accessing "Alloy Compositions" would be by
         #  the name of the alloy_type.
-        comp_list = session.get(f'{token}:alloy')['compositions']
+        sess_alloy_store = session.get(f'{token}:alloy_store')
+
+        # TODO(andrew@neuraldev.io): Implement the other options
+        comp_list: list = []
+        if sess_alloy_store['alloy_option'] == 'single':
+            comp_list = sess_alloy_store['alloys']['parent']['compositions']
 
         if comp_list is None:
             response['message'] = 'User has not set an Alloy.'
@@ -485,9 +504,11 @@ class BainiteStart(Resource):
 
         session_configs['auto_calculate_bs'] = True
 
-        # TODO(andrew@neuraldev.io): Accessing "Alloy Compositions" would be by
-        #  the name of the alloy_type.
-        comp_list = session.get(f'{token}:alloy')['alloy']['compositions']
+        sess_alloy_store = session.get(f'{token}:alloy_store')
+        # TODO(andrew@neuraldev.io): Implement the other options
+        comp_list: list = []
+        if sess_alloy_store['alloy_option'] == 'single':
+            comp_list = sess_alloy_store['alloys']['parent']['compositions']
 
         if comp_list is None:
             response['message'] = 'User has not set an Alloy.'
@@ -570,9 +591,11 @@ class Austenite(Resource):
         session_configs = session.get(f'{token}:configurations')
         session_configs['auto_calculate_ae'] = True
 
-        # TODO(andrew@neuraldev.io): Accessing "Alloy Compositions" would be by
-        #  the name of the alloy_type.
-        comp_list = session.get(f'{token}:alloy')['alloy']['compositions']
+        sess_alloy_store = session.get(f'{token}:alloy_store')
+        # TODO(andrew@neuraldev.io): Implement the other options
+        comp_list: list = []
+        if sess_alloy_store['alloy_option'] == 'single':
+            comp_list = sess_alloy_store['alloys']['parent']['compositions']
 
         if comp_list is None:
             response['message'] = 'User has not set an Alloy.'

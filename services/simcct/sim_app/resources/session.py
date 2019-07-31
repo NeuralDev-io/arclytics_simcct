@@ -26,7 +26,7 @@ from marshmallow import ValidationError
 from flask import Blueprint, session, request, jsonify
 from bson import ObjectId
 
-from sim_app.schemas import (ConfigurationsSchema, AlloyStore)
+from sim_app.schemas import (ConfigurationsSchema, AlloyStoreSchema)
 from sim_app.middleware import token_required
 
 session_blueprint = Blueprint('session', __name__)
@@ -95,7 +95,11 @@ def session_login(token):
     #                      chromium
     alloy_store = None
     if user_alloy_store:
-        alloy_store = AlloyStore().load(user_alloy_store)
+        try:
+            alloy_store = AlloyStoreSchema().load(user_alloy_store)
+        except ValidationError as e:
+            response['errors'] = e.messages
+            return jsonify(response), 400
     else:
         alloy_store = {
             'alloy_option': 'single',

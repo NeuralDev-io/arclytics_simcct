@@ -37,6 +37,7 @@ configs_blueprint = Blueprint('configs', __name__)
 class AlloyStore(Resource):
     method_decorators = {
         'patch': [token_required_restful],
+        'post': [token_required_restful]
     }
 
     def post(self, token):
@@ -449,6 +450,7 @@ class Configurations(Resource):
         grain_size = patch_data.get('grain_size', None)
         if grain_size:
             sess_store['grain_size'] = grain_size
+
         nuc_start = patch_data.get('nucleation_start', None)
         if nuc_start:
             sess_store['nucleation_start'] = nuc_start
@@ -509,14 +511,16 @@ class ConfigsMethod(Resource):
 
         session_configs = session.get(f'{token}:configurations')
 
-        if session_configs is None:
+        if not session_configs:
             response['message'] = 'No previous session configurations was set.'
             return response, 404
 
+        # Change the configs
         session_configs['method'] = Method.Li98.name
         if method == 'Kirkaldy83':
             session_configs['method'] = Method.Kirkaldy83.name
 
+        session[f'{token}:configurations'] = session_configs
         response['status'] = 'success'
         response['message'] = f'Changed to {method} method.'
         return response, 200

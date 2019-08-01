@@ -538,7 +538,9 @@ class TestAuthEndpoints(BaseTestCase):
             )
             data = json.loads(response.data.decode())
             self.assertTrue(data['status'] == 'fail')
-            self.assertTrue(data['message'] == 'This user does not exist.')
+            self.assertTrue(
+                data['message'] == 'This user account has been disabled.'
+            )
             self.assertEqual(response.status_code, 401)
 
 

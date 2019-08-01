@@ -58,9 +58,7 @@ class PingTest(Resource):
 class UserList(Resource):
     """Return all users (admin only)"""
 
-    method_decorators = {
-        'get': [authenticate_admin]
-    }
+    method_decorators = {'get': [authenticate_admin]}
 
     def get(self, resp) -> Tuple[dict, int]:
         """Get all users only available to admins."""
@@ -69,13 +67,10 @@ class UserList(Resource):
         return response, 200
 
 
-class SingleUser(Resource):
+class Users(Resource):
     """Get/Put a single user's details."""
 
-    method_decorators = {
-        'get': [authenticate],
-        'patch': [authenticate]
-    }
+    method_decorators = {'get': [authenticate], 'patch': [authenticate]}
 
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
@@ -87,22 +82,14 @@ class SingleUser(Resource):
         data = request.get_json()
 
         # Validating empty payload
-        response = {}
-        response['status'] = 'fail'
-        response['message'] = 'Invalid payload.'
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not data:
             return response, 400
 
         # Ensure there are valid keys in the request body
         valid_keys = [
-            'first_name',
-            'last_name',
-            'aim',
-            'highest_education',
-            'sci_tech_exp',
-            'phase_transform_exp',
-            'mobile_number',
-            'position'
+            'first_name', 'last_name', 'aim', 'highest_education',
+            'sci_tech_exp', 'phase_transform_exp', 'mobile_number', 'position'
         ]
         is_update = False
         for k in valid_keys:
@@ -115,6 +102,8 @@ class SingleUser(Resource):
             response['message'] = 'Payload does not have any valid keys.'
             return response, 400
 
+        response['data'] = {}
+
         # If there are valid keys, begin extracting them.
         first_name = data.get('first_name', None)
         last_name = data.get('last_name', None)
@@ -126,7 +115,7 @@ class SingleUser(Resource):
         # If we are going to update the user profile, create a dictionary so
         # that we can store the updated profile fields for the response body.
         if aim or highest_education or sci_tech_exp or highest_education:
-            response['profile'] = {}
+            response['data'] = {'profile': {}}
 
         # Get the user so we can begin updating fields.
         user = User.objects.get(id=resp)
@@ -136,19 +125,28 @@ class SingleUser(Resource):
         if not user.profile:
             # If we do not have all the profile fields, we will need to reject
             # the request as we are unable to create a profile object.
-            if not aim or not highest_education or not sci_tech_exp or not phase_transform_exp:
-                response.pop('profile')
-                response['message'] = 'User profile cannot be patched as there is no existing profile.'
+            if (
+                not aim or not highest_education or not sci_tech_exp
+                or not phase_transform_exp
+            ):
+                response.pop('data')
+                response['message'] = (
+                    'User profile cannot be updated as '
+                    'there is no existing profile.'
+                )
                 return response, 400
 
             # Once we have ensured we have all the fields, we can create the
             # profile object and put the information in the response body.
-            response['profile']['aim'] = aim
-            response['profile']['highest_education'] = highest_education
-            response['profile']['sci_tech_exp'] = sci_tech_exp
-            response['profile']['phase_transform_exp'] = phase_transform_exp
+            response['data']['profile'] = {
+                'aim': aim,
+                'highest_education': highest_education,
+                'sci_tech_exp': sci_tech_exp,
+                'phase_transform_exp': phase_transform_exp
+            }
             profile = UserProfile(
-                aim=aim, highest_education=highest_education,
+                aim=aim,
+                highest_education=highest_education,
                 sci_tech_exp=sci_tech_exp,
                 phase_transform_exp=phase_transform_exp
             )
@@ -159,34 +157,39 @@ class SingleUser(Resource):
         else:
             if aim:
                 user.profile.aim = aim
-                response['profile']['aim'] = aim
+                response['data']['profile']['aim'] = aim
             if highest_education:
                 user.profile.highest_education = highest_education
-                response['profile']['highest_education'] = highest_education
+                response['data']['profile']['highest_education'] = \
+                    highest_education
             if sci_tech_exp:
                 user.profile.sci_tech_exp = sci_tech_exp
-                response['profile']['sci_tech_exp'] = sci_tech_exp
+                response['data']['profile']['sci_tech_exp'] = sci_tech_exp
             if phase_transform_exp:
                 user.profile.phase_transform_exp = phase_transform_exp
-                response['profile']['phase_transform_exp'] = phase_transform_exp
+                response['data']['profile']['phase_transform_exp'] = \
+                    phase_transform_exp
 
         # If the user is an admin, we can also update their admin profile
         # details
         if user.is_admin:
+            # If the user is an admin but is not verified, we must also reject
+            # the request.
+            if not user.admin_profile.verified:
+                response['message'] = 'User is not verified as an admin.'
+                response.pop('data')
+                return response, 400
+
             # If the user is an admin but does not have an admin profile or they
             # do not have a position then something has gone wrong when they
             # were made an admin and we need to reject the request so as to not
             # put more invalid information in the user's document.
             if not user.admin_profile or not user.admin_profile.position:
-                response['message'] = 'User admin profile is invalid and cannot be patched.'
-                response.pop('profile')
-                return response, 400
-
-            # If the user is an admin but is not verified, we must also reject
-            # the request.
-            if not user.admin_profile.verified:
-                response['message'] = 'User is not verified as an admin.'
-                response.pop('profile')
+                response['message'] = (
+                    'User admin profile is invalid and '
+                    'cannot be updated.'
+                )
+                response.pop('data')
                 return response, 400
 
             # Otherwise, we can proceed to update the admin profile fields.
@@ -196,33 +199,39 @@ class SingleUser(Resource):
             # If there is data to be patched, we must create a dictionary for
             # admin profile information in the response body.
             if mobile_number or position:
-                response['admin_profile'] = {}
+                response['data']['admin_profile'] = {}
 
             if mobile_number:
                 user.admin_profile.mobile_number = mobile_number
-                response['admin_profile']['mobile_number'] = mobile_number
+                response['data']['admin_profile']['mobile_number'] = \
+                    mobile_number
             if position:
                 user.admin_profile.position = position
-                response['admin_profile']['position'] = position
+                response['data']['admin_profile']['position'] = position
 
         # Lastly we check for changes to the base user document.
         if first_name:
             user.first_name = first_name
-            response['first_name'] = first_name
+            response['data']['first_name'] = first_name
         if last_name:
             user.last_name = last_name
-            response['last_name'] = last_name
+            response['data']['last_name'] = last_name
 
         # Updated the user's last_updated field to now.
         user.last_updated = datetime.utcnow()
 
-        # Save the changes.
-        user.save()
-        user.cascade_save()
+        # Save the changes for both the user document and embedded document.
+        try:
+            user.cascade_save()
+            user.save()
+        except ValidationError as e:
+            response.pop('data')
+            response['errors'] = str(e)
+            response['message'] = 'Validation error.'
+            return response, 418
 
         # Return response body.
         response['status'] = 'success'
-        response['message'] = f'Successfully updated User details for {user.id}.'
         return response, 200
 
 
@@ -234,20 +243,20 @@ class UserLast(Resource):
 
     # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
 
-    method_decorators = {
-        'get': [authenticate]
-    }
+    method_decorators = {'get': [authenticate]}
 
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
         if not user.last_alloy:
             response = {
-                'status': 'fail', 'message': 'No last composition was found.'
+                'status': 'fail',
+                'message': 'No last composition was found.'
             }
             return response, 400
         if not user.last_configuration:
             response = {
-                'status': 'fail', 'message': 'No last configuration was found.'
+                'status': 'fail',
+                'message': 'No last configuration was found.'
             }
             return response, 400
 
@@ -264,10 +273,7 @@ class UserAlloys(Resource):
 
     # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
 
-    method_decorators = {
-        'get': [authenticate],
-        'post': [authenticate]
-    }
+    method_decorators = {'get': [authenticate], 'post': [authenticate]}
 
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
@@ -276,13 +282,8 @@ class UserAlloys(Resource):
             return response, 400
         alloys = []
         for a in user.saved_alloys:
-            alloys.append(
-                a.to_dict()
-            )
-        response = {
-            'status': 'success',
-            'alloys': alloys
-        }
+            alloys.append(a.to_dict())
+        response = {'status': 'success', 'alloys': alloys}
         return response, 200
 
     def post(self, resp) -> Tuple[dict, int]:
@@ -307,13 +308,22 @@ class UserProfiles(Resource):
         user = User.objects.get(id=resp)
         response = {
             'status': 'success',
-            'profile': {
-                'aim': user.profile.aim,
-                'highest_education': user.profile.highest_education,
-                'sci_tech_exp': user.profile.sci_tech_exp,
-                'phase_transform_exp': user.profile.phase_transform_exp
+            'data': {
+                'profile': {
+                    'aim': user.profile.aim,
+                    'highest_education': user.profile.highest_education,
+                    'sci_tech_exp': user.profile.sci_tech_exp,
+                    'phase_transform_exp': user.profile.phase_transform_exp
+                }
             }
         }
+
+        if user.is_admin:
+            response['data']['admin_profile'] = {
+                'position': user.admin_profile.position,
+                'mobile_number': user.admin_profile.mobile_number
+            }
+
         return response, 200
 
     def patch(self, resp) -> Tuple[dict, int]:
@@ -327,10 +337,7 @@ class UserProfiles(Resource):
 
         # Ensure there are valid keys in the request body
         valid_keys = [
-            'aim',
-            'highest_education',
-            'sci_tech_exp',
-            'phase_transform_exp'
+            'aim', 'highest_education', 'sci_tech_exp', 'phase_transform_exp'
         ]
         is_update = False
         for k in valid_keys:
@@ -349,10 +356,6 @@ class UserProfiles(Resource):
         sci_tech_exp = data.get('sci_tech_exp', None)
         phase_transform_exp = data.get('phase_transform_exp', None)
 
-        # Create a dictionary so that we can store the updated profile fields
-        # for the response body.
-        response['profile'] = {}
-
         # Get the user so we can begin updating fields.
         user = User.objects.get(id=resp)
 
@@ -361,19 +364,28 @@ class UserProfiles(Resource):
         if not user.profile:
             # If we do not have all the profile fields, we will need to reject
             # the request as we are unable to create a profile object.
-            if not aim or not highest_education or not sci_tech_exp or not phase_transform_exp:
+            if (
+                not aim or not highest_education or not sci_tech_exp
+                or not phase_transform_exp
+            ):
                 response.pop('profile')
-                response['message'] = 'User profile cannot be patched as there is no existing profile.'
+                response['message'] = (
+                    'User profile cannot be patched as '
+                    'there is no existing profile.'
+                )
                 return response, 400
 
             # Once we have ensured we have all the fields, we can create the
             # profile object and put the information in the response body.
-            response['profile']['aim'] = aim
-            response['profile']['highest_education'] = highest_education
-            response['profile']['sci_tech_exp'] = sci_tech_exp
-            response['profile']['phase_transform_exp'] = phase_transform_exp
+            response['data'] = {
+                'aim': aim,
+                'highest_education': highest_education,
+                'sci_tech_exp': sci_tech_exp,
+                'phase_transform_exp': phase_transform_exp
+            }
             profile = UserProfile(
-                aim=aim, highest_education=highest_education,
+                aim=aim,
+                highest_education=highest_education,
                 sci_tech_exp=sci_tech_exp,
                 phase_transform_exp=phase_transform_exp
             )
@@ -384,27 +396,27 @@ class UserProfiles(Resource):
         else:
             if aim:
                 user.profile.aim = aim
-                response['profile']['aim'] = aim
+                response['data']['aim'] = aim
             if highest_education:
                 user.profile.highest_education = highest_education
-                response['profile']['highest_education'] = highest_education
+                response['data']['highest_education'] = highest_education
             if sci_tech_exp:
                 user.profile.sci_tech_exp = sci_tech_exp
-                response['profile']['sci_tech_exp'] = sci_tech_exp
+                response['data']['sci_tech_exp'] = sci_tech_exp
             if phase_transform_exp:
                 user.profile.phase_transform_exp = phase_transform_exp
-                response['profile']['phase_transform_exp'] = phase_transform_exp
+                response['data']['phase_transform_exp'] = phase_transform_exp
 
         # Updated the user's last_updated field to now.
         user.last_updated = datetime.utcnow()
 
-        # Save the changes.
-        user.save()
+        # Save the changes for the user and the embedded documents
         user.cascade_save()
+        user.save()
 
         # Return the response body
         response['status'] = 'success'
-        response['message'] = f'Successfully updated User profile for {id}.'
+        response.pop('message')
         return response, 200
 
     def post(self, resp) -> Tuple[dict, int]:
@@ -438,30 +450,30 @@ class UserProfiles(Resource):
         # an exception will be raised, caught and sent back.
         try:
             user.last_updated = datetime.utcnow()
-            user.save()
             user.cascade_save()
+            user.save()
         except ValidationError as e:
             response['errors'] = str(e)
+            response['message'] = 'Validation error.'
             return response, 400
 
         # Otherwise the save was successful and a response with the updated
         # fields can be sent.
         response['status'] = 'success'
-        response['message'] = f'Successfully updated User profile for {resp}.'
-        response['profile'] = {}
-        response['profile']['aim'] = aim
-        response['profile']['highest_education'] = highest_education
-        response['profile']['sci_tech_exp'] = sci_tech_exp
-        response['profile']['phase_transform_exp'] = phase_transform_exp
+        response.pop('message')
+        response['data'] = {
+            'aim': aim,
+            'highest_education': highest_education,
+            'sci_tech_exp': sci_tech_exp,
+            'phase_transform_exp': phase_transform_exp
+        }
         return response, 200
 
 
 class UserConfigurations(Resource):
     """Retrieve the list of configurations saved in the User's document"""
 
-    method_decorators = {
-        'get': [authenticate]
-    }
+    method_decorators = {'get': [authenticate]}
 
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
@@ -473,9 +485,7 @@ class UserConfigurations(Resource):
 class UserGraphs(Resource):
     """Retrieve the list of Graphs saved in the User's document."""
 
-    method_decorators = {
-        'get': [authenticate]
-    }
+    method_decorators = {'get': [authenticate]}
 
     def get(self, resp) -> Tuple[dict, int]:
         pass
@@ -483,21 +493,16 @@ class UserGraphs(Resource):
 
 
 class AdminCreate(Resource):
-    """Route for Users for Create Admin."""
+    """Route for Admins to Create Admin."""
 
-    method_decorators = {
-        'post': [authenticate_admin]
-    }
+    method_decorators = {'post': [authenticate_admin]}
 
     def post(self, resp):
         """Make a user an administrator"""
         post_data = request.get_json()
 
         # Validating empty payload
-        response = {
-            'status': 'fail',
-            'message': 'Empty payload.'
-        }
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not post_data:
             return response, 400
 
@@ -528,7 +533,7 @@ class AdminCreate(Resource):
         # Make sure the user exists in the database.
         if not User.objects(email=valid_email):
             response['message'] = 'User does not exist.'
-            return response, 400
+            return response, 404
 
         user = User.objects.get(email=valid_email)
 
@@ -538,10 +543,10 @@ class AdminCreate(Resource):
 
         if user.is_admin:
             response['message'] = 'User is already an Administrator.'
-            return response, 401
+            return response, 400
 
         # If all validation checks pass, make user an admin.
-        user.is_admin=True
+        user.is_admin = True
         user.admin_profile = AdminProfile(
             position=position,
             mobile_number=None,
@@ -549,8 +554,8 @@ class AdminCreate(Resource):
             promoted_by=resp
         )
         user.last_updated = datetime.utcnow()
-        user.save()
         user.cascade_save()
+        user.save()
 
         # Generate a confirmation email to be sent to the user so that they can
         # confirm they have become an admin.
@@ -561,15 +566,19 @@ class AdminCreate(Resource):
         celery.send_task(
             'tasks.send_email',
             kwargs={
-                'to': user.email,
-                'subject_suffix': 'Confirm you are an Admin',
-                'html_template': render_template(
+                'to':
+                user.email,
+                'subject_suffix':
+                'Confirm you are an Admin',
+                'html_template':
+                render_template(
                     'activate_admin.html',
                     admin_url=admin_url,
                     email=valid_email,
                     users_name=f'{user.first_name} {user.last_name}'
                 ),
-                'text_template': render_template(
+                'text_template':
+                render_template(
                     'activate_admin.txt',
                     admin_url=admin_url,
                     email=valid_email,
@@ -589,15 +598,19 @@ class AdminCreate(Resource):
         celery.send_task(
             'tasks.send_email',
             kwargs={
-                'to': promoter.email,
-                'subject_suffix': 'You Promoted a User!',
-                'html_template': render_template(
+                'to':
+                promoter.email,
+                'subject_suffix':
+                'You Promoted a User!',
+                'html_template':
+                render_template(
                     'admin_created.html',
                     email=promoter.email,
                     users_name=f'{promoter.first_name} {promoter.last_name}',
                     cancel_url=cancel_url
                 ),
-                'text_template': render_template(
+                'text_template':
+                render_template(
                     'admin_created.txt',
                     email=promoter.email,
                     users_name=f'{promoter.first_name} {promoter.last_name}',
@@ -631,10 +644,9 @@ def confirm_create_admin(token):
         response['message'] = 'User is not an admin.'
         return jsonify(response), 400
 
-    # User has clicked verification link so we can verifiy their admin status
+    # User has clicked verification link so we can verify their admin status
     user.admin_profile.verified = True
     user.last_updated = datetime.utcnow()
-    user.cascade_save()
     user.save()
 
     # The following is the same as above in AdminCreate, however it notifies the
@@ -647,15 +659,19 @@ def confirm_create_admin(token):
     celery.send_task(
         'tasks.send_email',
         kwargs={
-            'to': promoter.email,
-            'subject_suffix': 'An Admin you promoted has been verified!',
-            'html_template': render_template(
+            'to':
+            promoter.email,
+            'subject_suffix':
+            'An Admin you promoted has been verified!',
+            'html_template':
+            render_template(
                 'admin_confirmed.html',
                 email=promoter.email,
                 users_name=f'{promoter.first_name} {promoter.last_name}',
                 cancel_url=cancel_url
             ),
-            'text_template': render_template(
+            'text_template':
+            render_template(
                 'admin_confirmed.txt',
                 email=promoter.email,
                 users_name=f'{promoter.first_name} {promoter.last_name}',
@@ -690,7 +706,7 @@ def admin_cancel(token):
         return jsonify(response), 400
 
     user = User.objects.get(email=email)
-    user.is_admin=False
+    user.is_admin = False
     user.last_updated = datetime.utcnow()
     user.save()
 
@@ -700,6 +716,8 @@ def admin_cancel(token):
     custom_redir_response = app.response_class(
         status=302, mimetype='application/json'
     )
+    # TODO(davidmatthews1004@gmail.com): Ask the frontend guys to make a page
+    #  so the user can be redirected to this page.
     redirect_url = f'http://localhost:3000/signin'
     custom_redir_response.headers['Location'] = redirect_url
     return custom_redir_response
@@ -708,23 +726,18 @@ def admin_cancel(token):
 class DisableAccount(Resource):
     """Route for Admins to disable user accounts"""
 
-    method_decorators = {
-        'put': [authenticate_admin]
-    }
+    method_decorators = {'put': [authenticate_admin]}
 
     def put(self, resp):
         post_data = request.get_json()
 
         # Validating empty payload
-        response = {
-            'status': 'fail',
-            'message': 'User does not exist.'
-        }
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not post_data:
             return response, 400
 
         # Extract the request body data
-        email = post_data.get('email', '')
+        email = post_data.get('email', None)
 
         if not email:
             response['message'] = 'No email provided.'
@@ -744,7 +757,8 @@ class DisableAccount(Resource):
 
         # Validation checks
         if not User.objects(email=valid_email):
-            return response, 201
+            response['message'] = 'User cannot be found.'
+            return response, 404
 
         user = User.objects.get(email=valid_email)
         user.active = False
@@ -752,17 +766,20 @@ class DisableAccount(Resource):
         user.save()
 
         response['status'] = 'success'
-        response['message'] = f'The account for User {user.id} has been disabled.'
+        response['message'] = (
+            f'The account for User {user.email} has been '
+            f'disabled.'
+        )
         return response, 200
 
 
 api.add_resource(PingTest, '/ping')
 api.add_resource(UserList, '/users')
-api.add_resource(SingleUser, '/user')
+api.add_resource(Users, '/user')
 api.add_resource(UserProfiles, '/user/profile')
 api.add_resource(UserLast, '/user/last')
 api.add_resource(UserAlloys, '/user/alloys')
 api.add_resource(UserConfigurations, '/user/configurations')
-api.add_resource(AdminCreate, '/admincreate')
+api.add_resource(AdminCreate, '/admin/create')
 api.add_resource(DisableAccount, '/user/disable')
 api.add_resource(UserGraphs, '/user/graphs')

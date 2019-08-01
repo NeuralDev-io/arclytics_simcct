@@ -33,10 +33,10 @@ from flask import current_app as app
 from flask import Blueprint, jsonify, request, render_template, redirect
 from mongoengine.errors import ValidationError, NotUniqueError
 
-from users_app.models import User
+from users_app.models import User, AdminProfile
 from users_app.extensions import bcrypt
 from logger.arc_logger import AppLogger
-from users_app.middleware import authenticate, logout_authenticate
+from users_app.middleware import authenticate_flask, logout_authenticate
 from users_app.token import (
     generate_confirmation_token, generate_url, confirm_token, URLTokenError
 )
@@ -98,6 +98,29 @@ def confirm_email(token):
     response['status'] = 'success'
     response.pop('message')
     # TODO(andrew@neuraldev.io): Need to check how to change this during
+    #  during production and using Ingress/Load balancing for Kubernetes
+    client_host = os.environ.get('CLIENT_HOST')
+    return redirect('http://localhost:3000/signin', code=302)
+
+
+@auth_blueprint.route('/confirmadmin/<token>', methods=['GET'])
+def confirm_email_admin(token):
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    try:
+        email = confirm_token(token)
+    except URLTokenError as e:
+        response['error'] = e
+        return jsonify(response), 400
+    except Exception as e:
+        return jsonify(response), 400
+
+    user = User.objects.get(email=email)
+    user.admin_profile.verified = True
+
+    response['status'] = 'success'
+    response.pop('message')
+    # TODO(davidmatthews1004@gmail.com): Need to check how to change this during
     #  during production and using Ingress/Load balancing for Kubernetes
     client_host = os.environ.get('CLIENT_HOST')
     return redirect('http://localhost:3000/signin', code=302)
@@ -239,7 +262,7 @@ def async_register_session(user: User = None,
     # header.
 
     last_configs = None
-    last_compositions = None
+    last_alloy = None
     user_id = ''  # Just for printing SessionValidationError
 
     if isinstance(user, User):
@@ -252,16 +275,15 @@ def async_register_session(user: User = None,
             last_configs = user.last_configuration.to_dict()
 
         # TODO(andrew@neuraldev.io): Change this to match new schema
-        if user.last_compositions is not None:
-            last_compositions['alloy'] = user.last_compositions
-            last_compositions['alloy_type'] = 'parent'
+        if user.last_alloy_store is not None:
+            last_alloy = user.last_alloy_store.to_dict()
 
     resp = requests.post(
         url=f'http://{simcct_host}/session/login',
         json={
             '_id': str(user_id),
             'last_configurations': last_configs,
-            'last_compositions': last_compositions
+            'last_alloy_store': last_alloy
         },
         headers={
             'Authorization': f'Bearer {auth_token}',
@@ -319,6 +341,10 @@ def login() -> Tuple[dict, int]:
     if bcrypt.check_password_hash(user.password, password):
         auth_token = user.encode_auth_token(user.id)
         if auth_token:
+            if user.account_disabled:
+                response['message'] = 'Your Account has been disabled.'
+                return jsonify(response), 400
+
             # Let's save some stats for later
             user.last_login = datetime.utcnow()
 
@@ -393,6 +419,9 @@ def reset_password():
         response['message'] = 'User does not exist.'
         return jsonify(response), 401
 
+    # TODO(andrew@neuraldev.io): Send a confirmation email again to the user
+    #  that their password has been reset.
+
     # Well, they have passed every test
     user.set_password(password)
     user.save()
@@ -402,7 +431,7 @@ def reset_password():
     return jsonify(response), 202
 
 
-@auth_blueprint.route('/auth/resetpassword/confirm/<token>', methods=['GET'])
+@auth_blueprint.route('/reset/password/confirm/<token>', methods=['GET'])
 def confirm_reset_password(token):
     response = {'status': 'fail', 'message': 'Invalid token.'}
 
@@ -436,7 +465,7 @@ def confirm_reset_password(token):
     return custom_redir_response
 
 
-@auth_blueprint.route('/auth/resetpassword', methods=['POST'])
+@auth_blueprint.route('/reset/password', methods=['POST'])
 def reset_password_email() -> Tuple[dict, int]:
     """This endpoint is to be used by the client-side browser to send the email
     to the API server for validation with the user's details. It will only send
@@ -554,7 +583,7 @@ def logout(user_id, token) -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
-@authenticate
+@authenticate_flask
 def get_user_status(user_id) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     user = User.objects.get(id=user_id)

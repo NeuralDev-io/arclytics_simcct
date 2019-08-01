@@ -54,7 +54,7 @@ class MyTestCase(BaseTestCase):
         """Ensure an empty request body fails during reset password."""
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -67,7 +67,7 @@ class MyTestCase(BaseTestCase):
         """Ensure a request body without email fails."""
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps(
                     {'address': '123 Forgetful Street, Old Town, 2222'}
                 ),
@@ -82,7 +82,7 @@ class MyTestCase(BaseTestCase):
         """Ensure if an invalid email we receive an error from validation."""
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({'email': 'bademail@nodomain'}),
                 content_type='application/json'
             )
@@ -99,7 +99,7 @@ class MyTestCase(BaseTestCase):
 
             # This validation requires an internet access
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({'email': 'bademail@nodomain.random'}),
                 content_type='application/json'
             )
@@ -110,7 +110,7 @@ class MyTestCase(BaseTestCase):
             self.assertEqual(data['message'], 'Invalid email.')
 
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({'email': 'bademailatyahoo.com'}),
                 content_type='application/json'
             )
@@ -127,7 +127,7 @@ class MyTestCase(BaseTestCase):
         """Ensure if the user does not exist we don't send an email."""
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({'email': 'carol@systemssecurity.com'}),
                 content_type='application/json'
             )
@@ -149,7 +149,7 @@ class MyTestCase(BaseTestCase):
 
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({'email': 'loki@asgard.space'}),
                 content_type='application/json'
             )
@@ -169,7 +169,7 @@ class MyTestCase(BaseTestCase):
         user.save()
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({'email': email}),
                 content_type='application/json',
             )
@@ -383,7 +383,7 @@ class MyTestCase(BaseTestCase):
 
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({'email': test_email}),
                 content_type='application/json'
             )

@@ -42,7 +42,6 @@ logger = AppLogger(__name__)
 # User type choices
 USERS = (('1', 'ADMIN'), ('2', 'USER'))
 
-
 # ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
 
 
@@ -200,7 +199,9 @@ class Alloy(EmbeddedDocument):
 
 
 class AlloyType(EmbeddedDocument):
-    parent = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
+    parent = EmbeddedDocumentField(
+        document_type=Alloy, default=None, null=True
+    )
     weld = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
     mix = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
 

@@ -6,10 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
+__author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'TBA'
-__version__ = '0.1.0'
+__version__ = '0.3.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
@@ -167,8 +167,10 @@ class AlloyStore(Resource):
         comp_np_arr = SimConfig.get_compositions(comp_list)
 
         # We need to store some results so let's prepare an empty dict
-        response['message'] = ('Compositions and Configurations in Session '
-                               'initiated.')
+        response['message'] = (
+            'Compositions and Configurations in Session '
+            'initiated.'
+        )
         response['data'] = {}
 
         # We need to convert them to our enums as required by the Sim
@@ -308,7 +310,8 @@ class AlloyStore(Resource):
                             sess_parent_comp.append(el)
 
                 # We update the name if they're not the same
-                if not alloy.get('name', None) == sess_alloys['parent']['name']:
+                if not alloy.get('name',
+                                 None) == sess_alloys['parent']['name']:
                     sess_alloys['parent']['name'] = alloy['name']
                 # Removing the other alloys if they exist
                 sess_alloy_store['alloys']['weld'] = None
@@ -422,11 +425,8 @@ class Configurations(Resource):
         # First we need to make sure there are actually some changes to be made
         # by ensuring the request body data has some keys that are valid.
         valid_keys = [
-            'grain_size',
-            'nucleation_start',
-            'nucleation_finish',
-            'start_temp',
-            'cct_cooling_rate'
+            'grain_size', 'nucleation_start', 'nucleation_finish',
+            'start_temp', 'cct_cooling_rate'
         ]
 
         # by default we will not change anything until we find at least 1 key
@@ -554,6 +554,10 @@ class MartensiteStart(Resource):
 
         session_configs = session.get(f'{token}:configurations')
 
+        if not session_configs:
+            response['message'] = "No previous session initiated."
+            return response, 400
+
         # We need to convert them to our enums as required by the calculations.
         transformation_method = Method.Li98
         if session_configs['method'] == 'Kirkaldy83':
@@ -625,7 +629,7 @@ class MartensiteStart(Resource):
             return response, 400
 
         session_configs = session.get(f'{token}:configurations', None)
-        if session_configs is None:
+        if not session_configs:
             response['message'] = 'No previous session configurations was set.'
             return response, 404
 
@@ -663,6 +667,10 @@ class BainiteStart(Resource):
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
         session_configs = session.get(f'{token}:configurations')
+
+        if not session_configs:
+            response['message'] = "No previous session initiated."
+            return response, 400
 
         # We need to convert them to our enums as required by the calculations.
         transformation_method = Method.Li98
@@ -726,7 +734,7 @@ class BainiteStart(Resource):
             return response, 400
 
         session_configs = session.get(f'{token}:configurations')
-        if session_configs is None:
+        if not session_configs:
             response['message'] = 'No previous session configurations was set.'
             return response, 404
 
@@ -761,6 +769,10 @@ class Austenite(Resource):
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
         session_configs = session.get(f'{token}:configurations')
+        if not session_configs:
+            response['message'] = "No previous session initiated."
+            return response, 400
+
         session_configs['auto_calculate_ae'] = True
 
         sess_alloy_store = session.get(f'{token}:alloy_store')

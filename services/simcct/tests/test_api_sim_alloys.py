@@ -31,7 +31,6 @@ _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 
 
 class TestSimConfigurations(BaseTestCase):
-
     def login_client(self, client):
         with open(_TEST_CONFIGS_PATH, 'r') as f:
             test_json = json.load(f)
@@ -124,7 +123,8 @@ class TestSimConfigurations(BaseTestCase):
             }
             new_parent_comp = new_alloy_store.get('alloy')
             new_parent_comp['compositions'][0] = {
-                'symbol': 'C', 'weight': 0.050
+                'symbol': 'C',
+                'weight': 0.050
             }
             req_alloy = AlloyStoreRequestSchema().load(new_alloy_store)
 

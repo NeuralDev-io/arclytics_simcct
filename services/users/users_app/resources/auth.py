@@ -419,6 +419,9 @@ def reset_password():
         response['message'] = 'User does not exist.'
         return jsonify(response), 401
 
+    # TODO(andrew@neuraldev.io): Send a confirmation email again to the user
+    #  that their password has been reset.
+
     # Well, they have passed every test
     user.set_password(password)
     user.save()
@@ -428,7 +431,7 @@ def reset_password():
     return jsonify(response), 202
 
 
-@auth_blueprint.route('/auth/resetpassword/confirm/<token>', methods=['GET'])
+@auth_blueprint.route('/reset/password/confirm/<token>', methods=['GET'])
 def confirm_reset_password(token):
     response = {'status': 'fail', 'message': 'Invalid token.'}
 
@@ -462,7 +465,7 @@ def confirm_reset_password(token):
     return custom_redir_response
 
 
-@auth_blueprint.route('/auth/resetpassword', methods=['POST'])
+@auth_blueprint.route('/reset/password', methods=['POST'])
 def reset_password_email() -> Tuple[dict, int]:
     """This endpoint is to be used by the client-side browser to send the email
     to the API server for validation with the user's details. It will only send

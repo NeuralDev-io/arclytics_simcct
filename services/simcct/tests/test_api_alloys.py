@@ -41,11 +41,19 @@ schema = AlloySchema()
 
 class TestAlloyService(BaseTestCase):
     alloy_data = {
-        'name': 'Alloy-101',
+        'name':
+        'Alloy-101',
         'compositions': [
-            {'symbol': 'C', 'weight': 2.0},
-            {'symbol': 'Ar', 'weight': 1.0},
-            {'symbol': 'Mn', 'weight': 1.0}
+            {
+                'symbol': 'C',
+                'weight': 2.0
+            }, {
+                'symbol': 'Ar',
+                'weight': 1.0
+            }, {
+                'symbol': 'Mn',
+                'weight': 1.0
+            }
         ]
     }
 
@@ -134,7 +142,10 @@ class TestAlloyService(BaseTestCase):
                 data=json.dumps(
                     {
                         'name': 'Alloy-1',
-                        'compositions': [{'name': 'carbon', 'weight': 0.1}]
+                        'compositions': [{
+                            'name': 'carbon',
+                            'weight': 0.1
+                        }]
                     }
                 ),
                 content_type='application/json'
@@ -158,11 +169,19 @@ class TestAlloyService(BaseTestCase):
         """Ensure we can't create a duplicate alloy."""
         with app.test_client() as client:
             alloy_data = {
-                'name': 'Alloy-666',
+                'name':
+                'Alloy-666',
                 'compositions': [
-                    {'symbol': 'C', 'weight': 2.0},
-                    {'symbol': 'Ar', 'weight': 1.0},
-                    {'symbol': 'Mn', 'weight': 1.0}
+                    {
+                        'symbol': 'C',
+                        'weight': 2.0
+                    }, {
+                        'symbol': 'Ar',
+                        'weight': 1.0
+                    }, {
+                        'symbol': 'Mn',
+                        'weight': 1.0
+                    }
                 ]
             }
 
@@ -171,10 +190,16 @@ class TestAlloyService(BaseTestCase):
             self.assertIsInstance(alloy_id, ObjectId)
 
             duplicate_alloy = {
-                'name': 'Alloy-666',
+                'name':
+                'Alloy-666',
                 'compositions': [
-                    {'symbol': 'C', 'weight': 2.0},
-                    {'symbol': 'Mn', 'weight': 1.0}
+                    {
+                        'symbol': 'C',
+                        'weight': 2.0
+                    }, {
+                        'symbol': 'Mn',
+                        'weight': 1.0
+                    }
                 ]
             }
 
@@ -192,11 +217,19 @@ class TestAlloyService(BaseTestCase):
     def test_get_single_alloy(self):
         """Ensure we can retrieve a single alloy."""
         alloy_data = {
-            'name': 'Alloy-620',
+            'name':
+            'Alloy-620',
             'compositions': [
-                {'symbol': 'C', 'weight': 2.0},
-                {'symbol': 'Ar', 'weight': 1.0},
-                {'symbol': 'Mn', 'weight': 1.0}
+                {
+                    'symbol': 'C',
+                    'weight': 2.0
+                }, {
+                    'symbol': 'Ar',
+                    'weight': 1.0
+                }, {
+                    'symbol': 'Mn',
+                    'weight': 1.0
+                }
             ]
         }
 
@@ -219,7 +252,9 @@ class TestAlloyService(BaseTestCase):
     def test_get_single_alloy_non_existing(self):
         with app.test_client() as client:
             _id = str(ObjectId())
-            res = client.get(f'/global/alloys/{_id}', content_type='application/json')
+            res = client.get(
+                f'/global/alloys/{_id}', content_type='application/json'
+            )
             data = json.loads(res.data.decode())
             self.assertEqual(res.status_code, 404)
             self.assertEqual(data['message'], 'Alloy not found.')
@@ -229,11 +264,19 @@ class TestAlloyService(BaseTestCase):
         """Ensure we can update an alloy."""
         with app.test_client() as client:
             alloy_data = {
-                'name': 'Alloy-600',
+                'name':
+                'Alloy-600',
                 'compositions': [
-                    {'symbol': 'C', 'weight': 1.0},
-                    {'symbol': 'Ar', 'weight': 1.0},
-                    {'symbol': 'Mn', 'weight': 1.0}
+                    {
+                        'symbol': 'C',
+                        'weight': 1.0
+                    }, {
+                        'symbol': 'Ar',
+                        'weight': 1.0
+                    }, {
+                        'symbol': 'Mn',
+                        'weight': 1.0
+                    }
                 ]
             }
 
@@ -242,10 +285,16 @@ class TestAlloyService(BaseTestCase):
             self.assertIsInstance(alloy_id, ObjectId)
 
             new_alloy_data = {
-                'name': 'Alloy-600',
+                'name':
+                'Alloy-600',
                 'compositions': [
-                    {'symbol': 'C', 'weight': 2.0},
-                    {'symbol': 'Cr', 'weight': 3.0}
+                    {
+                        'symbol': 'C',
+                        'weight': 2.0
+                    }, {
+                        'symbol': 'Cr',
+                        'weight': 3.0
+                    }
                 ]
             }
 
@@ -260,20 +309,26 @@ class TestAlloyService(BaseTestCase):
             self.assertEqual(data['status'], 'success')
             alloy_data['_id'] = data['data']['_id']
             alloy_data['compositions'][0] = {'symbol': 'C', 'weight': 2.0}
-            alloy_data['compositions'].append(
-                {'symbol': 'Cr', 'weight': 3.0}
-            )
+            alloy_data['compositions'].append({'symbol': 'Cr', 'weight': 3.0})
             self.assertEqual(data['data'], schema.dump(alloy_data))
 
     def test_update_single_alloy_by_addition(self):
         """Ensure we can partially just add a single element to an alloy."""
         with app.test_client() as client:
             alloy_data = {
-                'name': 'Alloy-500',
+                'name':
+                'Alloy-500',
                 'compositions': [
-                    {'symbol': 'C', 'weight': 1.0},
-                    {'symbol': 'Ar', 'weight': 1.0},
-                    {'symbol': 'Mn', 'weight': 1.0}
+                    {
+                        'symbol': 'C',
+                        'weight': 1.0
+                    }, {
+                        'symbol': 'Ar',
+                        'weight': 1.0
+                    }, {
+                        'symbol': 'Mn',
+                        'weight': 1.0
+                    }
                 ]
             }
 
@@ -283,9 +338,10 @@ class TestAlloyService(BaseTestCase):
 
             new_alloy_data = {
                 'name': 'Alloy-500',
-                'compositions': [
-                    {'symbol': 'Cr', 'weight': 3.0}
-                ]
+                'compositions': [{
+                    'symbol': 'Cr',
+                    'weight': 3.0
+                }]
             }
 
             _id = str(alloy_id)
@@ -298,19 +354,23 @@ class TestAlloyService(BaseTestCase):
             self.assertEqual(res.status_code, 200)
             self.assertEqual(data['status'], 'success')
             alloy_data['_id'] = data['data']['_id']
-            alloy_data['compositions'].append(
-                {'symbol': 'Cr', 'weight': 3.0}
-            )
+            alloy_data['compositions'].append({'symbol': 'Cr', 'weight': 3.0})
             self.assertEqual(data['data'], schema.dump(alloy_data))
 
     def test_update_alloy_validation_error(self):
         with app.test_client() as client:
             bad_alloy_data = {
-                'name': 'Alloy-626',
+                'name':
+                'Alloy-626',
                 'compositions': [
-                    {'symbol': 'C'},
-                    {'symbol': 'Ar'},
-                    {'symbol': 'Mn', 'weight': 1.0}
+                    {
+                        'symbol': 'C'
+                    }, {
+                        'symbol': 'Ar'
+                    }, {
+                        'symbol': 'Mn',
+                        'weight': 1.0
+                    }
                 ]
             }
 
@@ -331,11 +391,19 @@ class TestAlloyService(BaseTestCase):
     def test_update_alloy_non_existing(self):
         """Ensure if we try to update before creating it errors."""
         alloy_data = {
-            'name': 'Alloy-600',
+            'name':
+            'Alloy-600',
             'compositions': [
-                {'symbol': 'C', 'weight': 1.2},
-                {'symbol': 'Ar', 'weight': 1.0},
-                {'symbol': 'Mn', 'weight': 1.0}
+                {
+                    'symbol': 'C',
+                    'weight': 1.2
+                }, {
+                    'symbol': 'Ar',
+                    'weight': 1.0
+                }, {
+                    'symbol': 'Mn',
+                    'weight': 1.0
+                }
             ]
         }
         with app.test_client() as client:
@@ -366,11 +434,19 @@ class TestAlloyService(BaseTestCase):
 
     def test_delete_alloy(self):
         alloy_data = {
-            'name': 'Alloy-620',
+            'name':
+            'Alloy-620',
             'compositions': [
-                {'symbol': 'C', 'weight': 2.0},
-                {'symbol': 'Ar', 'weight': 1.0},
-                {'symbol': 'Mn', 'weight': 1.0}
+                {
+                    'symbol': 'C',
+                    'weight': 2.0
+                }, {
+                    'symbol': 'Ar',
+                    'weight': 1.0
+                }, {
+                    'symbol': 'Mn',
+                    'weight': 1.0
+                }
             ]
         }
 
@@ -400,11 +476,19 @@ class TestAlloyService(BaseTestCase):
 
     def test_invalid_request_object_id(self):
         alloy_data = {
-            'name': 'Alloy-101',
+            'name':
+            'Alloy-101',
             'compositions': [
-                {'symbol': 'C', 'weight': 2.0},
-                {'symbol': 'Ar', 'weight': 1.0},
-                {'symbol': 'Mn', 'weight': 1.0}
+                {
+                    'symbol': 'C',
+                    'weight': 2.0
+                }, {
+                    'symbol': 'Ar',
+                    'weight': 1.0
+                }, {
+                    'symbol': 'Mn',
+                    'weight': 1.0
+                }
             ]
         }
 
@@ -428,7 +512,9 @@ class TestAlloyService(BaseTestCase):
             self.assertEqual(data['message'], 'Invalid ObjectId.')
             self.assertEqual(data['status'], 'fail')
 
-            res = client.get(f'/global/alloys/{_id}', content_type='application/json')
+            res = client.get(
+                f'/global/alloys/{_id}', content_type='application/json'
+            )
             data = json.loads(res.data.decode())
             self.assertEqual(res.status_code, 400)
             self.assertEqual(data['status'], 'fail')

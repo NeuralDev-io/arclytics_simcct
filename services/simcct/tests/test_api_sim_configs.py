@@ -518,9 +518,7 @@ class TestSimConfigurations(BaseTestCase):
         with current_app.test_client() as client:
             # We don't login to set the previous configs
             # _, _, token = self.login_client(client)
-            bs_configs = {
-                'bs_temp': 563.238
-            }
+            bs_configs = {'bs_temp': 563.238}
 
             token = 'BoGuSToKeN'
             res = client.put(

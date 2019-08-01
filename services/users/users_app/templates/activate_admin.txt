@@ -1,0 +1,15 @@
+Please verify you are now an Admin!
+
+Hi {{ user_name }},
+
+To confirm you are now an Arclytics administrator, please verify the email
+address you provided during registration by clicking the button below.
+
+{{ confirm_url }}
+
+If you are having trouble with this process, please contact our team at help@neuraldev.io.
+We're here to help.
+
+
+Cheers,
+The Arclytics Team

@@ -53,7 +53,7 @@ class PhaseSimulation(object):
                 raise Exception('No Ae1 and Ae3 value has been provided.')
 
             self.configs = sim_configs
-            # TODO: Which one of the alloy types for PWD
+            # We only ever use one of "parent," "weld," or "mix"
             self.comp = sim_configs.comp.copy()
 
             self.start_percent = sim_configs.nuc_start
@@ -199,22 +199,6 @@ class PhaseSimulation(object):
             # logger.error('XFE has to be below 1.0')
             print('XFE has to be below 1.0')
 
-        # TODO: these are not used
-        # x_pct_vect = np.array([self.finish_percent, self.start_percent])
-        # pwd = self.configs.alloy.value
-
-        # Volume fraction remaining for potential Bainite precipitation.
-        # Starts at 1.0 but may reduce if in CCT mode
-        # if Ferrite/Pearlite already formed
-        # self.XBR
-
-        # Transformation time Ferrite, Pearlite, Bainite respectively
-        # torr_f, torr_p, torr_b
-        # torr_f_end, torr_p_end, torr_b_end
-
-        # Set initial grain size
-        # g_curr = self.g
-
         # Kirkaldy:
         # [0,0], [0,1], [0,2] spots for starting precipitation
         # [1,0], [1,1], [1,2] spots for finishing precipitation
@@ -223,8 +207,7 @@ class PhaseSimulation(object):
         # [3,0], [3,1], [3,2] spots for finishing precipitation
         integrated2_mat = np.zeros((4, 11), dtype=np.float64)
 
-        # Get integrals for relevant % transformed  at nucleation (start) and
-        # finish
+        # Get integrals for relevant % transformed at nucleation and completion
         self._vol_phantom_frac2(integrated2_mat)
 
         temp_start = self.configs.temp_peak
@@ -240,20 +223,21 @@ class PhaseSimulation(object):
 
         # Can hold 100000 time/temperature points for Ferrite nucleation
         # temperature
-        cct_record_f_mat = np.zeros((10000, 2), dtype=np.float64)  # Ferrite
-        cct_record_p_mat = np.zeros((10000, 2), dtype=np.float64)  # Pearlite
-        cct_record_b_mat = np.zeros((10000, 2), dtype=np.float64)  # Bainite
+        # Ferrite
+        cct_record_f_mat = np.zeros((10000, 2), dtype=np.float64)
+        # Pearlite
+        cct_record_p_mat = np.zeros((10000, 2), dtype=np.float64)
+        # Bainite
+        cct_record_b_mat = np.zeros((10000, 2), dtype=np.float64)
         # Can hold 100000 time/temperature points for Ferrite finish temperature
-        cct_record_f_end_mat = np.zeros(
-            (10000, 2), dtype=np.float64
-        )  # Ferrite
-        cct_record_p_end_mat = np.zeros(
-            (10000, 2), dtype=np.float64
-        )  # Pearlite
-        cct_record_b_end_mat = np.zeros(
-            (10000, 2), dtype=np.float64
-        )  # Bainite
-        cct_record_m_mat = np.zeros((2, 2), dtype=np.float64)  # Martensite
+        # Ferrite
+        cct_record_f_end_mat = np.zeros((10000, 2), dtype=np.float64)
+        # Pearlite
+        cct_record_p_end_mat = np.zeros((10000, 2), dtype=np.float64)
+        # Bainite
+        cct_record_b_end_mat = np.zeros((10000, 2), dtype=np.float64)
+        # Martensite
+        cct_record_m_mat = np.zeros((2, 2), dtype=np.float64)
 
         # Counters
         ii_f, ii_p, ii_b, ii_m = 0, 0, 0, 0
@@ -486,8 +470,8 @@ class PhaseSimulation(object):
         # ==================== # MARTENSITE # ==================== #
         cct_record_m_mat[0, 0] = 0.001
         cct_record_m_mat[0, 1] = self.ms
-        cct_record_m_mat[1, 0] = cct_record_b_end_mat[
-            0, 0]  # first recorded bainite transformation time point
+        # first recorded bainite transformation time point
+        cct_record_m_mat[1, 0] = cct_record_b_end_mat[0, 0]
         cct_record_b_mat[1, 1] = self.ms
 
         self.plots_data.set_cct_plot_data(
@@ -500,9 +484,117 @@ class PhaseSimulation(object):
             martensite=cct_record_m_mat
         )
 
-    # TODO(andrew@neuraldev.io): Plot the user cooling curve on the graphs.
-    def user_cooling_curve(self):
-        pass
+    def user_cooling_curve(self) -> None:
+
+        # We first start by doing some setup
+        # Define array to hold time and temperature data
+        user_cool_mat = np.zeros((10000, 2), dtype=np.float64)
+        # Count will set the array ID for each increment during cooling
+        count = 0
+        # Get the requested cooling rate
+        cooling_rate = self.configs.cct_cooling_rate
+        if cooling_rate < 0:
+            print("[DEBUG] Don't be silly")
+
+        ms = self.configs.ms_temp
+        ms_rate_param = self.configs.ms_rate_param
+
+        # ========== # Setup initial run parameters # ========== #
+        time = 0.0
+        # initialise temperature at the start point for curve
+        temp_curr = self.configs.temp_peak
+
+        # If increment is set too high then the slow cooling rate calculations
+        # start to deviate from reality
+        if cooling_rate < 1:
+            # set the first increment time at 1 degree/increment (this may be
+            # controlled within the loop once started)
+            increm_time = 0.1 / cooling_rate
+        else:
+            increm_time = 1 / cooling_rate
+
+        # ========== # Setup for Phase Fraction Monitoring # ========== #
+        # 0=Austenite, 1=Ferrite, 2=Pearlite, 3=Bainite, 4=Martensite
+        phase_frac_mat = np.zeros((10000, 6), dtype=np.float64)
+        # initiate fraction values (actual % of the phase formed) at time 0
+        phase_frac_mat[0, 0] = 1.0  # its all austenite at the start
+        phase_frac_mat[0, 1] = 0.0
+        phase_frac_mat[0, 2] = 0.0
+        phase_frac_mat[0, 3] = 0.0
+        phase_frac_mat[0, 4] = 0.0
+        phase_frac_mat[0, 5] = 0.0
+
+        # 0=Austenite, 1=Ferrite, 2=Pearlite, 3=Bainite, 4=Martensite
+        # initiate nucleation ratios values (proportion of nucleation time
+        # completed) at time 0
+        phase_nuc_ratio = np.zeros((10000, 6), dtype=np.float64)
+        phase_nuc_ratio[0, 1] = 0.0
+        phase_nuc_ratio[0, 2] = 0.0
+        phase_nuc_ratio[0, 3] = 0.0
+        phase_nuc_ratio[0, 4] = 0.0
+        phase_nuc_ratio[0, 5] = 0.0
+
+        # 0=Austenite, 1=Ferrite, 2=Pearlite, 3=Bainite, 4=Martensite
+        # initiate completion ratios values (proportion of nucleation time
+        # completed) at time 0
+        phase_complete_ratio = np.zeros((10000, 6), dtype=np.float64)
+        phase_complete_ratio[0, 1] = 0.0
+        phase_complete_ratio[0, 2] = 0.0
+        phase_complete_ratio[0, 3] = 0.0
+        phase_complete_ratio[0, 4] = 0.0
+        phase_complete_ratio[0, 5] = 0.0
+
+        # 0=Austenite, 1=Ferrite, 2=Pearlite, 3=Bainite, 4=Martensite
+        # initiate fraction values (actual % of the phase formed) at time 0
+        phase_vol = np.zeros((10000, 6), dtype=np.float64)
+        phase_vol[0, 0] = 100.0
+        phase_vol[0, 1] = 0.0
+        phase_vol[0, 2] = 0.0
+        phase_vol[0, 3] = 0.0
+        phase_vol[0, 4] = 0.0
+        phase_vol[0, 5] = 0.0
+
+        # At this point we would need the following values:
+        #  - Method
+        #  - Grain Size
+        #  - Alloy compositions
+        #  - BS
+        #  - Ae1
+        #  - Ae3
+        #  - Xfe
+
+        if self.xfe >= 1.0:
+            # logger.error('XFE has to be below 1.0')
+            print('XFE has to be below 1.0')
+
+        # Kirkaldy:
+        # [0,0], [0,1], [0,2] spots for starting precipitation
+        # [1,0], [1,1], [1,2] spots for finishing precipitation
+        # Li98:
+        # [2,0], [2,1], [2,2] spots for starting precipitation
+        # [3,0], [3,1], [3,2] spots for finishing precipitation
+        integrated2_mat = np.zeros((4, 11), dtype=np.float64)
+
+        # Get integrals for relevant % transformed at nucleation and completion
+        self._vol_phantom_frac2(integrated2_mat)
+
+        # Triggers -once turned off (False) they cant be turned on again
+        stop_f_end, stop_p_end, stop_b_end = True, True, True
+
+        # = # Set loop for all time intervals until cooling is finished # = #
+
+        # Modified for new Martensite transformation method (Koistinen and
+        # Marburger)
+        # MS - 200 : run down to current Martensite temperature (MS) - 200 deg.C
+        while temp_curr > 20:
+            # record current temperature and time in storage array
+            user_cool_mat[count, 0] = time
+            user_cool_mat[count, 1] = temp_curr
+
+            # This is the Phase transformation bit
+            if count > 0:
+                # transform_inc()
+                pass
 
     @staticmethod
     def _sigmoid2(x) -> np.float64:

@@ -21,8 +21,8 @@ microservice.
 """
 
 import jwt
-from datetime import datetime, tzinfo, timedelta
-from typing import Union, Optional
+from datetime import datetime, timedelta
+from typing import Union
 
 from bson import ObjectId
 from mongoengine import (
@@ -34,33 +34,13 @@ from flask import current_app, json
 
 from logger.arc_logger import AppLogger
 from users_app.extensions import bcrypt
-from users_app.utilities import JSONEncoder
+from users_app.utilities import (
+    JSONEncoder, PeriodicTable, PasswordValidationError
+)
 
 logger = AppLogger(__name__)
 # User type choices
 USERS = (('1', 'ADMIN'), ('2', 'USER'))
-
-
-# ========== # UTILITIES # ========== #
-# TODO(andrew@neuraldev.io): move these to a separate file at some point.
-class PasswordValidationError(Exception):
-    """
-    Raises an Exception if now password was set before trying to save
-    the User model.
-    """
-
-    def __init__(self):
-        super(PasswordValidationError,
-              self).__init__('A password must be set before saving.')
-
-
-class SimpleUTC(tzinfo):
-    def tzname(self, dt: Optional[datetime]) -> Optional[str]:
-        return 'UTC'
-
-    def utcoffset(self, dt: Optional[datetime]) -> Optional[timedelta]:
-        return timedelta(0)
-
 
 # ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
 
@@ -78,17 +58,20 @@ class UserProfile(EmbeddedDocument):
     aim = StringField(
         help_text='What sentence best describes you?',
         required=False,
-        default=None
+        default=None,
+        null=True
     )
     highest_education = StringField(
         help_text='What is the highest level of education have you studied?',
         required=False,
-        default=None
+        default=None,
+        null=True
     )
     sci_tech_exp = StringField(
         help_text='What is your experience with scientific software?',
         required=False,
-        default=None
+        default=None,
+        null=True
     )
     phase_transform_exp = StringField(
         help_text=(
@@ -96,7 +79,8 @@ class UserProfile(EmbeddedDocument):
             'transformation?'
         ),
         required=False,
-        default=None
+        default=None,
+        null=True
     )
 
     def to_dict(self) -> dict:
@@ -115,13 +99,18 @@ class UserProfile(EmbeddedDocument):
 class AdminProfile(EmbeddedDocument):
     position = StringField(max_length=255, required=True)
     mobile_number = StringField(max_length=11, min_length=10)
+    verified = BooleanField(default=False)
 
     def to_dict(self) -> dict:
         """
         Simple EmbeddedDocument.AdminProfile helper method to get a
         Python dict back.
         """
-        return {'position': self.position, 'mobile_number': self.mobile_number}
+        return {
+            'position': self.position,
+            'mobile_number': self.mobile_number,
+            'verified': self.verified
+        }
 
 
 class Configuration(EmbeddedDocument):
@@ -131,15 +120,15 @@ class Configuration(EmbeddedDocument):
     nucleation_start = FloatField(default=1.0)
     nucleation_finish = FloatField(default=99.9)
     auto_calculate_ms = BooleanField(default=False)
-    ms_temp = FloatField()
-    ms_rate_param = FloatField()
+    ms_temp = FloatField(default=0.0)
+    ms_rate_param = FloatField(default=0.0)
     auto_calculate_bs = BooleanField(default=False)
     bs_temp = FloatField()
     auto_calculate_ae = BooleanField(default=False)
-    ae1_temp = FloatField()
-    ae3_temp = FloatField()
-    start_temp = FloatField()
-    cct_cooling_rate = IntField()
+    ae1_temp = FloatField(default=0.0)
+    ae3_temp = FloatField(default=0.0)
+    start_temp = IntField(default=900)
+    cct_cooling_rate = IntField(default=10)
 
     def to_dict(self) -> dict:
         """
@@ -186,7 +175,7 @@ class Configuration(EmbeddedDocument):
 
 class Element(EmbeddedDocument):
     symbol = StringField(max_length=2)
-    weight = FloatField()
+    weight = FloatField(default=0.0)
 
     def to_dict(self):
         return {'symbol': self.symbol, 'weight': self.weight}
@@ -195,11 +184,44 @@ class Element(EmbeddedDocument):
         return self.to_json()
 
 
-class Compositions(EmbeddedDocument):
-    comp = ListField(EmbeddedDocumentField(Element))
+class Alloy(EmbeddedDocument):
+    name = StringField()
+    compositions = ListField(EmbeddedDocumentField(Element))
+
+    def to_dict(self):
+        comp = []
+        for e in self.compositions:
+            comp.append(e.to_dict())
+        return {'name': self.name, 'composition': comp}
 
     def __str__(self):
         return self.to_json()
+
+
+class AlloyType(EmbeddedDocument):
+    parent = EmbeddedDocumentField(
+        document_type=Alloy, default=None, null=True
+    )
+    weld = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
+    mix = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
+
+    def to_dict(self):
+        return {
+            'parent': self.parent.to_dict(),
+            'weld': self.weld.to_dict(),
+            'mix': self.mix.to_dict()
+        }
+
+
+class AlloyStore(EmbeddedDocument):
+    alloy_option = StringField(required=True)
+    alloys = EmbeddedDocumentField(document_type=AlloyType, required=True)
+
+    def to_dict(self):
+        return {
+            'alloy_option': self.alloy_option,
+            'alloys': self.alloys.to_dict()
+        }
 
 
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
@@ -213,13 +235,18 @@ class User(Document):
     profile = EmbeddedDocumentField(document_type=UserProfile)
     admin_profile = EmbeddedDocumentField(document_type=AdminProfile)
 
-    last_configuration = EmbeddedDocumentField(document_type=Configuration)
-    last_compositions = EmbeddedDocumentField(document_type=Compositions)
+    last_configuration = EmbeddedDocumentField(
+        document_type=Configuration, default=None
+    )
+
+    last_alloy_store = EmbeddedDocumentField(
+        document_type=AlloyStore, default=None
+    )
 
     # TODO(andrew@neuraldev.io -- Sprint 6): Make these
     # saved_configurations = EmbeddedDocumentListField(
     # document_type=Configurations)
-    # saved_compositions = EmbeddedDocumentListField(document_type=Compositions)
+    saved_alloys = EmbeddedDocumentListField(document_type=Alloy, default=None)
 
     # Some rather useful metadata information that's not core to the
     # definition of a user
@@ -233,6 +260,7 @@ class User(Document):
     last_login = DateTimeField()
     # Define the collection and indexing for this document
     meta = {'collection': 'users'}
+    account_disabled = BooleanField(default=False)
 
     def set_password(self, raw_password: str) -> None:
         """Helper utility method to save an encrypted password using the

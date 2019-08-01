@@ -39,6 +39,42 @@ def authenticate(f):
         auth_header = request.headers.get('Authorization', None)
 
         if not auth_header:
+            return response, 400
+
+        # auth_header = 'Bearer token'
+        auth_token = auth_header.split(' ')[1]
+
+        # Decode either returns bson.ObjectId if successful or a string from an
+        # exception
+        resp = User.decode_auth_token(auth_token=auth_token)
+
+        # Either returns an ObjectId User ID or a string response.
+        if not isinstance(resp, ObjectId):
+            response['message'] = resp
+            return response, 401
+
+        # Validate the user is active
+        user = User.objects.get(id=resp)
+        if not user or not user.active:
+            response['message'] = 'This user does not exist.'
+            return response, 401
+
+        return f(resp, *args, **kwargs)
+
+    return decorated_func
+
+
+def authenticate_flask(f):
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        response = {
+            'status': 'fail',
+            'message': 'Provide a valid JWT auth token.'
+        }
+        # get auth token
+        auth_header = request.headers.get('Authorization', None)
+
+        if not auth_header:
             return jsonify(response), 400
 
         # auth_header = 'Bearer token'
@@ -75,7 +111,7 @@ def authenticate_admin(f):
         auth_header = request.headers.get('Authorization', '')
 
         if not auth_header:
-            return jsonify(response), 400
+            return response, 400
 
         # auth_header = 'Bearer token'
         auth_token = auth_header.split(' ')[1]
@@ -84,16 +120,16 @@ def authenticate_admin(f):
 
         if isinstance(resp, str):
             response['message'] = resp
-            return jsonify(response), 401
+            return response, 401
 
         admin = User.objects.get(id=resp)
         if not admin or not admin.is_admin:
             response['message'] = 'Not authorized.'
-            return jsonify(response), 403
+            return response, 403
 
         if not admin.active:
             response['message'] = 'Admin must sign in again.'
-            return jsonify(response), 401
+            return response, 401
 
         return f(resp, *args, **kwargs)
 

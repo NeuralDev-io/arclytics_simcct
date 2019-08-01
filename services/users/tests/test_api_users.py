@@ -117,7 +117,9 @@ class TestUserService(BaseTestCase):
 
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 401)
-            self.assertEqual(data['message'], 'This user does not exist.')
+            self.assertEqual(
+                data['message'], 'This user account has been disabled.'
+            )
             self.assertEqual('fail', data['status'])
 
     def test_single_user_invalid_id(self):
@@ -125,7 +127,7 @@ class TestUserService(BaseTestCase):
         with self.client:
             response = self.client.get('/user')
             data = json.loads(response.data.decode())
-            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.status_code, 401)
             self.assertIn('Provide a valid JWT auth token.', data['message'])
             self.assertIn('fail', data['status'])
 
@@ -135,7 +137,7 @@ class TestUserService(BaseTestCase):
             _id = ObjectId()
             response = self.client.get('/user')
             data = json.loads(response.data.decode())
-            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.status_code, 401)
             self.assertIn('Provide a valid JWT auth token.', data['message'])
             self.assertIn('fail', data['status'])
 
@@ -180,7 +182,7 @@ class TestUserService(BaseTestCase):
                 '/users', content_type='application/json', headers={}
             )
             data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.status_code, 401)
             self.assertIn('fail', data['status'])
             self.assertNotIn('data', data)
             self.assertIn('Provide a valid JWT auth token.', data['message'])

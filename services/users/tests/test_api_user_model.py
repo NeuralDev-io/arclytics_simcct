@@ -7,13 +7,10 @@
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
-
 __credits__ = ['']
 __license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = '{dev_status}'
 __date__ = '2019.07.05'
 """test_api_user_model.py: 
 
@@ -30,9 +27,9 @@ from mongoengine import Document, EmailField, BooleanField
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from tests.test_api_base import BaseTestCase
-from users_app.models import (
-    User, PasswordValidationError, USERS, Configuration, Element, Compositions
-)
+from users_app.models import (User, Configuration, Element, Alloy)
+from users_app.utilities import PeriodicTable as pT
+from users_app.utilities import PasswordValidationError
 
 _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 
@@ -44,14 +41,6 @@ class TestUserModel(BaseTestCase):
         self.assertIsInstance(User.__base__, Document.__class__)
         self.assertIsInstance(User.email, EmailField)
         self.assertIsInstance(User.active, BooleanField)
-
-    def test_user_type_choices(self):
-        admin_choice = USERS[0]
-        normal_choice = USERS[1]
-        self.assertEqual(admin_choice[0], '1')
-        self.assertEqual(admin_choice[1], 'ADMIN')
-        self.assertEqual(normal_choice[0], '2')
-        self.assertEqual(normal_choice[1], 'USER')
 
     def test_password_validation_error(self):
         err = PasswordValidationError()
@@ -104,16 +93,26 @@ class TestUserModel(BaseTestCase):
 
         elem1 = Element(symbol='C', weight=0.044)
         elem2 = Element(symbol='Mn', weight=1.73)
-        comp = Compositions()
-        comp.comp.append(elem1)
-        comp.comp.append(elem2)
-        user.last_compositions = comp
+        comp = Alloy()
+        comp.name = 'Selvigium'
+        comp['compositions'] = [elem1, elem2]
+        alloy_store = {
+            'alloy_option': 'single',
+            'alloys': {
+                'parent': comp,
+                'weld': None,
+                'mix': None
+            }
+        }
+        user.last_alloy_store = alloy_store
         user.cascade_save()
 
-        self.assertEqual(user.last_compositions.comp[0]['symbol'], 'C')
-        self.assertEqual(user.last_compositions.comp[0]['weight'], 0.044)
-        self.assertEqual(user.last_compositions.comp[1]['symbol'], 'Mn')
-        self.assertEqual(user.last_compositions.comp[1]['weight'], 1.73)
+        alloy = user.last_alloy_store['alloys']['parent']
+        self.assertEqual(alloy['name'], 'Selvigium')
+        self.assertEqual(alloy['compositions'][0]['symbol'], 'C')
+        self.assertEqual(alloy['compositions'][0]['weight'], 0.044)
+        self.assertEqual(alloy['compositions'][1]['symbol'], 'Mn')
+        self.assertEqual(alloy['compositions'][1]['weight'], 1.73)
 
     def test_add_compositions_from_json(self):
         """Ensure we can loop a JSON-converted dict to create a compositions."""
@@ -124,22 +123,31 @@ class TestUserModel(BaseTestCase):
 
         with open(_TEST_CONFIGS_PATH, 'r') as f:
             test_json = json.load(f)
-        test_comp = test_json['compositions']
 
-        new_comp_inst = Compositions()
-        for e in test_comp:
-            elem_inst = Element(**e)
-            new_comp_inst.comp.append(elem_inst)
+        new_comp_inst = Alloy()
+        new_comp_inst.name = 'Selvigium'
+        new_comp_inst.compositions = test_json['compositions']
 
-        user.last_compositions = new_comp_inst
+        alloy_store = {
+            'alloy_option': 'single',
+            'alloys': {
+                'parent': new_comp_inst,
+                'weld': None,
+                'mix': None
+            }
+        }
+
+        user.last_alloy_store = alloy_store
         user.cascade_save()
 
-        self.assertEqual(user.last_compositions.comp[0]['symbol'], 'C')
-        self.assertEqual(user.last_compositions.comp[0]['weight'], 0.044)
-        self.assertEqual(user.last_compositions.comp[1]['symbol'], 'Mn')
-        self.assertEqual(user.last_compositions.comp[1]['weight'], 1.73)
-        self.assertEqual(user.last_compositions.comp[2]['symbol'], 'Si')
-        self.assertEqual(user.last_compositions.comp[2]['weight'], 0.22)
+        comp = user.last_alloy_store['alloys']['parent']
+        self.assertEqual(comp['name'], 'Selvigium')
+        self.assertEqual(comp['compositions'][0]['symbol'], 'C')
+        self.assertEqual(comp['compositions'][0]['weight'], 0.044)
+        self.assertEqual(comp['compositions'][1]['symbol'], 'Mn')
+        self.assertEqual(comp['compositions'][1]['weight'], 1.73)
+        self.assertEqual(comp['compositions'][2]['symbol'], 'Si')
+        self.assertEqual(comp['compositions'][2]['weight'], 0.22)
 
     def test_email_validation(self):
         user = User(

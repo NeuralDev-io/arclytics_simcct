@@ -169,21 +169,6 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/User Profile'
-        '400':
-          description: "The request parameters are bad."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    format: string
-                    example: "fail"
-                  message:
-                    type: string
-                    format: string
-                    example: "Provide a valid JWT auth token."
         '401':
           description: "The user is not authenticated to perform this request."
           content:
@@ -198,6 +183,10 @@ paths:
                     type: string
                     format: string
               examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
                 'Not Logged In':
                   value:
                     status: "fail"
@@ -210,15 +199,237 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-    put:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+    patch:
       summary: "Update the User's details."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "The data provided to update the user's details."
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                aim:
+                  type: string
+                highest_education:
+                  type: string
+                sci_tech_exp:
+                  type: string
+                phase_transform_exp:
+                  type: string
+            examples:
+              'Normal User':
+                value:
+                  first_name: "Morgan"
+                  last_name: "Stark"
+                  aim: "Grow up to be Iron Heart"
+                  highest_education: "Masters of Engineering, MIT"
+                  sci_tech_exp: "J.A.R.V.I.S. Taught me AI"
+                  phase_transform_exp: "I make Iron Masterpieces"
+              'Admin User':
+                value:
+                  first_name: "Talos"
+                  last_name: "Untamed"
+                  aim: "Pretending to be Nick Fury"
+                  highest_education: "Secret Invasion University"
+                  sci_tech_exp: "Skrull Tech High Advance"
+                  phase_transform_exp: "Not Very Much"
+                  position: "Former Directory of S.H.I.E.L.D."
+                  mobile_number: "+61 490 909 090"
+      responses:
+        '200':
+          description: "User has been updated successfully and the new user details have been returned."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                'Normal User':
+                  value:
+                    status: "success"
+                    data:
+                      first_name: "Morgan"
+                      last_name: "Stark"
+                      aim: "Grow up to be Iron Heart"
+                      highest_education: "Masters of Engineering, MIT"
+                      sci_tech_exp: "J.A.R.V.I.S. Taught me AI"
+                      phase_transform_exp: "I make Iron Masterpieces"
+                'Admin User':
+                  value:
+                    status: "success"
+                    data:
+                      first_name: "Talos"
+                      last_name: "Untamed"
+                      aim: "Pretending to be Nick Fury"
+                      highest_education: "Secret Invasion University"
+                      sci_tech_exp: "Skrull Tech High Advance"
+                      phase_transform_exp: "Not Very Much"
+                      position: "Former Directory of S.H.I.E.L.D."
+                      mobile_number: "+61 490 909 090"
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Not Logged In':
+                  value:
+                    status: "fail"
+                    message: "User must sign in again."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        '418':
+          description: "There has been some validation error saving to Mongo."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Validation error."
+                error: "ValidationError: ..."
+  /user/profile:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "Retrieve only enough information about the user for their profile."
       tags:
         - Users
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: "User has been updated successfully and the new user details have been returned."
+          description: "Return the User's profile successfully."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User Profile'
+    post:
+      summary: "Create the User's profile details the first time they complete it."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "User details to add"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Profile'
+            example:
+              aim: "Grow up to be Iron Heart"
+              highest_education: "Masters of Engineering, MIT"
+              sci_tech_exp: "J.A.R.V.I.S. Taught me AI"
+              phase_transform_exp: "I make Iron Masterpieces"
+      responses:
+        '201':
+          description: "The User's profile has been successfully saved."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: "success"
+                data:
+                  aim: "Grow up to be Iron Heart"
+                  highest_education: "Masters of Engineering, MIT"
+                  sci_tech_exp: "J.A.R.V.I.S. Taught me AI"
+                  phase_transform_exp: "I make Iron Masterpieces"
+        '400':
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    message: "Validation error."
+                    error: "ValidationError: ..."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Not Logged In':
+                  value:
+                    status: "fail"
+                    message: "User must sign in again."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+
   /user/last:
     servers:
       - url: http://localhost:8000
@@ -287,56 +498,6 @@ paths:
       responses:
         '201':
           description: "The Alloy has been saved to the User's Alloys database."
-  /user/profile:
-    servers:
-      - url: http://localhost:8000
-    get:
-      summary: "Retrieve only enough information about the user for their profile."
-      tags:
-        - Users
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: "Return the User's profile successfully."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User Profile'
-    post:
-      summary: "Create the User's profile details the first time they complete it."
-      tags:
-        - Users
-      security:
-        - bearerAuth: []
-      requestBody:
-        description: "User details to add"
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Profile'
-      responses:
-        '201':
-          description: "The User's profile has been successfully saved."
-    put:
-      summary: "Update the User's profile details."
-      tags:
-        - Users
-      security:
-        - bearerAuth: []
-      requestBody:
-        description: "User details to add"
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Profile'
-      responses:
-        '204':
-          description: "The user's profile has been updated and no response has been returned."
-        '400':
-          description: "An invalid payload has been sent with the request."
   /user/configurations:
     servers:
       - url: http://localhost:8000
@@ -582,7 +743,7 @@ paths:
                 'No User':
                   value:
                     status: "fail"
-                    message: "User does not exist."
+                    message: "This user account has been disabled."
                 'Incorrect Password':
                   value:
                     status: "fail"
@@ -838,7 +999,7 @@ paths:
                 'No User':
                   value:
                     status: "fail"
-                    message: "User does not exist."
+                    message: "This user account has been disabled."
 
 
   /user/disable:
@@ -857,13 +1018,84 @@ paths:
             schema:
               type: object
               properties:
-                user_id:
+                email:
                   type: string
-                  format: byte
+                  format: email
       responses:
         '200':
           description: "The user has been successfully disabled."
-
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                message: "The account for User loki@asgard.space has been disabled."
+        '400':
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Bad Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Email':
+                  value:
+                    status: "fail"
+                    message: "No email provided."
+                'Invalid Email':
+                  value:
+                    status: "fail"
+                    message: "Invalid email."
+                    error: "The email address is not valid. It must have exactly one @-sign."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        '403':
+          description: "The user is not authorised to perform this request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Authorisation':
+                  value:
+                    status: "fail"
+                    message: "Not authorized"
+        '404':
+          description: "We cannot find a valid user."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User cannot be found."
   /users/ping:
     servers:
       - url: http://localhost:8001

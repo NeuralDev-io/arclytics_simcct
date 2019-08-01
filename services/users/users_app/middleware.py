@@ -39,7 +39,7 @@ def authenticate(f):
         auth_header = request.headers.get('Authorization', None)
 
         if not auth_header:
-            return response, 400
+            return response, 401
 
         # auth_header = 'Bearer token'
         auth_token = auth_header.split(' ')[1]
@@ -56,7 +56,7 @@ def authenticate(f):
         # Validate the user is active
         user = User.objects.get(id=resp)
         if not user or not user.active:
-            response['message'] = 'This user does not exist.'
+            response['message'] = 'This user account has been disabled.'
             return response, 401
 
         return f(resp, *args, **kwargs)
@@ -75,7 +75,7 @@ def authenticate_flask(f):
         auth_header = request.headers.get('Authorization', None)
 
         if not auth_header:
-            return jsonify(response), 400
+            return jsonify(response), 401
 
         # auth_header = 'Bearer token'
         auth_token = auth_header.split(' ')[1]
@@ -92,7 +92,7 @@ def authenticate_flask(f):
         # Validate the user is active
         user = User.objects.get(id=resp)
         if not user or not user.active:
-            response['message'] = 'This user does not exist.'
+            response['message'] = 'This user account has been disabled.'
             return jsonify(response), 401
 
         return f(resp, *args, **kwargs)
@@ -111,7 +111,7 @@ def authenticate_admin(f):
         auth_header = request.headers.get('Authorization', '')
 
         if not auth_header:
-            return response, 400
+            return response, 401
 
         # auth_header = 'Bearer token'
         auth_token = auth_header.split(' ')[1]
@@ -126,10 +126,6 @@ def authenticate_admin(f):
         if not admin or not admin.is_admin:
             response['message'] = 'Not authorized.'
             return response, 403
-
-        if not admin.active:
-            response['message'] = 'Admin must sign in again.'
-            return response, 401
 
         return f(resp, *args, **kwargs)
 

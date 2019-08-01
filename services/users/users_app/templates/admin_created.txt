@@ -1,8 +1,8 @@
-An Admin you promoted has been verified!
+You Promoted A User!
 
 Hi {{ users_name }},
 
-We are emailing to let you know what a user you promoted to administrator has been verified.
+We are emailing to let you know that you have promoted a user to administrator.
 
 If you did not promote this user, please click the link below to cancel their administration privileges:
 

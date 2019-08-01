@@ -232,6 +232,8 @@ class UserLast(Resource):
     (if any)
     """
 
+    # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
+
     method_decorators = {
         'get': [authenticate]
     }
@@ -259,6 +261,8 @@ class UserLast(Resource):
 
 class UserAlloys(Resource):
     """We get the list of User's alloys stored in their document"""
+
+    # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
 
     method_decorators = {
         'get': [authenticate],
@@ -521,9 +525,10 @@ class AdminCreate(Resource):
             response['message'] = 'Invalid email.'
             return response, 400
 
-        # Validation checks
+        # Make sure the user exists in the database.
         if not User.objects(email=valid_email):
-            return response, 201
+            response['message'] = 'User does not exist.'
+            return response, 400
 
         user = User.objects.get(email=valid_email)
 
@@ -535,6 +540,7 @@ class AdminCreate(Resource):
             response['message'] = 'User is already an Administrator.'
             return response, 401
 
+        # If all validation checks pass, make user an admin.
         user.is_admin=True
         user.admin_profile = AdminProfile(
             position=position,
@@ -546,6 +552,8 @@ class AdminCreate(Resource):
         user.save()
         user.cascade_save()
 
+        # Generate a confirmation email to be sent to the user so that they can
+        # confirm they have become an admin.
         admin_token = generate_confirmation_token(user.email)
         admin_url = generate_url('users.confirm_create_admin', admin_token)
 
@@ -570,6 +578,34 @@ class AdminCreate(Resource):
             }
         )
 
+        # Not sure if this is a good way to cancel unintentional promotions.
+        # What I think I've done is get a url that has information about the
+        # promoted user and send that to the promoter in an email so that they
+        # can cancel the users admin privileges if they want.
+        cancel_token = generate_confirmation_token(user.email)
+        cancel_url = generate_url('users.admin_cancel', cancel_token)
+
+        promoter = User.objects.get(id=resp)
+        celery.send_task(
+            'tasks.send_email',
+            kwargs={
+                'to': promoter.email,
+                'subject_suffix': 'You Promoted a User!',
+                'html_template': render_template(
+                    'admin_created.html',
+                    email=promoter.email,
+                    users_name=f'{promoter.first_name} {promoter.last_name}',
+                    cancel_url=cancel_url
+                ),
+                'text_template': render_template(
+                    'admin_created.txt',
+                    email=promoter.email,
+                    users_name=f'{promoter.first_name} {promoter.last_name}',
+                    cancel_url=cancel_url
+                )
+            }
+        )
+
         response['status'] = 'success'
         response.pop('message')
         return response, 202
@@ -579,7 +615,7 @@ class AdminCreate(Resource):
 def confirm_create_admin(token):
     response = {'status': 'fail', 'message': 'Invalid token.'}
 
-    # Decode the token from the email to the confirm it was the right one
+    # Decode the token from the email to confirm it was the right one
     try:
         email = confirm_token(token)
     except URLTokenError as e:
@@ -590,10 +626,21 @@ def confirm_create_admin(token):
         return jsonify(response), 400
 
     user = User.objects.get(email=email)
+
+    if not user.is_admin:
+        response['message'] = 'User is not an admin.'
+        return jsonify(response), 400
+
+    # User has clicked verification link so we can verifiy their admin status
     user.admin_profile.verified = True
     user.last_updated = datetime.utcnow()
     user.cascade_save()
     user.save()
+
+    # The following is the same as above in AdminCreate, however it notifies the
+    # promoter that the user has been verified.
+    cancel_token = generate_confirmation_token(user.email)
+    cancel_url = generate_url('users.admin_cancel', cancel_token)
 
     promoter = User.objects.get(id=user.admin_profile.promoted_by)
     from celery_runner import celery
@@ -601,19 +648,51 @@ def confirm_create_admin(token):
         'tasks.send_email',
         kwargs={
             'to': promoter.email,
-            'subject_suffix': 'Confirm you are an Admin',
+            'subject_suffix': 'An Admin you promoted has been verified!',
             'html_template': render_template(
                 'admin_confirmed.html',
                 email=promoter.email,
-                users_name=f'{promoter.first_name} {promoter.last_name}'
+                users_name=f'{promoter.first_name} {promoter.last_name}',
+                cancel_url=cancel_url
             ),
             'text_template': render_template(
                 'admin_confirmed.txt',
                 email=promoter.email,
-                users_name=f'{promoter.first_name} {promoter.last_name}'
+                users_name=f'{promoter.first_name} {promoter.last_name}',
+                cancel_url=cancel_url
             )
         }
     )
+
+    # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
+    client_host = os.environ.get('CLIENT_HOST')
+    # We can make our own redirect response by doing the following
+    custom_redir_response = app.response_class(
+        status=302, mimetype='application/json'
+    )
+    redirect_url = f'http://localhost:3000/signin'
+    custom_redir_response.headers['Location'] = redirect_url
+    return custom_redir_response
+
+
+@users_blueprint.route('/admincreate/cancel/<token>', methods=['GET'])
+def admin_cancel(token):
+    response = {'status': 'fail', 'message': 'Invalid token.'}
+
+    # Decode the token from the email to confirm it was the right one
+    try:
+        email = confirm_token(token)
+    except URLTokenError as e:
+        response['error'] = str(e)
+        return jsonify(response), 400
+    except Exception as e:
+        response['error'] = str(e)
+        return jsonify(response), 400
+
+    user = User.objects.get(email=email)
+    user.is_admin=False
+    user.last_updated = datetime.utcnow()
+    user.save()
 
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
     client_host = os.environ.get('CLIENT_HOST')
@@ -648,7 +727,7 @@ class DisableAccount(Resource):
         email = post_data.get('email', '')
 
         if not email:
-            response['message'] = 'Invalid email provided.'
+            response['message'] = 'No email provided.'
             return response, 400
 
         # Verify it is actually a valid email

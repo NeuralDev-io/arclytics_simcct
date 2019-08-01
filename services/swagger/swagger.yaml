@@ -745,7 +745,7 @@ paths:
                 status: "success"
                 message: "pong!"
 
-  /alloys:
+  /global/alloys:
     servers:
       - url: http://localhost:8001
     post:
@@ -922,7 +922,7 @@ paths:
               example:
                 status: "fail"
                 message: "Empty."
-  /alloys/{id}:
+  /global/alloys/{id}:
     servers:
       - url: http://localhost:8001
     get:
@@ -1158,13 +1158,15 @@ paths:
                 status: "fail"
                 message: "Alloy not found."
 
-  /configs/method/update:
+  /alloys/update:
     servers:
       - url: http://localhost:8001
-    put:
-      summary: "Update the method used in the Session store of the current user."
+    post:
+      summary: "Initiate an Alloy and Configuration Session store."
       security:
         - bearerAuth: []
+      tags:
+        - Configurations
       requestBody:
         required: true
         content:
@@ -1172,141 +1174,74 @@ paths:
             schema:
               type: object
               properties:
-                method:
+                alloy_option:
+                  description: "One of either `single`, `both`, or `mix`"
                   type: string
-                  enum: ['Li98', 'Kirkaldy83']
+                  format: string
+                alloy_type:
+                  description: "One of either `parent`, `weld`, or `mix`"
+                  type: string
+                  format: string
+                alloy:
+                  $ref: '#/components/schemas/Alloy'
             examples:
-              Kirkaldy83:
+              'Arc_Stark':
                 value:
-                  method: "Kirkaldy83"
-              Li98:
-                value:
-                  method: "Li98"
-      tags:
-        - Configurations
+                  alloy_option: "single"
+                  alloy_type: "parent"
+                  alloy:
+                    name: "330M Alloy1"
+                    compositions:
+                      - symbol: "C"
+                        weight: 0.3
+                      - symbol: "M"
+                        weight: 0.78
+                      - symbol: "Si"
+                        weight: 1.6
+                      - symbol: "Ni"
+                        weight: 1.9
+                      - symbol: "Cr"
+                        weight: 0.91
+                      - symbol: "Mo"
+                        weight: 0.39
+                      - symbol: "Co"
+                        weight: 0.0
+                      - symbol: "Al"
+                        weight: 0.0
+                      - symbol: "Cu"
+                        weight: 0.0
+                      - symbol: "As"
+                        weight: 0.0
+                      - symbol: "Ti"
+                        weight: 0.0
+                      - symbol: "V"
+                        weight: 0.08
+                      - symbol: "W"
+                        weight: 0.0
+                      - symbol: "S"
+                        weight: 0.003
+                      - symbol: "N"
+                        weight: 0.011
+                      - symbol: "Nb"
+                        weight: 0.0
+                      - symbol: "B"
+                        weight: 0.0
+                      - symbol: "P"
+                        weight: 0.007
       responses:
         '200':
-          description: "Method changed successfully for the current user."
+          description: "The alloy and its compositions was successfully updated and stored
+            in the Session for the user. An initial Configurations with default values were
+            set."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
               example:
                 status: "success"
-                message: "Changed to Kirkaldy83 method."
-        '400':
-          description: 'Invalid payload sent in the request.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Empty Payload':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'No Method Key':
-                  value:
-                    status: "fail"
-                    message: "No method was provided."
-                'Bad Method Type':
-                  value:
-                    status: "fail"
-                    message: "Invalid method provided (must be Li98 or Kirkaldy83)"
-        '401':
-          description: "Unauthorized access to the endpoint."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Token':
-                  value:
-                    status: "fail"
-                    message: "No valid Authorization in header."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid JWT token in header."
-        '404':
-          description: "Cannot find a current Session store for the user."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "No previous configurations was set."
-  /configs/update:
-    servers:
-      - url: http://localhost:8001
-    put:
-      summary: "Update the Session store of the configurations for the current user."
-      tags:
-        - Configurations
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Configurations'
-            examples:
-              'Valid Configurations':
-                value:
-                  grain_size: 8.0
-                  nucleation_start: 1.0
-                  nucleation_finish: 99.90
-                  start_temp: 900
-                  cct_cooling_rate: 10
-              'Invalid Configurations':
-                value:
-                  grain_size: 8.0
-                  start_temp: 900
-                  cct_cooling_rate: 10
-      responses:
-        '202':
-          description: "The configurations were updated successfully and no content returned."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "success"
-                message: "Setup configurations values have been updated."
-        '400':
-          description: 'Invalid payload sent in the request.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Empty Payload':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'Invalid Paylod':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                    errors:
-                      nucleation_start:
-                        - "Missing data for required field."
-                      nucleation_finish:
-                        - "Missing data for required field."
-        '404':
-          description: "No content can be found to update."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "No previous session configurations was set."
-  /configs/comp/update:
-    servers:
-      - url: http://localhost:8001
     put:
       summary: "Update the Alloy compositions in Session store for the user."
       security:
@@ -1318,15 +1253,20 @@ paths:
             schema:
               type: object
               properties:
-                alloy_type:
+                alloy_option:
+                  description: "One of either `single`, `both`, or `mix`"
                   type: string
                   format: string
-                  enum: ["parent", "weld", "mix"]
+                alloy_type:
+                  description: "One of either `parent`, `weld`, or `mix`"
+                  type: string
+                  format: string
                 alloy:
                   $ref: '#/components/schemas/Alloy'
             examples:
               'Arc_Stark':
                 value:
+                  alloy_option: "single"
                   alloy_type: "parent"
                   alloy:
                     name: "330M Alloy1"
@@ -1372,8 +1312,8 @@ paths:
       responses:
         '200':
           description: "The request was success fully completed meaning the Session store has been updated with the new
-          alloy compositions and if any limit values need to be auto calculated, the system will do so and return the
-          newly updated values in a `data` object."
+            alloy compositions and if any limit values need to be auto calculated, the system will do so and return the
+            newly updated values in a `data` object."
           content:
             application/json:
               schema:
@@ -1454,6 +1394,161 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
+  /configs/method/update:
+    servers:
+      - url: http://localhost:8001
+    put:
+      summary: "Update the method used in the Session store of the current user."
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+            examples:
+              Kirkaldy83:
+                value:
+                  method: "Kirkaldy83"
+              Li98:
+                value:
+                  method: "Li98"
+      tags:
+        - Configurations
+      responses:
+        '200':
+          description: "Method changed successfully for the current user."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                message: "Changed to Kirkaldy83 method."
+        '400':
+          description: 'Invalid payload sent in the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Method Key':
+                  value:
+                    status: "fail"
+                    message: "No method was provided."
+                'Bad Method Type':
+                  value:
+                    status: "fail"
+                    message: "Invalid method provided (must be Li98 or Kirkaldy83)"
+        '401':
+          description: "Unauthorized access to the endpoint."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Token':
+                  value:
+                    status: "fail"
+                    message: "No valid Authorization in header."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid JWT token in header."
+        '404':
+          description: "Cannot find a current Session store for the user."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "No previous configurations was set."
+  /configs/update:
+    servers:
+      - url: http://localhost:8001
+    patch:
+      description: "These configurations are those not including the transformation temperatures
+      that we consider part of the setup. It includes grain size, nucleation start, nucleation
+      finish, start temperatures, and CCT cooling rate."
+      summary: "Update the Session store of the set configurations for the current user."
+      tags:
+        - Configurations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                grain_size:
+                  type: number
+                  format: float
+            examples:
+              'Valid Configurations':
+                value:
+                  grain_size: 8.0
+                  start_temp: 900
+                  cct_cooling_rate: 10
+      responses:
+        '202':
+          description: "The configurations were updated successfully and no content returned."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                message: "Setup configurations values have been updated."
+        '400':
+          description: 'Invalid payload sent in the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Valid Keys':
+                  value:
+                    status: "fail"
+                    message: "Payload does not have any valid keys."
+        '401':
+          description: "Unauthorized access to the endpoint."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Token':
+                  value:
+                    status: "fail"
+                    message: "No valid Authorization in header."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid JWT token in header."
+        '404':
+          description: "No content can be found to update."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "No previous session configurations was set."
   /configs/auto/ms:
     servers:
       - url: http://localhost:8001

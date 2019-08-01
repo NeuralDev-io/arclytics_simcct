@@ -39,6 +39,165 @@ class AlloyStore(Resource):
         'patch': [token_required_restful],
     }
 
+    def post(self, token):
+        """This POST endpoint initiates the Alloy Store by setting the alloy
+        in the request body to the Session storage.
+
+        Args:
+            token: a valid JWT token.
+
+        Returns:
+            A response object with appropriate status and message
+            strings.
+        """
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+        post_data = request.get_json()
+        if not post_data:
+            return response, 400
+
+        # Extract the method from the post request body
+        # REQUEST BODY SHOULD BE
+        # {
+        #     "alloy_option": "single",
+        #     "alloy_type": "parent",
+        #     "alloy": [{"symbol": "C", "weight": 1}, ...]
+        # }
+        alloy_option = post_data.get('alloy_option', None)
+        alloy_type = post_data.get('alloy_type', None)
+        alloy = post_data.get('alloy', None)
+
+        if not alloy_option:
+            response['message'] = 'No alloy option was provided.'
+            return response, 400
+
+        # We have a couple of ways the Alloy is stored in both Session and
+        # Database based on what is available with the alloy_option and
+        # alloy_type. From the client, we expect these two keys to at the
+        # very least be in the request body. Otherwise we won't do anything.
+        if alloy_option not in ['single', 'both', 'mix']:
+            response['message'] = (
+                'Alloy option not one of '
+                '["single" | "both" | "mix"].'
+            )
+            return response, 400
+
+        if not alloy_type or not isinstance(alloy_type, str):
+            response['message'] = 'No alloy type was provided.'
+            return response, 400
+
+        if alloy_type not in ['parent', 'weld', 'mix']:
+            response['message'] = (
+                'Alloy type not one of ["parent" | "weld" | "mix"].'
+            )
+            return response, 400
+
+        if not alloy:
+            response['message'] = 'No alloy was provided.'
+            return response, 400
+
+        # Let's validate the Alloy follows our schema
+        try:
+            valid_alloy = AlloySchema().load(alloy)
+        except ValidationError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Alloy failed schema validation.'
+            return response, 400
+
+        # We create a new session alloy_store for the user
+        session_alloy_store = {
+            'alloy_option': alloy_option,
+            'alloy_type': alloy_type,
+            'alloys': {
+                'parent': None,
+                'weld': None,
+                'mix': None
+            }
+        }
+
+        valid_store = None
+        try:
+            if alloy_option == 'single':
+                # In this situation, we will only use the parent alloy
+                session_alloy_store['alloys']['parent'] = valid_alloy
+                # Just quickly validate the alloy stored based on schema
+                valid_store = AlloyStoreSchema().load(session_alloy_store)
+            elif alloy_option == 'mix':
+                # TODO(andrew@neuraldev.io): Implement this.
+                pass
+            else:
+                # TODO(andrew@neuraldev.io): Implement this.
+                pass
+        except ValidationError as e:
+            response['errors'] = e.messages
+            response['message'] = 'Alloy failed schema validation.'
+            return response, 400
+
+        session[f'{token}:alloy_store'] = valid_store
+
+        # In this situation, we always need to auto calculate and set the
+        # below configs to default
+        default_configs = {
+            'is_valid': False,
+            'method': 'Li98',
+            'grain_size': 0.0,
+            'nucleation_start': 0.0,
+            'nucleation_finish': 0.0,
+            'auto_calculate_ms': True,
+            'auto_calculate_bs': True,
+            'auto_calculate_ae': True,
+            'start_temp': 0,
+            'cct_cooling_rate': 0
+        }
+
+        # We update the transformation limits based on which option is
+        # chosen
+        comp_list: list = []
+        if alloy_option == 'single':
+            comp_list = valid_store['alloys']['parent']['compositions']
+
+        # TODO(andrew@neuraldev.io): Implement this.
+        # else:
+        # comp_list = (
+        #     sess_alloy_store['mix']['compositions']
+        # )
+        # pass
+
+        comp_np_arr = SimConfig.get_compositions(comp_list)
+
+        # We need to store some results so let's prepare an empty dict
+        response['message'] = ('Compositions and Configurations in Session '
+                               'initiated.')
+        response['data'] = {}
+
+        # We need to convert them to our enums as required by the Sim
+        # package - by default we always use Li98
+        method = Method.Li98
+
+        ms_temp = SimConfig.get_ms(method, comp=comp_np_arr)
+        ms_rate_param = SimConfig.get_ms_alpha(comp=comp_np_arr)
+        default_configs['ms_temp'] = ms_temp
+        default_configs['ms_rate_param'] = ms_rate_param
+
+        bs_temp = SimConfig.get_bs(method, comp=comp_np_arr)
+        default_configs['bs_temp'] = bs_temp
+
+        ae1, ae3 = SimConfig.calc_ae1_ae3(comp_np_arr)
+        default_configs['ae1_temp'] = ae1
+        default_configs['ae3_temp'] = ae3
+
+        session[f'{token}:configurations'] = default_configs
+
+        response['data'] = {
+            'ms_temp': ms_temp,
+            'ms_rate_param': ms_rate_param,
+            'bs_temp': bs_temp,
+            'ae1_temp': ae1,
+            'ae3_temp': ae3
+        }
+        response['status'] = 'success'
+        return response, 200
+
     def patch(self, token):
         """This PATCH endpoint simply updates the `alloys` in the session
         store so that we can update all the other transformation temperature.
@@ -119,7 +278,7 @@ class AlloyStore(Resource):
         sess_alloy_store['alloy_option'] = alloy_option
 
         # Now we dig deeper into the object to update the elements and name
-        sess_alloys = sess_alloy_store['alloys']
+        sess_alloys = sess_alloy_store.get('alloys')
 
         try:
             if alloy_option == 'single':
@@ -185,9 +344,9 @@ class AlloyStore(Resource):
         # numpy.ndarray structured format and type
 
         # We update the transformation limits based on which option is chosen
-        comp_dict = {}
+        comp_list: list = []
         if alloy_option == 'single':
-            comp_dict = (sess_alloy_store['alloys']['parent']['compositions'])
+            comp_list = sess_alloy_store['alloys']['parent']['compositions']
 
         # TODO(andrew@neuraldev.io): Implement this.
         # else:
@@ -196,7 +355,7 @@ class AlloyStore(Resource):
         # )
         # pass
 
-        comp_np_arr = SimConfig.get_compositions(comp_dict)
+        comp_np_arr = SimConfig.get_compositions(comp_list)
 
         # We need to store some results so let's prepare an empty dict
         response['message'] = 'Compositions and other values updated.'
@@ -402,6 +561,10 @@ class MartensiteStart(Resource):
         #  the name of the alloy_type.
         sess_alloy_store = session.get(f'{token}:alloy_store')
 
+        if not sess_alloy_store:
+            response['message'] = 'No previous session initiated.'
+            return response, 400
+
         # TODO(andrew@neuraldev.io): Implement the other options
         comp_list: list = []
         if sess_alloy_store['alloy_option'] == 'single':
@@ -505,6 +668,11 @@ class BainiteStart(Resource):
         session_configs['auto_calculate_bs'] = True
 
         sess_alloy_store = session.get(f'{token}:alloy_store')
+
+        if not sess_alloy_store:
+            response['message'] = 'No previous session initiated.'
+            return response, 400
+
         # TODO(andrew@neuraldev.io): Implement the other options
         comp_list: list = []
         if sess_alloy_store['alloy_option'] == 'single':
@@ -592,6 +760,11 @@ class Austenite(Resource):
         session_configs['auto_calculate_ae'] = True
 
         sess_alloy_store = session.get(f'{token}:alloy_store')
+
+        if not sess_alloy_store:
+            response['message'] = 'No previous session initiated.'
+            return response, 400
+
         # TODO(andrew@neuraldev.io): Implement the other options
         comp_list: list = []
         if sess_alloy_store['alloy_option'] == 'single':

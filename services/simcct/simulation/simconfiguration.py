@@ -137,6 +137,8 @@ class SimConfiguration(object):
             len(comp_list),
             dtype=[('idx', int), ('symbol', 'U2'), ('weight', np.float64)]
         )
+
+        # TODO(andrew@neuraldev.io): Need to deal with TypeError and KeyError
         # iterate over lists at once and store them in the np.ndarray
         for i, e in enumerate(comp_list):
             s = e['symbol']

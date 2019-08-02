@@ -21,71 +21,82 @@ This module defines and implements the endpoints for CCT and TTT simulations.
 
 from threading import Thread
 
-from flask import Blueprint, jsonify, session
+from flask import Blueprint, session
+from flask_restful import Resource
 
-from sim_app.middleware import token_required
+from sim_app.extensions import api
+from sim_app.middleware import token_required_restful
 from simulation.simconfiguration import SimConfiguration
 from simulation.phasesimulation import PhaseSimulation
 
 sim_blueprint = Blueprint('simulation', __name__)
 
 
-@sim_blueprint.route('/simulate', methods=['GET'])
-@token_required
-def simulate(token):
-    response = {'status': 'fail'}
+class Simulation(Resource):
 
-    # First we need to make sure they logged in and are in a current session
-    session_configs = session.get(f'{token}:configurations')
-    if session_configs is None:
-        response['message'] = 'No previous session configurations was set.'
-        return jsonify(response), 404
+    method_decorators = {'get': [token_required_restful]}
 
-    session_alloy = session.get(f'{token}:alloy')
-    if session_alloy is None:
-        response['message'] = 'No previous session alloy was set.'
-        return jsonify(response), 404
+    def get(self, token):
+        response = {'status': 'fail'}
 
-    # We need to validate ae1, ae3, ms, and bs temperatures because if we do
-    # the calculations for CCT/TTT will cause many problems.
-    if (
-        not session_configs['ae1_temp'] > 0.0
-        or not session_configs['ae3_temp'] > 0.0
-    ):
-        response['message'] = 'Ae1 and Ae3 value cannot be less than 0.0.'
-        return jsonify(response), 400
+        # First we need to make sure they logged in and are in a current session
+        session_configs = session.get(f'{token}:configurations')
+        if session_configs is None:
+            response['message'] = 'No previous session configurations was set.'
+            return response, 404
 
-    if (
-        not session_configs['ms_temp'] > 0.0
-        or not session_configs['bs_temp'] > 0.0
-    ):
-        response['message'] = 'MS and BS value cannot be less than 0.0.'
-        return jsonify(response), 400
+        sess_alloy_store = session.get(f'{token}:alloy_store')
+        if sess_alloy_store is None:
+            response['message'] = 'No previous session alloy was set.'
+            return response, 404
 
-    # No we can do the calculations for CCT and TTT
-    sim_configs = SimConfiguration(
-        configs=session.get(f'{token}:configurations'),
-        compositions=session.get(f'{token}:alloy')['compositions']
-    )
+        # We need to validate ae1, ae3, ms, and bs temperatures because if we do
+        # the calculations for CCT/TTT will cause many problems.
+        if (
+            not session_configs['ae1_temp'] > 0.0
+            or not session_configs['ae3_temp'] > 0.0
+        ):
+            response['message'] = 'Ae1 and Ae3 value cannot be less than 0.0.'
+            return response, 400
 
-    sim = PhaseSimulation(sim_configs=sim_configs)
+        if (
+            not session_configs['ms_temp'] > 0.0
+            or not session_configs['bs_temp'] > 0.0
+        ):
+            response['message'] = 'MS and BS value cannot be less than 0.0.'
+            return response, 400
 
-    # Running these in parallel with threading
-    ttt_process = Thread(sim.ttt())
-    cct_process = Thread(sim.cct())
-    # Starting CCT first because it takes longer.
-    cct_process.start()
-    ttt_process.start()
+        alloy = None
+        if sess_alloy_store.get('alloy_option') == 'single':
+            alloy = sess_alloy_store['alloys']['parent']
 
-    # Now we stop the main thread to wait for them to finish.
-    ttt_process.join()
-    cct_process.join()
+        # No we can do the calculations for CCT and TTT
+        sim_configs = SimConfiguration(
+            configs=session_configs,
+            compositions=alloy
+        )
 
-    data = {
-        'TTT': sim.plots_data.get_ttt_plot_data(),
-        'CCT': sim.plots_data.get_cct_plot_data()
-    }
+        sim = PhaseSimulation(sim_configs=sim_configs)
 
-    response['status'] = 'success'
-    response['data'] = data
-    return jsonify(response), 200
+        # Running these in parallel with threading
+        ttt_process = Thread(sim.ttt())
+        cct_process = Thread(sim.cct())
+        # Starting CCT first because it takes longer.
+        cct_process.start()
+        ttt_process.start()
+
+        # Now we stop the main thread to wait for them to finish.
+        ttt_process.join()
+        cct_process.join()
+
+        data = {
+            'TTT': sim.plots_data.get_ttt_plot_data(),
+            'CCT': sim.plots_data.get_cct_plot_data()
+        }
+
+        response['status'] = 'success'
+        response['data'] = data
+        return response, 200
+
+
+api.add_resource(Simulation, '/simulate')

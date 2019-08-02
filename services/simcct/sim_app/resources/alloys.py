@@ -13,25 +13,24 @@
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
-__version__ = '1.0.0'
+__version__ = '0.9.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.14'
 """alloys.py: 
 
-This defines the resources and endpoints for Alloys.
+This defines the resources and endpoints for Global Alloys CRUD operations.
 """
 
 from bson import ObjectId
-from flask import Blueprint, request, json
+from flask import Blueprint, request
 from flask_restful import Resource
 from marshmallow import ValidationError
 
 from sim_app.extensions import api
 from sim_app.schemas import AlloySchema
 from sim_app.alloys_service import AlloysService
-from simulation.periodic import PeriodicTable as pt
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -42,6 +41,7 @@ alloys_blueprint = Blueprint('alloys', __name__)
 class AlloysList(Resource):
     """The resource of endpoints for retrieving an alloy list and creating."""
 
+    # TODO(andrew@neuraldev.io): How to verify an admin user.
     def post(self):
         """Exposes the POST method for `/alloys` to allow creating an alloy.
         The request must also include a request body of data that will need to
@@ -134,6 +134,7 @@ class Alloys(Resource):
         response.pop('message')
         return response, 200
 
+    # TODO(andrew@neuraldev.io): How to verify an admin user.
     def patch(self, alloy_id):
         """Exposes the PATCH method for `/alloys` to update an existing alloy by
         an admin to update the existing data.
@@ -221,6 +222,7 @@ class Alloys(Resource):
         response.pop('message')
         return response, 200
 
+    # TODO(andrew@neuraldev.io): How to verify an admin user.
     def delete(self, alloy_id):
         """Exposes the DELETE method on `/alloys/{id}` to delete an existing
         alloy in the database.

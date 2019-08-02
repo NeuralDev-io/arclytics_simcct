@@ -29,7 +29,6 @@ from flask import json
 from pymongo import MongoClient
 
 from tests.test_api_base import BaseTestCase
-from tests.utilities import convert_json_to_comp
 from sim_app.app import BASE_DIR
 from sim_app.mongo import MongoAlloys
 from sim_app.schemas import AlloySchema

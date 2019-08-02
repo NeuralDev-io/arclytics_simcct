@@ -110,6 +110,7 @@ class Alloys(Resource):
     """The resource of endpoints for retrieving an alloy detail, partial
     updating and deleting an alloy in the global database.
     """
+
     def get(self, alloy_id):
         """Allows the GET method with `/alloys/{id}` as an endpoint to get
         a single alloy from the database.

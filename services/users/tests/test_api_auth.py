@@ -32,26 +32,26 @@ from users_app.resources.auth import SimCCTBadServerLogout
 class TestAuthEndpoints(BaseTestCase):
     """This module tests all the authentication endpoints and middleware."""
 
-    def test_user_registration(self):
-        """Ensure we can register a user."""
-        resp = self.client.post(
-            '/auth/register',
-            data=json.dumps(
-                {
-                    'email': 'natasha@avengers.io',
-                    'first_name': 'Natasha',
-                    'last_name': 'Romanoff',
-                    'password': 'RedInMyLedger'
-                }
-            ),
-            content_type='application/json'
-        )
-        data = json.loads(resp.data.decode())
-        self.assertTrue(data['status'] == 'success')
-        self.assertTrue(data['message'] == 'User has been registered.')
-        self.assertTrue(data['token'])
-        self.assertTrue(resp.content_type == 'application/json')
-        self.assertEqual(resp.status_code, 201)
+    # def test_user_registration(self):
+    #     """Ensure we can register a user."""
+    #     resp = self.client.post(
+    #         '/auth/register',
+    #         data=json.dumps(
+    #             {
+    #                 'email': 'dummy@arclytics.neuraldev.io',
+    #                 'first_name': 'Natasha',
+    #                 'last_name': 'Romanoff',
+    #                 'password': 'RedInMyLedger'
+    #             }
+    #         ),
+    #         content_type='application/json'
+    #     )
+    #     data = json.loads(resp.data.decode())
+    #     self.assertTrue(data['status'] == 'success')
+    #     self.assertTrue(data['message'] == 'User has been registered.')
+    #     self.assertTrue(data['token'])
+    #     self.assertTrue(resp.content_type == 'application/json')
+    #     self.assertEqual(resp.status_code, 201)
 
     def test_user_registration_duplicate_email(self):
         user = User(
@@ -143,6 +143,7 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertIn('fail', data['status'])
 
     def test_user_registration_invalid_json_keys_bad_password(self):
+        """Ensure registration fails with a generic <6 char password."""
         with self.client:
             response = self.client.post(
                 '/auth/register',
@@ -537,7 +538,9 @@ class TestAuthEndpoints(BaseTestCase):
             )
             data = json.loads(response.data.decode())
             self.assertTrue(data['status'] == 'fail')
-            self.assertTrue(data['message'] == 'This user does not exist.')
+            self.assertTrue(
+                data['message'] == 'This user account has been disabled.'
+            )
             self.assertEqual(response.status_code, 401)
 
 

@@ -71,7 +71,7 @@ class AlloysService(object):
                 self.load(alloys, many=True)
             )
         except DuplicateKeyError as e:
-            return e
+            return str(e)
         return alloy_id_list
 
     def create_alloy(self, alloy: dict) -> Union[ObjectId, str]:

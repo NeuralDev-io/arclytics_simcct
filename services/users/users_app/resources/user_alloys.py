@@ -206,8 +206,10 @@ class UserAlloy(Resource):
 
         # If there are no keys in the request body that match what we want.
         if not patch_name and not patch_comp:
-            response['message'] = ('Invalid keys in request payload (i.e. must '
-                                   'be either "name" or "compositions").')
+            response['message'] = (
+                'Invalid keys in request payload (i.e. must '
+                'be either "name" or "compositions").'
+            )
             return response, 400
 
         if patch_comp and not isinstance(patch_comp, list):
@@ -247,10 +249,8 @@ class UserAlloy(Resource):
         # the name is sent, then we don't need to validate this.
         if patch_comp and patch_name:
             try:
-                Alloy(
-                    name=patch_name,
-                    compositions=patch_comp
-                ).validate(clean=True)
+                Alloy(name=patch_name,
+                      compositions=patch_comp).validate(clean=True)
             except FieldDoesNotExist as e:
                 response['error'] = str(e)
                 response['message'] = 'Alloy validation error.'

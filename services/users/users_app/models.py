@@ -44,7 +44,6 @@ logger = AppLogger(__name__)
 # User type choices
 USERS = (('1', 'ADMIN'), ('2', 'USER'))
 
-
 # ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
 
 
@@ -347,15 +346,15 @@ class User(Document):
         try:
             payload = {
                 'exp':
-                    datetime.utcnow() + timedelta(
-                        days=current_app.config.get('TOKEN_EXPIRATION_DAYS', 0),
-                        seconds=current_app.config.
-                            get('TOKEN_EXPIRATION_SECONDS', 0)
-                    ),
+                datetime.utcnow() + timedelta(
+                    days=current_app.config.get('TOKEN_EXPIRATION_DAYS', 0),
+                    seconds=current_app.config.
+                    get('TOKEN_EXPIRATION_SECONDS', 0)
+                ),
                 'iat':
-                    datetime.utcnow(),
+                datetime.utcnow(),
                 'sub':
-                    user_id
+                user_id
             }
 
             return jwt.encode(

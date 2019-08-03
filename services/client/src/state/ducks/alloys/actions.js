@@ -3,7 +3,7 @@ import {
 } from './types'
 
 export const getAlloys = () => (dispatch) => {
-  fetch('http://localhost:8001/alloys', {
+  fetch('http://localhost:8001/global/alloys', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

@@ -29,7 +29,7 @@ from prettytable import PrettyTable
 
 from simulation.utilities import Method, Alloy
 from simulation.ae3_utilities import ae3_single_carbon, ae3_multi_carbon
-from simulation.periodic import PeriodicTable
+from simulation.periodic import PeriodicTable as pt
 
 BASE = os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
@@ -127,23 +127,25 @@ class SimConfiguration(object):
         them as a Structured numpy.ndarray with ('name', 'symbol', 'weight')
         record types.
         Args:
-            comp_list: a list of composition elements and weights.
+            comp_list: a Dict of composition elements and weights with the key
+                       being the element's atomic number.
 
         Returns:
             A structured numpy.ndarray with the weights and names.
         """
         comp = np.zeros(
             len(comp_list),
-            dtype=[('idx', np.int), ('symbol', 'U2'), ('weight', np.float64)]
+            dtype=[('idx', int), ('symbol', 'U2'), ('weight', np.float64)]
         )
+
+        # TODO(andrew@neuraldev.io): Need to deal with TypeError and KeyError
         # iterate over lists at once and store them in the np.ndarray
         for i, e in enumerate(comp_list):
             s = e['symbol']
-            # Using the PeriodicTable 1-to-1 mapping validates that the name is
+            # Using the pt 1-to-1 mapping validates that the name is
             # exactly as we expect it. Will raise a NotImplementedError
             # exception if symbol names don't match.
-            # comp[i] = (i, PeriodicTable[s].name, e['weight'])
-            comp[i] = (i, e['symbol'], e['weight'])
+            comp[i] = (i, pt[s].name, e['weight'])
         return comp
 
     @staticmethod
@@ -155,12 +157,12 @@ class SimConfiguration(object):
         # TODO(andrew@neuraldev.io -- Sprint 6): Do some validation for these
         #  and return a tuple instead (float, error)
         # ensure we are getting the value and not the list by using index 0
-        c = comp[comp['symbol'] == PeriodicTable.C.name]['weight'][0]
-        mn = comp[comp['symbol'] == PeriodicTable.Mn.name]['weight'][0]
-        ni = comp[comp['symbol'] == PeriodicTable.Ni.name]['weight'][0]
-        cr = comp[comp['symbol'] == PeriodicTable.Cr.name]['weight'][0]
-        mo = comp[comp['symbol'] == PeriodicTable.Mo.name]['weight'][0]
-        si = comp[comp['symbol'] == PeriodicTable.Si.name]['weight'][0]
+        c = comp[comp['symbol'] == pt.C.name]['weight'][0]
+        mn = comp[comp['symbol'] == pt.Mn.name]['weight'][0]
+        ni = comp[comp['symbol'] == pt.Ni.name]['weight'][0]
+        cr = comp[comp['symbol'] == pt.Cr.name]['weight'][0]
+        mo = comp[comp['symbol'] == pt.Mo.name]['weight'][0]
+        si = comp[comp['symbol'] == pt.Si.name]['weight'][0]
 
         if method != Method.Li98 and method != Method.Kirkaldy83:
             return -1
@@ -185,13 +187,13 @@ class SimConfiguration(object):
         # TODO(andrew@neuraldev.io -- Sprint 6): Do some validation for these
         #  and return a tuple instead (float, error)
         # ensure we are getting the value and not the list by using index 0
-        c = comp[comp['symbol'] == PeriodicTable.C.name]['weight'][0]
-        mn = comp[comp['symbol'] == PeriodicTable.Mn.name]['weight'][0]
-        ni = comp[comp['symbol'] == PeriodicTable.Ni.name]['weight'][0]
-        cr = comp[comp['symbol'] == PeriodicTable.Cr.name]['weight'][0]
-        mo = comp[comp['symbol'] == PeriodicTable.Mo.name]['weight'][0]
-        co = comp[comp['symbol'] == PeriodicTable.Co.name]['weight'][0]
-        si = comp[comp['symbol'] == PeriodicTable.Si.name]['weight'][0]
+        c = comp[comp['symbol'] == pt.C.name]['weight'][0]
+        mn = comp[comp['symbol'] == pt.Mn.name]['weight'][0]
+        ni = comp[comp['symbol'] == pt.Ni.name]['weight'][0]
+        cr = comp[comp['symbol'] == pt.Cr.name]['weight'][0]
+        mo = comp[comp['symbol'] == pt.Mo.name]['weight'][0]
+        co = comp[comp['symbol'] == pt.Co.name]['weight'][0]
+        si = comp[comp['symbol'] == pt.Si.name]['weight'][0]
 
         if method != Method.Li98 and method != Method.Kirkaldy83:
             return -1
@@ -212,11 +214,11 @@ class SimConfiguration(object):
 
     @staticmethod
     def get_ms_alpha(comp: np.ndarray = None) -> float:
-        c = comp['weight'][comp['symbol'] == PeriodicTable.C.name][0]
-        mn = comp['weight'][comp['symbol'] == PeriodicTable.Mn.name][0]
-        ni = comp['weight'][comp['symbol'] == PeriodicTable.Ni.name][0]
-        cr = comp['weight'][comp['symbol'] == PeriodicTable.Cr.name][0]
-        mo = comp['weight'][comp['symbol'] == PeriodicTable.Mo.name][0]
+        c = comp['weight'][comp['symbol'] == pt.C.name][0]
+        mn = comp['weight'][comp['symbol'] == pt.Mn.name][0]
+        ni = comp['weight'][comp['symbol'] == pt.Ni.name][0]
+        cr = comp['weight'][comp['symbol'] == pt.Cr.name][0]
+        mo = comp['weight'][comp['symbol'] == pt.Mo.name][0]
 
         return (
             0.0224 - (0.0107 * c) - (0.0007 * mn) - (0.00005 * ni) -
@@ -225,15 +227,15 @@ class SimConfiguration(object):
 
     @staticmethod
     def calc_ae1_ae3(comp: np.ndarray = None) -> (np.float, np.float):
-        c = comp[comp['symbol'] == PeriodicTable.C.name]['weight'][0]
-        ni = comp[comp['symbol'] == PeriodicTable.Ni.name]['weight'][0]
-        si = comp[comp['symbol'] == PeriodicTable.Si.name]['weight'][0]
-        w = comp[comp['symbol'] == PeriodicTable.W.name]['weight'][0]
-        mn = comp[comp['symbol'] == PeriodicTable.Mn.name]['weight'][0]
-        cr = comp[comp['symbol'] == PeriodicTable.Cr.name]['weight'][0]
+        c = comp[comp['symbol'] == pt.C.name]['weight'][0]
+        ni = comp[comp['symbol'] == pt.Ni.name]['weight'][0]
+        si = comp[comp['symbol'] == pt.Si.name]['weight'][0]
+        w = comp[comp['symbol'] == pt.W.name]['weight'][0]
+        mn = comp[comp['symbol'] == pt.Mn.name]['weight'][0]
+        cr = comp[comp['symbol'] == pt.Cr.name]['weight'][0]
         # `as` is a keyword you can't use so must use `_as`
-        _as = comp[comp['symbol'] == PeriodicTable.As.name]['weight'][0]
-        mo = comp[comp['symbol'] == PeriodicTable.Mo.name]['weight'][0]
+        _as = comp[comp['symbol'] == pt.As.name]['weight'][0]
+        mo = comp[comp['symbol'] == pt.Mo.name]['weight'][0]
         # Do the calculations
         # 1. Equations of Andrews (1965)
         ae1 = (
@@ -284,7 +286,7 @@ class SimConfiguration(object):
         results_mat = np.zeros((1000, 22), dtype=np.float64)
         # reserve the initial carbon wt% as the main routine is passing back
         # another value despite being set "ByVal"
-        wt_c = wt['weight'][wt['symbol'] == PeriodicTable.C.name][0]
+        wt_c = wt['weight'][wt['symbol'] == pt.C.name][0]
 
         # Find Ae3 for array of Carbon contents form 0.00 to 0.96 wt%
         # UPDATE wt, Results to CALL Ae3MultiC(wt, Results)

@@ -21,8 +21,10 @@ from bson import ObjectId
 from pymongo import MongoClient
 from flask import current_app, session, json
 
-from sim_app.app import BASE_DIR
 from tests.test_api_base import BaseTestCase
+from sim_app.app import BASE_DIR
+from sim_app.schemas import AlloyStoreSchema, ConfigurationsSchema
+from simulation.periodic import PeriodicTable as pT
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 
@@ -76,18 +78,27 @@ class TestSessionService(BaseTestCase):
         with open(_TEST_CONFIGS_PATH, 'r') as f:
             test_json = json.load(f)
 
+        configs = ConfigurationsSchema().load(test_json['configurations'])
+        store_dict = {
+            'alloy_option': 'single',
+            'alloys': {
+                'parent': {
+                    'name': 'Arc_Stark',
+                    'compositions': test_json['compositions']
+                },
+                'weld': None,
+                'mix': None
+            }
+        }
+        alloy_store = AlloyStoreSchema().load(store_dict)
+
         login_res = client.post(
             '/session/login',
             data=json.dumps(
                 {
                     '_id': self.user_id,
-                    'last_configurations': test_json['configurations'],
-                    'last_compositions': {
-                        'alloy': {
-                            'name': 'Arc_Stark',
-                            'compositions': test_json['compositions']
-                        }
-                    }
+                    'last_configurations': configs,
+                    'last_alloy_store': alloy_store
                 }
             ),
             headers={'Authorization': f'Bearer {self.token}'},
@@ -99,7 +110,7 @@ class TestSessionService(BaseTestCase):
         self.assertEqual(session.get(f'{self.user_id}:token'), self.token)
         self.assertEqual(session.get(f'{self.token}:user'), self.user_id)
         self.assertTrue(session.get(f'{self.token}:configurations'))
-        self.assertTrue(session.get(f'{self.token}:alloy'))
+        self.assertTrue(session.get(f'{self.token}:alloy_store'))
 
     def test_session_user_ping(self):
         """Just a sanity check test that there is connection to users."""
@@ -229,7 +240,7 @@ class TestSessionService(BaseTestCase):
                         'last_compositions': {
                             'alloy': {
                                 'name': '',
-                                'compositions': []
+                                'compositions': {}
                             }
                         }
                     }
@@ -324,10 +335,18 @@ class TestSessionService(BaseTestCase):
                         '_id': str(self.user_id),
                         'token': self.token,
                         'last_configurations': configs,
-                        'last_compositions': {
-                            'alloy': {
-                                'name': 'Random',
-                                'compositions': [e1, e2]
+                        'last_alloy_store': {
+                            'alloy_option': 'single',
+                            'alloys': {
+                                'parent': {
+                                    'name': 'Random',
+                                    'compositions': {
+                                        pT.C.value.atomic_num: e1,
+                                        pT.Mn.value.atomic_num: e2
+                                    }
+                                },
+                                'weld': None,
+                                'mix': None
                             }
                         }
                     }
@@ -339,6 +358,7 @@ class TestSessionService(BaseTestCase):
             data = json.loads(login_res.data.decode())
             self.assertTrue(data['status'] == 'fail')
             self.assertEqual(data['message'], 'Invalid payload.')
+            self.assertTrue(data['errors'])
             comp_store = session.get(f'{str(self.token)}:alloy')
             self.assertIsNone(comp_store)
 
@@ -347,6 +367,7 @@ class TestSessionService(BaseTestCase):
         e1 = {'symbol': 'C', 'weight': 0.044}
         e2 = {'symbol': 'Mn', 'weight': 1.73}
         e3 = {'symbol': 'Si', 'weight': 0.22}
+        comp = [e1, e2, e3]
 
         with current_app.test_client() as client:
             login_res = client.post(
@@ -356,10 +377,15 @@ class TestSessionService(BaseTestCase):
                         '_id': str(self.user_id),
                         'token': self.token,
                         'last_configurations': {},
-                        'last_compositions': {
-                            'alloy': {
-                                'name': 'Random',
-                                'compositions': [e1, e2, e3]
+                        'last_alloy_store': {
+                            'alloy_option': 'single',
+                            'alloys': {
+                                'parent': {
+                                    'name': 'Random',
+                                    'compositions': comp
+                                },
+                                'weld': None,
+                                'mix': None
                             }
                         }
                     }
@@ -370,7 +396,8 @@ class TestSessionService(BaseTestCase):
             data = json.loads(login_res.data.decode())
             self.assertTrue(data['status'] == 'success')
             self.assertEqual(data['message'], 'User session initiated.')
-            comp_store = session.get(f'{str(self.token)}:alloy')
+            alloy_store = session.get(f'{str(self.token)}:alloy_store')
+            comp_store = alloy_store['alloys']['parent']
             self.assertTrue(comp_store['compositions'])
             stored_elem1 = comp_store['compositions'][0]
             stored_elem2 = comp_store['compositions'][1]

@@ -22,11 +22,11 @@ import unittest
 
 from tests.test_api_base import BaseTestCase
 from users_app.token import (
-    confirm_token, generate_confirmation_token, generate_url
+    confirm_token, generate_confirmation_token, generate_url, URLTokenError
 )
 
 
-class MyTestCase(BaseTestCase):
+class TestTokenURL(BaseTestCase):
     def test_verify_token(self):
         """Ensure that both confirm token encoding and decoding work."""
         token = generate_confirmation_token('dummy@email.com')
@@ -36,15 +36,17 @@ class MyTestCase(BaseTestCase):
     def test_verify_invalid_token(self):
         """Ensure an invalid token will not be decoded."""
         invalid_token = 'invalid string'
-        email = confirm_token(invalid_token)
-        self.assertEqual(email, False)
+        with self.assertRaises(URLTokenError):
+            email = confirm_token(invalid_token)
+            self.assertEqual(email, False)
 
     def test_verify_expired_token(self):
         """Ensure that if the token is expired it fails."""
         token = generate_confirmation_token('dummy@email.com')
         time.sleep(1)
-        email = confirm_token(token, 0)
-        self.assertEqual(email, False)
+        with self.assertRaises(URLTokenError):
+            email = confirm_token(token, 0)
+            self.assertEqual(email, False)
 
     def test_token_is_unique(self):
         """Ensure tokens are unique."""

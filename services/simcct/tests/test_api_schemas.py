@@ -23,7 +23,7 @@ from marshmallow import ValidationError
 from sim_app.app import BASE_DIR
 from tests.test_api_base import BaseTestCase
 from sim_app.schemas import (
-    AlloySchema, ConfigurationsSchema, NonLimitConfigsSchema
+    AlloySchema, ConfigurationsSchema, SetupConfigsSchema
 )
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'

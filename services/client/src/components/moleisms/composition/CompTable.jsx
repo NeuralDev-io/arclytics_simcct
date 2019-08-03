@@ -44,13 +44,13 @@ class CompTable extends Component {
       })
     }
     if (alloyOption === 'mix') {
-      const dialution = parseFloat(data.dialution)
+      const dilution = parseFloat(data.dilution)
       tableData.forEach((elem, idx) => {
         const parentVal = elem.parent ? parseFloat(elem.parent) : 0
         const weldVal = elem.weld ? parseFloat(elem.weld) : 0
         // calculate mix composition and round to 2 decimals
-        const mixVal = Math.round((dialution / 100 * weldVal
-          + (100 - dialution) / 100 * parentVal) * 100) / 100
+        const mixVal = Math.round((dilution / 100 * weldVal
+          + (100 - dilution) / 100 * parentVal) * 100) / 100
         tableData[idx] = {
           ...elem,
           mix: mixVal,
@@ -175,7 +175,7 @@ CompTable.propTypes = {
         ]),
       })),
     }),
-    dialution: PropTypes.oneOfType([
+    dilution: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.number,
     ]),

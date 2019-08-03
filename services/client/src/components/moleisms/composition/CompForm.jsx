@@ -82,14 +82,14 @@ class CompForm extends Component {
           />
         </div>
         <div className="input-col">
-          <h6 className={`${(values.alloyOption === 'single' || values.alloyOption === 'both') && 'text--disabled'}`}>Dialution</h6>
+          <h6 className={`${(values.alloyOption === 'single' || values.alloyOption === 'both') && 'text--disabled'}`}>Dilution</h6>
           <TextFieldExtra
             type="text"
-            name="dialution"
-            placeholder="Dialution"
-            value={values.dialution}
+            name="dilution"
+            placeholder="Dilution"
+            value={values.dilution}
             length="short"
-            onChange={val => onChange('dialution', val)}
+            onChange={val => onChange('dilution', val)}
             suffix="%"
             isDisabled={values.alloyOption === 'single' || values.alloyOption === 'both'}
           />
@@ -132,7 +132,7 @@ CompForm.propTypes = {
         ]),
       })),
     }),
-    dialution: PropTypes.oneOfType([
+    dilution: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.number,
     ]),

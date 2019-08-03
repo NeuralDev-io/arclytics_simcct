@@ -1,5 +1,6 @@
 import {
   GET_ALLOYS,
+  CREATE_ALLOY,
 } from './types'
 
 const initialState = {
@@ -13,6 +14,16 @@ const reducer = (state = initialState, action) => {
         ...state,
         list: action.payload,
       }
+    case CREATE_ALLOY: {
+      const newAlloys = [
+        ...state.list,
+        action.payload,
+      ]
+      return {
+        ...state,
+        list: newAlloys,
+      }
+    }
     default:
       return state
   }

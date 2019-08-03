@@ -59,7 +59,6 @@ class CompForm extends Component {
             length="stretch"
             onChange={val => onChange('parent', val)}
             className={styles.select}
-            isClearable
             isSearchable
           />
         </div>
@@ -77,7 +76,6 @@ class CompForm extends Component {
             onChange={val => onChange('weld', val)}
             className={styles.select}
             isDisabled={values.alloyOption === 'single'}
-            isClearable
             isSearchable
           />
         </div>

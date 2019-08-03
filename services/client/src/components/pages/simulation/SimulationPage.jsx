@@ -30,6 +30,7 @@ class SimulationPage extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      sessionStoreInit: false,
       displayConfig: true,
       displayProfile: true,
       displayUserCurve: true,
@@ -79,14 +80,11 @@ class SimulationPage extends Component {
     if (!localStorage.getItem('token')) {
       this.props.history.push('/signin') // eslint-disable-line
     }
-    initComp('single', 'parent', {
-      name: '',
-      compositions: [],
-    })
   }
 
   handleCompChange = (name, value) => {
     const { alloyList } = this.props
+    const { sessionStoreInit } = this.state
 
     if (name === 'alloyOption') { // alloy option is changed
       this.setState(prevState => ({
@@ -95,7 +93,6 @@ class SimulationPage extends Component {
           alloyOption: value.value,
         },
       }))
-      updateComp('', {})
     } else if (name === 'parent' || name === 'weld') { // alloy composition is changed
       if (value === null) {
         // clear all elements
@@ -109,18 +106,29 @@ class SimulationPage extends Component {
           },
         }))
       } else {
-        // find composition and set to state
-        this.setState(prevState => ({
-          alloys: {
-            ...prevState.alloys,
-            [name]: {
-              name: value.value,
-              compositions: [
-                ...alloyList[alloyList.findIndex(a => a.name === value.value)].compositions,
-              ],
+        // find composition
+        const alloy = {
+          name: value.value,
+          compositions: [
+            ...alloyList[alloyList.findIndex(a => a.name === value.value)].compositions,
+          ],
+        }
+        if (name === 'parent') {
+          // set to state
+          this.setState(prevState => ({
+            alloys: {
+              ...prevState.alloys,
+              [name]: alloy,
             },
-          },
-        }))
+          }))
+          // update session store on the server
+          const { alloys } = this.state
+          if (sessionStoreInit) {
+            updateComp(alloys.alloyOption, name, alloy)
+          } else {
+            initComp(alloys.alloyOption, name, alloy)
+          }
+        }
       }
     } else if (name === 'dilution') {
       this.setState(prevState => ({
@@ -131,6 +139,7 @@ class SimulationPage extends Component {
       }))
     } else { // weight of an element is changed
       const nameArr = name.split('_')
+      // update state
       this.setState((prevState) => {
         const idx = prevState.alloys[nameArr[0]].compositions.findIndex(
           elem => elem.symbol === nameArr[1]
@@ -152,6 +161,19 @@ class SimulationPage extends Component {
           },
         }
       })
+      // update session store on the server
+      if (nameArr[0] === 'parent') {
+        const { alloys } = this.state
+        updateComp(alloys.alloyOption, nameArr[0], {
+          name: alloys[nameArr[0]].name,
+          compositions: [
+            {
+              symbol: nameArr[1],
+              weight: parseFloat(value),
+            },
+          ],
+        })
+      }
     }
   }
 

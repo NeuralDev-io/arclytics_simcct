@@ -93,8 +93,8 @@ h4, .text--h4 {
 h5, .text--h5 {
   font-size: $text-h5;
   line-height: $line-height-h5;
-  font-weight: 600;
-  font-family: $font-primary;
+  font-weight: 700;
+  font-family: $font-secondary;
   letter-spacing: $letter-spacing-h5;
 }
 
@@ -135,4 +135,8 @@ p {
   color: $n500;
   font-family: $font-primary;
   letter-spacing: $letter-spacing-sub2;
+}
+
+.text--disabled {
+  color: $n300;
 }

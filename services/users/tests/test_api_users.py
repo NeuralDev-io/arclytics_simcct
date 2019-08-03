@@ -1114,10 +1114,10 @@ class TestUserService(BaseTestCase):
             )
 
             login_data = json.loads(resp_attempt_login.data.decode())
-            self.assertEqual(resp_attempt_login.status_code, 400)
+            self.assertEqual(resp_attempt_login.status_code, 401)
             self.assertEqual(login_data['status'], 'fail')
             self.assertEqual(
-                login_data['message'], 'Your Account has been disabled.'
+                login_data['message'], 'This user account has been disabled.'
             )
 
     def test_disable_account_no_data(self):

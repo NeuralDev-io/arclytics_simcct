@@ -54,6 +54,25 @@ class PasswordValidationError(Exception):
               self).__init__('A password must be set before saving.')
 
 
+class ElementSymbolInvalid(Exception):
+    """Raises an Exception if the Element does not conform to a valid symbol
+    as used in the Periodic Table of Elements.
+    """
+    default_err = ('ValidationError (Element) (Field does not match a valid '
+                   'element symbol in the Periodic Table: ["symbol"])')
+
+    def __init__(self, message=default_err):
+        super(ElementSymbolInvalid, self).__init__(message)
+
+
+class ElementInvalid(Exception):
+    """Raises an Exception if the Element is invalid in any way."""
+    prefix = 'ValidationError (Element)'
+
+    def __init__(self, message=''):
+        super(ElementInvalid, self).__init__(f'{self.prefix} ({message})')
+
+
 class SimpleUTC(tzinfo):
     def tzname(self, dt: Optional[datetime]) -> Optional[str]:
         return 'UTC'

@@ -21,7 +21,7 @@ import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { TTT, CCT } from '../../moleisms/charts'
-import { updateComp, updateConfig } from '../../../utils/sim/SessionConfigs'
+import { initComp, updateComp, updateConfig } from '../../../api/sim/SessionConfigs'
 import { runSim } from '../../../state/ducks/sim/actions'
 
 import styles from './SimulationPage.module.scss'
@@ -79,6 +79,10 @@ class SimulationPage extends Component {
     if (!localStorage.getItem('token')) {
       this.props.history.push('/signin') // eslint-disable-line
     }
+    initComp('single', 'parent', {
+      name: '',
+      compositions: [],
+    })
   }
 
   handleCompChange = (name, value) => {
@@ -91,6 +95,7 @@ class SimulationPage extends Component {
           alloyOption: value.value,
         },
       }))
+      updateComp('', {})
     } else if (name === 'parent' || name === 'weld') { // alloy composition is changed
       if (value === null) {
         // clear all elements
@@ -127,7 +132,9 @@ class SimulationPage extends Component {
     } else { // weight of an element is changed
       const nameArr = name.split('_')
       this.setState((prevState) => {
-        const idx = prevState.alloys[nameArr[0]].compositions.findIndex(elem => elem.symbol === nameArr[1])
+        const idx = prevState.alloys[nameArr[0]].compositions.findIndex(
+          elem => elem.symbol === nameArr[1]
+        )
         const newComp = [...prevState.alloys[nameArr[0]].compositions]
         if (idx !== undefined) {
           newComp[idx] = {

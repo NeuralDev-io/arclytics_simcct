@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import TextField, { TextFieldExtra } from '../../elements/textfield'
+import { TextFieldExtra } from '../../elements/textfield'
 import Checkbox from '../../elements/checkbox'
 
 import styles from './UserProfileConfig.module.scss'

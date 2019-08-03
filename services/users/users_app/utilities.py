@@ -58,8 +58,10 @@ class ElementSymbolInvalid(Exception):
     """Raises an Exception if the Element does not conform to a valid symbol
     as used in the Periodic Table of Elements.
     """
-    default_err = ('ValidationError (Element) (Field does not match a valid '
-                   'element symbol in the Periodic Table: ["symbol"])')
+    default_err = (
+        'ValidationError (Element) (Field does not match a valid '
+        'element symbol in the Periodic Table: ["symbol"])'
+    )
 
     def __init__(self, message=default_err):
         super(ElementSymbolInvalid, self).__init__(message)

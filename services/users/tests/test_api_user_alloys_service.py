@@ -410,7 +410,7 @@ class TestUserAlloyService(BaseTestCase):
 
             alloy_data2 = {
                 'name':
-                    'Alloy-102',
+                'Alloy-102',
                 'compositions': [
                     {
                         "symbol": "C",
@@ -444,15 +444,9 @@ class TestUserAlloyService(BaseTestCase):
             user.reload()
             copy_data = alloy_data.copy()
             copy_data['_id'] = _id
-            self.assertNotEqual(
-                user.saved_alloys.first().to_dict(),
-                copy_data
-            )
+            self.assertNotEqual(user.saved_alloys.first().to_dict(), copy_data)
             alloy_data2['_id'] = str(user.saved_alloys.first().oid)
-            self.assertEqual(
-                user.saved_alloys.first().to_dict(),
-                alloy_data2
-            )
+            self.assertEqual(user.saved_alloys.first().to_dict(), alloy_data2)
 
     def test_delete_invalid_objectid(self):
         with app.test_client() as client:
@@ -549,13 +543,18 @@ class TestUserAlloyService(BaseTestCase):
 
             res = client.patch(
                 f'/user/alloys/{_id}',
-                data=json.dumps({'alloy_name': 'Wrong_Key', 'comps': []}),
+                data=json.dumps({
+                    'alloy_name': 'Wrong_Key',
+                    'comps': []
+                }),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            msg = ('Invalid keys in request payload (i.e. must be either "name"'
-                   ' or "compositions").')
+            msg = (
+                'Invalid keys in request payload (i.e. must be either "name"'
+                ' or "compositions").'
+            )
             self.assertEqual(data['message'], msg)
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
@@ -569,13 +568,20 @@ class TestUserAlloyService(BaseTestCase):
 
             res = client.patch(
                 f'/user/alloys/{_id}',
-                data=json.dumps({'compositions': {'symbol': 'C', 'weight': 1}}),
+                data=json.dumps(
+                    {'compositions': {
+                        'symbol': 'C',
+                        'weight': 1
+                    }}
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            msg = ('Compositions must be provided as a list of valid elements '
-                   'e.g. {"symbol": "C", "weight": 1.0}')
+            msg = (
+                'Compositions must be provided as a list of valid elements '
+                'e.g. {"symbol": "C", "weight": 1.0}'
+            )
             self.assertEqual(data['message'], msg)
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
@@ -630,7 +636,9 @@ class TestUserAlloyService(BaseTestCase):
 
             updated_alloy = {
                 'compositions': [
-                    {"symbol": "C"},
+                    {
+                        "symbol": "C"
+                    },
                 ]
             }
 
@@ -641,8 +649,10 @@ class TestUserAlloyService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            err = ('ValidationError (Element) (symbol.Field is required: '
-                   '["Element.weight"])')
+            err = (
+                'ValidationError (Element) (symbol.Field is required: '
+                '["Element.weight"])'
+            )
             self.assertIsNotNone(data.get('error', None))
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Invalid element error.')
@@ -664,7 +674,10 @@ class TestUserAlloyService(BaseTestCase):
             # Yes, MS is not an element symbol
             updated_alloy = {
                 'compositions': [
-                    {'symbol': 'MS', 'weight': 0.5},
+                    {
+                        'symbol': 'MS',
+                        'weight': 0.5
+                    },
                 ]
             }
 
@@ -678,8 +691,10 @@ class TestUserAlloyService(BaseTestCase):
             # we want it to stop here because validation has not failed as we
             # expected it to.
             self.assertNotEqual(data['message'], 'No alloys found.')
-            err = ('ValidationError (Element) (Field does not match a valid '
-                   'element symbol in the Periodic Table: ["symbol"])')
+            err = (
+                'ValidationError (Element) (Field does not match a valid '
+                'element symbol in the Periodic Table: ["symbol"])'
+            )
             self.assertIsNotNone(data.get('error', None))
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Invalid element symbol error.')
@@ -699,9 +714,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = str(user.saved_alloys[0].oid)
 
             new_name = 'Alloy-New-101'
-            updated_alloy = {
-                'name': new_name
-            }
+            updated_alloy = {'name': new_name}
 
             res = client.patch(
                 f'/user/alloys/{_id}',
@@ -731,8 +744,13 @@ class TestUserAlloyService(BaseTestCase):
 
             updated_alloy = {
                 'compositions': [
-                    {"symbol": "C", "weight": 0.5},
-                    {"symbol": "Mn", "weight": 1.5}
+                    {
+                        "symbol": "C",
+                        "weight": 0.5
+                    }, {
+                        "symbol": "Mn",
+                        "weight": 1.5
+                    }
                 ]
             }
 
@@ -765,10 +783,7 @@ class TestUserAlloyService(BaseTestCase):
 
             new_name = 'Alloy-New-101'
             new_elem = {"symbol": "Fe", "weight": 0.01}
-            updated_alloy = {
-                'name': new_name,
-                'compositions': [new_elem]
-            }
+            updated_alloy = {'name': new_name, 'compositions': [new_elem]}
 
             res = client.patch(
                 f'/user/alloys/{_id}',

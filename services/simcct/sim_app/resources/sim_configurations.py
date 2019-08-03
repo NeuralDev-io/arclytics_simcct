@@ -31,7 +31,7 @@ from sim_app.middleware import token_required_restful
 from sim_app.schemas import AlloyStoreSchema, SetupConfigsSchema, AlloySchema
 from simulation.periodic import PeriodicTable as PT
 
-configs_blueprint = Blueprint('configs', __name__)
+configs_blueprint = Blueprint('sim_configurations', __name__)
 
 
 class AlloyStore(Resource):

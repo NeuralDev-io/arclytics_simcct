@@ -440,12 +440,12 @@ class DisableAccount(Resource):
 
         user = User.objects.get(email=email)
         user.account_disabled = True
-        # TODO(davidmatthews1004@gmail.com) Kick user if they are currently logged in
+        user.active = False
         user.save()
 
         response['status'] = 'success'
-        response['message'
-                 ] = f'The account for User {user.id} has been disabled.'
+        response['message'] = (f'The account for User {user.id} has been '
+                               f'disabled.')
         return response, 200
 
 

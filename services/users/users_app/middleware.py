@@ -55,7 +55,10 @@ def authenticate(f):
 
         # Validate the user is active
         user = User.objects.get(id=resp)
-        if not user or not user.active:
+        if not user:
+            response['message'] = 'User does not exist.'
+            return response, 404
+        if not user.active:
             response['message'] = 'This user account has been disabled.'
             return response, 401
 

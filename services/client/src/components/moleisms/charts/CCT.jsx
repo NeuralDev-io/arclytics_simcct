@@ -6,9 +6,9 @@ import withDimension from 'react-dimensions'
 import { layout, config } from './utils/chartConfig'
 
 import colours from '../../../styles/_colors_light.scss'
-import styles from './TTT.module.scss'
+import styles from './CCT.module.scss'
 
-const TTT = (props) => {
+const CCT = (props) => {
   const { containerWidth, containerHeight, data } = props // eslint-disable-line
   let chartData = []
   if (data !== undefined) {
@@ -50,7 +50,7 @@ const TTT = (props) => {
   )
 }
 
-TTT.propTypes = {
+CCT.propTypes = {
   // props given by withDimension()
   containerWidth: PropTypes.number.isRequired,
   containerHeight: PropTypes.number.isRequired,
@@ -60,9 +60,9 @@ TTT.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  data: state.sim.results['TTT Data'],
+  data: state.sim.results['CCT Data'],
 })
 
 export default withDimension({
   className: styles.wrapper,
-})(connect(mapStateToProps, {})(TTT))
+})(connect(mapStateToProps, {})(CCT))

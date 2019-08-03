@@ -1,0 +1,84 @@
+/**
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Functions used to update the current session configurations, used in the main
+ * simulation screen. These functions are called each time onChange is fired on an
+ * config/comp input field. The purpose is to speed up the time it takes since a
+ * user presses RUN until the result is returned.
+ *
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
+
+export const initComp = (option, type, alloy) => {
+  console.log(JSON.stringify({
+    alloy_option: option,
+    alloy_type: type,
+    alloy,
+  }))
+  fetch('http://localhost:8001/alloys/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify({
+      alloy_option: option,
+      alloy_type: type,
+      alloy,
+    }),
+  })
+    .then(res => res.json())
+    .then((data) => {
+      console.log(data)
+    })
+  // const newAlloy = {
+  //   name: 'Alloy dummy',
+  //   compositions: [
+  //     {
+  //       symbol: 'C',
+  //       weight: 3.1,
+  //     },
+  //   ],
+  // }
+  // console.log(newAlloy)
+  // fetch('http://localhost:8001/global/alloys', {
+  //   method: 'POST',
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //     Authorization: `Bearer ${localStorage.getItem('token')}`,
+  //   },
+  //   body: JSON.stringify(newAlloy),
+  // })
+  //   .then(res => res.json())
+  //   .then((data) => {
+  //     console.log(data)
+  //   })
+}
+
+export const updateComp = (type, alloy) => {
+  fetch('http://localhost:8001/alloys/update', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify({
+      
+    }),
+  })
+    .then(res => res.json())
+    .then((data) => {
+      console.log(data)
+      if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'success') console.log(data)
+    })
+    .catch(err => console.log(err))
+}
+
+export const updateConfig = () => {
+
+}

@@ -11,6 +11,18 @@
 .inputContainer {
   position: relative;
 
+  &.default{
+    width: 7.5rem;
+  }
+  &.short {
+    width: 7rem;
+  }
+  &.long {
+    width: 10rem;
+  }
+  &.stretch {
+    width: 100%
+  }
 }
 
 .suffix {

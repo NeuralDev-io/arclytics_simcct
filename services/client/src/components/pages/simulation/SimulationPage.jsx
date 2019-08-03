@@ -70,7 +70,7 @@ class SimulationPage extends Component {
           name: '',
           compositions: [],
         },
-        dialution: 0,
+        dilution: 0,
       },
     }
   }
@@ -122,11 +122,11 @@ class SimulationPage extends Component {
           },
         }))
       }
-    } else if (name === 'dialution') {
+    } else if (name === 'dilution') {
       this.setState(prevState => ({
         alloys: {
           ...prevState.alloys,
-          dialution: value,
+          dilution: value,
         },
       }))
     } else { // weight of an element is changed

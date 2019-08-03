@@ -71,7 +71,7 @@ CompSidebar.propTypes = {
         ]),
       })),
     }),
-    dialution: PropTypes.oneOfType([
+    dilution: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.number,
     ]),

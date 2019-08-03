@@ -30,17 +30,20 @@ from mongoengine import (
     DateTimeField, EmbeddedDocumentField, IntField, FloatField, ListField,
     EmbeddedDocumentListField, queryset_manager, ObjectIdField
 )
+from mongoengine.errors import ValidationError
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
 from users_app.extensions import bcrypt
 from users_app.utilities import (
-    JSONEncoder, PeriodicTable, PasswordValidationError
+    JSONEncoder, PeriodicTable, PasswordValidationError, ElementSymbolInvalid,
+    ElementInvalid
 )
 
 logger = AppLogger(__name__)
 # User type choices
 USERS = (('1', 'ADMIN'), ('2', 'USER'))
+
 
 # ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
 
@@ -175,10 +178,30 @@ class Configuration(EmbeddedDocument):
 
 class Element(EmbeddedDocument):
     symbol = StringField(max_length=2, required=True)
-    weight = FloatField(default=0.0, required=True)
+    weight = FloatField(required=True)
 
     def to_dict(self):
         return {'symbol': self.symbol, 'weight': self.weight}
+
+    def clean(self):
+        """Ensure that the `symbol` field must conform to a proper periodic
+        table element symbol and ensure they are both required.
+        """
+        # These ensure they are not missing.
+        if not self.symbol:
+            msg = 'symbol.Field is required: ["Element.symbol"])'
+            raise ElementInvalid(message=msg)
+
+        if not self.weight == 0.0:
+            if not self.weight:
+                msg = 'symbol.Field is required: ["Element.weight"]'
+                raise ElementInvalid(message=msg)
+
+        try:
+            valid_symbol = PeriodicTable[self.symbol].name
+        except KeyError as e:
+            raise ElementSymbolInvalid()
+        self.symbol = valid_symbol
 
     def __str__(self):
         return self.to_json()
@@ -188,18 +211,12 @@ class Alloy(EmbeddedDocument):
     oid = ObjectIdField(
         required=True, default=lambda: ObjectId(), primary_key=True
     )
-    name = StringField(required=True)
-    compositions = ListField(EmbeddedDocumentField(Element))
+    name = StringField()
+    compositions = EmbeddedDocumentListField(Element)
 
     def to_dict(self):
         comp = [obj.to_dict() for obj in self.compositions]
         return {'_id': str(self.oid), 'name': self.name, 'compositions': comp}
-
-    # def to_json(self, *args, **kwargs):
-    #     """Override the default method to customise the way a JSON format is
-    #     transformed.
-    #     """
-    #     return json.dumps(self.to_dict(), cls=JSONEncoder)
 
     def __str__(self):
         return self.to_json()
@@ -330,15 +347,15 @@ class User(Document):
         try:
             payload = {
                 'exp':
-                datetime.utcnow() + timedelta(
-                    days=current_app.config.get('TOKEN_EXPIRATION_DAYS', 0),
-                    seconds=current_app.config.
-                    get('TOKEN_EXPIRATION_SECONDS', 0)
-                ),
+                    datetime.utcnow() + timedelta(
+                        days=current_app.config.get('TOKEN_EXPIRATION_DAYS', 0),
+                        seconds=current_app.config.
+                            get('TOKEN_EXPIRATION_SECONDS', 0)
+                    ),
                 'iat':
-                datetime.utcnow(),
+                    datetime.utcnow(),
                 'sub':
-                user_id
+                    user_id
             }
 
             return jwt.encode(

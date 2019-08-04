@@ -275,90 +275,32 @@ def convert_wt_2_mol(wt: np.ndarray) -> (np.ndarray, np.array):
            composition (all elements).
         y: mole fraction of each element in relation to Fe only
     """
-    c_vect = np.zeros(wt.shape[0], dtype=np.float64)
-    y_vect = np.zeros(wt.shape[0], dtype=np.float64)
     d_vect = np.zeros(wt.shape[0], dtype=np.float64)
 
     # Convert wt% to moles as if 100grams total
 
+    # TODO(andrew@neuraldev.io): We MUST ensure that 'C' is always first
+    #  and 'Fe' is always last.
     # add all the wt% to find total wt% alloying elements
     # note: ensure last one with index -1 is Iron, Fe
     d_vect[-1] = np.sum(wt['weight'][1:11]).astype(np.float64).item()
     d_vect[-1] = 100.0 - d_vect[-1]  # find wt% Fe by difference
     d_vect[-1] = d_vect[-1] / 55.84  # Fe, calculate moles Fe if 100 g of alloy
 
-    # Carbon
     d_vect[0] = (
         wt['weight'][wt['symbol'] == PT.C.name].item() / PT.C.value.atomic_mass
     )
-    # Manganese
-    d_vect[1] = (
-        wt['weight'][wt['symbol'] == PT.Mn.name][0] / PT.Mn.value.atomic_mass
-    )
-    # Silicon
-    d_vect[2] = (
-        wt['weight'][wt['symbol'] == PT.Si.name][0] / PT.Si.value.atomic_mass
-    )
-    # Nickel
-    d_vect[3] = (
-        wt['weight'][wt['symbol'] == PT.Ni.name][0] / PT.Ni.value.atomic_mass
-    )
-    # Chromium
-    d_vect[4] = (
-        wt['weight'][wt['symbol'] == PT.Cr.name][0] / PT.Cr.value.atomic_mass
-    )
-    # Molybdenum
-    d_vect[5] = (
-        wt['weight'][wt['symbol'] == PT.Mo.name][0] / PT.Mo.value.atomic_mass
-    )
-    # Cobalt
-    d_vect[6] = (
-        wt['weight'][wt['symbol'] == PT.Co.name][0] / PT.Co.value.atomic_mass
-    )
-    # Aluminium
-    d_vect[7] = (
-        wt['weight'][wt['symbol'] == PT.Al.name][0] / PT.Al.value.atomic_mass
-    )
-    # Copper
-    d_vect[8] = (
-        wt['weight'][wt['symbol'] == PT.Cu.name][0] / PT.Cu.value.atomic_mass
-    )
-    # Arsenic
-    d_vect[9] = (
-        wt['weight'][wt['symbol'] == PT.As.name][0] / PT.As.value.atomic_mass
-    )
-    # Titanium
-    d_vect[10] = (
-        wt['weight'][wt['symbol'] == PT.Ti.name][0] / PT.Ti.value.atomic_mass
-    )
-    # Vanadium
-    d_vect[11] = (
-        wt['weight'][wt['symbol'] == PT.V.name][0] / PT.V.value.atomic_mass
-    )
-    # Tungsten
-    d_vect[12] = (
-        wt['weight'][wt['symbol'] == PT.W.name][0] / PT.W.value.atomic_mass
-    )
-    # Sulphur
-    d_vect[13] = (
-        wt['weight'][wt['symbol'] == PT.S.name][0] / PT.S.value.atomic_mass
-    )
-    # Nitrogen
-    d_vect[14] = (
-        wt['weight'][wt['symbol'] == PT.N.name][0] / PT.N.value.atomic_mass
-    )
-    # Niobium
-    d_vect[15] = (
-        wt['weight'][wt['symbol'] == PT.Nb.name][0] / PT.Nb.value.atomic_mass
-    )
-    # Boron
-    d_vect[16] = (
-        wt['weight'][wt['symbol'] == PT.B.name][0] / PT.B.value.atomic_mass
-    )
-    # Phosphorous
-    d_vect[17] = (
-        wt['weight'][wt['symbol'] == PT.P.name][0] / PT.P.value.atomic_mass
-    )
+
+    # 2019-08-04: Update by andrew@neuraldev.io
+    # In the original algorithm, Dr. Bendeich hard codes the elements and uses
+    # the hard coded atomic mass value for the compositions array.
+    # In this version, we only need to ensure the first element is 'C' and the
+    # last element is 'Fe' in the array. Once we know that, it doesn't matter
+    # what other elements there are as this loop will use a Periodic Table
+    # Enum and the Hash Dict access of the atomic mass to calculate the
+    # combined weight % of the alloying elements. 
+    for i, el in enumerate(wt[1:-1], start=1):
+        d_vect[i] = el['weight'].item() / PT[el['symbol']].value.atomic_mass
 
     b1 = np.sum(d_vect).astype(np.float64).item()
 

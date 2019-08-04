@@ -5,6 +5,7 @@ import store from './state/store'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
 import SimulationPage from './components/pages/simulation'
+import ProfilePage from './components/pages/profile'
 
 import './App.scss'
 
@@ -25,6 +26,11 @@ function App() {
             exact
             path="/"
             render={props => <SimulationPage {...props} />}
+          />
+          <Route
+            exact
+            path="/profile"
+            render={props => <ProfilePage {...props} />}
           />
         </Switch>
       </div>

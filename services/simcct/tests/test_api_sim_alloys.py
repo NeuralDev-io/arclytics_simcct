@@ -72,6 +72,69 @@ class TestSimConfigurations(BaseTestCase):
 
         return configs, alloy_store, token
 
+    def test_post_alloy_missing_elements(self):
+        with current_app.test_client() as client:
+            configs, comp, token = self.login_client(client)
+
+            res = client.post(
+                '/alloys/update',
+                data=json.dumps(
+                    {
+                        'alloy_option': 'single',
+                        'alloy_type': 'parent',
+                        'alloy': {
+                            'name': 'Bad Alloy',
+                            'compositions': [{'symbol': 'C', 'weight': 1}]
+                        }
+                    }
+                ),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            msg = ("Missing elements ['Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', 'W', "
+                   "'As', 'Fe']")
+            self.assertEqual(data['message'], msg)
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+    def test_post_alloy_all_elements(self):
+        with current_app.test_client() as client:
+            configs, comp, token = self.login_client(client)
+
+            good_comp = [
+                {'symbol': 'C', 'weight': 0.044},
+                {'symbol': 'Mn', 'weight': 0.0},
+                {'symbol': 'Ni', 'weight': 0.0},
+                {'symbol': 'Cr', 'weight': 0.0},
+                {'symbol': 'Mo', 'weight': 0.0},
+                {'symbol': 'Si', 'weight': 0.0},
+                {'symbol': 'Co', 'weight': 0.0},
+                {'symbol': 'W', 'weight': 0.0},
+                {'symbol': 'As', 'weight': 0.0},
+                {'symbol': 'Fe', 'weight': 0.0},
+            ]
+
+            res = client.post(
+                '/alloys/update',
+                data=json.dumps(
+                    {
+                        'alloy_option': 'single',
+                        'alloy_type': 'parent',
+                        'alloy': {
+                            'name': 'Bad Alloy',
+                            'compositions': good_comp
+                        }
+                    }
+                ),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            print(data)
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 201)
+
     def test_on_compositions_change(self):
         """Ensure if we update the compositions it changes in session store."""
         with current_app.test_client() as client:
@@ -198,11 +261,10 @@ class TestSimConfigurations(BaseTestCase):
             data = json.loads(res.data.decode())
 
             self.assertEqual(
-                data['message'], 'Alloy failed schema validation.'
+                data['message'], 'No valid key in the alloy was provided.'
             )
             self.assert400(res)
             self.assertEqual(data['status'], 'fail')
-            self.assertTrue(data['errors'])
             session_comp = session.get(f'{token}:alloy_store')
             self.assertNotEqual(session_comp, new_comp)
 
@@ -309,7 +371,7 @@ class TestSimConfigurations(BaseTestCase):
             data = json.loads(res.data.decode())
 
             self.assertEqual(
-                data['message'], 'No key in the alloy was provided.'
+                data['message'], 'No valid key in the alloy was provided.'
             )
             self.assert400(res)
             self.assertEqual(data['status'], 'fail')

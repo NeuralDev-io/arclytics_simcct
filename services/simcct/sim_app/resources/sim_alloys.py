@@ -95,6 +95,22 @@ class AlloyStore(Resource):
             response['message'] = 'No alloy was provided.'
             return response, 400
 
+        alloy_name = alloy.get('name', None)
+        alloy_comp = alloy.get('compositions', None)
+
+        if not alloy_name and not alloy_comp:
+            response['message'] = ('No valid keys was provided for alloy '
+                                   '(i.e. must be "name" or "compositions")')
+            return response, 400
+
+        if not alloy_comp:
+            response['message'] = 'You must provide an alloy composition.'
+            return response, 400
+
+        if not alloy_name:
+            response['message'] = 'You must provide an alloy name.'
+            return response, 400
+
         # Let's validate the Alloy follows our schema
         try:
             valid_alloy = AlloySchema().load(alloy)
@@ -102,6 +118,40 @@ class AlloyStore(Resource):
             response['errors'] = str(e)
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
+
+        # TODO(andrew@neuraldev.io): Need to also validate every element is
+        #  a valid symbol.
+        # Validate the alloy has all the elements that we need by using a
+        # hashed dictionary which is must faster than iterating a list
+        valid_elements = {
+            'C': False,
+            'Mn': False,
+            'Ni': False,
+            'Cr': False,
+            'Mo': False,
+            'Si': False,
+            'Co': False,
+            'W': False,
+            'As': False,
+            'Fe': False
+        }
+
+        for el in alloy_comp:
+            if el['symbol'] in valid_elements.keys():
+                valid_elements[el['symbol']] = True
+
+        # all() returns True if all values in the dict are True
+        # If it does not pass, we build up a message and respond.
+        if not all(el is True for el in valid_elements.values()):
+            # We build up a list of missing elements for the response.
+            missing_elem = []
+            for k, v in valid_elements.items():
+                if not v:
+                    missing_elem.append(k)
+
+            response['message'] = f'Missing elements {missing_elem}'
+            return response, 400
+        # Otherwise we have all the elements we need
 
         # We create a new session alloy_store for the user
         session_alloy_store = {
@@ -197,7 +247,7 @@ class AlloyStore(Resource):
             'ae3_temp': ae3
         }
         response['status'] = 'success'
-        return response, 200
+        return response, 201
 
     def patch(self, token):
         """This PATCH endpoint simply updates the `alloys` in the session
@@ -257,7 +307,7 @@ class AlloyStore(Resource):
         # The alloy might be provided but if it's got no valid keys, we need to
         # check that
         if not alloy.get('name', None) and not alloy.get('compositions', None):
-            response['message'] = 'No key in the alloy was provided.'
+            response['message'] = 'No valid key in the alloy was provided.'
             return response, 400
 
         # Let's validate the Alloy follows our schema
@@ -334,9 +384,9 @@ class AlloyStore(Resource):
 
         # Well, if we don't need to auto calc. anything, let's get out of here
         if (
-            not sess_configs['auto_calculate_ms']
-            and not sess_configs['auto_calculate_bs']
-            and not sess_configs['auto_calculate_ae']
+                not sess_configs['auto_calculate_ms']
+                and not sess_configs['auto_calculate_bs']
+                and not sess_configs['auto_calculate_ae']
         ):
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'
@@ -369,7 +419,6 @@ class AlloyStore(Resource):
             method = Method.Kirkaldy83
 
         if sess_configs['auto_calculate_ms']:
-
             ms_temp = SimConfig.get_ms(method, comp=comp_np_arr)
             ms_rate_param = SimConfig.get_ms_alpha(comp=comp_np_arr)
 

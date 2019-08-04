@@ -1,0 +1,14 @@
+Hi {{ admin_name }},
+
+You've recently promoted {{ user_name }} to the role of
+administrator with the position: {{ position }}
+
+Please confirm this promotion by clicking the link below:
+
+{{ promotion_confirm_url }}
+
+If you need additional assistance, or you did not make this change, please contact help@neuraldev.io.
+
+
+Cheers,
+The Arclytics Team

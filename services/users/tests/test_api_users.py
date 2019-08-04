@@ -32,7 +32,10 @@ from logger.arc_logger import AppLogger
 from users_app.models import (
     User, UserProfile, AdminProfile, Element, Alloy, Configuration
 )
-from users_app.token import generate_confirmation_token, generate_url
+from users_app.token import (
+    generate_confirmation_token, generate_url,
+    generate_promotion_confirmation_token
+)
 
 logger = AppLogger(__name__)
 
@@ -319,17 +322,20 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
-            self.assertEqual(data['first_name'], 'Obi-Wan')
-            self.assertEqual(data['last_name'], 'Kenobi')
-            self.assertEqual(data['profile']['aim'], 'Train Skywalkers.')
+            self.assertEqual(data['data']['first_name'], 'Obi-Wan')
+            self.assertEqual(data['data']['last_name'], 'Kenobi')
             self.assertEqual(
-                data['profile']['highest_education'], 'Jedi Council Member.'
+                data['data']['profile']['aim'], 'Train Skywalkers.'
             )
             self.assertEqual(
-                data['profile']['sci_tech_exp'], 'Flying is for Droids.'
+                data['data']['profile']['highest_education'],
+                'Jedi Council Member.'
             )
             self.assertEqual(
-                data['profile']['phase_transform_exp'], 'Prequels.'
+                data['data']['profile']['sci_tech_exp'], 'Flying is for Droids.'
+            )
+            self.assertEqual(
+                data['data']['profile']['phase_transform_exp'], 'Prequels.'
             )
 
             updated_user = User.objects.get(email=obiwan.email)
@@ -384,25 +390,27 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
-            self.assertEqual(data['first_name'], 'Yoda')
-            self.assertEqual(data['last_name'], 'Smith')
+            self.assertEqual(data['data']['first_name'], 'Yoda')
+            self.assertEqual(data['data']['last_name'], 'Smith')
             self.assertEqual(
-                data['profile']['aim'], 'Pass on what I have learned.'
+                data['data']['profile']['aim'], 'Pass on what I have learned.'
             )
             self.assertEqual(
-                data['profile']['highest_education'], 'Jedi Temple Professor.'
+                data['data']['profile']['highest_education'],
+                'Jedi Temple Professor.'
             )
             self.assertEqual(
-                data['profile']['sci_tech_exp'], 'Much to learn, I still have.'
+                data['data']['profile']['sci_tech_exp'],
+                'Much to learn, I still have.'
             )
             self.assertEqual(
-                data['profile']['phase_transform_exp'], 'I am a puppet.'
+                data['data']['profile']['phase_transform_exp'], 'I am a puppet.'
             )
             self.assertEqual(
-                data['admin_profile']['mobile_number'], '1234567890'
+                data['data']['admin_profile']['mobile_number'], '1234567890'
             )
             self.assertEqual(
-                data['admin_profile']['position'], 'Grand Jedi Master.'
+                data['data']['admin_profile']['position'], 'Grand Jedi Master.'
             )
 
             updated_user = User.objects.get(email=yoda.email)
@@ -465,10 +473,10 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
-            self.assertEqual(data['first_name'], 'Emperor')
-            self.assertEqual(data['profile']['aim'], 'Rule the Galaxy.')
+            self.assertEqual(data['data']['first_name'], 'Emperor')
+            self.assertEqual(data['data']['profile']['aim'], 'Rule the Galaxy.')
             self.assertEqual(
-                data['profile']['phase_transform_exp'], 'Sith Lord.'
+                data['data']['profile']['phase_transform_exp'], 'Sith Lord.'
             )
 
             updated_user = User.objects.get(email=sheev.email)
@@ -540,13 +548,19 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
-            self.assertEqual(data['last_name'], 'Tano')
+            self.assertEqual(data['data']['last_name'], 'Tano')
             self.assertEqual(
-                data['profile']['aim'], 'Follow the will of the force.'
+                data['data']['profile']['aim'], 'Follow the will of the force.'
             )
-            self.assertEqual(data['profile']['highest_education'], 'Rogue.')
-            self.assertEqual(data['profile']['sci_tech_exp'], 'Greater.')
-            self.assertEqual(data['profile']['phase_transform_exp'], 'Great.')
+            self.assertEqual(
+                data['data']['profile']['highest_education'], 'Rogue.'
+            )
+            self.assertEqual(
+                data['data']['profile']['sci_tech_exp'], 'Greater.'
+            )
+            self.assertEqual(
+                data['data']['profile']['phase_transform_exp'], 'Great.'
+            )
 
             updated_user = User.objects.get(email=ahsoka.email)
             self.assertEqual(updated_user['last_name'], 'Tano')
@@ -623,7 +637,6 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(data['status'], 'fail')
-            self.assertTrue(data['data'])
             self.assertEqual(
                 data['message'], (
                     'User profile cannot be updated as there is no existing '
@@ -669,9 +682,11 @@ class TestUserService(BaseTestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
             self.assertEqual(
-                data['admin_profile']['mobile_number'], '1234567890'
+                data['data']['admin_profile']['mobile_number'], '1234567890'
             )
-            self.assertEqual(data['admin_profile']['position'], 'Discharged.')
+            self.assertEqual(
+                data['data']['admin_profile']['position'], 'Discharged.'
+            )
 
             updated_user = User.objects.get(email=rex.email)
             self.assertEqual(
@@ -717,17 +732,20 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
-            self.assertEqual(data['first_name'], 'Ezra')
-            self.assertEqual(data['last_name'], 'Bridger')
+            self.assertEqual(data['data']['first_name'], 'Ezra')
+            self.assertEqual(data['data']['last_name'], 'Bridger')
             self.assertEqual(
-                data['profile']['aim'], 'Learn the ways of the force.'
+                data['data']['profile']['aim'], 'Learn the ways of the force.'
             )
             self.assertEqual(
-                data['profile']['highest_education'], 'Lothal Highschool.'
+                data['data']['profile']['highest_education'],
+                'Lothal Highschool.'
             )
-            self.assertEqual(data['profile']['sci_tech_exp'], 'Limited.')
             self.assertEqual(
-                data['profile']['phase_transform_exp'], 'Limited.'
+                data['data']['profile']['sci_tech_exp'], 'Limited.'
+            )
+            self.assertEqual(
+                data['data']['profile']['phase_transform_exp'], 'Limited.'
             )
 
             updated_user = User.objects.get(email=ezra.email)
@@ -806,25 +824,29 @@ class TestUserService(BaseTestCase):
             data_1 = json.loads(resp_1.data.decode())
             self.assertEqual(resp_1.status_code, 200)
             self.assertEqual(data_1['status'], 'success')
-            self.assertEqual(data_1['first_name'], 'Kanan')
-            self.assertEqual(data_1['last_name'], 'Jarrus')
-            self.assertEqual(data_1['profile']['aim'], 'Help the Rebellion.')
+            self.assertEqual(data_1['data']['first_name'], 'Kanan')
+            self.assertEqual(data_1['data']['last_name'], 'Jarrus')
             self.assertEqual(
-                data_1['admin_profile']['mobile_number'], '1234567890'
+                data_1['data']['profile']['aim'], 'Help the Rebellion.'
             )
             self.assertEqual(
-                data_1['admin_profile']['position'], 'Freedom Fighter.'
+                data_1['data']['admin_profile']['mobile_number'], '1234567890'
+            )
+            self.assertEqual(
+                data_1['data']['admin_profile']['position'], 'Freedom Fighter.'
             )
 
             data_2 = json.loads(resp_2.data.decode())
             self.assertEqual(resp_2.status_code, 200)
             self.assertEqual(data_2['status'], 'success')
             self.assertEqual(
-                data_2['profile']['highest_education'], 'Jedi Padawan.'
+                data_2['data']['profile']['highest_education'], 'Jedi Padawan.'
             )
-            self.assertEqual(data_2['profile']['sci_tech_exp'], 'Limited.')
             self.assertEqual(
-                data_2['profile']['phase_transform_exp'], 'Limited.'
+                data_2['data']['profile']['sci_tech_exp'], 'Limited.'
+            )
+            self.assertEqual(
+                data_2['data']['profile']['phase_transform_exp'], 'Limited.'
             )
 
             updated_user = User.objects.get(email=kanan.email)
@@ -877,11 +899,11 @@ class TestUserService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.status_code, 401)
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(
                 data['message'],
-                'User admin profile is invalid and cannot be patched.'
+                'User is not verified as an admin.'
             )
 
     def test_patch_unverified_admin(self):
@@ -916,7 +938,7 @@ class TestUserService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.status_code, 401)
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(
                 data['message'], 'User is not verified as an admin.'
@@ -1255,12 +1277,16 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
             self.assertIn(data['status'], 'success')
-            self.assertIn(data['profile']['aim'], 'Serve The Republic.')
             self.assertIn(
-                data['profile']['highest_education'], 'Kamino Graduate.'
+                data['data']['profile']['aim'], 'Serve The Republic.'
             )
-            self.assertIn(data['profile']['sci_tech_exp'], 'Student.')
-            self.assertIn(data['profile']['phase_transform_exp'], 'Limited.')
+            self.assertIn(
+                data['data']['profile']['highest_education'], 'Kamino Graduate.'
+            )
+            self.assertIn(data['data']['profile']['sci_tech_exp'], 'Student.')
+            self.assertIn(
+                data['data']['profile']['phase_transform_exp'], 'Limited.'
+            )
 
     def test_patch_user_profile(self):
         """
@@ -1294,14 +1320,14 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
-            self.assertEqual(data['profile']['aim'], 'Redeem my father.')
+            self.assertEqual(data['data']['aim'], 'Redeem my father.')
             self.assertEqual(
-                data['profile']['highest_education'],
+                data['data']['highest_education'],
                 'Graduated Dagobah Highschool.'
             )
-            self.assertEqual(data['profile']['sci_tech_exp'], 'Limited.')
+            self.assertEqual(data['data']['sci_tech_exp'], 'Limited.')
             self.assertEqual(
-                data['profile']['phase_transform_exp'], 'Limited.'
+                data['data']['phase_transform_exp'], 'Limited.'
             )
 
             updated_user = User.objects.get(email=luke.email)
@@ -1374,8 +1400,8 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
-            self.assertEqual(data['profile']['aim'], 'Pay Jabba.')
-            self.assertEqual(data['profile']['phase_transform_exp'], 'Limited')
+            self.assertEqual(data['data']['aim'], 'Pay Jabba.')
+            self.assertEqual(data['data']['phase_transform_exp'], 'Limited')
 
             updated_user = User.objects.get(email=han.email)
             profile_obj = json.loads(updated_user.profile.to_json())
@@ -1430,19 +1456,19 @@ class TestUserService(BaseTestCase):
             data_1 = json.loads(resp_1.data.decode())
             self.assertEqual(resp_1.status_code, 200)
             self.assertEqual(data_1['status'], 'success')
-            self.assertEqual(data_1['profile']['aim'], 'Defeat the Empire')
+            self.assertEqual(data_1['data']['aim'], 'Defeat the Empire')
             self.assertEqual(
-                data_1['profile']['phase_transform_exp'], 'Expert'
+                data_1['data']['phase_transform_exp'], 'Expert'
             )
 
             data_2 = json.loads(resp_2.data.decode())
             self.assertEqual(resp_2.status_code, 200)
             self.assertEqual(data_2['status'], 'success')
             self.assertEqual(
-                data_2['profile']['highest_education'],
+                data_2['data']['highest_education'],
                 'University of Alderaan'
             )
-            self.assertEqual(data_2['profile']['sci_tech_exp'], 'Expert')
+            self.assertEqual(data_2['data']['sci_tech_exp'], 'Expert')
 
             updated_user = User.objects.get(email=leia.email)
             profile_obj = json.loads(updated_user.profile.to_json())
@@ -1494,24 +1520,24 @@ class TestUserService(BaseTestCase):
             self.assertEqual(resp_1.status_code, 200)
             self.assertEqual(data_1['status'], 'success')
             self.assertEqual(
-                data_1['profile']['aim'], 'Stop the Sif from returning.'
+                data_1['data']['aim'], 'Stop the Sif from returning.'
             )
             self.assertEqual(
-                data_1['profile']['phase_transform_exp'], 'Limted'
+                data_1['data']['phase_transform_exp'], 'Limted'
             )
             self.assertEqual(
-                data_1['profile']['highest_education'], 'Jedi Council Member'
+                data_1['data']['highest_education'], 'Jedi Council Member'
             )
-            self.assertEqual(data_1['profile']['sci_tech_exp'], 'Limited')
+            self.assertEqual(data_1['data']['sci_tech_exp'], 'Limited')
 
             data_2 = json.loads(resp_2.data.decode())
             self.assertEqual(resp_2.status_code, 200)
             self.assertEqual(data_2['status'], 'success')
             self.assertEqual(
-                data_2['profile']['aim'], 'Stop the Sith from returning.'
+                data_2['data']['aim'], 'Stop the Sith from returning.'
             )
             self.assertEqual(
-                data_2['profile']['phase_transform_exp'], 'Limited'
+                data_2['data']['phase_transform_exp'], 'Limited'
             )
 
             updated_user = User.objects.get(email=mace.email)
@@ -1617,14 +1643,14 @@ class TestUserService(BaseTestCase):
             )
 
             data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.status_code, 201)
             self.assertEqual(data['status'], 'success')
-            self.assertEqual(data['profile']['aim'], 'Find Han Solo.')
+            self.assertEqual(data['data']['aim'], 'Find Han Solo.')
             self.assertEqual(
-                data['profile']['highest_education'], 'Hutt school of fatness.'
+                data['data']['highest_education'], 'Hutt school of fatness.'
             )
-            self.assertEqual(data['profile']['sci_tech_exp'], 'PHD.')
-            self.assertEqual(data['profile']['phase_transform_exp'], 'PHD.')
+            self.assertEqual(data['data']['sci_tech_exp'], 'PHD.')
+            self.assertEqual(data['data']['phase_transform_exp'], 'PHD.')
 
             updated_user = User.objects.get(email=jabba.email)
             profile_obj = json.loads(updated_user.profile.to_json())
@@ -1727,7 +1753,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(disable_data['status'], 'success')
             self.assertEqual(
                 disable_data['message'],
-                f'The account for User {kylo.id} has been disabled.'
+                f'The account for User {kylo.email} has been disabled.'
             )
 
             login_data = json.loads(resp_attempt_login.data.decode())
@@ -1781,9 +1807,9 @@ class TestUserService(BaseTestCase):
             )
 
             data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 201)
+            self.assertEqual(resp.status_code, 404)
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'User does not exist.')
+            self.assertEqual(data['message'], 'User cannot be found.')
 
     def test_disable_account_no_email(self):
         """
@@ -1877,7 +1903,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(disable_data['status'], 'success')
             self.assertEqual(
                 disable_data['message'],
-                f'The account for User {droid.id} has been disabled.'
+                f'The account for User {droid.email} has been disabled.'
             )
 
             action_data = json.loads(droid_action.data.decode())
@@ -1924,57 +1950,6 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(data['status'], 'success')
             self.assertEqual(resp.status_code, 202)
-
-            user = User.objects.get(email=obiwan.email)
-            self.assertEqual(user.is_admin, True)
-            self.assertEqual(user.admin_profile.position, 'Jedi Knight.')
-            self.assertEqual(user.admin_profile.mobile_number, None)
-            self.assertEqual(user.admin_profile.verified, False)
-
-    def test_create_admin_successful_redirect(self):
-        """Test admin creation confirmation is successful"""
-        promoter = User(
-            email='brickmatic479@gmail.com',
-            first_name='David',
-            last_name='Test'
-        )
-        promoter.is_admin = True
-        promoter.set_password('Testing123')
-        promoter.save()
-
-        email = 'test@test.com'
-        user = User(email=email, first_name='Test', last_name='User')
-        user.set_password('Testing123')
-        user.is_admin = True
-        user.admin_profile = AdminProfile(
-            position='Test position.',
-            mobile_number=None,
-            verified=False,
-            promoted_by=promoter.id
-        )
-        user.cascade_save()
-        user.save()
-        token = generate_confirmation_token(email)
-        admin_url = generate_url('users.confirm_create_admin', token)
-        with current_app.test_client() as client:
-            res = client.get(
-                admin_url,
-                content_type='application/json',
-            )
-            self.assertEquals(res.status_code, 302)
-            # self.assertTrue(res.headers['Authorization'])
-            self.assertTrue(res.headers['Location'])
-            # Every redirect will be different.
-            redirect_url = f'http://localhost:3000/signin'
-            self.assertRedirects(res, redirect_url)
-
-            updated_user = User.objects.get(email=email)
-            self.assertEqual(updated_user.is_admin, True)
-            self.assertEqual(
-                updated_user.admin_profile.position, 'Test position.'
-            )
-            self.assertEqual(updated_user.admin_profile.mobile_number, None)
-            self.assertEqual(updated_user.admin_profile.verified, True)
 
     def test_create_admin_invalid_email(self):
         """Test create admin with invalid email is unsuccessful"""
@@ -2094,7 +2069,7 @@ class TestUserService(BaseTestCase):
             )
             data = json.loads(resp.data.decode())
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(resp.status_code, 401)
+            self.assertEqual(resp.status_code, 400)
             self.assertEqual(
                 data['message'], 'User is already an Administrator.'
             )
@@ -2124,7 +2099,7 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(resp.status_code, 400)
-            self.assertEqual(data['message'], 'Empty payload.')
+            self.assertEqual(data['message'], 'Invalid payload.')
 
     def test_create_admin_no_email(self):
         """
@@ -2210,54 +2185,395 @@ class TestUserService(BaseTestCase):
             )
             data = json.loads(resp.data.decode())
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(resp.status_code, 404)
             self.assertEqual(data['message'], 'User does not exist.')
 
-    # def test_create_admin_success_manual(self):
-    #     david = User(
-    #         first_name='David',
-    #         last_name='Matthews',
-    #         email="dgm999@uowmail.edu.au"
-    #     )
-    #     david.is_admin=True
-    #     david.set_password('DestroyTheSith')
-    #     david.save()
-    #
-    #     david2 = User(
-    #         first_name='Dave',
-    #         last_name='Matthews',
-    #         email='davidmatthews1004@gmail.com'
-    #     )
-    #     david2.verified=True
-    #     david2.set_password('OrDestroyTheJedi')
-    #     david2.save()
-    #
-    #     with self.client:
-    #         resp_login = self.client.post(
-    #             '/auth/login',
-    #             data=json.dumps(
-    #                 {
-    #                     'email': 'dgm999@uowmail.edu.au',
-    #                     'password': 'DestroyTheSith'
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #         token = json.loads(resp_login.data.decode())['token']
-    #         resp = self.client.post(
-    #             '/admin/create',
-    #             data=json.dumps(
-    #                 {
-    #                     'email': 'davidmatthews1004@gmail.com'
-    #                 }
-    #             ),
-    #             headers={'Authorization': 'Bearer {}'.format(token)},
-    #             content_type='application/json'
-    #         )
-    #         data = json.loads(resp.data.decode())
-    #         self.assertEqual(data['status'], 'success')
-    #         self.assertEqual(resp.status_code, 202)
+    def test_confirm_promotion_success(self):
+        admin = User(
+            email='davidmatthews1004@gmail.com',
+            first_name='David',
+            last_name='Matthews'
+        )
+        admin.set_password('testing123')
+        admin.verified=True
+        admin.is_admin=True
+        admin_profile = AdminProfile(
+            position='Jedi Master',
+            mobile_number=None,
+            verified=True
+        )
+        admin.admin_profile = admin_profile
+        admin.save()
 
+        user = User(
+            email='brickmatic479@gmail.com',
+            first_name='David',
+            last_name='Jnr'
+        )
+        user.set_password('testing123')
+        user.verified=True
+        user.save()
+
+        token = generate_promotion_confirmation_token(
+            admin.email, user.email, 'Jedi Knight.'
+        )
+        url = generate_url('users.confirm_promotion', token)
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = 'http://localhost:3000/signin'
+            self.assertRedirects(resp, redirect_url)
+
+            updated_user = User.objects.get(email=user.email)
+            self.assertTrue(updated_user.is_admin)
+            self.assertEqual(
+                updated_user.admin_profile.position, 'Jedi Knight.'
+            )
+            self.assertEqual(updated_user.admin_profile.mobile_number, None)
+            self.assertEqual(updated_user.admin_profile.verified, False)
+
+    def test_confirm_promotion_invalid_token(self):
+        token = generate_confirmation_token('arclyticstest@gmail.com')
+        url = generate_url('users.confirm_promotion', token)
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEquals(resp.status_code, 400)
+            self.assertEqual(data['message'], 'Invalid Token.')
+
+    def test_confirm_promotion_invalid_token_list(self):
+        token = generate_promotion_confirmation_token(
+            'arclyticstest@gmail.com',
+            '',
+            'Position'
+        )
+        url = generate_url('users.confirm_promotion', token)
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEquals(resp.status_code, 400)
+            self.assertEqual(data['message'], 'Invalid data in Token.')
+
+    def test_confirm_promotion_invalid_email(self):
+        token = generate_promotion_confirmation_token(
+            'arclyticstest@gmail.com',
+            'invalid@com',
+            'Position'
+        )
+        url = generate_url('users.confirm_promotion', token)
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEquals(resp.status_code, 400)
+            self.assertEqual(data['message'], 'Invalid email.')
+
+    def test_confirm_promotion_promoter_not_admin(self):
+        admin = User(
+            email='davidmatthews1004@gmail.com',
+            first_name='David',
+            last_name='Matthews'
+        )
+        admin.set_password('testing123')
+        admin.verified = True
+        admin.save()
+
+        user = User(
+            email='brickmatic479@gmail.com',
+            first_name='David',
+            last_name='Jnr'
+        )
+        user.set_password('testing123')
+        user.verified = True
+        user.save()
+
+        token = generate_promotion_confirmation_token(
+            admin.email, user.email, 'Jedi Knight.'
+        )
+        url = generate_url('users.confirm_promotion', token)
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEquals(resp.status_code, 400)
+            self.assertEqual(
+                data['message'],
+                'User is not authorised to promote other users.'
+            )
+
+    def test_confirm_promotion_target_not_verified(self):
+        admin = User(
+            email='davidmatthews1004@gmail.com',
+            first_name='David',
+            last_name='Matthews'
+        )
+        admin.set_password('testing123')
+        admin.verified = True
+        admin.is_admin = True
+        admin_profile = AdminProfile(
+            position='Jedi Master',
+            mobile_number=None,
+            verified=True
+        )
+        admin.admin_profile = admin_profile
+        admin.save()
+
+        user = User(
+            email='brickmatic479@gmail.com',
+            first_name='David',
+            last_name='Jnr'
+        )
+        user.set_password('testing123')
+        user.save()
+
+        token = generate_promotion_confirmation_token(
+            admin.email, user.email, 'Jedi Knight.'
+        )
+        url = generate_url('users.confirm_promotion', token)
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEquals(resp.status_code, 400)
+            self.assertEqual(
+                data['message'],
+                'Target user is not verified.'
+            )
+
+    def test_confirm_promotion_admin_dne(self):
+        token = generate_promotion_confirmation_token(
+            'arclyticstestadmin@gmail.com',
+            'arclyticstestuser@gmail.com',
+            'Position'
+        )
+        url = generate_url('users.confirm_promotion', token)
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEquals(resp.status_code, 400)
+            self.assertEqual(data['message'], 'Administrator does not exist.')
+
+    def test_confirm_promotion_user_dne(self):
+        test_admin = User(
+            email='arclyticstestadmin@gmail.com',
+            first_name='Arclytics',
+            last_name='Testadmin'
+        )
+        test_admin.set_password('testing123'),
+        test_admin.save()
+        token = generate_promotion_confirmation_token(
+            'arclyticstestadmin@gmail.com',
+            'arclyticstestuser@gmail.com',
+            'Position'
+        )
+        url = generate_url('users.confirm_promotion', token)
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEquals(resp.status_code, 400)
+            self.assertEqual(data['message'], 'Target User does not exist.')
+
+    def test_acknowledge_promotion_success(self):
+        admin = User(
+            email='davidmatthews1004@gmail.com',
+            first_name='David',
+            last_name='Matthews'
+        )
+        admin.set_password('testing123')
+        admin.verified = True
+        admin.is_admin = True
+        admin_profile = AdminProfile(
+            position='Jedi Master',
+            mobile_number=None,
+            verified=True
+        )
+        admin.admin_profile = admin_profile
+        admin.save()
+
+        user = User(
+            email='brickmatic479@gmail.com',
+            first_name='David',
+            last_name='Jnr'
+        )
+        user.set_password('testing123')
+        user.verified = True
+        user.is_admin=True
+        user_admin_profile = AdminProfile(
+            position='Jedi Knight.',
+            mobile_number=None,
+            verified=False
+        )
+        user.admin_profile = user_admin_profile
+        user.admin_profile.promoted_by = admin.id
+        user.save()
+
+        token = generate_confirmation_token(user.email)
+        url = generate_url('users.acknowledge_promotion', token)
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = 'http://localhost:3000/signin'
+            self.assertRedirects(resp, redirect_url)
+
+            updated_user = User.objects.get(email=user.email)
+            self.assertTrue(updated_user.is_admin)
+            self.assertEqual(
+                updated_user.admin_profile.position, 'Jedi Knight.'
+            )
+            self.assertEqual(updated_user.admin_profile.mobile_number, None)
+            self.assertEqual(updated_user.admin_profile.verified, True)
+
+    def test_acknowledge_promotion_invalid_email(self):
+        token = generate_confirmation_token('test@invalid')
+        url = generate_url(
+            'users.acknowledge_promotion', token
+        )
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEquals(resp.status_code, 400)
+            self.assertEqual(data['message'], 'Invalid email.')
+
+    def test_acknowledge_promotion_user_dne(self):
+        token = generate_confirmation_token('arclyticstestuser@gmail.com')
+        url = generate_url(
+            'users.acknowledge_promotion', token
+        )
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEquals(resp.status_code, 400)
+            self.assertEqual(data['message'], 'User does not exist.')
+
+    def test_acknowledge_promotion_user_not_verified(self):
+        test_user = User(
+            email='arclyticstestuser@gmail.com',
+            first_name='Arclytics',
+            last_name='Testuser'
+        )
+        test_user.set_password('testing123')
+        test_user.save()
+
+        token = generate_confirmation_token(test_user.email)
+        url = generate_url(
+            'users.acknowledge_promotion', token
+        )
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEquals(resp.status_code, 400)
+            self.assertEqual(data['message'], 'User is not verified.')
+
+    def test_acknowledge_promotion_user_is_not_admin(self):
+        test_user = User(
+            email='arclyticstestuser@gmail.com',
+            first_name='Arclytics',
+            last_name='Testuser'
+        )
+        test_user.set_password('testing123')
+        test_user.verified=True
+        test_user.save()
+
+        token = generate_confirmation_token(test_user.email)
+        url = generate_url(
+            'users.acknowledge_promotion', token
+        )
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEquals(resp.status_code, 400)
+            self.assertEqual(data['message'], 'User is not an Admin.')
+
+    def test_acknowledge_promotion_invalid_admin_profile(self):
+        test_user = User(
+            email='arclyticstestuser@gmail.com',
+            first_name='Arclytics',
+            last_name='Testuser'
+        )
+        test_user.set_password('testing123')
+        test_user.verified=True
+        test_user.is_admin=True
+        test_user.save()
+
+        token = generate_confirmation_token(test_user.email)
+        url = generate_url(
+            'users.acknowledge_promotion', token
+        )
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEquals(resp.status_code, 400)
+            self.assertEqual(
+                data['message'], 'User has an invalid Admin profile.'
+            )
 
 if __name__ == '__main__':
     unittest.main()

@@ -257,7 +257,7 @@
   // box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.15);
 }
 .ReactTable .rt-tfoot .rt-td {
-  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  border: none;
 }
 .ReactTable .rt-tfoot .rt-td:last-child {
   border-right: 0;
@@ -368,10 +368,8 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  -webkit-transform: translate(-50%, calc(-50% + 3rem));
-  transform: translate(-50%, calc(-50% + 3rem));
-  // -webkit-transform: translate(-50%, -50%);
-  // transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
   background: transparent;
   transition: all 0.3s ease;
   z-index: 1;
@@ -433,10 +431,13 @@
   
     .rt-tr {
       padding: .5rem 1rem;
+
+      & > .rt-th:first-of-type { padding-left: 0; }
+      & > .rt-th:last-of-type { padding-right: 0; }
   
       .rt-th {
         @extend .text--sub2;
-        padding: 0;
+        padding: 0 .25rem;
         text-align: left;
         border: none;
         
@@ -457,9 +458,27 @@
         flex-direction: row;
         align-items: center;
 
+        & > .rt-td:first-of-type { padding-left: 0; }
+        & > .rt-td:last-of-type { padding-right: 0; }
+
         .rt-td {
-          padding: 0;
+          padding: 0 .25rem;
         }
+      }
+    }
+  }
+
+  .rt-tfoot {
+    .rt-tr {
+      padding: .5rem 1rem;
+      margin-top: .5rem;
+
+      & > .rt-td:first-of-type { padding-left: 0; }
+      & > .rt-td:last-of-type { padding-right: 0; }
+      
+      .rt-td {
+        @extend .text--sub2;
+        padding: 0 .25rem;
       }
     }
   }

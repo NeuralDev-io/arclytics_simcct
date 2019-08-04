@@ -34,6 +34,7 @@ from sim_app.resources.session import session_blueprint
 from sim_app.resources.sim_configurations import configs_blueprint
 from sim_app.resources.alloys import alloys_blueprint
 from sim_app.resources.simulation import sim_blueprint
+from sim_app.resources.sim_alloys import sim_alloys_blueprint
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -94,6 +95,7 @@ def create_app(script_info=None) -> Flask:
     app.register_blueprint(configs_blueprint)
     app.register_blueprint(alloys_blueprint)
     app.register_blueprint(sim_blueprint)
+    app.register_blueprint(sim_alloys_blueprint)
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
     extensions(app)

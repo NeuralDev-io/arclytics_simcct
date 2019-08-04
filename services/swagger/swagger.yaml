@@ -21,7 +21,7 @@ paths:
       tags:
         - Users
       responses:
-        '200':
+        200:
           description: "You are not crazy."
           content:
             application/json:
@@ -47,7 +47,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        200:
           description: "A list of User objects"
           content:
             application/json:
@@ -87,7 +87,7 @@ paths:
                     last_updated: '2019-07-08T12:40:55.948000+00:00'
                     last_login: None
                     profile: None
-        '400':
+        400:
           description: "The request parameters are bad."
           content:
             application/json:
@@ -128,7 +128,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-        '403':
+        403:
           description: "Unauthorized access to endpoint."
           content:
             application/json:
@@ -154,7 +154,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        200:
           description: "Returns the user object successfully."
           content:
             application/json:
@@ -199,10 +199,21 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'No User':
+                'Disabled User':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
     patch:
       summary: "Update the User's details."
       tags:
@@ -248,7 +259,7 @@ paths:
                   position: "Former Directory of S.H.I.E.L.D."
                   mobile_number: "+61 490 909 090"
       responses:
-        '200':
+        200:
           description: "User has been updated successfully and the new user details have been returned."
           content:
             application/json:
@@ -312,11 +323,22 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'No User':
+                'Disabled User':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
-        '418':
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+        418:
           description: "There has been some validation error saving to Mongo."
           content:
             application/json:
@@ -336,7 +358,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        200:
           description: "Return the User's profile successfully."
           content:
             application/json:
@@ -361,7 +383,7 @@ paths:
               sci_tech_exp: "J.A.R.V.I.S. Taught me AI"
               phase_transform_exp: "I make Iron Masterpieces"
       responses:
-        '201':
+        200:
           description: "The User's profile has been successfully saved."
           content:
             application/json:
@@ -379,7 +401,7 @@ paths:
                   highest_education: "Masters of Engineering, MIT"
                   sci_tech_exp: "J.A.R.V.I.S. Taught me AI"
                   phase_transform_exp: "I make Iron Masterpieces"
-        '400':
+        400:
           description: "An invalid payload has been sent with the request."
           content:
             application/json:
@@ -395,7 +417,7 @@ paths:
                     status: "fail"
                     message: "Validation error."
                     error: "ValidationError: ..."
-        '401':
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -425,10 +447,21 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'No User':
+                'Disabled User':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
 
   /user/last:
     servers:
@@ -440,7 +473,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        200:
           description: "Successfully returned the user's last Alloy and Configurations used."
           content:
             application/json:
@@ -470,34 +503,6 @@ paths:
                       last_alloy: '#/components/examples/alloyExample'
                       last_configurations: '#/components/examples/configurationsExample'
                       last_results: null
-  /user/alloys:
-    servers:
-      - url: http://localhost:8000
-    get:
-      summary: "We get the list of User's alloys stored in their document."
-      tags:
-        - Users
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: "Return the User's Alloys database successfully."
-    post:
-      summary: "Save an alloy to the User's database."
-      tags:
-        - Users
-      security:
-        - bearerAuth: []
-      requestBody:
-        description: "The alloy to save."
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Alloy'
-      responses:
-        '201':
-          description: "The Alloy has been saved to the User's Alloys database."
   /user/configurations:
     servers:
       - url: http://localhost:8000
@@ -508,7 +513,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        200:
           description: ""
   /user/graphs:
     servers:
@@ -520,7 +525,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        200:
           description: ""
 
   /auth/register:
@@ -589,7 +594,7 @@ paths:
                   first_name: "Peter"
                   last_name: "Parker"
       responses:
-        '200':
+        200:
           description: "The user has been successfully created and you get an ID back."
           content:
             application/json:
@@ -606,7 +611,7 @@ paths:
                     type: string
                     format: byte
                     example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjI1OTAzOTYsImlhdCI6MTU2MjU5MDM5MSwic3ViIjoiNWQyMzNjYjcxODE3YjIwNzU5NjZkNWJiIn0.SNRHYOgw2jAkIVWkuWA0a_PXu9S_QGcb2W7wrvXlqQk"
-        '400':
+        400:
           description: "Invalid payload in request body."
           content:
             application/json:
@@ -693,7 +698,7 @@ paths:
                   email: "spidey@avengers.io"
                   password: "PeterTingle!"
       responses:
-        '200':
+        200:
           description: "Successfully logged in"
           content:
             application/json:
@@ -710,7 +715,7 @@ paths:
                 status: "fail"
                 message: "Successfully logged in."
                 token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjI1OTAzOTYsImlhdCI6MTU2MjU5MDM5MSwic3ViIjoiNWQyMzNjYjcxODE3YjIwNzU5NjZkNWJiIn0.SNRHYOgw2jAkIVWkuWA0a_PXu9S_QGcb2W7wrvXlqQk"
-        '400':
+        400:
           description: "An invalid payload has been sent in the request."
           content:
             application/json:
@@ -733,7 +738,18 @@ paths:
                   value:
                     status: "fail"
                     message: "Email or password combination incorrect."
-        '404':
+        401:
+          description: "Unauthorised access by user."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
           description: "The user does not exist."
           content:
             application/json:
@@ -743,7 +759,7 @@ paths:
                 'No User':
                   value:
                     status: "fail"
-                    message: "This user account has been disabled."
+                    message: "User does not exist."
                 'Incorrect Password':
                   value:
                     status: "fail"
@@ -758,7 +774,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        200:
           description: "The user's token is currently valid."
           content:
             application/json:
@@ -771,7 +787,7 @@ paths:
                   message:
                     type: string
                     example: "Token valid."
-        '400':
+        400:
           description: "Bad request body provided with no JSON Web Token."
           content:
             application/json:
@@ -820,7 +836,7 @@ paths:
       responses:
         '204':
           description: "Successfully logged out"
-        '400':
+        400:
           description: "Bad request body provided with no JSON Web Token."
           content:
             application/json:
@@ -877,7 +893,7 @@ paths:
                   format: email
                   example: iron_man@avengers.io
       responses:
-        '202':
+        202:
           description: "The password reset email has been sent."
           content:
             application/json:
@@ -887,7 +903,7 @@ paths:
                   status:
                     type: string
                     example: "success"
-        '400':
+        400:
           description: "An invalid request payload has been sent."
           content:
             application/json:
@@ -916,7 +932,7 @@ paths:
               example:
                 status: "fail"
                 message: "The user must verify their email."
-        '404':
+        404:
           description: "The user does not exist in the database or cannot be found."
           content:
             application/json:
@@ -946,7 +962,7 @@ paths:
                   format: password
                   example: "IAmIronMan!"
       responses:
-        '202':
+        202:
           description: "The password for the user has successfully been reset."
           content:
             application/json:
@@ -954,7 +970,7 @@ paths:
                 $ref: '#/components/schemas/Response'
               example:
                 status: "success"
-        '400':
+        400:
           description: "An invalid payload has been sent with the request."
           content:
             application/json:
@@ -981,7 +997,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Passwords do not match."
-        '401':
+        401:
           description: "The JWT token has failed."
           content:
             application/json:
@@ -996,11 +1012,21 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please get a new token."
-                'No User':
+                'Disabled User':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
-
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
 
   /user/disable:
     servers:
@@ -1022,7 +1048,7 @@ paths:
                   type: string
                   format: email
       responses:
-        '200':
+        200:
           description: "The user has been successfully disabled."
           content:
             application/json:
@@ -1031,7 +1057,7 @@ paths:
               example:
                 status: "success"
                 message: "The account for User loki@asgard.space has been disabled."
-        '400':
+        400:
           description: "An invalid payload has been sent with the request."
           content:
             application/json:
@@ -1070,11 +1096,11 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'No User':
+                'Disabled User':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
-        '403':
+        403:
           description: "The user is not authorised to perform this request."
           content:
             application/json:
@@ -1085,7 +1111,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Not authorized"
-        '404':
+        404:
           description: "We cannot find a valid user."
           content:
             application/json:
@@ -1095,7 +1121,7 @@ paths:
                 'No User':
                   value:
                     status: "fail"
-                    message: "User cannot be found."
+                    message: "User does not exist."
   /users/ping:
     servers:
       - url: http://localhost:8001
@@ -1104,7 +1130,7 @@ paths:
       tags:
         - Sessions
       responses:
-        '200':
+        200:
           description: "You are not crazy."
           content:
             application/json:
@@ -1177,7 +1203,7 @@ paths:
                     - symbol: "P"
                       weight: 0.007
       responses:
-        '201':
+        200:
           description: "An alloy has been successfully created and stored in the database."
           content:
             application/json:
@@ -1194,7 +1220,7 @@ paths:
               example:
                 status: "success"
                 _id: "5d2345560f8b5fa4a8daca89"
-        '400':
+        400:
           description: "An invalid payload has been sent."
           content:
             application/json:
@@ -1226,7 +1252,7 @@ paths:
       tags:
         - Alloys
       responses:
-        '200':
+        200:
           description: "The request has been successful and there is data to respond with."
           content:
             application/json:
@@ -1280,7 +1306,7 @@ paths:
                             weight: 0.0
                           - symbol: "P"
                             weight: 0.007
-        '400':
+        400:
           description: "An invalid payload has been sent."
           content:
             application/json:
@@ -1289,7 +1315,7 @@ paths:
               example:
                 status: "fail"
                 message: "Invalid ObjectId"
-        '404':
+        404:
           description: "No content found in database."
           content:
             application/json:
@@ -1314,7 +1340,7 @@ paths:
             type: string
             format: bytes
       responses:
-        '200':
+        200:
           description: "The request has been successful."
           content:
             application/json:
@@ -1326,7 +1352,7 @@ paths:
                     example: "success"
                   data:
                     $ref: '#/components/schemas/Alloy'
-        '400':
+        400:
           description: "Invalid payload sent in the request body."
           content:
             application/json:
@@ -1335,7 +1361,7 @@ paths:
               example:
                 status: "fail"
                 message: "Invalid ObjectId"
-        '404':
+        404:
           description: "Cannot find an existing alloy with that ID."
           content:
             application/json:
@@ -1406,7 +1432,7 @@ paths:
             type: string
             format: bytes
       responses:
-        '202':
+        202:
           description: "The request was successful and the updated Alloy is returned."
           content:
             application/json:
@@ -1463,7 +1489,7 @@ paths:
                       weight: 0.0
                     - symbol: "P"
                       weight: 0.007
-        '400':
+        400:
           description: "An invalid payload has been sent."
           content:
             application/json:
@@ -1485,7 +1511,7 @@ paths:
                     errors:
                       compositions:
                         - "Missing data for required field."
-        '404':
+        404:
           description: "Cannot find an existing alloy so no content returned."
           content:
             application/json:
@@ -1507,7 +1533,7 @@ paths:
             type: string
             format: bytes
       responses:
-        '202':
+        202:
           description: "Your request was successfully completed."
           content:
             application/json:
@@ -1515,7 +1541,7 @@ paths:
                 $ref: '#/components/schemas/Response'
               example:
                 status: "success"
-        '400':
+        400:
           description: "An invalid request parameter has been sent."
           content:
             application/json:
@@ -1524,7 +1550,7 @@ paths:
               example:
                 status: "fail"
                 message: "Invalid ObjectId."
-        '404':
+        404:
           description: "No existing alloy to delete."
           content:
             application/json:
@@ -1533,6 +1559,682 @@ paths:
               example:
                 status: "fail"
                 message: "Alloy not found."
+  /user/alloys:
+    servers:
+      - url: http://localhost:8000
+    post:
+      summary: "Save an alloy to the User's database."
+      tags:
+        - Alloys
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "The alloy to save."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Alloy'
+      responses:
+        201:
+          description: "The Alloy has been saved to the User's Alloys database."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/Alloy'
+        400:
+          description: "An invalid request body has been sent."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty JSON':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Invalid JSON':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Missing Name Key':
+                  value:
+                    status: "fail"
+                    message: "Name must be provided."
+                'Missing Compositions':
+                  value:
+                    status: "fail"
+                    message: 'Compositions must be provided as a list of valid
+                                  elements e.g. {"symbol": "C", "weight": 1.0}'
+                'Compositions Not List':
+                  value:
+                    status: "fail"
+                    message: 'Compositions must be provided as a list of valid
+                                  elements e.g. {"symbol": "C", "weight": 1.0}'
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Not Logged In':
+                  value:
+                    status: "fail"
+                    message: "User must sign in again."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "There are no alloys saved to the user's document or user to find."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+    get:
+      summary: "We get the list of User's alloys stored in their document."
+      tags:
+        - Alloys
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Return the User's Alloys database successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alloy'
+                    example:
+                      - _id: "5d455058f6da81192a3f1c32"
+                        name: "Bohemen Alloy1"
+                        compositions:
+                          - symbol: "C"
+                            weight: 0.69
+                          - symbol: "Mn"
+                            weight: 0.61
+                          - symbol: "Si"
+                            weight: 0.03
+                          - symbol: "Ni"
+                            weight: 0.2
+                      - _id: "5d455058f6da81192a3f1c31"
+                        name: "330M Alloy1"
+                        compositions:
+                          - symbol: "C"
+                            weight: 0.3
+                          - symbol: "Mn"
+                            weight: 0.78
+                          - symbol: "Si"
+                            weight: 1.6
+                          - symbol: "Ni"
+                            weight: 1.9
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Not Logged In':
+                  value:
+                    status: "fail"
+                    message: "User must sign in again."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "There are no alloys saved to the user's document or user to find."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+                'No alloys':
+                  value:
+                    status: "fail"
+                    message: "No alloys found."
+  /user/alloys/{id}:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "We get the requested alloy from the parameter's ObjectId."
+      tags:
+        - Alloys
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Return the User's alloy detail successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alloy'
+                    example:
+                      _id: "5d455058f6da81192a3f1c32"
+                      name: "Bohemen Alloy1"
+                      compositions:
+                        - symbol: "C"
+                          weight: 0.69
+                        - symbol: "Mn"
+                          weight: 0.61
+                        - symbol: "Si"
+                          weight: 0.03
+                        - symbol: "Ni"
+                          weight: 0.2
+                        - symbol: "Cr"
+                          weight: 0.3
+                        - symbol: "Mo"
+                          weight: 0.0
+                        - symbol: "Co"
+                          weight: 0.0
+                        - symbol: "Al"
+                          weight: 0.0
+                        - symbol: "Cu"
+                          weight: 0.23
+                        - symbol: "As"
+                          weight: 0.0
+                        - symbol: "Ti"
+                          weight: 0.0
+                        - symbol: "V"
+                          weight: 0.0
+                        - symbol: "W"
+                          weight: 0.0
+                        - symbol: "S"
+                          weight: 0.04
+                        - symbol: "N"
+                          weight: 0.0
+                        - symbol: "Nb"
+                          weight: 0.0
+                        - symbol: "B"
+                          weight: 0.0
+                        - symbol: "P"
+                          weight: 0.012
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Not Logged In':
+                  value:
+                    status: "fail"
+                    message: "User must sign in again."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        400:
+          description: "The request has an invalid request parameter."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Invalid ObjectId."
+        404:
+          description: "There are no alloys saved to the user's document or user to find."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+                'No alloys':
+                  value:
+                    status: "fail"
+                    message: "No alloys found."
+        418:
+          description: "Multiple objects have been returned from the query."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Multiple objects returned."
+    patch:
+      summary: "Save an alloy to the User's database."
+      tags:
+        - Alloys
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "The Alloy details to partially update."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Alloy'
+            examples:
+              'Compositions and Name':
+                value:
+                  name: "330M Alloy1 New"
+                  compositions:
+                    - symbol: "C"
+                      weight: 0.5
+              'Name only':
+                value:
+                  name: "300M Alloy2"
+              'Compositions only':
+                value:
+                  compositions:
+                    - symbol: "Mn"
+                      weight: 0.5
+      responses:
+        200:
+          description: "The alloy has been successfully updated and returned in the response."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                'Compositions and Name':
+                  value:
+                    status: "success"
+                    data:
+                      name: "330M Alloy1 New"
+                      compositions:
+                        - symbol: "C"
+                          weight: 0.5
+                        - symbol: "Mn"
+                          weight: 0.78
+                        - symbol: "Si"
+                          weight: 1.6
+                        - symbol: "Ni"
+                          weight: 1.9
+                        - symbol: "Cr"
+                          weight: 0.91
+                        - symbol: "Mo"
+                          weight: 0.39
+                        - symbol: "Co"
+                          weight: 0.0
+                        - symbol: "Al"
+                          weight: 0.0
+                        - symbol: "Cu"
+                          weight: 0.0
+                        - symbol: "As"
+                          weight: 0.0
+                        - symbol: "Ti"
+                          weight: 0.0
+                        - symbol: "V"
+                          weight: 0.08
+                        - symbol: "W"
+                          weight: 0.0
+                        - symbol: "S"
+                          weight: 0.003
+                        - symbol: "N"
+                          weight: 0.011
+                        - symbol: "Nb"
+                          weight: 0.0
+                        - symbol: "B"
+                          weight: 0.0
+                        - symbol: "P"
+                          weight: 0.007
+                'Name Only':
+                  value:
+                    status: "success"
+                    data:
+                      name: "330M Alloy2"
+                      compositions:
+                        - symbol: "C"
+                          weight: 0.3
+                        - symbol: "Mn"
+                          weight: 0.78
+                        - symbol: "Si"
+                          weight: 1.6
+                        - symbol: "Ni"
+                          weight: 1.9
+                        - symbol: "Cr"
+                          weight: 0.91
+                        - symbol: "Mo"
+                          weight: 0.39
+                        - symbol: "Co"
+                          weight: 0.0
+                        - symbol: "Al"
+                          weight: 0.0
+                        - symbol: "Cu"
+                          weight: 0.0
+                        - symbol: "As"
+                          weight: 0.0
+                        - symbol: "Ti"
+                          weight: 0.0
+                        - symbol: "V"
+                          weight: 0.08
+                        - symbol: "W"
+                          weight: 0.0
+                        - symbol: "S"
+                          weight: 0.003
+                        - symbol: "N"
+                          weight: 0.011
+                        - symbol: "Nb"
+                          weight: 0.0
+                        - symbol: "B"
+                          weight: 0.0
+                        - symbol: "P"
+                          weight: 0.007
+                'Compositions Only':
+                  value:
+                    status: "success"
+                    data:
+                      name: "330M Alloy1 New"
+                      compositions:
+                        - symbol: "C"
+                          weight: 0.3
+                        - symbol: "Mn"
+                          weight: 0.5
+                        - symbol: "Si"
+                          weight: 1.6
+                        - symbol: "Ni"
+                          weight: 1.9
+                        - symbol: "Cr"
+                          weight: 0.91
+                        - symbol: "Mo"
+                          weight: 0.39
+                        - symbol: "Co"
+                          weight: 0.0
+                        - symbol: "Al"
+                          weight: 0.0
+                        - symbol: "Cu"
+                          weight: 0.0
+                        - symbol: "As"
+                          weight: 0.0
+                        - symbol: "Ti"
+                          weight: 0.0
+                        - symbol: "V"
+                          weight: 0.08
+                        - symbol: "W"
+                          weight: 0.0
+                        - symbol: "S"
+                          weight: 0.003
+                        - symbol: "N"
+                          weight: 0.011
+                        - symbol: "Nb"
+                          weight: 0.0
+                        - symbol: "B"
+                          weight: 0.0
+                        - symbol: "P"
+                          weight: 0.007
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Bad ObjectId Params':
+                  value:
+                    status: "fail"
+                    message: "Invalid ObjectId."
+                'Invalid Keys':
+                  value:
+                    status: "fail"
+                    message: "Invalid keys in request payload (i.e. must be either \"name\" or \"compositions\")."
+                'Invalid Compositions':
+                  value:
+                    status: "fail"
+                    message: "Compositions must be provided as a list of valid elements
+                              e.g. {\"symbol\": \"C\", \"weight\": 1.0}"
+                'Additional Fields in Element':
+                  value:
+                    status: "fail"
+                    message: "Alloy validation error."
+                'Bad Element Symbol':
+                  value:
+                    status: "fail"
+                    message: "Invalid element symbol error."
+                'Bad Element Error':
+                  value:
+                    status: "fail"
+                    message: "Invalid element error."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Not Logged In':
+                  value:
+                    status: "fail"
+                    message: "User must sign in again."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "There are no alloys saved to the user's document or user to find."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+                'No alloys':
+                  value:
+                    status: "fail"
+                    message: "No alloys found."
+                'Empty Alloys Store':
+                  value:
+                    status: "fail"
+                    message: "Alloy does not exist."
+        418:
+          description: "Multiple objects have been returned from the query."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Multiple objects returned."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "Validation error on updating."
+    delete:
+      summary: "Delete an alloy from the user's database."
+      tags:
+        - Alloys
+      security:
+        - bearerAuth: []
+      responses:
+        202:
+          description: "An alloy has successfully been deleted."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Not Logged In':
+                  value:
+                    status: "fail"
+                    message: "User must sign in again."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        400:
+          description: "The request has an invalid request parameter."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Bad ObjectId in Params':
+                  value:
+                    status: "fail"
+                    message: "Invalid ObjectId."
+                'Mongo Delete Error':
+                  value:
+                    status: "fail"
+                    message: "Failed to delete alloy."
+        404:
+          description: "There are no alloys saved to the user's document or user to find."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+                'No alloys':
+                  value:
+                    status: "fail"
+                    message: "No alloy found."
+                'Cannot Find Alloy':
+                  value:
+                    status: "fail"
+                    message: "Alloy does not exist."
+        418:
+          description: "Multiple objects have been returned from the query."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Multiple objects returned."
 
   /alloys/update:
     servers:
@@ -1605,7 +2307,7 @@ paths:
                       - symbol: "P"
                         weight: 0.007
       responses:
-        '200':
+        200:
           description: "The alloy and its compositions was successfully updated and stored
             in the Session for the user. An initial Configurations with default values were
             set."
@@ -1625,7 +2327,7 @@ paths:
                   bs_temp: 563.2380
                   ae1_temp: 700.90196
                   ae3_temp: 845.83796
-        '400':
+        400:
           description: "An invalid payload has been sent with the request."
           content:
             application/json:
@@ -1655,7 +2357,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Alloy type one of of ['parent' | 'weld' | 'mix' ]"
-        '401':
+        401:
           description: "Unauthorized access to the endpoint."
           content:
             application/json:
@@ -1703,7 +2405,7 @@ paths:
       tags:
         - Configurations
       responses:
-        '200':
+        200:
           description: "The request was success fully completed meaning the Session store has been updated with the new
             alloy compositions and if any limit values need to be auto calculated, the system will do so and return the
             newly updated values in a `data` object."
@@ -1746,7 +2448,7 @@ paths:
                     data:
                       ae1_temp: 700.90196
                       ae3_temp: 845.83796
-        '400':
+        400:
           description: "An invalid payload has been sent with the request."
           content:
             application/json:
@@ -1772,7 +2474,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Alloy type one of of ['parent' | 'weld' | 'mix' ]"
-        '401':
+        401:
           description: "Unauthorized access to the endpoint."
           content:
             application/json:
@@ -1813,7 +2515,7 @@ paths:
       tags:
         - Configurations
       responses:
-        '200':
+        200:
           description: "Method changed successfully for the current user."
           content:
             application/json:
@@ -1822,7 +2524,7 @@ paths:
               example:
                 status: "success"
                 message: "Changed to Kirkaldy83 method."
-        '400':
+        400:
           description: 'Invalid payload sent in the request.'
           content:
             application/json:
@@ -1841,7 +2543,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid method provided (must be Li98 or Kirkaldy83)"
-        '401':
+        401:
           description: "Unauthorized access to the endpoint."
           content:
             application/json:
@@ -1856,7 +2558,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
-        '404':
+        404:
           description: "Cannot find a current Session store for the user."
           content:
             application/json:
@@ -1894,7 +2596,7 @@ paths:
                   start_temp: 900
                   cct_cooling_rate: 10
       responses:
-        '202':
+        202:
           description: "The configurations were updated successfully and no content returned."
           content:
             application/json:
@@ -1903,7 +2605,7 @@ paths:
               example:
                 status: "success"
                 message: "Setup configurations values have been updated."
-        '400':
+        400:
           description: 'Invalid payload sent in the request.'
           content:
             application/json:
@@ -1918,7 +2620,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Payload does not have any valid keys."
-        '401':
+        401:
           description: "Unauthorized access to the endpoint."
           content:
             application/json:
@@ -1933,7 +2635,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
-        '404':
+        404:
           description: "No content can be found to update."
           content:
             application/json:
@@ -1952,7 +2654,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        200:
           description: "The auto calculate for MS store has been updated and returned."
           content:
             application/json:
@@ -1963,7 +2665,7 @@ paths:
                 data:
                   ms_temp: 464.1960
                   ms_rate_param: 0.0207
-        '400':
+        400:
           description: "An invalid request has been made."
           content:
             application/json:
@@ -1982,7 +2684,7 @@ paths:
                   value:
                     status: "fail"
                     message: "User has not set an Alloy."
-        '401':
+        401:
           description: "Unauthorized access to the endpoint."
           content:
             application/json:
@@ -2019,7 +2721,7 @@ paths:
                   format: float
                   example: 0.0207
       responses:
-        '202':
+        202:
           description: "The BS, MS and MS Rate Parameter temperatures were updated and no content returned."
           content:
             application/json:
@@ -2027,7 +2729,7 @@ paths:
                 $ref: '#/components/schemas/Response'
               example:
                 status: "success"
-        '400':
+        400:
           description: "An invalid payload was sent in the request."
           content:
             application/json:
@@ -2046,7 +2748,7 @@ paths:
                   value:
                     status: "fail"
                     message: "MS Rate Parameter temperature is required."
-        '404':
+        404:
           description: "No previous session configurations was found for the user."
           content:
             application/json:
@@ -2065,7 +2767,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        200:
           description: "The auto calculate for BS store has been updated and returned."
           content:
             application/json:
@@ -2075,7 +2777,7 @@ paths:
                 status: "success"
                 data:
                   bs_temp: 563.2380
-        '400':
+        400:
           description: "An invalid request has been made."
           content:
             application/json:
@@ -2094,7 +2796,7 @@ paths:
                   value:
                     status: "fail"
                     message: "User has not set an Alloy."
-        '401':
+        401:
           description: "Unauthorized access to the endpoint."
           content:
             application/json:
@@ -2127,7 +2829,7 @@ paths:
                   format: float
                   example: 563.2380
       responses:
-        '202':
+        202:
           description: "The BS, MS and MS Rate Parameter temperatures were updated and no content returned."
           content:
             application/json:
@@ -2135,7 +2837,7 @@ paths:
                 $ref: '#/components/schemas/Response'
               example:
                 status: "success"
-        '400':
+        400:
           description: "An invalid payload was sent in the request."
           content:
             application/json:
@@ -2150,7 +2852,7 @@ paths:
                   value:
                     status: "fail"
                     message: "BS temperature is required."
-        '404':
+        404:
           description: "No previous session configurations was found for the user."
           content:
             application/json:
@@ -2169,7 +2871,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        200:
           description: "The auto calculate for Ae1 and Ae3 store has been updated and returned."
           content:
             application/json:
@@ -2180,7 +2882,7 @@ paths:
                 data:
                   ae1_temp: 700.9019
                   ae3_temp: 845.8379
-        '400':
+        400:
           description: "An invalid request has been made."
           content:
             application/json:
@@ -2199,7 +2901,7 @@ paths:
                   value:
                     status: "fail"
                     message: "User has not set an Alloy."
-        '401':
+        401:
           description: "Unauthorized access to the endpoint."
           content:
             application/json:
@@ -2236,7 +2938,7 @@ paths:
                   format: float
                   example: 845.8380
       responses:
-        '202':
+        202:
           description: "The Ae1 and Ae3 temperatures were updated."
           content:
             application/json:
@@ -2244,7 +2946,7 @@ paths:
                 $ref: '#/components/schemas/Response'
               example:
                 status: "success"
-        '400':
+        400:
           description: "An invalid request has been made."
           content:
             application/json:
@@ -2263,7 +2965,7 @@ paths:
                   value:
                     status: "fail"
                     message: "No previous session initiated."
-        '401':
+        401:
           description: "Unauthorized access to the endpoint."
           content:
             application/json:
@@ -2278,7 +2980,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
-        '404':
+        404:
           description: "No previous session configurations was found for the user."
           content:
             application/json:
@@ -2287,7 +2989,6 @@ paths:
               example:
                 status: "fail"
                 message: "No previous session configurations was set."
-
 
   /simulate:
     servers:
@@ -2299,13 +3000,13 @@ paths:
       tags:
         - Simulation
       responses:
-        '200':
+        200:
           description: "The CCT and TTT simulations have been completed and the Graphs result returned."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Graphs'
-        '400':
+        400:
           description: "An invalid request has been made."
           content:
             application/json:
@@ -2320,7 +3021,7 @@ paths:
                   value:
                     status: "fail"
                     message: "MS and BS value cannot be less than 0.0."
-        '401':
+        401:
           description: "An invalid request header has been sent."
   /simulate/save:
     servers:
@@ -2332,7 +3033,7 @@ paths:
       tags:
         - Simulation
       responses:
-        '201':
+        201:
           description: "A new Saved Simulation has been made."
     post:
       summary: "Save an invalid simulation data to the User's document."
@@ -2347,7 +3048,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Invalid Configurations'
       responses:
-        '201':
+        201:
           description: "The invalid simulation has been saved successfully."
 
 
@@ -2869,10 +3570,9 @@ components:
         ae3_temp: 845.83796
         start_temp: 900
         cct_cooling_rate: 10
-    alloyExample:
-      summary: "Bohemen Alloy1 example."
+    alloyExample1:
       value:
-        _id: "5d2d811b88a3fafd802ca7d1"
+        _id: "5d455058f6da81192a3f1c32"
         name: "Bohemen Alloy1"
         compositions:
           - symbol: "C"
@@ -2911,7 +3611,47 @@ components:
             weight: 0.0
           - symbol: "P"
             weight: 0.012
-
+    alloyExample2:
+      value:
+        _id: "5d455058f6da81192a3f1c31"
+        name: "330M Alloy1"
+        compositions:
+          - symbol: "C"
+            weight: 0.3
+          - symbol: "Mn"
+            weight: 0.78
+          - symbol: "Si"
+            weight: 1.6
+          - symbol: "Ni"
+            weight: 1.9
+          - symbol: "Cr"
+            weight: 0.91
+          - symbol: "Mo"
+            weight: 0.39
+          - symbol: "Co"
+            weight: 0.0
+          - symbol: "Al"
+            weight: 0.0
+          - symbol: "Cu"
+            weight: 0.0
+          - symbol: "As"
+            weight: 0.0
+          - symbol: "Ti"
+            weight: 0.0
+          - symbol: "V"
+            weight: 0.08
+          - symbol: "W"
+            weight: 0.0
+          - symbol: "S"
+            weight: 0.003
+          - symbol: "N"
+            weight: 0.011
+          - symbol: "Nb"
+            weight: 0.0
+          - symbol: "B"
+            weight: 0.0
+          - symbol: "P"
+            weight: 0.007
 
 tags:
   - name: Users

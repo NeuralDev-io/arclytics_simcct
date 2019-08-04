@@ -214,6 +214,10 @@ class AlloyStore(Resource):
 
         comp_np_arr = SimConfig.get_compositions(comp_list)
 
+        if not comp_np_arr:
+            response['message'] = 'Compositions conversion error.'
+            return response, 500
+
         # We need to store some results so let's prepare an empty dict
         response['message'] = (
             'Compositions and Configurations in Session '
@@ -408,6 +412,10 @@ class AlloyStore(Resource):
         # pass
 
         comp_np_arr = SimConfig.get_compositions(comp_list)
+
+        if not comp_np_arr:
+            response['message'] = 'Compositions conversion error.'
+            return response, 500
 
         # We need to store some results so let's prepare an empty dict
         response['message'] = 'Compositions and other values updated.'

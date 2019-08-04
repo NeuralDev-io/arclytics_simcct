@@ -34,6 +34,7 @@ from sim_app.resources.session import session_blueprint
 from sim_app.resources.sim_configurations import configs_blueprint
 from sim_app.resources.alloys import alloys_blueprint
 from sim_app.resources.simulation import sim_blueprint
+from sim_app.resources.sim_alloys import sim_alloys_blueprint
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -89,17 +90,15 @@ def create_app(script_info=None) -> Flask:
     app_settings = os.environ.get('APP_SETTINGS', None)
     app.config.from_object(app_settings)
 
-    extensions(app)
-
     # Register blueprints
     app.register_blueprint(session_blueprint)
     app.register_blueprint(configs_blueprint)
     app.register_blueprint(alloys_blueprint)
     app.register_blueprint(sim_blueprint)
-    from sim_app.resources.sim_alloys import sim_alloys_blueprint
     app.register_blueprint(sim_alloys_blueprint)
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
+    extensions(app)
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects

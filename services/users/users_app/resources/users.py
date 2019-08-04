@@ -39,7 +39,8 @@ from users_app.models import User, UserProfile, AdminProfile
 from users_app.middleware import authenticate, authenticate_admin
 from users_app.extensions import api
 from users_app.token import (
-    generate_confirmation_token, generate_url, confirm_token, URLTokenError
+    generate_confirmation_token, generate_url, confirm_token, URLTokenError,
+    generate_promotion_confirmation_token
 )
 
 users_blueprint = Blueprint('users', __name__)
@@ -175,10 +176,10 @@ class Users(Resource):
         if user.is_admin:
             # If the user is an admin but is not verified, we must also reject
             # the request.
-            if not user.admin_profile.verified:
+            if not user.admin_profile or not user.admin_profile.verified:
                 response['message'] = 'User is not verified as an admin.'
                 response.pop('data')
-                return response, 400
+                return response, 401
 
             # If the user is an admin but does not have an admin profile or they
             # do not have a position then something has gone wrong when they
@@ -190,7 +191,7 @@ class Users(Resource):
                     'cannot be updated.'
                 )
                 response.pop('data')
-                return response, 400
+                return response, 401
 
             # Otherwise, we can proceed to update the admin profile fields.
             mobile_number = data.get('mobile_number', None)
@@ -222,7 +223,6 @@ class Users(Resource):
 
         # Save the changes for both the user document and embedded document.
         try:
-            user.cascade_save()
             user.save()
         except ValidationError as e:
             response.pop('data')
@@ -368,7 +368,6 @@ class UserProfiles(Resource):
                 not aim or not highest_education or not sci_tech_exp
                 or not phase_transform_exp
             ):
-                response.pop('profile')
                 response['message'] = (
                     'User profile cannot be patched as '
                     'there is no existing profile.'
@@ -394,6 +393,7 @@ class UserProfiles(Resource):
         # Otherwise if the user already has a profile, we can update individual
         # fields.
         else:
+            response['data'] = {}
             if aim:
                 user.profile.aim = aim
                 response['data']['aim'] = aim
@@ -411,7 +411,6 @@ class UserProfiles(Resource):
         user.last_updated = datetime.utcnow()
 
         # Save the changes for the user and the embedded documents
-        user.cascade_save()
         user.save()
 
         # Return the response body
@@ -450,7 +449,6 @@ class UserProfiles(Resource):
         # an exception will be raised, caught and sent back.
         try:
             user.last_updated = datetime.utcnow()
-            user.cascade_save()
             user.save()
         except ValidationError as e:
             response['errors'] = str(e)
@@ -467,7 +465,7 @@ class UserProfiles(Resource):
             'sci_tech_exp': sci_tech_exp,
             'phase_transform_exp': phase_transform_exp
         }
-        return response, 200
+        return response, 201
 
 
 class UserConfigurations(Resource):
@@ -510,10 +508,10 @@ class AdminCreate(Resource):
         email = post_data.get('email', '')
         position = post_data.get('position', '')
 
+        # Ensure email and position data was given
         if not email:
             response['message'] = 'No email provided.'
             return response, 400
-
         if not position:
             response['message'] = 'No position provided.'
             return response, 400
@@ -535,86 +533,51 @@ class AdminCreate(Resource):
             response['message'] = 'User does not exist.'
             return response, 404
 
+        # Get the user object and verify that it is verified and an admin
         user = User.objects.get(email=valid_email)
-
         if not user.verified:
             response['message'] = 'The user must verify their email.'
             return response, 401
-
         if user.is_admin:
             response['message'] = 'User is already an Administrator.'
             return response, 400
 
-        # If all validation checks pass, make user an admin.
-        user.is_admin = True
-        user.admin_profile = AdminProfile(
-            position=position,
-            mobile_number=None,
-            verified=False,
-            promoted_by=resp
+        # Get the admin object so we can email them a confirmation email.
+        admin = User.objects.get(id=resp)
+
+        # Generate a confirmation email to be sent to the Admin so that they can
+        # confirm they want to promote the user.
+        promotion_confirm_token = generate_promotion_confirmation_token(
+            admin.email, user.email, position
         )
-        user.last_updated = datetime.utcnow()
-        user.cascade_save()
-        user.save()
-
-        # Generate a confirmation email to be sent to the user so that they can
-        # confirm they have become an admin.
-        admin_token = generate_confirmation_token(user.email)
-        admin_url = generate_url('users.confirm_create_admin', admin_token)
-
+        promotion_confirm_url = generate_url(
+            'users.confirm_promotion', promotion_confirm_token
+        )
         from celery_runner import celery
         celery.send_task(
             'tasks.send_email',
             kwargs={
                 'to':
-                user.email,
+                admin.email,
                 'subject_suffix':
-                'Confirm you are an Admin',
+                'Confirm Promotion',
                 'html_template':
                 render_template(
-                    'activate_admin.html',
-                    admin_url=admin_url,
-                    email=valid_email,
-                    users_name=f'{user.first_name} {user.last_name}'
+                    'confirm_promotion.html',
+                    promotion_confirm_url=promotion_confirm_url,
+                    email=admin.email,
+                    position=position,
+                    admin_name=f'{admin.first_name} {admin.last_name}',
+                    user_name=f'{user.first_name} {user.last_name}'
                 ),
                 'text_template':
                 render_template(
-                    'activate_admin.txt',
-                    admin_url=admin_url,
-                    email=valid_email,
-                    users_name=f'{user.first_name} {user.last_name}'
-                )
-            }
-        )
-
-        # Not sure if this is a good way to cancel unintentional promotions.
-        # What I think I've done is get a url that has information about the
-        # promoted user and send that to the promoter in an email so that they
-        # can cancel the users admin privileges if they want.
-        cancel_token = generate_confirmation_token(user.email)
-        cancel_url = generate_url('users.admin_cancel', cancel_token)
-
-        promoter = User.objects.get(id=resp)
-        celery.send_task(
-            'tasks.send_email',
-            kwargs={
-                'to':
-                promoter.email,
-                'subject_suffix':
-                'You Promoted a User!',
-                'html_template':
-                render_template(
-                    'admin_created.html',
-                    email=promoter.email,
-                    users_name=f'{promoter.first_name} {promoter.last_name}',
-                    cancel_url=cancel_url
-                ),
-                'text_template':
-                render_template(
-                    'admin_created.txt',
-                    email=promoter.email,
-                    users_name=f'{promoter.first_name} {promoter.last_name}',
-                    cancel_url=cancel_url
+                    'confirm_promotion.txt',
+                    promotion_confirm_url=promotion_confirm_url,
+                    email=admin.email,
+                    position=position,
+                    admin_name=f'{admin.first_name} {admin.last_name}',
+                    user_name=f'{user.first_name} {user.last_name}'
                 )
             }
         )
@@ -624,8 +587,141 @@ class AdminCreate(Resource):
         return response, 202
 
 
-@users_blueprint.route('/admincreate/confirm/<token>', methods=['GET'])
-def confirm_create_admin(token):
+@users_blueprint.route('/admin/confirmpromotion/<token>', methods=['GET'])
+def confirm_promotion(token):
+    """
+    Allow an admin to confirm their promotion of another user
+    """
+
+    response = {'status': 'fail', 'message': 'Invalid token.'}
+
+    # Decode the token from the email to confirm it was the right one
+    try:
+        data = confirm_token(token)
+    except URLTokenError as e:
+        response['error'] = str(e)
+        return jsonify(response), 400
+    except Exception as e:
+        response['error'] = str(e)
+        return jsonify(response), 400
+
+    # Ensure that a list was returned
+    if not isinstance(data, list):
+        response['message'] = 'Invalid Token.'
+        return jsonify(response), 400
+
+    # Ensure data is all present
+    admin_email = data[0]
+    user_email = data[1]
+    position = data[2]
+    if not admin_email or not user_email or not position:
+        response['message'] = 'Invalid data in Token.'
+        return jsonify(response), 400
+
+    # Verify both email addresses are valid
+    try:
+        # validate and get info
+        va = validate_email(admin_email)
+        vu = validate_email(user_email)
+        # replace with normalized form
+        valid_admin_email = va['email']
+        valid_user_email = vu['email']
+    except EmailNotValidError as e:
+        # email is not valid, exception message is human-readable
+        response['error'] = str(e)
+        response['message'] = 'Invalid email.'
+        return jsonify(response), 400
+
+    # Ensure both users exist in the database
+    if not User.objects(email=valid_admin_email):
+        response['message'] = 'Administrator does not exist.'
+        return jsonify(response), 400
+    if not User.objects(email=valid_user_email):
+        response['message'] = 'Target User does not exist.'
+        return jsonify(response), 400
+
+    # Get both user objects
+    admin_user = User.objects.get(email=valid_admin_email)
+    target_user = User.objects.get(email=valid_user_email)
+
+    # Ensure the admin user is allowed to promote other users.
+    if not admin_user.is_admin or not admin_user.admin_profile.verified:
+        response['message'] = 'User is not authorised to promote other users.'
+        return jsonify(response), 400
+
+    # Ensure the target user has their account verified
+    if not target_user.verified:
+        response['message'] = 'Target user is not verified.'
+        return jsonify(response), 400
+
+    # Start promotion process
+    target_user.is_admin = True
+    target_user.admin_profile = AdminProfile(
+        position=position,
+        mobile_number=None,
+        verified=False,
+        promoted_by=admin_user.id
+    )
+    target_user.last_updated = datetime.utcnow()
+    target_user.save()
+
+    # Generate an acknowledgement email to be sent to the User so that they can
+    # verify they have been promoted.
+    promotion_acknowledge_token = generate_confirmation_token(target_user.email)
+    promotion_acknowledge_url = generate_url(
+        'users.acknowledge_promotion', promotion_acknowledge_token
+    )
+    from celery_runner import celery
+    celery.send_task(
+        'tasks.send_email',
+        kwargs={
+            'to':
+                target_user.email,
+            'subject_suffix':
+                'Acknowledge Promotion',
+            'html_template':
+                render_template(
+                    'acknowledge_promotion.html',
+                    promotion_acknowledge_url_url=promotion_acknowledge_url,
+                    email=target_user.email,
+                    position=position,
+                    user_name=(
+                        f'{target_user.first_name} {target_user.last_name}'
+                    )
+                ),
+            'text_template':
+                render_template(
+                    'acknowledge_promotion.html',
+                    promotion_acknowledge_url_url=promotion_acknowledge_url,
+                    email=target_user.email,
+                    position=position,
+                    user_name=(
+                        f'{target_user.first_name} {target_user.last_name}'
+                    )
+                )
+        }
+    )
+
+    # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
+    client_host = os.environ.get('CLIENT_HOST')
+    # We can make our own redirect response by doing the following
+    custom_redir_response = app.response_class(
+        status=302, mimetype='application/json'
+    )
+    # TODO(davidmatthews1004@gmail.com): Redirect the Admin somewhere else,
+    #  maybe the home screen or a confirmation page.
+    redirect_url = 'http://localhost:3000/signin'
+    custom_redir_response.headers['Location'] = redirect_url
+    return custom_redir_response
+
+
+@users_blueprint.route('/user/acknowledgepromotion/<token>', methods=['GET'])
+def acknowledge_promotion(token):
+    """
+    Allow a user to acknowledge their promotion and in doing so verify their
+    status as an admin
+    """
+
     response = {'status': 'fail', 'message': 'Invalid token.'}
 
     # Decode the token from the email to confirm it was the right one
@@ -638,45 +734,77 @@ def confirm_create_admin(token):
         response['error'] = str(e)
         return jsonify(response), 400
 
-    user = User.objects.get(email=email)
-
-    if not user.is_admin:
-        response['message'] = 'User is not an admin.'
+    # Verify it is actually a valid email
+    try:
+        # validate and get info
+        v = validate_email(email)
+        # replace with normalized form
+        valid_email = v['email']
+    except EmailNotValidError as e:
+        # email is not valid, exception message is human-readable
+        response['error'] = str(e)
+        response['message'] = 'Invalid email.'
         return jsonify(response), 400
 
-    # User has clicked verification link so we can verify their admin status
+    # Ensure the user exists in the database
+    if not User.objects(email=valid_email):
+        response['message'] = 'User does not exist.'
+        return jsonify(response), 400
+
+    # Get the user object
+    user = User.objects.get(email=valid_email)
+
+    # Ensure the user is verfiied, an admin and that they have a valid admin
+    # profile
+    if not user.verified:
+        response['message'] = 'User is not verified.'
+        return jsonify(response), 400
+    if not user.is_admin:
+        response['message'] = 'User is not an Admin.'
+        return jsonify(response), 400
+    if not user.admin_profile:
+        response['message'] = 'User has an invalid Admin profile.'
+        return jsonify(response), 400
+
+    # Verify user's admin status
     user.admin_profile.verified = True
-    user.last_updated = datetime.utcnow()
     user.save()
 
-    # The following is the same as above in AdminCreate, however it notifies the
-    # promoter that the user has been verified.
-    cancel_token = generate_confirmation_token(user.email)
-    cancel_url = generate_url('users.admin_cancel', cancel_token)
+    # Get promoter information so that they can be sent an email letting them
+    # know that the user they promoted has been verified.
+    promoter_id = user.admin_profile.promoted_by
+    promoter = User.objects.get(id=promoter_id)
 
-    promoter = User.objects.get(id=user.admin_profile.promoted_by)
     from celery_runner import celery
     celery.send_task(
         'tasks.send_email',
         kwargs={
             'to':
-            promoter.email,
+                promoter.email,
             'subject_suffix':
-            'An Admin you promoted has been verified!',
+                'Promotion Verified',
             'html_template':
-            render_template(
-                'admin_confirmed.html',
-                email=promoter.email,
-                users_name=f'{promoter.first_name} {promoter.last_name}',
-                cancel_url=cancel_url
-            ),
+                render_template(
+                    'promotion_verified.html',
+                    email=promoter.email,
+                    promoter_name=(
+                        f'{promoter.first_name} {promoter.last_name}'
+                    ),
+                    user_name=(
+                        f'{user.first_name} {user.last_name}'
+                    )
+                ),
             'text_template':
-            render_template(
-                'admin_confirmed.txt',
-                email=promoter.email,
-                users_name=f'{promoter.first_name} {promoter.last_name}',
-                cancel_url=cancel_url
-            )
+                render_template(
+                    'promotion_verified.txt',
+                    email=promoter.email,
+                    promoter_name=(
+                        f'{promoter.first_name} {promoter.last_name}'
+                    ),
+                    user_name=(
+                        f'{user.first_name} {user.last_name}'
+                    )
+                )
         }
     )
 
@@ -688,38 +816,8 @@ def confirm_create_admin(token):
     )
     redirect_url = f'http://localhost:3000/signin'
     custom_redir_response.headers['Location'] = redirect_url
-    return custom_redir_response
-
-
-@users_blueprint.route('/admincreate/cancel/<token>', methods=['GET'])
-def admin_cancel(token):
-    response = {'status': 'fail', 'message': 'Invalid token.'}
-
-    # Decode the token from the email to confirm it was the right one
-    try:
-        email = confirm_token(token)
-    except URLTokenError as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
-    except Exception as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
-
-    user = User.objects.get(email=email)
-    user.is_admin = False
-    user.last_updated = datetime.utcnow()
-    user.save()
-
-    # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
-    client_host = os.environ.get('CLIENT_HOST')
-    # We can make our own redirect response by doing the following
-    custom_redir_response = app.response_class(
-        status=302, mimetype='application/json'
-    )
-    # TODO(davidmatthews1004@gmail.com): Ask the frontend guys to make a page
-    #  so the user can be redirected to this page.
-    redirect_url = f'http://localhost:3000/signin'
-    custom_redir_response.headers['Location'] = redirect_url
+    # Additionally, if we need to, we can attach the JWT token in the header
+    # custom_redir_response.headers['Authorization'] = f'Bearer {jwt_token}'
     return custom_redir_response
 
 

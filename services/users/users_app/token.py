@@ -25,6 +25,16 @@ from typing import Union
 from flask import url_for
 from flask import current_app as app
 from itsdangerous import URLSafeTimedSerializer
+from itsdangerous.exc import BadSignature, SignatureExpired
+
+
+class URLTokenError(Exception):
+    """
+    A custom exception to be raised from any itsdangerous package exceptions.
+    """
+
+    def __init__(self, msg: str = None):
+        super(URLTokenError, self).__init__(msg)
 
 
 def generate_confirmation_token(email: str):
@@ -50,10 +60,12 @@ def confirm_token(token: bytes, expiration: int = 3600) -> Union[bool, str]:
             salt=app.config['SECURITY_PASSWORD_SALT'],
             max_age=expiration
         )
+    except BadSignature as e:
+        raise URLTokenError('Bad signature.')
+    except SignatureExpired as e:
+        raise URLTokenError('Signature expired.')
     except Exception as e:
-        # TODO(andrew@neuraldev.io): Not really sure what exceptions I am
-        #  catching.
-        return False
+        raise URLTokenError('Token error.')
     return email
 
 

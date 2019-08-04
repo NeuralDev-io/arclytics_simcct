@@ -13,21 +13,22 @@
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
-__version__ = '1.0.0'
+__version__ = '0.9.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.14'
 """alloys.py: 
 
-This defines the resources and endpoints for Alloys.
+This defines the resources and endpoints for Global Alloys CRUD operations.
 """
 
 from bson import ObjectId
-from flask import Blueprint, request, json
+from flask import Blueprint, request
 from flask_restful import Resource
 from marshmallow import ValidationError
 
+from sim_app.extensions import api
 from sim_app.schemas import AlloySchema
 from sim_app.alloys_service import AlloysService
 from logger.arc_logger import AppLogger
@@ -36,13 +37,11 @@ logger = AppLogger(__name__)
 
 alloys_blueprint = Blueprint('alloys', __name__)
 
-# Just some shorthands to make it easier to read
-schema = AlloySchema()  # alloy schema instance
-
 
 class AlloysList(Resource):
     """The resource of endpoints for retrieving an alloy list and creating."""
 
+    # TODO(andrew@neuraldev.io): How to verify an admin user.
     def post(self):
         """Exposes the POST method for `/alloys` to allow creating an alloy.
         The request must also include a request body of data that will need to
@@ -53,17 +52,25 @@ class AlloysList(Resource):
         """
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        if not request.get_json():
+        post_data = request.get_json()
+        if not post_data:
             return response, 400
 
-        # Extract the request data and validate it
+        post_comps = post_data.get('compositions', None)
+
+        if not post_comps:
+            response['message'] = 'No compositions list were provided.'
+            return response, 400
+
+        # We validate it to make sure it's valid before we do any
+        # conversions below with the compositions
         try:
-            post_data = schema.load(json.loads(request.data))
+            valid_data = AlloySchema().load(post_data)
         except ValidationError as e:
             response['errors'] = e.messages
             return response, 400
 
-        alloy = AlloysService().create_alloy(post_data)
+        alloy = AlloysService().create_alloy(valid_data)
 
         # create_alloy() will return a string on DuplicateKeyError meaning it
         # wasn't created.
@@ -127,19 +134,23 @@ class Alloys(Resource):
         response.pop('message')
         return response, 200
 
-    def put(self, alloy_id):
-        """Exposes the PUT method for `/alloys` to update an existing alloy by
-        user of replacing the old one.
+    # TODO(andrew@neuraldev.io): How to verify an admin user.
+    def patch(self, alloy_id):
+        """Exposes the PATCH method for `/alloys` to update an existing alloy by
+        an admin to update the existing data.
 
         Args:
             alloy_id: A valid ObjectId string that will be checked.
 
         Returns:
-            A Response object consisting of a dict and status code as an int.
+            A Response object consisting of a dict and status code as
+            an int.
         """
-        response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        if not request.get_json():
+        patch_data = request.get_json()
+
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+        if not patch_data:
             return response, 400
 
         # Verify the request params is a valid ObjectId to use
@@ -147,14 +158,56 @@ class Alloys(Resource):
             response['message'] = 'Invalid ObjectId.'
             return response, 400
 
-        # Extract the request data and validate it
+        # Just validate the input schema first before we do anything else
         try:
-            put_data = schema.load(json.loads(request.data))
+            AlloySchema().load(patch_data)
+        except ValidationError as e:
+            response['message'] = 'Request data failed schema validation.'
+            response['errors'] = e.messages
+            return response, 400
+
+        patch_name = patch_data.get('name', None)
+        patch_alloy = patch_data.get('compositions', None)
+
+        # First we update the compositions of the existing alloy if any.
+        existing_alloy = AlloysService().find_alloy(ObjectId(alloy_id))
+
+        if not existing_alloy:
+            response['message'] = 'Alloy not found.'
+            return response, 404
+
+        if patch_alloy:
+            existing_comp = existing_alloy.get('compositions')
+
+            # FIXME(andrew@neuraldev.io): This needs to be massively updated as
+            #  this is possible the slowest way possible to do this. One way
+            #  would be to make an Element class and override the comparison
+            #  of each class to only use the Symbol to compare to each other.
+            #  That way you can use the Python "for in" syntax without worries.
+            # Update the elements by search
+            for el in patch_data.get('compositions'):
+                exists = False
+                for i, ex_el in enumerate(existing_comp):
+                    if ex_el['symbol'] == el['symbol']:
+                        exists = True
+                        existing_comp[i] = el
+                        break
+                if not exists:
+                    existing_comp.append(el)
+
+        # update the name if a new one is provided
+        if not patch_name == existing_alloy['name']:
+            existing_alloy['name'] = patch_name
+
+        # Ensure the newly saved alloy is valid
+        try:
+            # Must remove ObjectId in data to pass
+            valid_data = AlloySchema(exclude=['_id']).load(existing_alloy)
         except ValidationError as e:
             response['errors'] = e.messages
             return response, 400
 
-        good = AlloysService().update_alloy(ObjectId(alloy_id), put_data)
+        good = AlloysService().update_alloy(ObjectId(alloy_id), valid_data)
 
         # The service will return True or False based on successfully updating
         # an alloy.
@@ -167,8 +220,9 @@ class Alloys(Resource):
         response['status'] = 'success'
         response['data'] = updated_alloy
         response.pop('message')
-        return response, 202
+        return response, 200
 
+    # TODO(andrew@neuraldev.io): How to verify an admin user.
     def delete(self, alloy_id):
         """Exposes the DELETE method on `/alloys/{id}` to delete an existing
         alloy in the database.
@@ -194,3 +248,7 @@ class Alloys(Resource):
         response['status'] = 'success'
         response.pop('message')
         return response, 202
+
+
+api.add_resource(Alloys, '/global/alloys/<alloy_id>')
+api.add_resource(AlloysList, '/global/alloys')

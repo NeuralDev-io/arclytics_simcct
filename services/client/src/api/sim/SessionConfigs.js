@@ -8,21 +8,20 @@
  * config/comp input field. The purpose is to speed up the time it takes since a
  * user presses RUN until the result is returned.
  *
- * TODO: in the future consider calling these functions on onBlur
  *
  * @version 1.0.0
  * @author Dalton Le
  */
 
-export const updateComp = (type, alloy) => {
-  fetch('http://localhost:8001/configs/comp/update', {
+export const initComp = (option, type, alloy) => {
+  fetch('http://localhost:8001/alloys/update', {
     method: 'POST',
-    mode: 'cors',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
+      alloy_option: option,
       alloy_type: type,
       alloy,
     }),
@@ -30,8 +29,28 @@ export const updateComp = (type, alloy) => {
     .then(res => res.json())
     .then((data) => {
       if (data.status === 'fail') throw new Error(data.message)
-      if (data.status === 'success') console.log(data)
     })
+    .catch(err => console.log(err))
+}
+
+export const updateComp = (option, type, alloy) => {
+  fetch('http://localhost:8001/alloys/update', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify({
+      alloy_option: option,
+      alloy_type: type,
+      alloy,
+    }),
+  })
+    .then(res => res.json())
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
+    })
+    .catch(err => console.log(err))
 }
 
 export const updateConfig = () => {

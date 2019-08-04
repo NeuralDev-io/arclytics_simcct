@@ -9,7 +9,7 @@
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
@@ -21,18 +21,11 @@ that will be received by the simcct server as request body data. They will
 be used to validate the post data is correct before adding to any DB.
 """
 
-import enum
-
 from bson import ObjectId
 from marshmallow import Schema, fields
+from marshmallow.validate import OneOf
 
 Schema.TYPE_MAPPING[ObjectId] = fields.String
-
-
-class AlloyOption(enum.Enum):
-    parent = 1
-    weld = 2
-    mix = 3
 
 
 class ElementSchema(Schema):
@@ -44,6 +37,33 @@ class AlloySchema(Schema):
     _id = fields.Str()
     name = fields.Str(required=True)
     compositions = fields.List(fields.Nested(ElementSchema), required=True)
+
+
+class AlloysTypeSchema(Schema):
+    parent = fields.Nested(AlloySchema, allow_none=True)
+    weld = fields.Nested(AlloySchema, allow_none=True)
+    mix = fields.Nested(AlloySchema, allow_none=True)
+
+
+class AlloyStoreRequestSchema(Schema):
+    """This is the schema that defines the request body for changing alloys."""
+    alloy_option = fields.Str(
+        required=True, validate=OneOf(['single', 'both', 'mix'])
+    )
+    alloy_type = fields.Str(
+        required=True, validate=OneOf(['parent', 'weld', 'mix'])
+    )
+    alloy = fields.Nested(AlloySchema, required=True)
+
+
+class AlloyStoreSchema(Schema):
+    """This is the schema that defines how the Alloy is stored in the Session
+    and the User's Mongo Document.
+    """
+    alloy_option = fields.Str(
+        required=True, validate=OneOf(['single', 'both', 'mix'])
+    )
+    alloys = fields.Nested(AlloysTypeSchema)
 
 
 class ConfigurationsSchema(Schema):
@@ -73,21 +93,10 @@ class ConfigurationsSchema(Schema):
     start_temp = fields.Int(required=True)
     cct_cooling_rate = fields.Int()
 
-    class Meta:
-        # TODO(andrew@neuraldev.io): Figure out what to do with these?
-        # By default, load will raise a ValidationError if it encounters a key
-        # with no matching Field in the schema.
-        # MODIFIED BEHAVIOUR:
-        #  - EXCLUDE: exclude unknown fields
-        #  - INCLUDE: accept and include the unknown fields
-        #  - RAISE: Raise a validationError if there are any
-        # unknown = EXCLUDE
-        pass
 
-
-class NonLimitConfigsSchema(Schema):
-    grain_size = fields.Float(required=True)
-    nucleation_start = fields.Float(required=True)
-    nucleation_finish = fields.Float(required=True)
-    start_temp = fields.Int(required=True)
-    cct_cooling_rate = fields.Int(required=True)
+class SetupConfigsSchema(Schema):
+    grain_size = fields.Float()
+    nucleation_start = fields.Float()
+    nucleation_finish = fields.Float()
+    start_temp = fields.Int()
+    cct_cooling_rate = fields.Int()

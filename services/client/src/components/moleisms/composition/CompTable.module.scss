@@ -1,8 +1,16 @@
 @import '../../../styles/colors_light'; 
 @import '../../../styles/typography';
 
+.wrapper {
+  flex-grow: 1;
+}
+
 .symbol {
   font-family: $font-secondary;
   font-weight: 700;
   color: $ag500;
+}
+
+.footerText {
+  margin-left: .75rem;
 }

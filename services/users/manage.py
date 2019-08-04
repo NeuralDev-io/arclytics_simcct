@@ -37,11 +37,9 @@ from users_app.models import User
 COV = coverage.coverage(
     branch=True,
     include=[
-        'users_app/models.py',
-        'users_app/resources/users.py',
-        'users_app/resources/auth.py',
-        'users_app/middleware.py',
-        'users_app/mongodb.py',
+        'users_app/models.py', 'users_app/resources/users.py',
+        'users_app/resources/auth.py', 'users_app/middleware.py',
+        'users_app/mongodb.py', 'users_app/token.py'
     ],
     omit=[
         'users_app/app.py'

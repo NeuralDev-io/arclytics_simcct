@@ -8,19 +8,19 @@
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
+__license__ = 'TBA'
+__version__ = '0.1.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.25'
 """extensions.py: 
 
-{Description}
+This module just defines extensions for Flask that can be used across the
+context of the app.
 """
 
 from flask_cors import CORS
-from flask_mail import Mail
 from flask_bcrypt import Bcrypt
 from flask_marshmallow import Marshmallow
 from flask_restful import Api
@@ -29,4 +29,4 @@ from flask_restful import Api
 cors = CORS()
 bcrypt = Bcrypt()
 ma = Marshmallow()
-# api = Api()
+api = Api()

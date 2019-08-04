@@ -172,7 +172,38 @@ class TestSimConfigurations(BaseTestCase):
             self.assert400(res)
             self.assertEqual(data['status'], 'fail')
             self.assertTrue(data['errors'])
-            session_comp = session.get(f'{token}:alloy')
+            session_comp = session.get(f'{token}:alloy_store')
+            self.assertNotEqual(session_comp, new_comp)
+
+    def test_on_comp_change_invalid_empty_schema(self):
+        """Ensure if we send a bad alloy schema we get errors."""
+        with current_app.test_client() as client:
+            configs, comp, token = self.login_client(client)
+
+            new_comp = {
+                'alloy_option': 'single',
+                'alloy': {
+                    'name': '',
+                    'compositions': []
+                },
+                'alloy_type': 'parent'
+            }
+
+            res = client.patch(
+                '/alloys/update',
+                data=json.dumps(new_comp),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+
+            self.assertEqual(
+                data['message'], 'Alloy failed schema validation.'
+            )
+            self.assert400(res)
+            self.assertEqual(data['status'], 'fail')
+            self.assertTrue(data['errors'])
+            session_comp = session.get(f'{token}:alloy_store')
             self.assertNotEqual(session_comp, new_comp)
 
     def test_on_comp_change_auto_update_temps(self):

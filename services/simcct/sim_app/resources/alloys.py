@@ -39,7 +39,9 @@ alloys_blueprint = Blueprint('alloys', __name__)
 
 
 class AlloysList(Resource):
-    """The resource of endpoints for retrieving an alloy list and creating."""
+    """The resource of endpoints for retrieving an alloy list and creating in
+    the global alloy database.
+    """
 
     # TODO(andrew@neuraldev.io): How to verify an admin user.
     def post(self):
@@ -105,6 +107,10 @@ class AlloysList(Resource):
 
 
 class Alloys(Resource):
+    """The resource of endpoints for retrieving an alloy detail, partial
+    updating and deleting an alloy in the global database.
+    """
+
     def get(self, alloy_id):
         """Allows the GET method with `/alloys/{id}` as an endpoint to get
         a single alloy from the database.

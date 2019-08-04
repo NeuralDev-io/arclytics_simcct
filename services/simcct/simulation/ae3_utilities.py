@@ -279,8 +279,7 @@ def convert_wt_2_mol(wt: np.ndarray) -> (np.ndarray, np.array):
 
     # Convert wt% to moles as if 100grams total
 
-    # TODO(andrew@neuraldev.io): We MUST ensure that 'C' is always first
-    #  and 'Fe' is always last.
+    # We MUST ensure that 'C' is always first and 'Fe' is always last.
     # add all the wt% to find total wt% alloying elements
     # note: ensure last one with index -1 is Iron, Fe
     d_vect[-1] = np.sum(wt['weight'][1:11]).astype(np.float64).item()

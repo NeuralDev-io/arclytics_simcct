@@ -35,8 +35,8 @@ class ElementSchema(Schema):
 
 class AlloySchema(Schema):
     _id = fields.Str()
-    name = fields.Str(required=True)
-    compositions = fields.List(fields.Nested(ElementSchema), required=True)
+    name = fields.Str()
+    compositions = fields.List(fields.Nested(ElementSchema))
 
 
 class AlloysTypeSchema(Schema):

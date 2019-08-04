@@ -90,7 +90,7 @@ def session_login(token):
     #                 cobalt, silicon
     #  - xfe_method2() --> carbon and iron
     #  - calc_ae1_ae3() --> carbon, nickel, silicon, tungsten, manganese,
-    #                       manganese, chromium, arsenic, molybdenum
+    #                       chromium, arsenic, molybdenum
     #  - _torr_calc2() --> carbon, manganese, silicon, molybdenum, nickel,
     #                      chromium
     alloy_store = None

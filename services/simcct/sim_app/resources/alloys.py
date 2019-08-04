@@ -59,9 +59,14 @@ class AlloysList(Resource):
             return response, 400
 
         post_comps = post_data.get('compositions', None)
+        post_name = post_data.get('name', None)
 
         if not post_comps:
             response['message'] = 'No compositions list were provided.'
+            return response, 400
+
+        if not post_name:
+            response['message'] = 'No alloy name was provided.'
             return response, 400
 
         # We validate it to make sure it's valid before we do any
@@ -164,6 +169,14 @@ class Alloys(Resource):
             response['message'] = 'Invalid ObjectId.'
             return response, 400
 
+        patch_name = patch_data.get('name', None)
+        patch_comp = patch_data.get('compositions', None)
+
+        if not patch_name and not patch_comp:
+            response['message'] = ('No valid keys was provided for alloy '
+                                   '(i.e. must be "name" or "compositions")')
+            return response, 400
+
         # Just validate the input schema first before we do anything else
         try:
             AlloySchema().load(patch_data)
@@ -172,9 +185,6 @@ class Alloys(Resource):
             response['errors'] = e.messages
             return response, 400
 
-        patch_name = patch_data.get('name', None)
-        patch_alloy = patch_data.get('compositions', None)
-
         # First we update the compositions of the existing alloy if any.
         existing_alloy = AlloysService().find_alloy(ObjectId(alloy_id))
 
@@ -182,7 +192,7 @@ class Alloys(Resource):
             response['message'] = 'Alloy not found.'
             return response, 404
 
-        if patch_alloy:
+        if patch_comp:
             existing_comp = existing_alloy.get('compositions')
 
             # FIXME(andrew@neuraldev.io): This needs to be massively updated as
@@ -202,7 +212,7 @@ class Alloys(Resource):
                     existing_comp.append(el)
 
         # update the name if a new one is provided
-        if not patch_name == existing_alloy['name']:
+        if patch_name and not patch_name == existing_alloy['name']:
             existing_alloy['name'] = patch_name
 
         # Ensure the newly saved alloy is valid

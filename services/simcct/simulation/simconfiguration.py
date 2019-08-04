@@ -23,11 +23,12 @@ __package__ = 'simulation'
 import os
 import json
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 from prettytable import PrettyTable
 
-from simulation.utilities import Method, Alloy
+from simulation.utilities import Method
 from simulation.ae3_utilities import ae3_single_carbon, ae3_multi_carbon
 from simulation.periodic import PeriodicTable as pt
 
@@ -46,10 +47,10 @@ class SimConfiguration(object):
     """
 
     def __init__(
-        self,
-        configs: dict = None,
-        compositions: list = None,
-        debug: bool = False
+            self,
+            configs: dict = None,
+            compositions: list = None,
+            debug: bool = False
     ):
 
         if debug:
@@ -60,6 +61,8 @@ class SimConfiguration(object):
 
         if compositions is not None:
             self.comp = self.get_compositions(compositions)
+            if self.comp:
+                raise Exception('Compositions conversion error.')
 
         if configs is not None:
             self.method = (
@@ -120,7 +123,7 @@ class SimConfiguration(object):
         self.ae1, self.ae3 = self.calc_ae1_ae3(self.comp)
 
     @staticmethod
-    def get_compositions(comp_list: list = None) -> np.ndarray:
+    def get_compositions(comp_list: list = None) -> Union[np.ndarray, bool]:
         """
         We get the compositions from the list passed and extract the
         compositions as a list from parent, weld, and mix. We then store
@@ -135,27 +138,66 @@ class SimConfiguration(object):
         """
         comp = np.zeros(
             len(comp_list),
-            dtype=[('idx', int), ('symbol', 'U2'), ('weight', np.float64)]
+            dtype=[('symbol', 'U2'), ('weight', np.float64)]
         )
 
+        # 2019-08-04: Update by andrew@neuraldev.io
+        # We add a special condition where we ensure that 'C' and 'Fe' are
+        # always the first and last element in our `comp` structured 1-D numpy
+        # array. This is necessary because some of the other elements downstream
+        # in the algorithm assume that 'C' and 'Fe' are first and last and we
+        # cannot ensure that the `comp_list` or API client data will follow
+        # this necessary step.
+
+        # We need to make sure these are inserted and appended at beginning and
+        # end respectively as it is assumed later.
+        c_weight = None
+        fe_weight = None
+
         # TODO(andrew@neuraldev.io): Need to deal with TypeError and KeyError
+        # Use a special exterior index to ensure we don't add an empty space
+        # when we skip enumerated numbers (if using enumerate()) which, when
+        # skipping by
+        idx = 1
         # iterate over lists at once and store them in the np.ndarray
-        for i, e in enumerate(comp_list):
+        for e in comp_list:
             s = e['symbol']
-            # Using the pt 1-to-1 mapping validates that the name is
-            # exactly as we expect it. Will raise a NotImplementedError
-            # exception if symbol names don't match.
-            comp[i] = (i, pt[s].name, e['weight'])
+
+            # We skip out if we hit 'C' or 'Fe' so we can add them later.
+            if s == pt.C.name:
+                c_weight = e['weight']
+                continue
+
+            if s == pt.Fe.name:
+                fe_weight = e['weight']
+                continue
+
+            # Using the pt 1-to-1 mapping validates that the name is exactly
+            # as we expect it. Will raise a KeyError exception if symbol names
+            # don't match. We return False and check it later.
+            try:
+                elem_symbol = pt[s].name
+                comp[idx] = (elem_symbol, e['weight'])
+                idx = idx + 1
+            except KeyError as e:
+                return False
+
+        # Now we add carbon and iron at the beginning and end respectively
+        # Special numpy insert and append
+        comp[0] = (pt.C.name, c_weight)
+        comp = np.append(
+            comp, np.array([(pt.Fe.name, fe_weight)], dtype=comp.dtype)
+        )
         return comp
 
+    # TODO(andrew@neuraldev.io -- Sprint 6): Do some validation for these
+    #  and return a tuple instead (float, error)
     @staticmethod
     def get_bs(method: Method = None, comp: np.ndarray = None) -> float:
         """
         Do the calculation based on Li98 or Kirkaldy 83 method and return
         the MS temperature.
         """
-        # TODO(andrew@neuraldev.io -- Sprint 6): Do some validation for these
-        #  and return a tuple instead (float, error)
         # ensure we are getting the value and not the list by using index 0
         c = comp[comp['symbol'] == pt.C.name]['weight'][0]
         mn = comp[comp['symbol'] == pt.Mn.name]['weight'][0]
@@ -170,8 +212,8 @@ class SimConfiguration(object):
         if method == Method.Kirkaldy83:
             # Eqn [30] in Kirkaldy defined 1983 paper
             return (
-                656 - (58 * c) - (35 * mn) - (75 * si) - (15 * ni) -
-                (34 * cr) - (41 * mo)
+                    656 - (58 * c) - (35 * mn) - (75 * si) - (15 * ni) -
+                    (34 * cr) - (41 * mo)
             )
 
         # By default, we return Method.Li98
@@ -184,8 +226,6 @@ class SimConfiguration(object):
         Do the calculation based on Li98 or Kirkaldy83 method and return the
         MS temperature.
         """
-        # TODO(andrew@neuraldev.io -- Sprint 6): Do some validation for these
-        #  and return a tuple instead (float, error)
         # ensure we are getting the value and not the list by using index 0
         c = comp[comp['symbol'] == pt.C.name]['weight'][0]
         mn = comp[comp['symbol'] == pt.Mn.name]['weight'][0]
@@ -201,15 +241,15 @@ class SimConfiguration(object):
         if method == Method.Kirkaldy83:
             # Eqn [31] in Kirkaldy 1983 paper
             return (
-                561 - (474 * c) - (33.0 * mn) - (17.0 * ni) - (17.0 * cr) -
-                (21.0 * mo)
+                    561 - (474 * c) - (33.0 * mn) - (17.0 * ni) - (17.0 * cr) -
+                    (21.0 * mo)
             )
 
         # By default we return Method.Li98
         # Eqn [25] in paper by Kung and Raymond
         return (
-            539 - (423 * c) - (30.4 * mn) - (17.7 * ni) - (12.1 * cr) -
-            (7.5 * mo) + (10.0 * co) - (7.5 * si)
+                539 - (423 * c) - (30.4 * mn) - (17.7 * ni) - (12.1 * cr) -
+                (7.5 * mo) + (10.0 * co) - (7.5 * si)
         )
 
     @staticmethod
@@ -221,8 +261,8 @@ class SimConfiguration(object):
         mo = comp['weight'][comp['symbol'] == pt.Mo.name][0]
 
         return (
-            0.0224 - (0.0107 * c) - (0.0007 * mn) - (0.00005 * ni) -
-            (0.00012 * cr) - (0.0001 * mo)
+                0.0224 - (0.0107 * c) - (0.0007 * mn) - (0.00005 * ni) -
+                (0.00012 * cr) - (0.0001 * mo)
         )
 
     @staticmethod
@@ -239,21 +279,21 @@ class SimConfiguration(object):
         # Do the calculations
         # 1. Equations of Andrews (1965)
         ae1 = (
-            723.0 - (16.9 * ni) + (29.1 * si) + (6.38 * w) - (10.7 * mn) +
-            (16.9 * cr) + (290 * _as)
-        ) / 3.0
+                      723.0 - (16.9 * ni) + (29.1 * si) + (6.38 * w) - (10.7 * mn) +
+                      (16.9 * cr) + (290 * _as)
+              ) / 3.0
 
         # 2. Equations of Eldis (in Barralis, 1982): 1/3 due to averaging
         ae1 = ae1 + (
-            712.0 - (17.8 * mn) - (19.1 * ni) + (20.1 * si) + (11.9 * cr) +
-            (9.8 * mo)
+                712.0 - (17.8 * mn) - (19.1 * ni) + (20.1 * si) + (11.9 * cr) +
+                (9.8 * mo)
         ) / 3.
 
         # 3. Equations of Grange (1961): 1/3 due to averaging, convert from F
         # to C (-32*(5/9))
         ae1 = ae1 + (
-            1333.0 - (25.0 * mn) + (40.0 * si) + (42.0 * cr) -
-            (26.0 * ni) - 32.0
+                1333.0 - (25.0 * mn) + (40.0 * si) + (42.0 * cr) -
+                (26.0 * ni) - 32.0
         ) * 5.0 / (3.0 * 9.0)
 
         # find the Ae3 temperature at the alloy Carbon content Using
@@ -264,7 +304,7 @@ class SimConfiguration(object):
     # TODO: Confirm with Dr. Bendeich if cf = 0.012 is the number he wants.
     @staticmethod
     def xfe_method2(
-        comp: np.ndarray = None, ae1: np.float = None, cf: np.float = 0.012
+            comp: np.ndarray = None, ae1: np.float = None, cf: np.float = 0.012
     ) -> (np.float, np.float):
         """Second method for estimating Xfe using parra-equilibrium methodology
         to predict  the Ae3 values with increasing carbon content. To find

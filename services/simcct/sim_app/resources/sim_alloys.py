@@ -214,7 +214,7 @@ class AlloyStore(Resource):
 
         comp_np_arr = SimConfig.get_compositions(comp_list)
 
-        if not comp_np_arr:
+        if comp_np_arr is False:
             response['message'] = 'Compositions conversion error.'
             return response, 500
 
@@ -413,7 +413,7 @@ class AlloyStore(Resource):
 
         comp_np_arr = SimConfig.get_compositions(comp_list)
 
-        if not comp_np_arr:
+        if comp_np_arr is False:
             response['message'] = 'Compositions conversion error.'
             return response, 500
 

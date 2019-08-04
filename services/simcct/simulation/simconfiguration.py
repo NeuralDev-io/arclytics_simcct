@@ -61,7 +61,7 @@ class SimConfiguration(object):
 
         if compositions is not None:
             self.comp = self.get_compositions(compositions)
-            if self.comp:
+            if self.comp is False:
                 raise Exception('Compositions conversion error.')
 
         if configs is not None:
@@ -177,17 +177,14 @@ class SimConfiguration(object):
             # don't match. We return False and check it later.
             try:
                 elem_symbol = pt[s].name
-                comp[idx] = (elem_symbol, e['weight'])
-                idx = idx + 1
             except KeyError as e:
                 return False
+            comp[idx] = (elem_symbol, e['weight'])
+            idx = idx + 1
 
         # Now we add carbon and iron at the beginning and end respectively
-        # Special numpy insert and append
         comp[0] = (pt.C.name, c_weight)
-        comp = np.append(
-            comp, np.array([(pt.Fe.name, fe_weight)], dtype=comp.dtype)
-        )
+        comp[-1] = (pt.Fe.name, fe_weight)
         return comp
 
     # TODO(andrew@neuraldev.io -- Sprint 6): Do some validation for these

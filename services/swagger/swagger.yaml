@@ -1562,6 +1562,106 @@ paths:
   /user/alloys:
     servers:
       - url: http://localhost:8000
+    post:
+      summary: "Save an alloy to the User's database."
+      tags:
+        - Alloys
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "The alloy to save."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Alloy'
+      responses:
+        201:
+          description: "The Alloy has been saved to the User's Alloys database."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    $ref: '#/components/schemas/Alloy'
+        400:
+          description: "An invalid request body has been sent."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty JSON':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Invalid JSON':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Missing Name Key':
+                  value:
+                    status: "fail"
+                    message: "Name must be provided."
+                'Missing Compositions':
+                  value:
+                    status: "fail"
+                    message: 'Compositions must be provided as a list of valid
+                                  elements e.g. {"symbol": "C", "weight": 1.0}'
+                'Compositions Not List':
+                  value:
+                    status: "fail"
+                    message: 'Compositions must be provided as a list of valid
+                                  elements e.g. {"symbol": "C", "weight": 1.0}'
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Not Logged In':
+                  value:
+                    status: "fail"
+                    message: "User must sign in again."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "There are no alloys saved to the user's document or user to find."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
     get:
       summary: "We get the list of User's alloys stored in their document."
       tags:
@@ -1655,106 +1755,6 @@ paths:
                   value:
                     status: "fail"
                     message: "No alloys found."
-    post:
-      summary: "Save an alloy to the User's database."
-      tags:
-        - Alloys
-      security:
-        - bearerAuth: []
-      requestBody:
-        description: "The alloy to save."
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Alloy'
-      responses:
-        201:
-          description: "The Alloy has been saved to the User's Alloys database."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "success"
-                  data:
-                    $ref: '#/components/schemas/Alloy'
-        400:
-          description: "An invalid request body has been sent."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Empty JSON':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'Invalid JSON':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'Missing Name Key':
-                  value:
-                    status: "fail"
-                    message: "Name must be provided."
-                'Missing Compositions':
-                  value:
-                    status: "fail"
-                    message: 'Compositions must be provided as a list of valid
-                              elements e.g. {"symbol": "C", "weight": 1.0}'
-                'Compositions Not List':
-                  value:
-                    status: "fail"
-                    message: 'Compositions must be provided as a list of valid
-                              elements e.g. {"symbol": "C", "weight": 1.0}'
-        401:
-          description: "The user is not authenticated to perform this request."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    format: string
-                  message:
-                    type: string
-                    format: string
-              examples:
-                'No Auth Header':
-                  value:
-                    status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Not Logged In':
-                  value:
-                    status: "fail"
-                    message: "User must sign in again."
-                'Expired Token':
-                  value:
-                    status: "fail"
-                    message: "Signature expired. Please login again."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid token. Please log in again."
-                'Disabled User':
-                  value:
-                    status: "fail"
-                    message: "This user account has been disabled."
-        404:
-          description: "There are no alloys saved to the user's document or user to find."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No User':
-                  value:
-                    status: "fail"
-                    message: "User does not exist."
   /user/alloys/{id}:
     servers:
       - url: http://localhost:8000
@@ -1846,6 +1846,15 @@ paths:
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
+        400:
+          description: "The request has an invalid request parameter."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Invalid ObjectId."
         404:
           description: "There are no alloys saved to the user's document or user to find."
           content:
@@ -1861,6 +1870,15 @@ paths:
                   value:
                     status: "fail"
                     message: "No alloys found."
+        418:
+          description: "Multiple objects have been returned from the query."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Multiple objects returned."
     patch:
       summary: "Save an alloy to the User's database."
       tags:
@@ -1877,11 +1895,346 @@ paths:
             examples:
               'Compositions and Name':
                 value:
-                  name: '301M Alloy1'
+                  name: "330M Alloy1 New"
+                  compositions:
+                    - symbol: "C"
+                      weight: 0.5
+              'Name only':
+                value:
+                  name: "300M Alloy2"
+              'Compositions only':
+                value:
+                  compositions:
+                    - symbol: "Mn"
+                      weight: 0.5
       responses:
         200:
           description: "The alloy has been successfully updated and returned in the response."
-
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+              examples:
+                'Compositions and Name':
+                  value:
+                    status: "success"
+                    data:
+                      name: "330M Alloy1 New"
+                      compositions:
+                        - symbol: "C"
+                          weight: 0.5
+                        - symbol: "Mn"
+                          weight: 0.78
+                        - symbol: "Si"
+                          weight: 1.6
+                        - symbol: "Ni"
+                          weight: 1.9
+                        - symbol: "Cr"
+                          weight: 0.91
+                        - symbol: "Mo"
+                          weight: 0.39
+                        - symbol: "Co"
+                          weight: 0.0
+                        - symbol: "Al"
+                          weight: 0.0
+                        - symbol: "Cu"
+                          weight: 0.0
+                        - symbol: "As"
+                          weight: 0.0
+                        - symbol: "Ti"
+                          weight: 0.0
+                        - symbol: "V"
+                          weight: 0.08
+                        - symbol: "W"
+                          weight: 0.0
+                        - symbol: "S"
+                          weight: 0.003
+                        - symbol: "N"
+                          weight: 0.011
+                        - symbol: "Nb"
+                          weight: 0.0
+                        - symbol: "B"
+                          weight: 0.0
+                        - symbol: "P"
+                          weight: 0.007
+                'Name Only':
+                  value:
+                    status: "success"
+                    data:
+                      name: "330M Alloy2"
+                      compositions:
+                        - symbol: "C"
+                          weight: 0.3
+                        - symbol: "Mn"
+                          weight: 0.78
+                        - symbol: "Si"
+                          weight: 1.6
+                        - symbol: "Ni"
+                          weight: 1.9
+                        - symbol: "Cr"
+                          weight: 0.91
+                        - symbol: "Mo"
+                          weight: 0.39
+                        - symbol: "Co"
+                          weight: 0.0
+                        - symbol: "Al"
+                          weight: 0.0
+                        - symbol: "Cu"
+                          weight: 0.0
+                        - symbol: "As"
+                          weight: 0.0
+                        - symbol: "Ti"
+                          weight: 0.0
+                        - symbol: "V"
+                          weight: 0.08
+                        - symbol: "W"
+                          weight: 0.0
+                        - symbol: "S"
+                          weight: 0.003
+                        - symbol: "N"
+                          weight: 0.011
+                        - symbol: "Nb"
+                          weight: 0.0
+                        - symbol: "B"
+                          weight: 0.0
+                        - symbol: "P"
+                          weight: 0.007
+                'Compositions Only':
+                  value:
+                    status: "success"
+                    data:
+                      name: "330M Alloy1 New"
+                      compositions:
+                        - symbol: "C"
+                          weight: 0.3
+                        - symbol: "Mn"
+                          weight: 0.5
+                        - symbol: "Si"
+                          weight: 1.6
+                        - symbol: "Ni"
+                          weight: 1.9
+                        - symbol: "Cr"
+                          weight: 0.91
+                        - symbol: "Mo"
+                          weight: 0.39
+                        - symbol: "Co"
+                          weight: 0.0
+                        - symbol: "Al"
+                          weight: 0.0
+                        - symbol: "Cu"
+                          weight: 0.0
+                        - symbol: "As"
+                          weight: 0.0
+                        - symbol: "Ti"
+                          weight: 0.0
+                        - symbol: "V"
+                          weight: 0.08
+                        - symbol: "W"
+                          weight: 0.0
+                        - symbol: "S"
+                          weight: 0.003
+                        - symbol: "N"
+                          weight: 0.011
+                        - symbol: "Nb"
+                          weight: 0.0
+                        - symbol: "B"
+                          weight: 0.0
+                        - symbol: "P"
+                          weight: 0.007
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Bad ObjectId Params':
+                  value:
+                    status: "fail"
+                    message: "Invalid ObjectId."
+                'Invalid Keys':
+                  value:
+                    status: "fail"
+                    message: "Invalid keys in request payload (i.e. must be either \"name\" or \"compositions\")."
+                'Invalid Compositions':
+                  value:
+                    status: "fail"
+                    message: "Compositions must be provided as a list of valid elements
+                              e.g. {\"symbol\": \"C\", \"weight\": 1.0}"
+                'Additional Fields in Element':
+                  value:
+                    status: "fail"
+                    message: "Alloy validation error."
+                'Bad Element Symbol':
+                  value:
+                    status: "fail"
+                    message: "Invalid element symbol error."
+                'Bad Element Error':
+                  value:
+                    status: "fail"
+                    message: "Invalid element error."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Not Logged In':
+                  value:
+                    status: "fail"
+                    message: "User must sign in again."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "There are no alloys saved to the user's document or user to find."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+                'No alloys':
+                  value:
+                    status: "fail"
+                    message: "No alloys found."
+                'Empty Alloys Store':
+                  value:
+                    status: "fail"
+                    message: "Alloy does not exist."
+        418:
+          description: "Multiple objects have been returned from the query."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Multiple objects returned."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "Validation error on updating."
+    delete:
+      summary: "Delete an alloy from the user's database."
+      tags:
+        - Alloys
+      security:
+        - bearerAuth: []
+      responses:
+        202:
+          description: "An alloy has successfully been deleted."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Not Logged In':
+                  value:
+                    status: "fail"
+                    message: "User must sign in again."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        400:
+          description: "The request has an invalid request parameter."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Bad ObjectId in Params':
+                  value:
+                    status: "fail"
+                    message: "Invalid ObjectId."
+                'Mongo Delete Error':
+                  value:
+                    status: "fail"
+                    message: "Failed to delete alloy."
+        404:
+          description: "There are no alloys saved to the user's document or user to find."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+                'No alloys':
+                  value:
+                    status: "fail"
+                    message: "No alloy found."
+                'Cannot Find Alloy':
+                  value:
+                    status: "fail"
+                    message: "Alloy does not exist."
+        418:
+          description: "Multiple objects have been returned from the query."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "fail"
+                message: "Multiple objects returned."
 
   /alloys/update:
     servers:

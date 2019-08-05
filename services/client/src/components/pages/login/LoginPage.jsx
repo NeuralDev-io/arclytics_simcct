@@ -52,7 +52,7 @@ class LoginPage extends Component {
                 setSubmitting(false)
               })
                 .catch(() => {
-                // If response is unsuccessful
+                  // If response is unsuccessful
                   setErrors({
                     email: 'Invalid email',
                     password: 'Password is invalid',
@@ -137,7 +137,7 @@ LoginPage.propTypes = {
 }
 
 const mapDispatchToProps = {
-  getUserProfile,
+  getUserProfileConnect: getUserProfile,
 }
 
 export default connect(null, mapDispatchToProps)(LoginPage)

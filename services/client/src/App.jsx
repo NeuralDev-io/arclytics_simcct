@@ -5,6 +5,7 @@ import store from './state/store'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
 import SimulationPage from './components/pages/simulation'
+import Restricted from './components/pages/restricted'
 
 import './App.scss'
 
@@ -25,6 +26,10 @@ function App() {
             exact
             path="/"
             render={props => <SimulationPage {...props} />}
+          />
+          <Route
+            path="/restricted"
+            render={props => <Restricted {...props} />}
           />
         </Switch>
       </div>

@@ -69,8 +69,9 @@ export const logout = () => {
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
-    .then((res) => {
-      if (res.status !== 400) throw new Error(res.json().then(r => r.message))
+    .then(res => res.json())
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
     })
     .catch(err => console.log(err))
 }

@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
 import Select from '../../elements/select'
 import TextField, { TextFieldExtra } from '../../elements/textfield'
 import Checkbox from '../../elements/checkbox'
@@ -209,8 +208,4 @@ ConfigForm.propTypes = {
   onChange: PropTypes.func.isRequired,
 }
 
-const mapDispatchToProps = {
-  
-}
-
-export default connect(null, mapDispatchToProps)(ConfigForm)
+export default ConfigForm

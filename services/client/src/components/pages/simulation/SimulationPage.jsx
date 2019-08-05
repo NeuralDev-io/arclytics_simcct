@@ -321,11 +321,12 @@ class SimulationPage extends Component {
     } = this.state
     const {
       runSimConnect,
+      history,
     } = this.props
 
     return (
       <React.Fragment>
-        <AppBar active="sim" redirect={this.props.history.push} /> {/* eslint-disable-line */} 
+        <AppBar active="sim" redirect={history.push} />
         <div className={styles.compSidebar}>
           <CompSidebar
             values={alloys}
@@ -424,6 +425,7 @@ SimulationPage.propTypes = {
     })),
   })).isRequired,
   runSimConnect: PropTypes.func.isRequired,
+  history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,  
 }
 
 const mapStateToProps = state => ({

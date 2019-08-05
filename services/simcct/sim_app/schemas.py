@@ -22,8 +22,9 @@ be used to validate the post data is correct before adding to any DB.
 """
 
 from bson import ObjectId
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validates, ValidationError
 from marshmallow.validate import OneOf
+from simulation.periodic import PeriodicTable
 
 Schema.TYPE_MAPPING[ObjectId] = fields.String
 
@@ -31,6 +32,17 @@ Schema.TYPE_MAPPING[ObjectId] = fields.String
 class ElementSchema(Schema):
     symbol = fields.Str(required=True)
     weight = fields.Float(required=True)
+
+    @validates('symbol')
+    def validate_symbol(self, value):
+        """The validate method for the symbol field."""
+        try:
+            valid_symbol = PeriodicTable[value].name
+        except KeyError as e:
+            msg = ('ValidationError (Element) (Field does not match a valid '
+                   'element symbol in the Periodic Table: ["symbol"])')
+            raise ValidationError(msg)
+        # If the function doesn't raise an error, the check is considered passed
 
 
 class AlloySchema(Schema):

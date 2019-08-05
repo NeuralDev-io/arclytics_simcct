@@ -131,9 +131,18 @@ class TestSimConfigurations(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            print(data)
+            trans_temps = data['data']
+            self.assertEqual(
+                data['message'],
+                'Compositions and Configurations in Session initiated.'
+            )
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 201)
+            self.assertEqual(trans_temps['ms_temp'], 520.388)
+            self.assertEqual(trans_temps['ms_rate_param'], 0.0219292)
+            self.assertEqual(trans_temps['bs_temp'], 634.448)
+            self.assertAlmostEqual(trans_temps['ae1_temp'], 719.259259259, 4)
+            self.assertAlmostEqual(trans_temps['ae3_temp'], 887.130506988, 4)
 
     def test_on_compositions_change(self):
         """Ensure if we update the compositions it changes in session store."""

@@ -27,7 +27,7 @@ from sim_app.extensions import api
 from sim_app.schemas import AlloySchema, AlloyStoreSchema
 from sim_app.middleware import token_required_restful
 from simulation.simconfiguration import SimConfiguration as SimConfig
-from simulation.utilities import Method
+from simulation.utilities import Method, validate_comp_elements
 
 sim_alloys_blueprint = Blueprint('sim_alloys', __name__)
 
@@ -121,34 +121,9 @@ class AlloyStore(Resource):
 
         # TODO(andrew@neuraldev.io): Need to also validate every element is
         #  a valid symbol.
-        # Validate the alloy has all the elements that we need by using a
-        # hashed dictionary which is must faster than iterating a list
-        valid_elements = {
-            'C': False,
-            'Mn': False,
-            'Ni': False,
-            'Cr': False,
-            'Mo': False,
-            'Si': False,
-            'Co': False,
-            'W': False,
-            'As': False,
-            'Fe': False
-        }
-
-        for el in alloy_comp:
-            if el['symbol'] in valid_elements.keys():
-                valid_elements[el['symbol']] = True
-
-        # all() returns True if all values in the dict are True
-        # If it does not pass, we build up a message and respond.
-        if not all(el is True for el in valid_elements.values()):
-            # We build up a list of missing elements for the response.
-            missing_elem = []
-            for k, v in valid_elements.items():
-                if not v:
-                    missing_elem.append(k)
-
+        # Validate the alloy has all the elements that we need
+        valid, missing_elem = validate_comp_elements(alloy_comp)
+        if not valid:
             response['message'] = f'Missing elements {missing_elem}'
             return response, 400
         # Otherwise we have all the elements we need

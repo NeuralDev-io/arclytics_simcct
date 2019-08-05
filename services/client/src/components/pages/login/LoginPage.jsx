@@ -46,14 +46,13 @@ class LoginPage extends Component {
               promise.then((data) => {
                 // If response is successful
                 localStorage.setItem('token', data.token)
-                const { getUserProfile, history } = this.props
-                getUserProfile()
+                const { getUserProfileConnect, history } = this.props
+                getUserProfileConnect()
                 history.push('/')
                 setSubmitting(false)
               })
-                .catch((err) => {
+                .catch(() => {
                 // If response is unsuccessful
-                  console.log(err)
                   setErrors({
                     email: 'Invalid email',
                     password: 'Password is invalid',
@@ -133,15 +132,12 @@ class LoginPage extends Component {
 }
 
 LoginPage.propTypes = {
-  getUserProfile: PropTypes.func.isRequired,
+  getUserProfileConnect: PropTypes.func.isRequired,
+  history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
 }
-
-const mapStateToProps = state => ({
-
-})
 
 const mapDispatchToProps = {
   getUserProfile,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(LoginPage)
+export default connect(null, mapDispatchToProps)(LoginPage)

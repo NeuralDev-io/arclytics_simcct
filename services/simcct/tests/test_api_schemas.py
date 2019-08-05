@@ -101,25 +101,31 @@ class TestSchemas(BaseTestCase):
         self.assertIsInstance(valid_configs, dict)
 
     def test_alloy_schema_compositions_invalid(self):
+        """Ensure the schema validates the incorrect Periodic symbol."""
         alloy = {
             'name': 'Invalid Comp',
-            'compositions': [
-                {'symbol': 'Vb', 'weight': 1}
-            ]
+            'compositions': [{
+                'symbol': 'Vb',
+                'weight': 1
+            }]
         }
 
-        err = ("{'compositions': {0: {'symbol': ['ValidationError (Element)"
-               " (Field does not match a valid element symbol in the "
-               "Periodic Table: [\"symbol\"])']}}}")
+        err = (
+            "{'compositions': {0: {'symbol': ['ValidationError (Element)"
+            " (Field does not match a valid element symbol in the "
+            "Periodic Table: [\"symbol\"])']}}}"
+        )
         with self.assertRaises(ValidationError, msg=err):
             AlloySchema().load(alloy)
 
     def test_alloy_schema_compositions_valid(self):
+        """Ensure the schema validates the correct Periodic symbol."""
         alloy = {
             'name': 'Invalid Comp',
-            'compositions': [
-                {'symbol': 'C', 'weight': 1}
-            ]
+            'compositions': [{
+                'symbol': 'C',
+                'weight': 1
+            }]
         }
 
         res = AlloySchema().load(alloy)

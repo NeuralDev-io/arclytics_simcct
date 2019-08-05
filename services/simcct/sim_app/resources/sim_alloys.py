@@ -99,8 +99,10 @@ class AlloyStore(Resource):
         alloy_comp = alloy.get('compositions', None)
 
         if not alloy_name and not alloy_comp:
-            response['message'] = ('No valid keys was provided for alloy '
-                                   '(i.e. must be "name" or "compositions")')
+            response['message'] = (
+                'No valid keys was provided for alloy '
+                '(i.e. must be "name" or "compositions")'
+            )
             return response, 400
 
         if not alloy_comp:
@@ -115,12 +117,10 @@ class AlloyStore(Resource):
         try:
             valid_alloy = AlloySchema().load(alloy)
         except ValidationError as e:
-            response['errors'] = str(e)
+            response['errors'] = str(e.messages)
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
-        # TODO(andrew@neuraldev.io): Need to also validate every element is
-        #  a valid symbol.
         # Validate the alloy has all the elements that we need
         valid, missing_elem = validate_comp_elements(alloy_comp)
         if not valid:
@@ -293,7 +293,7 @@ class AlloyStore(Resource):
         try:
             alloy = AlloySchema().load(alloy)
         except ValidationError as e:
-            response['errors'] = str(e)
+            response['errors'] = str(e.messages)
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
@@ -363,9 +363,9 @@ class AlloyStore(Resource):
 
         # Well, if we don't need to auto calc. anything, let's get out of here
         if (
-                not sess_configs['auto_calculate_ms']
-                and not sess_configs['auto_calculate_bs']
-                and not sess_configs['auto_calculate_ae']
+            not sess_configs['auto_calculate_ms']
+            and not sess_configs['auto_calculate_bs']
+            and not sess_configs['auto_calculate_ae']
         ):
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'

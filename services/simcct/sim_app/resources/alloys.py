@@ -173,8 +173,10 @@ class Alloys(Resource):
         patch_comp = patch_data.get('compositions', None)
 
         if not patch_name and not patch_comp:
-            response['message'] = ('No valid keys was provided for alloy '
-                                   '(i.e. must be "name" or "compositions")')
+            response['message'] = (
+                'No valid keys was provided for alloy '
+                '(i.e. must be "name" or "compositions")'
+            )
             return response, 400
 
         # Just validate the input schema first before we do anything else

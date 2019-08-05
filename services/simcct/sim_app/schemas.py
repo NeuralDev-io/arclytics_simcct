@@ -39,8 +39,10 @@ class ElementSchema(Schema):
         try:
             valid_symbol = PeriodicTable[value].name
         except KeyError as e:
-            msg = ('ValidationError (Element) (Field does not match a valid '
-                   'element symbol in the Periodic Table: ["symbol"])')
+            msg = (
+                'ValidationError (Element) (Field does not match a valid '
+                'element symbol in the Periodic Table: ["symbol"])'
+            )
             raise ValidationError(msg)
         # If the function doesn't raise an error, the check is considered passed
 

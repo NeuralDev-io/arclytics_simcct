@@ -84,7 +84,10 @@ class TestSimConfigurations(BaseTestCase):
                         'alloy_type': 'parent',
                         'alloy': {
                             'name': 'Bad Alloy',
-                            'compositions': [{'symbol': 'C', 'weight': 1}]
+                            'compositions': [{
+                                'symbol': 'C',
+                                'weight': 1
+                            }]
                         }
                     }
                 ),
@@ -92,8 +95,10 @@ class TestSimConfigurations(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            msg = ("Missing elements ['Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', 'W', "
-                   "'As', 'Fe']")
+            msg = (
+                "Missing elements ['Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', 'W', "
+                "'As', 'Fe']"
+            )
             self.assertEqual(data['message'], msg)
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
@@ -103,16 +108,46 @@ class TestSimConfigurations(BaseTestCase):
             configs, comp, token = self.login_client(client)
 
             good_comp = [
-                {'symbol': 'C', 'weight': 0.044},
-                {'symbol': 'Mn', 'weight': 0.0},
-                {'symbol': 'Ni', 'weight': 0.0},
-                {'symbol': 'Cr', 'weight': 0.0},
-                {'symbol': 'Mo', 'weight': 0.0},
-                {'symbol': 'Si', 'weight': 0.0},
-                {'symbol': 'Co', 'weight': 0.0},
-                {'symbol': 'W', 'weight': 0.0},
-                {'symbol': 'As', 'weight': 0.0},
-                {'symbol': 'Fe', 'weight': 0.0},
+                {
+                    'symbol': 'C',
+                    'weight': 0.044
+                },
+                {
+                    'symbol': 'Mn',
+                    'weight': 0.0
+                },
+                {
+                    'symbol': 'Ni',
+                    'weight': 0.0
+                },
+                {
+                    'symbol': 'Cr',
+                    'weight': 0.0
+                },
+                {
+                    'symbol': 'Mo',
+                    'weight': 0.0
+                },
+                {
+                    'symbol': 'Si',
+                    'weight': 0.0
+                },
+                {
+                    'symbol': 'Co',
+                    'weight': 0.0
+                },
+                {
+                    'symbol': 'W',
+                    'weight': 0.0
+                },
+                {
+                    'symbol': 'As',
+                    'weight': 0.0
+                },
+                {
+                    'symbol': 'Fe',
+                    'weight': 0.0
+                },
             ]
 
             res = client.post(

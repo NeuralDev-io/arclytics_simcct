@@ -47,10 +47,10 @@ class SimConfiguration(object):
     """
 
     def __init__(
-            self,
-            configs: dict = None,
-            compositions: list = None,
-            debug: bool = False
+        self,
+        configs: dict = None,
+        compositions: list = None,
+        debug: bool = False
     ):
 
         if debug:
@@ -137,8 +137,7 @@ class SimConfiguration(object):
             A structured numpy.ndarray with the weights and names.
         """
         comp = np.zeros(
-            len(comp_list),
-            dtype=[('symbol', 'U2'), ('weight', np.float64)]
+            len(comp_list), dtype=[('symbol', 'U2'), ('weight', np.float64)]
         )
 
         # 2019-08-04: Update by andrew@neuraldev.io
@@ -209,8 +208,8 @@ class SimConfiguration(object):
         if method == Method.Kirkaldy83:
             # Eqn [30] in Kirkaldy defined 1983 paper
             return (
-                    656 - (58 * c) - (35 * mn) - (75 * si) - (15 * ni) -
-                    (34 * cr) - (41 * mo)
+                656 - (58 * c) - (35 * mn) - (75 * si) - (15 * ni) -
+                (34 * cr) - (41 * mo)
             )
 
         # By default, we return Method.Li98
@@ -238,15 +237,15 @@ class SimConfiguration(object):
         if method == Method.Kirkaldy83:
             # Eqn [31] in Kirkaldy 1983 paper
             return (
-                    561 - (474 * c) - (33.0 * mn) - (17.0 * ni) - (17.0 * cr) -
-                    (21.0 * mo)
+                561 - (474 * c) - (33.0 * mn) - (17.0 * ni) - (17.0 * cr) -
+                (21.0 * mo)
             )
 
         # By default we return Method.Li98
         # Eqn [25] in paper by Kung and Raymond
         return (
-                539 - (423 * c) - (30.4 * mn) - (17.7 * ni) - (12.1 * cr) -
-                (7.5 * mo) + (10.0 * co) - (7.5 * si)
+            539 - (423 * c) - (30.4 * mn) - (17.7 * ni) - (12.1 * cr) -
+            (7.5 * mo) + (10.0 * co) - (7.5 * si)
         )
 
     @staticmethod
@@ -258,8 +257,8 @@ class SimConfiguration(object):
         mo = comp['weight'][comp['symbol'] == pt.Mo.name][0]
 
         return (
-                0.0224 - (0.0107 * c) - (0.0007 * mn) - (0.00005 * ni) -
-                (0.00012 * cr) - (0.0001 * mo)
+            0.0224 - (0.0107 * c) - (0.0007 * mn) - (0.00005 * ni) -
+            (0.00012 * cr) - (0.0001 * mo)
         )
 
     @staticmethod
@@ -276,21 +275,21 @@ class SimConfiguration(object):
         # Do the calculations
         # 1. Equations of Andrews (1965)
         ae1 = (
-                      723.0 - (16.9 * ni) + (29.1 * si) + (6.38 * w) - (10.7 * mn) +
-                      (16.9 * cr) + (290 * _as)
-              ) / 3.0
+            723.0 - (16.9 * ni) + (29.1 * si) + (6.38 * w) - (10.7 * mn) +
+            (16.9 * cr) + (290 * _as)
+        ) / 3.0
 
         # 2. Equations of Eldis (in Barralis, 1982): 1/3 due to averaging
         ae1 = ae1 + (
-                712.0 - (17.8 * mn) - (19.1 * ni) + (20.1 * si) + (11.9 * cr) +
-                (9.8 * mo)
+            712.0 - (17.8 * mn) - (19.1 * ni) + (20.1 * si) + (11.9 * cr) +
+            (9.8 * mo)
         ) / 3.
 
         # 3. Equations of Grange (1961): 1/3 due to averaging, convert from F
         # to C (-32*(5/9))
         ae1 = ae1 + (
-                1333.0 - (25.0 * mn) + (40.0 * si) + (42.0 * cr) -
-                (26.0 * ni) - 32.0
+            1333.0 - (25.0 * mn) + (40.0 * si) + (42.0 * cr) -
+            (26.0 * ni) - 32.0
         ) * 5.0 / (3.0 * 9.0)
 
         # find the Ae3 temperature at the alloy Carbon content Using
@@ -301,7 +300,7 @@ class SimConfiguration(object):
     # TODO: Confirm with Dr. Bendeich if cf = 0.012 is the number he wants.
     @staticmethod
     def xfe_method2(
-            comp: np.ndarray = None, ae1: np.float = None, cf: np.float = 0.012
+        comp: np.ndarray = None, ae1: np.float = None, cf: np.float = 0.012
     ) -> (np.float, np.float):
         """Second method for estimating Xfe using parra-equilibrium methodology
         to predict  the Ae3 values with increasing carbon content. To find

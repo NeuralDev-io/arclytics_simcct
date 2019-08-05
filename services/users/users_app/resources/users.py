@@ -444,8 +444,10 @@ class DisableAccount(Resource):
         user.save()
 
         response['status'] = 'success'
-        response['message'] = (f'The account for User {user.id} has been '
-                               f'disabled.')
+        response['message'] = (
+            f'The account for User {user.id} has been '
+            f'disabled.'
+        )
         return response, 200
 
 

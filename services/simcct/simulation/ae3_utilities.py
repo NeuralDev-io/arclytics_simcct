@@ -297,7 +297,7 @@ def convert_wt_2_mol(wt: np.ndarray) -> (np.ndarray, np.array):
     # last element is 'Fe' in the array. Once we know that, it doesn't matter
     # what other elements there are as this loop will use a Periodic Table
     # Enum and the Hash Dict access of the atomic mass to calculate the
-    # combined weight % of the alloying elements. 
+    # combined weight % of the alloying elements.
     for i, el in enumerate(wt[1:-1], start=1):
         d_vect[i] = el['weight'].item() / PT[el['symbol']].value.atomic_mass
 

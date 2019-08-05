@@ -49,9 +49,9 @@ class Simulation(Resource):
         # parent alloy is set to none.
         sess_alloy_store = session.get(f'{token}:alloy_store')
         if (
-                not sess_alloy_store['alloys']['parent'] and
-                not sess_alloy_store['alloys']['weld'] and
-                not sess_alloy_store['alloys']['mix']
+            not sess_alloy_store['alloys']['parent']
+            and not sess_alloy_store['alloys']['weld']
+            and not sess_alloy_store['alloys']['mix']
         ) or not sess_alloy_store:
             response['message'] = 'No previous session alloy was set.'
             return response, 404
@@ -79,8 +79,7 @@ class Simulation(Resource):
 
         # No we can do the calculations for CCT and TTT
         sim_configs = SimConfiguration(
-            configs=session_configs,
-            compositions=alloy['compositions']
+            configs=session_configs, compositions=alloy['compositions']
         )
 
         sim = PhaseSimulation(sim_configs=sim_configs)

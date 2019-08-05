@@ -320,7 +320,7 @@ class SimulationPage extends Component {
       alloys,
     } = this.state
     const {
-      runSim,
+      runSimConnect,
     } = this.props
 
     return (
@@ -335,7 +335,7 @@ class SimulationPage extends Component {
                 configurations,
                 alloys,
               })
-              runSim()
+              runSimConnect()
             }}
           />
         </div>
@@ -404,9 +404,6 @@ class SimulationPage extends Component {
                 />
               </div>
             </div>
-            <div>
-
-            </div>
           </div>
         </div>
       </React.Fragment>
@@ -426,6 +423,7 @@ SimulationPage.propTypes = {
       ]),
     })),
   })).isRequired,
+  runSimConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -433,7 +431,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = {
-  runSim,
+  runSimConnect: runSim,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(SimulationPage)

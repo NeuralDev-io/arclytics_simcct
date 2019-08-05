@@ -22,11 +22,7 @@ const AppBar = (props) => {
         <UserIcon className={`${styles.navIcon} ${active === 'user' && styles.active}`} />
         <LogOutIcon
           className={styles.navIcon}
-          onClick={() => {
-            logout()
-            localStorage.removeItem('token')
-            redirect('/signin')
-          }}
+          onClick={() => logout(redirect)}
         />
       </div>
     </nav>

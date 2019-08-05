@@ -3,7 +3,9 @@ import {
 } from './types'
 
 const initialState = {
-  user: {},
+  user: {
+    admin: false,
+  },
 }
 
 const reducer = (state = initialState, action) => {
@@ -11,7 +13,10 @@ const reducer = (state = initialState, action) => {
     case GET_USER_PROFILE:
       return {
         ...state,
-        ...action.payload,
+        user: {
+          ...state.user,
+          ...action.payload,
+        },
       }
     default:
       return state

@@ -61,8 +61,11 @@ class AlloysList(Resource):
         post_comps = post_data.get('compositions', None)
         post_name = post_data.get('name', None)
 
-        if not post_comps:
-            response['message'] = 'No compositions list were provided.'
+        if not post_comps or not isinstance(post_comps, list):
+            response['message'] = (
+                'Compositions must be provided as a list of valid elements e.g.'
+                ' {"symbol": "C", "weight": 1.0}'
+            )
             return response, 400
 
         if not post_name:
@@ -77,16 +80,18 @@ class AlloysList(Resource):
             response['errors'] = e.messages
             return response, 400
 
-        alloy = AlloysService().create_alloy(valid_data)
+        id_or_error = AlloysService().create_alloy(valid_data)
 
         # create_alloy() will return a string on DuplicateKeyError meaning it
         # wasn't created.
-        if isinstance(alloy, str):
-            response['message'] = alloy
+        if isinstance(id_or_error, str):
+            response['message'] = id_or_error
             return response, 412
 
+        alloy = AlloysService().find_alloy(id_or_error)
+
         response['status'] = 'success'
-        response['_id'] = str(alloy)
+        response['data'] = alloy
         response.pop('message')
         return response, 201
 
@@ -154,8 +159,7 @@ class Alloys(Resource):
             alloy_id: A valid ObjectId string that will be checked.
 
         Returns:
-            A Response object consisting of a dict and status code as
-            an int.
+            A Response object consisting of a dict and status code as an int.
         """
 
         patch_data = request.get_json()
@@ -179,7 +183,15 @@ class Alloys(Resource):
             )
             return response, 400
 
-        # Just validate the input schema first before we do anything else
+        if patch_comp and not isinstance(patch_comp, list):
+            response['message'] = (
+                'Compositions must be provided as a list of valid elements e.g.'
+                ' {"symbol": "C", "weight": 1.0}'
+            )
+            return response, 400
+
+        # Just validate the input schema first before we do anything else which
+        # will also validate the Elements symbol
         try:
             AlloySchema().load(patch_data)
         except ValidationError as e:

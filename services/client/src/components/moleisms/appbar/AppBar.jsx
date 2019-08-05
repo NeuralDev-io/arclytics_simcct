@@ -24,6 +24,7 @@ const AppBar = (props) => {
         <HelpIcon className={`${styles.navIcon} ${active === 'edu' && styles.active}`} />
         <MonitorIcon
           className={`${styles.navIcon} ${active === 'admin' && styles.active}`}
+          style={{ display: user.admin ? 'block' : 'none' }}
           onClick={() => redirect('/admin')}
         />
       </div>

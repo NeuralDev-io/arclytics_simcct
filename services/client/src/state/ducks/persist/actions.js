@@ -14,10 +14,9 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
     .then((data) => {
       if (data.status === 'fail') throw new Error(data.message)
       if (data.status === 'success') {
-        const { status, ...user } = this.state
         dispatch({
           type: GET_USER_PROFILE,
-          payload: user,
+          payload: data.data,
         })
       }
     })

@@ -59,19 +59,19 @@ class UserProfile(EmbeddedDocument):
     # )
     aim = StringField(
         help_text='What sentence best describes you?',
-        required=False,
+        required=True,
         default=None,
         null=True
     )
     highest_education = StringField(
         help_text='What is the highest level of education have you studied?',
-        required=False,
+        required=True,
         default=None,
         null=True
     )
     sci_tech_exp = StringField(
         help_text='What is your experience with scientific software?',
-        required=False,
+        required=True,
         default=None,
         null=True
     )
@@ -80,7 +80,7 @@ class UserProfile(EmbeddedDocument):
             'What is your experience with solid-state phase '
             'transformation?'
         ),
-        required=False,
+        required=True,
         default=None,
         null=True
     )
@@ -102,6 +102,7 @@ class AdminProfile(EmbeddedDocument):
     position = StringField(max_length=255, required=True)
     mobile_number = StringField(max_length=11, min_length=10)
     verified = BooleanField(default=False)
+    promoted_by = ObjectIdField()
 
     def to_dict(self) -> dict:
         """
@@ -281,7 +282,8 @@ class User(Document):
     created = DateTimeField(default=datetime.utcnow(), null=False)
     last_updated = DateTimeField(default=None, null=False)
     last_login = DateTimeField()
-    account_disabled = BooleanField(default=False)
+    # Define the collection and indexing for this document
+    meta = {'collection': 'users'}
 
     # Define the collection and indexing for this document
     meta = {

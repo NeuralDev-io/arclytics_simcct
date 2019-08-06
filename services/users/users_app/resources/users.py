@@ -35,7 +35,9 @@ from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
 from logger.arc_logger import AppLogger
-from users_app.models import User, UserProfile, AdminProfile
+from users_app.models import (
+    User, UserProfile, AdminProfile, Configuration, SharedConfiguration
+)
 from users_app.middleware import authenticate, authenticate_admin
 from users_app.extensions import api
 from users_app.token import (
@@ -611,12 +613,22 @@ def confirm_promotion(token):
         return jsonify(response), 400
 
     # Ensure data is all present
-    admin_email = data[0]
-    user_email = data[1]
-    position = data[2]
-    if not admin_email or not user_email or not position:
+    if not len(data) == 3:
         response['message'] = 'Invalid data in Token.'
         return jsonify(response), 400
+    try:
+        admin_email = data[0]
+        user_email = data[1]
+        position = data[2]
+    except IndexError as e:
+        response['message'] = 'Invalid list from token.'
+        response['error'] = str(e)
+        return jsonify(response), 400
+
+    if not admin_email or not user_email or not position:
+        response['message'] = 'Missing information in Token.'
+        return jsonify(response), 400
+
 
     # Verify both email addresses are valid
     try:
@@ -871,6 +883,309 @@ class DisableAccount(Resource):
         return response, 200
 
 
+class ShareConfigurationLink(Resource):
+    """
+    Allow a user to generate a link that can be used to share configurations.
+    """
+
+    method_decorators = {'post': [authenticate]}
+
+    def post(self, resp) -> Tuple[dict, int]:
+        # Get post data
+        data = request.get_json()
+
+        # Validating empty payload
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+        if not data:
+            return response, 400
+
+        # Extract the data
+        owner = User.objects.get(id=resp).email
+        shared_date = datetime.utcnow()
+        is_valid = data.get('is_valid', None)
+        method = data.get('method', None)
+        grain_size = data.get('grain_size', None)
+        nucleation_start = data.get('nucleation_start', None)
+        nucleation_finish = data.get('nucleation_finish', None)
+        auto_calculate_ms = data.get('auto_calculate_ms', None)
+        ms_temp = data.get('ms_temp', None)
+        ms_rate_param = data.get('ms_rate_param', None)
+        auto_calculate_bs = data.get('auto_calculate_ms', None)
+        bs_temp = data.get('bs_temp', None)
+        auto_calculate_ae = data.get('auto_calculate_ae', None)
+        ae1_temp = data.get('ae1_temp', None)
+        ae3_temp = data.get('ae3_temp', None)
+        start_temp = data.get('start_temp', None)
+        cct_cooling_rate = data.get('cct_cooling_rate', None)
+
+        config = Configuration(
+            is_valid=is_valid,
+            method=method,
+            grain_size=grain_size,
+            nucleation_start=nucleation_start,
+            nucleation_finish=nucleation_finish,
+            auto_calculate_ms=auto_calculate_ms,
+            ms_temp=ms_temp,
+            ms_rate_param=ms_rate_param,
+            auto_calculate_bs=auto_calculate_bs,
+            bs_temp=bs_temp,
+            auto_calculate_ae=auto_calculate_ae,
+            ae1_temp=ae1_temp,
+            ae3_temp=ae3_temp,
+            start_temp=start_temp,
+            cct_cooling_rate=cct_cooling_rate
+        )
+
+        shared_config = SharedConfiguration(
+            owner=owner,
+            shared_date=shared_date,
+            configuration=config
+        )
+
+        try:
+            shared_config.save()
+        except ValidationError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Validation error.'
+            return response, 400
+
+        id = f'{shared_config.id}'
+        config_token = generate_confirmation_token(id)
+        config_url = generate_url(
+            'users.view_shared_configuration', config_token
+        )
+
+        response['status'] = 'success'
+        response.pop('message')
+        response['link'] = config_url
+        return response, 201
+
+
+class ShareConfigurationEmail(Resource):
+    """
+    Allow a user to generate an email with a link so they can share
+    configurations.
+    """
+
+    method_decorators = {'post': [authenticate]}
+
+    def post(self, resp) -> Tuple[dict, int]:
+        # Get post data
+        data = request.get_json()
+
+        # Validate empty payload
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+        if not data:
+            return response, 400
+
+        owner = User.objects.get(id=resp)
+        shared_date = datetime.utcnow()
+
+        email_list = data.get('email_list', None)
+        if not email_list:
+            response['message'] = 'No email addresses provided.'
+            return response, 400
+        if not isinstance(email_list, str) and not isinstance(email_list, list):
+            response['message'] = 'Invalid email address/addresses.'
+            return response, 400
+
+        if isinstance(email_list, str):
+            # Verify it is actually a valid email
+            try:
+                # validate and get info
+                v = validate_email(email_list)
+                # replace with normalized form
+                valid_email_list = v['email']
+            except EmailNotValidError as e:
+                # email is not valid, exception message is human-readable
+                response['error'] = str(e)
+                response['message'] = 'Invalid email.'
+                return response, 400
+        else:
+            valid_email_list = []
+            for email in email_list:
+                try:
+                    # validate and get info
+                    v = validate_email(email_list)
+                    # replace with normalized form
+                    valid_email_list.append(v['email'])
+                except EmailNotValidError as e:
+                    # email is not valid, exception message is human-readable
+                    response['error'] = str(e)
+                    response['message'] = 'Invalid email.'
+                    return response, 400
+
+
+        is_valid = data.get('is_valid', None)
+        method = data.get('method', None)
+        grain_size = data.get('grain_size', None)
+        nucleation_start = data.get('nucleation_start', None)
+        nucleation_finish = data.get('nucleation_finish', None)
+        auto_calculate_ms = data.get('auto_calculate_ms', None)
+        ms_temp = data.get('ms_temp', None)
+        ms_rate_param = data.get('ms_rate_param', None)
+        auto_calculate_bs = data.get('auto_calculate_ms', None)
+        bs_temp = data.get('bs_temp', None)
+        auto_calculate_ae = data.get('auto_calculate_ae', None)
+        ae1_temp = data.get('ae1_temp', None)
+        ae3_temp = data.get('ae3_temp', None)
+        start_temp = data.get('start_temp', None)
+        cct_cooling_rate = data.get('cct_cooling_rate', None)
+
+        config = Configuration(
+            is_valid=is_valid,
+            method=method,
+            grain_size=grain_size,
+            nucleation_start=nucleation_start,
+            nucleation_finish=nucleation_finish,
+            auto_calculate_ms=auto_calculate_ms,
+            ms_temp=ms_temp,
+            ms_rate_param=ms_rate_param,
+            auto_calculate_bs=auto_calculate_bs,
+            bs_temp=bs_temp,
+            auto_calculate_ae=auto_calculate_ae,
+            ae1_temp=ae1_temp,
+            ae3_temp=ae3_temp,
+            start_temp=start_temp,
+            cct_cooling_rate=cct_cooling_rate
+        )
+
+        shared_config = SharedConfiguration(
+            owner=owner.email,
+            shared_date=shared_date,
+            configuration=config
+        )
+
+        try:
+            shared_config.save()
+        except ValidationError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Validation error.'
+            return response, 400
+
+        id = f'{shared_config.id}'
+        config_token = generate_confirmation_token(id)
+        config_url = generate_url(
+            'users.view_shared_configuration', config_token
+        )
+
+        from celery_runner import celery
+        if isinstance(valid_email_list, str):
+            celery.send_task(
+                'tasks.send_email',
+                kwargs={
+                    'to':
+                        valid_email_list,
+                    'subject_suffix':
+                        f'{owner.first_name} {owner.last_name} '
+                        'has shared a configuration with you!',
+                    'html_template':
+                        render_template(
+                            'share_configuration.html',
+                            email=valid_email_list,
+                            owner_name=(
+                                f'{owner.first_name} {owner.last_name}'
+                            ),
+                            config_url=config_url
+                        ),
+                    'text_template':
+                        render_template(
+                            'share_configuration.txt',
+                            email=valid_email_list,
+                            owner_name=(
+                                f'{owner.first_name} {owner.last_name}'
+                            ),
+                            config_url=config_url
+                        ),
+                }
+            )
+        else:
+            for email_address in valid_email_list:
+                celery.send_task(
+                    'tasks.send_email',
+                    kwargs={
+                        'to':
+                            email_address,
+                        'subject_suffix':
+                            f'{owner.first_name} {owner.last_name} '
+                            'has shared a configuration with you!',
+                        'html_template':
+                            render_template(
+                                # template name,
+                                email=email_address,
+                                owner_name=(
+                                    f'{owner.first_name} {owner.last_name}'
+                                )
+                            ),
+                        'text_template':
+                            render_template(
+                                # template name,
+                                email=email_address,
+                                owner_name=(
+                                    f'{owner.first_name} {owner.last_name}'
+                                )
+                            ),
+                    }
+                )
+
+        response['status'] = 'success'
+        response.pop('message')
+        response['link'] = config_url
+        return response, 201
+
+
+@users_blueprint.route('/user/viewsharedconfiguration/<token>', methods=['GET'])
+def view_shared_configuration(token):
+
+    response = {'status': 'fail', 'message': 'Invalid token.'}
+
+    # Placeholder expiration time of 30 days
+    expiration = 2592000
+    try:
+        config_id = confirm_token(token, expiration)
+    except URLTokenError as e:
+        response['error'] = str(e)
+        return jsonify(response), 400
+    except Exception as e:
+        response['error'] = str(e)
+        return jsonify(response), 400
+
+    if not SharedConfiguration.objects(id=config_id):
+        response['message'] = 'Configuration does not exist.'
+        return jsonify(response), 400
+
+    config = SharedConfiguration.objects.get(id=config_id)
+
+    response['data'] = {}
+    response['data']['is_valid'] = config.configuration.is_valid
+    response['data']['method'] = config.configuration.method
+    response['data']['grain_size'] = config.configuration.grain_size
+    response['data']['nucleation_start'] = (
+        config.configuration.nucleation_start
+    )
+    response['data']['nucleation_finish'] = (
+        config.configuration.nucleation_finish
+    )
+    response['data']['auto_calculate_ms'] = (
+        config.configuration.auto_calculate_ms
+    )
+    response['data']['ms_temp'] = config.configuration.ms_temp
+    response['data']['ms_rate_param'] = config.configuration.ms_rate_param
+    response['data']['auto_calculate_bs'] = (
+        config.configuration.auto_calculate_bs
+    )
+    response['data']['bs_temp'] = config.configuration.bs_temp
+    response['data']['auto_calculate_ae'] = (
+        config.configuration.auto_calculate_ae
+    )
+    response['data']['ae1_temp'] = config.configuration.ae1_temp
+    response['data']['ae3_temp'] = config.configuration.ae3_temp
+    response['data']['start_temp'] = config.configuration.start_temp
+    response['data']['cct_cooling_rate'] = config.configuration.cct_cooling_rate
+
+    response['message'] = 'success'
+    return jsonify(response), 200
+
 api.add_resource(PingTest, '/ping')
 api.add_resource(UserList, '/users')
 api.add_resource(Users, '/user')
@@ -881,3 +1196,5 @@ api.add_resource(UserConfigurations, '/user/configurations')
 api.add_resource(AdminCreate, '/admin/create')
 api.add_resource(DisableAccount, '/user/disable')
 api.add_resource(UserGraphs, '/user/graphs')
+api.add_resource(ShareConfigurationLink, '/user/shareconfiguration/link')
+api.add_resource(ShareConfigurationEmail, '/user/shareconfiguration/email')

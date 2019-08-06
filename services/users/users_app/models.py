@@ -219,6 +219,12 @@ class Alloy(EmbeddedDocument):
         return self.to_json()
 
 
+class SharedConfiguration(Document):
+    owner = EmailField(required=True)
+    shared_date = DateTimeField()
+    configuration = EmbeddedDocumentField(document_type=Configuration)
+
+
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
 class User(Document):
     email = EmailField(required=True, unique=True)

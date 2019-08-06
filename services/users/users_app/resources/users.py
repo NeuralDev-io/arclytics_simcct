@@ -72,14 +72,20 @@ class Users(Resource):
     """Get/Put a single user's details."""
 
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     method_decorators = {'get': [authenticate], 'put': [authenticate]}
 =======
     method_decorators = {'get': [authenticate], 'patch': [authenticate]}
 >>>>>>> ARC-105
+<<<<<<< Updated upstream
 =======
     method_decorators = {'get': [authenticate], 'patch': [authenticate]}
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
 
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
@@ -125,6 +131,7 @@ class Users(Resource):
         # that we can store the updated profile fields for the response body.
         if aim or highest_education or sci_tech_exp or highest_education:
             response['data'] = {'profile': {}}
+<<<<<<< Updated upstream
 
         # Get the user so we can begin updating fields.
         user = User.objects.get(id=resp)
@@ -197,6 +204,44 @@ class Users(Resource):
             user.profile = profile
 
 >>>>>>> ARC-105
+=======
+
+        # Get the user so we can begin updating fields.
+        user = User.objects.get(id=resp)
+
+        # If the user does not already have profile details set we need to
+        # create a user profile object.
+        if not user.profile:
+            # If we do not have all the profile fields, we will need to reject
+            # the request as we are unable to create a profile object.
+            if (
+                not aim or not highest_education or not sci_tech_exp
+                or not phase_transform_exp
+            ):
+                response.pop('data')
+                response['message'] = (
+                    'User profile cannot be updated as '
+                    'there is no existing profile.'
+                )
+                return response, 400
+
+            # Once we have ensured we have all the fields, we can create the
+            # profile object and put the information in the response body.
+            response['data']['profile'] = {
+                'aim': aim,
+                'highest_education': highest_education,
+                'sci_tech_exp': sci_tech_exp,
+                'phase_transform_exp': phase_transform_exp
+            }
+            profile = UserProfile(
+                aim=aim,
+                highest_education=highest_education,
+                sci_tech_exp=sci_tech_exp,
+                phase_transform_exp=phase_transform_exp
+            )
+            user.profile = profile
+
+>>>>>>> Stashed changes
         # Otherwise if the user already has a profile, we can update individual
         # fields.
         else:
@@ -213,7 +258,10 @@ class Users(Resource):
             if phase_transform_exp:
                 user.profile.phase_transform_exp = phase_transform_exp
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         else:
             profile = UserProfile(
                 aim=aim,
@@ -226,10 +274,13 @@ class Users(Resource):
                 response['data']['profile']['phase_transform_exp'] = \
                     phase_transform_exp
 >>>>>>> ARC-105
+<<<<<<< Updated upstream
 =======
                 response['data']['profile']['phase_transform_exp'] = \
                     phase_transform_exp
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
 
         # If the user is an admin, we can also update their admin profile
         # details
@@ -293,13 +344,19 @@ class Users(Resource):
         # Return response body.
         response['status'] = 'success'
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         response['message'
                  ] = f'Successfully updated User details for {user.id}.'
 =======
 >>>>>>> ARC-105
+<<<<<<< Updated upstream
 =======
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
         return response, 200
 
 
@@ -310,11 +367,14 @@ class UserLast(Resource):
     """
 
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 =======
     # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
 
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
 =======
     # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
 
@@ -348,11 +408,14 @@ class UserAlloys(Resource):
     """We get the list of User's alloys stored in their document"""
 
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 =======
     # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
 
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
 =======
     # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
 
@@ -442,6 +505,7 @@ class UserProfiles(Resource):
 
         # Get the user so we can begin updating fields.
         user = User.objects.get(id=resp)
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 
         # If the user does not already have profile details set we need to
@@ -477,6 +541,9 @@ class UserProfiles(Resource):
 
 =======
 
+=======
+
+>>>>>>> Stashed changes
         # If the user does not already have profile details set we need to
         # create a user profile object.
         if not user.profile:
@@ -508,7 +575,10 @@ class UserProfiles(Resource):
             )
             user.profile = profile
 
+<<<<<<< Updated upstream
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
         # Otherwise if the user already has a profile, we can update individual
         # fields.
         else:
@@ -519,21 +589,30 @@ class UserProfiles(Resource):
             if highest_education:
                 user.profile.highest_education = highest_education
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 
 =======
                 response['data']['highest_education'] = highest_education
 >>>>>>> ARC-105
+<<<<<<< Updated upstream
 =======
                 response['data']['highest_education'] = highest_education
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
             if sci_tech_exp:
                 user.profile.sci_tech_exp = sci_tech_exp
                 response['data']['sci_tech_exp'] = sci_tech_exp
             if phase_transform_exp:
                 user.profile.phase_transform_exp = phase_transform_exp
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         else:
             profile = UserProfile(
                 aim=aim,
@@ -545,9 +624,12 @@ class UserProfiles(Resource):
 =======
                 response['data']['phase_transform_exp'] = phase_transform_exp
 >>>>>>> ARC-105
+<<<<<<< Updated upstream
 =======
                 response['data']['phase_transform_exp'] = phase_transform_exp
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
 
         # Updated the user's last_updated field to now.
         user.last_updated = datetime.utcnow()
@@ -577,7 +659,10 @@ class UserProfiles(Resource):
 
         # Get the user
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         id = data.get('id')
         user = User.objects.get(data.get(id))
 
@@ -608,11 +693,14 @@ class UserProfiles(Resource):
         # Create a user profile object that can replace any existing user
         # profile information.
 >>>>>>> ARC-105
+<<<<<<< Updated upstream
 =======
         user = User.objects.get(id=resp)
         # Create a user profile object that can replace any existing user
         # profile information.
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
         profile = UserProfile(
             aim=aim,
             highest_education=highest_education,
@@ -677,14 +765,20 @@ class AdminCreate(Resource):
 
         # Validating empty payload
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         response = {'status': 'fail', 'message': 'User does not exist.'}
 =======
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 >>>>>>> ARC-105
+<<<<<<< Updated upstream
 =======
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
         if not post_data:
             return response, 400
 
@@ -730,7 +824,10 @@ class AdminCreate(Resource):
         admin = User.objects.get(id=resp)
 
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             # generate auth token
             auth_token = user.encode_auth_token(user.id)
             # generate the confirmation token for verifying email
@@ -795,6 +892,7 @@ class AdminCreate(Resource):
                 )
             }
         )
+<<<<<<< Updated upstream
 
         response['status'] = 'success'
         response.pop('message')
@@ -849,11 +947,21 @@ def confirm_promotion(token):
         return response, 202
 
 
+=======
+
+        response['status'] = 'success'
+        response.pop('message')
+        return response, 202
+>>>>>>> ARC-105
+
+
+>>>>>>> Stashed changes
 @users_blueprint.route('/admin/confirmpromotion/<token>', methods=['GET'])
 def confirm_promotion(token):
     """
     Allow an admin to confirm their promotion of another user
     """
+<<<<<<< Updated upstream
 
     response = {'status': 'fail', 'message': 'Invalid token.'}
 
@@ -984,16 +1092,22 @@ def acknowledge_promotion(token):
     status as an admin
 >>>>>>> ARC-105
     """
+=======
+>>>>>>> Stashed changes
 
     response = {'status': 'fail', 'message': 'Invalid token.'}
 
     # Decode the token from the email to confirm it was the right one
     try:
+<<<<<<< Updated upstream
 <<<<<<< HEAD
         data = confirm_token(token)
 =======
         email = confirm_token(token)
 >>>>>>> ARC-105
+=======
+        data = confirm_token(token)
+>>>>>>> Stashed changes
     except URLTokenError as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -1001,7 +1115,10 @@ def acknowledge_promotion(token):
         response['error'] = str(e)
         return jsonify(response), 400
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     # Ensure that a list was returned
     if not isinstance(data, list):
         response['message'] = 'Invalid Token.'
@@ -1023,6 +1140,7 @@ def acknowledge_promotion(token):
         # replace with normalized form
         valid_admin_email = va['email']
         valid_user_email = vu['email']
+<<<<<<< Updated upstream
 =======
     # Verify it is actually a valid email
     try:
@@ -1031,13 +1149,18 @@ def acknowledge_promotion(token):
         # replace with normalized form
         valid_email = v['email']
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
     except EmailNotValidError as e:
         # email is not valid, exception message is human-readable
         response['error'] = str(e)
         response['message'] = 'Invalid email.'
         return jsonify(response), 400
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     # Ensure both users exist in the database
     if not User.objects(email=valid_admin_email):
         response['message'] = 'Administrator does not exist.'
@@ -1077,6 +1200,7 @@ def acknowledge_promotion(token):
     promotion_acknowledge_url = generate_url(
         'users.acknowledge_promotion', promotion_acknowledge_token
     )
+<<<<<<< Updated upstream
 =======
     # Ensure the user exists in the database
     if not User.objects(email=valid_email):
@@ -1108,12 +1232,17 @@ def acknowledge_promotion(token):
     promoter = User.objects.get(id=promoter_id)
 
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
     from celery_runner import celery
     celery.send_task(
         'tasks.send_email',
         kwargs={
             'to':
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
                 target_user.email,
             'subject_suffix':
                 'Acknowledge Promotion',
@@ -1125,6 +1254,7 @@ def acknowledge_promotion(token):
                     position=position,
                     user_name=(
                         f'{target_user.first_name} {target_user.last_name}'
+<<<<<<< Updated upstream
 =======
                 promoter.email,
             'subject_suffix':
@@ -1139,17 +1269,23 @@ def acknowledge_promotion(token):
                     user_name=(
                         f'{user.first_name} {user.last_name}'
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
                     )
                 ),
             'text_template':
                 render_template(
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
                     'acknowledge_promotion.html',
                     promotion_acknowledge_url_url=promotion_acknowledge_url,
                     email=target_user.email,
                     position=position,
                     user_name=(
                         f'{target_user.first_name} {target_user.last_name}'
+<<<<<<< Updated upstream
 =======
                     'promotion_verified.txt',
                     email=promoter.email,
@@ -1159,11 +1295,16 @@ def acknowledge_promotion(token):
                     user_name=(
                         f'{user.first_name} {user.last_name}'
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
                     )
                 )
         }
     )
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
     client_host = os.environ.get('CLIENT_HOST')
@@ -1271,9 +1412,12 @@ def acknowledge_promotion(token):
         }
     )
 
+<<<<<<< Updated upstream
 =======
 
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
     client_host = os.environ.get('CLIENT_HOST')
     # We can make our own redirect response by doing the following
@@ -1291,28 +1435,40 @@ class DisableAccount(Resource):
     """Route for Admins to disable user accounts"""
 
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
     method_decorators = {'post': [authenticate_admin]}
 =======
     method_decorators = {'put': [authenticate_admin]}
 >>>>>>> ARC-105
+<<<<<<< Updated upstream
 =======
     method_decorators = {'put': [authenticate_admin]}
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
 
     def put(self, resp):
         post_data = request.get_json()
 
         # Validating empty payload
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
         response = {'status': 'fail', 'message': 'User does not exist.'}
 =======
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 >>>>>>> ARC-105
+<<<<<<< Updated upstream
 =======
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
         if not post_data:
             return response, 400
 
@@ -1347,19 +1503,28 @@ class DisableAccount(Resource):
 
         response['status'] = 'success'
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
         response['message'
                  ] = f'The account for User {user.id} has been disabled.'
 =======
 =======
 >>>>>>> ARC-105
+=======
+        response['message'
+                 ] = f'The account for User {user.id} has been disabled.'
+=======
+>>>>>>> Stashed changes
         response['message'] = (
             f'The account for User {user.email} has been '
             f'disabled.'
         )
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> ARC-105
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> ARC-105
         return response, 200
 

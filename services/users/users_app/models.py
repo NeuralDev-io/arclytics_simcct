@@ -28,7 +28,7 @@ from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
     DateTimeField, EmbeddedDocumentField, IntField, FloatField, ListField,
-    EmbeddedDocumentListField, queryset_manager
+    EmbeddedDocumentListField, ObjectIdField, queryset_manager
 )
 from flask import current_app, json
 
@@ -57,19 +57,19 @@ class UserProfile(EmbeddedDocument):
     # )
     aim = StringField(
         help_text='What sentence best describes you?',
-        required=False,
+        required=True,
         default=None,
         null=True
     )
     highest_education = StringField(
         help_text='What is the highest level of education have you studied?',
-        required=False,
+        required=True,
         default=None,
         null=True
     )
     sci_tech_exp = StringField(
         help_text='What is your experience with scientific software?',
-        required=False,
+        required=True,
         default=None,
         null=True
     )
@@ -78,7 +78,7 @@ class UserProfile(EmbeddedDocument):
             'What is your experience with solid-state phase '
             'transformation?'
         ),
-        required=False,
+        required=True,
         default=None,
         null=True
     )
@@ -100,6 +100,7 @@ class AdminProfile(EmbeddedDocument):
     position = StringField(max_length=255, required=True)
     mobile_number = StringField(max_length=11, min_length=10)
     verified = BooleanField(default=False)
+    promoted_by = ObjectIdField()
 
     def to_dict(self) -> dict:
         """
@@ -190,8 +191,13 @@ class Alloy(EmbeddedDocument):
 
     def to_dict(self):
         comp = []
+<<<<<<< HEAD
         for e in self.compositions:
             comp.append(e.to_dict())
+=======
+        for e in self.composition:
+            comp.append({'symbol': e.symbol, 'weight': e.weight})
+>>>>>>> ARC-105
         return {'name': self.name, 'composition': comp}
 
     def __str__(self):
@@ -238,10 +244,14 @@ class User(Document):
     last_configuration = EmbeddedDocumentField(
         document_type=Configuration, default=None
     )
+<<<<<<< HEAD
 
     last_alloy_store = EmbeddedDocumentField(
         document_type=AlloyStore, default=None
     )
+=======
+    last_alloy = EmbeddedDocumentField(document_type=Alloy, default=None)
+>>>>>>> ARC-105
 
     # TODO(andrew@neuraldev.io -- Sprint 6): Make these
     # saved_configurations = EmbeddedDocumentListField(
@@ -260,7 +270,6 @@ class User(Document):
     last_login = DateTimeField()
     # Define the collection and indexing for this document
     meta = {'collection': 'users'}
-    account_disabled = BooleanField(default=False)
 
     def set_password(self, raw_password: str) -> None:
         """Helper utility method to save an encrypted password using the

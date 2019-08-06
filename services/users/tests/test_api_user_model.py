@@ -107,12 +107,22 @@ class TestUserModel(BaseTestCase):
         user.last_alloy_store = alloy_store
         user.cascade_save()
 
+<<<<<<< HEAD
         alloy = user.last_alloy_store['alloys']['parent']
         self.assertEqual(alloy['name'], 'Selvigium')
         self.assertEqual(alloy['compositions'][0]['symbol'], 'C')
         self.assertEqual(alloy['compositions'][0]['weight'], 0.044)
         self.assertEqual(alloy['compositions'][1]['symbol'], 'Mn')
         self.assertEqual(alloy['compositions'][1]['weight'], 1.73)
+=======
+        self.assertEqual(user.last_compositions.name, 'Selvigium')
+        self.assertEqual(user.last_compositions.composition[0]['symbol'], 'C')
+        self.assertEqual(
+            user.last_compositions.composition[0]['weight'], 0.044
+        )
+        self.assertEqual(user.last_compositions.composition[1]['symbol'], 'Mn')
+        self.assertEqual(user.last_compositions.composition[1]['weight'], 1.73)
+>>>>>>> ARC-105
 
     def test_add_compositions_from_json(self):
         """Ensure we can loop a JSON-converted dict to create a compositions."""
@@ -140,6 +150,7 @@ class TestUserModel(BaseTestCase):
         user.last_alloy_store = alloy_store
         user.cascade_save()
 
+<<<<<<< HEAD
         comp = user.last_alloy_store['alloys']['parent']
         self.assertEqual(comp['name'], 'Selvigium')
         self.assertEqual(comp['compositions'][0]['symbol'], 'C')
@@ -148,6 +159,17 @@ class TestUserModel(BaseTestCase):
         self.assertEqual(comp['compositions'][1]['weight'], 1.73)
         self.assertEqual(comp['compositions'][2]['symbol'], 'Si')
         self.assertEqual(comp['compositions'][2]['weight'], 0.22)
+=======
+        self.assertEqual(user.last_compositions.name, 'Selvigium')
+        self.assertEqual(user.last_compositions.composition[0]['symbol'], 'C')
+        self.assertEqual(
+            user.last_compositions.composition[0]['weight'], 0.044
+        )
+        self.assertEqual(user.last_compositions.composition[1]['symbol'], 'Mn')
+        self.assertEqual(user.last_compositions.composition[1]['weight'], 1.73)
+        self.assertEqual(user.last_compositions.composition[2]['symbol'], 'Si')
+        self.assertEqual(user.last_compositions.composition[2]['weight'], 0.22)
+>>>>>>> ARC-105
 
     def test_email_validation(self):
         user = User(

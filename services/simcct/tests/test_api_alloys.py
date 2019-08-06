@@ -119,7 +119,6 @@ class TestAlloyService(BaseTestCase):
             self.assertEqual(res.status_code, 201)
             self.assertEqual(data['status'], 'success')
             self.assertTrue(data['data'])
-            print(data['data'])
 
     def test_create_alloy_empty_json(self):
         with app.test_client() as client:

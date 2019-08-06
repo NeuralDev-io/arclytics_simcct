@@ -1207,7 +1207,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(resp_attempt_login.status_code, 401)
             self.assertEqual(login_data['status'], 'fail')
             self.assertEqual(
-                login_data['message'], 'This user account has been disabled.'
+                login_data['message'], 'Your Account has been disabled.'
             )
 
     def test_disable_account_no_data(self):
@@ -1357,7 +1357,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(droid_action.status_code, 401)
             self.assertEqual(action_data['status'], 'fail')
             self.assertEqual(
-                action_data['message'], 'This user does not exist.'
+                action_data['message'], 'This user account has been disabled.'
             )
 
     def test_create_admin_success(self):

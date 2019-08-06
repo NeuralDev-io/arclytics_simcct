@@ -72,7 +72,11 @@ class Users(Resource):
     """Get/Put a single user's details."""
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     method_decorators = {'get': [authenticate], 'put': [authenticate]}
+=======
+    method_decorators = {'get': [authenticate], 'patch': [authenticate]}
+>>>>>>> ARC-105
 =======
     method_decorators = {'get': [authenticate], 'patch': [authenticate]}
 >>>>>>> ARC-105
@@ -124,6 +128,7 @@ class Users(Resource):
 
         # Get the user so we can begin updating fields.
         user = User.objects.get(id=resp)
+<<<<<<< HEAD
 
         # If the user does not already have profile details set we need to
         # create a user profile object.
@@ -157,6 +162,41 @@ class Users(Resource):
             )
             user.profile = profile
 
+=======
+
+        # If the user does not already have profile details set we need to
+        # create a user profile object.
+        if not user.profile:
+            # If we do not have all the profile fields, we will need to reject
+            # the request as we are unable to create a profile object.
+            if (
+                not aim or not highest_education or not sci_tech_exp
+                or not phase_transform_exp
+            ):
+                response.pop('data')
+                response['message'] = (
+                    'User profile cannot be updated as '
+                    'there is no existing profile.'
+                )
+                return response, 400
+
+            # Once we have ensured we have all the fields, we can create the
+            # profile object and put the information in the response body.
+            response['data']['profile'] = {
+                'aim': aim,
+                'highest_education': highest_education,
+                'sci_tech_exp': sci_tech_exp,
+                'phase_transform_exp': phase_transform_exp
+            }
+            profile = UserProfile(
+                aim=aim,
+                highest_education=highest_education,
+                sci_tech_exp=sci_tech_exp,
+                phase_transform_exp=phase_transform_exp
+            )
+            user.profile = profile
+
+>>>>>>> ARC-105
         # Otherwise if the user already has a profile, we can update individual
         # fields.
         else:
@@ -173,6 +213,7 @@ class Users(Resource):
             if phase_transform_exp:
                 user.profile.phase_transform_exp = phase_transform_exp
 <<<<<<< HEAD
+<<<<<<< HEAD
         else:
             profile = UserProfile(
                 aim=aim,
@@ -181,6 +222,10 @@ class Users(Resource):
                 phase_transform_exp=phase_transform_exp
             )
             user.profile = profile
+=======
+                response['data']['profile']['phase_transform_exp'] = \
+                    phase_transform_exp
+>>>>>>> ARC-105
 =======
                 response['data']['profile']['phase_transform_exp'] = \
                     phase_transform_exp
@@ -248,8 +293,11 @@ class Users(Resource):
         # Return response body.
         response['status'] = 'success'
 <<<<<<< HEAD
+<<<<<<< HEAD
         response['message'
                  ] = f'Successfully updated User details for {user.id}.'
+=======
+>>>>>>> ARC-105
 =======
 >>>>>>> ARC-105
         return response, 200
@@ -262,6 +310,11 @@ class UserLast(Resource):
     """
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+    # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
+
+>>>>>>> ARC-105
 =======
     # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
 
@@ -295,6 +348,11 @@ class UserAlloys(Resource):
     """We get the list of User's alloys stored in their document"""
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+    # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
+
+>>>>>>> ARC-105
 =======
     # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
 
@@ -384,6 +442,7 @@ class UserProfiles(Resource):
 
         # Get the user so we can begin updating fields.
         user = User.objects.get(id=resp)
+<<<<<<< HEAD
 
         # If the user does not already have profile details set we need to
         # create a user profile object.
@@ -416,6 +475,40 @@ class UserProfiles(Resource):
             )
             user.profile = profile
 
+=======
+
+        # If the user does not already have profile details set we need to
+        # create a user profile object.
+        if not user.profile:
+            # If we do not have all the profile fields, we will need to reject
+            # the request as we are unable to create a profile object.
+            if (
+                not aim or not highest_education or not sci_tech_exp
+                or not phase_transform_exp
+            ):
+                response['message'] = (
+                    'User profile cannot be patched as '
+                    'there is no existing profile.'
+                )
+                return response, 400
+
+            # Once we have ensured we have all the fields, we can create the
+            # profile object and put the information in the response body.
+            response['data'] = {
+                'aim': aim,
+                'highest_education': highest_education,
+                'sci_tech_exp': sci_tech_exp,
+                'phase_transform_exp': phase_transform_exp
+            }
+            profile = UserProfile(
+                aim=aim,
+                highest_education=highest_education,
+                sci_tech_exp=sci_tech_exp,
+                phase_transform_exp=phase_transform_exp
+            )
+            user.profile = profile
+
+>>>>>>> ARC-105
         # Otherwise if the user already has a profile, we can update individual
         # fields.
         else:
@@ -426,7 +519,11 @@ class UserProfiles(Resource):
             if highest_education:
                 user.profile.highest_education = highest_education
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+                response['data']['highest_education'] = highest_education
+>>>>>>> ARC-105
 =======
                 response['data']['highest_education'] = highest_education
 >>>>>>> ARC-105
@@ -436,6 +533,7 @@ class UserProfiles(Resource):
             if phase_transform_exp:
                 user.profile.phase_transform_exp = phase_transform_exp
 <<<<<<< HEAD
+<<<<<<< HEAD
         else:
             profile = UserProfile(
                 aim=aim,
@@ -444,6 +542,9 @@ class UserProfiles(Resource):
                 phase_transform_exp=phase_transform_exp
             )
             user.profile = profile
+=======
+                response['data']['phase_transform_exp'] = phase_transform_exp
+>>>>>>> ARC-105
 =======
                 response['data']['phase_transform_exp'] = phase_transform_exp
 >>>>>>> ARC-105
@@ -476,6 +577,7 @@ class UserProfiles(Resource):
 
         # Get the user
 <<<<<<< HEAD
+<<<<<<< HEAD
         id = data.get('id')
         user = User.objects.get(data.get(id))
 
@@ -501,6 +603,11 @@ class UserProfiles(Resource):
             }
             return response, 400
 
+=======
+        user = User.objects.get(id=resp)
+        # Create a user profile object that can replace any existing user
+        # profile information.
+>>>>>>> ARC-105
 =======
         user = User.objects.get(id=resp)
         # Create a user profile object that can replace any existing user
@@ -570,7 +677,11 @@ class AdminCreate(Resource):
 
         # Validating empty payload
 <<<<<<< HEAD
+<<<<<<< HEAD
         response = {'status': 'fail', 'message': 'User does not exist.'}
+=======
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+>>>>>>> ARC-105
 =======
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 >>>>>>> ARC-105
@@ -618,6 +729,7 @@ class AdminCreate(Resource):
         # Get the admin object so we can email them a confirmation email.
         admin = User.objects.get(id=resp)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
             # generate auth token
             auth_token = user.encode_auth_token(user.id)
@@ -688,6 +800,53 @@ class AdminCreate(Resource):
         response.pop('message')
         return response, 202
 >>>>>>> ARC-105
+
+
+@users_blueprint.route('/admin/confirmpromotion/<token>', methods=['GET'])
+def confirm_promotion(token):
+    """
+    Allow an admin to confirm their promotion of another user
+=======
+        # Generate a confirmation email to be sent to the Admin so that they can
+        # confirm they want to promote the user.
+        promotion_confirm_token = generate_promotion_confirmation_token(
+            admin.email, user.email, position
+        )
+        promotion_confirm_url = generate_url(
+            'users.confirm_promotion', promotion_confirm_token
+        )
+        from celery_runner import celery
+        celery.send_task(
+            'tasks.send_email',
+            kwargs={
+                'to':
+                admin.email,
+                'subject_suffix':
+                'Confirm Promotion',
+                'html_template':
+                render_template(
+                    'confirm_promotion.html',
+                    promotion_confirm_url=promotion_confirm_url,
+                    email=admin.email,
+                    position=position,
+                    admin_name=f'{admin.first_name} {admin.last_name}',
+                    user_name=f'{user.first_name} {user.last_name}'
+                ),
+                'text_template':
+                render_template(
+                    'confirm_promotion.txt',
+                    promotion_confirm_url=promotion_confirm_url,
+                    email=admin.email,
+                    position=position,
+                    admin_name=f'{admin.first_name} {admin.last_name}',
+                    user_name=f'{user.first_name} {user.last_name}'
+                )
+            }
+        )
+
+        response['status'] = 'success'
+        response.pop('message')
+        return response, 202
 
 
 @users_blueprint.route('/admin/confirmpromotion/<token>', methods=['GET'])
@@ -823,6 +982,207 @@ def acknowledge_promotion(token):
     """
     Allow a user to acknowledge their promotion and in doing so verify their
     status as an admin
+>>>>>>> ARC-105
+    """
+
+    response = {'status': 'fail', 'message': 'Invalid token.'}
+
+    # Decode the token from the email to confirm it was the right one
+    try:
+<<<<<<< HEAD
+        data = confirm_token(token)
+=======
+        email = confirm_token(token)
+>>>>>>> ARC-105
+    except URLTokenError as e:
+        response['error'] = str(e)
+        return jsonify(response), 400
+    except Exception as e:
+        response['error'] = str(e)
+        return jsonify(response), 400
+
+<<<<<<< HEAD
+    # Ensure that a list was returned
+    if not isinstance(data, list):
+        response['message'] = 'Invalid Token.'
+        return jsonify(response), 400
+
+    # Ensure data is all present
+    admin_email = data[0]
+    user_email = data[1]
+    position = data[2]
+    if not admin_email or not user_email or not position:
+        response['message'] = 'Invalid data in Token.'
+        return jsonify(response), 400
+
+    # Verify both email addresses are valid
+    try:
+        # validate and get info
+        va = validate_email(admin_email)
+        vu = validate_email(user_email)
+        # replace with normalized form
+        valid_admin_email = va['email']
+        valid_user_email = vu['email']
+=======
+    # Verify it is actually a valid email
+    try:
+        # validate and get info
+        v = validate_email(email)
+        # replace with normalized form
+        valid_email = v['email']
+>>>>>>> ARC-105
+    except EmailNotValidError as e:
+        # email is not valid, exception message is human-readable
+        response['error'] = str(e)
+        response['message'] = 'Invalid email.'
+        return jsonify(response), 400
+
+<<<<<<< HEAD
+    # Ensure both users exist in the database
+    if not User.objects(email=valid_admin_email):
+        response['message'] = 'Administrator does not exist.'
+        return jsonify(response), 400
+    if not User.objects(email=valid_user_email):
+        response['message'] = 'Target User does not exist.'
+        return jsonify(response), 400
+
+    # Get both user objects
+    admin_user = User.objects.get(email=valid_admin_email)
+    target_user = User.objects.get(email=valid_user_email)
+
+    # Ensure the admin user is allowed to promote other users.
+    if not admin_user.is_admin or not admin_user.admin_profile.verified:
+        response['message'] = 'User is not authorised to promote other users.'
+        return jsonify(response), 400
+
+    # Ensure the target user has their account verified
+    if not target_user.verified:
+        response['message'] = 'Target user is not verified.'
+        return jsonify(response), 400
+
+    # Start promotion process
+    target_user.is_admin = True
+    target_user.admin_profile = AdminProfile(
+        position=position,
+        mobile_number=None,
+        verified=False,
+        promoted_by=admin_user.id
+    )
+    target_user.last_updated = datetime.utcnow()
+    target_user.save()
+
+    # Generate an acknowledgement email to be sent to the User so that they can
+    # verify they have been promoted.
+    promotion_acknowledge_token = generate_confirmation_token(target_user.email)
+    promotion_acknowledge_url = generate_url(
+        'users.acknowledge_promotion', promotion_acknowledge_token
+    )
+=======
+    # Ensure the user exists in the database
+    if not User.objects(email=valid_email):
+        response['message'] = 'User does not exist.'
+        return jsonify(response), 400
+
+    # Get the user object
+    user = User.objects.get(email=valid_email)
+
+    # Ensure the user is verfiied, an admin and that they have a valid admin
+    # profile
+    if not user.verified:
+        response['message'] = 'User is not verified.'
+        return jsonify(response), 400
+    if not user.is_admin:
+        response['message'] = 'User is not an Admin.'
+        return jsonify(response), 400
+    if not user.admin_profile:
+        response['message'] = 'User has an invalid Admin profile.'
+        return jsonify(response), 400
+
+    # Verify user's admin status
+    user.admin_profile.verified = True
+    user.save()
+
+    # Get promoter information so that they can be sent an email letting them
+    # know that the user they promoted has been verified.
+    promoter_id = user.admin_profile.promoted_by
+    promoter = User.objects.get(id=promoter_id)
+
+>>>>>>> ARC-105
+    from celery_runner import celery
+    celery.send_task(
+        'tasks.send_email',
+        kwargs={
+            'to':
+<<<<<<< HEAD
+                target_user.email,
+            'subject_suffix':
+                'Acknowledge Promotion',
+            'html_template':
+                render_template(
+                    'acknowledge_promotion.html',
+                    promotion_acknowledge_url_url=promotion_acknowledge_url,
+                    email=target_user.email,
+                    position=position,
+                    user_name=(
+                        f'{target_user.first_name} {target_user.last_name}'
+=======
+                promoter.email,
+            'subject_suffix':
+                'Promotion Verified',
+            'html_template':
+                render_template(
+                    'promotion_verified.html',
+                    email=promoter.email,
+                    promoter_name=(
+                        f'{promoter.first_name} {promoter.last_name}'
+                    ),
+                    user_name=(
+                        f'{user.first_name} {user.last_name}'
+>>>>>>> ARC-105
+                    )
+                ),
+            'text_template':
+                render_template(
+<<<<<<< HEAD
+                    'acknowledge_promotion.html',
+                    promotion_acknowledge_url_url=promotion_acknowledge_url,
+                    email=target_user.email,
+                    position=position,
+                    user_name=(
+                        f'{target_user.first_name} {target_user.last_name}'
+=======
+                    'promotion_verified.txt',
+                    email=promoter.email,
+                    promoter_name=(
+                        f'{promoter.first_name} {promoter.last_name}'
+                    ),
+                    user_name=(
+                        f'{user.first_name} {user.last_name}'
+>>>>>>> ARC-105
+                    )
+                )
+        }
+    )
+<<<<<<< HEAD
+
+    # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
+    client_host = os.environ.get('CLIENT_HOST')
+    # We can make our own redirect response by doing the following
+    custom_redir_response = app.response_class(
+        status=302, mimetype='application/json'
+    )
+    # TODO(davidmatthews1004@gmail.com): Redirect the Admin somewhere else,
+    #  maybe the home screen or a confirmation page.
+    redirect_url = 'http://localhost:3000/signin'
+    custom_redir_response.headers['Location'] = redirect_url
+    return custom_redir_response
+
+
+@users_blueprint.route('/user/acknowledgepromotion/<token>', methods=['GET'])
+def acknowledge_promotion(token):
+    """
+    Allow a user to acknowledge their promotion and in doing so verify their
+    status as an admin
     """
 
     response = {'status': 'fail', 'message': 'Invalid token.'}
@@ -911,6 +1271,9 @@ def acknowledge_promotion(token):
         }
     )
 
+=======
+
+>>>>>>> ARC-105
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
     client_host = os.environ.get('CLIENT_HOST')
     # We can make our own redirect response by doing the following
@@ -928,7 +1291,11 @@ class DisableAccount(Resource):
     """Route for Admins to disable user accounts"""
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     method_decorators = {'post': [authenticate_admin]}
+=======
+    method_decorators = {'put': [authenticate_admin]}
+>>>>>>> ARC-105
 =======
     method_decorators = {'put': [authenticate_admin]}
 >>>>>>> ARC-105
@@ -938,7 +1305,11 @@ class DisableAccount(Resource):
 
         # Validating empty payload
 <<<<<<< HEAD
+<<<<<<< HEAD
         response = {'status': 'fail', 'message': 'User does not exist.'}
+=======
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+>>>>>>> ARC-105
 =======
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 >>>>>>> ARC-105
@@ -976,13 +1347,19 @@ class DisableAccount(Resource):
 
         response['status'] = 'success'
 <<<<<<< HEAD
+<<<<<<< HEAD
         response['message'
                  ] = f'The account for User {user.id} has been disabled.'
 =======
+=======
+>>>>>>> ARC-105
         response['message'] = (
             f'The account for User {user.email} has been '
             f'disabled.'
         )
+<<<<<<< HEAD
+>>>>>>> ARC-105
+=======
 >>>>>>> ARC-105
         return response, 200
 

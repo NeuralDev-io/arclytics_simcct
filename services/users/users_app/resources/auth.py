@@ -342,7 +342,11 @@ def login() -> Tuple[dict, int]:
         auth_token = user.encode_auth_token(user.id)
         if auth_token:
 <<<<<<< HEAD
+<<<<<<< HEAD
             if user.account_disabled:
+=======
+            if not user.active:
+>>>>>>> ARC-105
 =======
             if not user.active:
 >>>>>>> ARC-105

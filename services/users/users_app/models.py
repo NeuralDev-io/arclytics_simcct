@@ -197,6 +197,9 @@ class Alloy(EmbeddedDocument):
 =======
         for e in self.composition:
             comp.append({'symbol': e.symbol, 'weight': e.weight})
+<<<<<<< HEAD
+>>>>>>> ARC-105
+=======
 >>>>>>> ARC-105
         return {'name': self.name, 'composition': comp}
 
@@ -245,10 +248,14 @@ class User(Document):
         document_type=Configuration, default=None
     )
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     last_alloy_store = EmbeddedDocumentField(
         document_type=AlloyStore, default=None
     )
+=======
+    last_alloy = EmbeddedDocumentField(document_type=Alloy, default=None)
+>>>>>>> ARC-105
 =======
     last_alloy = EmbeddedDocumentField(document_type=Alloy, default=None)
 >>>>>>> ARC-105

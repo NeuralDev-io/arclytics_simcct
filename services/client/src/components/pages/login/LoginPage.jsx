@@ -6,11 +6,13 @@
  * @github Xaraox
  */
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { login } from '../../../utils/AuthenticationHelper'
 import { loginValidation } from '../../../utils/ValidationHelper'
+import { getUserProfile } from '../../../state/ducks/persist/actions'
 
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
@@ -19,7 +21,7 @@ import styles from './LoginPage.module.scss'
 
 class LoginPage extends Component {
   componentDidMount = () => {
-    if (localStorage.getItem('token')) this.props.history.push('/')
+    if (localStorage.getItem('token')) this.props.history.push('/') // eslint-disable-line
   }
 
   render() {
@@ -44,12 +46,13 @@ class LoginPage extends Component {
               promise.then((data) => {
                 // If response is successful
                 localStorage.setItem('token', data.token)
-                this.props.history.push('/')
+                const { getUserProfileConnect, history } = this.props
+                getUserProfileConnect()
+                history.push('/')
                 setSubmitting(false)
               })
-                .catch((err) => {
-                // If response is unsuccessful
-                  console.log(err)
+                .catch(() => {
+                  // If response is unsuccessful
                   setErrors({
                     email: 'Invalid email',
                     password: 'Password is invalid',
@@ -128,12 +131,13 @@ class LoginPage extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-
-})
-
-const mapDispatchToProps = {
-
+LoginPage.propTypes = {
+  getUserProfileConnect: PropTypes.func.isRequired,
+  history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(LoginPage)
+const mapDispatchToProps = {
+  getUserProfileConnect: getUserProfile,
+}
+
+export default connect(null, mapDispatchToProps)(LoginPage)

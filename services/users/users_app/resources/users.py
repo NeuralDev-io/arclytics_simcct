@@ -270,33 +270,6 @@ class UserLast(Resource):
         return response, 200
 
 
-class UserAlloys(Resource):
-    """We get the list of User's alloys stored in their document"""
-
-    # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
-
-    method_decorators = {'get': [authenticate], 'post': [authenticate]}
-
-    def get(self, resp) -> Tuple[dict, int]:
-        user = User.objects.get(id=resp)
-        if not user.saved_alloys:
-            response = {'status': 'fail', 'message': 'No alloys found.'}
-            return response, 400
-        alloys = []
-        for a in user.saved_alloys:
-            alloys.append(a.to_dict())
-        response = {'status': 'success', 'alloys': alloys}
-        return response, 200
-
-    def post(self, resp) -> Tuple[dict, int]:
-        user = User.objects.get(id=resp)
-        data = request.get_json()
-        if not data:
-            response = {'status': 'fail', 'message': 'Invalid payload.'}
-            return response, 400
-        #TODO(davidmatthews1004@gmail.com)
-
-
 class UserProfiles(Resource):
     """Create/Retrieve/Update User's profile details"""
 
@@ -1191,7 +1164,6 @@ api.add_resource(UserList, '/users')
 api.add_resource(Users, '/user')
 api.add_resource(UserProfiles, '/user/profile')
 api.add_resource(UserLast, '/user/last')
-api.add_resource(UserAlloys, '/user/alloys')
 api.add_resource(UserConfigurations, '/user/configurations')
 api.add_resource(AdminCreate, '/admin/create')
 api.add_resource(DisableAccount, '/user/disable')

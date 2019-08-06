@@ -30,7 +30,7 @@ from flask import json, session
 from pymongo import MongoClient
 
 from tests.test_api_base import BaseTestCase
-from sim_app.schemas import AlloySchema, ConfigurationsSchema
+from sim_app.schemas import AlloySchema, ConfigurationsSchema, AlloyStoreSchema
 from sim_app.app import BASE_DIR
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
@@ -90,7 +90,15 @@ class TestSimulationService(BaseTestCase):
                 'compositions': test_json['compositions']
             }
         )
-        comp = {'alloy': alloy, 'alloy_type': 'parent'}
+        store = {
+            'alloy_option': 'single',
+            'alloys': {
+                'parent': alloy,
+                'weld': None,
+                'mix': None
+            }
+        }
+        alloy_store = AlloyStoreSchema().load(store)
 
         sess_res = client.post(
             '/session/login',
@@ -98,17 +106,19 @@ class TestSimulationService(BaseTestCase):
                 {
                     '_id': self._id,
                     'last_configurations': configs,
-                    'last_compositions': comp
+                    'last_alloy_store': alloy_store
                 }
             ),
             headers={'Authorization': f'Bearer {self.token}'},
             content_type='application/json'
         )
         data = json.loads(sess_res.data.decode())
-        session_store = session.get(f'{self.token}:alloy')
+        session_store = session.get(f'{self.token}:alloy_store')
         self.assertEqual(data['status'], 'success')
         self.assertTrue(sess_res.status_code == 201)
-        self.assertEqual(comp['alloy'], session_store)
+        self.assertEqual(
+            alloy_store['alloys']['parent'], session_store['alloys']['parent']
+        )
 
     def test_simulate_no_prev_configs(self):
         """Ensure that if they have no previous configurations set it fails."""
@@ -138,7 +148,7 @@ class TestSimulationService(BaseTestCase):
                     {
                         '_id': self._id,
                         'last_configurations': configs,
-                        'last_compositions': {}
+                        'last_alloy_store': {}
                     }
                 ),
                 headers={'Authorization': f'Bearer {self.token}'},
@@ -156,11 +166,11 @@ class TestSimulationService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assert404(res)
-            self.assertEqual(data['status'], 'fail')
             self.assertEqual(
                 data['message'], 'No previous session alloy was set.'
             )
+            self.assert404(res)
+            self.assertEqual(data['status'], 'fail')
 
     def test_simulate_with_login(self):
         with app.test_client() as client:
@@ -168,21 +178,21 @@ class TestSimulationService(BaseTestCase):
 
             # MUST have AE and MS/BS > 0.0 before we can run simulate
             res = client.get(
-                '/configs/auto/ae',
+                '/configs/ae',
                 headers={'Authorization': f'Bearer {self.token}'},
                 content_type='application/json'
             )
             self.assert200(res)
 
             res = client.get(
-                '/configs/auto/ms',
+                '/configs/ms',
                 headers={'Authorization': f'Bearer {self.token}'},
                 content_type='application/json'
             )
             self.assert200(res)
 
             res = client.get(
-                '/configs/auto/bs',
+                '/configs/bs',
                 headers={'Authorization': f'Bearer {self.token}'},
                 content_type='application/json'
             )
@@ -195,9 +205,9 @@ class TestSimulationService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
+            self.assertFalse(data.get('message', None))
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
-            self.assertFalse(data.get('message', None))
             self.assertTrue(data['data'])
             self.assertEqual(
                 len(data['data']['CCT']['ferrite_nucleation']['time']),
@@ -244,5 +254,3 @@ class TestSimulationService(BaseTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-#

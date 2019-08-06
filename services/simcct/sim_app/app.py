@@ -28,9 +28,13 @@ import numpy as np
 from dotenv import load_dotenv
 from bson import ObjectId
 from flask import Flask
-from flask_cors import CORS
-from flask_restful import Api
-from flask_session import Session as FlaskSession
+
+from sim_app.extensions import cors, api, session
+from sim_app.resources.session import session_blueprint
+from sim_app.resources.sim_configurations import configs_blueprint
+from sim_app.resources.alloys import alloys_blueprint
+from sim_app.resources.simulation import sim_blueprint
+from sim_app.resources.sim_alloys import sim_alloys_blueprint
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -66,10 +70,6 @@ if os.path.isfile(env_path):
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'
 DATE_FMT = '%Y-%m-%d'
 
-# Some Flask extensions
-cors = CORS()
-sess = FlaskSession()
-
 
 def create_app(script_info=None) -> Flask:
     """Default Flask method to create a Flask app and its context. It sets
@@ -90,31 +90,15 @@ def create_app(script_info=None) -> Flask:
     app_settings = os.environ.get('APP_SETTINGS', None)
     app.config.from_object(app_settings)
 
-    # ========== # INIT FLASK EXTENSIONS # ========== #
-    cors.init_app(app)
-    # Flask-Session and Redis
-    sess.init_app(app)
-
-    from sim_app.resources.session import session_blueprint
-    api = Api(session_blueprint)
-
     # Register blueprints
     app.register_blueprint(session_blueprint)
-    from sim_app.resources.sim_configurations import configs_blueprint
     app.register_blueprint(configs_blueprint)
-    from sim_app.resources.alloys import alloys_blueprint
     app.register_blueprint(alloys_blueprint)
-    from sim_app.resources.simulation import sim_blueprint
     app.register_blueprint(sim_blueprint)
+    app.register_blueprint(sim_alloys_blueprint)
 
-    # ========== # API ROUTES # ========== #
-    # Importing within Flask app context scope because trying to init the
-    # the MongoAlloys adapter and the database before mongo.init_app(app)
-    # will raise all sorts of import issues.
-    from sim_app.resources.alloys import AlloysList, Alloys
-
-    api.add_resource(Alloys, '/alloys/<alloy_id>')
-    api.add_resource(AlloysList, '/alloys')
+    # ========== # INIT FLASK EXTENSIONS # ========== #
+    extensions(app)
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects
@@ -126,3 +110,20 @@ def create_app(script_info=None) -> Flask:
         return {'app': app}
 
     return app
+
+
+def extensions(app) -> None:
+    """Registers 0 or more extensions for Flask and then mutates the app
+    instance passed in.
+
+    Args:
+        app: A Flask app instance.
+
+    Returns:
+        None.
+    """
+    api.init_app(app)
+    cors.init_app(app)
+    session.init_app(app)
+
+    return None

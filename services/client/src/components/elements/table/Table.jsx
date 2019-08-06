@@ -15,6 +15,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import ReactTable from 'react-table'
+import Pagination from './Pagination'
 
 import './Table.scss'
 
@@ -29,6 +30,7 @@ const Table = (props) => {
     <ReactTable
       {...otherProps}
       className={`${hideDivider ? 'rt-hide-divider' : ''} ${condensed ? 'condensed' : ''}`}
+      PaginationComponent={Pagination}
     />
   )
 }

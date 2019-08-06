@@ -342,14 +342,20 @@ def login() -> Tuple[dict, int]:
         auth_token = user.encode_auth_token(user.id)
         if auth_token:
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
             if user.account_disabled:
 =======
             if not user.active:
 >>>>>>> ARC-105
+<<<<<<< Updated upstream
 =======
             if not user.active:
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
                 response['message'] = 'Your Account has been disabled.'
                 return jsonify(response), 400
 

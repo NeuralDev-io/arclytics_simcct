@@ -197,9 +197,12 @@ class Alloy(EmbeddedDocument):
 =======
         for e in self.composition:
             comp.append({'symbol': e.symbol, 'weight': e.weight})
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 >>>>>>> ARC-105
 =======
+=======
+>>>>>>> Stashed changes
 >>>>>>> ARC-105
         return {'name': self.name, 'composition': comp}
 
@@ -248,7 +251,10 @@ class User(Document):
         document_type=Configuration, default=None
     )
 <<<<<<< HEAD
+<<<<<<< Updated upstream
 <<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 
     last_alloy_store = EmbeddedDocumentField(
         document_type=AlloyStore, default=None
@@ -256,9 +262,12 @@ class User(Document):
 =======
     last_alloy = EmbeddedDocumentField(document_type=Alloy, default=None)
 >>>>>>> ARC-105
+<<<<<<< Updated upstream
 =======
     last_alloy = EmbeddedDocumentField(document_type=Alloy, default=None)
 >>>>>>> ARC-105
+=======
+>>>>>>> Stashed changes
 
     # TODO(andrew@neuraldev.io -- Sprint 6): Make these
     # saved_configurations = EmbeddedDocumentListField(

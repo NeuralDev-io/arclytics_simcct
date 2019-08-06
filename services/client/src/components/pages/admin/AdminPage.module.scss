@@ -1,0 +1,12 @@
+@import '../../../styles/colors_light';
+
+.sidebar {
+  width: 15vw;
+  height: 100vh;
+  margin-left: 4rem;
+  position: fixed;
+
+  @media screen and (max-width: 1720px) {
+    width: 250px;
+  }
+}

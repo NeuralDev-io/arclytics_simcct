@@ -343,7 +343,7 @@ def login() -> Tuple[dict, int]:
         if auth_token:
             if not user.active:
                 response['message'] = 'Your Account has been disabled.'
-                return jsonify(response), 400
+                return jsonify(response), 401
 
             # Let's save some stats for later
             user.last_login = datetime.utcnow()

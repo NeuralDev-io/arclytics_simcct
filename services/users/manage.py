@@ -103,6 +103,7 @@ def seed_user_db():
             last_name=u['last_name']
         )
         new_user.set_password(u['password'])
+        new_user.is_admin = u.get('is_admin', False)
         new_user.save()
         tbl.add_row(
             (

@@ -9,9 +9,9 @@ import styles from './CompForm.module.scss'
 
 class CompForm extends Component {
   componentDidMount = () => {
-    const { alloys, getAlloys } = this.props // eslint-disable-line
-    if (!alloys || alloys.length === 0) {
-      getAlloys()
+    const { alloyList, getAlloysConnect } = this.props
+    if (!alloyList || alloyList.length === 0) {
+      getAlloysConnect()
     }
   }
 
@@ -59,7 +59,6 @@ class CompForm extends Component {
             length="stretch"
             onChange={val => onChange('parent', val)}
             className={styles.select}
-            isClearable
             isSearchable
           />
         </div>
@@ -77,7 +76,6 @@ class CompForm extends Component {
             onChange={val => onChange('weld', val)}
             className={styles.select}
             isDisabled={values.alloyOption === 'single'}
-            isClearable
             isSearchable
           />
         </div>
@@ -146,7 +144,7 @@ CompForm.propTypes = {
       weight: PropTypes.number,
     })),
   })).isRequired,
-  getAlloys: PropTypes.func.isRequired,
+  getAlloysConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -154,7 +152,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = {
-  getAlloys,
+  getAlloysConnect: getAlloys,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(CompForm)

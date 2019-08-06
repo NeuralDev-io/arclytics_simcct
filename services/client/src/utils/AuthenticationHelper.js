@@ -61,7 +61,7 @@ export const signup = async (values, resolve, reject) => {
     .catch(err => console.log(err))
 }
 
-export const logout = () => {
+export const logout = (callback) => {
   fetch('http://localhost:8000/auth/logout', {
     method: 'GET',
     headers: {
@@ -69,8 +69,14 @@ export const logout = () => {
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
-    .then((res) => {
-      if (res.status !== 400) throw new Error(res.json().then(r => r.message))
+    .then(res => res.json())
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'success') {
+        localStorage.removeItem('token')
+        localStorage.removeItem('persist:userPersist')
+        callback('/signin')
+      }
     })
     .catch(err => console.log(err))
 }

@@ -30,7 +30,7 @@ from tests.test_api_base import BaseTestCase
 from users_app.token import generate_url, generate_confirmation_token
 
 
-class MyTestCase(BaseTestCase):
+class TestForgotPassword(BaseTestCase):
     def preprocess_reset_password(self, client):
         # We do some setup first to get a valid token.
         email = 'punisher@arclytics.neuraldev.io'
@@ -54,7 +54,7 @@ class MyTestCase(BaseTestCase):
         """Ensure an empty request body fails during reset password."""
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -67,7 +67,7 @@ class MyTestCase(BaseTestCase):
         """Ensure a request body without email fails."""
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps(
                     {'address': '123 Forgetful Street, Old Town, 2222'}
                 ),
@@ -82,7 +82,7 @@ class MyTestCase(BaseTestCase):
         """Ensure if an invalid email we receive an error from validation."""
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({'email': 'bademail@nodomain'}),
                 content_type='application/json'
             )
@@ -91,26 +91,26 @@ class MyTestCase(BaseTestCase):
                 'The domain name nodomain is not valid. '
                 'It should have a period.'
             )
-            self.assertTrue(data['error'])
             self.assertEqual(data['error'], err_msg)
+            # self.assertTrue(data['error'])
             self.assertEqual(data['message'], 'Invalid email.')
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
             # This validation requires an internet access
-            res = client.post(
-                '/auth/resetpassword',
-                data=json.dumps({'email': 'bademail@nodomain.random'}),
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            err_msg = 'The domain name nodomain.random does not exist.'
-            self.assertTrue(data['error'])
-            self.assertEqual(data['error'], err_msg)
-            self.assertEqual(data['message'], 'Invalid email.')
+            # res = client.post(
+            #     '/reset/password',
+            #     data=json.dumps({'email': 'bademail@nodomain.jhkfdf'}),
+            #     content_type='application/json'
+            # )
+            # data = json.loads(res.data.decode())
+            # err_msg = 'The domain name nodomain.random does not exist.'
+            # self.assertTrue(data['error'])
+            # self.assertEqual(data['error'], err_msg)
+            # self.assertEqual(data['message'], 'Invalid email.')
 
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({'email': 'bademailatyahoo.com'}),
                 content_type='application/json'
             )
@@ -119,7 +119,7 @@ class MyTestCase(BaseTestCase):
                 'The email address is not valid. It must have exactly '
                 'one @-sign.'
             )
-            self.assertTrue(data['error'])
+            # self.assertTrue(data['error'])
             self.assertEqual(data['error'], err_msg)
             self.assertEqual(data['message'], 'Invalid email.')
 
@@ -127,7 +127,7 @@ class MyTestCase(BaseTestCase):
         """Ensure if the user does not exist we don't send an email."""
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({'email': 'carol@systemssecurity.com'}),
                 content_type='application/json'
             )
@@ -149,7 +149,7 @@ class MyTestCase(BaseTestCase):
 
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({'email': 'loki@asgard.space'}),
                 content_type='application/json'
             )
@@ -169,7 +169,7 @@ class MyTestCase(BaseTestCase):
         user.save()
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({'email': email}),
                 content_type='application/json',
             )
@@ -383,7 +383,7 @@ class MyTestCase(BaseTestCase):
 
         with app.test_client() as client:
             res = client.post(
-                '/auth/resetpassword',
+                '/reset/password',
                 data=json.dumps({'email': test_email}),
                 content_type='application/json'
             )

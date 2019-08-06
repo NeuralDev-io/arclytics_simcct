@@ -1,50 +1,51 @@
 [
     {
-        "email": "andrew@codeninja55.me",
-        "password": "FineIllDoItMyself",
-        "first_name": "Andrew",
-        "last_name": "Che"
-    },
-    {
         "email": "iron_man@avengers.io",
-        "password": "IAmIronMan",
+        "password": "iamironman",
         "first_name": "Tony",
-        "last_name": "Stark"
+        "last_name": "Stark",
+        "is_admin": true
     },
     {
         "email": "black_widow@marvel.io",
         "password": "RedInMyLedger",
         "first_name": "Natasha",
-        "last_name": "Romanoff"
+        "last_name": "Romanoff",
+        "is_admin": false
     },
     {
         "email": "captain_america@avengers.io",
         "password": "ICanDoThisAllDay",
         "first_name": "Steve",
-        "last_name": "Rogers"
+        "last_name": "Rogers",
+        "is_admin": false
     },
     {
         "email": "hulk@avengers.io",
         "password": "HulkSmash",
         "first_name": "Bruce",
-        "last_name": "Banner"
+        "last_name": "Banner",
+        "is_admin": false
     },
     {
         "email": "thor@avengers.io",
         "password": "StrongestAvenger",
         "first_name": "Thor",
-        "last_name": "Odinson"
+        "last_name": "Odinson",
+        "is_admin": false
     },
     {
         "email": "hawkeye@avengers.io",
         "password": "BowAndArrows",
         "first_name": "Clint",
-        "last_name": "Barton"
+        "last_name": "Barton",
+        "is_admin": false
     },
     {
         "email": "spidey@avengers.io",
         "password": "PeterTingle!",
         "first_name": "Peter",
-        "last_name": "Parker"
+        "last_name": "Parker",
+        "is_admin": false
     }
 ]

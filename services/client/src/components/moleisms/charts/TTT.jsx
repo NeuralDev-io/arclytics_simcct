@@ -20,6 +20,20 @@ const TTT = (props) => {
         mode: 'line',
         marker: { color: colours.o500 },
       },
+      {
+        x: data['Ferrite-comp'].time,
+        y: data['Ferrite-comp'].temp,
+        name: 'Ferrite completion',
+        mode: 'line',
+        marker: { color: colours.l500 },
+      },
+      {
+        x: data['Pearlite-nuc'].time,
+        y: data['Pearlite-nuc'].temp,
+        name: 'Pearlite nucleation',
+        mode: 'line',
+        marker: { color: colours.g500 },
+      },
     ]
   }
 
@@ -46,7 +60,7 @@ TTT.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  data: state.sim['TTT Data'],
+  data: state.sim.results['TTT Data'],
 })
 
 export default withDimension({

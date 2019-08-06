@@ -8,7 +8,7 @@
 					"weight": 0.3
 				},
 				{
-					"symbol": "M",
+					"symbol": "Mn",
 					"weight": 0.78
 				},
 				{
@@ -307,6 +307,30 @@
                     "weight": 0.0
                 }
 			]
-		}	
+        },
+        {
+            "name": "Alloy that works",
+            "compositions": [
+                {"symbol": "C", "weight": 0.044},
+                {"symbol": "Mn", "weight": 1.73},
+                {"symbol": "Si", "weight": 0.22},
+                {"symbol": "Ni", "weight": 0.0},
+                {"symbol": "Cr", "weight": 0.0},
+                {"symbol": "Mo","weight": 0.26},
+                {"symbol": "Al", "weight": 0.0},
+                {"symbol": "Cu", "weight": 0.0},
+                {"symbol": "As", "weight": 0.0},
+                {"symbol": "Ti", "weight": 0.0},
+                {"symbol": "Co", "weight": 0.0},
+                {"symbol": "V", "weight": 0.0},
+                {"symbol": "W", "weight": 0.0},
+                {"symbol": "S", "weight": 0.0},
+                {"symbol": "N", "weight": 0.0},
+                {"symbol": "Nb", "weight": 0.0},
+                {"symbol": "B", "weight": 0.0},
+                {"symbol": "P", "weight": 0.0},
+                {"symbol": "Fe", "weight": 0.0}
+            ]
+        }
 	]
 }

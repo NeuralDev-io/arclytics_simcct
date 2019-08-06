@@ -33,7 +33,7 @@ from flask import current_app as app
 from flask import Blueprint, jsonify, request, render_template, redirect
 from mongoengine.errors import ValidationError, NotUniqueError
 
-from users_app.models import User, AdminProfile
+from users_app.models import User
 from users_app.extensions import bcrypt
 from logger.arc_logger import AppLogger
 from users_app.middleware import authenticate_flask, logout_authenticate
@@ -275,16 +275,15 @@ def async_register_session(user: User = None,
             last_configs = user.last_configuration.to_dict()
 
         # TODO(andrew@neuraldev.io): Change this to match new schema
-        if user.last_alloy is not None:
-            last_alloy['alloy'] = user.last_alloy
-            last_alloy['alloy_type'] = 'parent'
+        if user.last_alloy_store is not None:
+            last_alloy = user.last_alloy_store.to_dict()
 
     resp = requests.post(
         url=f'http://{simcct_host}/session/login',
         json={
             '_id': str(user_id),
             'last_configurations': last_configs,
-            'last_alloy': last_alloy
+            'last_alloy_store': last_alloy
         },
         headers={
             'Authorization': f'Bearer {auth_token}',
@@ -344,7 +343,7 @@ def login() -> Tuple[dict, int]:
         if auth_token:
             if not user.active:
                 response['message'] = 'Your Account has been disabled.'
-                return jsonify(response), 400
+                return jsonify(response), 401
 
             # Let's save some stats for later
             user.last_login = datetime.utcnow()
@@ -420,6 +419,9 @@ def reset_password():
         response['message'] = 'User does not exist.'
         return jsonify(response), 401
 
+    # TODO(andrew@neuraldev.io): Send a confirmation email again to the user
+    #  that their password has been reset.
+
     # Well, they have passed every test
     user.set_password(password)
     user.save()
@@ -429,7 +431,7 @@ def reset_password():
     return jsonify(response), 202
 
 
-@auth_blueprint.route('/auth/resetpassword/confirm/<token>', methods=['GET'])
+@auth_blueprint.route('/reset/password/confirm/<token>', methods=['GET'])
 def confirm_reset_password(token):
     response = {'status': 'fail', 'message': 'Invalid token.'}
 
@@ -463,7 +465,7 @@ def confirm_reset_password(token):
     return custom_redir_response
 
 
-@auth_blueprint.route('/auth/resetpassword', methods=['POST'])
+@auth_blueprint.route('/reset/password', methods=['POST'])
 def reset_password_email() -> Tuple[dict, int]:
     """This endpoint is to be used by the client-side browser to send the email
     to the API server for validation with the user's details. It will only send

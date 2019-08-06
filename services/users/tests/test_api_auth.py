@@ -7,9 +7,6 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = '{license}'
-__version__ = '0.1.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
@@ -498,6 +495,7 @@ class TestAuthEndpoints(BaseTestCase):
                 content_type='application/json'
             )
             token = json.loads(resp_login.data.decode())['token']
+            user.reload()
             user.active = False
             user.save()
             response = self.client.get(
@@ -532,6 +530,7 @@ class TestAuthEndpoints(BaseTestCase):
                 content_type='application/json'
             )
             token = json.loads(resp_login.data.decode())['token']
+            user.reload()
             user.active = False
             user.save()
             response = self.client.get(
@@ -540,7 +539,9 @@ class TestAuthEndpoints(BaseTestCase):
             )
             data = json.loads(response.data.decode())
             self.assertTrue(data['status'] == 'fail')
-            self.assertTrue(data['message'] == 'This user does not exist.')
+            self.assertTrue(
+                data['message'] == 'This user account has been disabled.'
+            )
             self.assertEqual(response.status_code, 401)
 
 

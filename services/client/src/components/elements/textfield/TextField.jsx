@@ -32,19 +32,23 @@ class TextField extends Component {
       value = '',
       length = 'default',
       name,
+      ...other
     } = this.props
     const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${className || ''}`
 
     return (
-      <input
-        type={type}
-        className={classname}
-        placeholder={placeholder}
-        name={name}
-        value={value}
-        onChange={e => this.handleChange(e)}
-        disabled={isDisabled}
-      />
+      <div>
+        <input
+          {...other}
+          type={type}
+          className={classname}
+          placeholder={placeholder}
+          name={name}
+          value={value}
+          onChange={e => this.handleChange(e)}
+          disabled={isDisabled}
+        />
+      </div>
     )
   }
 }

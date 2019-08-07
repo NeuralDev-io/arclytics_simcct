@@ -18,15 +18,14 @@ import unittest
 from flask import current_app
 from flask_testing import TestCase
 
-from sim_app.app import create_app
-from sim_app.extensions import session
+from sim_app.app import create_app, extensions
 
 
 class TestDevelopmentConfig(TestCase):
     def create_app(self):
         self.app = create_app()
         self.app.config.from_object('configs.flask_conf.DevelopmentConfig')
-        session.init_app(self.app)
+        extensions(self.app)
         return self.app
 
     def test_app_is_development(self):
@@ -45,7 +44,7 @@ class TestTestingConfig(TestCase):
     def create_app(self):
         self.app = create_app()
         self.app.config.from_object('configs.flask_conf.TestingConfig')
-        session.init_app(self.app)
+        extensions(self.app)
         return self.app
 
     def test_app_is_testing(self):
@@ -58,14 +57,14 @@ class TestTestingConfig(TestCase):
         self.assertTrue(self.app.config['REDIS_DB'] == 15)
         self.assertTrue(self.app.config['SESSION_REDIS'])
         redis = self.app.config['SESSION_REDIS']
-        self.assertEqual(int(str(redis)[56:58]), 15)
+        self.assertEqual(int(str(redis)[56:58]), 2)
 
 
 class TestProductionConfig(TestCase):
     def create_app(self):
         self.app = create_app()
         self.app.config.from_object('configs.flask_conf.ProductionConfig')
-        session.init_app(self.app)
+        extensions(self.app)
         return self.app
 
     def test_app_is_production(self):

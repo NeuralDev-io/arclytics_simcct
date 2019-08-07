@@ -5,10 +5,6 @@
 #
 # Attributions:
 # [1]
-# TODO:
-#  - (andrew@neuraldev.io) Try to not use Flask RESTfil resources and instead
-#    use just Flask API decorators so that the AlloysService doesn't get
-#    instantiated until it's
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']

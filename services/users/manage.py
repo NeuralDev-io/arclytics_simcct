@@ -43,7 +43,7 @@ COV = coverage.coverage(
     ],
     omit=[
         'users_app/app.py'
-        'users_app/flask_conf.py',
+        'configs/flask_conf.py',
         'tests/*',
         'configs/*',
         'data/*',

@@ -16,6 +16,7 @@
 export const initComp = (option, type, alloy) => {
   fetch('http://localhost:8001/alloys/update', {
     method: 'POST',
+    // credentials: 'same-origin',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -36,6 +37,7 @@ export const initComp = (option, type, alloy) => {
 export const updateComp = (option, type, alloy) => {
   fetch('http://localhost:8001/alloys/update', {
     method: 'PATCH',
+    // credentials: 'same-origin',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${localStorage.getItem('token')}`,

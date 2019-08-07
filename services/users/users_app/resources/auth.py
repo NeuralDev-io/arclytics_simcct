@@ -274,7 +274,6 @@ def async_register_session(user: User = None,
         if user.last_configuration is not None:
             last_configs = user.last_configuration.to_dict()
 
-        # TODO(andrew@neuraldev.io): Change this to match new schema
         if user.last_alloy_store is not None:
             last_alloy = user.last_alloy_store.to_dict()
 
@@ -282,6 +281,7 @@ def async_register_session(user: User = None,
         url=f'http://{simcct_host}/session/login',
         json={
             '_id': str(user_id),
+            'is_admin': user.is_admin,
             'last_configurations': last_configs,
             'last_alloy_store': last_alloy
         },

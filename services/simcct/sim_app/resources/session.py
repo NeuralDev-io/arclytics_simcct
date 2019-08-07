@@ -28,6 +28,10 @@ from bson import ObjectId
 
 from sim_app.schemas import (ConfigurationsSchema, AlloyStoreSchema)
 from sim_app.middleware import token_required
+from simulation.utilities import validate_comp_elements
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
 
 session_blueprint = Blueprint('session', __name__)
 
@@ -45,6 +49,7 @@ def session_login(token):
     # We take what's currently stored in the User's document and then we
     # validate it.
     user_id = post_data.get('_id', None)
+    user_is_admin = post_data.get('is_admin', False)
     user_configs = post_data.get('last_configurations', None)
     user_alloy_store = post_data.get('last_alloy_store', None)
 
@@ -83,20 +88,21 @@ def session_login(token):
             'cct_cooling_rate': 0
         }
 
-    # TODO(andrew@neuraldev.io): If auto_calculate on any of these are true
-    #  we have to ensure there are at least the necessary elements.
-    #  - get_bs() --> carbon, manganese, ni, chromium, molybdenum
-    #  - get_ms() --> carbon, manganese, nickel, chromium, molybdenum,
-    #                 cobalt, silicon
-    #  - xfe_method2() --> carbon and iron
-    #  - calc_ae1_ae3() --> carbon, nickel, silicon, tungsten, manganese,
-    #                       chromium, arsenic, molybdenum
-    #  - _torr_calc2() --> carbon, manganese, silicon, molybdenum, nickel,
-    #                      chromium
-    alloy_store = None
     if user_alloy_store:
         try:
+            # The schema now validates elements and passes back any errors
+            # with the element symbol. We still need to validate missing
+            # elements below.
             alloy_store = AlloyStoreSchema().load(user_alloy_store)
+
+            if alloy_store['alloy_option'] == 'single':
+                # Validate the alloy has all the elements that we need
+                comp = alloy_store['alloys'].get('parent')
+                valid, missing_elem = validate_comp_elements(comp)
+                if not valid:
+                    response['message'] = f'Missing elements {missing_elem}'
+                    return response, 400
+            # TODO(andrew@neuraldev.io): Implement the other alloy options.
         except ValidationError as e:
             response['errors'] = e.messages
             return jsonify(response), 400
@@ -110,16 +116,27 @@ def session_login(token):
             }
         }
 
-    session[f'{token}:user'] = user_id
-    session[f'{user_id}:token'] = token
-    session[f'{token}:configurations'] = configs
-    session[f'{token}:alloy_store'] = alloy_store
+    # TODO(andrew)
+    session['user_id'] = user_id
+    session['is_admin'] = user_is_admin
+    session['token'] = token
+    session['configurations'] = configs
+    session['alloy_store'] = alloy_store
+
+    logger.info('session_login : POST')
+    logger.pprint(session)
 
     response['status'] = 'success'
     response['message'] = 'User session initiated.'
     response['session_id'] = session.sid
 
-    return jsonify(response), 201
+    resp = jsonify(response)
+    resp.headers.add(
+        'Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, Accept, x-auth'
+    )
+
+    return resp, 201
 
 
 @session_blueprint.route('/session/logout', methods=['GET'])

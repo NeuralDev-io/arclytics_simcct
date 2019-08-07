@@ -21,13 +21,16 @@ Just some configuration settings.
 """
 
 import os
+import redis
 
 
 class BaseConfig:
     """Base configuration"""
     TESTING = False
+    BCRYPT_LOG_ROUNDS = 13
     SECRET_KEY = os.environ.get('SECRET_KEY', '')
-    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', '')
+    TOKEN_EXPIRATION_DAYS = 30
+    TOKEN_EXPIRATION_SECONDS = 0
 
     # Flask Email
     MAIL_SUBJECT_PREFIX = '[Arclytics]'
@@ -41,6 +44,9 @@ class BaseConfig:
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
+    MONGO_DBNAME = 'arc_dev'
+    BCRYPT_LOG_ROUNDS = 4
+
     # CELERY REDIS
     REDIS_HOST = os.environ.get('REDIS_HOST', None)
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
@@ -51,6 +57,11 @@ class DevelopmentConfig(BaseConfig):
 class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
+    MONGO_DBNAME = 'arc_test'
+    BCRYPT_LOG_ROUNDS = 4
+    TOKEN_EXPIRATION_DAYS = 0
+    TOKEN_EXPIRATION_SECONDS = 5
+
     SESSION_PERMANENT = False
 
     # CELERY REDIS
@@ -58,3 +69,9 @@ class TestingConfig(BaseConfig):
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/14'
     CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/13'
+
+
+class ProductionConfig(BaseConfig):
+    """Production configuration"""
+    MONGO_DBNAME = 'arclytics'
+    BCRYPT_LOG_ROUNDS = 13

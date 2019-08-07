@@ -29,6 +29,7 @@ class BaseConfig:
     TESTING = False
     BCRYPT_LOG_ROUNDS = 13
     SECRET_KEY = os.environ.get('SECRET_KEY', '')
+    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', '')
     TOKEN_EXPIRATION_DAYS = 30
     TOKEN_EXPIRATION_SECONDS = 0
 

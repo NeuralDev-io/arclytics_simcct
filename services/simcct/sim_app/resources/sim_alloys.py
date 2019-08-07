@@ -28,6 +28,9 @@ from sim_app.schemas import AlloySchema, AlloyStoreSchema
 from sim_app.middleware import token_required_restful
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, validate_comp_elements
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
 
 sim_alloys_blueprint = Blueprint('sim_alloys', __name__)
 
@@ -157,7 +160,11 @@ class AlloyStore(Resource):
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
-        session[f'{token}:alloy_store'] = valid_store
+        logger.info('AlloyStore : BEFORE POST')
+        logger.debug(str(session))
+        session['alloy_store'] = valid_store
+        logger.info('AlloyStore : AFTER POST')
+        logger.debug(str(session))
 
         # In this situation, we always need to auto calculate and set the
         # below configs to default
@@ -216,7 +223,7 @@ class AlloyStore(Resource):
         default_configs['ae1_temp'] = ae1
         default_configs['ae3_temp'] = ae3
 
-        session[f'{token}:configurations'] = default_configs
+        session['configurations'] = default_configs
 
         response['data'] = {
             'ms_temp': ms_temp,
@@ -226,7 +233,14 @@ class AlloyStore(Resource):
             'ae3_temp': ae3
         }
         response['status'] = 'success'
-        return response, 201
+
+        headers = {
+            'Access-Control-Allow-Headers':
+                'Origin, X-Requested-With, Content-Type, Accept, x-auth',
+            'Content-type': 'application/json'
+        }
+
+        return response, 201, headers
 
     def patch(self, token):
         """This PATCH endpoint simply updates the `alloys` in the session
@@ -298,7 +312,10 @@ class AlloyStore(Resource):
             return response, 400
 
         # We get what's currently stored in the session and we update it
-        sess_alloy_store = session.get(f'{token}:alloy_store')
+        sess_alloy_store = session.get('alloy_store')
+        logger.info('AlloyStore : PATCH')
+        logger.debug(str(session))
+
         # Basically, the user should have a session initiated from login
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
@@ -357,9 +374,9 @@ class AlloyStore(Resource):
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
-        session[f'{token}:alloy_store'] = sess_alloy_store
+        session['alloy_store'] = sess_alloy_store
 
-        sess_configs = session.get(f'{token}:configurations')
+        sess_configs = session.get('configurations')
 
         # Well, if we don't need to auto calc. anything, let's get out of here
         if (
@@ -427,10 +444,17 @@ class AlloyStore(Resource):
             response['data']['ae1_temp'] = ae1
             response['data']['ae3_temp'] = ae3
 
-        session[f'{token}:configurations'] = sess_configs
+        session['configurations'] = sess_configs
 
         response['status'] = 'success'
-        return response, 200
+
+        headers = {
+            'Access-Control-Allow-Headers':
+                'Origin, X-Requested-With, Content-Type, Accept, x-auth',
+            'Content-type': 'application/json'
+        }
+
+        return response, 200, headers
 
 
 api.add_resource(AlloyStore, '/alloys/update')

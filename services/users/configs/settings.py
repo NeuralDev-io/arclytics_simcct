@@ -34,10 +34,6 @@ BASE_DIR = os.path.abspath(
 )
 sys.path.append(BASE_DIR)
 
-ENV_CONFIGS = os.path.join(BASE_DIR, '.env')
-if os.path.isfile(ENV_CONFIGS):
-    load_dotenv(ENV_CONFIGS)
-
 DEFAULT_LOGGER = AppLogger('ARCLYTICS')
 APP_CONFIGS = None
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'

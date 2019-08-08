@@ -222,12 +222,6 @@ class Alloy(EmbeddedDocument):
         return self.to_json()
 
 
-class SharedConfiguration(Document):
-    owner = EmailField(required=True)
-    shared_date = DateTimeField()
-    configuration = EmbeddedDocumentField(document_type=Configuration)
-
-
 class AlloyType(EmbeddedDocument):
     parent = EmbeddedDocumentField(
         document_type=Alloy, default=None, null=True
@@ -263,7 +257,9 @@ class User(Document):
     first_name = StringField(required=True, max_length=255)
     last_name = StringField(required=True, max_length=255)
     profile = EmbeddedDocumentField(document_type=UserProfile)
-    admin_profile = EmbeddedDocumentField(document_type=AdminProfile)
+    admin_profile = EmbeddedDocumentField(
+        document_type=AdminProfile, default=None
+    )
 
     last_configuration = EmbeddedDocumentField(
         document_type=Configuration, default=None
@@ -282,6 +278,7 @@ class User(Document):
     # definition of a user
     active = BooleanField(default=True)
     is_admin = BooleanField(default=False, db_field='admin')
+    disable_admin = BooleanField(default=False)
     verified = BooleanField(default=False)
     # Make sure when converting these that it follows ISO8601 format as
     # defined in settings.DATETIME_FMT
@@ -461,6 +458,10 @@ class User(Document):
         else:
             self.last_updated = datetime.utcnow()
 
+        admin_profile_present = False
+        if self.admin_profile: admin_profile_present = True
+        self.is_admin = not self.disable_admin and admin_profile_present
+
     @queryset_manager
     def as_dict(cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
@@ -480,3 +481,13 @@ class User(Document):
 
     def __str__(self):
         return self.to_json()
+
+
+class SharedConfiguration(Document):
+    owner = EmailField(required=True)
+    shared_date = DateTimeField()
+    configuration = EmbeddedDocumentField(document_type=Configuration)
+    # alloy_store = EmbeddedDocumentField(document_type=AlloyStore)
+
+
+

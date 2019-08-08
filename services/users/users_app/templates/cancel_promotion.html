@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <head>
-    <title>Confirm Promotion of a User</title>
+    <title>You Promoted a User!</title>
     <style>
       .default-button {
         outline: none;
@@ -45,16 +45,16 @@
               You've recently promoted {{ user_name }} to the role of
               administrator with the position: {{ position }}
           </p>
-          <p>Please confirm this promotion by clicking the link below:</p>
+          <p>If you would like to cancel the promotion, please the link below:</p>
           <br/>
-          <a href="{{ reset_url }}" style="text-decoration: none; text-decoration-color: #fafafa;">
-            <button onclick="window.location.href='{{ promotion_confirm_url }}';" class="default-button">
-              Confirm
+          <a href="{{ promotion_cancellation_url }}" style="text-decoration: none; text-decoration-color: #fafafa;">
+            <button onclick="window.location.href='{{ promotion_cancellation_url }}';" class="default-button">
+              Cancel Promotion
             </button>
           </a>
           <br/>
           <p>
-            If you need additional assistance, or you did not make this change, please contact <a href="mailto:help@neuraldev.io">help@neuraldev.io</a>.
+            If you need additional assistance, please contact <a href="mailto:help@neuraldev.io">help@neuraldev.io</a>.
           </p>
           <br/>
           <br/>

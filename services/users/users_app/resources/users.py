@@ -178,20 +178,8 @@ class Users(Resource):
         if user.is_admin:
             # If the user is an admin but is not verified, we must also reject
             # the request.
-            if not user.admin_profile or not user.admin_profile.verified:
+            if not user.admin_profile.verified:
                 response['message'] = 'User is not verified as an admin.'
-                response.pop('data')
-                return response, 401
-
-            # If the user is an admin but does not have an admin profile or they
-            # do not have a position then something has gone wrong when they
-            # were made an admin and we need to reject the request so as to not
-            # put more invalid information in the user's document.
-            if not user.admin_profile or not user.admin_profile.position:
-                response['message'] = (
-                    'User admin profile is invalid and '
-                    'cannot be updated.'
-                )
                 response.pop('data')
                 return response, 401
 
@@ -235,234 +223,6 @@ class Users(Resource):
         # Return response body.
         response['status'] = 'success'
         return response, 200
-
-
-class UserLast(Resource):
-    """
-    Returns the user's Alloy and Configurations used, and CCT/TTT results
-    (if any)
-    """
-
-    # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
-
-    method_decorators = {'get': [authenticate]}
-
-    def get(self, resp) -> Tuple[dict, int]:
-        user = User.objects.get(id=resp)
-        if not user.last_alloy:
-            response = {
-                'status': 'fail',
-                'message': 'No last composition was found.'
-            }
-            return response, 400
-        if not user.last_configuration:
-            response = {
-                'status': 'fail',
-                'message': 'No last configuration was found.'
-            }
-            return response, 400
-
-        response = {
-            'status': 'success',
-            'configuration': user.last_configuration.to_dict(),
-            'composition': user.last_alloy.to_dict()
-        }
-        return response, 200
-
-
-class UserProfiles(Resource):
-    """Create/Retrieve/Update User's profile details"""
-
-    method_decorators = {
-        'get': [authenticate],
-        'patch': [authenticate],
-        'post': [authenticate]
-    }
-
-    def get(self, resp) -> Tuple[dict, int]:
-        user = User.objects.get(id=resp)
-        response = {
-            'status': 'success',
-            'data': {
-                'profile': {
-                    'aim': user.profile.aim,
-                    'highest_education': user.profile.highest_education,
-                    'sci_tech_exp': user.profile.sci_tech_exp,
-                    'phase_transform_exp': user.profile.phase_transform_exp
-                }
-            }
-        }
-
-        if user.is_admin:
-            response['data']['admin_profile'] = {
-                'position': user.admin_profile.position,
-                'mobile_number': user.admin_profile.mobile_number
-            }
-
-        return response, 200
-
-    def patch(self, resp) -> Tuple[dict, int]:
-        # Get patch data
-        data = request.get_json()
-
-        # Ensure the payload is not empty
-        response = {'status': 'fail', 'message': 'Invalid payload.'}
-        if not data:
-            return response, 400
-
-        # Ensure there are valid keys in the request body
-        valid_keys = [
-            'aim', 'highest_education', 'sci_tech_exp', 'phase_transform_exp'
-        ]
-        is_update = False
-        for k in valid_keys:
-            if k in data.keys():
-                is_update = True
-                break
-
-        # If there are no valid keys, reject request.
-        if not is_update:
-            response['message'] = 'Payload does not have any valid keys.'
-            return response, 400
-
-        # Otherwise begin extracting request body
-        aim = data.get('aim', None)
-        highest_education = data.get('highest_education', None)
-        sci_tech_exp = data.get('sci_tech_exp', None)
-        phase_transform_exp = data.get('phase_transform_exp', None)
-
-        # Get the user so we can begin updating fields.
-        user = User.objects.get(id=resp)
-
-        # If the user does not already have profile details set we need to
-        # create a user profile object.
-        if not user.profile:
-            # If we do not have all the profile fields, we will need to reject
-            # the request as we are unable to create a profile object.
-            if (
-                not aim or not highest_education or not sci_tech_exp
-                or not phase_transform_exp
-            ):
-                response['message'] = (
-                    'User profile cannot be patched as '
-                    'there is no existing profile.'
-                )
-                return response, 400
-
-            # Once we have ensured we have all the fields, we can create the
-            # profile object and put the information in the response body.
-            response['data'] = {
-                'aim': aim,
-                'highest_education': highest_education,
-                'sci_tech_exp': sci_tech_exp,
-                'phase_transform_exp': phase_transform_exp
-            }
-            profile = UserProfile(
-                aim=aim,
-                highest_education=highest_education,
-                sci_tech_exp=sci_tech_exp,
-                phase_transform_exp=phase_transform_exp
-            )
-            user.profile = profile
-
-        # Otherwise if the user already has a profile, we can update individual
-        # fields.
-        else:
-            response['data'] = {}
-            if aim:
-                user.profile.aim = aim
-                response['data']['aim'] = aim
-            if highest_education:
-                user.profile.highest_education = highest_education
-                response['data']['highest_education'] = highest_education
-            if sci_tech_exp:
-                user.profile.sci_tech_exp = sci_tech_exp
-                response['data']['sci_tech_exp'] = sci_tech_exp
-            if phase_transform_exp:
-                user.profile.phase_transform_exp = phase_transform_exp
-                response['data']['phase_transform_exp'] = phase_transform_exp
-
-        # Updated the user's last_updated field to now.
-        user.last_updated = datetime.utcnow()
-
-        # Save the changes for the user and the embedded documents
-        user.save()
-
-        # Return the response body
-        response['status'] = 'success'
-        response.pop('message')
-        return response, 200
-
-    def post(self, resp) -> Tuple[dict, int]:
-        # Get post data
-        data = request.get_json()
-
-        # Validating empty payload
-        response = {'status': 'fail', 'message': 'Invalid payload.'}
-        if not data:
-            return response, 400
-
-        # Extract the request body data
-        aim = data.get('aim', None)
-        highest_education = data.get('highest_education', None)
-        sci_tech_exp = data.get('sci_tech_exp', None)
-        phase_transform_exp = data.get('phase_transform_exp', None)
-
-        # Get the user
-        user = User.objects.get(id=resp)
-        # Create a user profile object that can replace any existing user
-        # profile information.
-        profile = UserProfile(
-            aim=aim,
-            highest_education=highest_education,
-            sci_tech_exp=sci_tech_exp,
-            phase_transform_exp=phase_transform_exp
-        )
-        user.profile = profile
-
-        # Attempt to save the new profile object. If there are missing fields
-        # an exception will be raised, caught and sent back.
-        try:
-            user.last_updated = datetime.utcnow()
-            user.save()
-        except ValidationError as e:
-            response['errors'] = str(e)
-            response['message'] = 'Validation error.'
-            return response, 400
-
-        # Otherwise the save was successful and a response with the updated
-        # fields can be sent.
-        response['status'] = 'success'
-        response.pop('message')
-        response['data'] = {
-            'aim': aim,
-            'highest_education': highest_education,
-            'sci_tech_exp': sci_tech_exp,
-            'phase_transform_exp': phase_transform_exp
-        }
-        return response, 201
-
-
-class UserConfigurations(Resource):
-    """Retrieve the list of configurations saved in the User's document"""
-
-    method_decorators = {'get': [authenticate]}
-
-    def get(self, resp) -> Tuple[dict, int]:
-        user = User.objects.get(id=resp)
-        response = {'status': 'success', 'message': 'fail'}
-        return response, 400
-        #TODO(davidmatthews1004@gmail.com)
-
-
-class UserGraphs(Resource):
-    """Retrieve the list of Graphs saved in the User's document."""
-
-    method_decorators = {'get': [authenticate]}
-
-    def get(self, resp) -> Tuple[dict, int]:
-        pass
-        # TODO(davidmatthews1004@gmail.com)
 
 
 class AdminCreate(Resource):
@@ -520,14 +280,24 @@ class AdminCreate(Resource):
         # Get the admin object so we can email them a confirmation email.
         admin = User.objects.get(id=resp)
 
-        # Generate a confirmation email to be sent to the Admin so that they can
-        # confirm they want to promote the user.
-        promotion_confirm_token = generate_promotion_confirmation_token(
-            admin.email, user.email, position
+        # Start promotion
+        user.admin_profile = AdminProfile(
+            position=position,
+            mobile_number=None,
+            verified=False,
+            promoted_by=admin.id
         )
-        promotion_confirm_url = generate_url(
-            'users.confirm_promotion', promotion_confirm_token
+        user.last_updated = datetime.utcnow()
+        user.save()
+
+        # Create a cancellation link for the promoter
+        promotion_cancellation_token = generate_promotion_confirmation_token(
+            admin.email, user.email
         )
+        promotion_cancellation_url = generate_url(
+            'users.cancel_promotion', promotion_cancellation_token
+        )
+
         from celery_runner import celery
         celery.send_task(
             'tasks.send_email',
@@ -535,11 +305,11 @@ class AdminCreate(Resource):
                 'to':
                 admin.email,
                 'subject_suffix':
-                'Confirm Promotion',
+                'You Promoted a User!',
                 'html_template':
                 render_template(
-                    'confirm_promotion.html',
-                    promotion_confirm_url=promotion_confirm_url,
+                    'cancel_promotion.html',
+                    promotion_cancellation_url=promotion_cancellation_url,
                     email=admin.email,
                     position=position,
                     admin_name=f'{admin.first_name} {admin.last_name}',
@@ -547,8 +317,8 @@ class AdminCreate(Resource):
                 ),
                 'text_template':
                 render_template(
-                    'confirm_promotion.txt',
-                    promotion_confirm_url=promotion_confirm_url,
+                    'cancel_promotion.txt',
+                    promotion_cancellation_url=promotion_cancellation_url,
                     email=admin.email,
                     position=position,
                     admin_name=f'{admin.first_name} {admin.last_name}',
@@ -557,15 +327,53 @@ class AdminCreate(Resource):
             }
         )
 
+        # Create a verification link for the user being promoted
+        promotion_verification_token = generate_confirmation_token(
+            user.email
+        )
+        promotion_verification_url = generate_url(
+            'users.verify_promotion', promotion_verification_token
+        )
+
+        celery.send_task(
+            'tasks.send_email',
+            kwargs={
+                'to':
+                    user.email,
+                'subject_suffix':
+                    'Acknowledge Promotion',
+                'html_template':
+                    render_template(
+                        'acknowledge_promotion.html',
+                        promotion_verification_url=promotion_verification_url,
+                        email=user.email,
+                        position=position,
+                        user_name=(
+                            f'{user.first_name} {user.last_name}'
+                        )
+                    ),
+                'text_template':
+                    render_template(
+                        'acknowledge_promotion.html',
+                        promotion_verification_url=promotion_verification_url,
+                        email=user.email,
+                        position=position,
+                        user_name=(
+                            f'{user.first_name} {user.last_name}'
+                        )
+                    )
+            }
+        )
+
         response['status'] = 'success'
         response.pop('message')
         return response, 202
 
 
-@users_blueprint.route('/admin/confirmpromotion/<token>', methods=['GET'])
-def confirm_promotion(token):
+@users_blueprint.route('/admin/create/cancel/<token>', methods=['GET'])
+def cancel_promotion(token):
     """
-    Allow an admin to confirm their promotion of another user
+    Allow an admin to cancel their promotion of another user
     """
 
     response = {'status': 'fail', 'message': 'Invalid token.'}
@@ -586,106 +394,43 @@ def confirm_promotion(token):
         return jsonify(response), 400
 
     # Ensure data is all present
-    if not len(data) == 3:
+    if not len(data) == 2:
         response['message'] = 'Invalid data in Token.'
         return jsonify(response), 400
     try:
         admin_email = data[0]
         user_email = data[1]
-        position = data[2]
     except IndexError as e:
         response['message'] = 'Invalid list from token.'
         response['error'] = str(e)
         return jsonify(response), 400
 
-    if not admin_email or not user_email or not position:
+    if not admin_email or not user_email:
         response['message'] = 'Missing information in Token.'
         return jsonify(response), 400
 
-
-    # Verify both email addresses are valid
-    try:
-        # validate and get info
-        va = validate_email(admin_email)
-        vu = validate_email(user_email)
-        # replace with normalized form
-        valid_admin_email = va['email']
-        valid_user_email = vu['email']
-    except EmailNotValidError as e:
-        # email is not valid, exception message is human-readable
-        response['error'] = str(e)
-        response['message'] = 'Invalid email.'
-        return jsonify(response), 400
-
     # Ensure both users exist in the database
-    if not User.objects(email=valid_admin_email):
+    if not User.objects(email=admin_email):
         response['message'] = 'Administrator does not exist.'
         return jsonify(response), 400
-    if not User.objects(email=valid_user_email):
+    if not User.objects(email=user_email):
         response['message'] = 'Target User does not exist.'
         return jsonify(response), 400
 
-    # Get both user objects
-    admin_user = User.objects.get(email=valid_admin_email)
-    target_user = User.objects.get(email=valid_user_email)
+    # Get Admin user object
+    admin_user = User.objects.get(email=admin_email)
 
     # Ensure the admin user is allowed to promote other users.
     if not admin_user.is_admin or not admin_user.admin_profile.verified:
         response['message'] = 'User is not authorised to promote other users.'
         return jsonify(response), 400
 
-    # Ensure the target user has their account verified
-    if not target_user.verified:
-        response['message'] = 'Target user is not verified.'
-        return jsonify(response), 400
+    # Get target user object
+    target_user = User.objects.get(email=user_email)
 
-    # Start promotion process
-    target_user.is_admin = True
-    target_user.admin_profile = AdminProfile(
-        position=position,
-        mobile_number=None,
-        verified=False,
-        promoted_by=admin_user.id
-    )
-    target_user.last_updated = datetime.utcnow()
+    target_user.disabled_admin = True
+    target_user.admin_profile = None
     target_user.save()
-
-    # Generate an acknowledgement email to be sent to the User so that they can
-    # verify they have been promoted.
-    promotion_acknowledge_token = generate_confirmation_token(target_user.email)
-    promotion_acknowledge_url = generate_url(
-        'users.acknowledge_promotion', promotion_acknowledge_token
-    )
-    from celery_runner import celery
-    celery.send_task(
-        'tasks.send_email',
-        kwargs={
-            'to':
-                target_user.email,
-            'subject_suffix':
-                'Acknowledge Promotion',
-            'html_template':
-                render_template(
-                    'acknowledge_promotion.html',
-                    promotion_acknowledge_url_url=promotion_acknowledge_url,
-                    email=target_user.email,
-                    position=position,
-                    user_name=(
-                        f'{target_user.first_name} {target_user.last_name}'
-                    )
-                ),
-            'text_template':
-                render_template(
-                    'acknowledge_promotion.html',
-                    promotion_acknowledge_url_url=promotion_acknowledge_url,
-                    email=target_user.email,
-                    position=position,
-                    user_name=(
-                        f'{target_user.first_name} {target_user.last_name}'
-                    )
-                )
-        }
-    )
 
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
     client_host = os.environ.get('CLIENT_HOST')
@@ -700,8 +445,8 @@ def confirm_promotion(token):
     return custom_redir_response
 
 
-@users_blueprint.route('/user/acknowledgepromotion/<token>', methods=['GET'])
-def acknowledge_promotion(token):
+@users_blueprint.route('/admin/create/verify/<token>', methods=['GET'])
+def verify_promotion(token):
     """
     Allow a user to acknowledge their promotion and in doing so verify their
     status as an admin
@@ -719,27 +464,15 @@ def acknowledge_promotion(token):
         response['error'] = str(e)
         return jsonify(response), 400
 
-    # Verify it is actually a valid email
-    try:
-        # validate and get info
-        v = validate_email(email)
-        # replace with normalized form
-        valid_email = v['email']
-    except EmailNotValidError as e:
-        # email is not valid, exception message is human-readable
-        response['error'] = str(e)
-        response['message'] = 'Invalid email.'
-        return jsonify(response), 400
-
     # Ensure the user exists in the database
-    if not User.objects(email=valid_email):
+    if not User.objects(email=email):
         response['message'] = 'User does not exist.'
         return jsonify(response), 400
 
     # Get the user object
-    user = User.objects.get(email=valid_email)
+    user = User.objects.get(email=email)
 
-    # Ensure the user is verfiied, an admin and that they have a valid admin
+    # Ensure the user is verified, an admin and that they have a valid admin
     # profile
     if not user.verified:
         response['message'] = 'User is not verified.'
@@ -747,8 +480,8 @@ def acknowledge_promotion(token):
     if not user.is_admin:
         response['message'] = 'User is not an Admin.'
         return jsonify(response), 400
-    if not user.admin_profile:
-        response['message'] = 'User has an invalid Admin profile.'
+    if user.disable_admin:
+        response['message'] = 'User is not an Admin.'
         return jsonify(response), 400
 
     # Verify user's admin status
@@ -840,7 +573,7 @@ class DisableAccount(Resource):
 
         # Validation checks
         if not User.objects(email=valid_email):
-            response['message'] = 'User cannot be found.'
+            response['message'] = 'User does not exist.'
             return response, 404
 
         user = User.objects.get(email=valid_email)
@@ -856,317 +589,11 @@ class DisableAccount(Resource):
         return response, 200
 
 
-class ShareConfigurationLink(Resource):
-    """
-    Allow a user to generate a link that can be used to share configurations.
-    """
-
-    method_decorators = {'post': [authenticate]}
-
-    def post(self, resp) -> Tuple[dict, int]:
-        # Get post data
-        data = request.get_json()
-
-        # Validating empty payload
-        response = {'status': 'fail', 'message': 'Invalid payload.'}
-        if not data:
-            return response, 400
-
-        # Extract the data
-        owner = User.objects.get(id=resp).email
-        shared_date = datetime.utcnow()
-        is_valid = data.get('is_valid', None)
-        method = data.get('method', None)
-        grain_size = data.get('grain_size', None)
-        nucleation_start = data.get('nucleation_start', None)
-        nucleation_finish = data.get('nucleation_finish', None)
-        auto_calculate_ms = data.get('auto_calculate_ms', None)
-        ms_temp = data.get('ms_temp', None)
-        ms_rate_param = data.get('ms_rate_param', None)
-        auto_calculate_bs = data.get('auto_calculate_ms', None)
-        bs_temp = data.get('bs_temp', None)
-        auto_calculate_ae = data.get('auto_calculate_ae', None)
-        ae1_temp = data.get('ae1_temp', None)
-        ae3_temp = data.get('ae3_temp', None)
-        start_temp = data.get('start_temp', None)
-        cct_cooling_rate = data.get('cct_cooling_rate', None)
-
-        config = Configuration(
-            is_valid=is_valid,
-            method=method,
-            grain_size=grain_size,
-            nucleation_start=nucleation_start,
-            nucleation_finish=nucleation_finish,
-            auto_calculate_ms=auto_calculate_ms,
-            ms_temp=ms_temp,
-            ms_rate_param=ms_rate_param,
-            auto_calculate_bs=auto_calculate_bs,
-            bs_temp=bs_temp,
-            auto_calculate_ae=auto_calculate_ae,
-            ae1_temp=ae1_temp,
-            ae3_temp=ae3_temp,
-            start_temp=start_temp,
-            cct_cooling_rate=cct_cooling_rate
-        )
-
-        shared_config = SharedConfiguration(
-            owner=owner,
-            shared_date=shared_date,
-            configuration=config
-        )
-
-        try:
-            shared_config.save()
-        except ValidationError as e:
-            response['errors'] = str(e)
-            response['message'] = 'Validation error.'
-            return response, 400
-
-        id = f'{shared_config.id}'
-        config_token = generate_confirmation_token(id)
-        config_url = generate_url(
-            'users.view_shared_configuration', config_token
-        )
-
-        response['status'] = 'success'
-        response.pop('message')
-        response['link'] = config_url
-        return response, 201
-
-
-class ShareConfigurationEmail(Resource):
-    """
-    Allow a user to generate an email with a link so they can share
-    configurations.
-    """
-
-    method_decorators = {'post': [authenticate]}
-
-    def post(self, resp) -> Tuple[dict, int]:
-        # Get post data
-        data = request.get_json()
-
-        # Validate empty payload
-        response = {'status': 'fail', 'message': 'Invalid payload.'}
-        if not data:
-            return response, 400
-
-        owner = User.objects.get(id=resp)
-        shared_date = datetime.utcnow()
-
-        email_list = data.get('email_list', None)
-        if not email_list:
-            response['message'] = 'No email addresses provided.'
-            return response, 400
-        if not isinstance(email_list, str) and not isinstance(email_list, list):
-            response['message'] = 'Invalid email address/addresses.'
-            return response, 400
-
-        if isinstance(email_list, str):
-            # Verify it is actually a valid email
-            try:
-                # validate and get info
-                v = validate_email(email_list)
-                # replace with normalized form
-                valid_email_list = v['email']
-            except EmailNotValidError as e:
-                # email is not valid, exception message is human-readable
-                response['error'] = str(e)
-                response['message'] = 'Invalid email.'
-                return response, 400
-        else:
-            valid_email_list = []
-            for email in email_list:
-                try:
-                    # validate and get info
-                    v = validate_email(email_list)
-                    # replace with normalized form
-                    valid_email_list.append(v['email'])
-                except EmailNotValidError as e:
-                    # email is not valid, exception message is human-readable
-                    response['error'] = str(e)
-                    response['message'] = 'Invalid email.'
-                    return response, 400
-
-
-        is_valid = data.get('is_valid', None)
-        method = data.get('method', None)
-        grain_size = data.get('grain_size', None)
-        nucleation_start = data.get('nucleation_start', None)
-        nucleation_finish = data.get('nucleation_finish', None)
-        auto_calculate_ms = data.get('auto_calculate_ms', None)
-        ms_temp = data.get('ms_temp', None)
-        ms_rate_param = data.get('ms_rate_param', None)
-        auto_calculate_bs = data.get('auto_calculate_ms', None)
-        bs_temp = data.get('bs_temp', None)
-        auto_calculate_ae = data.get('auto_calculate_ae', None)
-        ae1_temp = data.get('ae1_temp', None)
-        ae3_temp = data.get('ae3_temp', None)
-        start_temp = data.get('start_temp', None)
-        cct_cooling_rate = data.get('cct_cooling_rate', None)
-
-        config = Configuration(
-            is_valid=is_valid,
-            method=method,
-            grain_size=grain_size,
-            nucleation_start=nucleation_start,
-            nucleation_finish=nucleation_finish,
-            auto_calculate_ms=auto_calculate_ms,
-            ms_temp=ms_temp,
-            ms_rate_param=ms_rate_param,
-            auto_calculate_bs=auto_calculate_bs,
-            bs_temp=bs_temp,
-            auto_calculate_ae=auto_calculate_ae,
-            ae1_temp=ae1_temp,
-            ae3_temp=ae3_temp,
-            start_temp=start_temp,
-            cct_cooling_rate=cct_cooling_rate
-        )
-
-        shared_config = SharedConfiguration(
-            owner=owner.email,
-            shared_date=shared_date,
-            configuration=config
-        )
-
-        try:
-            shared_config.save()
-        except ValidationError as e:
-            response['errors'] = str(e)
-            response['message'] = 'Validation error.'
-            return response, 400
-
-        id = f'{shared_config.id}'
-        config_token = generate_confirmation_token(id)
-        config_url = generate_url(
-            'users.view_shared_configuration', config_token
-        )
-
-        from celery_runner import celery
-        if isinstance(valid_email_list, str):
-            celery.send_task(
-                'tasks.send_email',
-                kwargs={
-                    'to':
-                        valid_email_list,
-                    'subject_suffix':
-                        f'{owner.first_name} {owner.last_name} '
-                        'has shared a configuration with you!',
-                    'html_template':
-                        render_template(
-                            'share_configuration.html',
-                            email=valid_email_list,
-                            owner_name=(
-                                f'{owner.first_name} {owner.last_name}'
-                            ),
-                            config_url=config_url
-                        ),
-                    'text_template':
-                        render_template(
-                            'share_configuration.txt',
-                            email=valid_email_list,
-                            owner_name=(
-                                f'{owner.first_name} {owner.last_name}'
-                            ),
-                            config_url=config_url
-                        ),
-                }
-            )
-        else:
-            for email_address in valid_email_list:
-                celery.send_task(
-                    'tasks.send_email',
-                    kwargs={
-                        'to':
-                            email_address,
-                        'subject_suffix':
-                            f'{owner.first_name} {owner.last_name} '
-                            'has shared a configuration with you!',
-                        'html_template':
-                            render_template(
-                                # template name,
-                                email=email_address,
-                                owner_name=(
-                                    f'{owner.first_name} {owner.last_name}'
-                                )
-                            ),
-                        'text_template':
-                            render_template(
-                                # template name,
-                                email=email_address,
-                                owner_name=(
-                                    f'{owner.first_name} {owner.last_name}'
-                                )
-                            ),
-                    }
-                )
-
-        response['status'] = 'success'
-        response.pop('message')
-        response['link'] = config_url
-        return response, 201
-
-
-@users_blueprint.route('/user/viewsharedconfiguration/<token>', methods=['GET'])
-def view_shared_configuration(token):
-
-    response = {'status': 'fail', 'message': 'Invalid token.'}
-
-    # Placeholder expiration time of 30 days
-    expiration = 2592000
-    try:
-        config_id = confirm_token(token, expiration)
-    except URLTokenError as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
-    except Exception as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
-
-    if not SharedConfiguration.objects(id=config_id):
-        response['message'] = 'Configuration does not exist.'
-        return jsonify(response), 400
-
-    config = SharedConfiguration.objects.get(id=config_id)
-
-    response['data'] = {}
-    response['data']['is_valid'] = config.configuration.is_valid
-    response['data']['method'] = config.configuration.method
-    response['data']['grain_size'] = config.configuration.grain_size
-    response['data']['nucleation_start'] = (
-        config.configuration.nucleation_start
-    )
-    response['data']['nucleation_finish'] = (
-        config.configuration.nucleation_finish
-    )
-    response['data']['auto_calculate_ms'] = (
-        config.configuration.auto_calculate_ms
-    )
-    response['data']['ms_temp'] = config.configuration.ms_temp
-    response['data']['ms_rate_param'] = config.configuration.ms_rate_param
-    response['data']['auto_calculate_bs'] = (
-        config.configuration.auto_calculate_bs
-    )
-    response['data']['bs_temp'] = config.configuration.bs_temp
-    response['data']['auto_calculate_ae'] = (
-        config.configuration.auto_calculate_ae
-    )
-    response['data']['ae1_temp'] = config.configuration.ae1_temp
-    response['data']['ae3_temp'] = config.configuration.ae3_temp
-    response['data']['start_temp'] = config.configuration.start_temp
-    response['data']['cct_cooling_rate'] = config.configuration.cct_cooling_rate
-
-    response['message'] = 'success'
-    return jsonify(response), 200
-
 api.add_resource(PingTest, '/ping')
 api.add_resource(UserList, '/users')
 api.add_resource(Users, '/user')
-api.add_resource(UserProfiles, '/user/profile')
-api.add_resource(UserLast, '/user/last')
-api.add_resource(UserConfigurations, '/user/configurations')
+# api.add_resource(UserProfiles, '/user/profile')
 api.add_resource(AdminCreate, '/admin/create')
 api.add_resource(DisableAccount, '/user/disable')
-api.add_resource(UserGraphs, '/user/graphs')
-api.add_resource(ShareConfigurationLink, '/user/shareconfiguration/link')
-api.add_resource(ShareConfigurationEmail, '/user/shareconfiguration/email')
+# api.add_resource(ShareConfigurationLink, '/user/shareconfiguration/link')
+# api.add_resource(ShareConfigurationEmail, '/user/shareconfiguration/email')

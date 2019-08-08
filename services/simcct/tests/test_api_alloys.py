@@ -118,8 +118,7 @@ class TestAlloyService(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assertEqual(res.status_code, 201)
             self.assertEqual(data['status'], 'success')
-            self.assertTrue(data['_id'])
-            self.assertTrue(ObjectId.is_valid(data['_id']))
+            self.assertTrue(data['data'])
 
     def test_create_alloy_empty_json(self):
         with app.test_client() as client:

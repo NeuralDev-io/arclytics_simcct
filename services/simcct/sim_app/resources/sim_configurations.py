@@ -212,6 +212,10 @@ class MartensiteStart(Resource):
 
         comp_np_arr = SimConfig.get_compositions(comp_list)
 
+        if comp_np_arr is False:
+            response['message'] = 'Compositions conversion error.'
+            return response, 500
+
         ms_temp = SimConfig.get_ms(
             method=transformation_method, comp=comp_np_arr
         )
@@ -324,6 +328,10 @@ class BainiteStart(Resource):
 
         comp_np_arr = SimConfig.get_compositions(comp_list)
 
+        if comp_np_arr is False:
+            response['message'] = 'Compositions conversion error.'
+            return response, 500
+
         bs_temp = SimConfig.get_bs(
             method=transformation_method, comp=comp_np_arr
         )
@@ -419,6 +427,10 @@ class Austenite(Resource):
             return response, 400
 
         comp_np_arr = SimConfig.get_compositions(comp_list)
+
+        if comp_np_arr is False:
+            response['message'] = 'Compositions conversion error.'
+            return response, 500
 
         ae1, ae3 = SimConfig.calc_ae1_ae3(comp_np_arr)
 

@@ -23,12 +23,12 @@ import os
 
 import requests
 from marshmallow import ValidationError
-from flask import Blueprint, session, request, jsonify, Response, json
+from flask import Blueprint, request, jsonify
 from bson import ObjectId
 
 from sim_app.sim_session import SimSessionService
 from sim_app.schemas import (ConfigurationsSchema, AlloyStoreSchema)
-from sim_app.middleware import token_required
+from sim_app.middleware import session_and_token_required, session_key_required
 from simulation.utilities import validate_comp_elements
 from logger.arc_logger import AppLogger
 
@@ -38,7 +38,7 @@ session_blueprint = Blueprint('session', __name__)
 
 
 @session_blueprint.route('/session/login', methods=['POST'])
-@token_required
+@session_and_token_required
 def session_login(token):
     post_data = request.get_json()
 
@@ -117,59 +117,39 @@ def session_login(token):
             }
         }
 
-    # TODO(andrew)
-    session['user_id'] = user_id
-    session['is_admin'] = user_is_admin
-    session['token'] = token
-    session['configurations'] = configs
-    session['alloy_store'] = alloy_store
-
-    logger.info('session_login : POST')
-    logger.pprint(session)
+    # This dict defines what we store in Redis for the session
+    session_data_store = {
+        'user_id': user_id,
+        'is_admin': user_is_admin,
+        'token': token,
+        'configurations': configs,
+        'alloy_store': alloy_store
+    }
+    session_key = SimSessionService().new_session(token, session_data_store)
 
     response['status'] = 'success'
     response['message'] = 'User session initiated.'
+    response['session_key'] = session_key
 
-    resp = Response(
-        response=json.dumps(response), status=201, mimetype='application/json'
-    )
-    resp.headers['Access-Control-Allow-Headers'] = (
-        'Origin, X-Requested-With, Content-Type, Accept, x-auth'
-    )
-    resp.headers['Content-Type'] = 'application/json; charset=utf-8'
-
-    return resp
+    return jsonify(response), 201
 
 
 @session_blueprint.route('/session/logout', methods=['GET'])
-@token_required
-def session_logout(token):
+@session_key_required
+def session_logout(session_key):
     """We need to destroy the Session store of the user's configurations and
     other storage matters if the user has logged out from the users.
 
     Args:
-        token: a valid JWT token associated with the user.
+        session_key: a valid TimedJSONWebSignature token.
 
     Returns:
         A JSON response and a status code.
     """
     response = {'status': 'fail', 'message': 'Invalid session.'}
-    sess_user = session.get('user')
 
-    # FIXME(andrew@neuraldev.io): This seems to not be working as signing in
-    #  does not store the user OR your testing method is screwed up.
-    # sess_token = session.get(f'{sess_user}:token')
-    # response['session_user'] = sess_user
-    # response['session_token'] = sess_token
-
-    # if token != sess_token:
-    #     response['session_user'] = sess_user
-    #     return jsonify(response), 401
-
-    # session.pop(f'{token}:user')
-    # session.pop(f'{sess_user}:token')
-    # session.pop(f'{token}:configurations')
-    # session.pop(f'{token}:alloy')
+    # Delete this from the Redis datastore
+    SimSessionService().clean_redis_session(session_key)
 
     response['status'] = 'success'
     response.pop('message')

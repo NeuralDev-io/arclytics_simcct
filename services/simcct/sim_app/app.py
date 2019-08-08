@@ -25,14 +25,13 @@ import sys
 from dotenv import load_dotenv
 from flask import Flask
 
-from sim_app.extensions import cors, api, sess
+from sim_app.extensions import cors, api
 from sim_app.utilities import JSONEncoder
 from sim_app.resources.session import session_blueprint
 from sim_app.resources.sim_configurations import configs_blueprint
 from sim_app.resources.alloys import alloys_blueprint
 from sim_app.resources.simulation import sim_blueprint
 from sim_app.resources.sim_alloys import sim_alloys_blueprint
-
 
 # Setup the environment
 BASE_DIR = os.path.abspath(
@@ -102,6 +101,5 @@ def extensions(app) -> None:
     """
     api.init_app(app)
     cors.init_app(app)
-    sess.init_app(app)
 
     return None

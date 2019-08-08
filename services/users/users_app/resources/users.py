@@ -640,7 +640,9 @@ def confirm_promotion(token):
 
     # Generate an acknowledgement email to be sent to the User so that they can
     # verify they have been promoted.
-    promotion_acknowledge_token = generate_confirmation_token(target_user.email)
+    promotion_acknowledge_token = generate_confirmation_token(
+        target_user.email
+    )
     promotion_acknowledge_url = generate_url(
         'users.acknowledge_promotion', promotion_acknowledge_token
     )
@@ -649,29 +651,29 @@ def confirm_promotion(token):
         'tasks.send_email',
         kwargs={
             'to':
-                target_user.email,
+            target_user.email,
             'subject_suffix':
-                'Acknowledge Promotion',
+            'Acknowledge Promotion',
             'html_template':
-                render_template(
-                    'acknowledge_promotion.html',
-                    promotion_acknowledge_url_url=promotion_acknowledge_url,
-                    email=target_user.email,
-                    position=position,
-                    user_name=(
-                        f'{target_user.first_name} {target_user.last_name}'
-                    )
-                ),
-            'text_template':
-                render_template(
-                    'acknowledge_promotion.html',
-                    promotion_acknowledge_url_url=promotion_acknowledge_url,
-                    email=target_user.email,
-                    position=position,
-                    user_name=(
-                        f'{target_user.first_name} {target_user.last_name}'
-                    )
+            render_template(
+                'acknowledge_promotion.html',
+                promotion_acknowledge_url_url=promotion_acknowledge_url,
+                email=target_user.email,
+                position=position,
+                user_name=(
+                    f'{target_user.first_name} {target_user.last_name}'
                 )
+            ),
+            'text_template':
+            render_template(
+                'acknowledge_promotion.html',
+                promotion_acknowledge_url_url=promotion_acknowledge_url,
+                email=target_user.email,
+                position=position,
+                user_name=(
+                    f'{target_user.first_name} {target_user.last_name}'
+                )
+            )
         }
     )
 
@@ -753,31 +755,23 @@ def acknowledge_promotion(token):
         'tasks.send_email',
         kwargs={
             'to':
-                promoter.email,
+            promoter.email,
             'subject_suffix':
-                'Promotion Verified',
+            'Promotion Verified',
             'html_template':
-                render_template(
-                    'promotion_verified.html',
-                    email=promoter.email,
-                    promoter_name=(
-                        f'{promoter.first_name} {promoter.last_name}'
-                    ),
-                    user_name=(
-                        f'{user.first_name} {user.last_name}'
-                    )
-                ),
+            render_template(
+                'promotion_verified.html',
+                email=promoter.email,
+                promoter_name=(f'{promoter.first_name} {promoter.last_name}'),
+                user_name=(f'{user.first_name} {user.last_name}')
+            ),
             'text_template':
-                render_template(
-                    'promotion_verified.txt',
-                    email=promoter.email,
-                    promoter_name=(
-                        f'{promoter.first_name} {promoter.last_name}'
-                    ),
-                    user_name=(
-                        f'{user.first_name} {user.last_name}'
-                    )
-                )
+            render_template(
+                'promotion_verified.txt',
+                email=promoter.email,
+                promoter_name=(f'{promoter.first_name} {promoter.last_name}'),
+                user_name=(f'{user.first_name} {user.last_name}')
+            )
         }
     )
 

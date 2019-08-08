@@ -334,14 +334,15 @@ def register_session(user: User = None, auth_token: str = None):
             'Content-type': 'application/json'
         }
     )
+    data = resp.json()
     # Because this method is in an async state, we want to know if our request
     # to the other side has failed by raising an exception.
-    # if resp.json().get('status') == 'fail':
-    #     _id = user.id
-    #     raise SessionValidationError(
-    #         f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
-    #     )
-    return resp
+    if not data or data.get('status') == 'fail':
+        _id = user.id
+        raise SessionValidationError(
+            f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
+        )
+    return data.get('session_key')
 
 
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
@@ -405,12 +406,17 @@ def login() -> any:
             # Leave this here -- create a queue for responses
             # thr.join()
             # print(q.get().json())
-            session_resp = register_session(user, auth_token.decode())
+            try:
+                session_key = register_session(user, auth_token.decode())
+            except SessionValidationError as e:
+                response['message'] = 'Session validation error.'
+                response['error'] = str(e)
+                return jsonify(response), 400
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
             response['token'] = auth_token.decode()
-            response['session'] = session_resp.headers['session_key']
+            response['session'] = session_key
             return jsonify(response), 200
 
     response['message'] = 'Email or password combination incorrect.'
@@ -600,7 +606,7 @@ def reset_password_email() -> Tuple[dict, int]:
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])
 @logout_authenticate
-def logout(user_id, token) -> Tuple[dict, int]:
+def logout(user_id, token, session_key) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
     # FIXME(andrew@neuraldev.io): There seems to be a huge issue with this
     #  as in testing, or possibly even live, there seems to be no cross-server
@@ -609,11 +615,11 @@ def logout(user_id, token) -> Tuple[dict, int]:
     response = {'status': 'success', 'message': 'Successfully logged out.'}
 
     simcct_host = os.environ.get('SIMCCT_HOST', None)
-
     simcct_resp = requests.get(
         url=f'http://{simcct_host}/session/logout',
         headers={
             'Authorization': 'Bearer {token}'.format(token=token),
+            'Session': f'{session_key}',
             'Content-type': 'application/json'
         }
     )

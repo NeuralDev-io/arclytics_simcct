@@ -117,13 +117,14 @@ def confirm_email_admin(token):
 
     user = User.objects.get(email=email)
     user.admin_profile.verified = True
+    user.save()
 
     response['status'] = 'success'
     response.pop('message')
     # TODO(davidmatthews1004@gmail.com): Need to check how to change this during
     #  during production and using Ingress/Load balancing for Kubernetes
     client_host = os.environ.get('CLIENT_HOST')
-    return redirect('http://localhost:3000/signin', code=302)
+    return redirect(f'http://{client_host}:3000/signin', code=302)
 
 
 @auth_blueprint.route(rule='/auth/register', methods=['POST'])

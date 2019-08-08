@@ -380,7 +380,9 @@ def cancel_promotion(token):
 
     # Decode the token from the email to confirm it was the right one
     try:
-        data = confirm_token(token)
+        # The token was encoded with the admin and user email as a list so
+        # we want a list back of emails.
+        email_list = confirm_token(token)
     except URLTokenError as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -388,18 +390,20 @@ def cancel_promotion(token):
         response['error'] = str(e)
         return jsonify(response), 400
 
-    # Ensure that a list was returned
-    if not isinstance(data, list):
+    # If a list is not returned, we should get out of here.
+    if not isinstance(email_list, list):
         response['message'] = 'Invalid Token.'
         return jsonify(response), 400
 
-    # Ensure data is all present
-    if not len(data) == 2:
+    # Ensure both admin and user email is present in list
+    if not len(email_list) == 2:
         response['message'] = 'Invalid data in Token.'
         return jsonify(response), 400
+
+    # Let's just be sure that we don't go out of index range
     try:
-        admin_email = data[0]
-        user_email = data[1]
+        admin_email = email_list[0]
+        user_email = email_list[1]
     except IndexError as e:
         response['message'] = 'Invalid list from token.'
         response['error'] = str(e)
@@ -423,7 +427,7 @@ def cancel_promotion(token):
     # Ensure the admin user is allowed to promote other users.
     if not admin_user.is_admin or not admin_user.admin_profile.verified:
         response['message'] = 'User is not authorised to promote other users.'
-        return jsonify(response), 400
+        return jsonify(response), 401
 
     # Get target user object
     target_user = User.objects.get(email=user_email)

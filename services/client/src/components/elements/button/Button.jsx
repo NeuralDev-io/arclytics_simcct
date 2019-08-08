@@ -61,7 +61,7 @@ Button.propTypes = {
   /* length?: "default" | "short" | "long" */
   length: PropTypes.string,
   onClick: PropTypes.func.isRequired,
-  IconComponent: PropTypes.node,
+  IconComponent: PropTypes.elementType,
 }
 
 Button.defaultProps = {

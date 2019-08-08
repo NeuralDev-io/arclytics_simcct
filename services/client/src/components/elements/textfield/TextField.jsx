@@ -18,6 +18,12 @@ import styles from './TextField.module.scss'
 
 // TODO: include validation
 class TextField extends Component {
+  validate = () => {
+    const { validation, name } = this.props
+    console.log(name, ' : ', validation)
+    // do stuff
+  }
+
   handleChange = (e) => {
     const { onChange } = this.props
     onChange(e.target.value)
@@ -47,6 +53,7 @@ class TextField extends Component {
           value={value}
           onChange={e => this.handleChange(e)}
           disabled={isDisabled}
+          validation={this.validate()}
         />
       </div>
     )
@@ -65,6 +72,8 @@ TextField.propTypes = {
   placeholder: PropTypes.string,
   isDisabled: PropTypes.bool,
   className: PropTypes.string,
+  validation: PropTypes.string,
+
 }
 
 TextField.defaultProps = {
@@ -74,6 +83,7 @@ TextField.defaultProps = {
   isDisabled: false,
   className: '',
   value: '',
+  validation: '',
 }
 
 export default TextField

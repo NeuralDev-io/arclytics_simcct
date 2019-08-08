@@ -71,3 +71,15 @@ def confirm_token(token: bytes, expiration: int = 3600) -> Union[bool, str]:
 
 def generate_url(endpoint, token):
     return url_for(endpoint, token=token, _external=True)
+
+
+def generate_promotion_confirmation_token(admin_email: str,
+                                          user_email: str) -> Union[bool, list]:
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return serializer.dumps(
+        [
+            admin_email,
+            user_email
+        ],
+        salt=app.config['SECURITY_PASSWORD_SALT']
+    )

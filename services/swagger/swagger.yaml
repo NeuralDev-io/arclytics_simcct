@@ -1203,7 +1203,7 @@ paths:
                     - symbol: "P"
                       weight: 0.007
       responses:
-        200:
+        201:
           description: "An alloy has been successfully created and stored in the database."
           content:
             application/json:
@@ -1219,7 +1219,45 @@ paths:
                     description: "The ObjectId primary key of the Alloy in the database."
               example:
                 status: "success"
-                _id: "5d2345560f8b5fa4a8daca89"
+                data:
+                  name: "330M Alloy1"
+                  compositions:
+                    - symbol: "C"
+                      weight: 0.3
+                    - symbol: "M"
+                      weight: 0.78
+                    - symbol: "Si"
+                      weight: 1.6
+                    - symbol: "Ni"
+                      weight: 1.9
+                    - symbol: "Cr"
+                      weight: 0.91
+                    - symbol: "Mo"
+                      weight: 0.39
+                    - symbol: "Co"
+                      weight: 0.0
+                    - symbol: "Al"
+                      weight: 0.0
+                    - symbol: "Cu"
+                      weight: 0.0
+                    - symbol: "As"
+                      weight: 0.0
+                    - symbol: "Ti"
+                      weight: 0.0
+                    - symbol: "V"
+                      weight: 0.08
+                    - symbol: "W"
+                      weight: 0.0
+                    - symbol: "S"
+                      weight: 0.003
+                    - symbol: "N"
+                      weight: 0.011
+                    - symbol: "Nb"
+                      weight: 0.0
+                    - symbol: "B"
+                      weight: 0.0
+                    - symbol: "P"
+                      weight: 0.007
         400:
           description: "An invalid payload has been sent."
           content:
@@ -1231,6 +1269,15 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid payload."
+                'Missing Compositions':
+                  value:
+                    status: "fail"
+                    message: "Compositions must be provided as a list of valid
+                              elements e.g. {\"symbol\": \"C\", \"weight\": 1.0}"
+                'Missing Name':
+                  value:
+                    status: "fail"
+                    message: "No alloy name was provided."
                 'Invalid Alloy payload schema':
                   value:
                     status: "fail"
@@ -1370,7 +1417,7 @@ paths:
               example:
                 status: "fail"
                 message: "Alloy not found."
-    put:
+    patch:
       summary: "Update a single existing Alloy."
       tags:
         - Alloys

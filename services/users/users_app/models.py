@@ -59,19 +59,19 @@ class UserProfile(EmbeddedDocument):
     # )
     aim = StringField(
         help_text='What sentence best describes you?',
-        required=False,
+        required=True,
         default=None,
         null=True
     )
     highest_education = StringField(
         help_text='What is the highest level of education have you studied?',
-        required=False,
+        required=True,
         default=None,
         null=True
     )
     sci_tech_exp = StringField(
         help_text='What is your experience with scientific software?',
-        required=False,
+        required=True,
         default=None,
         null=True
     )
@@ -80,7 +80,7 @@ class UserProfile(EmbeddedDocument):
             'What is your experience with solid-state phase '
             'transformation?'
         ),
-        required=False,
+        required=True,
         default=None,
         null=True
     )
@@ -102,6 +102,7 @@ class AdminProfile(EmbeddedDocument):
     position = StringField(max_length=255, required=True)
     mobile_number = StringField(max_length=11, min_length=10)
     verified = BooleanField(default=False)
+    promoted_by = ObjectIdField()
 
     def to_dict(self) -> dict:
         """
@@ -256,7 +257,9 @@ class User(Document):
     first_name = StringField(required=True, max_length=255)
     last_name = StringField(required=True, max_length=255)
     profile = EmbeddedDocumentField(document_type=UserProfile)
-    admin_profile = EmbeddedDocumentField(document_type=AdminProfile)
+    admin_profile = EmbeddedDocumentField(
+        document_type=AdminProfile, default=None
+    )
 
     last_configuration = EmbeddedDocumentField(
         document_type=Configuration, default=None
@@ -275,13 +278,13 @@ class User(Document):
     # definition of a user
     active = BooleanField(default=True)
     is_admin = BooleanField(default=False, db_field='admin')
+    disable_admin = BooleanField(default=False)
     verified = BooleanField(default=False)
     # Make sure when converting these that it follows ISO8601 format as
     # defined in settings.DATETIME_FMT
     created = DateTimeField(default=datetime.utcnow(), null=False)
     last_updated = DateTimeField(default=None, null=False)
     last_login = DateTimeField()
-    account_disabled = BooleanField(default=False)
 
     # Define the collection and indexing for this document
     meta = {
@@ -453,6 +456,11 @@ class User(Document):
         else:
             self.last_updated = datetime.utcnow()
 
+        self.is_admin = (
+                not self.disable_admin and
+                self.admin_profile is not None
+        )
+
     @queryset_manager
     def as_dict(cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
@@ -472,3 +480,13 @@ class User(Document):
 
     def __str__(self):
         return self.to_json()
+
+
+class SharedConfiguration(Document):
+    owner = EmailField(required=True)
+    shared_date = DateTimeField()
+    configuration = EmbeddedDocumentField(document_type=Configuration)
+    # alloy_store = EmbeddedDocumentField(document_type=AlloyStore)
+
+
+

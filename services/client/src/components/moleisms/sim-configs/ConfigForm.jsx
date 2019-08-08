@@ -42,6 +42,20 @@ const ConfigForm = (props) => {
                 onChange={val => onChange('grain_size_ASTM', val)}
                 value={values.grain_size_ASTM}
                 length="short"
+                validation={[
+                  {
+                    constraint: parseFloat(values.grain_size_ASTM) <= 0,
+                    message: 'Can not be less than 0',
+                  },
+                  {
+                    constraint: isNaN(values.grain_size_ASTM),
+                    message: 'Must be a number',
+                  },
+                  {
+                    constraint: values.grain_size_ASTM.length === 0,
+                    message: 'Can not be empty',
+                  },
+                ]}
               />
             </div>
             <div className="input-row">
@@ -53,6 +67,20 @@ const ConfigForm = (props) => {
                 value={values.grain_size_diameter}
                 length="short"
                 suffix="μ"
+                validation={[
+                  {
+                    constraint: parseFloat(values.grain_size_diameter) <= 0,
+                    message: 'Can not be less than 0',
+                  },
+                  {
+                    constraint: isNaN(values.grain_size_diameter),
+                    message: 'Must be a number',
+                  },
+                  {
+                    constraint: values.grain_size_diameter.length === null,
+                    message: 'Can not be empty',
+                  },
+                ]}
               />
             </div>
           </div>

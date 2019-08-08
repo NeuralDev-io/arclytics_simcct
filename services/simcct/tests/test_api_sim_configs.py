@@ -21,7 +21,6 @@ from bson import ObjectId
 from flask import session, current_app
 
 from tests.test_api_base import BaseTestCase
-from tests.utilities import convert_json_to_comp
 from sim_app.app import BASE_DIR
 from sim_app.schemas import ConfigurationsSchema, AlloyStoreSchema
 

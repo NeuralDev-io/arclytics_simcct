@@ -27,6 +27,7 @@ import unittest
 from pathlib import Path
 
 import coverage
+import redis
 from flask.cli import FlaskGroup
 from pymongo import MongoClient
 
@@ -87,6 +88,10 @@ def flush():
     client.drop_database('arc')
     client.drop_database('arc_dev')
     client.drop_database('arc_test')
+    redis_client = redis.Redis(
+        host=os.environ.get('REDIS_HOST'), port=os.environ.get('REDIS_PORT')
+    )
+    redis_client.flushall()
 
 
 @cli.command()

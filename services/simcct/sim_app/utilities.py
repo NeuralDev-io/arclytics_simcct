@@ -2,9 +2,9 @@
 # -----------------------------------------------------------------------------
 # arclytics_sim
 # utilities.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
@@ -28,6 +28,7 @@ from bson import ObjectId
 
 class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""
+
     def default(self, o):
         if isinstance(o, ObjectId):
             return str(o)

@@ -28,9 +28,14 @@ import time
 from datetime import timedelta, datetime, timezone
 from uuid import uuid4
 
+from itsdangerous import (
+    TimedJSONWebSignatureSerializer,
+    JSONWebSignatureSerializer,
+    BadSignature,
+    SignatureExpired
+)
 from flask.sessions import SessionMixin, SessionInterface
-from redis import ReadOnlyError
-from redis import Redis
+from redis import Redis, ReadOnlyError
 from werkzeug.datastructures import CallbackDict
 
 from logger.arc_logger import AppLogger
@@ -57,6 +62,7 @@ class RedisSession(CallbackDict, SessionMixin):
 
 
 class RedisSessionInterface(SessionInterface):
+    """The interface defines how a Session is stored and opened in Flask."""
     def __init__(self, app=None):
         # self.redis = redis if redis is not None else Redis()
         if app:
@@ -65,7 +71,12 @@ class RedisSessionInterface(SessionInterface):
                 port=int(app.config['REDIS_PORT']),
                 db=int(app.config['REDIS_DB']),
             )
-            app.secret_key = app.config.get('SECRET_KEY')
+            # Store some secret Hydra stuff
+            self.secret_key = app.config.get('SECRET_KEY', None)
+            app.secret_key = self.secret_key
+            self.salt = app.config.get('SECURITY_PASSWORD_SALT', None)
+            # This is where the "magic" happens with changing the Session
+            # interface
             app.session_interface = self
 
     def init_app(self, app):
@@ -75,7 +86,10 @@ class RedisSessionInterface(SessionInterface):
             port=int(app.config['REDIS_PORT']),
             db=int(app.config['REDIS_DB']),
         )
-        app.secret_key = app.config.get('SECRET_KEY')
+        # Store some secret Hydra stuff
+        self.secret_key = app.config.get('SECRET_KEY', None)
+        app.secret_key = self.secret_key
+        self.salt = app.config.get('SECURITY_PASSWORD_SALT', None)
         # This is where the "magic" happens with changing the Session interface
         app.session_interface = self
 
@@ -83,34 +97,38 @@ class RedisSessionInterface(SessionInterface):
         # Traditionally a Session implementation will use a Cookie
         # session_key = request.cookies.get(SESSION_COOKIE_NAME)
 
+        logger.debug(f'open_session(): request: {request.__dict__}')
+
         # Our middleware will ensure all the requests sent to this server
         # will have the correct header.
-        auth_header = request.headers.get('Authorization', None)
+        auth_header = request.headers.get('Authorization')
+        sid_header = request.headers.get('Session')
 
         # No auth header means a new Session needs to be initiated
         if not auth_header:
-            logger.debug(
-                'open_session(): auth_header _new_session.'
-            )
-            logger.debug(
-                f'open_session(): request.headers: {request.headers}'
-            )
+            logger.debug('open_session(): auth_header _new_session.')
+            logger.debug(f'open_session(): auth_header: {auth_header}.')
+            return self._new_session()
+
+        if not sid_header:
+            logger.debug('open_session(): sid_header _new_session.')
+            logger.debug(f'open_session(): sid_header: {sid_header}.')
             return self._new_session()
 
         # We use the JWT Auth Token as the key instead
-        session_key = auth_header.split(' ')[1]
+        jwt_token = auth_header.split(' ')[1]
 
-        sid, expiry_timestamp = self._extract_sid_and_expiry_timestamp_from(
-            session_key
+        sid, expiry_timestamp = self._decode_sid_and_expiry_timestamp_from(
+            session_key=sid_header
         )
+        # token_sid = self._decode_token_from(session.sid)
 
-        logger.debug(f'open_session(): session_key: {session_key}.')
+        logger.debug(f'open_session(): jwt_token: {jwt_token}.')
         logger.debug(f'open_session(): sid: {sid}.')
+        # logger.debug(f'open_session(): token_sid: {token_sid}.')
 
         if not expiry_timestamp:
-            logger.debug(
-                'open_session(): expiry_timestamp _new_session.'
-            )
+            logger.debug('open_session(): expiry_timestamp _new_session.')
             logger.debug(
                 f'open_session(): expiry_timestamp: {expiry_timestamp}.'
             )
@@ -118,9 +136,7 @@ class RedisSessionInterface(SessionInterface):
 
         redis_value, redis_key_ttl = self._get_redis_value_and_ttl_of(sid)
         if not redis_value:
-            logger.debug(
-                'open_session(): redis_value _new_session.'
-            )
+            logger.debug('open_session(): redis_value _new_session.')
             return self._new_session()
 
         if self._expiry_timestamp_not_match(expiry_timestamp, redis_key_ttl):
@@ -159,12 +175,14 @@ class RedisSessionInterface(SessionInterface):
         expiry_date = datetime.utcnow() + expiry_duration
         expires_in_seconds = int(expiry_duration.total_seconds())
 
-        session.sid = self._inject_token_in_sid(session.sid, token)
-        session_key = self._create_session_key(session.sid, expiry_date)
+        # session.sid = self._inject_token_in_sid(session.sid, token)
+        # session_key = self._create_session_key(session.sid, expiry_date)
+        session.sid = self._encode_token_and_sid(session.sid, token)
+        session_key = self._generate_session_key(session.sid, expiry_date)
 
-        logger.debug(
-            f'save_session() : expires_in_seconds: {expires_in_seconds}'
-        )
+        logger.debug(f'save_session() : token encoded token: {token}.')
+        logger.debug(f'save_session() : expiry_date: {expiry_date}.')
+        logger.debug(f'save_session() : session_key: {session_key}.')
 
         self._write_wrapper(
             self.redis.setex,
@@ -173,29 +191,28 @@ class RedisSessionInterface(SessionInterface):
             time=expires_in_seconds
         )
 
-        response.set_cookie(
-            SESSION_COOKIE_NAME,
-            session_key,
-            expires=expiry_date,
-            httponly=True,
-            domain=self.get_cookie_domain(app)
-        )
-
-        logger.debug(
-            f'save_session() : response: {response.headers}'
-        )
+        # response.set_cookie(
+        #     SESSION_COOKIE_NAME,
+        #     session_key,
+        #     expires=expiry_date,
+        #     httponly=True,
+        #     domain=self.get_cookie_domain(app)
+        # )
+        response.headers['session_key'] = session_key
 
     @staticmethod
     def _new_session():
         """Simple helper method to create a new RedisSession."""
-        logger.debug(
-            f'_new_session()'
-        )
+        logger.debug(f'_new_session()')
         return RedisSession(sid=uuid4().hex, new=True)
 
     @staticmethod
     def _get_expiry_duration(app, session):
         if session.permanent:
+            logger.debug(
+                f'_get_expiry_duration(): session.permanent: '
+                f'{app.permanent_session_lifetime}'
+            )
             return app.permanent_session_lifetime
         return timedelta(minutes=SESSION_EXPIRY_MINUTES)
 
@@ -253,21 +270,60 @@ class RedisSessionInterface(SessionInterface):
     @staticmethod
     def _extract_sid_and_expiry_timestamp_from(session_key):
         matched = re.match(r"^(.+)\.(\d+)$", session_key)
+
+        logger.debug(
+            f'_extract_sid_and_expiry_timestamp(): matched: {matched}'
+        )
+
         if not matched:
             return session_key, None
 
         return matched.group(1), matched.group(2)
 
-    @staticmethod
-    def _create_session_key(sid, expiry_date):
-        return "{}.{}".format(sid, utc_timestamp_by_second(expiry_date))
+    def _encode_token_and_sid(self, sid, token):
+        serializer = JSONWebSignatureSerializer(secret_key=self.secret_key)
+        encoded_str_sid = serializer.dumps(
+            {'sid': sid, 'token': token}, salt=self.salt
+        )
+        return encoded_str_sid.decode('utf-8')
 
-    @staticmethod
-    def _inject_token_in_sid(sid, user_id):
-        prefix = "{}.".format(user_id)
-        if not sid.startswith(prefix):
-            sid = prefix + sid
-        return sid
+    def _generate_session_key(self, sid, expiry_date):
+        expiry_seconds = utc_timestamp_by_second(expiry_date)
+        serializer = TimedJSONWebSignatureSerializer(
+            secret_key=self.secret_key,
+            expires_in=expiry_seconds
+        )
+        encoded_bytes = serializer.dumps(
+                {'sid': sid, 'expiry_seconds': expiry_seconds},
+                salt=self.salt
+        )
+        return encoded_bytes.decode('utf-8')
+
+    def _decode_sid_and_expiry_timestamp_from(self, session_key):
+        serializer = TimedJSONWebSignatureSerializer(secret_key=self.secret_key)
+        try:
+            res = serializer.loads(session_key)
+            logger.debug(
+                f'_decode_token_and_expiry_timestamp_from(): res: {res}'
+            )
+        except BadSignature as e:
+            return 'BadSignature', None
+        except SignatureExpired as e:
+            return 'SignatureExpired', None
+        return res.get('sid'), res.get('expiry_seconds')
+
+    def _decode_token_from(self, sid):
+        serializer = JSONWebSignatureSerializer(secret_key=self.secret_key)
+        try:
+            sid = serializer.loads(sid)
+            logger.debug(
+                f'_decode_sid_from(): res: {sid}'
+            )
+        except BadSignature as e:
+            return 'BadSignature'
+        except SignatureExpired as e:
+            return 'SignatureExpired'
+        return sid.get('token')
 
     def _clean_redis_and_cookie(self, app, response, session):
         self._write_wrapper(self.redis.delete, self._redis_key(session.sid))

@@ -285,8 +285,6 @@ class User(Document):
     created = DateTimeField(default=datetime.utcnow(), null=False)
     last_updated = DateTimeField(default=None, null=False)
     last_login = DateTimeField()
-    # Define the collection and indexing for this document
-    meta = {'collection': 'users'}
 
     # Define the collection and indexing for this document
     meta = {
@@ -458,9 +456,10 @@ class User(Document):
         else:
             self.last_updated = datetime.utcnow()
 
-        admin_profile_present = False
-        if self.admin_profile: admin_profile_present = True
-        self.is_admin = not self.disable_admin and admin_profile_present
+        self.is_admin = (
+                not self.disable_admin and
+                self.admin_profile is not None
+        )
 
     @queryset_manager
     def as_dict(cls, queryset) -> list:

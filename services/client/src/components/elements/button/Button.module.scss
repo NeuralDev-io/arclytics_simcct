@@ -1,19 +1,12 @@
 @import '../../../styles/colors_light';
 
-.default {
-  // disable default button styling
+.base {
   border: none;
   outline: none;
-
-  // default buton style
-  background-color: $ag500;
-  border: 2px solid $ag500;
-  color: $n0;
   width: 7.5rem;
   height: 2.5rem;
   padding: 0 .75rem;
   border-radius: 6px;
-  box-shadow: $base-shadow;
   transition: ease-in-out .4s;
   cursor: pointer;
 
@@ -21,6 +14,15 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
+}
+
+.default {
+  @extend .base;
+  // default buton style
+  background-color: $ag500;
+  border: 2px solid $ag500;
+  color: $n0;
+  box-shadow: $base-shadow;
 
   &:hover {
     background-color: adjust-color($color: $ag500, $saturation: 20%);
@@ -65,26 +67,11 @@
 }
 
 .outline {
-  // disable default button styling
-  border: none;
-  outline: none;
-
-  // default buton style
+  @extend .base;
   background-color: transparent;
   color: $ag500;
   border: 2px solid $ag500;
   box-shadow: none;
-  width: 7.5rem;
-  height: 2.5rem;
-  padding: 0 .75rem;
-  border-radius: 6px;
-  transition: ease-in-out .4s;
-  cursor: pointer;
-
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
 
   &:hover {
     background-color: adjust-color($color: $ag500, $saturation: 20%);
@@ -131,26 +118,11 @@
 }
 
 .text {
-  // disable default button styling
-  border: none;
-  outline: none;
-
-  // default buton style
+  @extend .base;
   background-color: transparent;
   color: $ag500;
   border: none;
   box-shadow: none;
-  width: 7.5rem;
-  height: 2.5rem;
-  padding: 0 .75rem;
-  border-radius: 6px;
-  transition: ease-in-out .4s;
-  cursor: pointer;
-
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
 
   &:hover {
     background-color: $n50;
@@ -159,6 +131,9 @@
 
   &.dangerous {
     color: $r400;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
   
     &:hover {
       background-color: rgba($color: $r500, $alpha: .1);

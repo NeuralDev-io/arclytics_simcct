@@ -21,7 +21,7 @@ const Button = (props) => {
   const {
     type = 'button',
     appearance = 'default',
-    length = 'default',
+    length = '',
     color = '',
     isDisabled = false,
     IconComponent = null,
@@ -30,7 +30,9 @@ const Button = (props) => {
     onClick,
     children,
   } = props
-  const classname = `${styles[appearance]} ${styles[length]} ${styles[color]} ${isDisabled ? styles.disabled : ''} text--btn ${className || ''}`
+  const classname = `${(appearance === 'default' || appearance === 'text' || appearance === 'outline') && styles[appearance]}
+    ${(length === 'short' || length === 'long') && styles[length]}
+    ${(color === 'dangerous' || color === 'warning') && styles[color]} ${isDisabled ? styles.disabled : ''} text--btn ${className || ''}`
 
   return (
     // eslint-disable-next-line react/button-has-type
@@ -61,7 +63,7 @@ Button.propTypes = {
   appearance: PropTypes.string,
   /* color?: "dangerous" | "warning" */
   color: PropTypes.string,
-  /* length?: "default" | "short" | "long" */
+  /* length?: "short" | "long" */
   length: PropTypes.string,
   onClick: PropTypes.func.isRequired,
   IconComponent: PropTypes.elementType,
@@ -72,7 +74,7 @@ Button.defaultProps = {
   className: '',
   isLoading: false,
   appearance: 'default',
-  length: 'default',
+  length: '',
   color: '',
   isDisabled: false,
   IconComponent: null,

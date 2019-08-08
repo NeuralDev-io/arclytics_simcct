@@ -1,7 +1,7 @@
 .first {
   display: flex;
   flex-flow: row wrap;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 2rem;
 
   &>div:first-of-type {

@@ -18,14 +18,38 @@ import styles from './TextField.module.scss'
 
 // TODO: include validation
 class TextField extends Component {
-  validate = () => {
-    const { validation, name } = this.props
-    console.log(name, ' : ', validation)
-    // do stuff
+  constructor(props) {
+    super(props)
+    this.state = {
+      err: '',
+    }
+  }
+
+  validate = (value) => {
+    const { validation } = this.props
+    console.log(validation)
+    console.log(value)
+    const BreakException = {}
+    try {
+      validation.forEach((valObj) => {
+        console.log('start validation')
+        if (!valObj.constraint(value)) {
+          this.setState({ err: valObj.message })
+          console.log('validation = false')
+          throw BreakException
+        } else {
+          this.setState({ err: '' })
+          console.log('validation = true')
+        }
+      })
+    } catch (ex) {
+      if (ex !== BreakException) throw ex
+    }
   }
 
   handleChange = (e) => {
     const { onChange } = this.props
+    this.validate(e.target.value)
     onChange(e.target.value)
   }
 
@@ -40,10 +64,11 @@ class TextField extends Component {
       name,
       ...other
     } = this.props
-    const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${className || ''}`
+    const { err } = this.state
+    const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${err !== '' && styles.error} ${className || ''}`
 
     return (
-      <div>
+      <div className={styles.container}>
         <input
           {...other}
           type={type}
@@ -53,8 +78,8 @@ class TextField extends Component {
           value={value}
           onChange={e => this.handleChange(e)}
           disabled={isDisabled}
-          validation={this.validate()}
         />
+        <span className="text--sub2">{err}</span>
       </div>
     )
   }

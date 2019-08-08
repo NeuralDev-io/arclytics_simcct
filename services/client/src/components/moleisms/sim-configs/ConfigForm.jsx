@@ -44,16 +44,16 @@ const ConfigForm = (props) => {
                 length="short"
                 validation={[
                   {
-                    constraint: parseFloat(values.grain_size_ASTM) <= 0,
-                    message: 'Can not be less than 0',
+                    constraint: value => (value.length !== 0),
+                    message: 'Can not be empty',
                   },
                   {
-                    constraint: isNaN(values.grain_size_ASTM),
+                    constraint: value => (!isNaN(value)),
                     message: 'Must be a number',
                   },
                   {
-                    constraint: values.grain_size_ASTM.length === 0,
-                    message: 'Can not be empty',
+                    constraint: value => (parseFloat(value) > 0),
+                    message: 'Can not be less than 0',
                   },
                 ]}
               />
@@ -67,20 +67,6 @@ const ConfigForm = (props) => {
                 value={values.grain_size_diameter}
                 length="short"
                 suffix="μ"
-                validation={[
-                  {
-                    constraint: parseFloat(values.grain_size_diameter) <= 0,
-                    message: 'Can not be less than 0',
-                  },
-                  {
-                    constraint: isNaN(values.grain_size_diameter),
-                    message: 'Must be a number',
-                  },
-                  {
-                    constraint: values.grain_size_diameter.length === null,
-                    message: 'Can not be empty',
-                  },
-                ]}
               />
             </div>
           </div>

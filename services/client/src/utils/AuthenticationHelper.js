@@ -66,6 +66,7 @@ export const logout = (callback) => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
@@ -74,6 +75,7 @@ export const logout = (callback) => {
       if (data.status === 'fail') throw new Error(data.message)
       if (data.status === 'success') {
         localStorage.removeItem('token')
+        localStorage.removeItem('session')
         localStorage.removeItem('persist:userPersist')
         callback('/signin')
       }

@@ -46,6 +46,7 @@ class LoginPage extends Component {
               promise.then((data) => {
                 // If response is successful
                 localStorage.setItem('token', data.token)
+                localStorage.setItem('session', data.session)
                 const { getUserProfileConnect, history } = this.props
                 getUserProfileConnect()
                 history.push('/')

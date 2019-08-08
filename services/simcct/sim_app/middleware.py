@@ -24,6 +24,10 @@ from functools import wraps
 
 from flask import request, jsonify
 
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
+
 
 def token_required(f):
     @wraps(f)

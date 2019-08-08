@@ -23,7 +23,7 @@ import os
 
 import requests
 from marshmallow import ValidationError
-from flask import Blueprint, session, request, jsonify
+from flask import Blueprint, session, request, jsonify, Response, json
 from bson import ObjectId
 
 from sim_app.schemas import (ConfigurationsSchema, AlloyStoreSchema)
@@ -128,15 +128,16 @@ def session_login(token):
 
     response['status'] = 'success'
     response['message'] = 'User session initiated.'
-    response['session_id'] = session.sid
 
-    resp = jsonify(response)
-    resp.headers.add(
-        'Access-Control-Allow-Headers',
+    resp = Response(
+        response=json.dumps(response), status=201, mimetype='application/json'
+    )
+    resp.headers['Access-Control-Allow-Headers'] = (
         'Origin, X-Requested-With, Content-Type, Accept, x-auth'
     )
+    resp.headers['Content-Type'] = 'application/json; charset=utf-8'
 
-    return resp, 201
+    return resp
 
 
 @session_blueprint.route('/session/logout', methods=['GET'])
@@ -152,7 +153,7 @@ def session_logout(token):
         A JSON response and a status code.
     """
     response = {'status': 'fail', 'message': 'Invalid session.'}
-    sess_user = session.get(f'{token}:user')
+    sess_user = session.get('user')
 
     # FIXME(andrew@neuraldev.io): This seems to not be working as signing in
     #  does not store the user OR your testing method is screwed up.

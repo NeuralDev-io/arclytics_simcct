@@ -16,9 +16,10 @@
 export const initComp = (option, type, alloy) => {
   fetch('http://localhost:8001/alloys/update', {
     method: 'POST',
-    // credentials: 'same-origin',
+    credentials: 'same-origin',
     headers: {
       'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({

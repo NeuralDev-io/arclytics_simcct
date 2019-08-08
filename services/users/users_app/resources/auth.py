@@ -30,7 +30,9 @@ from threading import Thread
 from celery.states import PENDING
 from email_validator import validate_email, EmailNotValidError
 from flask import current_app as app
-from flask import Blueprint, jsonify, request, render_template, redirect
+from flask import (
+    Blueprint, jsonify, request, render_template, redirect, Response
+)
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from users_app.models import User
@@ -301,8 +303,49 @@ def async_register_session(user: User = None,
     return resp.json()
 
 
+def register_session(user: User = None, auth_token: str = None):
+    # We now need to send a request to the simcct server to initiate
+    # a session as a server-side store to save the last compositions/configs
+    simcct_host = os.environ.get('SIMCCT_HOST', None)
+    # Using the `json` param tells requests to serialize the dict to
+    # JSON and write the correct MIME type ('application/json') in
+    # header.
+
+    last_configs = None
+    last_alloy = None
+
+    if isinstance(user, User):
+        if user.last_configuration is not None:
+            last_configs = user.last_configuration.to_dict()
+
+        if user.last_alloy_store is not None:
+            last_alloy = user.last_alloy_store.to_dict()
+
+    resp = requests.post(
+        url=f'http://{simcct_host}/session/login',
+        json={
+            '_id': str(user.id),
+            'is_admin': user.is_admin,
+            'last_configurations': last_configs,
+            'last_alloy_store': last_alloy
+        },
+        headers={
+            'Authorization': f'Bearer {auth_token}',
+            'Content-type': 'application/json'
+        }
+    )
+    # Because this method is in an async state, we want to know if our request
+    # to the other side has failed by raising an exception.
+    # if resp.json().get('status') == 'fail':
+    #     _id = user.id
+    #     raise SessionValidationError(
+    #         f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
+    #     )
+    return resp
+
+
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
-def login() -> Tuple[dict, int]:
+def login() -> any:
     """
     Blueprint route for registration of users with a returned JWT if successful.
     """
@@ -354,18 +397,20 @@ def login() -> Tuple[dict, int]:
 
             # We will register the session for the user to the simcct server
             # in the background so as not to slow the login process down.
-            thr = Thread(
-                target=async_register_session,
-                args=[user, str(auth_token.decode())]
-            )
-            thr.start()
+            # thr = Thread(
+            #     target=async_register_session,
+            #     args=[user, str(auth_token.decode())]
+            # )
+            # thr.start()
             # Leave this here -- create a queue for responses
             # thr.join()
             # print(q.get().json())
+            session_resp = register_session(user, auth_token.decode())
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
             response['token'] = auth_token.decode()
+            response['session'] = session_resp.headers['session_key']
             return jsonify(response), 200
 
     response['message'] = 'Email or password combination incorrect.'

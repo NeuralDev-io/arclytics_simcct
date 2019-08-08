@@ -1,5 +1,15 @@
 @import '../../../styles/colors_light';
 
+.container {
+  display: flex;
+  flex-flow: column nowrap;
+
+  & > span {
+    color: $r500;
+    margin-top: .25rem;
+  }
+}
+
 .input {
   // remove default styles
   border: none;
@@ -50,4 +60,21 @@
 
 .stretch {
   width: 100%
+}
+
+.error {
+  background-color: rgba($color: $r500, $alpha: 0.1);
+  border: 1px solid $r500;
+
+  &:hover {
+    background-color: rgba($color: $r500, $alpha: 0.2);
+    border-color: 1px solid $r500;
+  }
+  &:hover:not([disabled]) {
+    background-color: rgba($color: $r500, $alpha: 0.2);
+  }
+  &:focus {
+    background-color: $n0;
+    border-color: $r500;
+  }
 }

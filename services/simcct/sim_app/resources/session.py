@@ -26,6 +26,7 @@ from marshmallow import ValidationError
 from flask import Blueprint, session, request, jsonify, Response, json
 from bson import ObjectId
 
+from sim_app.sim_session import SimSessionService
 from sim_app.schemas import (ConfigurationsSchema, AlloyStoreSchema)
 from sim_app.middleware import token_required
 from simulation.utilities import validate_comp_elements

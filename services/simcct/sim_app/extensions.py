@@ -22,8 +22,6 @@ context of the app.
 
 from flask_cors import CORS
 from flask_restful import Api
-from .redis_session import RedisSessionInterface
 
 api = Api()
 cors = CORS()
-sess = RedisSessionInterface()

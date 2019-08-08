@@ -1,0 +1,160 @@
+@import '../../../styles/colors_light';
+@import '../../../styles/typography';
+@import '../../../styles/animation';
+@import url('https://fonts.googleapis.com/css?family=Red+Hat+Display&display=swap');
+
+.container {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(18, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  grid-column-gap: .25rem;
+  grid-row-gap: .25rem;
+}
+
+.col1 { grid-column-start: 1; grid-column-end: 2; }
+.col2 { grid-column-start: 2; grid-column-end: 3; }
+.col3 { grid-column-start: 3; grid-column-end: 4; }
+.col4 { grid-column-start: 4; grid-column-end: 5; }
+.col5 { grid-column-start: 5; grid-column-end: 6; }
+.col6 { grid-column-start: 6; grid-column-end: 7; }
+.col7 { grid-column-start: 7; grid-column-end: 8; }
+.col8 { grid-column-start: 8; grid-column-end: 9; }
+.col9 { grid-column-start: 9; grid-column-end: 10; }
+.col10 { grid-column-start: 10; grid-column-end: 11; }
+.col11 { grid-column-start: 11; grid-column-end: 12; }
+.col12 { grid-column-start: 12; grid-column-end: 13; }
+.col13 { grid-column-start: 13; grid-column-end: 14; }
+.col14 { grid-column-start: 14; grid-column-end: 15; }
+.col15 { grid-column-start: 15; grid-column-end: 16; }
+.col16 { grid-column-start: 16; grid-column-end: 17; }
+.col17 { grid-column-start: 17; grid-column-end: 18; }
+.col18 { grid-column-start: 18; grid-column-end: 19; }
+
+.row1 { grid-row-start: 1; grid-row-end: 2; }
+.row2 { grid-row-start: 2; grid-row-end: 3; }
+.row3 { grid-row-start: 3; grid-row-end: 4; }
+.row4 { grid-row-start: 4; grid-row-end: 5; }
+.row5 { grid-row-start: 5; grid-row-end: 6; }
+.row6 { grid-row-start: 6; grid-row-end: 7; }
+.row7 { grid-row-start: 7; grid-row-end: 8; }
+.row8 { grid-row-start: 8; grid-row-end: 9; }
+.row9 { grid-row-start: 9; grid-row-end: 10; }
+.row10 { grid-row-start: 10; grid-row-end: 11; }
+
+.elementContainer {
+  position: relative;
+}
+
+.element {
+  padding: .5rem .5rem .5rem .75rem;
+  background-color: $n10;
+  border-radius: 3px;
+  display: flex;
+  flex-flow: column nowrap;
+  transition: $ease-in-quad .4s;
+  cursor: pointer;
+
+  & > span.number {
+    @extend .text--sub2;
+    align-self: flex-end;
+  }
+  
+  & > span.symbol {
+    font-size: 1.25rem;
+    font-family: 'Red Hat Display';//$font-secondary;
+    font-weight: 500;
+    letter-spacing: .1rem;
+  }
+
+  & > span.name {
+    @extend .text--sub2;
+  }
+
+  &:hover {
+    z-index: 500;
+    transform: scale(1.3);
+    background-color: $n0;
+    box-shadow: 0 8px 14px rgba($color: #000000, $alpha: .16);
+    
+    & ~ .popup {
+      opacity: 1;
+    }
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: inset 0 0 1px 1px $ag500;
+  }
+
+  &.active {
+    background-color: $ag500;
+    & > span { color: $n0; }
+    & > span.number { color: $n20; }
+  }
+}
+
+.active {
+  background-color: $ag500;
+  & > span { color: $n0; }
+}
+
+.popup {
+  width: 20rem;
+  padding: 2rem 2rem;
+  background-color: $n0;
+  border-radius: 3px;
+  box-shadow: 0 8px 14px rgba($color: #000000, $alpha: .16);
+  transition: $ease-in-quad .4s;
+
+  position: absolute;
+  z-index: 500;
+  opacity: 0;
+
+  .elementDetail {
+    display: flex;
+    flex-flow: column nowrap;
+    width: 3.5rem;
+    margin-bottom: 1.5rem;
+
+    & > span.number {
+      @extend .text--sub2;
+      align-self: flex-end;
+    }
+    
+    & > span.symbol {
+      font-size: 2.5rem;
+      font-family: 'Red Hat Display';//$font-secondary;
+      font-weight: 500;
+      letter-spacing: .1rem;
+    }
+
+    & > span.name {
+      color: $n500;
+    }
+  }
+}
+
+.popupTopRight {
+  @extend .popup;
+  top: -9px;
+  left: calc(100% + 1.5rem);
+}
+
+.popupBottomRight {
+  @extend .popup;
+  bottom: -9px;
+  left: calc(100% + 1.5rem);
+}
+
+.popupTopLeft {
+  @extend .popup;
+  top: -9px;
+  right: calc(100% + 1.5rem);
+}
+
+.popupBottomLeft {
+  @extend .popup;
+  bottom: -9px;
+  right: calc(100% + 1.5rem);
+}

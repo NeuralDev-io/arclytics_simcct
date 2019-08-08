@@ -8,8 +8,9 @@ import styles from './AdminSidebar.module.scss'
 class AdminSidebar extends Component {
   constructor(props) {
     super(props)
+    const pathArr = window.location.pathname.split('/')
     this.state = {
-      active: 'analytics',
+      active: pathArr[pathArr.length - 1],
     }
   }
 
@@ -24,7 +25,7 @@ class AdminSidebar extends Component {
           className={`${styles.item} ${active === 'analytics' && styles.active}`}
         >
           <ActivityIcon className={styles.icon} />
-          <h6>Analytics</h6>
+          <span>Analytics</span>
         </a>
         <a
           id="alloys"
@@ -32,7 +33,7 @@ class AdminSidebar extends Component {
           className={`${styles.item} ${active === 'alloys' && styles.active}`}
         >
           <DatabaseIcon className={styles.icon} />
-          <h6>Alloy database</h6>
+          <span>Alloy database</span>
         </a>
         <a
           id="users"
@@ -40,7 +41,7 @@ class AdminSidebar extends Component {
           className={`${styles.item} ${active === 'users' && styles.active}`}
         >
           <UsersIcon className={styles.icon} />
-          <h6>Manage users</h6>
+          <span>Manage users</span>
         </a>
       </div>
     )

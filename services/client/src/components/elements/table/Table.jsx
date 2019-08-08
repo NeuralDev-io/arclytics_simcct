@@ -19,7 +19,6 @@ import Pagination from './Pagination'
 
 import './Table.scss'
 
-// TODO: add custom pagination component
 const Table = (props) => {
   const {
     hideDivider = false,

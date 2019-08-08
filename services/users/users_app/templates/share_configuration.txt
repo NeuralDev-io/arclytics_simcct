@@ -1,0 +1,15 @@
+Hello,
+
+
+{{ owner_name }} would like to share an Arclytics configuration
+with you!
+
+To view this configuration, pleas click the link below:
+
+{{ config_url }}
+
+If you need additional assistance, or you did not make this change,
+please contact help@neuraldev.io.
+
+Cheers,
+The Arclytics Team

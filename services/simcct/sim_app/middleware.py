@@ -30,7 +30,7 @@ from logger.arc_logger import AppLogger
 logger = AppLogger(__name__)
 
 
-def session_and_token_required(f):
+def token_required_flask(f):
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {'status': 'fail', 'message': 'Invalid payload.'}
@@ -54,6 +54,34 @@ def session_and_token_required(f):
         #    for a user.
 
         return f(token, *args, **kwargs)
+
+    return decorated_func
+
+
+def session_and_token_required_flask(f):
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+        # Get the auth header
+        auth_header = request.headers.get('Authorization', None)
+        session_key = request.headers.get('Session', None)
+
+        if not auth_header:
+            response['message'] = 'No valid Authorization in header.'
+            return jsonify(response), 401
+
+        token = auth_header.split(' ')[1]
+
+        if token == '':
+            response['message'] = 'Invalid JWT token in header.'
+            return jsonify(response), 401
+
+        if not session_key:
+            response['message'] = 'No Session key in header.'
+            return response, 401
+
+        return f(token, session_key, *args, **kwargs)
 
     return decorated_func
 

@@ -27,13 +27,13 @@ from sim_app.extensions import api
 from sim_app.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
-from sim_app.middleware import session_and_token_required
+from sim_app.middleware import token_required_flask, token_and_session_required
 
 configs_blueprint = Blueprint('sim_configurations', __name__)
 
 
 class Configurations(Resource):
-    method_decorators = {'patch': [session_and_token_required]}
+    method_decorators = {'patch': [token_and_session_required]}
 
     # noinspection PyMethodMayBeStatic
     def patch(self, token, session_key):
@@ -108,7 +108,7 @@ class Configurations(Resource):
 
 
 class ConfigsMethod(Resource):
-    method_decorators = {'put': [session_and_token_required]}
+    method_decorators = {'put': [token_and_session_required]}
 
     # noinspection PyMethodMayBeStatic
     def put(self, token, session_key):
@@ -166,8 +166,8 @@ class ConfigsMethod(Resource):
 
 class MartensiteStart(Resource):
     method_decorators = {
-        'get': [session_and_token_required],
-        'put': [session_and_token_required]
+        'get': [token_and_session_required],
+        'put': [token_and_session_required]
     }
 
     # noinspection PyMethodMayBeStatic
@@ -294,8 +294,8 @@ class MartensiteStart(Resource):
 
 class BainiteStart(Resource):
     method_decorators = {
-        'get': [session_and_token_required],
-        'put': [session_and_token_required]
+        'get': [token_and_session_required],
+        'put': [token_and_session_required]
     }
 
     # noinspection PyMethodMayBeStatic
@@ -410,8 +410,8 @@ class BainiteStart(Resource):
 
 class Austenite(Resource):
     method_decorators = {
-        'get': [session_and_token_required],
-        'put': [session_and_token_required]
+        'get': [token_and_session_required],
+        'put': [token_and_session_required]
     }
 
     # noinspection PyMethodMayBeStatic

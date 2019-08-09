@@ -25,7 +25,7 @@ from flask import Blueprint
 from flask_restful import Resource
 
 from sim_app.extensions import api
-from sim_app.middleware import session_and_token_required
+from sim_app.middleware import token_and_session_required
 from sim_app.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration
 from simulation.phasesimulation import PhaseSimulation
@@ -35,7 +35,7 @@ sim_blueprint = Blueprint('simulation', __name__)
 
 class Simulation(Resource):
 
-    method_decorators = {'get': [session_and_token_required]}
+    method_decorators = {'get': [token_and_session_required]}
 
     # noinspection PyMethodMayBeStatic
     def get(self, token, session_key):

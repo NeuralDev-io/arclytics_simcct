@@ -21,12 +21,13 @@ from bson import ObjectId
 from pymongo import MongoClient
 from flask import current_app, session, json
 
+import settings
 from tests.test_api_base import BaseTestCase
-from sim_app.app import BASE_DIR
+from sim_app.sim_session import SimSessionService
 from sim_app.schemas import AlloyStoreSchema, ConfigurationsSchema
 from simulation.periodic import PeriodicTable as pT
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'simulation' / 'sim_configs.json'
 
 
 class TestSessionService(BaseTestCase):
@@ -97,6 +98,7 @@ class TestSessionService(BaseTestCase):
             data=json.dumps(
                 {
                     '_id': self.user_id,
+                    'is_admin': False,
                     'last_configurations': configs,
                     'last_alloy_store': alloy_store
                 }
@@ -105,12 +107,14 @@ class TestSessionService(BaseTestCase):
             content_type='application/json'
         )
         data = json.loads(login_res.data.decode())
+        self.session_key = data['session_key']
         self.assertEqual(data['message'], 'User session initiated.')
         self.assertEqual(data['status'], 'success')
-        self.assertEqual(session.get(f'{self.user_id}:token'), self.token)
-        self.assertEqual(session.get(f'{self.token}:user'), self.user_id)
-        self.assertTrue(session.get(f'{self.token}:configurations'))
-        self.assertTrue(session.get(f'{self.token}:alloy_store'))
+        _, session_store = SimSessionService().load_session(self.session_key)
+        self.assertEqual(session_store.get('token'), self.token)
+        self.assertEqual(session_store.get('user_id'), self.user_id)
+        self.assertTrue(session_store.get('configurations'))
+        self.assertTrue(session_store.get('alloy_store'))
 
     def test_session_user_ping(self):
         """Just a sanity check test that there is connection to users."""
@@ -197,14 +201,17 @@ class TestSessionService(BaseTestCase):
                 '/session/login',
                 data=json.dumps({
                     '_id': str(_id),
+                    'is_admin': False
                 }),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(login_res.data.decode())
+            session_key = data['session_key']
             self.assertTrue(data['status'] == 'success')
             self.assertEqual(data['message'], 'User session initiated.')
-            sess_saved = session.get(f'{str(token)}:configurations')
+            _, session_store = SimSessionService().load_session(session_key)
+            sess_saved = session_store.get('configurations')
             self.assertEqual(sess_saved['method'], 'Li98')
 
     def test_login_user_with_invalid_configurations(self):
@@ -296,14 +303,16 @@ class TestSessionService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(login_res.data.decode())
+            session_key = data['session_key']
             self.assertTrue(data['status'] == 'success')
             self.assertEqual(data['message'], 'User session initiated.')
-            sess_saved = session.get(f'{str(self.token)}:configurations')
-            self.assertEqual(sess_saved['method'], 'Li98')
-            self.assertEqual(sess_saved['grain_size'], 8.0)
-            self.assertEqual(sess_saved['auto_calculate_ms'], True)
-            self.assertEqual(sess_saved['auto_calculate_bs'], True)
-            self.assertEqual(sess_saved['auto_calculate_ae'], True)
+            _, sess_saved = SimSessionService().load_session(session_key)
+            sess_configs = sess_saved.get('configurations')
+            self.assertEqual(sess_configs['method'], 'Li98')
+            self.assertEqual(sess_configs['grain_size'], 8.0)
+            self.assertEqual(sess_configs['auto_calculate_ms'], True)
+            self.assertEqual(sess_configs['auto_calculate_bs'], True)
+            self.assertEqual(sess_configs['auto_calculate_ae'], True)
 
     def test_login_user_with_invalid_compositions(self):
         """Ensure if the comp is invalid it fails."""
@@ -375,6 +384,7 @@ class TestSessionService(BaseTestCase):
                 data=json.dumps(
                     {
                         '_id': str(self.user_id),
+                        'is_admin': False,
                         'token': self.token,
                         'last_configurations': {},
                         'last_alloy_store': {
@@ -394,9 +404,12 @@ class TestSessionService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(login_res.data.decode())
+            session_key = data['session_key']
             self.assertTrue(data['status'] == 'success')
             self.assertEqual(data['message'], 'User session initiated.')
-            alloy_store = session.get(f'{str(self.token)}:alloy_store')
+
+            _, session_store = SimSessionService().load_session(session_key)
+            alloy_store = session_store.get('alloy_store')
             comp_store = alloy_store['alloys']['parent']
             self.assertTrue(comp_store['compositions'])
             stored_elem1 = comp_store['compositions'][0]
@@ -418,12 +431,12 @@ class TestSessionService(BaseTestCase):
             self.login_jane(client)
             logout_res = client.get(
                 '/session/logout',
-                headers={'Authorization': f'Bearer ThisWasNotTheUsersToken'},
+                headers={'Session': ''},
                 content_type='application/json'
             )
             data = json.loads(logout_res.data.decode())
-            # self.assert401(logout_res)
-            # self.assertEqual(data['status'], 'fail')
+            self.assert401(logout_res)
+            self.assertEqual(data['status'], 'fail')
             # self.assertTrue(session.get(f'{self.user_id}:token') ==
             # self.token)
             # self.assertTrue(session.get('user'))

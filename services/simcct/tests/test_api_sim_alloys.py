@@ -19,15 +19,17 @@ from pathlib import Path
 from bson import ObjectId
 from flask import session, current_app
 
+import settings
 from tests.test_api_base import BaseTestCase
-from tests.utilities import convert_json_to_comp
-from sim_app.app import BASE_DIR
 from sim_app.schemas import (
     AlloyStoreRequestSchema, ConfigurationsSchema, AlloyStoreSchema
 )
+from sim_app.sim_session import SimSessionService
 from simulation.periodic import PeriodicTable as pT
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(
+    settings.BASE_DIR
+) / 'simulation' / 'sim_configs.json'
 
 
 class TestSimConfigurations(BaseTestCase):
@@ -57,6 +59,7 @@ class TestSimConfigurations(BaseTestCase):
             data=json.dumps(
                 {
                     '_id': str(_id),
+                    'is_admin': False,
                     'last_configurations': configs,
                     'last_alloy_store': alloy_store
                 }
@@ -65,16 +68,18 @@ class TestSimConfigurations(BaseTestCase):
             content_type='application/json'
         )
         data = json.loads(sess_res.data.decode())
-        session_store = session.get(f'{token}:alloy_store')
+        session_key = data['session_key']
+        _, session_store = SimSessionService().load_session(session_key)
+        session_alloy = session_store.get('alloy_store')
         self.assertEqual(data['status'], 'success')
         self.assertTrue(sess_res.status_code == 201)
-        self.assertEqual(alloy_store, session_store)
+        self.assertEqual(alloy_store, session_alloy)
 
-        return configs, alloy_store, token
+        return configs, alloy_store, token, session_key
 
     def test_post_alloy_missing_elements(self):
         with current_app.test_client() as client:
-            configs, comp, token = self.login_client(client)
+            configs, comp, token, session_key = self.login_client(client)
 
             res = client.post(
                 '/alloys/update',
@@ -91,7 +96,10 @@ class TestSimConfigurations(BaseTestCase):
                         }
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': session_key
+                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -105,7 +113,7 @@ class TestSimConfigurations(BaseTestCase):
 
     def test_post_alloy_all_elements(self):
         with current_app.test_client() as client:
-            configs, comp, token = self.login_client(client)
+            configs, comp, token, session_key = self.login_client(client)
 
             good_comp = [
                 {
@@ -162,7 +170,10 @@ class TestSimConfigurations(BaseTestCase):
                         }
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': session_key
+                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -182,11 +193,10 @@ class TestSimConfigurations(BaseTestCase):
     def test_on_compositions_change(self):
         """Ensure if we update the compositions it changes in session store."""
         with current_app.test_client() as client:
-            configs, alloy_store, token = self.login_client(client)
+            configs, alloy_store, token, session_key = self.login_client(client)
 
             # By default the auto calculate bools are all true so we need to
             # set them to false to get this working.
-
             client.put(
                 '/configs/ms',
                 data=json.dumps(
@@ -195,13 +205,19 @@ class TestSimConfigurations(BaseTestCase):
                         'ms_rate_param': 0.0168,
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': session_key
+                },
                 content_type='application/json'
             )
             client.put(
                 '/configs/bs',
                 data=json.dumps({'bs_temp': 563.238}),
-                headers={'Authorization': f'Bearer {token}'},
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': session_key
+                },
                 content_type='application/json'
             )
             client.put(
@@ -210,17 +226,21 @@ class TestSimConfigurations(BaseTestCase):
                     'ae1_temp': 700.902,
                     'ae3_temp': 845.838
                 }),
-                headers={'Authorization': f'Bearer {token}'},
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': session_key
+                },
                 content_type='application/json'
             )
+            _, session_store = SimSessionService().load_session(session_key)
             self.assertFalse(
-                session[f'{token}:configurations']['auto_calculate_ms']
+                session_store['configurations']['auto_calculate_ms']
             )
             self.assertFalse(
-                session[f'{token}:configurations']['auto_calculate_bs']
+                session_store['configurations']['auto_calculate_bs']
             )
             self.assertFalse(
-                session[f'{token}:configurations']['auto_calculate_ae']
+                session_store['configurations']['auto_calculate_ae']
             )
 
             new_alloy_store = {
@@ -238,7 +258,10 @@ class TestSimConfigurations(BaseTestCase):
             res = client.patch(
                 '/alloys/update',
                 data=json.dumps(req_alloy),
-                headers={'Authorization': f'Bearer {token}'},
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': session_key
+                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -246,7 +269,8 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['message'], 'Compositions updated.')
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
-            session_comp = session.get(f'{token}:alloy_store')
+            _, session_store = SimSessionService().load_session(session_key)
+            session_comp = session_store.get('alloy_store')
             self.assertEqual(
                 session_comp['alloys']['parent'], new_alloy_store['alloy']
             )
@@ -254,7 +278,7 @@ class TestSimConfigurations(BaseTestCase):
     def test_on_comp_change_invalid_comp_schema(self):
         """Ensure if we send a bad alloy schema we get errors."""
         with current_app.test_client() as client:
-            configs, comp, token = self.login_client(client)
+            configs, comp, token, s_key = self.login_client(client)
 
             new_comp = {
                 'alloy_option': 'single',
@@ -268,7 +292,10 @@ class TestSimConfigurations(BaseTestCase):
             res = client.patch(
                 '/alloys/update',
                 data=json.dumps(new_comp),
-                headers={'Authorization': f'Bearer {token}'},
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': s_key
+                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -279,13 +306,14 @@ class TestSimConfigurations(BaseTestCase):
             self.assert400(res)
             self.assertEqual(data['status'], 'fail')
             self.assertTrue(data['errors'])
-            session_comp = session.get(f'{token}:alloy_store')
+            _, session_store = SimSessionService().load_session(s_key)
+            session_comp = session_store.get('alloy_store')
             self.assertNotEqual(session_comp, new_comp)
 
     def test_on_comp_change_invalid_empty_schema(self):
         """Ensure if we send a bad alloy schema we get errors."""
         with current_app.test_client() as client:
-            configs, comp, token = self.login_client(client)
+            configs, comp, token, session_key = self.login_client(client)
 
             new_comp = {
                 'alloy_option': 'single',
@@ -299,7 +327,10 @@ class TestSimConfigurations(BaseTestCase):
             res = client.patch(
                 '/alloys/update',
                 data=json.dumps(new_comp),
-                headers={'Authorization': f'Bearer {token}'},
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': session_key
+                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -309,37 +340,48 @@ class TestSimConfigurations(BaseTestCase):
             )
             self.assert400(res)
             self.assertEqual(data['status'], 'fail')
-            session_comp = session.get(f'{token}:alloy_store')
+            _, session_store = SimSessionService().load_session(session_key)
+            session_comp = session_store.get('alloy_store')
             self.assertNotEqual(session_comp, new_comp)
 
     def test_on_comp_change_auto_update_temps(self):
         """Ensure if we update compositions schema we also auto update."""
         with current_app.test_client() as client:
-            configs, alloy_store, token = self.login_client(client)
+            configs, alloy_store, token, session_key = self.login_client(client)
 
             # We need to make auto_calculate true by using the endpoints
             client.get(
                 '/configs/ms',
-                headers={'Authorization': f'Bearer {token}'},
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': session_key
+                },
                 content_type='application/json'
             )
             client.get(
                 '/configs/ae',
-                headers={'Authorization': f'Bearer {token}'},
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': session_key
+                },
                 content_type='application/json'
             )
             client.get(
                 '/configs/bs',
-                headers={'Authorization': f'Bearer {token}'},
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': session_key
+                },
                 content_type='application/json'
             )
 
-            sess_store = session.get(f'{token}:configurations')
-            self.assertAlmostEqual(sess_store['ms_temp'], 464.1960, 4)
-            self.assertAlmostEqual(sess_store['ms_rate_param'], 0.02069, 4)
-            self.assertAlmostEqual(sess_store['bs_temp'], 563.2380, 4)
-            self.assertAlmostEqual(sess_store['ae1_temp'], 700.90196, 4)
-            self.assertAlmostEqual(sess_store['ae3_temp'], 845.83721, 4)
+            _, session_store = SimSessionService().load_session(session_key)
+            sess_configs = session_store.get('configurations')
+            self.assertAlmostEqual(sess_configs['ms_temp'], 464.1960, 4)
+            self.assertAlmostEqual(sess_configs['ms_rate_param'], 0.02069, 4)
+            self.assertAlmostEqual(sess_configs['bs_temp'], 563.2380, 4)
+            self.assertAlmostEqual(sess_configs['ae1_temp'], 700.90196, 4)
+            self.assertAlmostEqual(sess_configs['ae3_temp'], 845.83721, 4)
 
             # Now we change the compositions and make sure it's all updated
             # with the composition change
@@ -357,7 +399,10 @@ class TestSimConfigurations(BaseTestCase):
             res = client.patch(
                 '/alloys/update',
                 data=json.dumps(req_alloy),
-                headers={'Authorization': f'Bearer {token}'},
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': session_key
+                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -383,21 +428,23 @@ class TestSimConfigurations(BaseTestCase):
             self.assertAlmostEqual(data['data']['bs_temp'], bs_temp, 2)
             self.assertAlmostEqual(data['data']['ae1_temp'], ae1_temp, 4)
             self.assertAlmostEqual(data['data']['ae3_temp'], ae3_temp, 4)
-            sess_store = session.get(f'{token}:configurations')
-            self.assertAlmostEqual(sess_store['ms_temp'], ms_temp, 4)
+            _, session_store = SimSessionService().load_session(session_key)
+            sess_configs = session_store.get('configurations')
+            self.assertAlmostEqual(sess_configs['ms_temp'], ms_temp, 4)
             self.assertAlmostEqual(
-                sess_store['ms_rate_param'], ms_rate_param, 4
+                sess_configs['ms_rate_param'], ms_rate_param, 4
             )
-            self.assertAlmostEqual(sess_store['bs_temp'], bs_temp, 2)
-            self.assertAlmostEqual(sess_store['ae1_temp'], ae1_temp, 4)
-            self.assertAlmostEqual(sess_store['ae3_temp'], ae3_temp, 4)
+            self.assertAlmostEqual(sess_configs['bs_temp'], bs_temp, 2)
+            self.assertAlmostEqual(sess_configs['ae1_temp'], ae1_temp, 4)
+            self.assertAlmostEqual(sess_configs['ae3_temp'], ae3_temp, 4)
 
     def test_on_comp_change_bad_comp_payload(self):
         """Ensure if we send no compositions to update it fails."""
         with current_app.test_client() as client:
-            configs, comp, token = self.login_client(client)
+            configs, comp, token, session_key = self.login_client(client)
 
-            prev_sess_comp = session.get(f'{token}:alloy_store')
+            _, session_store = SimSessionService().load_session(session_key)
+            prev_sess_comp = session_store.get('alloy_store')
             res = client.patch(
                 '/alloys/update',
                 data=json.dumps(
@@ -409,7 +456,10 @@ class TestSimConfigurations(BaseTestCase):
                         }
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': session_key
+                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -419,7 +469,8 @@ class TestSimConfigurations(BaseTestCase):
             )
             self.assert400(res)
             self.assertEqual(data['status'], 'fail')
-            after_sess_comp = session.get(f'{token}:alloy_store')
+            _, session_store = SimSessionService().load_session(session_key)
+            after_sess_comp = session_store.get('alloy_store')
             self.assertEqual(prev_sess_comp, after_sess_comp)
 
     # def test_on_comp_change_only_auto_ms_bs(self):

@@ -16,17 +16,16 @@ __date__ = '2019.07.18'
 import unittest
 from pathlib import Path
 
-from bson import ObjectId
 from flask import json
 from marshmallow import ValidationError
 
-from sim_app.app import BASE_DIR
+import settings
 from tests.test_api_base import BaseTestCase
 from sim_app.schemas import (
     AlloySchema, ConfigurationsSchema, SetupConfigsSchema
 )
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'simulation' / 'sim_configs.json'
 
 
 class TestSchemas(BaseTestCase):

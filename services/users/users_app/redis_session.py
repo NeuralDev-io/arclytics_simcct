@@ -50,6 +50,7 @@ def utc_timestamp_by_second(utc_date_time):
 
 
 class RedisSession(CallbackDict, SessionMixin):
+    """The class to create a new <RedisSession > Flask Session instance."""
     def __init__(self, initial=None, sid=None, new=False):
         def on_update(s):
             s.modified = True
@@ -61,7 +62,19 @@ class RedisSession(CallbackDict, SessionMixin):
 
 
 class RedisSessionInterface(SessionInterface):
-    """The interface defines how a Session is stored and opened in Flask."""
+    """The interface defines how a Session is stored and opened in Flask. When
+    initialising the interface, it will automatically make instantiate a Redis
+    client connection and set `app.session_interface` to itself.
+
+        Usage:
+            Option A.
+            session = RedisSessionInterface(app)
+
+            Option B.
+            session = RedisSessionInterface()
+
+            session.init_app(app)
+    """
     def __init__(self, app=None):
         # self.redis = redis if redis is not None else Redis()
         if app:

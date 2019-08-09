@@ -35,7 +35,9 @@ from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
 from logger.arc_logger import AppLogger
-from users_app.models import User, UserProfile, AdminProfile
+from users_app.models import (
+    User, UserProfile, AdminProfile, Configuration, SharedConfiguration
+)
 from users_app.middleware import authenticate, authenticate_admin
 from users_app.extensions import api
 from users_app.token import (
@@ -71,21 +73,7 @@ class UserList(Resource):
 class Users(Resource):
     """Get/Put a single user's details."""
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-    method_decorators = {'get': [authenticate], 'put': [authenticate]}
-=======
     method_decorators = {'get': [authenticate], 'patch': [authenticate]}
->>>>>>> ARC-105
-<<<<<<< Updated upstream
-=======
-    method_decorators = {'get': [authenticate], 'patch': [authenticate]}
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
 
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
@@ -257,50 +245,16 @@ class Users(Resource):
                 response['data']['profile']['sci_tech_exp'] = sci_tech_exp
             if phase_transform_exp:
                 user.profile.phase_transform_exp = phase_transform_exp
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-        else:
-            profile = UserProfile(
-                aim=aim,
-                highest_education=highest_education,
-                sci_tech_exp=sci_tech_exp,
-                phase_transform_exp=phase_transform_exp
-            )
-            user.profile = profile
-=======
                 response['data']['profile']['phase_transform_exp'] = \
                     phase_transform_exp
->>>>>>> ARC-105
-<<<<<<< Updated upstream
-=======
-                response['data']['profile']['phase_transform_exp'] = \
-                    phase_transform_exp
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
 
         # If the user is an admin, we can also update their admin profile
         # details
         if user.is_admin:
             # If the user is an admin but is not verified, we must also reject
             # the request.
-            if not user.admin_profile or not user.admin_profile.verified:
+            if not user.admin_profile.verified:
                 response['message'] = 'User is not verified as an admin.'
-                response.pop('data')
-                return response, 401
-
-            # If the user is an admin but does not have an admin profile or they
-            # do not have a position then something has gone wrong when they
-            # were made an admin and we need to reject the request so as to not
-            # put more invalid information in the user's document.
-            if not user.admin_profile or not user.admin_profile.position:
-                response['message'] = (
-                    'User admin profile is invalid and '
-                    'cannot be updated.'
-                )
                 response.pop('data')
                 return response, 401
 
@@ -343,415 +297,7 @@ class Users(Resource):
 
         # Return response body.
         response['status'] = 'success'
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-        response['message'
-                 ] = f'Successfully updated User details for {user.id}.'
-=======
->>>>>>> ARC-105
-<<<<<<< Updated upstream
-=======
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
         return response, 200
-
-
-class UserLast(Resource):
-    """
-    Returns the user's Alloy and Configurations used, and CCT/TTT results
-    (if any)
-    """
-
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
-    # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
-
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
-=======
-    # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
-
->>>>>>> ARC-105
-    method_decorators = {'get': [authenticate]}
-
-    def get(self, resp) -> Tuple[dict, int]:
-        user = User.objects.get(id=resp)
-        if not user.last_alloy:
-            response = {
-                'status': 'fail',
-                'message': 'No last composition was found.'
-            }
-            return response, 400
-        if not user.last_configuration:
-            response = {
-                'status': 'fail',
-                'message': 'No last configuration was found.'
-            }
-            return response, 400
-
-        response = {
-            'status': 'success',
-            'configuration': user.last_configuration.to_dict(),
-            'composition': user.last_alloy.to_dict()
-        }
-        return response, 200
-
-
-class UserAlloys(Resource):
-    """We get the list of User's alloys stored in their document"""
-
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
-    # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
-
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
-=======
-    # TODO(davidmatthews1004@gmail.com) Update this method to match new schema.
-
->>>>>>> ARC-105
-    method_decorators = {'get': [authenticate], 'post': [authenticate]}
-
-    def get(self, resp) -> Tuple[dict, int]:
-        user = User.objects.get(id=resp)
-        if not user.saved_alloys:
-            response = {'status': 'fail', 'message': 'No alloys found.'}
-            return response, 400
-        alloys = []
-        for a in user.saved_alloys:
-            alloys.append(a.to_dict())
-        response = {'status': 'success', 'alloys': alloys}
-        return response, 200
-
-    def post(self, resp) -> Tuple[dict, int]:
-        user = User.objects.get(id=resp)
-        data = request.get_json()
-        if not data:
-            response = {'status': 'fail', 'message': 'Invalid payload.'}
-            return response, 400
-        #TODO(davidmatthews1004@gmail.com)
-
-
-class UserProfiles(Resource):
-    """Create/Retrieve/Update User's profile details"""
-
-    method_decorators = {
-        'get': [authenticate],
-        'patch': [authenticate],
-        'post': [authenticate]
-    }
-
-    def get(self, resp) -> Tuple[dict, int]:
-        user = User.objects.get(id=resp)
-        response = {
-            'status': 'success',
-            'data': {
-                'profile': {
-                    'aim': user.profile.aim,
-                    'highest_education': user.profile.highest_education,
-                    'sci_tech_exp': user.profile.sci_tech_exp,
-                    'phase_transform_exp': user.profile.phase_transform_exp
-                }
-            }
-        }
-
-        if user.is_admin:
-            response['data']['admin_profile'] = {
-                'position': user.admin_profile.position,
-                'mobile_number': user.admin_profile.mobile_number
-            }
-
-        return response, 200
-
-    def patch(self, resp) -> Tuple[dict, int]:
-        # Get patch data
-        data = request.get_json()
-
-        # Ensure the payload is not empty
-        response = {'status': 'fail', 'message': 'Invalid payload.'}
-        if not data:
-            return response, 400
-
-        # Ensure there are valid keys in the request body
-        valid_keys = [
-            'aim', 'highest_education', 'sci_tech_exp', 'phase_transform_exp'
-        ]
-        is_update = False
-        for k in valid_keys:
-            if k in data.keys():
-                is_update = True
-                break
-
-        # If there are no valid keys, reject request.
-        if not is_update:
-            response['message'] = 'Payload does not have any valid keys.'
-            return response, 400
-
-        # Otherwise begin extracting request body
-        aim = data.get('aim', None)
-        highest_education = data.get('highest_education', None)
-        sci_tech_exp = data.get('sci_tech_exp', None)
-        phase_transform_exp = data.get('phase_transform_exp', None)
-
-        # Get the user so we can begin updating fields.
-        user = User.objects.get(id=resp)
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-
-        # If the user does not already have profile details set we need to
-        # create a user profile object.
-        if not user.profile:
-            # If we do not have all the profile fields, we will need to reject
-            # the request as we are unable to create a profile object.
-            if (
-                not aim or not highest_education or not sci_tech_exp
-                or not phase_transform_exp
-            ):
-                response['message'] = (
-                    'User profile cannot be patched as '
-                    'there is no existing profile.'
-                )
-                return response, 400
-
-            # Once we have ensured we have all the fields, we can create the
-            # profile object and put the information in the response body.
-            response['data'] = {
-                'aim': aim,
-                'highest_education': highest_education,
-                'sci_tech_exp': sci_tech_exp,
-                'phase_transform_exp': phase_transform_exp
-            }
-            profile = UserProfile(
-                aim=aim,
-                highest_education=highest_education,
-                sci_tech_exp=sci_tech_exp,
-                phase_transform_exp=phase_transform_exp
-            )
-            user.profile = profile
-
-=======
-
-=======
-
->>>>>>> Stashed changes
-        # If the user does not already have profile details set we need to
-        # create a user profile object.
-        if not user.profile:
-            # If we do not have all the profile fields, we will need to reject
-            # the request as we are unable to create a profile object.
-            if (
-                not aim or not highest_education or not sci_tech_exp
-                or not phase_transform_exp
-            ):
-                response['message'] = (
-                    'User profile cannot be patched as '
-                    'there is no existing profile.'
-                )
-                return response, 400
-
-            # Once we have ensured we have all the fields, we can create the
-            # profile object and put the information in the response body.
-            response['data'] = {
-                'aim': aim,
-                'highest_education': highest_education,
-                'sci_tech_exp': sci_tech_exp,
-                'phase_transform_exp': phase_transform_exp
-            }
-            profile = UserProfile(
-                aim=aim,
-                highest_education=highest_education,
-                sci_tech_exp=sci_tech_exp,
-                phase_transform_exp=phase_transform_exp
-            )
-            user.profile = profile
-
-<<<<<<< Updated upstream
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
-        # Otherwise if the user already has a profile, we can update individual
-        # fields.
-        else:
-            response['data'] = {}
-            if aim:
-                user.profile.aim = aim
-                response['data']['aim'] = aim
-            if highest_education:
-                user.profile.highest_education = highest_education
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-
-=======
-                response['data']['highest_education'] = highest_education
->>>>>>> ARC-105
-<<<<<<< Updated upstream
-=======
-                response['data']['highest_education'] = highest_education
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
-            if sci_tech_exp:
-                user.profile.sci_tech_exp = sci_tech_exp
-                response['data']['sci_tech_exp'] = sci_tech_exp
-            if phase_transform_exp:
-                user.profile.phase_transform_exp = phase_transform_exp
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-        else:
-            profile = UserProfile(
-                aim=aim,
-                highest_education=highest_education,
-                sci_tech_exp=sci_tech_exp,
-                phase_transform_exp=phase_transform_exp
-            )
-            user.profile = profile
-=======
-                response['data']['phase_transform_exp'] = phase_transform_exp
->>>>>>> ARC-105
-<<<<<<< Updated upstream
-=======
-                response['data']['phase_transform_exp'] = phase_transform_exp
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
-
-        # Updated the user's last_updated field to now.
-        user.last_updated = datetime.utcnow()
-
-        # Save the changes for the user and the embedded documents
-        user.save()
-
-        # Return the response body
-        response['status'] = 'success'
-        response.pop('message')
-        return response, 200
-
-    def post(self, resp) -> Tuple[dict, int]:
-        # Get post data
-        data = request.get_json()
-
-        # Validating empty payload
-        response = {'status': 'fail', 'message': 'Invalid payload.'}
-        if not data:
-            return response, 400
-
-        # Extract the request body data
-        aim = data.get('aim', None)
-        highest_education = data.get('highest_education', None)
-        sci_tech_exp = data.get('sci_tech_exp', None)
-        phase_transform_exp = data.get('phase_transform_exp', None)
-
-        # Get the user
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-        id = data.get('id')
-        user = User.objects.get(data.get(id))
-
-        if not aim:
-            response = {'status': 'fail', 'message': 'Missing aim.'}
-            return response, 400
-        if not highest_education:
-            response = {
-                'status': 'fail',
-                'message': 'Missing highest education.'
-            }
-            return response, 400
-        if not sci_tech_exp:
-            response = {
-                'status': 'fail',
-                'message': 'Missing science technology experience.'
-            }
-            return response, 400
-        if not phase_transform_exp:
-            response = {
-                'status': 'fail',
-                'message': 'Missing phase transformation experience.'
-            }
-            return response, 400
-
-=======
-        user = User.objects.get(id=resp)
-        # Create a user profile object that can replace any existing user
-        # profile information.
->>>>>>> ARC-105
-<<<<<<< Updated upstream
-=======
-        user = User.objects.get(id=resp)
-        # Create a user profile object that can replace any existing user
-        # profile information.
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
-        profile = UserProfile(
-            aim=aim,
-            highest_education=highest_education,
-            sci_tech_exp=sci_tech_exp,
-            phase_transform_exp=phase_transform_exp
-        )
-        user.profile = profile
-
-        # Attempt to save the new profile object. If there are missing fields
-        # an exception will be raised, caught and sent back.
-        try:
-            user.last_updated = datetime.utcnow()
-            user.save()
-        except ValidationError as e:
-            response['errors'] = str(e)
-            response['message'] = 'Validation error.'
-            return response, 400
-
-        # Otherwise the save was successful and a response with the updated
-        # fields can be sent.
-        response['status'] = 'success'
-        response.pop('message')
-        response['data'] = {
-            'aim': aim,
-            'highest_education': highest_education,
-            'sci_tech_exp': sci_tech_exp,
-            'phase_transform_exp': phase_transform_exp
-        }
-        return response, 201
-
-
-class UserConfigurations(Resource):
-    """Retrieve the list of configurations saved in the User's document"""
-
-    method_decorators = {'get': [authenticate]}
-
-    def get(self, resp) -> Tuple[dict, int]:
-        user = User.objects.get(id=resp)
-        response = {'status': 'success', 'message': 'fail'}
-        return response, 400
-        #TODO(davidmatthews1004@gmail.com)
-
-
-class UserGraphs(Resource):
-    """Retrieve the list of Graphs saved in the User's document."""
-
-    method_decorators = {'get': [authenticate]}
-
-    def get(self, resp) -> Tuple[dict, int]:
-        pass
-        # TODO(davidmatthews1004@gmail.com)
 
 
 class AdminCreate(Resource):
@@ -764,21 +310,7 @@ class AdminCreate(Resource):
         post_data = request.get_json()
 
         # Validating empty payload
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-        response = {'status': 'fail', 'message': 'User does not exist.'}
-=======
         response = {'status': 'fail', 'message': 'Invalid payload.'}
->>>>>>> ARC-105
-<<<<<<< Updated upstream
-=======
-        response = {'status': 'fail', 'message': 'Invalid payload.'}
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
         if not post_data:
             return response, 400
 
@@ -823,141 +355,101 @@ class AdminCreate(Resource):
         # Get the admin object so we can email them a confirmation email.
         admin = User.objects.get(id=resp)
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-            # generate auth token
-            auth_token = user.encode_auth_token(user.id)
-            # generate the confirmation token for verifying email
-            confirmation_token = generate_confirmation_token(email)
-            confirm_url = generate_url(
-                'auth.confirm_email_admin', confirmation_token
-            )
+        # Start promotion
+        user.admin_profile = AdminProfile(
+            position=position,
+            mobile_number=None,
+            verified=False,
+            promoted_by=admin.id
+        )
+        user.last_updated = datetime.utcnow()
+        user.save()
 
-            from celery_runner import celery
-            task = celery.send_tassk(
-                'tasks.send_email',
-                kwargs={
-                    'to':
-                    email,
-                    'subject_suffix':
-                    'Please Confirm You Are Now Admin',
-                    'html_template':
+        # Create a cancellation link for the promoter
+        promotion_cancellation_token = generate_promotion_confirmation_token(
+            admin.email, user.email
+        )
+        promotion_cancellation_url = generate_url(
+            'users.cancel_promotion', promotion_cancellation_token
+        )
+
+        from celery_runner import celery
+        celery.send_task(
+            'tasks.send_email',
+            kwargs={
+                'to':
+                admin.email,
+                'subject_suffix':
+                'You Promoted a User!',
+                'html_template':
+                render_template(
+                    'cancel_promotion.html',
+                    promotion_cancellation_url=promotion_cancellation_url,
+                    email=admin.email,
+                    position=position,
+                    admin_name=f'{admin.first_name} {admin.last_name}',
+                    user_name=f'{user.first_name} {user.last_name}'
+                ),
+                'text_template':
+                render_template(
+                    'cancel_promotion.txt',
+                    promotion_cancellation_url=promotion_cancellation_url,
+                    email=admin.email,
+                    position=position,
+                    admin_name=f'{admin.first_name} {admin.last_name}',
+                    user_name=f'{user.first_name} {user.last_name}'
+                )
+            }
+        )
+<<<<<<< Updated upstream
+
+        # Create a verification link for the user being promoted
+        promotion_verification_token = generate_confirmation_token(
+            user.email
+        )
+        promotion_verification_url = generate_url(
+            'users.verify_promotion', promotion_verification_token
+        )
+
+        celery.send_task(
+            'tasks.send_email',
+            kwargs={
+                'to':
+                    user.email,
+                'subject_suffix':
+                    'Acknowledge Promotion',
+                'html_template':
                     render_template(
-                        'activate_admin.html',
-                        confirm_url=confirm_url,
-                        user_name=f'{user.first_name} {user.last_name}'
+                        'acknowledge_promotion.html',
+                        promotion_verification_url=promotion_verification_url,
+                        email=user.email,
+                        position=position,
+                        user_name=(
+                            f'{user.first_name} {user.last_name}'
+                        )
+                    ),
+                'text_template':
+                    render_template(
+                        'acknowledge_promotion.html',
+                        promotion_verification_url=promotion_verification_url,
+                        email=user.email,
+                        position=position,
+                        user_name=(
+                            f'{user.first_name} {user.last_name}'
+                        )
                     )
-                }
-            )
-            # FIXME(davidmatthews1004@gmail.com): Need to find a way to validate that it has
-            #  sent without waiting for the result.
-            task_status = celery.AsyncResult(task.id).state
-=======
-        # Generate a confirmation email to be sent to the Admin so that they can
-        # confirm they want to promote the user.
-        promotion_confirm_token = generate_promotion_confirmation_token(
-            admin.email, user.email, position
-        )
-        promotion_confirm_url = generate_url(
-            'users.confirm_promotion', promotion_confirm_token
-        )
-        from celery_runner import celery
-        celery.send_task(
-            'tasks.send_email',
-            kwargs={
-                'to':
-                admin.email,
-                'subject_suffix':
-                'Confirm Promotion',
-                'html_template':
-                render_template(
-                    'confirm_promotion.html',
-                    promotion_confirm_url=promotion_confirm_url,
-                    email=admin.email,
-                    position=position,
-                    admin_name=f'{admin.first_name} {admin.last_name}',
-                    user_name=f'{user.first_name} {user.last_name}'
-                ),
-                'text_template':
-                render_template(
-                    'confirm_promotion.txt',
-                    promotion_confirm_url=promotion_confirm_url,
-                    email=admin.email,
-                    position=position,
-                    admin_name=f'{admin.first_name} {admin.last_name}',
-                    user_name=f'{user.first_name} {user.last_name}'
-                )
             }
         )
-<<<<<<< Updated upstream
 
         response['status'] = 'success'
         response.pop('message')
         return response, 202
->>>>>>> ARC-105
 
 
-@users_blueprint.route('/admin/confirmpromotion/<token>', methods=['GET'])
-def confirm_promotion(token):
+@users_blueprint.route('/admin/create/cancel/<token>', methods=['GET'])
+def cancel_promotion(token):
     """
-    Allow an admin to confirm their promotion of another user
-=======
-        # Generate a confirmation email to be sent to the Admin so that they can
-        # confirm they want to promote the user.
-        promotion_confirm_token = generate_promotion_confirmation_token(
-            admin.email, user.email, position
-        )
-        promotion_confirm_url = generate_url(
-            'users.confirm_promotion', promotion_confirm_token
-        )
-        from celery_runner import celery
-        celery.send_task(
-            'tasks.send_email',
-            kwargs={
-                'to':
-                admin.email,
-                'subject_suffix':
-                'Confirm Promotion',
-                'html_template':
-                render_template(
-                    'confirm_promotion.html',
-                    promotion_confirm_url=promotion_confirm_url,
-                    email=admin.email,
-                    position=position,
-                    admin_name=f'{admin.first_name} {admin.last_name}',
-                    user_name=f'{user.first_name} {user.last_name}'
-                ),
-                'text_template':
-                render_template(
-                    'confirm_promotion.txt',
-                    promotion_confirm_url=promotion_confirm_url,
-                    email=admin.email,
-                    position=position,
-                    admin_name=f'{admin.first_name} {admin.last_name}',
-                    user_name=f'{user.first_name} {user.last_name}'
-                )
-            }
-        )
-
-        response['status'] = 'success'
-        response.pop('message')
-        return response, 202
-
-
-=======
-
-        response['status'] = 'success'
-        response.pop('message')
-        return response, 202
->>>>>>> ARC-105
-
-
->>>>>>> Stashed changes
-@users_blueprint.route('/admin/confirmpromotion/<token>', methods=['GET'])
-def confirm_promotion(token):
+    Allow an admin to cancel their promotion of another user
     """
     Allow an admin to confirm their promotion of another user
     """
@@ -967,7 +459,9 @@ def confirm_promotion(token):
 
     # Decode the token from the email to confirm it was the right one
     try:
-        data = confirm_token(token)
+        # The token was encoded with the admin and user email as a list so
+        # we want a list back of emails.
+        email_list = confirm_token(token)
     except URLTokenError as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -975,102 +469,51 @@ def confirm_promotion(token):
         response['error'] = str(e)
         return jsonify(response), 400
 
-    # Ensure that a list was returned
-    if not isinstance(data, list):
+    # If a list is not returned, we should get out of here.
+    if not isinstance(email_list, list):
         response['message'] = 'Invalid Token.'
         return jsonify(response), 400
 
-    # Ensure data is all present
-    admin_email = data[0]
-    user_email = data[1]
-    position = data[2]
-    if not admin_email or not user_email or not position:
+    # Ensure both admin and user email is present in list
+    if not len(email_list) == 2:
         response['message'] = 'Invalid data in Token.'
         return jsonify(response), 400
 
-    # Verify both email addresses are valid
+    # Let's just be sure that we don't go out of index range
     try:
-        # validate and get info
-        va = validate_email(admin_email)
-        vu = validate_email(user_email)
-        # replace with normalized form
-        valid_admin_email = va['email']
-        valid_user_email = vu['email']
-    except EmailNotValidError as e:
-        # email is not valid, exception message is human-readable
+        admin_email = email_list[0]
+        user_email = email_list[1]
+    except IndexError as e:
+        response['message'] = 'Invalid list from token.'
         response['error'] = str(e)
-        response['message'] = 'Invalid email.'
+        return jsonify(response), 400
+
+    if not admin_email or not user_email:
+        response['message'] = 'Missing information in Token.'
         return jsonify(response), 400
 
     # Ensure both users exist in the database
-    if not User.objects(email=valid_admin_email):
+    if not User.objects(email=admin_email):
         response['message'] = 'Administrator does not exist.'
         return jsonify(response), 400
-    if not User.objects(email=valid_user_email):
+    if not User.objects(email=user_email):
         response['message'] = 'Target User does not exist.'
         return jsonify(response), 400
 
-    # Get both user objects
-    admin_user = User.objects.get(email=valid_admin_email)
-    target_user = User.objects.get(email=valid_user_email)
+    # Get Admin user object
+    admin_user = User.objects.get(email=admin_email)
 
     # Ensure the admin user is allowed to promote other users.
     if not admin_user.is_admin or not admin_user.admin_profile.verified:
         response['message'] = 'User is not authorised to promote other users.'
-        return jsonify(response), 400
+        return jsonify(response), 401
 
-    # Ensure the target user has their account verified
-    if not target_user.verified:
-        response['message'] = 'Target user is not verified.'
-        return jsonify(response), 400
+    # Get target user object
+    target_user = User.objects.get(email=user_email)
 
-    # Start promotion process
-    target_user.is_admin = True
-    target_user.admin_profile = AdminProfile(
-        position=position,
-        mobile_number=None,
-        verified=False,
-        promoted_by=admin_user.id
-    )
-    target_user.last_updated = datetime.utcnow()
+    target_user.disabled_admin = True
+    target_user.admin_profile = None
     target_user.save()
-
-    # Generate an acknowledgement email to be sent to the User so that they can
-    # verify they have been promoted.
-    promotion_acknowledge_token = generate_confirmation_token(target_user.email)
-    promotion_acknowledge_url = generate_url(
-        'users.acknowledge_promotion', promotion_acknowledge_token
-    )
-    from celery_runner import celery
-    celery.send_task(
-        'tasks.send_email',
-        kwargs={
-            'to':
-                target_user.email,
-            'subject_suffix':
-                'Acknowledge Promotion',
-            'html_template':
-                render_template(
-                    'acknowledge_promotion.html',
-                    promotion_acknowledge_url_url=promotion_acknowledge_url,
-                    email=target_user.email,
-                    position=position,
-                    user_name=(
-                        f'{target_user.first_name} {target_user.last_name}'
-                    )
-                ),
-            'text_template':
-                render_template(
-                    'acknowledge_promotion.html',
-                    promotion_acknowledge_url_url=promotion_acknowledge_url,
-                    email=target_user.email,
-                    position=position,
-                    user_name=(
-                        f'{target_user.first_name} {target_user.last_name}'
-                    )
-                )
-        }
-    )
 
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
     client_host = os.environ.get('CLIENT_HOST')
@@ -1085,8 +528,8 @@ def confirm_promotion(token):
     return custom_redir_response
 
 
-@users_blueprint.route('/user/acknowledgepromotion/<token>', methods=['GET'])
-def acknowledge_promotion(token):
+@users_blueprint.route('/admin/create/verify/<token>', methods=['GET'])
+def verify_promotion(token):
     """
     Allow a user to acknowledge their promotion and in doing so verify their
     status as an admin
@@ -1115,102 +558,15 @@ def acknowledge_promotion(token):
         response['error'] = str(e)
         return jsonify(response), 400
 
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-    # Ensure that a list was returned
-    if not isinstance(data, list):
-        response['message'] = 'Invalid Token.'
-        return jsonify(response), 400
-
-    # Ensure data is all present
-    admin_email = data[0]
-    user_email = data[1]
-    position = data[2]
-    if not admin_email or not user_email or not position:
-        response['message'] = 'Invalid data in Token.'
-        return jsonify(response), 400
-
-    # Verify both email addresses are valid
-    try:
-        # validate and get info
-        va = validate_email(admin_email)
-        vu = validate_email(user_email)
-        # replace with normalized form
-        valid_admin_email = va['email']
-        valid_user_email = vu['email']
-<<<<<<< Updated upstream
-=======
-    # Verify it is actually a valid email
-    try:
-        # validate and get info
-        v = validate_email(email)
-        # replace with normalized form
-        valid_email = v['email']
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
-    except EmailNotValidError as e:
-        # email is not valid, exception message is human-readable
-        response['error'] = str(e)
-        response['message'] = 'Invalid email.'
-        return jsonify(response), 400
-
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-    # Ensure both users exist in the database
-    if not User.objects(email=valid_admin_email):
-        response['message'] = 'Administrator does not exist.'
-        return jsonify(response), 400
-    if not User.objects(email=valid_user_email):
-        response['message'] = 'Target User does not exist.'
-        return jsonify(response), 400
-
-    # Get both user objects
-    admin_user = User.objects.get(email=valid_admin_email)
-    target_user = User.objects.get(email=valid_user_email)
-
-    # Ensure the admin user is allowed to promote other users.
-    if not admin_user.is_admin or not admin_user.admin_profile.verified:
-        response['message'] = 'User is not authorised to promote other users.'
-        return jsonify(response), 400
-
-    # Ensure the target user has their account verified
-    if not target_user.verified:
-        response['message'] = 'Target user is not verified.'
-        return jsonify(response), 400
-
-    # Start promotion process
-    target_user.is_admin = True
-    target_user.admin_profile = AdminProfile(
-        position=position,
-        mobile_number=None,
-        verified=False,
-        promoted_by=admin_user.id
-    )
-    target_user.last_updated = datetime.utcnow()
-    target_user.save()
-
-    # Generate an acknowledgement email to be sent to the User so that they can
-    # verify they have been promoted.
-    promotion_acknowledge_token = generate_confirmation_token(target_user.email)
-    promotion_acknowledge_url = generate_url(
-        'users.acknowledge_promotion', promotion_acknowledge_token
-    )
-<<<<<<< Updated upstream
-=======
     # Ensure the user exists in the database
-    if not User.objects(email=valid_email):
+    if not User.objects(email=email):
         response['message'] = 'User does not exist.'
         return jsonify(response), 400
 
     # Get the user object
-    user = User.objects.get(email=valid_email)
+    user = User.objects.get(email=email)
 
-    # Ensure the user is verfiied, an admin and that they have a valid admin
+    # Ensure the user is verified, an admin and that they have a valid admin
     # profile
     if not user.verified:
         response['message'] = 'User is not verified.'
@@ -1218,8 +574,8 @@ def acknowledge_promotion(token):
     if not user.is_admin:
         response['message'] = 'User is not an Admin.'
         return jsonify(response), 400
-    if not user.admin_profile:
-        response['message'] = 'User has an invalid Admin profile.'
+    if user.disable_admin:
+        response['message'] = 'User is not an Admin.'
         return jsonify(response), 400
 
     # Verify user's admin status
@@ -1434,41 +790,13 @@ def acknowledge_promotion(token):
 class DisableAccount(Resource):
     """Route for Admins to disable user accounts"""
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-    method_decorators = {'post': [authenticate_admin]}
-=======
     method_decorators = {'put': [authenticate_admin]}
->>>>>>> ARC-105
-<<<<<<< Updated upstream
-=======
-    method_decorators = {'put': [authenticate_admin]}
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
 
     def put(self, resp):
         post_data = request.get_json()
 
         # Validating empty payload
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-        response = {'status': 'fail', 'message': 'User does not exist.'}
-=======
         response = {'status': 'fail', 'message': 'Invalid payload.'}
->>>>>>> ARC-105
-<<<<<<< Updated upstream
-=======
-        response = {'status': 'fail', 'message': 'Invalid payload.'}
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
         if not post_data:
             return response, 400
 
@@ -1493,7 +821,7 @@ class DisableAccount(Resource):
 
         # Validation checks
         if not User.objects(email=valid_email):
-            response['message'] = 'User cannot be found.'
+            response['message'] = 'User does not exist.'
             return response, 404
 
         user = User.objects.get(email=valid_email)
@@ -1502,40 +830,18 @@ class DisableAccount(Resource):
         user.save()
 
         response['status'] = 'success'
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-        response['message'
-                 ] = f'The account for User {user.id} has been disabled.'
-=======
-=======
->>>>>>> ARC-105
-=======
-        response['message'
-                 ] = f'The account for User {user.id} has been disabled.'
-=======
->>>>>>> Stashed changes
         response['message'] = (
             f'The account for User {user.email} has been '
             f'disabled.'
         )
-<<<<<<< Updated upstream
-<<<<<<< HEAD
->>>>>>> ARC-105
-=======
-=======
->>>>>>> Stashed changes
->>>>>>> ARC-105
         return response, 200
 
 
 api.add_resource(PingTest, '/ping')
 api.add_resource(UserList, '/users')
 api.add_resource(Users, '/user')
-api.add_resource(UserProfiles, '/user/profile')
-api.add_resource(UserLast, '/user/last')
-api.add_resource(UserAlloys, '/user/alloys')
-api.add_resource(UserConfigurations, '/user/configurations')
+# api.add_resource(UserProfiles, '/user/profile')
 api.add_resource(AdminCreate, '/admin/create')
 api.add_resource(DisableAccount, '/user/disable')
-api.add_resource(UserGraphs, '/user/graphs')
+# api.add_resource(ShareConfigurationLink, '/user/shareconfiguration/link')
+# api.add_resource(ShareConfigurationEmail, '/user/shareconfiguration/email')

@@ -23,11 +23,12 @@ __package__ = 'simulation'
 import os
 import json
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 from prettytable import PrettyTable
 
-from simulation.utilities import Method, Alloy
+from simulation.utilities import Method
 from simulation.ae3_utilities import ae3_single_carbon, ae3_multi_carbon
 from simulation.periodic import PeriodicTable as pt
 
@@ -60,6 +61,8 @@ class SimConfiguration(object):
 
         if compositions is not None:
             self.comp = self.get_compositions(compositions)
+            if self.comp is False:
+                raise Exception('Compositions conversion error.')
 
         if configs is not None:
             self.method = (
@@ -120,7 +123,7 @@ class SimConfiguration(object):
         self.ae1, self.ae3 = self.calc_ae1_ae3(self.comp)
 
     @staticmethod
-    def get_compositions(comp_list: list = None) -> np.ndarray:
+    def get_compositions(comp_list: list = None) -> Union[np.ndarray, bool]:
         """
         We get the compositions from the list passed and extract the
         compositions as a list from parent, weld, and mix. We then store
@@ -134,28 +137,63 @@ class SimConfiguration(object):
             A structured numpy.ndarray with the weights and names.
         """
         comp = np.zeros(
-            len(comp_list),
-            dtype=[('idx', int), ('symbol', 'U2'), ('weight', np.float64)]
+            len(comp_list), dtype=[('symbol', 'U2'), ('weight', np.float64)]
         )
 
+        # 2019-08-04: Update by andrew@neuraldev.io
+        # We add a special condition where we ensure that 'C' and 'Fe' are
+        # always the first and last element in our `comp` structured 1-D numpy
+        # array. This is necessary because some of the other elements downstream
+        # in the algorithm assume that 'C' and 'Fe' are first and last and we
+        # cannot ensure that the `comp_list` or API client data will follow
+        # this necessary step.
+
+        # We need to make sure these are inserted and appended at beginning and
+        # end respectively as it is assumed later.
+        c_weight = None
+        fe_weight = None
+
         # TODO(andrew@neuraldev.io): Need to deal with TypeError and KeyError
+        # Use a special exterior index to ensure we don't add an empty space
+        # when we skip enumerated numbers (if using enumerate()) which, when
+        # skipping by
+        idx = 1
         # iterate over lists at once and store them in the np.ndarray
-        for i, e in enumerate(comp_list):
+        for e in comp_list:
             s = e['symbol']
-            # Using the pt 1-to-1 mapping validates that the name is
-            # exactly as we expect it. Will raise a NotImplementedError
-            # exception if symbol names don't match.
-            comp[i] = (i, pt[s].name, e['weight'])
+
+            # We skip out if we hit 'C' or 'Fe' so we can add them later.
+            if s == pt.C.name:
+                c_weight = e['weight']
+                continue
+
+            if s == pt.Fe.name:
+                fe_weight = e['weight']
+                continue
+
+            # Using the pt 1-to-1 mapping validates that the name is exactly
+            # as we expect it. Will raise a KeyError exception if symbol names
+            # don't match. We return False and check it later.
+            try:
+                elem_symbol = pt[s].name
+            except KeyError as e:
+                return False
+            comp[idx] = (elem_symbol, e['weight'])
+            idx = idx + 1
+
+        # Now we add carbon and iron at the beginning and end respectively
+        comp[0] = (pt.C.name, c_weight)
+        comp[-1] = (pt.Fe.name, fe_weight)
         return comp
 
+    # TODO(andrew@neuraldev.io -- Sprint 6): Do some validation for these
+    #  and return a tuple instead (float, error)
     @staticmethod
     def get_bs(method: Method = None, comp: np.ndarray = None) -> float:
         """
         Do the calculation based on Li98 or Kirkaldy 83 method and return
         the MS temperature.
         """
-        # TODO(andrew@neuraldev.io -- Sprint 6): Do some validation for these
-        #  and return a tuple instead (float, error)
         # ensure we are getting the value and not the list by using index 0
         c = comp[comp['symbol'] == pt.C.name]['weight'][0]
         mn = comp[comp['symbol'] == pt.Mn.name]['weight'][0]
@@ -184,8 +222,6 @@ class SimConfiguration(object):
         Do the calculation based on Li98 or Kirkaldy83 method and return the
         MS temperature.
         """
-        # TODO(andrew@neuraldev.io -- Sprint 6): Do some validation for these
-        #  and return a tuple instead (float, error)
         # ensure we are getting the value and not the list by using index 0
         c = comp[comp['symbol'] == pt.C.name]['weight'][0]
         mn = comp[comp['symbol'] == pt.Mn.name]['weight'][0]

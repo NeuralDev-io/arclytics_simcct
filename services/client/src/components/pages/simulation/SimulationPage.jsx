@@ -21,7 +21,14 @@ import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { TTT, CCT } from '../../moleisms/charts'
-import { initComp, updateComp, updateConfig } from '../../../api/sim/SessionConfigs'
+import {
+  initComp,
+  updateComp,
+  updateConfigMethod,
+  updateConfig,
+  updateMsBsAe,
+  getMsBsAe,
+} from '../../../api/sim/SessionConfigs'
 import { runSim } from '../../../state/ducks/sim/actions'
 
 import styles from './SimulationPage.module.scss'
@@ -40,16 +47,10 @@ class SimulationPage extends Component {
         grain_size_diameter: 0.202,
         nucleation_start: 1.0,
         nucleation_finish: 99.9,
-        auto_calculate_xfe: true,
-        xfe_value: 0.0,
-        cf_value: 0.012,
-        ceut_value: 0.762,
         auto_calculate_bs: true,
         auto_calculate_ms: true,
-        ms_rate: 5.378,
-        transformation_method: 'Li98',
+        ms_rate_param: 5.378,
         ms_temp: 0.0,
-        ms_undercool: 100.0,
         bs_temp: 0.0,
         auto_calculate_ae: true,
         ae1_temp: 0.0,
@@ -178,25 +179,20 @@ class SimulationPage extends Component {
   }
 
   handleConfigChange = (name, value) => {
-    if (name === 'method' || name === 'transformation_method') {
-      // check if new value is null (select option was cleared)
-      if (value === null) {
-        this.setState(prevState => ({
-          configurations: {
-            ...prevState.configurations,
-            [name]: '',
-          },
-        }))
-      } else {
-        this.setState(prevState => ({
-          configurations: {
-            ...prevState.configurations,
-            [name]: value.value,
-          },
-        }))
-      }
+    if (name === 'method') {
+      // set new value to state
+      this.setState(prevState => ({
+        configurations: {
+          ...prevState.configurations,
+          [name]: value.value,
+        },
+      }))
+
+      // update method in session store on server
+      updateConfigMethod(value.value)
     } else if (name === 'grain_size_ASTM') {
       if (value === '') {
+        // set value to state
         this.setState(prevState => ({
           configurations: {
             ...prevState.configurations,
@@ -204,8 +200,12 @@ class SimulationPage extends Component {
             grain_size_diameter: '',
           },
         }))
+
+        // update in server session store with value = 0
+        updateConfig({ grain_size: 0 })
       } else {
-        // do some calculation here to convert unit of grain size
+        // TODO: do some calculation here to convert unit of grain size
+        // set value to state
         this.setState(prevState => ({
           configurations: {
             ...prevState.configurations,
@@ -213,9 +213,13 @@ class SimulationPage extends Component {
             grain_size_diameter: value,
           },
         }))
+
+        // update in server session store
+        updateConfig({ grain_size: parseFloat(value) })
       }
     } else if (name === 'grain_size_diameter') {
       if (value === '') {
+        // set value to state
         this.setState(prevState => ({
           configurations: {
             ...prevState.configurations,
@@ -223,8 +227,12 @@ class SimulationPage extends Component {
             grain_size_diameter: '',
           },
         }))
+
+        // update in server session store with value = 0
+        updateConfig({ grain_size: 0 })
       } else {
-        // do some calculation here to convert unit of grain size
+        // TODO: do some calculation here to convert unit of grain size
+        // set value to state
         this.setState(prevState => ({
           configurations: {
             ...prevState.configurations,
@@ -232,16 +240,74 @@ class SimulationPage extends Component {
             grain_size_diameter: value,
           },
         }))
+
+        // update in server session store
+        updateConfig({ grain_size: parseFloat(value) })
       }
     } else if (name === 'displayUserCurve') {
       this.setState(prevState => ({ displayUserCurve: !prevState.displayUserCurve }))
-    } else {
+    } else if (name === 'ms_temp' || name === 'ms_rate_param') {
+      const { configurations } = this.state
+      const data = {
+        ms_temp: configurations.ms_temp,
+        ms_rate_param: configurations.ms_rate_param,
+      }
+
+      // update state
       this.setState(prevState => ({
         configurations: {
           ...prevState.configurations,
           [name]: value,
         },
       }))
+
+      // update in server session store
+      updateMsBsAe('ms', {
+        ...data,
+        [name]: value,
+      })
+    } else if (name === 'bs_temp') {
+      this.setState(prevState => ({
+        configurations: {
+          ...prevState.configurations,
+          [name]: value,
+        },
+      }))
+
+      // update in server session store
+      updateMsBsAe('bs', { [name]: value })
+    } else if (name === 'ae1_temp' || name === 'ae3_temp') {
+      const { configurations } = this.state
+      const data = {
+        ae1_temp: configurations.ae1_temp,
+        ae3_temp: configurations.ae3_temp,
+      }
+
+      // update state
+      this.setState(prevState => ({
+        configurations: {
+          ...prevState.configurations,
+          [name]: value,
+        },
+      }))
+
+      // update in server session store
+      updateMsBsAe('ae', {
+        ...data,
+        [name]: value,
+      })
+    } else if (name === 'auto_calculate_ms' || name === 'auto_calculate_bs'
+      || name === 'auto_calculate_ae') {
+      this.setState(prevState => ({
+        configurations: {
+          ...prevState.configurations,
+          [name]: value,
+        },
+      }))
+
+      // update in server session store
+      const nameArr = name.split('_')
+      getMsBsAe(nameArr[2], this.setState)
     }
   }
 
@@ -254,12 +320,13 @@ class SimulationPage extends Component {
       alloys,
     } = this.state
     const {
-      runSim,
+      runSimConnect,
+      history,
     } = this.props
 
     return (
       <React.Fragment>
-        <AppBar active="sim" redirect={this.props.history.push} /> {/* eslint-disable-line */} 
+        <AppBar active="sim" redirect={history.push} />
         <div className={styles.compSidebar}>
           <CompSidebar
             values={alloys}
@@ -269,7 +336,7 @@ class SimulationPage extends Component {
                 configurations,
                 alloys,
               })
-              runSim()
+              runSimConnect()
             }}
           />
         </div>
@@ -338,9 +405,6 @@ class SimulationPage extends Component {
                 />
               </div>
             </div>
-            <div>
-
-            </div>
           </div>
         </div>
       </React.Fragment>
@@ -360,6 +424,8 @@ SimulationPage.propTypes = {
       ]),
     })),
   })).isRequired,
+  runSimConnect: PropTypes.func.isRequired,
+  history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,  
 }
 
 const mapStateToProps = state => ({
@@ -367,7 +433,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = {
-  runSim,
+  runSimConnect: runSim,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(SimulationPage)

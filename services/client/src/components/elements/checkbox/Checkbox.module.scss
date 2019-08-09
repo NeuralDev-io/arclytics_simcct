@@ -27,7 +27,7 @@
     border-radius: 3px;
     border: 1px solid $n500;
     z-index: 0;
-    transition: $ease-in-quad .4s;
+    transition: $ease-in-quad .3s;
 
     display: flex;
     flex-direction: column;
@@ -49,5 +49,9 @@
     .icon {
       opacity: 1;
     }
+  }
+
+  input[type="checkbox"]:focus ~ .checkmark {
+    box-shadow: inset 0 0 1px 1px $ag500;
   }
 }

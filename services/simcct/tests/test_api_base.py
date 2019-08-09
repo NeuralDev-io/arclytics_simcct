@@ -26,6 +26,7 @@ from flask_testing import TestCase
 from pymongo import MongoClient
 from redis import Redis
 
+import settings
 from sim_app.app import create_app
 
 

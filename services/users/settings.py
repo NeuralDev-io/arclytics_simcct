@@ -29,10 +29,13 @@ from dotenv import load_dotenv
 
 from logger.arc_logger import AppLogger
 
-BASE_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
-)
+BASE_DIR = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
+
+# Load environment variables
+env_path = os.path.join(BASE_DIR, '.env')
+if os.path.isfile(env_path):
+    load_dotenv(env_path)
 
 DEFAULT_LOGGER = AppLogger('ARCLYTICS')
 APP_CONFIGS = None

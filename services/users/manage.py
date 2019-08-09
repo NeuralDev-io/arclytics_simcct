@@ -31,8 +31,9 @@ from flask.cli import FlaskGroup
 from prettytable import PrettyTable
 import coverage
 
+import settings
 from users_app.app import create_app, get_flask_mongo
-from users_app.models import User
+from users_app.models import User, AdminProfile
 
 COV = coverage.coverage(
     branch=True,

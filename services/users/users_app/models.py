@@ -457,8 +457,7 @@ class User(Document):
             self.last_updated = datetime.utcnow()
 
         self.is_admin = (
-                not self.disable_admin and
-                self.admin_profile is not None
+            not self.disable_admin and self.admin_profile is not None
         )
 
     @queryset_manager
@@ -487,6 +486,3 @@ class SharedConfiguration(Document):
     shared_date = DateTimeField()
     configuration = EmbeddedDocumentField(document_type=Configuration)
     # alloy_store = EmbeddedDocumentField(document_type=AlloyStore)
-
-
-

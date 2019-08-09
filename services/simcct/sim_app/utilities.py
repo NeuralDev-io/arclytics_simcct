@@ -28,7 +28,6 @@ from bson import ObjectId
 
 class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""
-
     def default(self, o):
         if isinstance(o, ObjectId):
             return str(o)

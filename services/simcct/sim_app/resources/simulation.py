@@ -21,11 +21,12 @@ This module defines and implements the endpoints for CCT and TTT simulations.
 
 from threading import Thread
 
-from flask import Blueprint, session
+from flask import Blueprint
 from flask_restful import Resource
 
 from sim_app.extensions import api
-from sim_app.middleware import token_required_restful
+from sim_app.middleware import session_and_token_required
+from sim_app.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration
 from simulation.phasesimulation import PhaseSimulation
 
@@ -34,20 +35,22 @@ sim_blueprint = Blueprint('simulation', __name__)
 
 class Simulation(Resource):
 
-    method_decorators = {'get': [token_required_restful]}
+    method_decorators = {'get': [session_and_token_required]}
 
-    def get(self, token):
+    # noinspection PyMethodMayBeStatic
+    def get(self, token, session_key):
         response = {'status': 'fail'}
 
         # First we need to make sure they logged in and are in a current session
-        session_configs = session.get(f'{token}:configurations')
+        sid, session_store = SimSessionService().load_session(session_key)
+        session_configs = session_store.get('configurations')
         if session_configs is None:
             response['message'] = 'No previous session configurations was set.'
             return response, 404
 
         # By default, the session alloy store is single and parent but the
         # parent alloy is set to none.
-        sess_alloy_store = session.get(f'{token}:alloy_store')
+        sess_alloy_store = session_store.get('alloy_store')
         if (
             not sess_alloy_store['alloys']['parent']
             and not sess_alloy_store['alloys']['weld']
@@ -94,6 +97,9 @@ class Simulation(Resource):
         # Now we stop the main thread to wait for them to finish.
         ttt_process.join()
         cct_process.join()
+
+        # TODO(andrew@neuraldev.io): We need to store the results in the Session
+        #  store at some point as well.
 
         data = {
             'TTT': sim.plots_data.get_ttt_plot_data(),

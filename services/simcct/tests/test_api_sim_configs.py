@@ -20,11 +20,13 @@ from pathlib import Path
 from bson import ObjectId
 from flask import session, current_app
 
+import settings
 from tests.test_api_base import BaseTestCase
-from sim_app.app import BASE_DIR
 from sim_app.schemas import ConfigurationsSchema, AlloyStoreSchema
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(
+    settings.BASE_DIR
+) / 'simulation' / 'sim_configs.json'
 
 
 class TestSimConfigurations(BaseTestCase):
@@ -194,7 +196,6 @@ class TestSimConfigurations(BaseTestCase):
     def test_configurations_bad_auth_header(self):
         """Ensure it fails with a bad header."""
         with current_app.test_client() as client:
-            token = 'EncodedHelloWorld!'
             method = 'Kirkaldy83'
             res = client.put(
                 '/configs/method/update',

@@ -42,6 +42,7 @@ class AlloyStore(Resource):
         'post': [token_and_session_required]
     }
 
+    # noinspection PyMethodMayBeStatic
     def post(self, token, session_key):
         """This POST endpoint initiates the Alloy Store by setting the alloy
         in the request body to the Session storage.
@@ -242,11 +243,13 @@ class AlloyStore(Resource):
 
         return response, 201, headers
 
+    # noinspection PyMethodMayBeStatic
     def patch(self, token, session_key):
         """This PATCH endpoint simply updates the `alloys` in the session
         store so that we can update all the other transformation temperature.
 
         Args:
+            session_key:
             token: a valid JWT token.
 
         Returns:

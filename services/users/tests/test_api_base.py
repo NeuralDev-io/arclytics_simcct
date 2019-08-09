@@ -24,6 +24,7 @@ from pymongo import MongoClient
 from mongoengine.connection import get_db, get_connection
 from flask_testing import TestCase
 
+import settings
 from users_app.app import create_app, set_flask_mongo, init_db
 from logger.arc_logger import AppLogger
 

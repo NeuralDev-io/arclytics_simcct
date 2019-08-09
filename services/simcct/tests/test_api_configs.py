@@ -18,14 +18,14 @@ import unittest
 from flask import current_app
 from flask_testing import TestCase
 
-from sim_app.app import create_app, extensions
+import settings
+from sim_app.app import create_app
 
 
 class TestDevelopmentConfig(TestCase):
     def create_app(self):
         self.app = create_app()
         self.app.config.from_object('configs.flask_conf.DevelopmentConfig')
-        extensions(self.app)
         return self.app
 
     def test_app_is_development(self):
@@ -44,7 +44,6 @@ class TestTestingConfig(TestCase):
     def create_app(self):
         self.app = create_app()
         self.app.config.from_object('configs.flask_conf.TestingConfig')
-        extensions(self.app)
         return self.app
 
     def test_app_is_testing(self):
@@ -54,7 +53,7 @@ class TestTestingConfig(TestCase):
         self.assertTrue(self.app.config['TESTING'])
         self.assertFalse(self.app.config['PRESERVE_CONTEXT_ON_EXCEPTION'])
         self.assertTrue(self.app.config['MONGO_DBNAME'] == 'arc_test')
-        self.assertTrue(self.app.config['REDIS_DB'] == 15)
+        self.assertTrue(self.app.config['REDIS_DB'] == 2)
         self.assertTrue(self.app.config['SESSION_REDIS'])
         redis = self.app.config['SESSION_REDIS']
         self.assertEqual(int(str(redis)[56:58]), 2)
@@ -64,7 +63,6 @@ class TestProductionConfig(TestCase):
     def create_app(self):
         self.app = create_app()
         self.app.config.from_object('configs.flask_conf.ProductionConfig')
-        extensions(self.app)
         return self.app
 
     def test_app_is_production(self):

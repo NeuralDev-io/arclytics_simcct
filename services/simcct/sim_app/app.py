@@ -20,9 +20,7 @@ This is the entrypoint to our SimCCT Flask API server.
 """
 
 import os
-import sys
 
-from dotenv import load_dotenv
 from flask import Flask
 
 from sim_app.extensions import cors, api
@@ -32,17 +30,6 @@ from sim_app.resources.sim_configurations import configs_blueprint
 from sim_app.resources.alloys import alloys_blueprint
 from sim_app.resources.simulation import sim_blueprint
 from sim_app.resources.sim_alloys import sim_alloys_blueprint
-
-# Setup the environment
-BASE_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
-)
-sys.path.append(BASE_DIR)
-
-# Load environment variables
-env_path = os.path.join(BASE_DIR, '.env')
-if os.path.isfile(env_path):
-    load_dotenv(env_path)
 
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'
 DATE_FMT = '%Y-%m-%d'

@@ -31,7 +31,7 @@ from pymongo import MongoClient
 
 from tests.test_api_base import BaseTestCase
 from sim_app.schemas import AlloySchema, ConfigurationsSchema, AlloyStoreSchema
-from sim_app.app import BASE_DIR
+from settings import BASE_DIR
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 

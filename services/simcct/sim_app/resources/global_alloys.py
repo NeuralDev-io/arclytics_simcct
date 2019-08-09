@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# alloys.py
+# global_alloys.py
 #
 # Attributions:
 # [1]
@@ -14,7 +14,7 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.14'
-"""alloys.py: 
+"""global_alloys.py: 
 
 This defines the resources and endpoints for Global Alloys CRUD operations.
 """

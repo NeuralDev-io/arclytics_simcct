@@ -42,6 +42,7 @@ COV = coverage.coverage(
         'sim_app/alloys/*',
         'sim_app/alloys_service.py',
         'sim_app/middleware.py',
+        'sim_app/sim_session.py'
     ],
     omit=[
         'sim_app/app.py'

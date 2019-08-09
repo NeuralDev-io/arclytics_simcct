@@ -1,5 +1,9 @@
+
+$bg-img: url('../../../assets/background_img-min.png');
+@import '../../../styles/colors_light';
+
 .Sidebar{
-  width: 27vw;
+  width: 14.375vw;
   height: 100vh;
   margin-left: 4rem;
   box-shadow: 3px 0 6px rgba($color: #000000, $alpha: .16);
@@ -9,8 +13,9 @@
   flex-flow: column;
   justify-content: flex-start;
 
+  
   @media screen and (max-width: 1720px) {
-    width: 430px;
+    width: 260px;
   }
 
   .navList{
@@ -20,13 +25,104 @@
 
 
 .main {
-  margin-left: calc(4rem + 27vw);
+  margin-left: calc(4rem + 24.25vw);
   width: calc(100% - calc(4rem + 27vw));
   padding: 2.5rem 0rem 2.5rem 2.5rem;
 
-  @media screen and (max-width: 1720px) {
-    margin-left: calc(4rem + 430px);
-    width: calc(100% - calc(4rem + 430px));
+  // @media screen and (max-width: 1720px) {
+  //   margin-left: calc(4rem + 430px);
+  //   width: calc(100% - calc(4rem + 430px));
+  // }
+
+}
+
+.header{
+  margin-bottom: 2.5rem;
+}
+
+.general{
+  width: 22rem;
+  margin-bottom: 5rem;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+  .row{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width:100%;
+    margin-bottom: 1rem;
+  }
+  
+  .column{
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    flex: 1;
   }
 
+  .leftCol{
+    padding-top: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    flex: 1;
+  }
+} 
+
+
+.security{
+  width: 22rem;
+  margin-bottom: 5rem;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+
+  .row{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width:100%;
+    margin-bottom: 1rem;
+  }
+  .currPwd{
+    padding-top: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    flex: 1;
+  }
+
+  .newPwd{
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    flex: 1;
+  }
+
+  .cnfrmPwd{
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    flex: 1;
+  }
+}
+
+
+
+.security{
+  width: 22.5vw;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+}
+
+.securityRow{
+  display: flex;
+  flex-flow: row;
+  justify-content: space-between;
+}
+
+.delete{
+  color: $r400;
 }

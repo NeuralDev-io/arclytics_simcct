@@ -28,7 +28,7 @@ from dotenv import load_dotenv
 
 from logger.arc_logger import AppLogger
 
-BASE_DIR = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 
 # Load environment variables

@@ -28,7 +28,7 @@ from bson import ObjectId
 
 from sim_app.sim_session import SimSessionService
 from sim_app.schemas import (ConfigurationsSchema, AlloyStoreSchema)
-from sim_app.middleware import session_and_token_required, session_key_required
+from sim_app.middleware import token_required_flask, session_key_required
 from simulation.utilities import validate_comp_elements
 from logger.arc_logger import AppLogger
 
@@ -38,7 +38,7 @@ session_blueprint = Blueprint('session', __name__)
 
 
 @session_blueprint.route('/session/login', methods=['POST'])
-@session_and_token_required
+@token_required_flask
 def session_login(token):
     post_data = request.get_json()
 
@@ -98,7 +98,7 @@ def session_login(token):
 
             if alloy_store['alloy_option'] == 'single':
                 # Validate the alloy has all the elements that we need
-                comp = alloy_store['alloys'].get('parent')
+                comp = alloy_store['alloys'].get('parent')['compositions']
                 valid, missing_elem = validate_comp_elements(comp)
                 if not valid:
                     response['message'] = f'Missing elements {missing_elem}'

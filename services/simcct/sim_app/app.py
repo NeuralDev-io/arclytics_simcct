@@ -27,7 +27,7 @@ from sim_app.extensions import cors, api
 from sim_app.utilities import JSONEncoder
 from sim_app.resources.session import session_blueprint
 from sim_app.resources.sim_configurations import configs_blueprint
-from sim_app.resources.alloys import alloys_blueprint
+from sim_app.resources.global_alloys import alloys_blueprint
 from sim_app.resources.simulation import sim_blueprint
 from sim_app.resources.sim_alloys import sim_alloys_blueprint
 

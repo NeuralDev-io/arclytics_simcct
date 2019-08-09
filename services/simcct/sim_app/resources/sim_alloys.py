@@ -449,12 +449,7 @@ class AlloyStore(Resource):
         session_store['configurations'] = sess_configs
         SimSessionService().save_session(sid, session_store)
 
-        logger.info('AlloyStore : PATCH - AFTER SAVING')
-        _, data = SimSessionService().load_session(session_key)
-        logger.debug(str(data))
-
         response['status'] = 'success'
-
         headers = {
             'Access-Control-Allow-Headers':
             'Origin, X-Requested-With, Content-Type, Accept, x-auth',

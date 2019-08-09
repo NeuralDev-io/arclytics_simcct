@@ -29,7 +29,6 @@ from flask import json
 from pymongo import MongoClient
 
 from tests.test_api_base import BaseTestCase
-from tests.utilities import convert_json_to_comp
 from sim_app.app import BASE_DIR
 from sim_app.mongo import MongoAlloys
 from sim_app.schemas import AlloySchema
@@ -119,8 +118,7 @@ class TestAlloyService(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assertEqual(res.status_code, 201)
             self.assertEqual(data['status'], 'success')
-            self.assertTrue(data['_id'])
-            self.assertTrue(ObjectId.is_valid(data['_id']))
+            self.assertTrue(data['data'])
 
     def test_create_alloy_empty_json(self):
         with app.test_client() as client:

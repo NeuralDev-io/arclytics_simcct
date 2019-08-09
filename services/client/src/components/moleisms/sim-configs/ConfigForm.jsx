@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
 import Select from '../../elements/select'
 import TextField, { TextFieldExtra } from '../../elements/textfield'
 import Checkbox from '../../elements/checkbox'
@@ -134,9 +133,9 @@ const ConfigForm = (props) => {
                 <span>MS rate parameter</span>
                 <TextField
                   type="text"
-                  name="ms_rate"
-                  onChange={val => onChange('ms_rate', val)}
-                  value={values.ms_rate}
+                  name="ms_rate_param"
+                  onChange={val => onChange('ms_rate_param', val)}
+                  value={values.ms_rate_param}
                   length="short"
                 />
               </div>
@@ -195,16 +194,10 @@ ConfigForm.propTypes = {
     ]).isRequired,
     nucleation_start: PropTypes.number.isRequired,
     nucleation_finish: PropTypes.number.isRequired,
-    auto_calculate_xfe: PropTypes.bool.isRequired,
-    xfe_value: PropTypes.number.isRequired,
-    cf_value: PropTypes.number.isRequired,
-    ceut_value: PropTypes.number.isRequired,
     auto_calculate_bs: PropTypes.bool.isRequired,
     auto_calculate_ms: PropTypes.bool.isRequired,
-    transformation_method: PropTypes.string.isRequired,
     ms_temp: PropTypes.number.isRequired,
-    ms_rate: PropTypes.number.isRequired,
-    ms_undercool: PropTypes.number.isRequired,
+    ms_rate_param: PropTypes.number.isRequired,
     bs_temp: PropTypes.number.isRequired,
     auto_calculate_ae: PropTypes.bool.isRequired,
     ae1_temp: PropTypes.number.isRequired,
@@ -215,8 +208,4 @@ ConfigForm.propTypes = {
   onChange: PropTypes.func.isRequired,
 }
 
-const mapDispatchToProps = {
-  
-}
-
-export default connect(null, mapDispatchToProps)(ConfigForm)
+export default ConfigForm

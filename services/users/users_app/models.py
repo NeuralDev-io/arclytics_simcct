@@ -28,14 +28,16 @@ from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
     DateTimeField, EmbeddedDocumentField, IntField, FloatField, ListField,
-    EmbeddedDocumentListField, ObjectIdField, queryset_manager
+    EmbeddedDocumentListField, queryset_manager, ObjectIdField
 )
+from mongoengine.errors import ValidationError
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
 from users_app.extensions import bcrypt
 from users_app.utilities import (
-    JSONEncoder, PeriodicTable, PasswordValidationError
+    JSONEncoder, PeriodicTable, PasswordValidationError, ElementSymbolInvalid,
+    ElementInvalid
 )
 
 logger = AppLogger(__name__)
@@ -175,36 +177,46 @@ class Configuration(EmbeddedDocument):
 
 
 class Element(EmbeddedDocument):
-    symbol = StringField(max_length=2)
-    weight = FloatField(default=0.0)
+    symbol = StringField(max_length=2, required=True)
+    weight = FloatField(required=True)
 
     def to_dict(self):
         return {'symbol': self.symbol, 'weight': self.weight}
+
+    def clean(self):
+        """Ensure that the `symbol` field must conform to a proper periodic
+        table element symbol and ensure they are both required.
+        """
+        # These ensure they are not missing.
+        if not self.symbol:
+            msg = 'symbol.Field is required: ["Element.symbol"])'
+            raise ElementInvalid(message=msg)
+
+        if not self.weight == 0.0:
+            if not self.weight:
+                msg = 'symbol.Field is required: ["Element.weight"]'
+                raise ElementInvalid(message=msg)
+
+        try:
+            valid_symbol = PeriodicTable[self.symbol].name
+        except KeyError as e:
+            raise ElementSymbolInvalid()
+        self.symbol = valid_symbol
 
     def __str__(self):
         return self.to_json()
 
 
 class Alloy(EmbeddedDocument):
+    oid = ObjectIdField(
+        required=True, default=lambda: ObjectId(), primary_key=True
+    )
     name = StringField()
-    compositions = ListField(EmbeddedDocumentField(Element))
+    compositions = EmbeddedDocumentListField(Element)
 
     def to_dict(self):
-        comp = []
-<<<<<<< HEAD
-        for e in self.compositions:
-            comp.append(e.to_dict())
-=======
-        for e in self.composition:
-            comp.append({'symbol': e.symbol, 'weight': e.weight})
-<<<<<<< Updated upstream
-<<<<<<< HEAD
->>>>>>> ARC-105
-=======
-=======
->>>>>>> Stashed changes
->>>>>>> ARC-105
-        return {'name': self.name, 'composition': comp}
+        comp = [obj.to_dict() for obj in self.compositions]
+        return {'_id': str(self.oid), 'name': self.name, 'compositions': comp}
 
     def __str__(self):
         return self.to_json()
@@ -245,47 +257,42 @@ class User(Document):
     first_name = StringField(required=True, max_length=255)
     last_name = StringField(required=True, max_length=255)
     profile = EmbeddedDocumentField(document_type=UserProfile)
-    admin_profile = EmbeddedDocumentField(document_type=AdminProfile)
+    admin_profile = EmbeddedDocumentField(
+        document_type=AdminProfile, default=None
+    )
 
     last_configuration = EmbeddedDocumentField(
         document_type=Configuration, default=None
     )
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
 
     last_alloy_store = EmbeddedDocumentField(
         document_type=AlloyStore, default=None
     )
-=======
-    last_alloy = EmbeddedDocumentField(document_type=Alloy, default=None)
->>>>>>> ARC-105
-<<<<<<< Updated upstream
-=======
-    last_alloy = EmbeddedDocumentField(document_type=Alloy, default=None)
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
 
     # TODO(andrew@neuraldev.io -- Sprint 6): Make these
     # saved_configurations = EmbeddedDocumentListField(
     # document_type=Configurations)
-    saved_alloys = EmbeddedDocumentListField(document_type=Alloy, default=None)
+    saved_alloys = EmbeddedDocumentListField(document_type=Alloy)
 
     # Some rather useful metadata information that's not core to the
     # definition of a user
     active = BooleanField(default=True)
     is_admin = BooleanField(default=False, db_field='admin')
+    disable_admin = BooleanField(default=False)
     verified = BooleanField(default=False)
     # Make sure when converting these that it follows ISO8601 format as
     # defined in settings.DATETIME_FMT
     created = DateTimeField(default=datetime.utcnow(), null=False)
     last_updated = DateTimeField(default=None, null=False)
     last_login = DateTimeField()
+
     # Define the collection and indexing for this document
-    meta = {'collection': 'users'}
+    meta = {
+        'collection': 'users',
+        # 'indexes': [
+        # {'fields': ['saved_alloys.name'], 'unique': True}
+        # ]
+    }
 
     def set_password(self, raw_password: str) -> None:
         """Helper utility method to save an encrypted password using the
@@ -449,6 +456,11 @@ class User(Document):
         else:
             self.last_updated = datetime.utcnow()
 
+        self.is_admin = (
+                not self.disable_admin and
+                self.admin_profile is not None
+        )
+
     @queryset_manager
     def as_dict(cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
@@ -468,3 +480,13 @@ class User(Document):
 
     def __str__(self):
         return self.to_json()
+
+
+class SharedConfiguration(Document):
+    owner = EmailField(required=True)
+    shared_date = DateTimeField()
+    configuration = EmbeddedDocumentField(document_type=Configuration)
+    # alloy_store = EmbeddedDocumentField(document_type=AlloyStore)
+
+
+

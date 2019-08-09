@@ -53,6 +53,75 @@ export const updateComp = (option, type, alloy) => {
     .catch(err => console.log(err))
 }
 
-export const updateConfig = () => {
+export const updateConfigMethod = (value) => {
+  fetch('http://localhost:8001/configs/method/update', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify({ method: value }),
+  })
+    .then(res => res.json())
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
+    })
+    .catch(err => console.log(err))
+}
 
+export const updateConfig = (reqBody) => {
+  fetch('http://localhost:8001/configs/update', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify(reqBody),
+  })
+    .then(res => res.json())
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
+    })
+    .catch(err => console.log(err))
+}
+
+export const updateMsBsAe = (name, reqBody) => {
+  fetch(`http://localhost:8001/${name}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify(reqBody),
+  })
+    .then(res => res.json())
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
+    })
+    .catch(err => console.log(err))
+}
+
+export const getMsBsAe = (name, callback) => {
+  fetch(`http://localhost:8001/${name}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  })
+    .then(res => res.json())
+    .then((data) => {
+      const { status, ...others } = data
+      if (status === 'fail') throw new Error(data.message)
+      if (status === 'success') {
+        // use callback function to set state to SimulationPage
+        callback(prevState => ({
+          configurations: {
+            ...prevState.configurations,
+            ...others,
+          },
+        }))
+      }
+    })
+    .catch(err => console.log(err))
 }

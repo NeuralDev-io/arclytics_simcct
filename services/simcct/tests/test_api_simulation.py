@@ -117,8 +117,7 @@ class TestSimulationService(BaseTestCase):
         self.assertEqual(data['status'], 'success')
         self.assertTrue(sess_res.status_code == 201)
         self.assertEqual(
-            alloy_store['alloys']['parent'],
-            session_store['alloys']['parent']
+            alloy_store['alloys']['parent'], session_store['alloys']['parent']
         )
 
     def test_simulate_no_prev_configs(self):

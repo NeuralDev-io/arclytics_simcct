@@ -5,7 +5,7 @@ administrator with the position: {{ position }}
 
 Please confirm this promotion by clicking the link below:
 
-{{ promotion_acknowledge_url }}
+{{ promotion_verification_url }}
 
 If you need additional assistance, please contact help@neuraldev.io.
 

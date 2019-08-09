@@ -33,7 +33,7 @@ from flask import current_app as app
 from flask import Blueprint, jsonify, request, render_template, redirect
 from mongoengine.errors import ValidationError, NotUniqueError
 
-from users_app.models import User, AdminProfile
+from users_app.models import User
 from users_app.extensions import bcrypt
 from logger.arc_logger import AppLogger
 from users_app.middleware import authenticate_flask, logout_authenticate
@@ -117,13 +117,14 @@ def confirm_email_admin(token):
 
     user = User.objects.get(email=email)
     user.admin_profile.verified = True
+    user.save()
 
     response['status'] = 'success'
     response.pop('message')
     # TODO(davidmatthews1004@gmail.com): Need to check how to change this during
     #  during production and using Ingress/Load balancing for Kubernetes
     client_host = os.environ.get('CLIENT_HOST')
-    return redirect('http://localhost:3000/signin', code=302)
+    return redirect(f'http://{client_host}:3000/signin', code=302)
 
 
 @auth_blueprint.route(rule='/auth/register', methods=['POST'])
@@ -341,23 +342,9 @@ def login() -> Tuple[dict, int]:
     if bcrypt.check_password_hash(user.password, password):
         auth_token = user.encode_auth_token(user.id)
         if auth_token:
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-            if user.account_disabled:
-=======
             if not user.active:
->>>>>>> ARC-105
-<<<<<<< Updated upstream
-=======
-            if not user.active:
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
                 response['message'] = 'Your Account has been disabled.'
-                return jsonify(response), 400
+                return jsonify(response), 401
 
             # Let's save some stats for later
             user.last_login = datetime.utcnow()

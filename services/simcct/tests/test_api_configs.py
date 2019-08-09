@@ -34,10 +34,6 @@ class TestDevelopmentConfig(TestCase):
         )
         self.assertFalse(current_app is None)
         self.assertTrue(self.app.config['MONGO_DBNAME'] == 'arc_dev')
-        self.assertTrue(self.app.config['REDIS_DB'] == 1)
-        # This is very stupid I know, but I can't find another way.
-        redis = self.app.config['SESSION_REDIS']
-        self.assertEqual(int(str(redis)[56:57]), 1)
 
 
 class TestTestingConfig(TestCase):
@@ -53,10 +49,6 @@ class TestTestingConfig(TestCase):
         self.assertTrue(self.app.config['TESTING'])
         self.assertFalse(self.app.config['PRESERVE_CONTEXT_ON_EXCEPTION'])
         self.assertTrue(self.app.config['MONGO_DBNAME'] == 'arc_test')
-        self.assertTrue(self.app.config['REDIS_DB'] == 2)
-        self.assertTrue(self.app.config['SESSION_REDIS'])
-        redis = self.app.config['SESSION_REDIS']
-        self.assertEqual(int(str(redis)[56:58]), 2)
 
 
 class TestProductionConfig(TestCase):
@@ -71,9 +63,6 @@ class TestProductionConfig(TestCase):
         )
         self.assertFalse(self.app.config['TESTING'])
         self.assertTrue(self.app.config['MONGO_DBNAME'] == 'arclytics')
-        self.assertTrue(self.app.config['REDIS_DB'] == 0)
-        redis = self.app.config['SESSION_REDIS']
-        self.assertEqual(int(str(redis)[56:57]), 0)
 
 
 if __name__ == '__main__':

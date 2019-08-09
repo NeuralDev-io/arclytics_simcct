@@ -2,9 +2,9 @@
 # -----------------------------------------------------------------------------
 # arclytics_sim
 # settings.py.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
@@ -47,6 +47,3 @@ if os.path.isfile(DEFAULT_CONFIGS):
         APP_CONFIGS = json.load(config_file)
 else:
     raise FileNotFoundError('Cannot find app.json')
-
-
-

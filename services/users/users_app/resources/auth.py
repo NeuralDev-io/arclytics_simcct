@@ -53,7 +53,6 @@ class SessionValidationError(Exception):
     A custom exception to be raised by a threaded async call to register if
     the response is not what we are expecting.
     """
-
     def __init__(self, msg: str):
         super(SessionValidationError, self).__init__(msg)
 
@@ -63,7 +62,6 @@ class SimCCTBadServerLogout(Exception):
     A custom exception to be raised by a synchronous call to logout on the
     SimCCT server if the response is not what we are expecting.
     """
-
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
 
@@ -203,32 +201,32 @@ def register_user() -> Tuple[dict, int]:
         )
         # FIXME(andrew@neuraldev.io): Need to find a way to validate that it has
         #  sent without waiting for the result.
-        task_status = celery.AsyncResult(task.id).state
+        # task_status = celery.AsyncResult(task.id).state
 
-        while task_status == PENDING:
-            task_status = celery.AsyncResult(task.id).state
+        # while task_status == PENDING:
+        #     task_status = celery.AsyncResult(task.id).state
         # The email tasks responds with a Tuple[bool, str]
-        res = celery.AsyncResult(task.id)
+        # res = celery.AsyncResult(task.id)
 
         # Generic response regardless of email task working
         response['status'] = 'success'
         response['token'] = auth_token.decode()
 
-        if isinstance(res.result, gaierror):
-            response['error'] = 'Socket error.'
-            response['message'] = (
-                'User registered but registration '
-                'email failed.'
-            )
-            return jsonify(response), 201
-
-        if not res.result[0]:
-            response['error'] = res.result[1]
-            response['message'] = (
-                'User registered but registration '
-                'email failed.'
-            )
-            return jsonify(response), 201
+        # if isinstance(res.result, gaierror):
+        #     response['error'] = 'Socket error.'
+        #     response['message'] = (
+        #         'User registered but registration '
+        #         'email failed.'
+        #     )
+        #     return jsonify(response), 201
+        #
+        # if not res.result[0]:
+        #     response['error'] = res.result[1]
+        #     response['message'] = (
+        #         'User registered but registration '
+        #         'email failed.'
+        #     )
+        #     return jsonify(response), 201
 
         response['message'] = 'User has been registered.'
         return jsonify(response), 201
@@ -280,28 +278,28 @@ def async_register_session(user: User = None,
         if user.last_alloy_store is not None:
             last_alloy = user.last_alloy_store.to_dict()
 
-    resp = requests.post(
-        url=f'http://{simcct_host}/session/login',
-        json={
-            '_id': str(user_id),
-            'is_admin': user.is_admin,
-            'last_configurations': last_configs,
-            'last_alloy_store': last_alloy
-        },
-        headers={
-            'Authorization': f'Bearer {auth_token}',
-            'Content-type': 'application/json'
-        }
-    )
-    # Because this method is in an async state, we want to know if our request
-    # to the other side has failed by raising an exception.
-    if resp.json().get('status') == 'fail':
-        _id = None if user_id == '' else user.id
-        raise SessionValidationError(
-            f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
+        resp = requests.post(
+            url=f'http://{simcct_host}/session/login',
+            json={
+                '_id': str(user_id),
+                'is_admin': user.is_admin,
+                'last_configurations': last_configs,
+                'last_alloy_store': last_alloy
+            },
+            headers={
+                'Authorization': f'Bearer {auth_token}',
+                'Content-type': 'application/json'
+            }
         )
-    # q.put(resp)
-    return resp.json()
+        # Because this method is in an async state, we want to know if our
+        # request to the other side has failed by raising an exception.
+        if resp.json().get('status') == 'fail':
+            _id = None if user_id == '' else user.id
+            raise SessionValidationError(
+                f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
+            )
+        # q.put(resp)
+        return resp.json()
 
 
 def register_session(user: User = None, auth_token: str = None):
@@ -322,28 +320,32 @@ def register_session(user: User = None, auth_token: str = None):
         if user.last_alloy_store is not None:
             last_alloy = user.last_alloy_store.to_dict()
 
-    resp = requests.post(
-        url=f'http://{simcct_host}/session/login',
-        json={
-            '_id': str(user.id),
-            'is_admin': user.is_admin,
-            'last_configurations': last_configs,
-            'last_alloy_store': last_alloy
-        },
-        headers={
-            'Authorization': f'Bearer {auth_token}',
-            'Content-type': 'application/json'
-        }
-    )
-    data = resp.json()
-    # Because this method is in an async state, we want to know if our request
-    # to the other side has failed by raising an exception.
-    if not data or data.get('status') == 'fail':
-        _id = user.id
-        raise SessionValidationError(
-            f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
+        resp = requests.post(
+            url=f'http://{simcct_host}/session/login',
+            json={
+                '_id': str(user.id),
+                'is_admin': user.is_admin,
+                'last_configurations': last_configs,
+                'last_alloy_store': last_alloy
+            },
+            headers={
+                'Authorization': f'Bearer {auth_token}',
+                'Content-type': 'application/json'
+            }
         )
-    return data.get('session_key')
+        data = resp.json()
+        # Because this method is in an async state, we want to know if our
+        # request to the other side has failed by raising an exception.
+        if not data or data.get('status') == 'fail':
+            _id = user.id
+            raise SessionValidationError(
+                f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
+            )
+        return data.get('session_key')
+    else:
+        raise SessionValidationError(
+            f'[DEBUG] A session cannot be initiated because User object failed.'
+        )
 
 
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])

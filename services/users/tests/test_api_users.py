@@ -59,7 +59,6 @@ def log_test_user_in(self, user: User, password: str) -> str:
 
 class TestUserService(BaseTestCase):
     """Tests for the User API service."""
-
     def test_ping(self):
         """Ensure the /ping route behaves correctly."""
         res = self.client.get('/ping')
@@ -1356,9 +1355,7 @@ class TestUserService(BaseTestCase):
         user.verified = True
         user.save()
 
-        token = generate_promotion_confirmation_token(
-            admin.email, user.email
-        )
+        token = generate_promotion_confirmation_token(admin.email, user.email)
         url = generate_url('users.cancel_promotion', token)
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')
@@ -1433,16 +1430,14 @@ class TestUserService(BaseTestCase):
         user.verified = True
         user.save()
 
-        token = generate_promotion_confirmation_token(
-            admin.email, user.email
-        )
+        token = generate_promotion_confirmation_token(admin.email, user.email)
         url = generate_url('users.cancel_promotion', token)
 
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')
 
             data = json.loads(resp.data.decode())
-            self.assertEquals(resp.status_code, 400)
+            self.assertEquals(resp.status_code, 401)
             self.assertEqual(
                 data['message'],
                 'User is not authorised to promote other users.'
@@ -1450,8 +1445,7 @@ class TestUserService(BaseTestCase):
 
     def test_cancel_promotion_admin_dne(self):
         token = generate_promotion_confirmation_token(
-            'arclyticstestadmin@gmail.com',
-            'arclyticstestuser@gmail.com'
+            'arclyticstestadmin@gmail.com', 'arclyticstestuser@gmail.com'
         )
         url = generate_url('users.cancel_promotion', token)
 
@@ -1471,8 +1465,7 @@ class TestUserService(BaseTestCase):
         test_admin.set_password('testing123'),
         test_admin.save()
         token = generate_promotion_confirmation_token(
-            'arclyticstestadmin@gmail.com',
-            'arclyticstestuser@gmail.com'
+            'arclyticstestadmin@gmail.com', 'arclyticstestuser@gmail.com'
         )
         url = generate_url('users.cancel_promotion', token)
 
@@ -1534,9 +1527,7 @@ class TestUserService(BaseTestCase):
 
     def test_verify_promotion_user_dne(self):
         token = generate_confirmation_token('arclyticstestuser@gmail.com')
-        url = generate_url(
-            'users.verify_promotion', token
-        )
+        url = generate_url('users.verify_promotion', token)
 
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')
@@ -1555,9 +1546,7 @@ class TestUserService(BaseTestCase):
         test_user.save()
 
         token = generate_confirmation_token(test_user.email)
-        url = generate_url(
-            'users.verify_promotion', token
-        )
+        url = generate_url('users.verify_promotion', token)
 
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')
@@ -1577,9 +1566,7 @@ class TestUserService(BaseTestCase):
         test_user.save()
 
         token = generate_confirmation_token(test_user.email)
-        url = generate_url(
-            'users.verify_promotion', token
-        )
+        url = generate_url('users.verify_promotion', token)
 
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')

@@ -40,6 +40,7 @@ class AlloysList(Resource):
     """
 
     # TODO(andrew@neuraldev.io): How to verify an admin user.
+    # noinspection PyMethodMayBeStatic
     def post(self):
         """Exposes the POST method for `/alloys` to allow creating an alloy.
         The request must also include a request body of data that will need to
@@ -91,6 +92,7 @@ class AlloysList(Resource):
         response.pop('message')
         return response, 201
 
+    # noinspection PyMethodMayBeStatic
     def get(self):
         """Exposes the GET method for `/alloys` to retrieve a list of alloys in
         the database.
@@ -117,6 +119,7 @@ class Alloys(Resource):
     updating and deleting an alloy in the global database.
     """
 
+    # noinspection PyMethodMayBeStatic
     def get(self, alloy_id):
         """Allows the GET method with `/alloys/{id}` as an endpoint to get
         a single alloy from the database.
@@ -147,6 +150,7 @@ class Alloys(Resource):
         return response, 200
 
     # TODO(andrew@neuraldev.io): How to verify an admin user.
+    # noinspection PyMethodMayBeStatic
     def patch(self, alloy_id):
         """Exposes the PATCH method for `/alloys` to update an existing alloy by
         an admin to update the existing data.
@@ -249,6 +253,7 @@ class Alloys(Resource):
         return response, 200
 
     # TODO(andrew@neuraldev.io): How to verify an admin user.
+    # noinspection PyMethodMayBeStatic
     def delete(self, alloy_id):
         """Exposes the DELETE method on `/alloys/{id}` to delete an existing
         alloy in the database.

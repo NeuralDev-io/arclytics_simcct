@@ -52,7 +52,6 @@ logger = AppLogger(__name__)
 
 class PingTest(Resource):
     """Just a sanity check"""
-
     def get(self) -> Tuple[dict, int]:
         response = {'status': 'success', 'message': 'pong'}
         return response, 200
@@ -328,9 +327,7 @@ class AdminCreate(Resource):
         )
 
         # Create a verification link for the user being promoted
-        promotion_verification_token = generate_confirmation_token(
-            user.email
-        )
+        promotion_verification_token = generate_confirmation_token(user.email)
         promotion_verification_url = generate_url(
             'users.verify_promotion', promotion_verification_token
         )
@@ -339,29 +336,25 @@ class AdminCreate(Resource):
             'tasks.send_email',
             kwargs={
                 'to':
-                    user.email,
+                user.email,
                 'subject_suffix':
-                    'Acknowledge Promotion',
+                'Acknowledge Promotion',
                 'html_template':
-                    render_template(
-                        'acknowledge_promotion.html',
-                        promotion_verification_url=promotion_verification_url,
-                        email=user.email,
-                        position=position,
-                        user_name=(
-                            f'{user.first_name} {user.last_name}'
-                        )
-                    ),
+                render_template(
+                    'acknowledge_promotion.html',
+                    promotion_verification_url=promotion_verification_url,
+                    email=user.email,
+                    position=position,
+                    user_name=(f'{user.first_name} {user.last_name}')
+                ),
                 'text_template':
-                    render_template(
-                        'acknowledge_promotion.html',
-                        promotion_verification_url=promotion_verification_url,
-                        email=user.email,
-                        position=position,
-                        user_name=(
-                            f'{user.first_name} {user.last_name}'
-                        )
-                    )
+                render_template(
+                    'acknowledge_promotion.html',
+                    promotion_verification_url=promotion_verification_url,
+                    email=user.email,
+                    position=position,
+                    user_name=(f'{user.first_name} {user.last_name}')
+                )
             }
         )
 

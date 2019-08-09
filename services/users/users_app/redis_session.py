@@ -28,9 +28,7 @@ from datetime import timedelta, datetime, timezone
 from uuid import uuid4
 
 from itsdangerous import (
-    TimedJSONWebSignatureSerializer,
-    JSONWebSignatureSerializer,
-    BadSignature,
+    TimedJSONWebSignatureSerializer, JSONWebSignatureSerializer, BadSignature,
     SignatureExpired
 )
 from flask.sessions import SessionMixin, SessionInterface
@@ -246,24 +244,30 @@ class RedisSessionInterface(SessionInterface):
     def _encode_token_and_sid(self, sid, token):
         serializer = JSONWebSignatureSerializer(secret_key=self.secret_key)
         encoded_str_sid = serializer.dumps(
-            {'sid': sid, 'token': token}, salt=self.salt
+            {
+                'sid': sid,
+                'token': token
+            }, salt=self.salt
         )
         return encoded_str_sid.decode('utf-8')
 
     def _generate_session_key(self, sid, expiry_date):
         expiry_seconds = utc_timestamp_by_second(expiry_date)
         serializer = TimedJSONWebSignatureSerializer(
-            secret_key=self.secret_key,
-            expires_in=expiry_seconds
+            secret_key=self.secret_key, expires_in=expiry_seconds
         )
         encoded_bytes = serializer.dumps(
-                {'sid': sid, 'expiry_seconds': expiry_seconds},
-                salt=self.salt
+            {
+                'sid': sid,
+                'expiry_seconds': expiry_seconds
+            }, salt=self.salt
         )
         return encoded_bytes.decode('utf-8')
 
     def _decode_sid_and_expiry_timestamp_from(self, session_key):
-        serializer = TimedJSONWebSignatureSerializer(secret_key=self.secret_key)
+        serializer = TimedJSONWebSignatureSerializer(
+            secret_key=self.secret_key
+        )
         try:
             res = serializer.loads(session_key, salt=self.salt)
         except BadSignature as e:

@@ -31,7 +31,7 @@ _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'seed_alloy_data.json'
 
 alloy_data = {
     'name':
-        'Alloy-101',
+    'Alloy-101',
     'compositions': [
         {
             "symbol": "C",
@@ -89,7 +89,7 @@ class TestUserAlloyService(BaseTestCase):
 
     @staticmethod
     def login(
-            client, email='morgan@starkindustries.com', password='IronHeart!'
+        client, email='morgan@starkindustries.com', password='IronHeart!'
     ):
         resp_login = client.post(
             '/auth/login',
@@ -276,7 +276,7 @@ class TestUserAlloyService(BaseTestCase):
 
             alloy_data2 = {
                 'name':
-                    'Alloy-102',
+                'Alloy-102',
                 'compositions': [
                     {
                         "symbol": "C",
@@ -350,7 +350,7 @@ class TestUserAlloyService(BaseTestCase):
 
             alloy_data2 = {
                 'name':
-                    'Alloy-102',
+                'Alloy-102',
                 'compositions': [
                     {
                         "symbol": "C",
@@ -469,7 +469,7 @@ class TestUserAlloyService(BaseTestCase):
 
             alloy_data2 = {
                 'name':
-                    'Alloy-102',
+                'Alloy-102',
                 'compositions': [
                     {
                         "symbol": "C",
@@ -648,8 +648,11 @@ class TestUserAlloyService(BaseTestCase):
                 data=json.dumps(
                     {
                         'name': 'Bad Alloc',
-                        'compositions': {'symbol': 'C', 'weight': 1}
-                     }
+                        'compositions': {
+                            'symbol': 'C',
+                            'weight': 1
+                        }
+                    }
                 ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
@@ -793,7 +796,8 @@ class TestUserAlloyService(BaseTestCase):
             _id = str(user.saved_alloys[0].oid)
 
             updated_alloy = {
-                'name': 'Alloy-102',
+                'name':
+                'Alloy-102',
                 'compositions': [
                     {
                         "symbol": "C",
@@ -870,8 +874,10 @@ class TestUserAlloyService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            msg = ('Method Not Allowed. These are not the endpoints you are '
-                   'looking for.')
+            msg = (
+                'Method Not Allowed. These are not the endpoints you are '
+                'looking for.'
+            )
             self.assertEqual(data['message'], msg)
             self.assert405(res)
 

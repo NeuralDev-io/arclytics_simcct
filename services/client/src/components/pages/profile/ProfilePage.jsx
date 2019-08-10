@@ -7,8 +7,6 @@
  */
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Formik } from 'formik'
-import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 
 import TextField from '../../elements/textfield'
 import Select from '../../elements/select'
@@ -33,12 +31,14 @@ class ProfilePage extends Component {
         { label: 'HighSchool', value: 'highSchool'},
         { label: 'University', value: 'university'},
       ],
-      eduSelect: { label: 'HighSchool', value: 'highSchool'},
+      education: { label: 'HighSchool', value: 'highSchool'},
       showDelete: true,
     };
   }
+
   componentDidMount = () => {
-    // (arvy@neuraldev.io) - I set state because of this  https://stackoverflow.com/questions/35850118/setting-state-on-componentdidmount and https://reactjs.org/docs/faq-ajax.html
+    if (!localStorage.getItem("token"))
+      this.props.history.push('/signin')
   }
 
   handleChange = (name, value) => {
@@ -48,8 +48,8 @@ class ProfilePage extends Component {
   }
 
   render() {
-    const { firstName, lastName, occupation, occOptions, education, eduOptions } = this.state
-
+    const { occupation, occOptions, education, eduOptions } = this.state
+    const { user } = this.props
     return (
       <React.Fragment>
         <AppBar active="profile" redirect={this.props.history.push} /> 
@@ -65,32 +65,29 @@ class ProfilePage extends Component {
           <h4 className={styles.header}>General</h4>
           <div className={styles.general}>
             <div className={styles.row}>
-            
-            <h7 className={styles.column}> Email </h7> 
-            <div className={styles.column}> <h7 className={styles.emailText}> {this.state.email} </h7> </div>  
-           
+            <h6 className={styles.column}> Email </h6> 
+            <div className={styles.column}> <h6 className={styles.emailText}> {user.email} </h6> </div>   
             </div>
             <div className={styles.row}>
-              <h7  className={styles.leftCol}>First name</h7>
+              <h6  className={styles.leftCol}>First name</h6>
               <div className={styles.column}>
-                <TextField
+               <TextField
                   type="firstName"
                   name="firstName"
-                  value={firstName}
+                  value={user.first_name}
                   placeholder="First Name"
                   length="short"
                   onChange={value => this.handleChange('firstName', value)}
                 />
-              </div>
-              
+              </div>       
             </div>
             <div className={styles.row}>
-              <h7 className={styles.column}> Last name </h7>
+              <h6 className={styles.column}> Last name </h6>
               <div className={styles.column}>
                 <TextField
                   type="lastName"
                   name="lastName"
-                  value={lastName}
+                  value={user.last_name}
                   placeholder="Last Name"
                   length="short"
                   onChange={value => this.handleChange('lastName', value )}
@@ -98,7 +95,7 @@ class ProfilePage extends Component {
               </div> 
             </div>
             <div className={styles.row}>
-              <div className={styles.column}> <h7>Occupation</h7> </div>
+              <div className={styles.column}> <h6>Occupation</h6> </div>
               <div className={styles.column}>
                 <Select
                   type="occupation"
@@ -112,7 +109,7 @@ class ProfilePage extends Component {
               </div>
             </div>
             <div className={styles.row}>
-              <div className={styles.column}><h7>Education</h7></div>
+              <div className={styles.column}><h6>Education</h6></div>
               <div className={styles.column}>  
               <Select
                 name="education"
@@ -124,13 +121,13 @@ class ProfilePage extends Component {
               </div>
             </div>
 
-            <div className={styles.profilePicture}> a </div>         
+            <div className={styles.profilePicture}> Profile Picture </div>         
           </div>
           <h4 className={styles.header}>Security</h4>
           <h3>Change your password</h3>
           <div className={styles.security}>
             <div className={styles.row}>
-              <h7 className={styles.currPwd}>Current password</h7>
+              <h6 className={styles.currPwd}>Current password</h6>
               <div className={StyleSheet.input}>
                 <TextField
                   type="currentPassword"
@@ -142,7 +139,7 @@ class ProfilePage extends Component {
             </div>
 
             <div className={styles.row}>
-              <h7 className={styles.newPwd}>New password</h7>
+              <h6 className={styles.newPwd}>New password</h6>
               <div className={styles.input}>
               <TextField
                 type="newPassword"
@@ -154,7 +151,7 @@ class ProfilePage extends Component {
             </div>
 
             <div className={styles.row}>
-             <h7 className={styles.cnfrmPwd}>Confirm password</h7> 
+             <h6 className={styles.cnfrmPwd}>Confirm password</h6> 
              <div className={styles.input}>
               <TextField
                   type="confirmPassword"
@@ -176,11 +173,10 @@ class ProfilePage extends Component {
 }
 
 const mapStateToProps = state => ({
-
+  user: state.persist.user
 })
 
-const mapDispatchToProps = {
-
-}
+const mapDispatchToProps = {}
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProfilePage)
+

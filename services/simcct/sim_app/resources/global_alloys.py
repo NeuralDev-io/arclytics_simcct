@@ -158,10 +158,10 @@ class Alloys(Resource):
 
     # noinspection PyMethodMayBeStatic
     def put(self, token, session_key, alloy_id):
-        patch_data = request.get_json()
+        put_data = request.get_json()
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}
-        if not patch_data:
+        if not put_data:
             return response, 400
 
         # Verify the request params is a valid ObjectId to use
@@ -169,18 +169,18 @@ class Alloys(Resource):
             response['message'] = 'Invalid ObjectId.'
             return response, 400
 
-        patch_name = patch_data.get('name', None)
-        patch_comp = patch_data.get('compositions', None)
+        put_name = put_data.get('name', None)
+        put_comp = put_data.get('compositions', None)
 
-        if not patch_name:
+        if not put_name:
             response['message'] = 'Alloy name must be provided.'
             return response, 400
 
-        if not patch_name:
+        if not put_comp:
             response['message'] = 'Alloy compositions list must be provided.'
             return response, 400
 
-        if not isinstance(patch_comp, list):
+        if not isinstance(put_comp, list):
             response['message'] = (
                 'Compositions must be provided as a list of valid elements e.g.'
                 ' {"symbol": "C", "weight": 1.0}'
@@ -190,7 +190,7 @@ class Alloys(Resource):
         # Just validate the input schema first before we do anything else which
         # will also validate the Elements symbol
         try:
-            new_alloy = AlloySchema().load(patch_data)
+            new_alloy = AlloySchema().load(put_data)
         except ValidationError as e:
             response['message'] = 'Request data failed schema validation.'
             response['errors'] = e.messages

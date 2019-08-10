@@ -32,7 +32,7 @@ from mongoengine.errors import (
 
 from users_app.extensions import api
 from users_app.middleware import authenticate
-from users_app.models import Alloy, User, Element
+from users_app.models import Alloy, User
 from users_app.utilities import ElementSymbolInvalid, ElementInvalid
 
 user_alloys_blueprint = Blueprint('user_alloys', __name__)

@@ -45,7 +45,7 @@ schema = AlloySchema()
 class TestAlloyService(BaseTestCase):
     alloy_data = {
         'name':
-            'Alloy-101',
+        'Alloy-101',
         'compositions': [
             {
                 'symbol': 'C',
@@ -299,7 +299,7 @@ class TestAlloyService(BaseTestCase):
 
             alloy_data = {
                 'name':
-                    'Alloy-666',
+                'Alloy-666',
                 'compositions': [
                     {
                         'symbol': 'C',
@@ -320,7 +320,7 @@ class TestAlloyService(BaseTestCase):
 
             duplicate_alloy = {
                 'name':
-                    'Alloy-666',
+                'Alloy-666',
                 'compositions': [
                     {
                         'symbol': 'C',
@@ -351,7 +351,7 @@ class TestAlloyService(BaseTestCase):
         """Ensure we can retrieve a single alloy."""
         alloy_data = {
             'name':
-                'Alloy-660',
+            'Alloy-660',
             'compositions': [
                 {
                     'symbol': 'C',
@@ -419,8 +419,10 @@ class TestAlloyService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            msg = ('Method Not Allowed. These are not the endpoints you are '
-                   'looking for.')
+            msg = (
+                'Method Not Allowed. These are not the endpoints you are '
+                'looking for.'
+            )
             self.assertEqual(data['message'], msg)
             self.assertEqual(res.status_code, 405)
 
@@ -431,27 +433,66 @@ class TestAlloyService(BaseTestCase):
 
             alloy_data = {
                 'name':
-                    'Alloy-600',
+                'Alloy-600',
                 'compositions': [
-                    {"symbol": "C", "weight": 0.044},
-                    {"symbol": "Mn", "weight": 1.73},
-                    {"symbol": "Si", "weight": 0.22},
-                    {"symbol": "Ni", "weight": 0.0},
-                    {"symbol": "Cr", "weight": 0.0},
-                    {"symbol": "Mo", "weight": 0.26},
-                    {"symbol": "Co", "weight": 0.0},
-                    {"symbol": "Al", "weight": 0.0},
-                    {"symbol": "Cu", "weight": 0.0},
-                    {"symbol": "As", "weight": 0.0},
-                    {"symbol": "Ti", "weight": 0.0},
-                    {"symbol": "V", "weight": 0.0},
-                    {"symbol": "W", "weight": 0.0},
-                    {"symbol": "S", "weight": 0.0},
-                    {"symbol": "N", "weight": 0.0},
-                    {"symbol": "Nb", "weight": 0.0},
-                    {"symbol": "B", "weight": 0.0},
-                    {"symbol": "P", "weight": 0.0},
-                    {"symbol": "Fe", "weight": 0.0}
+                    {
+                        "symbol": "C",
+                        "weight": 0.044
+                    }, {
+                        "symbol": "Mn",
+                        "weight": 1.73
+                    }, {
+                        "symbol": "Si",
+                        "weight": 0.22
+                    }, {
+                        "symbol": "Ni",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Cr",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Mo",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "Co",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Al",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Cu",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "As",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Ti",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "V",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "W",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "S",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "N",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Nb",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "B",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "P",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Fe",
+                        "weight": 0.0
+                    }
                 ]
             }
 
@@ -461,25 +502,60 @@ class TestAlloyService(BaseTestCase):
 
             new_alloy_data = {
                 'name':
-                    'Alloy-600',
+                'Alloy-600',
                 'compositions': [
-                    {"symbol": "C", "weight": 0.5},
-                    {"symbol": "Mn", "weight": 1.73},
-                    {"symbol": "Si", "weight": 0.22},
-                    {"symbol": "Ni", "weight": 0.0},
-                    {"symbol": "Cr", "weight": 0.0},
-                    {"symbol": "Mo", "weight": 0.26},
-                    {"symbol": "Co", "weight": 0.0},
-                    {"symbol": "Cu", "weight": 0.0},
-                    {"symbol": "As", "weight": 0.0},
-                    {"symbol": "Ti", "weight": 0.0},
-                    {"symbol": "W", "weight": 0.0},
-                    {"symbol": "S", "weight": 0.0},
-                    {"symbol": "N", "weight": 0.0},
-                    {"symbol": "Nb", "weight": 0.0},
-                    {"symbol": "B", "weight": 0.0},
-                    {"symbol": "P", "weight": 0.0},
-                    {"symbol": "Fe", "weight": 0.0}
+                    {
+                        "symbol": "C",
+                        "weight": 0.5
+                    }, {
+                        "symbol": "Mn",
+                        "weight": 1.73
+                    }, {
+                        "symbol": "Si",
+                        "weight": 0.22
+                    }, {
+                        "symbol": "Ni",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Cr",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Mo",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "Co",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Cu",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "As",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Ti",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "W",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "S",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "N",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Nb",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "B",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "P",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Fe",
+                        "weight": 0.0
+                    }
                 ]
             }
 
@@ -539,14 +615,11 @@ class TestAlloyService(BaseTestCase):
     def test_update_alloy_non_existing(self):
         """Ensure if we try to update before creating it errors."""
         alloy_data = {
-            'name':
-            'Alloy-600',
-            'compositions': [
-                {
-                    'symbol': 'C',
-                    'weight': 1.2
-                }
-            ]
+            'name': 'Alloy-600',
+            'compositions': [{
+                'symbol': 'C',
+                'weight': 1.2
+            }]
         }
         with app.test_client() as client:
             self.login_client(client)
@@ -587,20 +660,45 @@ class TestAlloyService(BaseTestCase):
     def test_delete_alloy(self):
         alloy_data = {
             'name':
-                'Alloy-66',
+            'Alloy-66',
             'compositions': [
-                {"symbol": "C", "weight": 0.044},
-                {"symbol": "Mn", "weight": 1.73},
-                {"symbol": "Si", "weight": 0.22},
-                {"symbol": "Ni", "weight": 0.0},
-                {"symbol": "Cr", "weight": 0.0},
-                {"symbol": "Mo", "weight": 0.26},
-                {"symbol": "Co", "weight": 0.0},
-                {"symbol": "Cu", "weight": 0.0},
-                {"symbol": "As", "weight": 0.0},
-                {"symbol": "Ti", "weight": 0.0},
-                {"symbol": "W", "weight": 0.0},
-                {"symbol": "Fe", "weight": 0.0}
+                {
+                    "symbol": "C",
+                    "weight": 0.044
+                }, {
+                    "symbol": "Mn",
+                    "weight": 1.73
+                }, {
+                    "symbol": "Si",
+                    "weight": 0.22
+                }, {
+                    "symbol": "Ni",
+                    "weight": 0.0
+                }, {
+                    "symbol": "Cr",
+                    "weight": 0.0
+                }, {
+                    "symbol": "Mo",
+                    "weight": 0.26
+                }, {
+                    "symbol": "Co",
+                    "weight": 0.0
+                }, {
+                    "symbol": "Cu",
+                    "weight": 0.0
+                }, {
+                    "symbol": "As",
+                    "weight": 0.0
+                }, {
+                    "symbol": "Ti",
+                    "weight": 0.0
+                }, {
+                    "symbol": "W",
+                    "weight": 0.0
+                }, {
+                    "symbol": "Fe",
+                    "weight": 0.0
+                }
             ]
         }
 
@@ -647,14 +745,11 @@ class TestAlloyService(BaseTestCase):
         we get an error.
         """
         alloy_data = {
-            'name':
-            'Alloy-101',
-            'compositions': [
-                {
-                    'symbol': 'C',
-                    'weight': 2.0
-                }
-            ]
+            'name': 'Alloy-101',
+            'compositions': [{
+                'symbol': 'C',
+                'weight': 2.0
+            }]
         }
 
         with app.test_client() as client:

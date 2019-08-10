@@ -222,8 +222,10 @@ class Alloys(Resource):
         Returns:
             A Response object consisting of a dict and status code as an int.
         """
-        msg = ('Method Not Allowed. These are not the endpoints you are '
-               'looking for.')
+        msg = (
+            'Method Not Allowed. These are not the endpoints you are '
+            'looking for.'
+        )
         return {'message': msg}, 405
 
         # patch_data = request.get_json()

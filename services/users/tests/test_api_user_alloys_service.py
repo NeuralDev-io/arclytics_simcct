@@ -31,7 +31,7 @@ _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'seed_alloy_data.json'
 
 alloy_data = {
     'name':
-    'Alloy-101',
+        'Alloy-101',
     'compositions': [
         {
             "symbol": "C",
@@ -51,6 +51,21 @@ alloy_data = {
         }, {
             "symbol": "Mo",
             "weight": 0.26
+        }, {
+            "symbol": "As",
+            "weight": 0.0
+        }, {
+            "symbol": "W",
+            "weight": 0.0
+        }, {
+            "symbol": "Co",
+            "weight": 0.26
+        }, {
+            "symbol": "Mo",
+            "weight": 0.26
+        }, {
+            "symbol": "Fe",
+            "weight": 0.0
         }
     ]
 }
@@ -74,7 +89,7 @@ class TestUserAlloyService(BaseTestCase):
 
     @staticmethod
     def login(
-        client, email='morgan@starkindustries.com', password='IronHeart!'
+            client, email='morgan@starkindustries.com', password='IronHeart!'
     ):
         resp_login = client.post(
             '/auth/login',
@@ -261,20 +276,42 @@ class TestUserAlloyService(BaseTestCase):
 
             alloy_data2 = {
                 'name':
-                'Alloy-102',
+                    'Alloy-102',
                 'compositions': [
                     {
                         "symbol": "C",
                         "weight": 0.044
-                    },
-                    {
+                    }, {
                         "symbol": "Mn",
                         "weight": 1.73
-                    },
-                    {
+                    }, {
                         "symbol": "Si",
                         "weight": 0.22
-                    },
+                    }, {
+                        "symbol": "Ni",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Cr",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Mo",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "As",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "W",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Co",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "Mo",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "Fe",
+                        "weight": 0.0
+                    }
                 ]
             }
 
@@ -313,20 +350,42 @@ class TestUserAlloyService(BaseTestCase):
 
             alloy_data2 = {
                 'name':
-                'Alloy-102',
+                    'Alloy-102',
                 'compositions': [
                     {
                         "symbol": "C",
                         "weight": 0.044
-                    },
-                    {
+                    }, {
                         "symbol": "Mn",
                         "weight": 1.73
-                    },
-                    {
+                    }, {
                         "symbol": "Si",
                         "weight": 0.22
-                    },
+                    }, {
+                        "symbol": "Ni",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Cr",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Mo",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "As",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "W",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Co",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "Mo",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "Fe",
+                        "weight": 0.0
+                    }
                 ]
             }
 
@@ -410,20 +469,42 @@ class TestUserAlloyService(BaseTestCase):
 
             alloy_data2 = {
                 'name':
-                'Alloy-102',
+                    'Alloy-102',
                 'compositions': [
                     {
                         "symbol": "C",
-                        "weight": 0.044
-                    },
-                    {
+                        "weight": 0.054
+                    }, {
                         "symbol": "Mn",
-                        "weight": 1.73
-                    },
-                    {
+                        "weight": 1.7
+                    }, {
                         "symbol": "Si",
-                        "weight": 0.22
-                    },
+                        "weight": 0.25
+                    }, {
+                        "symbol": "Ni",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Cr",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Mo",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "As",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "W",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Co",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "Mo",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "Fe",
+                        "weight": 0.0
+                    }
                 ]
             }
 
@@ -507,7 +588,7 @@ class TestUserAlloyService(BaseTestCase):
 
             _id = ObjectId()
 
-            res = client.patch(
+            res = client.put(
                 f'/user/alloys/{_id}',
                 data=json.dumps({}),
                 headers={'Authorization': f'Bearer {token}'},
@@ -523,7 +604,7 @@ class TestUserAlloyService(BaseTestCase):
             token = self.login(client)
             self.assertTrue(token)
 
-            res = client.patch(
+            res = client.put(
                 f'/user/alloys/ironheart!',
                 data=json.dumps(alloy_data),
                 headers={'Authorization': f'Bearer {token}'},
@@ -541,7 +622,7 @@ class TestUserAlloyService(BaseTestCase):
 
             _id = ObjectId()
 
-            res = client.patch(
+            res = client.put(
                 f'/user/alloys/{_id}',
                 data=json.dumps({
                     'alloy_name': 'Wrong_Key',
@@ -551,11 +632,7 @@ class TestUserAlloyService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            msg = (
-                'Invalid keys in request payload (i.e. must be either "name"'
-                ' or "compositions").'
-            )
-            self.assertEqual(data['message'], msg)
+            self.assertEqual(data['message'], 'Alloy name must be provided.')
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
@@ -566,13 +643,13 @@ class TestUserAlloyService(BaseTestCase):
 
             _id = ObjectId()
 
-            res = client.patch(
+            res = client.put(
                 f'/user/alloys/{_id}',
                 data=json.dumps(
-                    {'compositions': {
-                        'symbol': 'C',
-                        'weight': 1
-                    }}
+                    {
+                        'name': 'Bad Alloc',
+                        'compositions': {'symbol': 'C', 'weight': 1}
+                     }
                 ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
@@ -593,7 +670,7 @@ class TestUserAlloyService(BaseTestCase):
 
             _id = ObjectId()
 
-            res = client.patch(
+            res = client.put(
                 f'/user/alloys/{_id}',
                 data=json.dumps(alloy_data),
                 headers={'Authorization': f'Bearer {token}'},
@@ -615,7 +692,7 @@ class TestUserAlloyService(BaseTestCase):
 
             _id = ObjectId()
 
-            res = client.patch(
+            res = client.put(
                 f'/user/alloys/{_id}',
                 data=json.dumps(alloy_data),
                 headers={'Authorization': f'Bearer {token}'},
@@ -635,6 +712,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = ObjectId()
 
             updated_alloy = {
+                'name': 'Really Bad Alloy',
                 'compositions': [
                     {
                         "symbol": "C"
@@ -642,7 +720,7 @@ class TestUserAlloyService(BaseTestCase):
                 ]
             }
 
-            res = client.patch(
+            res = client.put(
                 f'/user/alloys/{_id}',
                 data=json.dumps(updated_alloy),
                 headers={'Authorization': f'Bearer {token}'},
@@ -653,9 +731,9 @@ class TestUserAlloyService(BaseTestCase):
                 'ValidationError (Element) (symbol.Field is required: '
                 '["Element.weight"])'
             )
+            self.assertEqual(data['message'], 'Invalid element error.')
             self.assertIsNotNone(data.get('error', None))
             self.assertEqual(data['error'], err)
-            self.assertEqual(data['message'], 'Invalid element error.')
             self.assertEqual(data['status'], 'fail')
             self.assertIsNone(data.get('data', None))
             self.assert400(res)
@@ -673,6 +751,7 @@ class TestUserAlloyService(BaseTestCase):
 
             # Yes, MS is not an element symbol
             updated_alloy = {
+                'name': 'Bad Alloy',
                 'compositions': [
                     {
                         'symbol': 'MS',
@@ -681,7 +760,7 @@ class TestUserAlloyService(BaseTestCase):
                 ]
             }
 
-            res = client.patch(
+            res = client.put(
                 f'/user/alloys/{_id}',
                 data=json.dumps(updated_alloy),
                 headers={'Authorization': f'Bearer {token}'},
@@ -690,6 +769,7 @@ class TestUserAlloyService(BaseTestCase):
             data = json.loads(res.data.decode())
             # we want it to stop here because validation has not failed as we
             # expected it to.
+            self.assertEqual(data['message'], 'Invalid element symbol error.')
             self.assertNotEqual(data['message'], 'No alloys found.')
             err = (
                 'ValidationError (Element) (Field does not match a valid '
@@ -697,41 +777,11 @@ class TestUserAlloyService(BaseTestCase):
             )
             self.assertIsNotNone(data.get('error', None))
             self.assertEqual(data['error'], err)
-            self.assertEqual(data['message'], 'Invalid element symbol error.')
             self.assertEqual(data['status'], 'fail')
             self.assertIsNone(data.get('data', None))
             self.assert400(res)
 
-    def test_partial_update_name_only(self):
-        with app.test_client() as client:
-            token = self.login(client)
-            self.assertTrue(token)
-
-            user = User.objects.get(email='morgan@starkindustries.com')
-            user.saved_alloys.create(**alloy_data)
-            user.save()
-
-            _id = str(user.saved_alloys[0].oid)
-
-            new_name = 'Alloy-New-101'
-            updated_alloy = {'name': new_name}
-
-            res = client.patch(
-                f'/user/alloys/{_id}',
-                data=json.dumps(updated_alloy),
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(data['status'], 'success')
-            self.assertIsNotNone(data.get('data', None))
-            self.assert200(res)
-            expected_alloy = alloy_data.copy()
-            expected_alloy['_id'] = data['data']['_id']
-            expected_alloy['name'] = new_name
-            self.assertEqual(data['data'], expected_alloy)
-
-    def test_partial_update(self):
+    def test_update(self):
         with app.test_client() as client:
             token = self.login(client)
             self.assertTrue(token)
@@ -743,6 +793,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = str(user.saved_alloys[0].oid)
 
             updated_alloy = {
+                'name': 'Alloy-102',
                 'compositions': [
                     {
                         "symbol": "C",
@@ -750,27 +801,54 @@ class TestUserAlloyService(BaseTestCase):
                     }, {
                         "symbol": "Mn",
                         "weight": 1.5
+                    }, {
+                        "symbol": "Si",
+                        "weight": 0.2
+                    }, {
+                        "symbol": "Ni",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Cr",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Mo",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "As",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "W",
+                        "weight": 0.0
+                    }, {
+                        "symbol": "Co",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "Mo",
+                        "weight": 0.26
+                    }, {
+                        "symbol": "Fe",
+                        "weight": 0.0
                     }
                 ]
             }
 
-            res = client.patch(
+            res = client.put(
                 f'/user/alloys/{_id}',
                 data=json.dumps(updated_alloy),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(data['status'], 'success')
-            self.assertIsNotNone(data.get('data', None))
-            self.assert200(res)
-            expected_alloy = alloy_data.copy()
+            # user.reload()
+            # alloy = user.saved_alloys.get(**{'oid': ObjectId(_id)})
+            expected_alloy = updated_alloy.copy()
             expected_alloy['_id'] = data['data']['_id']
-            expected_alloy['compositions'][0]['weight'] = 0.5
-            expected_alloy['compositions'][1]['weight'] = 1.5
             self.assertEqual(data['data'], expected_alloy)
+            self.assertIsNotNone(data.get('data', None))
+            self.assertEqual(data['status'], 'success')
+            self.assert200(res)
 
-    def test_partial_add(self):
+    def test_patch_method_not_allowed(self):
         with app.test_client() as client:
             token = self.login(client)
             self.assertTrue(token)
@@ -792,14 +870,10 @@ class TestUserAlloyService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(data['status'], 'success')
-            self.assertIsNotNone(data.get('data', None))
-            self.assert200(res)
-            expected_alloy = alloy_data.copy()
-            expected_alloy['_id'] = data['data']['_id']
-            expected_alloy['name'] = new_name
-            expected_alloy['compositions'].append(new_elem)
-            self.assertEqual(data['data'], expected_alloy)
+            msg = ('Method Not Allowed. These are not the endpoints you are '
+                   'looking for.')
+            self.assertEqual(data['message'], msg)
+            self.assert405(res)
 
 
 if __name__ == '__main__':

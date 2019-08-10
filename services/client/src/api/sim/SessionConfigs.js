@@ -14,15 +14,11 @@
  */
 
 export const initComp = (option, type, alloy) => {
-  console.log(JSON.stringify({
-    alloy_option: option,
-    alloy_type: type,
-    alloy,
-  }))
   fetch('http://localhost:8001/alloys/update', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
@@ -33,52 +29,105 @@ export const initComp = (option, type, alloy) => {
   })
     .then(res => res.json())
     .then((data) => {
-      console.log(data)
-    })
-  // const newAlloy = {
-  //   name: 'Alloy dummy',
-  //   compositions: [
-  //     {
-  //       symbol: 'C',
-  //       weight: 3.1,
-  //     },
-  //   ],
-  // }
-  // console.log(newAlloy)
-  // fetch('http://localhost:8001/global/alloys', {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //     Authorization: `Bearer ${localStorage.getItem('token')}`,
-  //   },
-  //   body: JSON.stringify(newAlloy),
-  // })
-  //   .then(res => res.json())
-  //   .then((data) => {
-  //     console.log(data)
-  //   })
-}
-
-export const updateComp = (type, alloy) => {
-  fetch('http://localhost:8001/alloys/update', {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
-    },
-    body: JSON.stringify({
-      
-    }),
-  })
-    .then(res => res.json())
-    .then((data) => {
-      console.log(data)
       if (data.status === 'fail') throw new Error(data.message)
-      if (data.status === 'success') console.log(data)
     })
     .catch(err => console.log(err))
 }
 
-export const updateConfig = () => {
+export const updateComp = (option, type, alloy) => {
+  fetch('http://localhost:8001/alloys/update', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify({
+      alloy_option: option,
+      alloy_type: type,
+      alloy,
+    }),
+  })
+    .then(res => res.json())
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
+    })
+    .catch(err => console.log(err))
+}
 
+export const updateConfigMethod = (value) => {
+  fetch('http://localhost:8001/configs/method/update', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify({ method: value }),
+  })
+    .then(res => res.json())
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
+    })
+    .catch(err => console.log(err))
+}
+
+export const updateConfig = (reqBody) => {
+  fetch('http://localhost:8001/configs/update', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify(reqBody),
+  })
+    .then(res => res.json())
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
+    })
+    .catch(err => console.log(err))
+}
+
+export const updateMsBsAe = (name, reqBody) => {
+  fetch(`http://localhost:8001/${name}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify(reqBody),
+  })
+    .then(res => res.json())
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
+    })
+    .catch(err => console.log(err))
+}
+
+export const getMsBsAe = (name, callback) => {
+  fetch(`http://localhost:8001/${name}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  })
+    .then(res => res.json())
+    .then((data) => {
+      const { status, ...others } = data
+      if (status === 'fail') throw new Error(data.message)
+      if (status === 'success') {
+        // use callback function to set state to SimulationPage
+        callback(prevState => ({
+          configurations: {
+            ...prevState.configurations,
+            ...others,
+          },
+        }))
+      }
+    })
+    .catch(err => console.log(err))
 }

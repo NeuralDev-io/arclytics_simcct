@@ -24,7 +24,7 @@ from flask import current_app as app
 from flask import json
 
 from tests.test_api_base import BaseTestCase
-from configs.settings import BASE_DIR
+from settings import BASE_DIR
 from users_app.models import User
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'seed_alloy_data.json'

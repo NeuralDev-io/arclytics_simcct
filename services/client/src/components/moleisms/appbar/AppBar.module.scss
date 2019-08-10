@@ -18,17 +18,27 @@
 
     & > .logo {
       width: 2.5rem;
-      margin-bottom: 2.75rem;
+      margin-bottom: 2.5rem;
     }
 
     & > .navIcon {
-      width: 1.25rem;
-      stroke: $n900;
+      width: 2rem;
+      height: 2rem;
       margin-bottom: 2.5rem;
       cursor: pointer;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      & > .icon {
+        width: 1.25rem;
+        stroke: $n900;
+      }
   
       &.active {
-        stroke: $ag500;
+        & > .icon { stroke: $ag500; }
       }
 
       &:last-child {

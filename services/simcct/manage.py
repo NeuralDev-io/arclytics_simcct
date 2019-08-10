@@ -27,9 +27,11 @@ import unittest
 from pathlib import Path
 
 import coverage
+import redis
 from flask.cli import FlaskGroup
 from pymongo import MongoClient
 
+import settings
 from sim_app.app import create_app
 
 COV = coverage.coverage(
@@ -40,6 +42,7 @@ COV = coverage.coverage(
         'sim_app/alloys/*',
         'sim_app/alloys_service.py',
         'sim_app/middleware.py',
+        'sim_app/sim_session.py'
     ],
     omit=[
         'sim_app/app.py'
@@ -49,9 +52,6 @@ COV = coverage.coverage(
     ]
 )
 COV.start()
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(BASE_DIR)
 
 app = create_app()
 cli = FlaskGroup(create_app=create_app)
@@ -64,7 +64,7 @@ def seed_alloy_db():
         port=int(os.environ.get('MONGO_PORT'))
     )
     db = client['arc_dev']
-    path = Path(BASE_DIR) / 'seed_alloy_data.json'
+    path = Path(settings.BASE_DIR) / 'seed_alloy_data.json'
     if os.path.isfile(path):
         with open(path) as f:
             json_data = json.load(f)
@@ -87,6 +87,10 @@ def flush():
     client.drop_database('arc')
     client.drop_database('arc_dev')
     client.drop_database('arc_test')
+    redis_client = redis.Redis(
+        host=os.environ.get('REDIS_HOST'), port=os.environ.get('REDIS_PORT')
+    )
+    redis_client.flushall()
 
 
 @cli.command()

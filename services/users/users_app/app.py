@@ -29,7 +29,7 @@ from mongoengine.connection import (
     disconnect_all, get_connection, get_db, MongoEngineConnectionError
 )
 
-from configs.settings import DEFAULT_LOGGER
+from settings import DEFAULT_LOGGER
 from users_app.utilities import JSONEncoder
 from users_app.extensions import cors, bcrypt, ma, api
 from users_app.mongodb import MongoSingleton

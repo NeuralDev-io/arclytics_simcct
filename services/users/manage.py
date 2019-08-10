@@ -31,8 +31,9 @@ from flask.cli import FlaskGroup
 from prettytable import PrettyTable
 import coverage
 
+import settings
 from users_app.app import create_app, get_flask_mongo
-from users_app.models import User
+from users_app.models import User, AdminProfile
 
 COV = coverage.coverage(
     branch=True,
@@ -43,7 +44,7 @@ COV = coverage.coverage(
     ],
     omit=[
         'users_app/app.py'
-        'users_app/flask_conf.py',
+        'configs/flask_conf.py',
         'tests/*',
         'configs/*',
         'data/*',
@@ -85,16 +86,15 @@ def flush():
 @cli.command('seed_db')
 def seed_user_db():
     """Seed the database with some basic users."""
-    from configs.settings import BASE_DIR
     from mongoengine.connection import get_db
     db = get_db('default')
 
-    path = Path(BASE_DIR) / 'seed_user_data.json'
+    path = Path(settings.BASE_DIR) / 'seed_user_data.json'
     if os.path.isfile(path):
         with open(path) as f:
             data = json.load(f)
 
-    tbl = PrettyTable(['No.', 'Email', 'Name'])
+    tbl = PrettyTable(['No.', 'Email', 'Name', 'Admin'])
     print('Seeding users to <{}> database:'.format(db.name))
     for i, u in enumerate(data):
         new_user = User(
@@ -103,11 +103,22 @@ def seed_user_db():
             last_name=u['last_name']
         )
         new_user.set_password(u['password'])
+
+        if u.get('is_admin', False):
+            profile = AdminProfile(
+                position=u['admin_profile']['position'],
+                mobile_number=u['admin_profile']['mobile_number']
+            )
+            profile.verified = True
+            new_user.disable_admin = not u.get('is_admin', False)
+            new_user.admin_profile = profile
+
         new_user.save()
         tbl.add_row(
             (
                 str(i + 1), u['email'],
-                '{} {}'.format(u['first_name'], u['last_name'])
+                '{} {}'.format(u['first_name'],
+                               u['last_name']), new_user.is_admin
             )
         )
     tbl.align['Name'] = 'l'

@@ -28,7 +28,7 @@ from sim_app.schemas import AlloySchema, AlloyStoreSchema
 from sim_app.middleware import token_and_session_required
 from sim_app.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
-from simulation.utilities import Method, validate_comp_elements
+from simulation.utilities import Method, MissingElementError
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -122,16 +122,14 @@ class AlloyStore(Resource):
         # Let's validate the Alloy follows our schema
         try:
             valid_alloy = AlloySchema().load(alloy)
+        except MissingElementError as e:
+            response['message'] = str(e)
+            return response, 400
         except ValidationError as e:
             response['errors'] = str(e.messages)
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
-        # Validate the alloy has all the elements that we need
-        valid, missing_elem = validate_comp_elements(alloy_comp)
-        if not valid:
-            response['message'] = f'Missing elements {missing_elem}'
-            return response, 400
         # Otherwise we have all the elements we need
 
         # We create a new session alloy_store for the user

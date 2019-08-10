@@ -36,6 +36,8 @@ class PeriodicTable extends Component {
       ypos,
       symbol,
       name,
+      atomic_mass, // eslint-disable-line
+      category,
     } = elem
     const { active, hovering } = this.state
     let popupPos = ''
@@ -43,6 +45,21 @@ class PeriodicTable extends Component {
     if (xpos > 9 && ypos <= 5) popupPos = 'popupTopLeft'
     if (xpos <= 9 && ypos > 5) popupPos = 'popupBottomRight'
     if (xpos > 9 && ypos > 5) popupPos = 'popupBottomLeft'
+    const colour = () => {
+      switch (category) {
+        case 'transition metal': return 'r'
+        case 'post-transition metal': return 'o'
+        case 'alkali metal': return 'l'
+        case 'alkaline earth metal': return 'g'
+        case 'lanthanide': return 't'
+        case 'actinide': return 'b'
+        case 'metalloid': return 'i' // or semimetals
+        case 'noble gas': return 'v'
+        case 'diatomic nonmetal': return 'm'
+        case 'polyatomic nonmetal': return 'm'
+        default: return 'br'
+      }
+    }
 
     return (
       <div
@@ -52,7 +69,7 @@ class PeriodicTable extends Component {
         onMouseLeave={() => this.handleMouseLeave(number)}
         {...buttonize(() => this.handleToggleElement(number))}
       >
-        <div className={`${styles.element} ${typeof active[number] !== 'undefined' && styles.active}`}>
+        <div className={`${styles.element} ${styles[colour()]} ${typeof active[number] !== 'undefined' && styles.active}`}>
           <span className={styles.number}>{number}</span>
           <span className={styles.symbol}>{symbol}</span>
         </div>
@@ -64,6 +81,7 @@ class PeriodicTable extends Component {
             <span className={styles.number}>{number}</span>
             <span className={styles.symbol}>{symbol}</span>
             <span className={styles.name}>{name}</span>
+            <span className={styles.mass}>[{atomic_mass}]</span> {/* eslint-disable-line */}
           </div>
           <p>{elem.summary}</p>
         </div>

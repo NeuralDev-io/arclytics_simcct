@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# alloys.py
+# global_alloys.py
 #
 # Attributions:
 # [1]
-# TODO:
-#  - (andrew@neuraldev.io) Try to not use Flask RESTfil resources and instead
-#    use just Flask API decorators so that the AlloysService doesn't get
-#    instantiated until it's
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
@@ -18,7 +14,7 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.14'
-"""alloys.py: 
+"""global_alloys.py: 
 
 This defines the resources and endpoints for Global Alloys CRUD operations.
 """
@@ -44,6 +40,7 @@ class AlloysList(Resource):
     """
 
     # TODO(andrew@neuraldev.io): How to verify an admin user.
+    # noinspection PyMethodMayBeStatic
     def post(self):
         """Exposes the POST method for `/alloys` to allow creating an alloy.
         The request must also include a request body of data that will need to
@@ -59,9 +56,17 @@ class AlloysList(Resource):
             return response, 400
 
         post_comps = post_data.get('compositions', None)
+        post_name = post_data.get('name', None)
 
-        if not post_comps:
-            response['message'] = 'No compositions list were provided.'
+        if not post_comps or not isinstance(post_comps, list):
+            response['message'] = (
+                'Compositions must be provided as a list of valid elements e.g.'
+                ' {"symbol": "C", "weight": 1.0}'
+            )
+            return response, 400
+
+        if not post_name:
+            response['message'] = 'No alloy name was provided.'
             return response, 400
 
         # We validate it to make sure it's valid before we do any
@@ -72,19 +77,22 @@ class AlloysList(Resource):
             response['errors'] = e.messages
             return response, 400
 
-        alloy = AlloysService().create_alloy(valid_data)
+        id_or_error = AlloysService().create_alloy(valid_data)
 
         # create_alloy() will return a string on DuplicateKeyError meaning it
         # wasn't created.
-        if isinstance(alloy, str):
-            response['message'] = alloy
+        if isinstance(id_or_error, str):
+            response['message'] = id_or_error
             return response, 412
 
+        alloy = AlloysService().find_alloy(id_or_error)
+
         response['status'] = 'success'
-        response['_id'] = str(alloy)
+        response['data'] = alloy
         response.pop('message')
         return response, 201
 
+    # noinspection PyMethodMayBeStatic
     def get(self):
         """Exposes the GET method for `/alloys` to retrieve a list of alloys in
         the database.
@@ -111,6 +119,7 @@ class Alloys(Resource):
     updating and deleting an alloy in the global database.
     """
 
+    # noinspection PyMethodMayBeStatic
     def get(self, alloy_id):
         """Allows the GET method with `/alloys/{id}` as an endpoint to get
         a single alloy from the database.
@@ -141,6 +150,7 @@ class Alloys(Resource):
         return response, 200
 
     # TODO(andrew@neuraldev.io): How to verify an admin user.
+    # noinspection PyMethodMayBeStatic
     def patch(self, alloy_id):
         """Exposes the PATCH method for `/alloys` to update an existing alloy by
         an admin to update the existing data.
@@ -149,8 +159,7 @@ class Alloys(Resource):
             alloy_id: A valid ObjectId string that will be checked.
 
         Returns:
-            A Response object consisting of a dict and status code as
-            an int.
+            A Response object consisting of a dict and status code as an int.
         """
 
         patch_data = request.get_json()
@@ -164,16 +173,31 @@ class Alloys(Resource):
             response['message'] = 'Invalid ObjectId.'
             return response, 400
 
-        # Just validate the input schema first before we do anything else
+        patch_name = patch_data.get('name', None)
+        patch_comp = patch_data.get('compositions', None)
+
+        if not patch_name and not patch_comp:
+            response['message'] = (
+                'No valid keys was provided for alloy '
+                '(i.e. must be "name" or "compositions")'
+            )
+            return response, 400
+
+        if patch_comp and not isinstance(patch_comp, list):
+            response['message'] = (
+                'Compositions must be provided as a list of valid elements e.g.'
+                ' {"symbol": "C", "weight": 1.0}'
+            )
+            return response, 400
+
+        # Just validate the input schema first before we do anything else which
+        # will also validate the Elements symbol
         try:
             AlloySchema().load(patch_data)
         except ValidationError as e:
             response['message'] = 'Request data failed schema validation.'
             response['errors'] = e.messages
             return response, 400
-
-        patch_name = patch_data.get('name', None)
-        patch_alloy = patch_data.get('compositions', None)
 
         # First we update the compositions of the existing alloy if any.
         existing_alloy = AlloysService().find_alloy(ObjectId(alloy_id))
@@ -182,7 +206,7 @@ class Alloys(Resource):
             response['message'] = 'Alloy not found.'
             return response, 404
 
-        if patch_alloy:
+        if patch_comp:
             existing_comp = existing_alloy.get('compositions')
 
             # FIXME(andrew@neuraldev.io): This needs to be massively updated as
@@ -202,7 +226,7 @@ class Alloys(Resource):
                     existing_comp.append(el)
 
         # update the name if a new one is provided
-        if not patch_name == existing_alloy['name']:
+        if patch_name and not patch_name == existing_alloy['name']:
             existing_alloy['name'] = patch_name
 
         # Ensure the newly saved alloy is valid
@@ -229,6 +253,7 @@ class Alloys(Resource):
         return response, 200
 
     # TODO(andrew@neuraldev.io): How to verify an admin user.
+    # noinspection PyMethodMayBeStatic
     def delete(self, alloy_id):
         """Exposes the DELETE method on `/alloys/{id}` to delete an existing
         alloy in the database.

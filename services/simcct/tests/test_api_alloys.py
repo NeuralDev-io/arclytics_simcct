@@ -28,12 +28,14 @@ from flask import current_app as app
 from flask import json
 from pymongo import MongoClient
 
+import settings
 from tests.test_api_base import BaseTestCase
-from sim_app.app import BASE_DIR
 from sim_app.mongo import MongoAlloys
 from sim_app.schemas import AlloySchema
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(
+    settings.BASE_DIR
+) / 'simulation' / 'sim_configs.json'
 
 schema = AlloySchema()
 
@@ -59,7 +61,7 @@ class TestAlloyService(BaseTestCase):
     def test_get_all_alloys(self):
         """Ensure we can get all alloys."""
         # Clear the database so we can count properly.
-        path = Path(BASE_DIR) / 'seed_alloy_data.json'
+        path = Path(settings.BASE_DIR) / 'seed_alloy_data.json'
         with open(path) as f:
             json_data = json.load(f)
 
@@ -118,8 +120,7 @@ class TestAlloyService(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assertEqual(res.status_code, 201)
             self.assertEqual(data['status'], 'success')
-            self.assertTrue(data['_id'])
-            self.assertTrue(ObjectId.is_valid(data['_id']))
+            self.assertTrue(data['data'])
 
     def test_create_alloy_empty_json(self):
         with app.test_client() as client:

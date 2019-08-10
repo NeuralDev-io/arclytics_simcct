@@ -29,7 +29,6 @@ class BaseConfig:
     TESTING = False
     BCRYPT_LOG_ROUNDS = 13
     SECRET_KEY = os.environ.get('SECRET_KEY', '')
-    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', '')
     TOKEN_EXPIRATION_DAYS = 30
     TOKEN_EXPIRATION_SECONDS = 0
 
@@ -52,7 +51,7 @@ class DevelopmentConfig(BaseConfig):
     REDIS_HOST = os.environ.get('REDIS_HOST', None)
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/14'
-    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
+    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/13'
 
 
 class TestingConfig(BaseConfig):
@@ -69,7 +68,7 @@ class TestingConfig(BaseConfig):
     REDIS_HOST = os.environ.get('REDIS_HOST', None)
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/14'
-    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/1'
+    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/13'
 
 
 class ProductionConfig(BaseConfig):

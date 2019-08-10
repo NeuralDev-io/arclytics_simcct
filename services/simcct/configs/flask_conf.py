@@ -27,6 +27,9 @@ class BaseConfig:
     """Base configuration"""
     TESTING = False
     SECRET_KEY = os.environ.get('SECRET_KEY')
+    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT')
+
+    PERMANENT_SESSION_LIFETIME = True
 
     os.environ['MONGO_DBNAME'] = 'arc_dev'
 
@@ -35,10 +38,9 @@ class BaseConfig:
     MONGO_USER = os.environ.get('MONGODB_USER')
     MONGO_PASSWORD = os.environ.get('MONGODB_PASSWORD')
 
-    SESSION_PERMANENT = True
-    SESSION_USER_SIGNER = True
-    SESSION_KEY_PREFIX = 'session:'
-    SESSION_TYPE = 'redis'
+    REDIS_HOST = os.environ.get('REDIS_HOST', None)
+    REDIS_PORT = os.environ.get('REDIS_PORT', None)
+    REDIS_DB = 0
 
 
 class DevelopmentConfig(BaseConfig):
@@ -46,14 +48,7 @@ class DevelopmentConfig(BaseConfig):
 
     MONGO_DBNAME = 'arc_dev'
     os.environ['MONGO_DBNAME'] = MONGO_DBNAME
-
     REDIS_DB = 1
-    redis_client_dev = redis.Redis(
-        host=os.environ.get('REDIS_HOST'),
-        port=int(os.environ.get('REDIS_PORT')),
-        db=REDIS_DB
-    )
-    SESSION_REDIS = redis_client_dev
 
 
 class TestingConfig(BaseConfig):
@@ -62,25 +57,12 @@ class TestingConfig(BaseConfig):
     MONGO_DBNAME = 'arc_test'
     os.environ['MONGO_DBNAME'] = MONGO_DBNAME
 
-    SESSION_PERMANENT = False
-    REDIS_DB = 15
-    redis_client_test = redis.Redis(
-        host=os.environ.get('REDIS_HOST'),
-        port=int(os.environ.get('REDIS_PORT')),
-        db=REDIS_DB
-    )
-    SESSION_REDIS = redis_client_test
+    REDIS_DB = 2
 
 
 class ProductionConfig(BaseConfig):
     """Production configuration"""
     MONGO_DBNAME = 'arclytics'
     # TODO(andrew@neuraldev.io): Ensure the database changes over during
-    #  production mode.
-    REDIS_DB = 0
-    redis_client_prod = redis.Redis(
-        host=os.environ.get('REDIS_HOST'),
-        port=int(os.environ.get('REDIS_PORT')),
-        db=REDIS_DB
-    )
-    SESSION_REDIS = redis_client_prod
+    #  production mode and that there are passwords set on Mongo and Redis.
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)

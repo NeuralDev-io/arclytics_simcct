@@ -28,7 +28,6 @@ class Plots(object):
     This class is used to store TTT and CCT plotting data. There will also be some helper instance methods
     to allow plotting with Plotly or printing to stdout.
     """
-
     def __init__(self):
         self.ttt = None
         self.cct = None

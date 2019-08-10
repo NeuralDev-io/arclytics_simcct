@@ -19,31 +19,37 @@ __date__ = '2019.08.03'
 {Description}
 """
 
-from flask import Blueprint, request, session
+from flask import Blueprint, request
 from flask_restful import Resource
 from marshmallow import ValidationError
 
 from sim_app.extensions import api
 from sim_app.schemas import AlloySchema, AlloyStoreSchema
-from sim_app.middleware import token_required_restful
+from sim_app.middleware import token_and_session_required
+from sim_app.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
-from simulation.utilities import Method
+from simulation.utilities import Method, validate_comp_elements
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
 
 sim_alloys_blueprint = Blueprint('sim_alloys', __name__)
 
 
 class AlloyStore(Resource):
     method_decorators = {
-        'patch': [token_required_restful],
-        'post': [token_required_restful]
+        'patch': [token_and_session_required],
+        'post': [token_and_session_required]
     }
 
-    def post(self, token):
+    # noinspection PyMethodMayBeStatic
+    def post(self, token, session_key):
         """This POST endpoint initiates the Alloy Store by setting the alloy
         in the request body to the Session storage.
 
         Args:
             token: a valid JWT token.
+            session_key: a valid TimedJSONWebSignature session key.
 
         Returns:
             A response object with appropriate status and message
@@ -95,13 +101,38 @@ class AlloyStore(Resource):
             response['message'] = 'No alloy was provided.'
             return response, 400
 
+        alloy_name = alloy.get('name', None)
+        alloy_comp = alloy.get('compositions', None)
+
+        if not alloy_name and not alloy_comp:
+            response['message'] = (
+                'No valid keys was provided for alloy '
+                '(i.e. must be "name" or "compositions")'
+            )
+            return response, 400
+
+        if not alloy_comp:
+            response['message'] = 'You must provide an alloy composition.'
+            return response, 400
+
+        if not alloy_name:
+            response['message'] = 'You must provide an alloy name.'
+            return response, 400
+
         # Let's validate the Alloy follows our schema
         try:
             valid_alloy = AlloySchema().load(alloy)
         except ValidationError as e:
-            response['errors'] = str(e)
+            response['errors'] = str(e.messages)
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
+
+        # Validate the alloy has all the elements that we need
+        valid, missing_elem = validate_comp_elements(alloy_comp)
+        if not valid:
+            response['message'] = f'Missing elements {missing_elem}'
+            return response, 400
+        # Otherwise we have all the elements we need
 
         # We create a new session alloy_store for the user
         session_alloy_store = {
@@ -132,7 +163,8 @@ class AlloyStore(Resource):
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
-        session[f'{token}:alloy_store'] = valid_store
+        sid, session_store = SimSessionService().load_session(session_key)
+        session_store['alloy_store'] = valid_store
 
         # In this situation, we always need to auto calculate and set the
         # below configs to default
@@ -164,6 +196,10 @@ class AlloyStore(Resource):
 
         comp_np_arr = SimConfig.get_compositions(comp_list)
 
+        if comp_np_arr is False:
+            response['message'] = 'Compositions conversion error.'
+            return response, 500
+
         # We need to store some results so let's prepare an empty dict
         response['message'] = (
             'Compositions and Configurations in Session '
@@ -187,7 +223,8 @@ class AlloyStore(Resource):
         default_configs['ae1_temp'] = ae1
         default_configs['ae3_temp'] = ae3
 
-        session[f'{token}:configurations'] = default_configs
+        session_store['configurations'] = default_configs
+        SimSessionService().save_session(sid, session_store)
 
         response['data'] = {
             'ms_temp': ms_temp,
@@ -197,13 +234,22 @@ class AlloyStore(Resource):
             'ae3_temp': ae3
         }
         response['status'] = 'success'
-        return response, 200
 
-    def patch(self, token):
+        headers = {
+            'Access-Control-Allow-Headers':
+            'Origin, X-Requested-With, Content-Type, Accept, x-auth',
+            'Content-type': 'application/json'
+        }
+
+        return response, 201, headers
+
+    # noinspection PyMethodMayBeStatic
+    def patch(self, token, session_key):
         """This PATCH endpoint simply updates the `alloys` in the session
         store so that we can update all the other transformation temperature.
 
         Args:
+            session_key:
             token: a valid JWT token.
 
         Returns:
@@ -257,19 +303,22 @@ class AlloyStore(Resource):
         # The alloy might be provided but if it's got no valid keys, we need to
         # check that
         if not alloy.get('name', None) and not alloy.get('compositions', None):
-            response['message'] = 'No key in the alloy was provided.'
+            response['message'] = 'No valid key in the alloy was provided.'
             return response, 400
 
         # Let's validate the Alloy follows our schema
         try:
             alloy = AlloySchema().load(alloy)
         except ValidationError as e:
-            response['errors'] = str(e)
+            response['errors'] = str(e.messages)
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
+        sid, session_store = SimSessionService().load_session(session_key)
+
         # We get what's currently stored in the session and we update it
-        sess_alloy_store = session.get(f'{token}:alloy_store')
+        sess_alloy_store = session_store.get('alloy_store')
+
         # Basically, the user should have a session initiated from login
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
@@ -328,9 +377,9 @@ class AlloyStore(Resource):
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
-        session[f'{token}:alloy_store'] = sess_alloy_store
-
-        sess_configs = session.get(f'{token}:configurations')
+        # We also need to do auto update fixes if necessary
+        session_store['alloy_store'] = sess_alloy_store
+        sess_configs = session_store.get('configurations')
 
         # Well, if we don't need to auto calc. anything, let's get out of here
         if (
@@ -338,6 +387,9 @@ class AlloyStore(Resource):
             and not sess_configs['auto_calculate_bs']
             and not sess_configs['auto_calculate_ae']
         ):
+            # If we are only updating the alloy_store in the session, we access
+            # Redis at this point and save it.
+            SimSessionService().save_session(sid, session_store)
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'
             return response, 200
@@ -359,6 +411,10 @@ class AlloyStore(Resource):
 
         comp_np_arr = SimConfig.get_compositions(comp_list)
 
+        if comp_np_arr is False:
+            response['message'] = 'Compositions conversion error.'
+            return response, 500
+
         # We need to store some results so let's prepare an empty dict
         response['message'] = 'Compositions and other values updated.'
         response['data'] = {}
@@ -369,7 +425,6 @@ class AlloyStore(Resource):
             method = Method.Kirkaldy83
 
         if sess_configs['auto_calculate_ms']:
-
             ms_temp = SimConfig.get_ms(method, comp=comp_np_arr)
             ms_rate_param = SimConfig.get_ms_alpha(comp=comp_np_arr)
 
@@ -395,10 +450,17 @@ class AlloyStore(Resource):
             response['data']['ae1_temp'] = ae1
             response['data']['ae3_temp'] = ae3
 
-        session[f'{token}:configurations'] = sess_configs
+        session_store['configurations'] = sess_configs
+        SimSessionService().save_session(sid, session_store)
 
         response['status'] = 'success'
-        return response, 200
+        headers = {
+            'Access-Control-Allow-Headers':
+            'Origin, X-Requested-With, Content-Type, Accept, x-auth',
+            'Content-type': 'application/json'
+        }
+
+        return response, 200, headers
 
 
 api.add_resource(AlloyStore, '/alloys/update')

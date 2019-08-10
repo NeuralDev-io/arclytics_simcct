@@ -26,12 +26,13 @@ from pathlib import Path
 
 from bson import ObjectId
 from flask import current_app as app
-from flask import json, session
+from flask import json
 from pymongo import MongoClient
 
 from tests.test_api_base import BaseTestCase
+from sim_app.sim_session import SimSessionService
 from sim_app.schemas import AlloySchema, ConfigurationsSchema, AlloyStoreSchema
-from sim_app.app import BASE_DIR
+from settings import BASE_DIR
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 
@@ -105,6 +106,7 @@ class TestSimulationService(BaseTestCase):
             data=json.dumps(
                 {
                     '_id': self._id,
+                    'is_admin': False,
                     'last_configurations': configs,
                     'last_alloy_store': alloy_store
                 }
@@ -113,11 +115,13 @@ class TestSimulationService(BaseTestCase):
             content_type='application/json'
         )
         data = json.loads(sess_res.data.decode())
-        session_store = session.get(f'{self.token}:alloy_store')
+        self.session_key = data['session_key']
+        _, session_store = SimSessionService().load_session(self.session_key)
+        session_alloy = session_store.get('alloy_store')
         self.assertEqual(data['status'], 'success')
         self.assertTrue(sess_res.status_code == 201)
         self.assertEqual(
-            alloy_store['alloys']['parent'], session_store['alloys']['parent']
+            alloy_store['alloys']['parent'], session_alloy['alloys']['parent']
         )
 
     def test_simulate_no_prev_configs(self):
@@ -126,7 +130,10 @@ class TestSimulationService(BaseTestCase):
 
             res = client.get(
                 '/simulate',
-                headers={'Authorization': f'Bearer {self.token}'},
+                headers={
+                    'Authorization': f'Bearer {self.token}',
+                    'Session': 'SessionKey!'
+                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -147,6 +154,7 @@ class TestSimulationService(BaseTestCase):
                 data=json.dumps(
                     {
                         '_id': self._id,
+                        'is_admin': False,
                         'last_configurations': configs,
                         'last_alloy_store': {}
                     }
@@ -155,14 +163,19 @@ class TestSimulationService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(sess_res.data.decode())
-            session_store = session.get(f'{self.token}:configurations')
+            session_key = data['session_key']
+            sid, session_store = SimSessionService().load_session(session_key)
+            session_configs = session_store.get('configurations')
             self.assertEqual(data['status'], 'success')
             self.assertTrue(sess_res.status_code == 201)
-            self.assertEqual(configs, session_store)
+            self.assertEqual(configs, session_configs)
 
             res = client.get(
                 '/simulate',
-                headers={'Authorization': f'Bearer {self.token}'},
+                headers={
+                    'Authorization': f'Bearer {self.token}',
+                    'Session': session_key
+                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -173,27 +186,36 @@ class TestSimulationService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
 
     def test_simulate_with_login(self):
+        """Ensure there is a successful simulation get request."""
         with app.test_client() as client:
             self.login_client(client)
 
             # MUST have AE and MS/BS > 0.0 before we can run simulate
             res = client.get(
                 '/configs/ae',
-                headers={'Authorization': f'Bearer {self.token}'},
+                headers={
+                    'Authorization': f'Bearer {self.token}',
+                    'Session': self.session_key
+                },
                 content_type='application/json'
             )
             self.assert200(res)
 
             res = client.get(
                 '/configs/ms',
-                headers={'Authorization': f'Bearer {self.token}'},
+                headers={
+                    'Authorization': f'Bearer {self.token}',
+                    'Session': self.session_key
+                },
                 content_type='application/json'
             )
             self.assert200(res)
-
             res = client.get(
                 '/configs/bs',
-                headers={'Authorization': f'Bearer {self.token}'},
+                headers={
+                    'Authorization': f'Bearer {self.token}',
+                    'Session': self.session_key
+                },
                 content_type='application/json'
             )
             self.assert200(res)
@@ -201,7 +223,10 @@ class TestSimulationService(BaseTestCase):
             # Now we can run
             res = client.get(
                 '/simulate',
-                headers={'Authorization': f'Bearer {self.token}'},
+                headers={
+                    'Authorization': f'Bearer {self.token}',
+                    'Session': self.session_key
+                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())

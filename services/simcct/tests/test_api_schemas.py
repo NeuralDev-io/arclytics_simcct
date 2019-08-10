@@ -16,17 +16,16 @@ __date__ = '2019.07.18'
 import unittest
 from pathlib import Path
 
-from bson import ObjectId
 from flask import json
 from marshmallow import ValidationError
 
-from sim_app.app import BASE_DIR
+import settings
 from tests.test_api_base import BaseTestCase
 from sim_app.schemas import (
     AlloySchema, ConfigurationsSchema, SetupConfigsSchema
 )
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'simulation' / 'sim_configs.json'
 
 
 class TestSchemas(BaseTestCase):
@@ -39,7 +38,11 @@ class TestSchemas(BaseTestCase):
             'name': 'Arc_Stark',
             'compositions': test_json['compositions']
         }
-        comp = {'alloy': alloy, 'alloy_type': 'parent'}
+        comp = {
+            'alloy': alloy,
+            'alloy_type': 'parent',
+            'alloy_option': 'single'
+        }
 
         return test_json['configurations'], comp
 
@@ -95,6 +98,38 @@ class TestSchemas(BaseTestCase):
         self.assertIsInstance(configs['grain_size'], str)
         valid_configs = ConfigurationsSchema().dump(configs)
         self.assertIsInstance(valid_configs, dict)
+
+    def test_alloy_schema_compositions_invalid(self):
+        """Ensure the schema validates the incorrect Periodic symbol."""
+        alloy = {
+            'name': 'Invalid Comp',
+            'compositions': [{
+                'symbol': 'Vb',
+                'weight': 1
+            }]
+        }
+
+        err = (
+            "{'compositions': {0: {'symbol': ['ValidationError (Element)"
+            " (Field does not match a valid element symbol in the "
+            "Periodic Table: [\"symbol\"])']}}}"
+        )
+        with self.assertRaises(ValidationError, msg=err):
+            AlloySchema().load(alloy)
+
+    def test_alloy_schema_compositions_valid(self):
+        """Ensure the schema validates the correct Periodic symbol."""
+        alloy = {
+            'name': 'Invalid Comp',
+            'compositions': [{
+                'symbol': 'C',
+                'weight': 1
+            }]
+        }
+
+        res = AlloySchema().load(alloy)
+        self.assertEqual(res['compositions'][0]['symbol'], 'C')
+        self.assertEqual(res['compositions'][0]['weight'], 1.0)
 
 
 if __name__ == '__main__':

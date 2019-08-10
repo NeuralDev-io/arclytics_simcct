@@ -45,7 +45,7 @@ class DevelopmentConfig(BaseConfig):
     REDIS_HOST = os.environ.get('REDIS_HOST', None)
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/14'
-    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
+    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/13'
 
 
 class TestingConfig(BaseConfig):
@@ -57,4 +57,4 @@ class TestingConfig(BaseConfig):
     REDIS_HOST = os.environ.get('REDIS_HOST', None)
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/14'
-    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/1'
+    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/13'

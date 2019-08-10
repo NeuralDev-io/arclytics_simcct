@@ -87,6 +87,124 @@ class TestSimConfigurations(BaseTestCase):
 
         return configs, alloy_store, token, session_key
 
+    def test_sim_configs_no_session_key(self):
+        """Ensure if we don't pass a session key it fails."""
+        with current_app.test_client() as client:
+            configs, comp, token, session_key = self.login_client(client)
+
+            # Don't need data in any of these as Middleware should go first.
+            res = client.patch(
+                '/configs/update',
+                data=json.dumps({}),
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': ''
+                },
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assert401(res)
+
+            res = client.put(
+                '/configs/method/update',
+                data=json.dumps({}),
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': ''
+                },
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assert401(res)
+
+            res = client.get(
+                '/configs/ms',
+                data=json.dumps({}),
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': ''
+                },
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assert401(res)
+
+            res = client.put(
+                '/configs/ms',
+                data=json.dumps({}),
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': ''
+                },
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assert401(res)
+
+            res = client.get(
+                '/configs/bs',
+                data=json.dumps({}),
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': ''
+                },
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assert401(res)
+
+            res = client.put(
+                '/configs/bs',
+                data=json.dumps({}),
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': ''
+                },
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assert401(res)
+
+            res = client.get(
+                '/configs/ae',
+                data=json.dumps({}),
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': ''
+                },
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assert401(res)
+
+            res = client.put(
+                '/configs/ae',
+                data=json.dumps({}),
+                headers={
+                    'Authorization': f'Bearer {token}',
+                    'Session': ''
+                },
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assert401(res)
+
     def test_on_method_change(self):
         """Ensure we can change the method in the session store."""
         with current_app.test_client() as client:

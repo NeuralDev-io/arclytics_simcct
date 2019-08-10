@@ -345,7 +345,7 @@ class AdminCreate(Resource):
                     promotion_verification_url=promotion_verification_url,
                     email=user.email,
                     position=position,
-                    user_name=(f'{user.first_name} {user.last_name}')
+                    user_name=f'{user.first_name} {user.last_name}'
                 ),
                 'text_template':
                 render_template(
@@ -353,7 +353,7 @@ class AdminCreate(Resource):
                     promotion_verification_url=promotion_verification_url,
                     email=user.email,
                     position=position,
-                    user_name=(f'{user.first_name} {user.last_name}')
+                    user_name=f'{user.first_name} {user.last_name}'
                 )
             }
         )

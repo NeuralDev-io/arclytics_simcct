@@ -178,7 +178,7 @@ class TestSessionService(BaseTestCase):
             )
             self.assert401(login_res)
 
-    def test_login_session_no_token(self):
+    def test_login_session_invalid_token(self):
         with self.app.test_client() as client:
             login_res = client.post(
                 '/session/login',
@@ -189,6 +189,20 @@ class TestSessionService(BaseTestCase):
             data = json.loads(login_res.data.decode())
             self.assertTrue(data['status'] == 'fail')
             self.assertEqual(data['message'], 'Invalid JWT token in header.')
+            self.assert401(login_res)
+
+    def test_login_session_no_token(self):
+        with self.app.test_client() as client:
+            login_res = client.post(
+                '/session/login',
+                data=json.dumps({'_id': self.user_id, 'is_admin': False}),
+                content_type='application/json'
+            )
+            data = json.loads(login_res.data.decode())
+            self.assertTrue(data['status'] == 'fail')
+            self.assertEqual(
+                data['message'], 'No valid Authorization in header.'
+            )
             self.assert401(login_res)
 
     def test_login_user_with_no_configurations(self):

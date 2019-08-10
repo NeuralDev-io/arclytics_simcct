@@ -259,10 +259,7 @@ class UserAlloy(Resource):
         # Now we do the real updating work
         updated = User.objects.filter(
             saved_alloys__oid=ObjectId(alloy_id)
-        ).update_one(
-            set__saved_alloys__S__name=put_name,
-            upsert=False
-        )
+        ).update_one(set__saved_alloys__S__name=put_name, upsert=False)
 
         if updated == 0:
             response['message'] = 'Alloy does not exist.'
@@ -271,8 +268,7 @@ class UserAlloy(Resource):
         updated = User.objects.filter(
             saved_alloys__oid=ObjectId(alloy_id)
         ).update_one(
-            set__saved_alloys__S__compositions=put_comp,
-            upsert=False
+            set__saved_alloys__S__compositions=put_comp, upsert=False
         )
 
         if updated == 0:
@@ -308,8 +304,10 @@ class UserAlloy(Resource):
         Returns:
             A valid HTTP Response with a dict and a HTTP status code.
         """
-        msg = ('Method Not Allowed. These are not the endpoints you are '
-               'looking for.')
+        msg = (
+            'Method Not Allowed. These are not the endpoints you are '
+            'looking for.'
+        )
 
         return {'message': msg}, 405
 

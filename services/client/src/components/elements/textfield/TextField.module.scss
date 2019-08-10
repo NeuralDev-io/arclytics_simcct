@@ -3,6 +3,7 @@
 .container {
   display: flex;
   flex-flow: column nowrap;
+  height: 60px;
 
   & > span {
     color: $r500;

@@ -27,19 +27,19 @@ class TextField extends Component {
 
   validate = (value) => {
     const { validation } = this.props
-    console.log(validation)
-    console.log(value)
+    // console.log(validation)
+    // console.log(value)
     const BreakException = {}
     try {
       validation.forEach((valObj) => {
-        console.log('start validation')
+        // console.log('start validation')
         if (!valObj.constraint(value)) {
           this.setState({ err: valObj.message })
-          console.log('validation = false')
+          // console.log('validation = false')
           throw BreakException
         } else {
           this.setState({ err: '' })
-          console.log('validation = true')
+          // console.log('validation = true')
         }
       })
     } catch (ex) {

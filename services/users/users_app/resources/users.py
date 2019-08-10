@@ -119,80 +119,6 @@ class Users(Resource):
         # that we can store the updated profile fields for the response body.
         if aim or highest_education or sci_tech_exp or highest_education:
             response['data'] = {'profile': {}}
-<<<<<<< Updated upstream
-
-        # Get the user so we can begin updating fields.
-        user = User.objects.get(id=resp)
-<<<<<<< HEAD
-
-        # If the user does not already have profile details set we need to
-        # create a user profile object.
-        if not user.profile:
-            # If we do not have all the profile fields, we will need to reject
-            # the request as we are unable to create a profile object.
-            if (
-                not aim or not highest_education or not sci_tech_exp
-                or not phase_transform_exp
-            ):
-                response.pop('data')
-                response['message'] = (
-                    'User profile cannot be updated as '
-                    'there is no existing profile.'
-                )
-                return response, 400
-
-            # Once we have ensured we have all the fields, we can create the
-            # profile object and put the information in the response body.
-            response['data']['profile'] = {
-                'aim': aim,
-                'highest_education': highest_education,
-                'sci_tech_exp': sci_tech_exp,
-                'phase_transform_exp': phase_transform_exp
-            }
-            profile = UserProfile(
-                aim=aim,
-                highest_education=highest_education,
-                sci_tech_exp=sci_tech_exp,
-                phase_transform_exp=phase_transform_exp
-            )
-            user.profile = profile
-
-=======
-
-        # If the user does not already have profile details set we need to
-        # create a user profile object.
-        if not user.profile:
-            # If we do not have all the profile fields, we will need to reject
-            # the request as we are unable to create a profile object.
-            if (
-                not aim or not highest_education or not sci_tech_exp
-                or not phase_transform_exp
-            ):
-                response.pop('data')
-                response['message'] = (
-                    'User profile cannot be updated as '
-                    'there is no existing profile.'
-                )
-                return response, 400
-
-            # Once we have ensured we have all the fields, we can create the
-            # profile object and put the information in the response body.
-            response['data']['profile'] = {
-                'aim': aim,
-                'highest_education': highest_education,
-                'sci_tech_exp': sci_tech_exp,
-                'phase_transform_exp': phase_transform_exp
-            }
-            profile = UserProfile(
-                aim=aim,
-                highest_education=highest_education,
-                sci_tech_exp=sci_tech_exp,
-                phase_transform_exp=phase_transform_exp
-            )
-            user.profile = profile
-
->>>>>>> ARC-105
-=======
 
         # Get the user so we can begin updating fields.
         user = User.objects.get(id=resp)
@@ -229,7 +155,6 @@ class Users(Resource):
             )
             user.profile = profile
 
->>>>>>> Stashed changes
         # Otherwise if the user already has a profile, we can update individual
         # fields.
         else:
@@ -401,7 +326,6 @@ class AdminCreate(Resource):
                 )
             }
         )
-<<<<<<< Updated upstream
 
         # Create a verification link for the user being promoted
         promotion_verification_token = generate_confirmation_token(
@@ -451,9 +375,6 @@ def cancel_promotion(token):
     """
     Allow an admin to cancel their promotion of another user
     """
-    Allow an admin to confirm their promotion of another user
-    """
-<<<<<<< Updated upstream
 
     response = {'status': 'fail', 'message': 'Invalid token.'}
 
@@ -533,24 +454,13 @@ def verify_promotion(token):
     """
     Allow a user to acknowledge their promotion and in doing so verify their
     status as an admin
->>>>>>> ARC-105
     """
-=======
->>>>>>> Stashed changes
 
     response = {'status': 'fail', 'message': 'Invalid token.'}
 
     # Decode the token from the email to confirm it was the right one
     try:
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-        data = confirm_token(token)
-=======
         email = confirm_token(token)
->>>>>>> ARC-105
-=======
-        data = confirm_token(token)
->>>>>>> Stashed changes
     except URLTokenError as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -587,154 +497,6 @@ def verify_promotion(token):
     promoter_id = user.admin_profile.promoted_by
     promoter = User.objects.get(id=promoter_id)
 
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
-    from celery_runner import celery
-    celery.send_task(
-        'tasks.send_email',
-        kwargs={
-            'to':
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-                target_user.email,
-            'subject_suffix':
-                'Acknowledge Promotion',
-            'html_template':
-                render_template(
-                    'acknowledge_promotion.html',
-                    promotion_acknowledge_url_url=promotion_acknowledge_url,
-                    email=target_user.email,
-                    position=position,
-                    user_name=(
-                        f'{target_user.first_name} {target_user.last_name}'
-<<<<<<< Updated upstream
-=======
-                promoter.email,
-            'subject_suffix':
-                'Promotion Verified',
-            'html_template':
-                render_template(
-                    'promotion_verified.html',
-                    email=promoter.email,
-                    promoter_name=(
-                        f'{promoter.first_name} {promoter.last_name}'
-                    ),
-                    user_name=(
-                        f'{user.first_name} {user.last_name}'
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
-                    )
-                ),
-            'text_template':
-                render_template(
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-                    'acknowledge_promotion.html',
-                    promotion_acknowledge_url_url=promotion_acknowledge_url,
-                    email=target_user.email,
-                    position=position,
-                    user_name=(
-                        f'{target_user.first_name} {target_user.last_name}'
-<<<<<<< Updated upstream
-=======
-                    'promotion_verified.txt',
-                    email=promoter.email,
-                    promoter_name=(
-                        f'{promoter.first_name} {promoter.last_name}'
-                    ),
-                    user_name=(
-                        f'{user.first_name} {user.last_name}'
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
-                    )
-                )
-        }
-    )
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-
-    # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
-    client_host = os.environ.get('CLIENT_HOST')
-    # We can make our own redirect response by doing the following
-    custom_redir_response = app.response_class(
-        status=302, mimetype='application/json'
-    )
-    # TODO(davidmatthews1004@gmail.com): Redirect the Admin somewhere else,
-    #  maybe the home screen or a confirmation page.
-    redirect_url = 'http://localhost:3000/signin'
-    custom_redir_response.headers['Location'] = redirect_url
-    return custom_redir_response
-
-
-@users_blueprint.route('/user/acknowledgepromotion/<token>', methods=['GET'])
-def acknowledge_promotion(token):
-    """
-    Allow a user to acknowledge their promotion and in doing so verify their
-    status as an admin
-    """
-
-    response = {'status': 'fail', 'message': 'Invalid token.'}
-
-    # Decode the token from the email to confirm it was the right one
-    try:
-        email = confirm_token(token)
-    except URLTokenError as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
-    except Exception as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
-
-    # Verify it is actually a valid email
-    try:
-        # validate and get info
-        v = validate_email(email)
-        # replace with normalized form
-        valid_email = v['email']
-    except EmailNotValidError as e:
-        # email is not valid, exception message is human-readable
-        response['error'] = str(e)
-        response['message'] = 'Invalid email.'
-        return jsonify(response), 400
-
-    # Ensure the user exists in the database
-    if not User.objects(email=valid_email):
-        response['message'] = 'User does not exist.'
-        return jsonify(response), 400
-
-    # Get the user object
-    user = User.objects.get(email=valid_email)
-
-    # Ensure the user is verfiied, an admin and that they have a valid admin
-    # profile
-    if not user.verified:
-        response['message'] = 'User is not verified.'
-        return jsonify(response), 400
-    if not user.is_admin:
-        response['message'] = 'User is not an Admin.'
-        return jsonify(response), 400
-    if not user.admin_profile:
-        response['message'] = 'User has an invalid Admin profile.'
-        return jsonify(response), 400
-
-    # Verify user's admin status
-    user.admin_profile.verified = True
-    user.save()
-
-    # Get promoter information so that they can be sent an email letting them
-    # know that the user they promoted has been verified.
-    promoter_id = user.admin_profile.promoted_by
-    promoter = User.objects.get(id=promoter_id)
-
     from celery_runner import celery
     celery.send_task(
         'tasks.send_email',
@@ -768,12 +530,6 @@ def acknowledge_promotion(token):
         }
     )
 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> ARC-105
-=======
->>>>>>> Stashed changes
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
     client_host = os.environ.get('CLIENT_HOST')
     # We can make our own redirect response by doing the following

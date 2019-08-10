@@ -48,12 +48,14 @@ const AppBar = (props) => {
             redirect('/profile')
           }}
         />
-        <LogOutIcon
+       <LogOutIcon
           className={styles.navIcon}
-          {...buttonize(() => logout(redirect))}
-        >
-          <LogOutIcon className={styles.icon} />
-        </div>
+          onClick={() => {
+            logout()
+            localStorage.removeItem('token')
+            redirect('/signin')
+          }}
+        />
       </div>
     </nav>
   )

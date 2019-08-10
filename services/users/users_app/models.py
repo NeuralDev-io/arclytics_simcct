@@ -250,9 +250,7 @@ class Element(EmbeddedDocument):
 
 
 class Alloy(EmbeddedDocument):
-    oid = ObjectIdField(
-        default=lambda: ObjectId(), primary_key=True
-    )
+    oid = ObjectIdField(default=lambda: ObjectId(), primary_key=True)
     name = StringField()
     compositions = EmbeddedDocumentListField(Element)
 

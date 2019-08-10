@@ -21,7 +21,8 @@ const Button = (props) => {
   const {
     type = 'button',
     appearance = 'default',
-    length = 'default',
+    length = '',
+    color = '',
     isDisabled = false,
     IconComponent = null,
     className,
@@ -29,7 +30,9 @@ const Button = (props) => {
     onClick,
     children,
   } = props
-  const classname = `${styles[appearance]} ${styles[length]} ${isDisabled ? styles.disabled : ''} text--btn ${className || ''}`
+  const classname = `${(appearance === 'default' || appearance === 'text' || appearance === 'outline') && styles[appearance]}
+    ${(length === 'short' || length === 'long') && styles[length]}
+    ${(color === 'dangerous' || color === 'warning') && styles[color]} ${isDisabled ? styles.disabled : ''} text--btn ${className || ''}`
 
   return (
     // eslint-disable-next-line react/button-has-type
@@ -56,12 +59,14 @@ Button.propTypes = {
   className: PropTypes.string,
   isLoading: PropTypes.bool,
   isDisabled: PropTypes.bool,
-  /* appearance?: "default" | "outline" | "text" | "dangerous" | "warning"  */
+  /* appearance?: "default" | "outline" | "text"  */
   appearance: PropTypes.string,
-  /* length?: "default" | "short" | "long" */
+  /* color?: "dangerous" | "warning" */
+  color: PropTypes.string,
+  /* length?: "short" | "long" */
   length: PropTypes.string,
   onClick: PropTypes.func.isRequired,
-  IconComponent: PropTypes.node,
+  IconComponent: PropTypes.elementType,
 }
 
 Button.defaultProps = {
@@ -69,7 +74,8 @@ Button.defaultProps = {
   className: '',
   isLoading: false,
   appearance: 'default',
-  length: 'default',
+  length: '',
+  color: '',
   isDisabled: false,
   IconComponent: null,
 }

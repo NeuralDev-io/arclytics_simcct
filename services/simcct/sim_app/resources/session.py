@@ -29,7 +29,7 @@ from bson import ObjectId
 from sim_app.sim_session import SimSessionService
 from sim_app.schemas import (ConfigurationsSchema, AlloyStoreSchema)
 from sim_app.middleware import token_required_flask, session_key_required_flask
-from simulation.utilities import validate_comp_elements
+from simulation.utilities import MissingElementError
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -95,15 +95,9 @@ def session_login(token):
             # with the element symbol. We still need to validate missing
             # elements below.
             alloy_store = AlloyStoreSchema().load(user_alloy_store)
-
-            if alloy_store['alloy_option'] == 'single':
-                # Validate the alloy has all the elements that we need
-                comp = alloy_store['alloys'].get('parent')['compositions']
-                valid, missing_elem = validate_comp_elements(comp)
-                if not valid:
-                    response['message'] = f'Missing elements {missing_elem}'
-                    return jsonify(response), 400
-            # TODO(andrew@neuraldev.io): Implement the other alloy options.
+        except MissingElementError as e:
+            response['message'] = str(e)
+            return jsonify(response), 400
         except ValidationError as e:
             response['errors'] = e.messages
             return jsonify(response), 400

@@ -25,6 +25,7 @@ from bson import ObjectId
 from marshmallow import Schema, fields, validates, ValidationError
 from marshmallow.validate import OneOf
 from simulation.periodic import PeriodicTable
+from simulation.utilities import MissingElementError
 
 Schema.TYPE_MAPPING[ObjectId] = fields.String
 
@@ -37,7 +38,7 @@ class ElementSchema(Schema):
     def validate_symbol(self, value):
         """The validate method for the symbol field."""
         try:
-            valid_symbol = PeriodicTable[value].name
+            PeriodicTable[value].name
         except KeyError as e:
             msg = (
                 'ValidationError (Element) (Field does not match a valid '
@@ -51,6 +52,37 @@ class AlloySchema(Schema):
     _id = fields.Str()
     name = fields.Str()
     compositions = fields.List(fields.Nested(ElementSchema))
+
+    @validates('compositions')
+    def validate_required_elements(self, value):
+        valid_elements = {
+            'C': False,
+            'Mn': False,
+            'Ni': False,
+            'Cr': False,
+            'Mo': False,
+            'Si': False,
+            'Co': False,
+            'W': False,
+            'As': False,
+            'Fe': False
+        }
+
+        for el in value:
+            if el['symbol'] in valid_elements.keys():
+                valid_elements[el['symbol']] = True
+
+        # all() returns True if all values in the dict are True
+        # If it does not pass, we build up a message and respond.
+        if not all(el is True for el in valid_elements.values()):
+            # We build up a list of missing elements for the response.
+            missing_elem = []
+            for k, v in valid_elements.items():
+                if not v:
+                    missing_elem.append(k)
+            # The validation has failed so we pass the missing elements
+            raise MissingElementError(f'Missing elements {missing_elem}')
+        # The validation has succeeded
 
 
 class AlloysTypeSchema(Schema):
@@ -105,12 +137,4 @@ class ConfigurationsSchema(Schema):
     ae1_temp = fields.Float(required=False)
     ae3_temp = fields.Float(required=False)
     start_temp = fields.Int(required=True)
-    cct_cooling_rate = fields.Int()
-
-
-class SetupConfigsSchema(Schema):
-    grain_size = fields.Float()
-    nucleation_start = fields.Float()
-    nucleation_finish = fields.Float()
-    start_temp = fields.Int()
     cct_cooling_rate = fields.Int()

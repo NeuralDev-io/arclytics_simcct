@@ -28,7 +28,7 @@ from bson import ObjectId
 
 from sim_app.sim_session import SimSessionService
 from sim_app.schemas import (ConfigurationsSchema, AlloyStoreSchema)
-from sim_app.middleware import token_required_flask, session_key_required
+from sim_app.middleware import token_required_flask, session_key_required_flask
 from simulation.utilities import validate_comp_elements
 from logger.arc_logger import AppLogger
 
@@ -102,7 +102,7 @@ def session_login(token):
                 valid, missing_elem = validate_comp_elements(comp)
                 if not valid:
                     response['message'] = f'Missing elements {missing_elem}'
-                    return response, 400
+                    return jsonify(response), 400
             # TODO(andrew@neuraldev.io): Implement the other alloy options.
         except ValidationError as e:
             response['errors'] = e.messages
@@ -135,7 +135,7 @@ def session_login(token):
 
 
 @session_blueprint.route('/session/logout', methods=['GET'])
-@session_key_required
+@session_key_required_flask
 def session_logout(session_key):
     """We need to destroy the Session store of the user's configurations and
     other storage matters if the user has logged out from the users.

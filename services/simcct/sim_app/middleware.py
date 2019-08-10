@@ -58,6 +58,22 @@ def token_required_flask(f):
     return decorated_func
 
 
+def session_key_required_flask(f):
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+        session_key = request.headers.get('Session', None)
+
+        if not session_key:
+            response['message'] = 'No Session in header.'
+            return jsonify(response), 401
+
+        return f(session_key, *args, **kwargs)
+
+    return decorated_func
+
+
 def session_and_token_required_flask(f):
     @wraps(f)
     def decorated_func(*args, **kwargs):
@@ -82,22 +98,6 @@ def session_and_token_required_flask(f):
             return response, 401
 
         return f(token, session_key, *args, **kwargs)
-
-    return decorated_func
-
-
-def session_key_required(f):
-    @wraps(f)
-    def decorated_func(*args, **kwargs):
-        response = {'status': 'fail', 'message': 'Invalid payload.'}
-
-        session_key = request.headers.get('Session', None)
-
-        if not session_key:
-            response['message'] = 'No Session in header.'
-            return response, 401
-
-        return f(session_key, *args, **kwargs)
 
     return decorated_func
 

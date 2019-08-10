@@ -30,7 +30,9 @@ from threading import Thread
 from celery.states import PENDING
 from email_validator import validate_email, EmailNotValidError
 from flask import current_app as app
-from flask import Blueprint, jsonify, request, render_template, redirect
+from flask import (
+    Blueprint, jsonify, request, render_template, redirect, Response
+)
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from users_app.models import User
@@ -201,32 +203,32 @@ def register_user() -> Tuple[dict, int]:
         )
         # FIXME(andrew@neuraldev.io): Need to find a way to validate that it has
         #  sent without waiting for the result.
-        task_status = celery.AsyncResult(task.id).state
+        # task_status = celery.AsyncResult(task.id).state
 
-        while task_status == PENDING:
-            task_status = celery.AsyncResult(task.id).state
+        # while task_status == PENDING:
+        #     task_status = celery.AsyncResult(task.id).state
         # The email tasks responds with a Tuple[bool, str]
-        res = celery.AsyncResult(task.id)
+        # res = celery.AsyncResult(task.id)
 
         # Generic response regardless of email task working
         response['status'] = 'success'
         response['token'] = auth_token.decode()
 
-        if isinstance(res.result, gaierror):
-            response['error'] = 'Socket error.'
-            response['message'] = (
-                'User registered but registration '
-                'email failed.'
-            )
-            return jsonify(response), 201
-
-        if not res.result[0]:
-            response['error'] = res.result[1]
-            response['message'] = (
-                'User registered but registration '
-                'email failed.'
-            )
-            return jsonify(response), 201
+        # if isinstance(res.result, gaierror):
+        #     response['error'] = 'Socket error.'
+        #     response['message'] = (
+        #         'User registered but registration '
+        #         'email failed.'
+        #     )
+        #     return jsonify(response), 201
+        #
+        # if not res.result[0]:
+        #     response['error'] = res.result[1]
+        #     response['message'] = (
+        #         'User registered but registration '
+        #         'email failed.'
+        #     )
+        #     return jsonify(response), 201
 
         response['message'] = 'User has been registered.'
         return jsonify(response), 201
@@ -275,35 +277,81 @@ def async_register_session(user: User = None,
         if user.last_configuration is not None:
             last_configs = user.last_configuration.to_dict()
 
-        # TODO(andrew@neuraldev.io): Change this to match new schema
         if user.last_alloy_store is not None:
             last_alloy = user.last_alloy_store.to_dict()
 
-    resp = requests.post(
-        url=f'http://{simcct_host}/session/login',
-        json={
-            '_id': str(user_id),
-            'last_configurations': last_configs,
-            'last_alloy_store': last_alloy
-        },
-        headers={
-            'Authorization': f'Bearer {auth_token}',
-            'Content-type': 'application/json'
-        }
-    )
-    # Because this method is in an async state, we want to know if our request
-    # to the other side has failed by raising an exception.
-    if resp.json().get('status') == 'fail':
-        _id = None if user_id == '' else user.id
-        raise SessionValidationError(
-            f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
+        resp = requests.post(
+            url=f'http://{simcct_host}/session/login',
+            json={
+                '_id': str(user_id),
+                'is_admin': user.is_admin,
+                'last_configurations': last_configs,
+                'last_alloy_store': last_alloy
+            },
+            headers={
+                'Authorization': f'Bearer {auth_token}',
+                'Content-type': 'application/json'
+            }
         )
-    # q.put(resp)
-    return resp.json()
+        # Because this method is in an async state, we want to know if our
+        # request to the other side has failed by raising an exception.
+        if resp.json().get('status') == 'fail':
+            _id = None if user_id == '' else user.id
+            raise SessionValidationError(
+                f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
+            )
+        # q.put(resp)
+        return resp.json()
+
+
+def register_session(user: User = None, auth_token: str = None):
+    # We now need to send a request to the simcct server to initiate
+    # a session as a server-side store to save the last compositions/configs
+    simcct_host = os.environ.get('SIMCCT_HOST', None)
+    # Using the `json` param tells requests to serialize the dict to
+    # JSON and write the correct MIME type ('application/json') in
+    # header.
+
+    last_configs = None
+    last_alloy = None
+
+    if isinstance(user, User):
+        if user.last_configuration is not None:
+            last_configs = user.last_configuration.to_dict()
+
+        if user.last_alloy_store is not None:
+            last_alloy = user.last_alloy_store.to_dict()
+
+        resp = requests.post(
+            url=f'http://{simcct_host}/session/login',
+            json={
+                '_id': str(user.id),
+                'is_admin': user.is_admin,
+                'last_configurations': last_configs,
+                'last_alloy_store': last_alloy
+            },
+            headers={
+                'Authorization': f'Bearer {auth_token}',
+                'Content-type': 'application/json'
+            }
+        )
+        data = resp.json()
+        # Because this method is in an async state, we want to know if our
+        # request to the other side has failed by raising an exception.
+        if not data or data.get('status') == 'fail':
+            _id = user.id
+            raise SessionValidationError(
+                f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
+            )
+        return data.get('session_key')
+    else:
+        raise SessionValidationError(
+            f'[DEBUG] A session cannot be initiated because User object failed.'
+        )
 
 
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
-def login() -> Tuple[dict, int]:
+def login() -> any:
     """
     Blueprint route for registration of users with a returned JWT if successful.
     """
@@ -355,18 +403,25 @@ def login() -> Tuple[dict, int]:
 
             # We will register the session for the user to the simcct server
             # in the background so as not to slow the login process down.
-            thr = Thread(
-                target=async_register_session,
-                args=[user, str(auth_token.decode())]
-            )
-            thr.start()
+            # thr = Thread(
+            #     target=async_register_session,
+            #     args=[user, str(auth_token.decode())]
+            # )
+            # thr.start()
             # Leave this here -- create a queue for responses
             # thr.join()
             # print(q.get().json())
+            try:
+                session_key = register_session(user, auth_token.decode())
+            except SessionValidationError as e:
+                response['message'] = 'Session validation error.'
+                response['error'] = str(e)
+                return jsonify(response), 400
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
             response['token'] = auth_token.decode()
+            response['session'] = session_key
             return jsonify(response), 200
 
     response['message'] = 'Email or password combination incorrect.'
@@ -556,7 +611,7 @@ def reset_password_email() -> Tuple[dict, int]:
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])
 @logout_authenticate
-def logout(user_id, token) -> Tuple[dict, int]:
+def logout(user_id, token, session_key) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
     # FIXME(andrew@neuraldev.io): There seems to be a huge issue with this
     #  as in testing, or possibly even live, there seems to be no cross-server
@@ -565,11 +620,11 @@ def logout(user_id, token) -> Tuple[dict, int]:
     response = {'status': 'success', 'message': 'Successfully logged out.'}
 
     simcct_host = os.environ.get('SIMCCT_HOST', None)
-
     simcct_resp = requests.get(
         url=f'http://{simcct_host}/session/logout',
         headers={
             'Authorization': 'Bearer {token}'.format(token=token),
+            'Session': f'{session_key}',
             'Content-type': 'application/json'
         }
     )

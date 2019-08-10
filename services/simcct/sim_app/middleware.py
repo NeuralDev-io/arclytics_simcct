@@ -24,8 +24,13 @@ from functools import wraps
 
 from flask import request, jsonify
 
+from sim_app.sim_session import SimSessionService
+from logger.arc_logger import AppLogger
 
-def token_required(f):
+logger = AppLogger(__name__)
+
+
+def token_required_flask(f):
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {'status': 'fail', 'message': 'Invalid payload.'}
@@ -53,6 +58,81 @@ def token_required(f):
     return decorated_func
 
 
+def session_key_required_flask(f):
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+        session_key = request.headers.get('Session', None)
+
+        if not session_key:
+            response['message'] = 'No Session in header.'
+            return jsonify(response), 401
+
+        return f(session_key, *args, **kwargs)
+
+    return decorated_func
+
+
+def session_and_token_required_flask(f):
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+        # Get the auth header
+        auth_header = request.headers.get('Authorization', None)
+        session_key = request.headers.get('Session', None)
+
+        if not auth_header:
+            response['message'] = 'No valid Authorization in header.'
+            return jsonify(response), 401
+
+        token = auth_header.split(' ')[1]
+
+        if token == '':
+            response['message'] = 'Invalid JWT token in header.'
+            return jsonify(response), 401
+
+        if not session_key:
+            response['message'] = 'No Session key in header.'
+            return response, 401
+
+        return f(token, session_key, *args, **kwargs)
+
+    return decorated_func
+
+
+def token_and_session_required(f):
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+        # Get the auth header
+        auth_header = request.headers.get('Authorization', None)
+        session_key = request.headers.get('Session', None)
+
+        if not auth_header:
+            response['message'] = 'No Authorization in header.'
+            return response, 401
+
+        token = auth_header.split(' ')[1]
+
+        if token == '':
+            response['message'] = 'Invalid JWT token in header.'
+            return response, 401
+
+        # TODO(andrew@neuraldev.io -- Sprint 6): Find a way to validate this is
+        #  is a valid token for a user.
+
+        if not session_key:
+            response['message'] = 'No Session key in header.'
+            return response, 401
+
+        return f(token, session_key, *args, **kwargs)
+
+    return decorated_func
+
+
 def token_required_restful(f):
     @wraps(f)
     def decorated_func(*args, **kwargs):
@@ -75,5 +155,43 @@ def token_required_restful(f):
         #  is a valid token for a user.
 
         return f(token, *args, **kwargs)
+
+    return decorated_func
+
+
+def admin_session_and_token_required(f):
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+        # Get the auth header
+        auth_header = request.headers.get('Authorization', None)
+        session_key = request.headers.get('Session', None)
+
+        if not auth_header:
+            response['message'] = 'No valid Authorization in header.'
+            return response, 401
+
+        token = auth_header.split(' ')[1]
+
+        if token == '':
+            response['message'] = 'Invalid JWT token in header.'
+            return response, 401
+
+        if not session_key:
+            response['message'] = 'No Session key in header.'
+            return response, 401
+
+        sid, session_store = SimSessionService().load_session(session_key)
+
+        if not session_store:
+            response['message'] = 'User does not have a Session'
+            return response, 401
+
+        if not session_store.get('is_admin'):
+            response['message'] = 'User does not have privilege rights.'
+            return response, 401
+
+        return f(token, session_key, *args, **kwargs)
 
     return decorated_func

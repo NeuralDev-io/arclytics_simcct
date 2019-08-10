@@ -8,6 +8,7 @@ export const getAlloys = () => (dispatch) => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })

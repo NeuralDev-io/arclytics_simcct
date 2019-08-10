@@ -20,25 +20,28 @@ This module deals with all the endpoints for setting and updating the
 configurations for the main simulations page. 
 """
 
-from flask import Blueprint, session, request
+from flask import Blueprint, request
 from flask_restful import Resource
 
 from sim_app.extensions import api
+from sim_app.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
-from sim_app.middleware import token_required_restful
+from sim_app.middleware import token_required_flask, token_and_session_required
 
 configs_blueprint = Blueprint('sim_configurations', __name__)
 
 
 class Configurations(Resource):
-    method_decorators = {'patch': [token_required_restful]}
+    method_decorators = {'patch': [token_and_session_required]}
 
-    def patch(self, token):
+    # noinspection PyMethodMayBeStatic
+    def patch(self, token, session_key):
         """This PATCH endpoint updates the other configurations that are
         not part of the transformation temperatures.
 
         Args:
+            session_key:
             token: the returned token from the `token_required_restful`
                    middleware decorator.
 
@@ -70,32 +73,34 @@ class Configurations(Resource):
             return response, 400
 
         # If there are changes to be made, then we will get the session store.
-        sess_store = session.get(f'{token}:configurations')
-        if sess_store is None:
+        sid, session_store = SimSessionService().load_session(session_key)
+        sess_configs = session_store.get('configurations')
+        if sess_configs is None:
             response['message'] = 'No previous session configurations was set.'
             return response, 404
 
         grain_size = patch_data.get('grain_size', None)
         if grain_size:
-            sess_store['grain_size'] = grain_size
+            sess_configs['grain_size'] = grain_size
 
         nuc_start = patch_data.get('nucleation_start', None)
         if nuc_start:
-            sess_store['nucleation_start'] = nuc_start
+            sess_configs['nucleation_start'] = nuc_start
 
         nuc_finish = patch_data.get('nucleation_finish', None)
         if nuc_start:
-            sess_store['nucleation_finish'] = nuc_finish
+            sess_configs['nucleation_finish'] = nuc_finish
 
         start_temp = patch_data.get('start_temp', None)
         if start_temp:
-            sess_store['start_temp'] = start_temp
+            sess_configs['start_temp'] = start_temp
 
         cct_cool_rate = patch_data.get('cct_cooling_rate', None)
         if cct_cool_rate:
-            sess_store['cct_cooling_rate'] = cct_cool_rate
+            sess_configs['cct_cooling_rate'] = cct_cool_rate
 
-        session[f'{token}:configurations'] = sess_store
+        session_store['configurations'] = sess_configs
+        SimSessionService().save_session(sid, session_store)
 
         response['status'] = 'success'
         response['message'] = 'Setup configurations values have been updated.'
@@ -103,13 +108,15 @@ class Configurations(Resource):
 
 
 class ConfigsMethod(Resource):
-    method_decorators = {'put': [token_required_restful]}
+    method_decorators = {'put': [token_and_session_required]}
 
-    def put(self, token):
+    # noinspection PyMethodMayBeStatic
+    def put(self, token, session_key):
         """This PUT endpoint simply updates the `method` for CCT and TTT
         calculations in the session store
 
         Args:
+            session_key:
             token: a valid JWT token.
 
         Returns:
@@ -137,7 +144,8 @@ class ConfigsMethod(Resource):
             )
             return response, 400
 
-        session_configs = session.get(f'{token}:configurations')
+        sid, session_store = SimSessionService().load_session(session_key)
+        session_configs = session_store.get('configurations')
 
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
@@ -148,7 +156,9 @@ class ConfigsMethod(Resource):
         if method == 'Kirkaldy83':
             session_configs['method'] = Method.Kirkaldy83.name
 
-        session[f'{token}:configurations'] = session_configs
+        session_store['configurations'] = session_configs
+        SimSessionService().save_session(sid, session_store)
+
         response['status'] = 'success'
         response['message'] = f'Changed to {method} method.'
         return response, 200
@@ -156,17 +166,19 @@ class ConfigsMethod(Resource):
 
 class MartensiteStart(Resource):
     method_decorators = {
-        'get': [token_required_restful],
-        'put': [token_required_restful]
+        'get': [token_and_session_required],
+        'put': [token_and_session_required]
     }
 
-    def get(self, token):
+    # noinspection PyMethodMayBeStatic
+    def get(self, token, session_key):
         """This GET endpoint auto calculates the `MS` and `MS Rate Param` as the
         user has selected the auto calculate feature without the need for
         sending
         the compositions as they are already stored in the session store.
 
         Args:
+            session_key:
             token: a valid JWT token.
 
         Returns:
@@ -180,7 +192,8 @@ class MartensiteStart(Resource):
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        session_configs = session.get(f'{token}:configurations')
+        sid, session_store = SimSessionService().load_session(session_key)
+        session_configs = session_store.get('configurations')
 
         if not session_configs:
             response['message'] = "No previous session initiated."
@@ -195,7 +208,7 @@ class MartensiteStart(Resource):
 
         # TODO(andrew@neuraldev.io): Accessing "Alloy Compositions" would be by
         #  the name of the alloy_type.
-        sess_alloy_store = session.get(f'{token}:alloy_store')
+        sess_alloy_store = session_store.get('alloy_store')
 
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
@@ -224,7 +237,8 @@ class MartensiteStart(Resource):
         # Save the new calculated BS and MS to the Session store
         session_configs['ms_temp'] = ms_temp
         session_configs['ms_rate_param'] = ms_rate_param
-        session[f'{token}:configurations'] = session_configs
+        session_store['configurations'] = session_configs
+        SimSessionService().save_session(sid, session_store)
 
         response['status'] = 'success'
         response.pop('message')
@@ -232,11 +246,13 @@ class MartensiteStart(Resource):
 
         return response, 200
 
-    def put(self, token):
+    # noinspection PyMethodMayBeStatic
+    def put(self, token, session_key):
         """If the user manually updates the MS temperatures in the client,
         we receive those and update the session cache.
 
         Args:
+            session_key:
             token: a valid JWT token.
 
         Returns:
@@ -260,7 +276,9 @@ class MartensiteStart(Resource):
             response['message'] = 'MS Rate Parameter temperature is required.'
             return response, 400
 
-        session_configs = session.get(f'{token}:configurations', None)
+        sid, session_store = SimSessionService().load_session(session_key)
+        session_configs = session_store.get('configurations', None)
+
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
             return response, 404
@@ -268,23 +286,26 @@ class MartensiteStart(Resource):
         session_configs['auto_calculate_ms'] = False
         session_configs['ms_temp'] = ms_temp
         session_configs['ms_rate_param'] = ms_rate_param
-        session[f'{token}:configurations'] = session_configs
+        session_store['configurations'] = session_configs
+        SimSessionService().save_session(sid, session_store)
 
         return {'status': 'success'}, 202
 
 
 class BainiteStart(Resource):
     method_decorators = {
-        'get': [token_required_restful],
-        'put': [token_required_restful]
+        'get': [token_and_session_required],
+        'put': [token_and_session_required]
     }
 
-    def get(self, token):
+    # noinspection PyMethodMayBeStatic
+    def get(self, token, session_key):
         """This POST endpoint auto calculates the `BS` as the user has
         selected the auto calculate feature without the need for sending the
         compositions as they are already stored in the session store.
 
         Args:
+            session_key:
             token: a valid JWT token.
 
         Returns:
@@ -298,7 +319,8 @@ class BainiteStart(Resource):
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        session_configs = session.get(f'{token}:configurations')
+        sid, session_store = SimSessionService().load_session(session_key)
+        session_configs = session_store.get('configurations')
 
         if not session_configs:
             response['message'] = "No previous session initiated."
@@ -311,7 +333,7 @@ class BainiteStart(Resource):
 
         session_configs['auto_calculate_bs'] = True
 
-        sess_alloy_store = session.get(f'{token}:alloy_store')
+        sess_alloy_store = session_store.get('alloy_store')
 
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
@@ -338,7 +360,8 @@ class BainiteStart(Resource):
 
         # Save the new calculated BS and MS to the Session store
         session_configs['bs_temp'] = bs_temp
-        session[f'{token}:configurations'] = session_configs
+        session_store['configurations'] = session_configs
+        SimSessionService().save_session(sid, session_store)
 
         response['status'] = 'success'
         response.pop('message')
@@ -346,11 +369,13 @@ class BainiteStart(Resource):
 
         return response, 200
 
-    def put(self, token):
+    # noinspection PyMethodMayBeStatic
+    def put(self, token, session_key):
         """If the user manually updates the BS temperatures in the client, we
         receive those and update the session cache.
 
         Args:
+            session_key:
             token: a valid JWT token.
 
         Returns:
@@ -369,30 +394,34 @@ class BainiteStart(Resource):
             response['message'] = 'BS temperature is required.'
             return response, 400
 
-        session_configs = session.get(f'{token}:configurations')
+        sid, session_store = SimSessionService().load_session(session_key)
+        session_configs = session_store.get('configurations')
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
             return response, 404
 
         session_configs['auto_calculate_bs'] = False
         session_configs['bs_temp'] = bs_temp
-        session[f'{token}:configurations'] = session_configs
+        session_store[f'configurations'] = session_configs
+        SimSessionService().save_session(sid, session_store)
 
         return {'status': 'success'}, 202
 
 
 class Austenite(Resource):
     method_decorators = {
-        'get': [token_required_restful],
-        'put': [token_required_restful]
+        'get': [token_and_session_required],
+        'put': [token_and_session_required]
     }
 
-    def get(self, token):
+    # noinspection PyMethodMayBeStatic
+    def get(self, token, session_key):
         """This GET endpoint auto calculates the `Ae1` and `Ae3` as the user has
         selected the auto calculate feature without the need for sending the
         compositions as they are already stored in the session store.
 
         Args:
+            session_key:
             token: a valid JWT token.
 
         Returns:
@@ -404,14 +433,16 @@ class Austenite(Resource):
         #   * Need to do the validation checks for this.
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        session_configs = session.get(f'{token}:configurations')
+        sid, session_store = SimSessionService().load_session(session_key)
+        session_configs = session_store.get('configurations')
+
         if not session_configs:
             response['message'] = "No previous session initiated."
             return response, 400
 
         session_configs['auto_calculate_ae'] = True
 
-        sess_alloy_store = session.get(f'{token}:alloy_store')
+        sess_alloy_store = session_store.get('alloy_store')
 
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
@@ -437,7 +468,8 @@ class Austenite(Resource):
         # Save the new calculated Ae1 and Ae3 to the Session store
         session_configs['ae1_temp'] = ae1
         session_configs['ae3_temp'] = ae3
-        session[f'{token}:configurations'] = session_configs
+        session_store['configurations'] = session_configs
+        SimSessionService().save_session(sid, session_store)
 
         response['status'] = 'success'
         response.pop('message')
@@ -445,11 +477,13 @@ class Austenite(Resource):
 
         return response, 200
 
-    def put(self, token):
+    # noinspection PyMethodMayBeStatic
+    def put(self, token, session_key):
         """If the user manually updates the Ae1 and Ae3 temperatures in the
         client, we receive those and update the session cache.
 
         Args:
+            session_key:
             token: a valid JWT token.
 
         Returns:
@@ -473,7 +507,9 @@ class Austenite(Resource):
             response['message'] = 'Ae3 temperature is required.'
             return response, 400
 
-        session_configs = session.get(f'{token}:configurations')
+        sid, session_store = SimSessionService().load_session(session_key)
+        session_configs = session_store.get('configurations')
+
         if session_configs is None:
             response['message'] = 'No previous session configurations was set.'
             return response, 404
@@ -481,6 +517,8 @@ class Austenite(Resource):
         session_configs['auto_calculate_ae'] = False
         session_configs['ae1_temp'] = ae1_temp
         session_configs['ae3_temp'] = ae3_temp
+        session_store['configurations'] = session_configs
+        SimSessionService().save_session(sid, session_store)
 
         return {'status': 'success'}, 202
 

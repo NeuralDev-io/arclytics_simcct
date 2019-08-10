@@ -328,9 +328,7 @@ class AdminCreate(Resource):
         )
 
         # Create a verification link for the user being promoted
-        promotion_verification_token = generate_confirmation_token(
-            user.email
-        )
+        promotion_verification_token = generate_confirmation_token(user.email)
         promotion_verification_url = generate_url(
             'users.verify_promotion', promotion_verification_token
         )
@@ -339,29 +337,25 @@ class AdminCreate(Resource):
             'tasks.send_email',
             kwargs={
                 'to':
-                    user.email,
+                user.email,
                 'subject_suffix':
-                    'Acknowledge Promotion',
+                'Acknowledge Promotion',
                 'html_template':
-                    render_template(
-                        'acknowledge_promotion.html',
-                        promotion_verification_url=promotion_verification_url,
-                        email=user.email,
-                        position=position,
-                        user_name=(
-                            f'{user.first_name} {user.last_name}'
-                        )
-                    ),
+                render_template(
+                    'acknowledge_promotion.html',
+                    promotion_verification_url=promotion_verification_url,
+                    email=user.email,
+                    position=position,
+                    user_name=f'{user.first_name} {user.last_name}'
+                ),
                 'text_template':
-                    render_template(
-                        'acknowledge_promotion.html',
-                        promotion_verification_url=promotion_verification_url,
-                        email=user.email,
-                        position=position,
-                        user_name=(
-                            f'{user.first_name} {user.last_name}'
-                        )
-                    )
+                render_template(
+                    'acknowledge_promotion.html',
+                    promotion_verification_url=promotion_verification_url,
+                    email=user.email,
+                    position=position,
+                    user_name=f'{user.first_name} {user.last_name}'
+                )
             }
         )
 
@@ -502,31 +496,23 @@ def verify_promotion(token):
         'tasks.send_email',
         kwargs={
             'to':
-                promoter.email,
+            promoter.email,
             'subject_suffix':
-                'Promotion Verified',
+            'Promotion Verified',
             'html_template':
-                render_template(
-                    'promotion_verified.html',
-                    email=promoter.email,
-                    promoter_name=(
-                        f'{promoter.first_name} {promoter.last_name}'
-                    ),
-                    user_name=(
-                        f'{user.first_name} {user.last_name}'
-                    )
-                ),
+            render_template(
+                'promotion_verified.html',
+                email=promoter.email,
+                promoter_name=(f'{promoter.first_name} {promoter.last_name}'),
+                user_name=(f'{user.first_name} {user.last_name}')
+            ),
             'text_template':
-                render_template(
-                    'promotion_verified.txt',
-                    email=promoter.email,
-                    promoter_name=(
-                        f'{promoter.first_name} {promoter.last_name}'
-                    ),
-                    user_name=(
-                        f'{user.first_name} {user.last_name}'
-                    )
-                )
+            render_template(
+                'promotion_verified.txt',
+                email=promoter.email,
+                promoter_name=(f'{promoter.first_name} {promoter.last_name}'),
+                user_name=(f'{user.first_name} {user.last_name}')
+            )
         }
     )
 

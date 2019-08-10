@@ -18,6 +18,7 @@ export const initComp = (option, type, alloy) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
@@ -38,6 +39,7 @@ export const updateComp = (option, type, alloy) => {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
@@ -58,6 +60,7 @@ export const updateConfigMethod = (value) => {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({ method: value }),
@@ -74,6 +77,7 @@ export const updateConfig = (reqBody) => {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(reqBody),
@@ -90,6 +94,7 @@ export const updateMsBsAe = (name, reqBody) => {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(reqBody),
@@ -106,6 +111,7 @@ export const getMsBsAe = (name, callback) => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
+      'Session': localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })

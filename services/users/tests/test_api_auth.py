@@ -24,6 +24,7 @@ from flask import current_app
 from users_app.models import User
 from tests.test_api_base import BaseTestCase
 from users_app.resources.auth import SimCCTBadServerLogout
+from users_app.resources.auth import register_session
 
 
 class TestAuthEndpoints(BaseTestCase):
@@ -371,11 +372,13 @@ class TestAuthEndpoints(BaseTestCase):
             )
             # valid token logout
             token = json.loads(resp_login.data.decode())['token']
+            session_key = register_session(user, str(token))
 
             response = self.client.get(
                 '/auth/logout',
                 headers={
-                    'Authorization': 'Bearer {token}'.format(token=token)
+                    'Authorization': 'Bearer {token}'.format(token=token),
+                    'Session': session_key
                 }
             )
             data = json.loads(response.data.decode())
@@ -498,10 +501,14 @@ class TestAuthEndpoints(BaseTestCase):
             user.reload()
             user.active = False
             user.save()
+
+            session_key = register_session(user, str(token))
+
             response = self.client.get(
                 '/auth/logout',
                 headers={
-                    'Authorization': 'Bearer {token}'.format(token=token)
+                    'Authorization': 'Bearer {token}'.format(token=token),
+                    'Session': session_key
                 }
             )
             data = json.loads(response.data.decode())

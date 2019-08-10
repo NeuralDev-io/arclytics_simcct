@@ -22,8 +22,6 @@ context of the app.
 
 from flask_cors import CORS
 from flask_restful import Api
-from flask_session import Session as FlaskSession
 
 api = Api()
 cors = CORS()
-session = FlaskSession()

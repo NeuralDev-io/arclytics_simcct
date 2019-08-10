@@ -27,7 +27,9 @@ from sim_app.sim_session import SimSessionService
 from sim_app.schemas import AlloyStoreSchema, ConfigurationsSchema
 from simulation.periodic import PeriodicTable as pT
 
-_TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(
+    settings.BASE_DIR
+) / 'simulation' / 'sim_configs.json'
 
 
 class TestSessionService(BaseTestCase):
@@ -195,7 +197,10 @@ class TestSessionService(BaseTestCase):
         with self.app.test_client() as client:
             login_res = client.post(
                 '/session/login',
-                data=json.dumps({'_id': self.user_id, 'is_admin': False}),
+                data=json.dumps({
+                    '_id': self.user_id,
+                    'is_admin': False
+                }),
                 content_type='application/json'
             )
             data = json.loads(login_res.data.decode())
@@ -517,7 +522,9 @@ class TestSessionService(BaseTestCase):
             data = json.loads(logout_res.data.decode())
             self.assert200(logout_res)
             self.assertEqual(data['status'], 'success')
-            sid, session_store = SimSessionService().load_session(self.session_key)
+            sid, session_store = SimSessionService().load_session(
+                self.session_key
+            )
             self.assertIsNone(sid)
             self.assertFalse(session_store)
 

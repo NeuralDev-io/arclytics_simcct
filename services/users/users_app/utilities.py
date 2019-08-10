@@ -30,6 +30,7 @@ from typing import Optional
 
 class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""
+
     def default(self, o):
         if isinstance(o, ObjectId):
             return str(o)
@@ -47,6 +48,7 @@ class PasswordValidationError(Exception):
     Raises an Exception if now password was set before trying to save
     the User model.
     """
+
     def __init__(self):
         super(PasswordValidationError,
               self).__init__('A password must be set before saving.')

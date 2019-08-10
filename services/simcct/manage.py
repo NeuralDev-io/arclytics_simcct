@@ -37,11 +37,8 @@ from sim_app.app import create_app
 COV = coverage.coverage(
     branch=True,
     include=[
-        'sim_app/schemas.py',
-        'sim_app/resources/*',
-        'sim_app/alloys/*',
-        'sim_app/alloys_service.py',
-        'sim_app/middleware.py',
+        'sim_app/schemas.py', 'sim_app/resources/*', 'sim_app/alloys/*',
+        'sim_app/alloys_service.py', 'sim_app/middleware.py',
         'sim_app/sim_session.py'
     ],
     omit=[

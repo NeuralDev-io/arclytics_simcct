@@ -45,6 +45,7 @@ class SimConfiguration(object):
     automatically based on the Li '98 or Kirkaldy '83 equations as aggregated
     by Dr. Bendeich.
     """
+
     def __init__(
         self,
         configs: dict = None,

@@ -22,12 +22,12 @@ microservice.
 
 import jwt
 from datetime import datetime, timedelta
-from typing import Union
+from typing import Union, Tuple
 
 from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
-    DateTimeField, EmbeddedDocumentField, IntField, FloatField, ListField,
+    DateTimeField, EmbeddedDocumentField, IntField, FloatField,
     EmbeddedDocumentListField, queryset_manager, ObjectIdField
 )
 from mongoengine.errors import ValidationError
@@ -41,8 +41,50 @@ from users_app.utilities import (
 )
 
 logger = AppLogger(__name__)
-# User type choices
-USERS = (('1', 'ADMIN'), ('2', 'USER'))
+
+
+def validate_comp_elements(alloy_comp: list) -> Tuple[bool, list]:
+    """We validate the alloy has all the elements that will be needed by the
+    simulation algorithms using a hashed dictionary as it is much faster.
+
+    Args:
+        alloy_comp: a list of Alloy composition objects (i.e.
+                    {"symbol": "C", "weight": 1.0})
+
+    Returns:
+        A tuple response whether the validation succeeded and the missing
+        elements if it did not.
+    """
+    valid_elements = {
+        'C': False,
+        'Mn': False,
+        'Ni': False,
+        'Cr': False,
+        'Mo': False,
+        'Si': False,
+        'Co': False,
+        'W': False,
+        'As': False,
+        'Fe': False
+    }
+
+    for el in alloy_comp:
+        if el['symbol'] in valid_elements.keys():
+            valid_elements[el['symbol']] = True
+
+    # all() returns True if all values in the dict are True
+    # If it does not pass, we build up a message and respond.
+    if not all(el is True for el in valid_elements.values()):
+        # We build up a list of missing elements for the response.
+        missing_elem = []
+        for k, v in valid_elements.items():
+            if not v:
+                missing_elem.append(k)
+        # The validation has failed so we return False and the missing elements
+        return False, missing_elem
+    # The validation has succeeded
+    return True, []
+
 
 # ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
 
@@ -209,7 +251,7 @@ class Element(EmbeddedDocument):
 
 class Alloy(EmbeddedDocument):
     oid = ObjectIdField(
-        required=True, default=lambda: ObjectId(), primary_key=True
+        default=lambda: ObjectId(), primary_key=True
     )
     name = StringField()
     compositions = EmbeddedDocumentListField(Element)
@@ -217,6 +259,12 @@ class Alloy(EmbeddedDocument):
     def to_dict(self):
         comp = [obj.to_dict() for obj in self.compositions]
         return {'_id': str(self.oid), 'name': self.name, 'compositions': comp}
+
+    def clean(self):
+        # comps = [el for el in self.compositions]
+        valid, missing = validate_comp_elements(self.compositions)
+        if not valid:
+            raise ValidationError(f'Missing elements {missing}')
 
     def __str__(self):
         return self.to_json()

@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# settings.py
+# settings.py.py
 #
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-
+__author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.1.0'
+__license__ = '{license}'
+__version__ = '{mayor}.{minor}.{rel}'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
-__date__ = '2019.06.26'
-"""settings.py: 
+__date__ = '2019.08.09'
+"""settings.py.py: 
 
 {Description}
 """
@@ -29,14 +28,13 @@ from dotenv import load_dotenv
 
 from logger.arc_logger import AppLogger
 
-BASE_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
-)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 
-ENV_CONFIGS = os.path.join(BASE_DIR, '.env')
-if os.path.isfile(ENV_CONFIGS):
-    load_dotenv(ENV_CONFIGS)
+# Load environment variables
+env_path = os.path.join(BASE_DIR, '.env')
+if os.path.isfile(env_path):
+    load_dotenv(env_path)
 
 DEFAULT_LOGGER = AppLogger('ARCLYTICS')
 APP_CONFIGS = None

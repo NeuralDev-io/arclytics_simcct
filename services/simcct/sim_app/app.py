@@ -20,52 +20,16 @@ This is the entrypoint to our SimCCT Flask API server.
 """
 
 import os
-import json
-import sys
-from datetime import datetime
 
-import numpy as np
-from dotenv import load_dotenv
-from bson import ObjectId
 from flask import Flask
 
-from sim_app.extensions import cors, api, session
+from sim_app.extensions import cors, api
+from sim_app.utilities import JSONEncoder
 from sim_app.resources.session import session_blueprint
 from sim_app.resources.sim_configurations import configs_blueprint
-from sim_app.resources.alloys import alloys_blueprint
+from sim_app.resources.global_alloys import alloys_blueprint
 from sim_app.resources.simulation import sim_blueprint
 from sim_app.resources.sim_alloys import sim_alloys_blueprint
-
-
-class JSONEncoder(json.JSONEncoder):
-    """Extends the json-encoder to properly convert dates and bson.ObjectId"""
-
-    def default(self, o):
-        if isinstance(o, ObjectId):
-            return str(o)
-        if isinstance(o, set):
-            return list(o)
-        if isinstance(o, datetime):
-            return str(o.isoformat())
-        if isinstance(o, np.float):
-            return str(o)
-        if isinstance(o, np.float32):
-            return str(o)
-        if isinstance(o, np.float64):
-            return str(o)
-        return json.JSONEncoder.default(self, o)
-
-
-# Setup the environment
-BASE_DIR = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
-)
-sys.path.append(BASE_DIR)
-
-# Load environment variables
-env_path = os.path.join(BASE_DIR, '.env')
-if os.path.isfile(env_path):
-    load_dotenv(env_path)
 
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'
 DATE_FMT = '%Y-%m-%d'
@@ -124,6 +88,5 @@ def extensions(app) -> None:
     """
     api.init_app(app)
     cors.init_app(app)
-    session.init_app(app)
 
     return None

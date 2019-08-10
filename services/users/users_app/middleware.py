@@ -144,8 +144,13 @@ def logout_authenticate(f):
         }
         # get auth token
         auth_header = request.headers.get('Authorization', None)
+        session_key = request.headers.get('Session', None)
 
         if not auth_header:
+            return jsonify(response), 400
+
+        if not session_key:
+            response['message'] = 'Provide a valid Session key.'
             return jsonify(response), 400
 
         # auth_header = 'Bearer token'
@@ -166,6 +171,6 @@ def logout_authenticate(f):
             response['message'] = 'This user does not exist.'
             return jsonify(response), 401
 
-        return f(resp, auth_token, *args, **kwargs)
+        return f(resp, auth_token, session_key, *args, **kwargs)
 
     return decorated_func

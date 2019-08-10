@@ -19,31 +19,37 @@ __date__ = '2019.08.03'
 {Description}
 """
 
-from flask import Blueprint, request, session
+from flask import Blueprint, request
 from flask_restful import Resource
 from marshmallow import ValidationError
 
 from sim_app.extensions import api
 from sim_app.schemas import AlloySchema, AlloyStoreSchema
-from sim_app.middleware import token_required_restful
+from sim_app.middleware import token_and_session_required
+from sim_app.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, validate_comp_elements
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
 
 sim_alloys_blueprint = Blueprint('sim_alloys', __name__)
 
 
 class AlloyStore(Resource):
     method_decorators = {
-        'patch': [token_required_restful],
-        'post': [token_required_restful]
+        'patch': [token_and_session_required],
+        'post': [token_and_session_required]
     }
 
-    def post(self, token):
+    # noinspection PyMethodMayBeStatic
+    def post(self, token, session_key):
         """This POST endpoint initiates the Alloy Store by setting the alloy
         in the request body to the Session storage.
 
         Args:
             token: a valid JWT token.
+            session_key: a valid TimedJSONWebSignature session key.
 
         Returns:
             A response object with appropriate status and message
@@ -157,7 +163,8 @@ class AlloyStore(Resource):
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
-        session[f'{token}:alloy_store'] = valid_store
+        sid, session_store = SimSessionService().load_session(session_key)
+        session_store['alloy_store'] = valid_store
 
         # In this situation, we always need to auto calculate and set the
         # below configs to default
@@ -216,7 +223,8 @@ class AlloyStore(Resource):
         default_configs['ae1_temp'] = ae1
         default_configs['ae3_temp'] = ae3
 
-        session[f'{token}:configurations'] = default_configs
+        session_store['configurations'] = default_configs
+        SimSessionService().save_session(sid, session_store)
 
         response['data'] = {
             'ms_temp': ms_temp,
@@ -226,13 +234,22 @@ class AlloyStore(Resource):
             'ae3_temp': ae3
         }
         response['status'] = 'success'
-        return response, 201
 
-    def patch(self, token):
+        headers = {
+            'Access-Control-Allow-Headers':
+            'Origin, X-Requested-With, Content-Type, Accept, x-auth',
+            'Content-type': 'application/json'
+        }
+
+        return response, 201, headers
+
+    # noinspection PyMethodMayBeStatic
+    def patch(self, token, session_key):
         """This PATCH endpoint simply updates the `alloys` in the session
         store so that we can update all the other transformation temperature.
 
         Args:
+            session_key:
             token: a valid JWT token.
 
         Returns:
@@ -297,8 +314,11 @@ class AlloyStore(Resource):
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
+        sid, session_store = SimSessionService().load_session(session_key)
+
         # We get what's currently stored in the session and we update it
-        sess_alloy_store = session.get(f'{token}:alloy_store')
+        sess_alloy_store = session_store.get('alloy_store')
+
         # Basically, the user should have a session initiated from login
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
@@ -357,9 +377,9 @@ class AlloyStore(Resource):
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
-        session[f'{token}:alloy_store'] = sess_alloy_store
-
-        sess_configs = session.get(f'{token}:configurations')
+        # We also need to do auto update fixes if necessary
+        session_store['alloy_store'] = sess_alloy_store
+        sess_configs = session_store.get('configurations')
 
         # Well, if we don't need to auto calc. anything, let's get out of here
         if (
@@ -367,6 +387,9 @@ class AlloyStore(Resource):
             and not sess_configs['auto_calculate_bs']
             and not sess_configs['auto_calculate_ae']
         ):
+            # If we are only updating the alloy_store in the session, we access
+            # Redis at this point and save it.
+            SimSessionService().save_session(sid, session_store)
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'
             return response, 200
@@ -427,10 +450,17 @@ class AlloyStore(Resource):
             response['data']['ae1_temp'] = ae1
             response['data']['ae3_temp'] = ae3
 
-        session[f'{token}:configurations'] = sess_configs
+        session_store['configurations'] = sess_configs
+        SimSessionService().save_session(sid, session_store)
 
         response['status'] = 'success'
-        return response, 200
+        headers = {
+            'Access-Control-Allow-Headers':
+            'Origin, X-Requested-With, Content-Type, Accept, x-auth',
+            'Content-type': 'application/json'
+        }
+
+        return response, 200, headers
 
 
 api.add_resource(AlloyStore, '/alloys/update')

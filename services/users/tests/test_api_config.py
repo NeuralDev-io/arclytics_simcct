@@ -33,12 +33,13 @@ app = create_app()
 
 class TestDevelopmentConfig(TestCase):
     def create_app(self):
-        app.config.from_object('users_app.flask_conf.DevelopmentConfig')
+        self.app = create_app()
+        self.app.config.from_object('configs.flask_conf.DevelopmentConfig')
         return app
 
     def test_app_is_development(self):
         self.assertTrue(
-            app.config['SECRET_KEY'] == os.environ.get('SECRET_KEY', '')
+            app.config['SECRET_KEY'] == os.environ.get('SECRET_KEY')
         )
         self.assertFalse(current_app is None)
         self.assertTrue(app.config['MONGO_DBNAME'] == 'arc_dev')
@@ -49,12 +50,12 @@ class TestDevelopmentConfig(TestCase):
 
 class TestTestingConfig(TestCase):
     def create_app(self):
-        app.config.from_object('users_app.flask_conf.TestingConfig')
+        app.config.from_object('configs.flask_conf.TestingConfig')
         return app
 
     def test_app_is_testing(self):
         self.assertTrue(
-            app.config['SECRET_KEY'] == os.environ.get('SECRET_KEY', '')
+            app.config['SECRET_KEY'] == os.environ.get('SECRET_KEY')
         )
         self.assertTrue(app.config['TESTING'])
         self.assertFalse(app.config['PRESERVE_CONTEXT_ON_EXCEPTION'])
@@ -66,12 +67,12 @@ class TestTestingConfig(TestCase):
 
 class TestProductionConfig(TestCase):
     def create_app(self):
-        app.config.from_object('users_app.flask_conf.ProductionConfig')
+        app.config.from_object('configs.flask_conf.ProductionConfig')
         return app
 
     def test_app_is_production(self):
         self.assertTrue(
-            app.config['SECRET_KEY'] == os.environ.get('SECRET_KEY', '')
+            app.config['SECRET_KEY'] == os.environ.get('SECRET_KEY')
         )
         self.assertFalse(app.config['TESTING'])
         self.assertTrue(app.config['MONGO_DBNAME'] == 'arclytics')

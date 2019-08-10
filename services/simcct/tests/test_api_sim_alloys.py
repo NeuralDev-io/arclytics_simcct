@@ -193,7 +193,9 @@ class TestSimConfigurations(BaseTestCase):
     def test_on_compositions_change(self):
         """Ensure if we update the compositions it changes in session store."""
         with current_app.test_client() as client:
-            configs, alloy_store, token, session_key = self.login_client(client)
+            configs, alloy_store, token, session_key = self.login_client(
+                client
+            )
 
             # By default the auto calculate bools are all true so we need to
             # set them to false to get this working.
@@ -347,7 +349,9 @@ class TestSimConfigurations(BaseTestCase):
     def test_on_comp_change_auto_update_temps(self):
         """Ensure if we update compositions schema we also auto update."""
         with current_app.test_client() as client:
-            configs, alloy_store, token, session_key = self.login_client(client)
+            configs, alloy_store, token, session_key = self.login_client(
+                client
+            )
 
             # We need to make auto_calculate true by using the endpoints
             client.get(

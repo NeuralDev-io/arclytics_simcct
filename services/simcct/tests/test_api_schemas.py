@@ -25,7 +25,9 @@ from sim_app.schemas import (
     AlloySchema, ConfigurationsSchema, SetupConfigsSchema
 )
 
-_TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(
+    settings.BASE_DIR
+) / 'simulation' / 'sim_configs.json'
 
 
 class TestSchemas(BaseTestCase):

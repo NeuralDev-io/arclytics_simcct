@@ -49,6 +49,7 @@ def utc_timestamp_by_second(utc_date_time):
 
 class RedisSession(CallbackDict, SessionMixin):
     """The class to create a new <RedisSession > Flask Session instance."""
+
     def __init__(self, initial=None, sid=None, new=False):
         def on_update(s):
             s.modified = True
@@ -73,6 +74,7 @@ class RedisSessionInterface(SessionInterface):
 
             session.init_app(app)
     """
+
     def __init__(self, app=None):
         # self.redis = redis if redis is not None else Redis()
         if app:

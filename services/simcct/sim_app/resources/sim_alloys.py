@@ -377,6 +377,7 @@ class AlloyStore(Resource):
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
+        # We also need to do auto update fixes if necessary
         session_store['alloy_store'] = sess_alloy_store
         sess_configs = session_store.get('configurations')
 
@@ -386,6 +387,9 @@ class AlloyStore(Resource):
             and not sess_configs['auto_calculate_bs']
             and not sess_configs['auto_calculate_ae']
         ):
+            # If we are only updating the alloy_store in the session, we access
+            # Redis at this point and save it.
+            SimSessionService().save_session(sid, session_store)
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'
             return response, 200

@@ -271,7 +271,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['status'], 'success')
             _, session_store = SimSessionService().load_session(session_key)
             session_comp = session_store.get('alloy_store')
-            self.assertEqual(
+            self.assertDictEqual(
                 session_comp['alloys']['parent'], new_alloy_store['alloy']
             )
 

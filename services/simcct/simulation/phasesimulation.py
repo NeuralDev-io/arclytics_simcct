@@ -44,6 +44,7 @@ class PhaseSimulation(object):
     """
     This class encapsulates the methods necessary to calculate CCT and TTT.
     """
+
     def __init__(self, sim_configs: SimConfiguration = None, debug=False):
         if sim_configs is not None:
 

@@ -52,6 +52,7 @@ logger = AppLogger(__name__)
 
 class PingTest(Resource):
     """Just a sanity check"""
+
     def get(self) -> Tuple[dict, int]:
         response = {'status': 'success', 'message': 'pong'}
         return response, 200

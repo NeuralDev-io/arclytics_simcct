@@ -248,7 +248,7 @@ class TestSimConfigurations(BaseTestCase):
                 'alloy_type': 'parent',
                 'alloy': alloy_store['alloys']['parent']
             }
-            new_parent_comp = new_alloy_store.get('alloy')
+            new_parent_comp = dict(new_alloy_store.get('alloy'))
             new_parent_comp['compositions'][0] = {
                 'symbol': 'C',
                 'weight': 0.050

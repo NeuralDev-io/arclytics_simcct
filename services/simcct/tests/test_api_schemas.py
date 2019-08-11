@@ -22,7 +22,7 @@ from marshmallow import ValidationError
 import settings
 from tests.test_api_base import BaseTestCase
 from sim_app.schemas import (
-    AlloySchema, ConfigurationsSchema, SetupConfigsSchema
+    AlloySchema, ConfigurationsSchema
 )
 
 _TEST_CONFIGS_PATH = Path(
@@ -122,16 +122,73 @@ class TestSchemas(BaseTestCase):
     def test_alloy_schema_compositions_valid(self):
         """Ensure the schema validates the correct Periodic symbol."""
         alloy = {
-            'name': 'Invalid Comp',
-            'compositions': [{
-                'symbol': 'C',
-                'weight': 1
-            }]
+            'name':
+                'Alloy-1001',
+            'compositions': [
+                {
+                    "symbol": "C",
+                    "weight": 0.044
+                }, {
+                    "symbol": "Mn",
+                    "weight": 1.73
+                }, {
+                    "symbol": "Si",
+                    "weight": 0.22
+                }, {
+                    "symbol": "Ni",
+                    "weight": 0.0
+                }, {
+                    "symbol": "Cr",
+                    "weight": 0.0
+                }, {
+                    "symbol": "Mo",
+                    "weight": 0.26
+                }, {
+                    "symbol": "Co",
+                    "weight": 0.0
+                }, {
+                    "symbol": "Al",
+                    "weight": 0.0
+                }, {
+                    "symbol": "Cu",
+                    "weight": 0.0
+                }, {
+                    "symbol": "As",
+                    "weight": 0.0
+                }, {
+                    "symbol": "Ti",
+                    "weight": 0.0
+                }, {
+                    "symbol": "V",
+                    "weight": 0.0
+                }, {
+                    "symbol": "W",
+                    "weight": 0.0
+                }, {
+                    "symbol": "S",
+                    "weight": 0.0
+                }, {
+                    "symbol": "N",
+                    "weight": 0.0
+                }, {
+                    "symbol": "Nb",
+                    "weight": 0.0
+                }, {
+                    "symbol": "B",
+                    "weight": 0.0
+                }, {
+                    "symbol": "P",
+                    "weight": 0.0
+                }, {
+                    "symbol": "Fe",
+                    "weight": 0.0
+                }
+            ]
         }
 
         res = AlloySchema().load(alloy)
         self.assertEqual(res['compositions'][0]['symbol'], 'C')
-        self.assertEqual(res['compositions'][0]['weight'], 1.0)
+        self.assertEqual(res['compositions'][0]['weight'], 0.044)
 
 
 if __name__ == '__main__':

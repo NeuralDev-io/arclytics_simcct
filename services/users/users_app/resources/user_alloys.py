@@ -32,8 +32,10 @@ from mongoengine.errors import (
 
 from users_app.extensions import api
 from users_app.middleware import authenticate
-from users_app.models import Alloy, User, Element
-from users_app.utilities import ElementSymbolInvalid, ElementInvalid
+from users_app.models import Alloy, User
+from users_app.utilities import (
+    ElementSymbolInvalid, ElementInvalid, MissingElementError
+)
 
 user_alloys_blueprint = Blueprint('user_alloys', __name__)
 
@@ -87,7 +89,7 @@ class UserAlloysList(Resource):
             Alloy(name=alloy_name, compositions=alloy_comp).validate()
         except FieldDoesNotExist as e:
             response['error'] = str(e)
-            response['message'] = 'Alloy validation error.'
+            response['message'] = 'Field does not exist error.'
             return response, 400
         except ElementSymbolInvalid as e:
             # This validation is a custom one used to validate the symbol used
@@ -99,6 +101,11 @@ class UserAlloysList(Resource):
             # This validation is a custom one used to validate the Element used
             response['error'] = str(e)
             response['message'] = 'Invalid element error.'
+            return response, 400
+        except MissingElementError as e:
+            # This validation is a custom one used to validate missing Elements
+            response['error'] = str(e)
+            response['message'] = 'Missing element error.'
             return response, 400
         except ValidationError as e:
             response['error'] = str(e.message)
@@ -230,7 +237,7 @@ class UserAlloy(Resource):
             new_alloy.validate(clean=True)
         except FieldDoesNotExist as e:
             response['error'] = str(e)
-            response['message'] = 'Alloy validation error.'
+            response['message'] = 'Field does not exist error.'
             return response, 400
         except ElementSymbolInvalid as e:
             # This validation is a custom one used to validate the symbol
@@ -244,6 +251,11 @@ class UserAlloy(Resource):
             # Element used
             response['error'] = str(e)
             response['message'] = 'Invalid element error.'
+            return response, 400
+        except MissingElementError as e:
+            # This validation is a custom one used to validate missing Elements
+            response['error'] = str(e)
+            response['message'] = 'Missing element error.'
             return response, 400
         except ValidationError as e:
             response['error'] = str(e.message)
@@ -259,10 +271,7 @@ class UserAlloy(Resource):
         # Now we do the real updating work
         updated = User.objects.filter(
             saved_alloys__oid=ObjectId(alloy_id)
-        ).update_one(
-            set__saved_alloys__S__name=put_name,
-            upsert=False
-        )
+        ).update_one(set__saved_alloys__S__name=put_name, upsert=False)
 
         if updated == 0:
             response['message'] = 'Alloy does not exist.'
@@ -271,8 +280,7 @@ class UserAlloy(Resource):
         updated = User.objects.filter(
             saved_alloys__oid=ObjectId(alloy_id)
         ).update_one(
-            set__saved_alloys__S__compositions=put_comp,
-            upsert=False
+            set__saved_alloys__S__compositions=put_comp, upsert=False
         )
 
         if updated == 0:
@@ -308,8 +316,10 @@ class UserAlloy(Resource):
         Returns:
             A valid HTTP Response with a dict and a HTTP status code.
         """
-        msg = ('Method Not Allowed. These are not the endpoints you are '
-               'looking for.')
+        msg = (
+            'Method Not Allowed. These are not the endpoints you are '
+            'looking for.'
+        )
 
         return {'message': msg}, 405
 

@@ -41,20 +41,20 @@ const ConfigForm = (props) => {
                 onChange={val => onChange('grain_size_ASTM', val)}
                 value={values.grain_size_ASTM}
                 length="short"
-                validation={[
-                  {
-                    constraint: value => (value.length !== 0),
-                    message: 'Can not be empty',
-                  },
-                  {
-                    constraint: value => (!isNaN(value)),
-                    message: 'Must be a number',
-                  },
-                  {
-                    constraint: value => (parseFloat(value) > 0),
-                    message: 'Can not be less than 0',
-                  },
-                ]}
+                // validation={[
+                //   {
+                //     constraint: value => (value.length !== 0),
+                //     message: 'Can not be empty',
+                //   },
+                //   {
+                //     constraint: value => (!isNaN(value)),
+                //     message: 'Must be a number',
+                //   },
+                //   {
+                //     constraint: value => (parseFloat(value) > 0),
+                //     message: 'Can not be less than 0',
+                //   },
+                // ]}
               />
             </div>
             <div className="input-row">
@@ -66,20 +66,20 @@ const ConfigForm = (props) => {
                 value={values.grain_size_diameter}
                 length="short"
                 suffix="μ"
-                validation={[
-                  {
-                    constraint: value => (value.length !== 0),
-                    message: 'Can not be empty',
-                  },
-                  {
-                    constraint: value => (!isNaN(value)),
-                    message: 'Must be a number',
-                  },
-                  {
-                    constraint: value => (parseFloat(value) > 0),
-                    message: 'Can not be less than 0',
-                  },
-                ]}
+                // validation={[
+                //   {
+                //     constraint: value => (value.length !== 0),
+                //     message: 'Can not be empty',
+                //   },
+                //   {
+                //     constraint: value => (!isNaN(value)),
+                //     message: 'Must be a number',
+                //   },
+                //   {
+                //     constraint: value => (parseFloat(value) > 0),
+                //     message: 'Can not be less than 0',
+                //   },
+                // ]}
               />
             </div>
           </div>
@@ -100,20 +100,20 @@ const ConfigForm = (props) => {
                   value={values.ae1_temp}
                   length="short"
                   suffix="°C"
-                  validation={[
-                    {
-                      constraint: value => (value.length !== 0),
-                      message: 'Can not be empty',
-                    },
-                    {
-                      constraint: value => (!isNaN(value)),
-                      message: 'Must be a number',
-                    },
-                    {
-                      constraint: value => (parseFloat(value) > 0),
-                      message: 'Can not be less than 0',
-                    },
-                  ]}
+                  // validation={[
+                  //   {
+                  //     constraint: value => (value.length !== 0),
+                  //     message: 'Can not be empty',
+                  //   },
+                  //   {
+                  //     constraint: value => (!isNaN(value)),
+                  //     message: 'Must be a number',
+                  //   },
+                  //   {
+                  //     constraint: value => (parseFloat(value) > 0),
+                  //     message: 'Can not be less than 0',
+                  //   },
+                  // ]}
                 />
               </div>
               <div className="input-row">
@@ -125,20 +125,20 @@ const ConfigForm = (props) => {
                   value={values.ae3_temp}
                   length="short"
                   suffix="°C"
-                  validation={[
-                    {
-                      constraint: value => (value.length !== 0),
-                      message: 'Can not be empty',
-                    },
-                    {
-                      constraint: value => (!isNaN(value)),
-                      message: 'Must be a number',
-                    },
-                    {
-                      constraint: value => (parseFloat(value) > 0),
-                      message: 'Can not be less than 0',
-                    },
-                  ]}
+                  // validation={[
+                  //   {
+                  //     constraint: value => (value.length !== 0),
+                  //     message: 'Can not be empty',
+                  //   },
+                  //   {
+                  //     constraint: value => (!isNaN(value)),
+                  //     message: 'Must be a number',
+                  //   },
+                  //   {
+                  //     constraint: value => (parseFloat(value) > 0),
+                  //     message: 'Can not be less than 0',
+                  //   },
+                  // ]}
                 />
               </div>
             </div>
@@ -161,20 +161,20 @@ const ConfigForm = (props) => {
                   value={values.bs_temp}
                   length="short"
                   suffix="°C"
-                  validation={[
-                    {
-                      constraint: value => (value.length !== 0),
-                      message: 'Can not be empty',
-                    },
-                    {
-                      constraint: value => (!isNaN(value)),
-                      message: 'Must be a number',
-                    },
-                    {
-                      constraint: value => (parseFloat(value) > 0),
-                      message: 'Can not be less than 0',
-                    },
-                  ]}
+                  // validation={[
+                  //   {
+                  //     constraint: value => (value.length !== 0),
+                  //     message: 'Can not be empty',
+                  //   },
+                  //   {
+                  //     constraint: value => (!isNaN(value)),
+                  //     message: 'Must be a number',
+                  //   },
+                  //   {
+                  //     constraint: value => (parseFloat(value) > 0),
+                  //     message: 'Can not be less than 0',
+                  //   },
+                  // ]}
                 />
               </div>
             </div>
@@ -197,20 +197,20 @@ const ConfigForm = (props) => {
                   value={values.ms_temp}
                   length="short"
                   suffix="°C"
-                  validation={[
-                    {
-                      constraint: value => (value.length !== 0),
-                      message: 'Can not be empty',
-                    },
-                    {
-                      constraint: value => (!isNaN(value)),
-                      message: 'Must be a number',
-                    },
-                    {
-                      constraint: value => (parseFloat(value) > 0),
-                      message: 'Can not be less than 0',
-                    },
-                  ]}
+                  // validation={[
+                  //   {
+                  //     constraint: value => (value.length !== 0),
+                  //     message: 'Can not be empty',
+                  //   },
+                  //   {
+                  //     constraint: value => (!isNaN(value)),
+                  //     message: 'Must be a number',
+                  //   },
+                  //   {
+                  //     constraint: value => (parseFloat(value) > 0),
+                  //     message: 'Can not be less than 0',
+                  //   },
+                  // ]}
                 />
               </div>
               <div className="input-row">
@@ -221,20 +221,20 @@ const ConfigForm = (props) => {
                   onChange={val => onChange('ms_rate_param', val)}
                   value={values.ms_rate_param}
                   length="short"
-                  validation={[
-                    {
-                      constraint: value => (value.length !== 0),
-                      message: 'Can not be empty',
-                    },
-                    {
-                      constraint: value => (!isNaN(value)),
-                      message: 'Must be a number',
-                    },
-                    {
-                      constraint: value => (parseFloat(value) > 0),
-                      message: 'Can not be less than 0',
-                    },
-                  ]}
+                  // validation={[
+                  //   {
+                  //     constraint: value => (value.length !== 0),
+                  //     message: 'Can not be empty',
+                  //   },
+                  //   {
+                  //     constraint: value => (!isNaN(value)),
+                  //     message: 'Must be a number',
+                  //   },
+                  //   {
+                  //     constraint: value => (parseFloat(value) > 0),
+                  //     message: 'Can not be less than 0',
+                  //   },
+                  // ]}
                 />
               </div>
             </div>
@@ -259,20 +259,20 @@ const ConfigForm = (props) => {
               value={values.nucleation_start}
               length="short"
               suffix="%"
-              validation={[
-                {
-                  constraint: value => (value.length !== 0),
-                  message: 'Can not be empty',
-                },
-                {
-                  constraint: value => (!isNaN(value)),
-                  message: 'Must be a number',
-                },
-                {
-                  constraint: value => (parseFloat(value) > 0),
-                  message: 'Can not be less than 0',
-                },
-              ]}
+              // validation={[
+              //   {
+              //     constraint: value => (value.length !== 0),
+              //     message: 'Can not be empty',
+              //   },
+              //   {
+              //     constraint: value => (!isNaN(value)),
+              //     message: 'Must be a number',
+              //   },
+              //   {
+              //     constraint: value => (parseFloat(value) > 0),
+              //     message: 'Can not be less than 0',
+              //   },
+              // ]}
             />
           </div>
           <div className="input-row">
@@ -284,20 +284,20 @@ const ConfigForm = (props) => {
               value={values.nucleation_finish}
               length="short"
               suffix="%"
-              validation={[
-                {
-                  constraint: value => (value.length !== 0),
-                  message: 'Can not be empty',
-                },
-                {
-                  constraint: value => (!isNaN(value)),
-                  message: 'Must be a number',
-                },
-                {
-                  constraint: value => (parseFloat(value) > 0),
-                  message: 'Can not be less than 0',
-                },
-              ]}
+              // validation={[
+              //   {
+              //     constraint: value => (value.length !== 0),
+              //     message: 'Can not be empty',
+              //   },
+              //   {
+              //     constraint: value => (!isNaN(value)),
+              //     message: 'Must be a number',
+              //   },
+              //   {
+              //     constraint: value => (parseFloat(value) > 0),
+              //     message: 'Can not be less than 0',
+              //   },
+              // ]}
             />
           </div>
         </div>

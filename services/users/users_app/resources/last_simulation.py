@@ -2,9 +2,9 @@
 # -----------------------------------------------------------------------------
 # arclytics_sim
 # last_simulation.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
@@ -37,17 +37,26 @@ last_simulation_blueprint = Blueprint('user_last_simulation', __name__)
 
 class LastSimulation(Resource):
 
-    method_decorators = {
-        'post': [authenticate],
-        'get': [authenticate]
-    }
+    method_decorators = {'post': [authenticate], 'get': [authenticate]}
 
     # noinspection PyMethodMayBeStatic
     def post(self, user_id):
+        """Exposes the POST method to save the last configurations and alloy
+        storage to the `users_app.models.User` document in the fields
+        `last_configurations` and `last_alloy_store`.
+
+        Args:
+            user_id: a valid user_id verified and passed by the
+                     `users_app.middleware.authenticate` method.
+
+        Returns:
+            A HTTP Flask Restful Response.
+        """
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
         post_data = request.get_json()
 
+        # First we validate the request data
         if not post_data:
             return response, 400
 
@@ -62,29 +71,38 @@ class LastSimulation(Resource):
             response['message'] = 'Missing Alloy Store in payload.'
             return response, 400
 
-        # TODO(andrew@neuraldev.io): Add the graphs also
+        # TODO(andrew@neuraldev.io): Add the graphs also\
+        # The following `mongoengine.EmbeddedDocument` models have in-built
+        # custom validation that will be passed down.
         try:
             valid_configs = Configuration.from_json(json.dumps(post_configs))
             valid_configs.validate(clean=True)
             valid_store = AlloyStore.from_json(json.dumps(post_alloy_store))
             valid_store.validate(clean=True)
         except FieldDoesNotExist as e:
+            # In case the request has fields we do not expect.
             response['error'] = str(e)
             response['message'] = 'Field does not exist error.'
             return response, 400
         except ElementSymbolInvalid as e:
+            # Where the symbol used for the element is not valid meaning it
+            # does not exist in a Periodic Table.
             response['error'] = str(e)
             response['message'] = 'Invalid element symbol error.'
             return response, 400
         except ElementInvalid as e:
+            # If no "symbol" or "weight" passed as an Element object.
             response['error'] = str(e)
             response['message'] = 'Invalid element error.'
             return response, 400
         except MissingElementError as e:
+            # Where the alloy is missing elements we expect to always be
+            # available as they are required downstream in the algorithm.
             response['error'] = str(e)
             response['message'] = 'Missing element error.'
             return response, 400
         except ValidationError as e:
+            # All other validation errors
             response['error'] = str(e)
             response['message'] = 'Model schema validation error.'
             return response, 400
@@ -102,10 +120,21 @@ class LastSimulation(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self, user_id):
+        """Exposes the GET method to get the last configurations and alloy
+        storage from the `users_app.models.User` document.
+
+        Args:
+            user_id: a valid user_id verified and passed by the
+                     `users_app.middleware.authenticate` method.
+
+        Returns:
+            A HTTP Flask Restful Response.
+        """
         response = {'status': 'fail'}
 
         user = User.objects.get(id=user_id)
 
+        # We need to check there's something to return first.
         if not user.last_configuration:
             response['message'] = 'User does not have a last configurations.'
             return response, 404

@@ -2,9 +2,9 @@
 # -----------------------------------------------------------------------------
 # arclytics_sim
 # test_api_last_simulation.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
@@ -25,7 +25,6 @@ from flask import current_app as app
 import settings
 from tests.test_api_base import BaseTestCase
 from users_app.models import User, Configuration
-
 
 _TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'tests' / 'sim_configs.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
@@ -65,9 +64,7 @@ class TestLastSimulation(BaseTestCase):
         self.user.delete()
 
     @staticmethod
-    def login(
-            client, email='hank@pymtechnologies.com', password='Subatomic!'
-    ):
+    def login(client, email='hank@pymtechnologies.com', password='Subatomic!'):
         resp_login = client.post(
             '/auth/login',
             data=json.dumps({
@@ -87,7 +84,9 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(data['message'], 'Provide a valid JWT auth token.')
+            self.assertEqual(
+                data['message'], 'Provide a valid JWT auth token.'
+            )
             self.assertEqual(data['status'], 'fail')
             self.assert401(res)
 
@@ -129,7 +128,9 @@ class TestLastSimulation(BaseTestCase):
 
             res = client.post(
                 '/user/last/simulation',
-                data=json.dumps({'configurations': {'is_valid': False}}),
+                data=json.dumps({'configurations': {
+                    'is_valid': False
+                }}),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -150,10 +151,12 @@ class TestLastSimulation(BaseTestCase):
 
             res = client.post(
                 '/user/last/simulation',
-                data=json.dumps({
-                    'configurations': configs,
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps(
+                    {
+                        'configurations': configs,
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -163,9 +166,7 @@ class TestLastSimulation(BaseTestCase):
                 "['method', 'grain_size'])"
             )
             self.assertEqual(data['error'], err)
-            self.assertEqual(
-                data['message'], 'Model schema validation error.'
-            )
+            self.assertEqual(data['message'], 'Model schema validation error.')
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
@@ -177,10 +178,12 @@ class TestLastSimulation(BaseTestCase):
 
             res = client.post(
                 '/user/last/simulation',
-                data=json.dumps({
-                    'configurations': configs,
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps(
+                    {
+                        'configurations': configs,
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -190,9 +193,7 @@ class TestLastSimulation(BaseTestCase):
                 "('Li98', 'Kirkaldy83'): ['method'])"
             )
             self.assertEqual(data['error'], err)
-            self.assertEqual(
-                data['message'], 'Model schema validation error.'
-            )
+            self.assertEqual(data['message'], 'Model schema validation error.')
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
@@ -205,10 +206,12 @@ class TestLastSimulation(BaseTestCase):
 
             res = client.post(
                 '/user/last/simulation',
-                data=json.dumps({
-                    'configurations': configs,
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps(
+                    {
+                        'configurations': configs,
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -219,9 +222,7 @@ class TestLastSimulation(BaseTestCase):
                 "['nucleation_finish'])"
             )
             self.assertEqual(data['error'], err)
-            self.assertEqual(
-                data['message'], 'Model schema validation error.'
-            )
+            self.assertEqual(data['message'], 'Model schema validation error.')
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
@@ -237,10 +238,12 @@ class TestLastSimulation(BaseTestCase):
 
             res = client.post(
                 '/user/last/simulation',
-                data=json.dumps({
-                    'configurations': configs,
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps(
+                    {
+                        'configurations': configs,
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -251,9 +254,7 @@ class TestLastSimulation(BaseTestCase):
                 "'ae3_temp'])"
             )
             self.assertEqual(data['error'], err)
-            self.assertEqual(
-                data['message'], 'Model schema validation error.'
-            )
+            self.assertEqual(data['message'], 'Model schema validation error.')
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
@@ -275,10 +276,12 @@ class TestLastSimulation(BaseTestCase):
 
             res = client.post(
                 '/user/last/simulation',
-                data=json.dumps({
-                    'configurations': CONFIGS,
-                    'alloy_store': alloy_store
-                }),
+                data=json.dumps(
+                    {
+                        'configurations': CONFIGS,
+                        'alloy_store': alloy_store
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -312,10 +315,12 @@ class TestLastSimulation(BaseTestCase):
 
             res = client.post(
                 '/user/last/simulation',
-                data=json.dumps({
-                    'configurations': CONFIGS,
-                    'alloy_store': alloy_store
-                }),
+                data=json.dumps(
+                    {
+                        'configurations': CONFIGS,
+                        'alloy_store': alloy_store
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -331,10 +336,12 @@ class TestLastSimulation(BaseTestCase):
 
             res = client.post(
                 '/user/last/simulation',
-                data=json.dumps({
-                    'configurations': CONFIGS,
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps(
+                    {
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -348,18 +355,17 @@ class TestLastSimulation(BaseTestCase):
             user = self.user
             user.reload()
 
-            self.assertDictEqual(
-                user.last_configuration.to_dict(), CONFIGS
-            )
+            self.assertDictEqual(user.last_configuration.to_dict(), CONFIGS)
 
     def test_get_detail_last_no_token(self):
         with app.test_client() as client:
             res = client.get(
-                '/user/last/simulation',
-                content_type='application/json'
+                '/user/last/simulation', content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(data['message'], 'Provide a valid JWT auth token.')
+            self.assertEqual(
+                data['message'], 'Provide a valid JWT auth token.'
+            )
             self.assertEqual(data['status'], 'fail')
             self.assert401(res)
 
@@ -422,10 +428,12 @@ class TestLastSimulation(BaseTestCase):
 
             client.post(
                 '/user/last/simulation',
-                data=json.dumps({
-                    'configurations': CONFIGS,
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps(
+                    {
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -438,13 +446,11 @@ class TestLastSimulation(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
             self.assertTrue(data.get('data', None))
-            self.assertDictEqual(
-                data['data']['last_configurations'], CONFIGS
-            )
+            self.assertDictEqual(data['data']['last_configurations'], CONFIGS)
 
             expected_alloy_store = ALLOY_STORE.copy()
             _id = data['data']['last_alloy_store']['alloys']['parent']['_id']
-            expected_alloy_store['alloys']['parent']['_id'] =_id
+            expected_alloy_store['alloys']['parent']['_id'] = _id
             self.assertDictEqual(
                 data['data']['last_alloy_store'], expected_alloy_store
             )

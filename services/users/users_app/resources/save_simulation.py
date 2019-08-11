@@ -3,9 +3,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # save_simulation.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 
 __author__ = 'Andrew Che <@codeninja55>'
@@ -17,7 +17,6 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = '{dev_status}'
 __date__ = '2019.08.11'
-
 """save_simulation.py: 
 
 This module defines the Resource for saving and retrieving a user's saved 
@@ -30,7 +29,6 @@ from flask_restful import Resource
 from users_app.extensions import api
 from users_app.middleware import authenticate
 
-
 save_simulation_blueprint = Blueprint('user_save_simulation', __name__)
 
 # NOTE: An is_valid = False Configuration instance means it has not been run.
@@ -38,10 +36,7 @@ save_simulation_blueprint = Blueprint('user_save_simulation', __name__)
 
 class SaveSimulationList(Resource):
 
-    method_decorators = {
-        'get': [authenticate],
-        'post': [authenticate]
-    }
+    method_decorators = {'get': [authenticate], 'post': [authenticate]}
 
     # noinspection PyMethodMayBeStatic
     def post(self, user_id):
@@ -65,10 +60,7 @@ class SaveSimulationList(Resource):
 
 class SaveSimulationDetail(Resource):
 
-    method_decorators = {
-        'get': [authenticate],
-        'delete': [authenticate]
-    }
+    method_decorators = {'get': [authenticate], 'delete': [authenticate]}
 
     # noinspection PyMethodMayBeStatic
     def get(self, sim_id, user_id):

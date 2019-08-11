@@ -89,7 +89,7 @@ class UserAlloysList(Resource):
             Alloy(name=alloy_name, compositions=alloy_comp).validate()
         except FieldDoesNotExist as e:
             response['error'] = str(e)
-            response['message'] = 'Alloy validation error.'
+            response['message'] = 'Field does not exist error.'
             return response, 400
         except ElementSymbolInvalid as e:
             # This validation is a custom one used to validate the symbol used
@@ -101,6 +101,11 @@ class UserAlloysList(Resource):
             # This validation is a custom one used to validate the Element used
             response['error'] = str(e)
             response['message'] = 'Invalid element error.'
+            return response, 400
+        except MissingElementError as e:
+            # This validation is a custom one used to validate missing Elements
+            response['error'] = str(e)
+            response['message'] = 'Missing element error.'
             return response, 400
         except ValidationError as e:
             response['error'] = str(e.message)
@@ -232,7 +237,7 @@ class UserAlloy(Resource):
             new_alloy.validate(clean=True)
         except FieldDoesNotExist as e:
             response['error'] = str(e)
-            response['message'] = 'Alloy validation error.'
+            response['message'] = 'Field does not exist error.'
             return response, 400
         except ElementSymbolInvalid as e:
             # This validation is a custom one used to validate the symbol
@@ -246,6 +251,11 @@ class UserAlloy(Resource):
             # Element used
             response['error'] = str(e)
             response['message'] = 'Invalid element error.'
+            return response, 400
+        except MissingElementError as e:
+            # This validation is a custom one used to validate missing Elements
+            response['error'] = str(e)
+            response['message'] = 'Missing element error.'
             return response, 400
         except ValidationError as e:
             response['error'] = str(e.message)

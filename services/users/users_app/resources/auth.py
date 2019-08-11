@@ -182,7 +182,7 @@ def register_user() -> Tuple[dict, int]:
             'tasks.send_email',
             kwargs={
                 'to':
-                email,
+                [email],
                 'subject_suffix':
                 'Please Confirm Your Email',
                 'html_template':
@@ -529,7 +529,7 @@ def reset_password_email() -> Tuple[dict, int]:
         'tasks.send_email',
         kwargs={
             'to':
-            user.email,
+            [user.email],
             'subject_suffix':
             'Reset your Arclytics Sim password',
             'html_template':

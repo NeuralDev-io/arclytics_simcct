@@ -28,7 +28,7 @@ from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
     DateTimeField, EmbeddedDocumentField, IntField, FloatField, ListField,
-    EmbeddedDocumentListField, queryset_manager, ObjectIdField
+    EmbeddedDocumentListField, queryset_manager, ObjectIdField, ReferenceField
 )
 from mongoengine.errors import ValidationError
 from flask import current_app, json
@@ -224,16 +224,30 @@ class Alloy(EmbeddedDocument):
 
 class AlloyType(EmbeddedDocument):
     parent = EmbeddedDocumentField(
-        document_type=Alloy, default=None, null=True
+        document_type=Alloy, default=None, null=True, required=True
     )
-    weld = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
-    mix = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
+    weld = EmbeddedDocumentField(
+        document_type=Alloy, default=None, null=True, required=True
+    )
+    mix = EmbeddedDocumentField(
+        document_type=Alloy, default=None, null=True, required=True
+    )
 
     def to_dict(self):
-        data = {}
-        if self.parent is not None: data['parent'] = self.parent.to_dict()
-        if self.weld is not None: data['weld'] = self.weld.to_dict()
-        if self.mix is not None: data['mix'] = self.mix.to_dict()
+        parent = None
+        if self.parent is not None:
+            parent = self.parent.to_dict()
+        weld = None
+        if self.weld is not None:
+            weld = self.weld.to_dict()
+        mix = None
+        if self.mix is not None:
+            mix = self.mix.to_dict()
+        data = {
+            'parent': parent,
+            'weld': weld,
+            'mix': mix
+        }
         return data
 
 
@@ -483,20 +497,20 @@ class User(Document):
 
 
 class SharedSimulation(Document):
-    owner = EmailField(required=True)
-    shared_date = DateTimeField(default=datetime.utcnow(), required=True)
+    owner_email = EmailField(required=True)
+    created_date = DateTimeField(default=datetime.utcnow(), required=True)
     configuration = EmbeddedDocumentField(
         document_type=Configuration, required=True
     )
     alloy_store = EmbeddedDocumentField(document_type=AlloyStore, required=True)
 
+    # add results
+    # add views but dont send in dict
+
     def to_dict(self):
         return {
-            # 'owner': self.owner,
-            # 'shared_date': str(self.shared_date),
+            'owner_email': self.owner_email,
+            'created_date': str(self.created_date),
             'configuration': self.configuration.to_dict(),
             'alloy_store': self.alloy_store.to_dict()
         }
-
-
-

@@ -27,9 +27,7 @@ from typing import Tuple, Optional
 
 from email_validator import validate_email, EmailNotValidError
 from flask import current_app as app
-from flask import (
-    Blueprint, jsonify, request, render_template, redirect
-)
+from flask import (Blueprint, jsonify, request, render_template, redirect)
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from users_app.models import User

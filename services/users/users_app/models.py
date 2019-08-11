@@ -264,9 +264,10 @@ class Configuration(EmbeddedDocument):
         return self.to_json()
 
 
+# TODO(davidgmatthews@gmail.com): Validate if there are duplicate elements sent.
 class Element(EmbeddedDocument):
     symbol = StringField(max_length=2, required=True)
-    weight = FloatField(required=True)
+    weight = FloatField(required=True, validation=not_negative)
 
     def to_dict(self):
         return {'symbol': self.symbol, 'weight': self.weight}
@@ -582,7 +583,7 @@ class User(Document):
 
 class SavedSimulation(Document):
     user = ReferenceField(User, reverse_delete_rule=DO_NOTHING)
-    configuration = EmbeddedDocumentField(
+    configurations = EmbeddedDocumentField(
         document_type=Configuration, required=True, null=False
     )
     alloy_store = EmbeddedDocumentField(
@@ -598,8 +599,13 @@ class SavedSimulation(Document):
     # def clean(self):
     #     pass
 
-    # def to_dict(self):
-    #     pass
+    def to_dict(self):
+        return {
+            '_id': str(self.id),
+            'configurations': self.configurations.to_dict(),
+            'alloy_store': self.alloy_store.to_dict(),
+            'created': str(self.created.isoformat())
+        }
 
     # def to_json(self, *args, **kwargs):
     #     pass

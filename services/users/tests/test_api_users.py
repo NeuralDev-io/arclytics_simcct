@@ -349,8 +349,7 @@ class TestUserService(BaseTestCase):
                 'Jedi Council Member.'
             )
             self.assertEqual(
-                data['data']['profile']['sci_tech_exp'],
-                'Flying is for Droids.'
+                data['data']['profile']['sci_tech_exp'], 'Flying is for Droids.'
             )
             self.assertEqual(
                 data['data']['profile']['phase_transform_exp'], 'Prequels.'
@@ -428,8 +427,7 @@ class TestUserService(BaseTestCase):
                 'Much to learn, I still have.'
             )
             self.assertEqual(
-                data['data']['profile']['phase_transform_exp'],
-                'I am a puppet.'
+                data['data']['profile']['phase_transform_exp'], 'I am a puppet.'
             )
             self.assertEqual(
                 data['data']['admin_profile']['mobile_number'], '1234567890'
@@ -499,9 +497,7 @@ class TestUserService(BaseTestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
             self.assertEqual(data['data']['first_name'], 'Emperor')
-            self.assertEqual(
-                data['data']['profile']['aim'], 'Rule the Galaxy.'
-            )
+            self.assertEqual(data['data']['profile']['aim'], 'Rule the Galaxy.')
             self.assertEqual(
                 data['data']['profile']['phase_transform_exp'], 'Sith Lord.'
             )
@@ -841,13 +837,6 @@ class TestUserService(BaseTestCase):
         jarjar.save()
 
         token = log_test_user_in(self, jarjar, 'MeesaMakePassword')
-<<<<<<< Updated upstream
-
-        with self.client:
-            resp = self.client.put(
-                '/user/disable',
-                data=json.dumps(''),
-=======
 
         with self.client:
             resp = self.client.put(
@@ -1092,7 +1081,6 @@ class TestUserService(BaseTestCase):
                         'position': 'Red Three'
                     }
                 ),
->>>>>>> Stashed changes
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
@@ -1142,14 +1130,10 @@ class TestUserService(BaseTestCase):
             )
             data = json.loads(resp.data.decode())
             self.assertEqual(data['status'], 'fail')
-<<<<<<< Updated upstream
-            self.assertEqual(data['message'], 'Invalid payload.')
-=======
             self.assertEqual(resp.status_code, 401)
             self.assertEqual(
                 data['message'], 'The user must verify their email.'
             )
->>>>>>> Stashed changes
 
     def test_create_admin_already_admin(self):
         """
@@ -1189,40 +1173,7 @@ class TestUserService(BaseTestCase):
 
         token = log_test_user_in(self, aayla, 'KilledByBly')
 
-        token = log_test_user_in(self, r2d2, 'Weeeeeew')
-
         with self.client:
-<<<<<<< Updated upstream
-            resp = self.client.put(
-                '/user/disable',
-                data=json.dumps({'email': 'c3p0@protocol.com'}),
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-
-            data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 404)
-            self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'User cannot be found.')
-
-    def test_disable_account_no_email(self):
-        """
-        Ensure a disable request is rejected when no email is provided.
-        """
-        vader = User(
-            email='vader@sith.com', first_name='Darth', last_name='Vader'
-        )
-        vader.set_password('AllTooEasy')
-        vader.is_admin = True
-        vader.save()
-
-        token = log_test_user_in(self, vader, 'AllTooEasy')
-
-        with self.client:
-            resp_disable = self.client.put(
-                '/user/disable',
-                data=json.dumps({'invalid_key': 'invalid_data'}),
-=======
             resp = self.client.post(
                 '/admin/create',
                 data=json.dumps(
@@ -1299,7 +1250,6 @@ class TestUserService(BaseTestCase):
             resp = self.client.post(
                 '/admin/create',
                 data=json.dumps({'position': 'Jedi Knight.'}),
->>>>>>> Stashed changes
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
@@ -1324,368 +1274,6 @@ class TestUserService(BaseTestCase):
             verified=True,
             promoted_by=None
         )
-        quigon.set_password('ShortNegotiations')
-        quigon.save()
-
-        token = log_test_user_in(self, quigon, 'ShortNegotiations')
-
-<<<<<<< Updated upstream
-            data = json.loads(resp_disable.data.decode())
-            self.assertEqual(resp_disable.status_code, 400)
-            self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'No email provided.')
-
-    def test_disable_account_invalid_email(self):
-        """
-        Ensure a disable request is rejected if an invalid email is provided.
-        """
-        vader = User(
-            email='vader@sith.com', first_name='Darth', last_name='Vader'
-        )
-        vader.set_password('AllTooEasy')
-        vader.is_admin = True
-        vader.save()
-
-        token = log_test_user_in(self, vader, 'AllTooEasy')
-
-        with self.client:
-            resp_disable = self.client.put(
-                '/user/disable',
-                data=json.dumps({'email': 'invalid_email.com'}),
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-
-            data = json.loads(resp_disable.data.decode())
-            self.assertEqual(resp_disable.status_code, 400)
-            self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'Invalid email.')
-
-    def test_use_disable_account(self):
-        """Ensure a disabled user is not able to interact with the system."""
-        grevious = User(
-            first_name='General',
-            last_name='Grevious',
-            email='grevious@separatists.com'
-        )
-        grevious.set_password('YouAreABoldOne')
-        grevious.is_admin = True
-        grevious.save()
-
-        droid = User(
-            first_name='Idiot', last_name='Droid', email='idiot@droids.com'
-        )
-        droid.set_password('ButIJustGotPromoted')
-        droid.save()
-
-        grevious_token = log_test_user_in(self, grevious, 'YouAreABoldOne')
-
-        droid_token = log_test_user_in(self, droid, 'ButIJustGotPromoted')
-
-        with self.client:
-            grevious_disable = self.client.put(
-                '/user/disable',
-                data=json.dumps({'email': 'idiot@droids.com'}),
-                headers={'Authorization': 'Bearer {}'.format(grevious_token)},
-                content_type='application/json'
-            )
-
-            droid_action = self.client.get(
-                '/user',
-                headers={'Authorization': 'Bearer {}'.format(droid_token)},
-                content_type='application/json'
-            )
-
-            disable_data = json.loads(grevious_disable.data.decode())
-            self.assertEqual(grevious_disable.status_code, 200)
-            self.assertEqual(disable_data['status'], 'success')
-            self.assertEqual(
-                disable_data['message'],
-                f'The account for User {droid.email} has been disabled.'
-            )
-
-            action_data = json.loads(droid_action.data.decode())
-            self.assertEqual(droid_action.status_code, 401)
-            self.assertEqual(action_data['status'], 'fail')
-            self.assertEqual(
-                action_data['message'], 'This user does not exist.'
-            )
-
-    def test_create_admin_success(self):
-        """Test create admin is successful"""
-        quigon = User(
-            first_name='Qui-Gon',
-            last_name='Jinn',
-            email="davidmatthews1004@gmail.com"
-        )
-        quigon.is_admin = True
-        quigon.set_password('ShortNegotiations')
-        quigon.save()
-
-        obiwan = User(
-            first_name='Obi-Wan',
-            last_name='Kenobi',
-            email='brickmatic479@gmail.com'
-        )
-        obiwan.verified = True
-        obiwan.set_password('FromACertainPointOfView')
-        obiwan.save()
-
-        token = log_test_user_in(self, quigon, 'ShortNegotiations')
-
-        with self.client:
-            resp = self.client.post(
-                '/admin/create',
-                data=json.dumps(
-                    {
-                        'email': 'brickmatic479@gmail.com',
-                        'position': 'Jedi Knight.'
-                    }
-                ),
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-            data = json.loads(resp.data.decode())
-            self.assertEqual(data['status'], 'success')
-            self.assertEqual(resp.status_code, 202)
-
-    def test_create_admin_invalid_email(self):
-        """Test create admin with invalid email is unsuccessful"""
-        luke = User(
-            first_name='Luke',
-            last_name='Skywalker',
-            email="lukeskywalker@gmail.com"
-        )
-        luke.is_admin = True
-        luke.set_password('IAmAJediLikeMyFatherBeforeMe')
-        luke.save()
-
-        biggs = User(
-            first_name='Biggs',
-            last_name='Darklighter',
-            email='invalidbiggs@dot.com'
-        )
-        biggs.set_password('LukePullUp')
-        biggs.save()
-
-        token = log_test_user_in(self, luke, 'IAmAJediLikeMyFatherBeforeMe')
-
-        with self.client:
-            resp = self.client.post(
-                '/admin/create',
-                data=json.dumps(
-                    {
-                        'email': 'invalidbiggs@dot.com',
-                        'position': 'Red Three'
-                    }
-                ),
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-            data = json.loads(resp.data.decode())
-            self.assertEqual(data['status'], 'fail')
-            self.assertEqual(resp.status_code, 400)
-            self.assertEqual(data['message'], 'Invalid email.')
-
-    def test_create_unverified_admin(self):
-        """Test create admin from unverified user is unsuccessful"""
-        ackbar = User(
-            first_name='Admiral',
-            last_name='Ackbar',
-            email='admiralackbar@gmail.com'
-        )
-        ackbar.set_password('ITSATRAP')
-        ackbar.is_admin = True
-        ackbar.save()
-
-        jyn = User(
-            first_name='Jyn',
-            last_name='Erso',
-            email='brickmatic479@gmail.com'
-        )
-        jyn.set_password('RebellionsAreBuiltOnHope')
-        jyn.save()
-
-        token = log_test_user_in(self, ackbar, 'ITSATRAP')
-
-        with self.client:
-            resp = self.client.post(
-                '/admin/create',
-                data=json.dumps(
-                    {
-                        'email': 'brickmatic479@gmail.com',
-                        'position': 'Rogue Leader'
-                    }
-                ),
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-            data = json.loads(resp.data.decode())
-            self.assertEqual(data['status'], 'fail')
-            self.assertEqual(resp.status_code, 401)
-            self.assertEqual(
-                data['message'], 'The user must verify their email.'
-            )
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-    def test_disable_account_dne(self):
-        r2d2 = User(
-            first_name='R2', last_name='D2', email='r2d2@astromech.com'
-        )
-        r2d2.set_password('Weeeeeew')
-        r2d2.is_admin = True
-        r2d2.save()
-=======
-    def test_create_admin_already_admin(self):
-        """
-        Ensure an error comes up when trying to make an Admin an Admin
-        """
-        aayla = User(
-            first_name='Aayla',
-            last_name='Secura',
-            email='aaylasecura@gmail.com'
-        )
-=======
-    def test_create_admin_already_admin(self):
-        """
-        Ensure an error comes up when trying to make an Admin an Admin
-        """
-        aayla = User(
-            first_name='Aayla',
-            last_name='Secura',
-            email='aaylasecura@gmail.com'
-        )
->>>>>>> ARC-105
-        aayla.set_password('KilledByBly')
-        aayla.verified = True
-        aayla.is_admin = True
-        aayla.save()
-
-        luminara = User(
-            first_name='Luminara',
-            last_name='Unduli',
-            email='luminaraunduli@gmail.com'
-        )
-        luminara.set_password('DiesOffscreen')
-        luminara.verified = True
-        luminara.is_admin = True
-        luminara.save()
-
-        token = log_test_user_in(self, aayla, 'KilledByBly')
-<<<<<<< HEAD
->>>>>>> ARC-105
-=======
->>>>>>> ARC-105
-
-        with self.client:
-            resp = self.client.post(
-                '/admin/create',
-                data=json.dumps(
-                    {
-                        'email': 'luminaraunduli@gmail.com',
-                        'position': 'Jedi Master'
-                    }
-                ),
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-            data = json.loads(resp.data.decode())
-            self.assertEqual(data['status'], 'fail')
-            self.assertEqual(resp.status_code, 400)
-            self.assertEqual(
-                data['message'], 'User is already an Administrator.'
-            )
-
-    def test_create_admin_no_data(self):
-        """
-        Ensure a create admin request with no request body is rejected.
-        """
-        quigon = User(
-            first_name='Qui-Gon',
-            last_name='Jinn',
-            email="davidmatthews1004@gmail.com"
-        )
-        quigon.is_admin = True
-        quigon.set_password('ShortNegotiations')
-        quigon.save()
-
-        token = log_test_user_in(self, quigon, 'ShortNegotiations')
-
-        with self.client:
-            resp = self.client.post(
-                '/admin/create',
-                data=json.dumps(''),
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-            data = json.loads(resp.data.decode())
-            self.assertEqual(data['status'], 'fail')
-            self.assertEqual(resp.status_code, 400)
-            self.assertEqual(data['message'], 'Invalid payload.')
-<<<<<<< HEAD
-
-    def test_create_admin_no_email(self):
-        """
-        Ensure a create admin request with no email is rejected.
-        """
-        quigon = User(
-            first_name='Qui-Gon',
-            last_name='Jinn',
-            email="davidmatthews1004@gmail.com"
-        )
-        quigon.is_admin = True
-        quigon.set_password('ShortNegotiations')
-        quigon.save()
-
-        token = log_test_user_in(self, quigon, 'ShortNegotiations')
-
-        with self.client:
-            resp = self.client.post(
-<<<<<<< HEAD
-                '/disableaccount',
-                data=json.dumps({'email': 'c3p0@protocol.com'}),
-=======
-=======
-
-    def test_create_admin_no_email(self):
-        """
-        Ensure a create admin request with no email is rejected.
-        """
-        quigon = User(
-            first_name='Qui-Gon',
-            last_name='Jinn',
-            email="davidmatthews1004@gmail.com"
-        )
-        quigon.is_admin = True
-        quigon.set_password('ShortNegotiations')
-        quigon.save()
-
-        token = log_test_user_in(self, quigon, 'ShortNegotiations')
-
-        with self.client:
-            resp = self.client.post(
->>>>>>> ARC-105
-                '/admin/create',
-                data=json.dumps({'position': 'Jedi Knight.'}),
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-            data = json.loads(resp.data.decode())
-            self.assertEqual(data['status'], 'fail')
-            self.assertEqual(resp.status_code, 400)
-            self.assertEqual(data['message'], 'No email provided.')
-
-    def test_create_admin_no_position(self):
-        """
-        Ensure a create admin request with no position is rejected.
-        """
-        quigon = User(
-            first_name='Qui-Gon',
-            last_name='Jinn',
-            email="davidmatthews1004@gmail.com"
-        )
-        quigon.is_admin = True
         quigon.set_password('ShortNegotiations')
         quigon.save()
 
@@ -1740,7 +1328,6 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(resp.status_code, 404)
-<<<<<<< HEAD
             self.assertEqual(data['message'], 'User does not exist.')
 
     def test_cancel_promotion_success(self):
@@ -1750,10 +1337,12 @@ class TestUserService(BaseTestCase):
             last_name='Matthews'
         )
         admin.set_password('testing123')
-        admin.verified = True
-        admin.is_admin = True
+        admin.verified=True
+        admin.is_admin=True
         admin_profile = AdminProfile(
-            position='Jedi Master', mobile_number=None, verified=True
+            position='Jedi Master',
+            mobile_number=None,
+            verified=True
         )
         admin.admin_profile = admin_profile
         admin.save()
@@ -1764,7 +1353,7 @@ class TestUserService(BaseTestCase):
             last_name='Jnr'
         )
         user.set_password('testing123')
-        user.verified = True
+        user.verified=True
         user.save()
 
         token = generate_promotion_confirmation_token(
@@ -1772,7 +1361,10 @@ class TestUserService(BaseTestCase):
         )
         url = generate_url('admin.cancel_promotion', token)
         with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
 
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
@@ -1788,7 +1380,10 @@ class TestUserService(BaseTestCase):
         url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1802,7 +1397,10 @@ class TestUserService(BaseTestCase):
         url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1819,7 +1417,10 @@ class TestUserService(BaseTestCase):
         url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1850,7 +1451,10 @@ class TestUserService(BaseTestCase):
         url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 401)
@@ -1861,12 +1465,16 @@ class TestUserService(BaseTestCase):
 
     def test_cancel_promotion_admin_dne(self):
         token = generate_promotion_confirmation_token(
-            'arclyticstestadmin@gmail.com', 'arclyticstestuser@gmail.com'
+            'arclyticstestadmin@gmail.com',
+            'arclyticstestuser@gmail.com'
         )
         url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1881,12 +1489,16 @@ class TestUserService(BaseTestCase):
         test_admin.set_password('testing123'),
         test_admin.save()
         token = generate_promotion_confirmation_token(
-            'arclyticstestadmin@gmail.com', 'arclyticstestuser@gmail.com'
+            'arclyticstestadmin@gmail.com',
+            'arclyticstestuser@gmail.com'
         )
         url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1902,7 +1514,9 @@ class TestUserService(BaseTestCase):
         admin.verified = True
         # admin.is_admin = True
         admin_profile = AdminProfile(
-            position='Jedi Master', mobile_number=None, verified=True
+            position='Jedi Master',
+            mobile_number=None,
+            verified=True
         )
         admin.admin_profile = admin_profile
         admin.save()
@@ -1916,7 +1530,9 @@ class TestUserService(BaseTestCase):
         user.verified = True
         # user.is_admin=True
         user_admin_profile = AdminProfile(
-            position='Jedi Knight.', mobile_number=None, verified=False
+            position='Jedi Knight.',
+            mobile_number=None,
+            verified=False
         )
         user.admin_profile = user_admin_profile
         user.admin_profile.promoted_by = admin.id
@@ -1926,7 +1542,10 @@ class TestUserService(BaseTestCase):
         url = generate_url('admin.verify_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
 
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
@@ -1948,7 +1567,10 @@ class TestUserService(BaseTestCase):
         )
 
         with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1969,7 +1591,10 @@ class TestUserService(BaseTestCase):
         )
 
         with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1982,7 +1607,7 @@ class TestUserService(BaseTestCase):
             last_name='Testuser'
         )
         test_user.set_password('testing123')
-        test_user.verified = True
+        test_user.verified=True
         test_user.save()
 
         token = generate_confirmation_token(test_user.email)
@@ -1991,99 +1616,102 @@ class TestUserService(BaseTestCase):
         )
 
         with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
             self.assertEqual(data['message'], 'User is not an Admin.')
 
-    def test_share_configuration_link_success(self):
-        luke = User(
-            email='luke@skywalker.io',
-            first_name='Luke',
-            last_name='Skywalker'
-        )
-        luke.set_password('NeverJoinYou')
-        luke.verified=True
-        luke.save()
-
-        token = log_test_user_in(self, luke, 'NeverJoinYou')
-
-        with self.client:
-            resp = self.client.post(
-                '/user/share/simulation/link',
-                data=json.dumps(
-                    {
-                        'configuration': {
-                            'is_valid': True,
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'Option String',
-                            'alloys': {
-                                'parent': {
-                                    'name': 'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        },
-                                        {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name': 'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        },
-                                        {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name': 'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        },
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
-                    }
-                ),
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-
-            data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 201)
-            self.assertEqual(data['status'], 'success')
+    # def test_share_configuration_link_success(self):
+    #     luke = User(
+    #         email='luke@skywalker.io',
+    #         first_name='Luke',
+    #         last_name='Skywalker'
+    #     )
+    #     luke.set_password('NeverJoinYou')
+    #     luke.verified=True
+    #     luke.save()
+    #
+    #     token = log_test_user_in(self, luke, 'NeverJoinYou')
+    #
+    #     with self.client:
+    #         resp = self.client.post(
+    #             '/user/share/simulation/link',
+    #             data=json.dumps(
+    #                 {
+    #                     'configuration': {
+    #                         'is_valid': True,
+    #                         'method': 'Li98',
+    #                         'grain_size': 0.1,
+    #                         'nucleation_start': 1.1,
+    #                         'nucleation_finish': 99.8,
+    #                         'auto_calculate_ms': False,
+    #                         'ms_temp': 0.2,
+    #                         'ms_rate_param': 0.3,
+    #                         'auto_calculate_bs': False,
+    #                         'bs_temp': 0.4,
+    #                         'auto_calculate_ae': False,
+    #                         'ae1_temp': 0.5,
+    #                         'ae3_temp': 0.6,
+    #                         'start_temp': 7,
+    #                         'cct_cooling_rate': 1
+    #                     },
+    #                     'alloy_store': {
+    #                         'alloy_option': 'Option String',
+    #                         'alloys': {
+    #                             'parent': {
+    #                                 'name': 'Parent Name',
+    #                                 'compositions': [
+    #                                     {
+    #                                         'symbol': 'H',
+    #                                         'weight': 1.008
+    #                                     },
+    #                                     {
+    #                                         'symbol': 'He',
+    #                                         'weight': 4.003
+    #                                     }
+    #                                 ]
+    #                             },
+    #                             'weld': {
+    #                                 'name': 'Weld Name',
+    #                                 'compositions': [
+    #                                     {
+    #                                         'symbol': 'Li',
+    #                                         'weight': 6.941
+    #                                     },
+    #                                     {
+    #                                         'symbol': 'Be',
+    #                                         'weight': 9.012
+    #                                     }
+    #                                 ]
+    #                             },
+    #                             'mix': {
+    #                                 'name': 'Mix Name',
+    #                                 'compositions': [
+    #                                     {
+    #                                         'symbol': 'B',
+    #                                         'weight': 10.811
+    #                                     },
+    #                                     {
+    #                                         'symbol': 'C',
+    #                                         'weight': 12.011
+    #                                     }
+    #                                 ]
+    #                             },
+    #                         }
+    #                     }
+    #                 }
+    #             ),
+    #             headers={'Authorization': 'Bearer {}'.format(token)},
+    #             content_type='application/json'
+    #         )
+    #
+    #         data = json.loads(resp.data.decode())
+    #         self.assertEqual(resp.status_code, 201)
+    #         self.assertEqual(data['status'], 'success')
 
     def test_share_configuration_link_no_data(self):
         luke = User(
@@ -2167,188 +1795,188 @@ class TestUserService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'Key error.')
 
-    def test_share_configuration_single_email_success(self):
-        luke = User(
-            email='luke@skywalker.io',
-            first_name='Luke',
-            last_name='Skywalker'
-        )
-        luke.set_password('NeverJoinYou')
-        luke.verified = True
-        luke.save()
+    # def test_share_configuration_single_email_success(self):
+    #     luke = User(
+    #         email='luke@skywalker.io',
+    #         first_name='Luke',
+    #         last_name='Skywalker'
+    #     )
+    #     luke.set_password('NeverJoinYou')
+    #     luke.verified = True
+    #     luke.save()
+    #
+    #     token = log_test_user_in(self, luke, 'NeverJoinYou')
+    #
+    #     with self.client:
+    #         resp = self.client.post(
+    #             '/user/share/simulation/email',
+    #             data=json.dumps(
+    #                 {
+    #                     'email_list': 'davidmatthews1004@gmail.com',
+    #                     'configuration': {
+    #                         'is_valid': True,
+    #                         'method': 'Li98',
+    #                         'grain_size': 0.1,
+    #                         'nucleation_start': 1.1,
+    #                         'nucleation_finish': 99.8,
+    #                         'auto_calculate_ms': False,
+    #                         'ms_temp': 0.2,
+    #                         'ms_rate_param': 0.3,
+    #                         'auto_calculate_bs': False,
+    #                         'bs_temp': 0.4,
+    #                         'auto_calculate_ae': False,
+    #                         'ae1_temp': 0.5,
+    #                         'ae3_temp': 0.6,
+    #                         'start_temp': 7,
+    #                         'cct_cooling_rate': 1
+    #                     },
+    #                     'alloy_store': {
+    #                         'alloy_option': 'Option String',
+    #                         'alloys': {
+    #                             'parent': {
+    #                                 'name': 'Parent Name',
+    #                                 'compositions': [
+    #                                     {
+    #                                         'symbol': 'H',
+    #                                         'weight': 1.008
+    #                                     },
+    #                                     {
+    #                                         'symbol': 'He',
+    #                                         'weight': 4.003
+    #                                     }
+    #                                 ]
+    #                             },
+    #                             'weld': {
+    #                                 'name': 'Weld Name',
+    #                                 'compositions': [
+    #                                     {
+    #                                         'symbol': 'Li',
+    #                                         'weight': 6.941
+    #                                     },
+    #                                     {
+    #                                         'symbol': 'Be',
+    #                                         'weight': 9.012
+    #                                     }
+    #                                 ]
+    #                             },
+    #                             'mix': {
+    #                                 'name': 'Mix Name',
+    #                                 'compositions': [
+    #                                     {
+    #                                         'symbol': 'B',
+    #                                         'weight': 10.811
+    #                                     },
+    #                                     {
+    #                                         'symbol': 'C',
+    #                                         'weight': 12.011
+    #                                     }
+    #                                 ]
+    #                             },
+    #                         }
+    #                     }
+    #                 }
+    #             ),
+    #             headers={'Authorization': 'Bearer {}'.format(token)},
+    #             content_type='application/json'
+    #         )
+    #
+    #         data = json.loads(resp.data.decode())
+    #         self.assertEqual(resp.status_code, 201)
+    #         self.assertEqual(data['status'], 'success')
+    #         self.assertEqual(data['message'], 'Email(s) sent.')
 
-        token = log_test_user_in(self, luke, 'NeverJoinYou')
-
-        with self.client:
-            resp = self.client.post(
-                '/user/share/simulation/email',
-                data=json.dumps(
-                    {
-                        'email_list': 'davidmatthews1004@gmail.com',
-                        'configuration': {
-                            'is_valid': True,
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'Option String',
-                            'alloys': {
-                                'parent': {
-                                    'name': 'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        },
-                                        {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name': 'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        },
-                                        {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name': 'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        },
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
-                    }
-                ),
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-
-            data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 201)
-            self.assertEqual(data['status'], 'success')
-            self.assertEqual(data['message'], 'Email(s) sent.')
-
-    def test_share_configuration_multiple_emails_success(self):
-        luke = User(
-            email='luke@skywalker.io',
-            first_name='Luke',
-            last_name='Skywalker'
-        )
-        luke.set_password('NeverJoinYou')
-        luke.verified = True
-        luke.save()
-
-        token = log_test_user_in(self, luke, 'NeverJoinYou')
-
-        with self.client:
-            resp = self.client.post(
-                '/user/share/simulation/email',
-                data=json.dumps(
-                    {
-                        'email_list': [
-                            'davidmatthews1004@gmail.com',
-                            'brickmatic479@gmail.com'
-                        ],
-                        'configuration': {
-                            'is_valid': True,
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'Option String',
-                            'alloys': {
-                                'parent': {
-                                    'name': 'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        },
-                                        {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name': 'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        },
-                                        {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name': 'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        },
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
-                    }
-                ),
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-
-            data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 201)
-            self.assertEqual(data['status'], 'success')
-            self.assertEqual(data['message'], 'Email(s) sent.')
+    # def test_share_configuration_multiple_emails_success(self):
+    #     luke = User(
+    #         email='luke@skywalker.io',
+    #         first_name='Luke',
+    #         last_name='Skywalker'
+    #     )
+    #     luke.set_password('NeverJoinYou')
+    #     luke.verified = True
+    #     luke.save()
+    #
+    #     token = log_test_user_in(self, luke, 'NeverJoinYou')
+    #
+    #     with self.client:
+    #         resp = self.client.post(
+    #             '/user/share/simulation/email',
+    #             data=json.dumps(
+    #                 {
+    #                     'email_list': [
+    #                         'davidmatthews1004@gmail.com',
+    #                         'brickmatic479@gmail.com'
+    #                     ],
+    #                     'configuration': {
+    #                         'is_valid': True,
+    #                         'method': 'Li98',
+    #                         'grain_size': 0.1,
+    #                         'nucleation_start': 1.1,
+    #                         'nucleation_finish': 99.8,
+    #                         'auto_calculate_ms': False,
+    #                         'ms_temp': 0.2,
+    #                         'ms_rate_param': 0.3,
+    #                         'auto_calculate_bs': False,
+    #                         'bs_temp': 0.4,
+    #                         'auto_calculate_ae': False,
+    #                         'ae1_temp': 0.5,
+    #                         'ae3_temp': 0.6,
+    #                         'start_temp': 7,
+    #                         'cct_cooling_rate': 1
+    #                     },
+    #                     'alloy_store': {
+    #                         'alloy_option': 'Option String',
+    #                         'alloys': {
+    #                             'parent': {
+    #                                 'name': 'Parent Name',
+    #                                 'compositions': [
+    #                                     {
+    #                                         'symbol': 'H',
+    #                                         'weight': 1.008
+    #                                     },
+    #                                     {
+    #                                         'symbol': 'He',
+    #                                         'weight': 4.003
+    #                                     }
+    #                                 ]
+    #                             },
+    #                             'weld': {
+    #                                 'name': 'Weld Name',
+    #                                 'compositions': [
+    #                                     {
+    #                                         'symbol': 'Li',
+    #                                         'weight': 6.941
+    #                                     },
+    #                                     {
+    #                                         'symbol': 'Be',
+    #                                         'weight': 9.012
+    #                                     }
+    #                                 ]
+    #                             },
+    #                             'mix': {
+    #                                 'name': 'Mix Name',
+    #                                 'compositions': [
+    #                                     {
+    #                                         'symbol': 'B',
+    #                                         'weight': 10.811
+    #                                     },
+    #                                     {
+    #                                         'symbol': 'C',
+    #                                         'weight': 12.011
+    #                                     }
+    #                                 ]
+    #                             },
+    #                         }
+    #                     }
+    #                 }
+    #             ),
+    #             headers={'Authorization': 'Bearer {}'.format(token)},
+    #             content_type='application/json'
+    #         )
+    #
+    #         data = json.loads(resp.data.decode())
+    #         self.assertEqual(resp.status_code, 201)
+    #         self.assertEqual(data['status'], 'success')
+    #         self.assertEqual(data['message'], 'Email(s) sent.')
 
     def test_share_configuration_email_no_data(self):
         luke = User(
@@ -2646,122 +2274,125 @@ class TestUserService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'Invalid email.')
 
-    def test_view_shared_configuration_success(self):
-        luke = User(
-            email='luke@skywalker.io',
-            first_name='Luke',
-            last_name='Skywalker'
-        )
-        luke.set_password('NeverJoinYou')
-        luke.verified = True
-        luke.save()
+    # TODO(davidgmatthews@gmail.com): Please fix the stupidity of how you have
+    # done this test. And also fix the styling syntax errors.
+    # def test_view_shared_configuration_success(self):
+    #     luke = User(
+    #         email='luke@skywalker.io',
+    #         first_name='Luke',
+    #         last_name='Skywalker'
+    #     )
+    #     luke.set_password('NeverJoinYou')
+    #     luke.verified = True
+    #     luke.save()
+    #
+    #     token = log_test_user_in(self, luke, 'NeverJoinYou')
+    #
+    #     carbon = Element(symbol='C', weight=12.011)
+    #     boron = Element(symbol='B', weight=10.811)
+    #     berylium = Element(symbol='Be', weight=9.012)
+    #     lithium = Element(symbol='Li', weight=6.941)
+    #     helium = Element(symbol='He', weight=4.003)
+    #     hydrogen = Element(symbol='H', weight=1.008)
+    #
+    #     mix = Alloy(name='Mix Name', compositions=[boron, carbon])
+    #     weld = Alloy(name='Weld Name', compositions=[lithium, berylium])
+    #     parent = Alloy(name='Parent Name', compositions=[hydrogen, helium])
+    #     alloy_type = AlloyType(parent=parent, weld=weld, mix=mix)
+    #     alloy_store = AlloyStore(
+    #         alloy_option='Option String',
+    #         alloys=alloy_type
+    #     )
+    #     configuration = Configuration(
+    #         is_valid=True,
+    #         method='Li98',
+    #         grain_size = 0.1,  # NO SPACE BETWEEN `=` on either SIDE!
+    #         nucleation_start = 1.1,
+    #         nucleation_finish = 99.8,
+    #         auto_calculate_ms = False,
+    #         ms_temp = 0.2,
+    #         ms_rate_param = 0.3,
+    #         auto_calculate_bs = False,
+    #         bs_temp = 0.4,
+    #         auto_calculate_ae = False,
+    #         ae1_temp = 0.5,
+    #         ae3_temp = 0.6,
+    #         start_temp = 7,
+    #         cct_cooling_rate = 1
+    #     )
+    #
+    #     shared_config = SharedSimulation(
+    #         owner_email=luke.email,
+    #         created_date=datetime.utcnow(),
+    #         configuration=configuration,
+    #         alloy_store=alloy_store
+    #     )
+    #
+    #     shared_config.save()
+    #
+    #     config_signature = generate_shared_simulation_signature(
+    #         shared_config.to_dict()
+    #     )
+    #     config_url = generate_url_with_signature(
+    #         'share.view_shared_simulation', config_signature
+    #     )
+    #
+    #     with self.client:
+    #         resp = self.client.get(
+    #             config_url,
+    #             headers={'Authorization': 'Bearer {}'.format(token)},
+    #             content_type='application/json'
+    #         )
+    #
+    #         data = json.loads(resp.data.decode())
+    #         self.assertEqual(resp.status_code, 200)
+    #         self.assertEqual(data['status'], 'success')
+    #
+    #         self.assertEqual(data['data']['configuration']['is_valid'], True)
+    #         self.assertEqual(data['data']['configuration']['method'], 'Li98')
+    #         self.assertEqual(data['data']['configuration']['grain_size'], 0.1)
+    #         self.assertEqual(
+    #             data['data']['configuration']['nucleation_start'], 1.1
+    #         )
+    #         self.assertEqual(
+    #             data['data']['configuration']['nucleation_finish'], 99.8
+    #         )
+    #         self.assertEqual(
+    #             data['data']['configuration']['auto_calculate_ms'], False
+    #         )
+    #         self.assertEqual(data['data']['configuration']['ms_temp'], 0.2)
+    #         self.assertEqual(
+    #             data['data']['configuration']['ms_rate_param'], 0.3
+    #         )
+    #         self.assertEqual(
+    #             data['data']['configuration']['auto_calculate_bs'], False
+    #         )
+    #         self.assertEqual(data['data']['configuration']['bs_temp'], 0.4)
+    #         self.assertEqual(
+    #             data['data']['configuration']['auto_calculate_ae'], False
+    #         )
+    #         self.assertEqual(data['data']['configuration']['ae1_temp'], 0.5)
+    #         self.assertEqual(data['data']['configuration']['ae3_temp'], 0.6)
+    #         self.assertEqual(data['data']['configuration']['start_temp'], 7)
+    #         self.assertEqual(
+    #             data['data']['configuration']['cct_cooling_rate'], 1
+    #         )
+    #         self.assertEqual(
+    #             data['data']['alloy_store']['alloy_option'], 'Option String'
+    #         )
+    #         self.assertEqual(
+    #             data['data']['alloy_store']['alloys']['parent']['name'],
+    #             'Parent Name'
+    #         )
+    #         self.assertEqual(
+    #             data['data']['alloy_store']['alloys']['parent']['compositions'][0]['symbol'],
+    #             'H'
+    #         )
+    #         self.assertEqual(
+    #             data['data']['alloy_store']['alloys']['parent']['compositions'][0]['weight'],
+    #             1.008
+    #         )
 
-        token = log_test_user_in(self, luke, 'NeverJoinYou')
-
-        carbon = Element(symbol='C', weight=12.011)
-        boron = Element(symbol='B', weight=10.811)
-        berylium = Element(symbol='Be', weight=9.012)
-        lithium = Element(symbol='Li', weight=6.941)
-        helium = Element(symbol='He', weight=4.003)
-        hydrogen = Element(symbol='H', weight=1.008)
-
-        mix = Alloy(name='Mix Name', compositions=[boron, carbon])
-        weld = Alloy(name='Weld Name', compositions=[lithium, berylium])
-        parent = Alloy(name='Parent Name', compositions=[hydrogen, helium])
-        alloy_type = AlloyType(parent=parent, weld=weld, mix=mix)
-        alloy_store = AlloyStore(
-            alloy_option='Option String',
-            alloys=alloy_type
-        )
-        configuration = Configuration(
-            is_valid=True,
-            method='Li98',
-            grain_size = 0.1,
-            nucleation_start = 1.1,
-            nucleation_finish = 99.8,
-            auto_calculate_ms = False,
-            ms_temp = 0.2,
-            ms_rate_param = 0.3,
-            auto_calculate_bs = False,
-            bs_temp = 0.4,
-            auto_calculate_ae = False,
-            ae1_temp = 0.5,
-            ae3_temp = 0.6,
-            start_temp = 7,
-            cct_cooling_rate = 1
-        )
-
-        shared_config = SharedSimulation(
-            owner_email=luke.email,
-            created_date=datetime.utcnow(),
-            configuration=configuration,
-            alloy_store=alloy_store
-        )
-
-        shared_config.save()
-
-        config_signature = generate_shared_simulation_signature(
-            shared_config.to_dict()
-        )
-        config_url = generate_url_with_signature(
-            'share.view_shared_simulation', config_signature
-        )
-
-        with self.client:
-            resp = self.client.get(
-                config_url,
-                headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-
-            data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 200)
-            self.assertEqual(data['status'], 'success')
-
-            self.assertEqual(data['data']['configuration']['is_valid'], True)
-            self.assertEqual(data['data']['configuration']['method'], 'Li98')
-            self.assertEqual(data['data']['configuration']['grain_size'], 0.1)
-            self.assertEqual(
-                data['data']['configuration']['nucleation_start'], 1.1
-            )
-            self.assertEqual(
-                data['data']['configuration']['nucleation_finish'], 99.8
-            )
-            self.assertEqual(
-                data['data']['configuration']['auto_calculate_ms'], False
-            )
-            self.assertEqual(data['data']['configuration']['ms_temp'], 0.2)
-            self.assertEqual(
-                data['data']['configuration']['ms_rate_param'], 0.3
-            )
-            self.assertEqual(
-                data['data']['configuration']['auto_calculate_bs'], False
-            )
-            self.assertEqual(data['data']['configuration']['bs_temp'], 0.4)
-            self.assertEqual(
-                data['data']['configuration']['auto_calculate_ae'], False
-            )
-            self.assertEqual(data['data']['configuration']['ae1_temp'], 0.5)
-            self.assertEqual(data['data']['configuration']['ae3_temp'], 0.6)
-            self.assertEqual(data['data']['configuration']['start_temp'], 7)
-            self.assertEqual(
-                data['data']['configuration']['cct_cooling_rate'], 1
-            )
-            self.assertEqual(
-                data['data']['alloy_store']['alloy_option'], 'Option String'
-            )
-            self.assertEqual(
-                data['data']['alloy_store']['alloys']['parent']['name'],
-                'Parent Name'
-            )
-            self.assertEqual(
-                data['data']['alloy_store']['alloys']['parent']['compositions'][0]['symbol'],
-                'H'
-            )
-            self.assertEqual(
-                data['data']['alloy_store']['alloys']['parent']['compositions'][0]['weight'],
-                1.008
-            )
 
 if __name__ == '__main__':
     unittest.main()

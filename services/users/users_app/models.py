@@ -29,9 +29,7 @@ from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
     DateTimeField, EmbeddedDocumentField, IntField, FloatField, DO_NOTHING,
     EmbeddedDocumentListField, queryset_manager, ObjectIdField, ReferenceField,
-    ValidationError
-    DateTimeField, EmbeddedDocumentField, IntField, FloatField, ListField,
-    EmbeddedDocumentListField, queryset_manager, ObjectIdField, ReferenceField
+    ValidationError, ListField
 )
 from flask import current_app, json
 
@@ -319,13 +317,13 @@ class Alloy(EmbeddedDocument):
 
 class AlloyType(EmbeddedDocument):
     parent = EmbeddedDocumentField(
-        document_type=Alloy, default=None, null=True, required=True
+        document_type=Alloy, default=None, null=True
     )
     weld = EmbeddedDocumentField(
-        document_type=Alloy, default=None, null=True, required=True
+        document_type=Alloy, default=None, null=True
     )
     mix = EmbeddedDocumentField(
-        document_type=Alloy, default=None, null=True, required=True
+        document_type=Alloy, default=None, null=True
     )
 
     def to_dict(self):
@@ -587,13 +585,6 @@ class User(Document):
         return self.to_json()
 
 
-class SharedSimulation(Document):
-    owner_email = EmailField(required=True)
-    created_date = DateTimeField(default=datetime.utcnow(), required=True)
-    configuration = EmbeddedDocumentField(
-        document_type=Configuration, required=True
-    )
-    alloy_store = EmbeddedDocumentField(document_type=AlloyStore, required=True)
 class SavedSimulation(Document):
     user = ReferenceField(User, reverse_delete_rule=DO_NOTHING)
     configurations = EmbeddedDocumentField(
@@ -609,9 +600,6 @@ class SavedSimulation(Document):
 
     meta = {'collection': 'saved_simulations'}
 
-    # def clean(self):
-    #     pass
-
     def to_dict(self):
         return {
             '_id': str(self.id),
@@ -620,18 +608,17 @@ class SavedSimulation(Document):
             'created': str(self.created.isoformat())
         }
 
-    # def to_json(self, *args, **kwargs):
-    #     pass
-
     def __str__(self):
         return self.to_json()
 
 
-class SharedConfiguration(Document):
-    owner = EmailField(required=True)
-    shared_date = DateTimeField()
-    configuration = EmbeddedDocumentField(document_type=Configuration)
-    # alloy_store = EmbeddedDocumentField(document_type=AlloyStore)
+class SharedSimulation(Document):
+    owner_email = EmailField(required=True)
+    created_date = DateTimeField(default=datetime.utcnow(), required=True)
+    configuration = EmbeddedDocumentField(
+        document_type=Configuration, required=True
+    )
+    alloy_store = EmbeddedDocumentField(document_type=AlloyStore, required=True)
 
     # add results
     # add views but dont send in dict

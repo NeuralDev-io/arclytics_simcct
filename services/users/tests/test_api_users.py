@@ -6,7 +6,7 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@davidjmatthews>']
+__author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
 
 __credits__ = ['']
 __license__ = 'TBA'
@@ -1001,49 +1001,49 @@ class TestUserService(BaseTestCase):
                 action_data['message'], 'This user account has been disabled.'
             )
 
-    # def test_create_admin_success(self):
-    #     """Test create admin is successful"""
-    #     quigon = User(
-    #         first_name='Qui-Gon',
-    #         last_name='Jinn',
-    #         email="davidmatthews1004@gmail.com"
-    #     )
-    #     # quigon.is_admin = True
-    #     quigon.admin_profile = AdminProfile(
-    #         position='Position',
-    #         mobile_number=None,
-    #         verified=True,
-    #         promoted_by=None
-    #     )
-    #     quigon.set_password('ShortNegotiations')
-    #     quigon.save()
-    #
-    #     obiwan = User(
-    #         first_name='Obi-Wan',
-    #         last_name='Kenobi',
-    #         email='brickmatic479@gmail.com'
-    #     )
-    #     obiwan.verified = True
-    #     obiwan.set_password('FromACertainPointOfView')
-    #     obiwan.save()
-    #
-    #     token = log_test_user_in(self, quigon, 'ShortNegotiations')
-    #
-    #     with self.client:
-    #         resp = self.client.post(
-    #             '/admin/create',
-    #             data=json.dumps(
-    #                 {
-    #                     'email': 'brickmatic479@gmail.com',
-    #                     'position': 'Jedi Knight.'
-    #                 }
-    #             ),
-    #             headers={'Authorization': 'Bearer {}'.format(token)},
-    #             content_type='application/json'
-    #         )
-    #         data = json.loads(resp.data.decode())
-    #         self.assertEqual(data['status'], 'success')
-    #         self.assertEqual(resp.status_code, 202)
+    def test_create_admin_success(self):
+        """Test create admin is successful"""
+        quigon = User(
+            first_name='Qui-Gon',
+            last_name='Jinn',
+            email="davidmatthews1004@gmail.com"
+        )
+        # quigon.is_admin = True
+        quigon.admin_profile = AdminProfile(
+            position='Position',
+            mobile_number=None,
+            verified=True,
+            promoted_by=None
+        )
+        quigon.set_password('ShortNegotiations')
+        quigon.save()
+
+        obiwan = User(
+            first_name='Obi-Wan',
+            last_name='Kenobi',
+            email='brickmatic479@gmail.com'
+        )
+        obiwan.verified = True
+        obiwan.set_password('FromACertainPointOfView')
+        obiwan.save()
+
+        token = log_test_user_in(self, quigon, 'ShortNegotiations')
+
+        with self.client:
+            resp = self.client.post(
+                '/admin/create',
+                data=json.dumps(
+                    {
+                        'email': 'brickmatic479@gmail.com',
+                        'position': 'Jedi Knight.'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(resp.status_code, 202)
 
     def test_create_admin_invalid_email(self):
         """Test create admin with invalid email is unsuccessful"""
@@ -1359,7 +1359,7 @@ class TestUserService(BaseTestCase):
         token = generate_promotion_confirmation_token(
             admin.email, user.email
         )
-        url = generate_url('users.cancel_promotion', token)
+        url = generate_url('admin.cancel_promotion', token)
         with current_app.test_client() as client:
             resp = client.get(
                 url,
@@ -1377,7 +1377,7 @@ class TestUserService(BaseTestCase):
 
     def test_cancel_promotion_invalid_token(self):
         token = generate_confirmation_token('arclyticstest@gmail.com')
-        url = generate_url('users.cancel_promotion', token)
+        url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
             resp = client.get(
@@ -1394,7 +1394,7 @@ class TestUserService(BaseTestCase):
             'arclyticstest@gmail.com',
             '',
         )
-        url = generate_url('users.cancel_promotion', token)
+        url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
             resp = client.get(
@@ -1414,7 +1414,7 @@ class TestUserService(BaseTestCase):
             ],
             salt=current_app.config['SECURITY_PASSWORD_SALT']
         )
-        url = generate_url('users.cancel_promotion', token)
+        url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
             resp = client.get(
@@ -1448,7 +1448,7 @@ class TestUserService(BaseTestCase):
         token = generate_promotion_confirmation_token(
             admin.email, user.email
         )
-        url = generate_url('users.cancel_promotion', token)
+        url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
             resp = client.get(
@@ -1468,7 +1468,7 @@ class TestUserService(BaseTestCase):
             'arclyticstestadmin@gmail.com',
             'arclyticstestuser@gmail.com'
         )
-        url = generate_url('users.cancel_promotion', token)
+        url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
             resp = client.get(
@@ -1492,7 +1492,7 @@ class TestUserService(BaseTestCase):
             'arclyticstestadmin@gmail.com',
             'arclyticstestuser@gmail.com'
         )
-        url = generate_url('users.cancel_promotion', token)
+        url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
             resp = client.get(
@@ -1504,66 +1504,66 @@ class TestUserService(BaseTestCase):
             self.assertEquals(resp.status_code, 400)
             self.assertEqual(data['message'], 'Target User does not exist.')
 
-    # def test_verify_promotion_success(self):
-    #     admin = User(
-    #         email='davidmatthews1004@gmail.com',
-    #         first_name='David',
-    #         last_name='Matthews'
-    #     )
-    #     admin.set_password('testing123')
-    #     admin.verified = True
-    #     # admin.is_admin = True
-    #     admin_profile = AdminProfile(
-    #         position='Jedi Master',
-    #         mobile_number=None,
-    #         verified=True
-    #     )
-    #     admin.admin_profile = admin_profile
-    #     admin.save()
-    #
-    #     user = User(
-    #         email='brickmatic479@gmail.com',
-    #         first_name='David',
-    #         last_name='Jnr'
-    #     )
-    #     user.set_password('testing123')
-    #     user.verified = True
-    #     # user.is_admin=True
-    #     user_admin_profile = AdminProfile(
-    #         position='Jedi Knight.',
-    #         mobile_number=None,
-    #         verified=False
-    #     )
-    #     user.admin_profile = user_admin_profile
-    #     user.admin_profile.promoted_by = admin.id
-    #     user.save()
-    #
-    #     token = generate_confirmation_token(user.email)
-    #     url = generate_url('users.verify_promotion', token)
-    #
-    #     with current_app.test_client() as client:
-    #         resp = client.get(
-    #             url,
-    #             content_type='application/json'
-    #         )
-    #
-    #         self.assertEquals(resp.status_code, 302)
-    #         self.assertTrue(resp.headers['Location'])
-    #         redirect_url = 'http://localhost:3000/signin'
-    #         self.assertRedirects(resp, redirect_url)
-    #
-    #         updated_user = User.objects.get(email=user.email)
-    #         self.assertTrue(updated_user.is_admin)
-    #         self.assertEqual(
-    #             updated_user.admin_profile.position, 'Jedi Knight.'
-    #         )
-    #         self.assertEqual(updated_user.admin_profile.mobile_number, None)
-    #         self.assertEqual(updated_user.admin_profile.verified, True)
+    def test_verify_promotion_success(self):
+        admin = User(
+            email='davidmatthews1004@gmail.com',
+            first_name='David',
+            last_name='Matthews'
+        )
+        admin.set_password('testing123')
+        admin.verified = True
+        # admin.is_admin = True
+        admin_profile = AdminProfile(
+            position='Jedi Master',
+            mobile_number=None,
+            verified=True
+        )
+        admin.admin_profile = admin_profile
+        admin.save()
+
+        user = User(
+            email='brickmatic479@gmail.com',
+            first_name='David',
+            last_name='Jnr'
+        )
+        user.set_password('testing123')
+        user.verified = True
+        # user.is_admin=True
+        user_admin_profile = AdminProfile(
+            position='Jedi Knight.',
+            mobile_number=None,
+            verified=False
+        )
+        user.admin_profile = user_admin_profile
+        user.admin_profile.promoted_by = admin.id
+        user.save()
+
+        token = generate_confirmation_token(user.email)
+        url = generate_url('admin.verify_promotion', token)
+
+        with current_app.test_client() as client:
+            resp = client.get(
+                url,
+                content_type='application/json'
+            )
+
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = 'http://localhost:3000/signin'
+            self.assertRedirects(resp, redirect_url)
+
+            updated_user = User.objects.get(email=user.email)
+            self.assertTrue(updated_user.is_admin)
+            self.assertEqual(
+                updated_user.admin_profile.position, 'Jedi Knight.'
+            )
+            self.assertEqual(updated_user.admin_profile.mobile_number, None)
+            self.assertEqual(updated_user.admin_profile.verified, True)
 
     def test_verify_promotion_user_dne(self):
         token = generate_confirmation_token('arclyticstestuser@gmail.com')
         url = generate_url(
-            'users.verify_promotion', token
+            'admin.verify_promotion', token
         )
 
         with current_app.test_client() as client:
@@ -1587,7 +1587,7 @@ class TestUserService(BaseTestCase):
 
         token = generate_confirmation_token(test_user.email)
         url = generate_url(
-            'users.verify_promotion', token
+            'admin.verify_promotion', token
         )
 
         with current_app.test_client() as client:
@@ -1612,7 +1612,7 @@ class TestUserService(BaseTestCase):
 
         token = generate_confirmation_token(test_user.email)
         url = generate_url(
-            'users.verify_promotion', token
+            'admin.verify_promotion', token
         )
 
         with current_app.test_client() as client:
@@ -1881,7 +1881,6 @@ class TestUserService(BaseTestCase):
             )
 
             data = json.loads(resp.data.decode())
-            print(data)
             self.assertEqual(resp.status_code, 201)
             self.assertEqual(data['status'], 'success')
             self.assertEqual(data['message'], 'Email(s) sent.')
@@ -2321,8 +2320,8 @@ class TestUserService(BaseTestCase):
         )
 
         shared_config = SharedSimulation(
-            owner=luke.email,
-            shared_date=datetime.utcnow(),
+            owner_email=luke.email,
+            created_date=datetime.utcnow(),
             configuration=configuration,
             alloy_store=alloy_store
         )
@@ -2333,7 +2332,7 @@ class TestUserService(BaseTestCase):
             shared_config.to_dict()
         )
         config_url = generate_url_with_signature(
-            'users.view_shared_simulation', config_signature
+            'share.view_shared_simulation', config_signature
         )
 
         with self.client:

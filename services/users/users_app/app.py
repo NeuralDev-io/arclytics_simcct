@@ -36,6 +36,8 @@ from users_app.mongodb import MongoSingleton
 from users_app.resources.users import users_blueprint
 from users_app.resources.auth import auth_blueprint
 from users_app.resources.user_alloys import user_alloys_blueprint
+from users_app.resources.last_simulation import last_simulation_blueprint
+from users_app.resources.save_simulation import save_simulation_blueprint
 
 # Instantiate the Mongo object to store a connection
 app_settings = os.getenv('APP_SETTINGS')
@@ -125,6 +127,8 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     app.register_blueprint(users_blueprint)
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(user_alloys_blueprint)
+    app.register_blueprint(last_simulation_blueprint)
+    app.register_blueprint(save_simulation_blueprint)
 
     # Connect to the Mongo Client
     db = init_db(app)

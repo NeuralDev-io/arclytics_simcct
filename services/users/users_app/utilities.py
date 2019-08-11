@@ -75,6 +75,11 @@ class ElementInvalid(Exception):
         super(ElementInvalid, self).__init__(f'{self.prefix} ({message})')
 
 
+class MissingElementError(Exception):
+    def __init__(self, message=''):
+        super(MissingElementError, self).__init__(message)
+
+
 class SimpleUTC(tzinfo):
     def tzname(self, dt: Optional[datetime]) -> Optional[str]:
         return 'UTC'

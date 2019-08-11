@@ -43,7 +43,7 @@ $bg-img: url('../../../assets/background_img-min.png');
 
 .general{
   width: 22rem;
-  margin-bottom: 5rem;
+  margin-bottom: 3.5rem;
   display: flex;
   flex-flow: column;
   justify-content: space-between;
@@ -72,12 +72,37 @@ $bg-img: url('../../../assets/background_img-min.png');
 } 
 
 
+.profilePicture{
+  margin-top: calc(7.5rem - 2.5rem);
+  margin-right: calc(30.71vw);
+  float:right;
+  text-align: center;
+  background: grey;
+  border-color:grey;
+  border-radius: 50%;
+  width: 8.5rem;
+  height: 8.5rem;
+  overflow:hidden;
+}
+
+
 .security{
-  width: 22rem;
-  margin-bottom: 5rem;
+  margin-bottom: 3.5rem;
   display: flex;
   flex-flow: column;
   justify-content: space-between;
+  width: 22.5vw;
+
+  h5{
+    margin-bottom: 1.5rem;
+  }
+
+  
+  .securityRow{
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+  }
 
   .row{
     display: flex;
@@ -109,21 +134,16 @@ $bg-img: url('../../../assets/background_img-min.png');
   }
 }
 
-
-
-.security{
-  width: 22.5vw;
-  display: flex;
-  flex-flow: column;
-  justify-content: space-between;
+.deleteHeader{
+  margin-bottom: 1.5rem;
 }
 
-.securityRow{
-  display: flex;
-  flex-flow: row;
-  justify-content: space-between;
+.deleteWarning{
+  margin-bottom: 1.5rem;
 }
+
 
 .delete{
   color: $r400;
+  cursor: pointer;
 }

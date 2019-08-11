@@ -109,7 +109,7 @@ class LoginPage extends Component {
                       </a>
                     </div>
                     <div className={styles.clear}>
-                      <Button className={styles.signIn} name="SIGN IN" type="submit" length="long" isSubmitting={isSubmitting}>
+                      <Button className={styles.signIn} name="SIGN IN" type="button" length="long" isSubmitting={isSubmitting} onClick={handleSubmit}>
                         SIGN IN
                       </Button>
                       <h6>

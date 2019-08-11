@@ -839,6 +839,13 @@ class TestUserService(BaseTestCase):
         jarjar.save()
 
         token = log_test_user_in(self, jarjar, 'MeesaMakePassword')
+<<<<<<< Updated upstream
+
+        with self.client:
+            resp = self.client.put(
+                '/user/disable',
+                data=json.dumps(''),
+=======
 
         with self.client:
             resp = self.client.put(
@@ -1083,6 +1090,7 @@ class TestUserService(BaseTestCase):
                         'position': 'Red Three'
                     }
                 ),
+>>>>>>> Stashed changes
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
@@ -1132,10 +1140,14 @@ class TestUserService(BaseTestCase):
             )
             data = json.loads(resp.data.decode())
             self.assertEqual(data['status'], 'fail')
+<<<<<<< Updated upstream
+            self.assertEqual(data['message'], 'Invalid payload.')
+=======
             self.assertEqual(resp.status_code, 401)
             self.assertEqual(
                 data['message'], 'The user must verify their email.'
             )
+>>>>>>> Stashed changes
 
     def test_create_admin_already_admin(self):
         """
@@ -1175,7 +1187,40 @@ class TestUserService(BaseTestCase):
 
         token = log_test_user_in(self, aayla, 'KilledByBly')
 
+        token = log_test_user_in(self, r2d2, 'Weeeeeew')
+
         with self.client:
+<<<<<<< Updated upstream
+            resp = self.client.put(
+                '/user/disable',
+                data=json.dumps({'email': 'c3p0@protocol.com'}),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 404)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'User cannot be found.')
+
+    def test_disable_account_no_email(self):
+        """
+        Ensure a disable request is rejected when no email is provided.
+        """
+        vader = User(
+            email='vader@sith.com', first_name='Darth', last_name='Vader'
+        )
+        vader.set_password('AllTooEasy')
+        vader.is_admin = True
+        vader.save()
+
+        token = log_test_user_in(self, vader, 'AllTooEasy')
+
+        with self.client:
+            resp_disable = self.client.put(
+                '/user/disable',
+                data=json.dumps({'invalid_key': 'invalid_data'}),
+=======
             resp = self.client.post(
                 '/admin/create',
                 data=json.dumps(
@@ -1252,6 +1297,7 @@ class TestUserService(BaseTestCase):
             resp = self.client.post(
                 '/admin/create',
                 data=json.dumps({'position': 'Jedi Knight.'}),
+>>>>>>> Stashed changes
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
@@ -1276,6 +1322,368 @@ class TestUserService(BaseTestCase):
             verified=True,
             promoted_by=None
         )
+        quigon.set_password('ShortNegotiations')
+        quigon.save()
+
+        token = log_test_user_in(self, quigon, 'ShortNegotiations')
+
+<<<<<<< Updated upstream
+            data = json.loads(resp_disable.data.decode())
+            self.assertEqual(resp_disable.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'No email provided.')
+
+    def test_disable_account_invalid_email(self):
+        """
+        Ensure a disable request is rejected if an invalid email is provided.
+        """
+        vader = User(
+            email='vader@sith.com', first_name='Darth', last_name='Vader'
+        )
+        vader.set_password('AllTooEasy')
+        vader.is_admin = True
+        vader.save()
+
+        token = log_test_user_in(self, vader, 'AllTooEasy')
+
+        with self.client:
+            resp_disable = self.client.put(
+                '/user/disable',
+                data=json.dumps({'email': 'invalid_email.com'}),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp_disable.data.decode())
+            self.assertEqual(resp_disable.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'Invalid email.')
+
+    def test_use_disable_account(self):
+        """Ensure a disabled user is not able to interact with the system."""
+        grevious = User(
+            first_name='General',
+            last_name='Grevious',
+            email='grevious@separatists.com'
+        )
+        grevious.set_password('YouAreABoldOne')
+        grevious.is_admin = True
+        grevious.save()
+
+        droid = User(
+            first_name='Idiot', last_name='Droid', email='idiot@droids.com'
+        )
+        droid.set_password('ButIJustGotPromoted')
+        droid.save()
+
+        grevious_token = log_test_user_in(self, grevious, 'YouAreABoldOne')
+
+        droid_token = log_test_user_in(self, droid, 'ButIJustGotPromoted')
+
+        with self.client:
+            grevious_disable = self.client.put(
+                '/user/disable',
+                data=json.dumps({'email': 'idiot@droids.com'}),
+                headers={'Authorization': 'Bearer {}'.format(grevious_token)},
+                content_type='application/json'
+            )
+
+            droid_action = self.client.get(
+                '/user',
+                headers={'Authorization': 'Bearer {}'.format(droid_token)},
+                content_type='application/json'
+            )
+
+            disable_data = json.loads(grevious_disable.data.decode())
+            self.assertEqual(grevious_disable.status_code, 200)
+            self.assertEqual(disable_data['status'], 'success')
+            self.assertEqual(
+                disable_data['message'],
+                f'The account for User {droid.email} has been disabled.'
+            )
+
+            action_data = json.loads(droid_action.data.decode())
+            self.assertEqual(droid_action.status_code, 401)
+            self.assertEqual(action_data['status'], 'fail')
+            self.assertEqual(
+                action_data['message'], 'This user does not exist.'
+            )
+
+    def test_create_admin_success(self):
+        """Test create admin is successful"""
+        quigon = User(
+            first_name='Qui-Gon',
+            last_name='Jinn',
+            email="davidmatthews1004@gmail.com"
+        )
+        quigon.is_admin = True
+        quigon.set_password('ShortNegotiations')
+        quigon.save()
+
+        obiwan = User(
+            first_name='Obi-Wan',
+            last_name='Kenobi',
+            email='brickmatic479@gmail.com'
+        )
+        obiwan.verified = True
+        obiwan.set_password('FromACertainPointOfView')
+        obiwan.save()
+
+        token = log_test_user_in(self, quigon, 'ShortNegotiations')
+
+        with self.client:
+            resp = self.client.post(
+                '/admin/create',
+                data=json.dumps(
+                    {
+                        'email': 'brickmatic479@gmail.com',
+                        'position': 'Jedi Knight.'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(resp.status_code, 202)
+
+    def test_create_admin_invalid_email(self):
+        """Test create admin with invalid email is unsuccessful"""
+        luke = User(
+            first_name='Luke',
+            last_name='Skywalker',
+            email="lukeskywalker@gmail.com"
+        )
+        luke.is_admin = True
+        luke.set_password('IAmAJediLikeMyFatherBeforeMe')
+        luke.save()
+
+        biggs = User(
+            first_name='Biggs',
+            last_name='Darklighter',
+            email='invalidbiggs@dot.com'
+        )
+        biggs.set_password('LukePullUp')
+        biggs.save()
+
+        token = log_test_user_in(self, luke, 'IAmAJediLikeMyFatherBeforeMe')
+
+        with self.client:
+            resp = self.client.post(
+                '/admin/create',
+                data=json.dumps(
+                    {
+                        'email': 'invalidbiggs@dot.com',
+                        'position': 'Red Three'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['message'], 'Invalid email.')
+
+    def test_create_unverified_admin(self):
+        """Test create admin from unverified user is unsuccessful"""
+        ackbar = User(
+            first_name='Admiral',
+            last_name='Ackbar',
+            email='admiralackbar@gmail.com'
+        )
+        ackbar.set_password('ITSATRAP')
+        ackbar.is_admin = True
+        ackbar.save()
+
+        jyn = User(
+            first_name='Jyn',
+            last_name='Erso',
+            email='brickmatic479@gmail.com'
+        )
+        jyn.set_password('RebellionsAreBuiltOnHope')
+        jyn.save()
+
+        token = log_test_user_in(self, ackbar, 'ITSATRAP')
+
+        with self.client:
+            resp = self.client.post(
+                '/admin/create',
+                data=json.dumps(
+                    {
+                        'email': 'brickmatic479@gmail.com',
+                        'position': 'Rogue Leader'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(resp.status_code, 401)
+            self.assertEqual(
+                data['message'], 'The user must verify their email.'
+            )
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+    def test_disable_account_dne(self):
+        r2d2 = User(
+            first_name='R2', last_name='D2', email='r2d2@astromech.com'
+        )
+        r2d2.set_password('Weeeeeew')
+        r2d2.is_admin = True
+        r2d2.save()
+=======
+    def test_create_admin_already_admin(self):
+        """
+        Ensure an error comes up when trying to make an Admin an Admin
+        """
+        aayla = User(
+            first_name='Aayla',
+            last_name='Secura',
+            email='aaylasecura@gmail.com'
+        )
+=======
+    def test_create_admin_already_admin(self):
+        """
+        Ensure an error comes up when trying to make an Admin an Admin
+        """
+        aayla = User(
+            first_name='Aayla',
+            last_name='Secura',
+            email='aaylasecura@gmail.com'
+        )
+>>>>>>> ARC-105
+        aayla.set_password('KilledByBly')
+        aayla.verified = True
+        aayla.is_admin = True
+        aayla.save()
+
+        luminara = User(
+            first_name='Luminara',
+            last_name='Unduli',
+            email='luminaraunduli@gmail.com'
+        )
+        luminara.set_password('DiesOffscreen')
+        luminara.verified = True
+        luminara.is_admin = True
+        luminara.save()
+
+        token = log_test_user_in(self, aayla, 'KilledByBly')
+<<<<<<< HEAD
+>>>>>>> ARC-105
+=======
+>>>>>>> ARC-105
+
+        with self.client:
+            resp = self.client.post(
+                '/admin/create',
+                data=json.dumps(
+                    {
+                        'email': 'luminaraunduli@gmail.com',
+                        'position': 'Jedi Master'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(
+                data['message'], 'User is already an Administrator.'
+            )
+
+    def test_create_admin_no_data(self):
+        """
+        Ensure a create admin request with no request body is rejected.
+        """
+        quigon = User(
+            first_name='Qui-Gon',
+            last_name='Jinn',
+            email="davidmatthews1004@gmail.com"
+        )
+        quigon.is_admin = True
+        quigon.set_password('ShortNegotiations')
+        quigon.save()
+
+        token = log_test_user_in(self, quigon, 'ShortNegotiations')
+
+        with self.client:
+            resp = self.client.post(
+                '/admin/create',
+                data=json.dumps(''),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['message'], 'Invalid payload.')
+<<<<<<< HEAD
+
+    def test_create_admin_no_email(self):
+        """
+        Ensure a create admin request with no email is rejected.
+        """
+        quigon = User(
+            first_name='Qui-Gon',
+            last_name='Jinn',
+            email="davidmatthews1004@gmail.com"
+        )
+        quigon.is_admin = True
+        quigon.set_password('ShortNegotiations')
+        quigon.save()
+
+        token = log_test_user_in(self, quigon, 'ShortNegotiations')
+
+        with self.client:
+            resp = self.client.post(
+<<<<<<< HEAD
+                '/disableaccount',
+                data=json.dumps({'email': 'c3p0@protocol.com'}),
+=======
+=======
+
+    def test_create_admin_no_email(self):
+        """
+        Ensure a create admin request with no email is rejected.
+        """
+        quigon = User(
+            first_name='Qui-Gon',
+            last_name='Jinn',
+            email="davidmatthews1004@gmail.com"
+        )
+        quigon.is_admin = True
+        quigon.set_password('ShortNegotiations')
+        quigon.save()
+
+        token = log_test_user_in(self, quigon, 'ShortNegotiations')
+
+        with self.client:
+            resp = self.client.post(
+>>>>>>> ARC-105
+                '/admin/create',
+                data=json.dumps({'position': 'Jedi Knight.'}),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['message'], 'No email provided.')
+
+    def test_create_admin_no_position(self):
+        """
+        Ensure a create admin request with no position is rejected.
+        """
+        quigon = User(
+            first_name='Qui-Gon',
+            last_name='Jinn',
+            email="davidmatthews1004@gmail.com"
+        )
+        quigon.is_admin = True
         quigon.set_password('ShortNegotiations')
         quigon.save()
 
@@ -1330,6 +1738,7 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(resp.status_code, 404)
+<<<<<<< HEAD
             self.assertEqual(data['message'], 'User does not exist.')
 
     def test_cancel_promotion_success(self):

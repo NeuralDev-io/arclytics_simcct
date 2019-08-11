@@ -20,7 +20,7 @@ from uuid import uuid4
 from pathlib import Path
 
 from bson import ObjectId
-from flask import session, current_app
+from flask import current_app
 
 import settings
 from tests.test_api_base import BaseTestCase

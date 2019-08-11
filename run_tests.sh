@@ -59,6 +59,7 @@ all() {
 
 ##### Check for positional arguments
 usage() {
+   # shellcheck disable=SC1078
    echo """Usage: run_tests.sh [OPTIONS] COMMAND
 
 A CLI script for running unit tests on the Arclytics Sim Docker Orchestration.
@@ -74,7 +75,7 @@ Commands:
   client      Run the client-side unit tests.
   users       Run only the users tests.
   simcct      Run only the simcct tests.
-   """
+  """
 }
 
 run() {

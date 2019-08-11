@@ -16,8 +16,10 @@ import unittest
 from copy import deepcopy
 from pathlib import Path
 
+from bson import ObjectId
 from flask import json
 from flask import current_app as app
+from mongoengine import DoesNotExist
 
 import settings
 from tests.test_api_base import BaseTestCase
@@ -76,7 +78,7 @@ class TestSaveSimulationService(BaseTestCase):
             token = self.login(client)
 
             res = client.post(
-                '/user/simulation/save',
+                '/user/simulation',
                 data=json.dumps({}),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
@@ -92,7 +94,7 @@ class TestSaveSimulationService(BaseTestCase):
             token = self.login(client)
 
             res = client.post(
-                '/user/simulation/save',
+                '/user/simulation',
                 data=json.dumps({'alloy_store': ALLOY_STORE}),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
@@ -110,7 +112,7 @@ class TestSaveSimulationService(BaseTestCase):
             token = self.login(client)
 
             res = client.post(
-                '/user/simulation/save',
+                '/user/simulation',
                 data=json.dumps({'configurations': CONFIGS}),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
@@ -123,7 +125,7 @@ class TestSaveSimulationService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
-    def test_save_user_sim_invalid_alloy(self):
+    def test_save_user_sim_invalid_missing_alloy(self):
         with app.test_client() as client:
             token = self.login(client)
 
@@ -131,7 +133,7 @@ class TestSaveSimulationService(BaseTestCase):
             del alloy_store['alloys']['parent']['compositions'][-1]
 
             res = client.post(
-                '/user/simulation/save',
+                '/user/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -148,12 +150,45 @@ class TestSaveSimulationService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
+    def test_save_user_sim_invalid_bad_alloy(self):
+        with app.test_client() as client:
+            token = self.login(client)
+
+            alloy_store = deepcopy(ALLOY_STORE)
+            alloy_store['alloys']['parent']['compositions'].append(
+                {
+                    'symbol': 'Vb',
+                    'weight': 0.0
+                }
+            )
+
+            res = client.post(
+                '/user/simulation',
+                data=json.dumps(
+                    {
+                        'configurations': CONFIGS,
+                        'alloy_store': alloy_store
+                    }
+                ),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            err = (
+                'ValidationError (Element) (Field does not match a valid '
+                'element symbol in the Periodic Table: ["symbol"])'
+            )
+            self.assertEqual(data['error'], err)
+            self.assertEqual(data['message'], 'Invalid element symbol error.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
     def test_save_user_sim_success(self):
         with app.test_client() as client:
             token = self.login(client)
 
             res = client.post(
-                '/user/simulation/save',
+                '/user/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -185,6 +220,169 @@ class TestSaveSimulationService(BaseTestCase):
             self.assertDictEqual(
                 saved_inst.alloy_store.to_dict(), expected_alloy
             )
+
+    def test_get_empty_sim_list(self):
+        with app.test_client() as client:
+            token = self.login(client)
+
+            res = client.get(
+                '/user/simulation',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'No saved simulations found.')
+            self.assert404(res)
+
+    def test_get_saved_sim_list(self):
+        with app.test_client() as client:
+            token = self.login(client)
+            configs2 = deepcopy(CONFIGS)
+            alloy_store2 = deepcopy(ALLOY_STORE)
+            configs2['method'] = 'Kirkaldy83'
+            alloy_store2['alloys']['parent']['compositions'][0]['weight'] = 0.5
+
+            saved_sim1 = SavedSimulation(
+                user=self.user,
+                configurations=Configuration(**CONFIGS),
+                alloy_store=AlloyStore(**ALLOY_STORE)
+            ).save()
+            saved_sim2 = SavedSimulation(
+                user=self.user,
+                configurations=Configuration(**configs2),
+                alloy_store=AlloyStore(**alloy_store2)
+            ).save()
+
+            res = client.get(
+                '/user/simulation',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'success')
+            self.assert200(res)
+            self.assertTrue(data.get('data', False))
+            self.assertDictEqual(
+                saved_sim1.configurations.to_dict(),
+                data['data'][0]['configurations']
+            )
+            self.assertDictEqual(
+                saved_sim1.alloy_store.to_dict(),
+                data['data'][0]['alloy_store']
+            )
+            self.assertDictEqual(
+                saved_sim2.configurations.to_dict(),
+                data['data'][1]['configurations']
+            )
+            self.assertDictEqual(
+                saved_sim2.alloy_store.to_dict(),
+                data['data'][1]['alloy_store']
+            )
+
+    def test_get_saved_sim_invalid_id(self):
+        with app.test_client() as client:
+            token = self.login(client)
+
+            res = client.get(
+                '/user/simulation/BadObjectId',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'Invalid ObjectId.')
+            self.assert400(res)
+
+    def test_get_saved_sim_empty(self):
+        with app.test_client() as client:
+            token = self.login(client)
+            sim_id = ObjectId()
+
+            res = client.get(
+                f'/user/simulation/{sim_id}',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'Does not exist.')
+            self.assert404(res)
+
+    def test_get_saved_sim_detail_success(self):
+        with app.test_client() as client:
+            token = self.login(client)
+            saved_sim = SavedSimulation(
+                user=self.user,
+                configurations=Configuration(**CONFIGS),
+                alloy_store=AlloyStore(**ALLOY_STORE)
+            ).save()
+
+            res = client.get(
+                f'/user/simulation/{saved_sim.id}',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'success')
+            self.assertTrue(data.get('data', False))
+            self.assertDictEqual(
+                saved_sim.configurations.to_dict(),
+                data['data']['configurations']
+            )
+            self.assertDictEqual(
+                saved_sim.alloy_store.to_dict(), data['data']['alloy_store']
+            )
+            self.assert200(res)
+
+    def test_delete_saved_sim_invalid_id(self):
+        with app.test_client() as client:
+            token = self.login(client)
+
+            res = client.delete(
+                '/user/simulation/BadObjectId',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'Invalid ObjectId.')
+            self.assert400(res)
+
+    def test_delete_saved_sim_empty(self):
+        with app.test_client() as client:
+            token = self.login(client)
+            sim_id = ObjectId()
+
+            res = client.delete(
+                f'/user/simulation/{sim_id}',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'Does not exist.')
+            self.assert404(res)
+
+    def test_delete_saved_sim_detail_success(self):
+        with app.test_client() as client:
+            token = self.login(client)
+            saved_sim = SavedSimulation(
+                user=self.user,
+                configurations=Configuration(**CONFIGS),
+                alloy_store=AlloyStore(**ALLOY_STORE)
+            ).save()
+
+            res = client.delete(
+                f'/user/simulation/{saved_sim.id}',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 202)
+            with self.assertRaises(DoesNotExist):
+                SavedSimulation.objects.get(id=saved_sim.id)
 
 
 if __name__ == '__main__':

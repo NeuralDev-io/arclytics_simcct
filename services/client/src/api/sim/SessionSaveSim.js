@@ -17,7 +17,7 @@ const usersServer = process.env.USERS_HOST
 
 // eslint-disable-next-line import/prefer-default-export
 export const postSaveSimulation = () => {
-  fetch(`http://${usersServer}/users/simulation`, {
+  fetch('http://localhost:8000/user/simulation', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

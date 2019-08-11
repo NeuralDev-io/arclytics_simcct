@@ -11,7 +11,7 @@ const Modal = (props) =>{
         clicked
     } = props
     
-    const classname = `${styles.default} ${show ? styles.show: ''} ${className || ''}`
+    const classname = `${className || ''} ${styles.default} ${show ? styles.show: ''} `
 
     return(
         <div>

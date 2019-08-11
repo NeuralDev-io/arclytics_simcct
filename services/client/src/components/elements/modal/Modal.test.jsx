@@ -1,7 +1,7 @@
 import React from 'react'
 import { configure, shallow} from 'enzyme'
 
-import Modal from '../elements/modal'
+import Modal from '.'
 
 // TODO: (arvy@neuraldev.io) -- might add more complex tests later on. 
 

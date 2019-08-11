@@ -1,19 +1,12 @@
 @import '../../../styles/colors_light';
 
-.default {
-  // disable default button styling
+.base {
   border: none;
   outline: none;
-
-  // default buton style
-  background-color: $ag500;
-  border: 2px solid $ag500;
-  color: $n0;
   width: 7.5rem;
   height: 2.5rem;
   padding: 0 .75rem;
   border-radius: 6px;
-  box-shadow: $base-shadow;
   transition: ease-in-out .4s;
   cursor: pointer;
 
@@ -21,6 +14,15 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
+}
+
+.default {
+  @extend .base;
+  // default buton style
+  background-color: $ag500;
+  border: 2px solid $ag500;
+  color: $n0;
+  box-shadow: $base-shadow;
 
   &:hover {
     background-color: adjust-color($color: $ag500, $saturation: 20%);
@@ -39,10 +41,33 @@
     width: 1rem;
     margin-right: .5rem;
   }
+
+  &.dangerous {
+    background-color: $r400;
+    border-color: $r400;
+  
+    &:hover {
+      background-color: adjust-color($color: $r400, $saturation: 20%);
+      border-color: adjust-color($color: $r400, $saturation: 20%);
+      box-shadow: $shadow-up;
+    }
+  }
+  
+  &.warning {
+    background-color: $o400;
+    border-color: $o400;
+    color: $n900;
+  
+    &:hover {
+      background-color: adjust-color($color: $o400, $saturation: 20%);
+      border-color: adjust-color($color: $o400, $saturation: 20%);
+      box-shadow: $shadow-up;
+    }
+  }
 }
 
 .outline {
-  @extend .default;
+  @extend .base;
   background-color: transparent;
   color: $ag500;
   border: 2px solid $ag500;
@@ -55,15 +80,45 @@
     color: $n0;
   }
 
+  &.dangerous {
+    border-color: $r400;
+    color: $r400;
+  
+    &:hover {
+      background-color: adjust-color($color: $r400, $saturation: 20%);
+      color: $n0;
+      border-color: adjust-color($color: $r400, $saturation: 20%);
+      box-shadow: none;
+    }
+  }
+  
+  &.warning {
+    border-color: $o400;
+    color: $n900;
+  
+    &:hover {
+      background-color: adjust-color($color: $o400, $saturation: 20%);
+      color: $n0;
+      border-color: adjust-color($color: $o400, $saturation: 20%);
+      box-shadow: none;
+    }
+  }
+
   &.disabled {
     background-color: transparent;
     border-color: $n100;
     color: $n100;
   }
+
+  & > .icon {
+    height: 1rem;
+    width: 1rem;
+    margin-right: .5rem;
+  }
 }
 
 .text {
-  @extend .default;
+  @extend .base;
   background-color: transparent;
   color: $ag500;
   border: none;
@@ -74,35 +129,35 @@
     box-shadow: none;
   }
 
+  &.dangerous {
+    color: $r400;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+  
+    &:hover {
+      background-color: rgba($color: $r500, $alpha: .1);
+    }
+  }
+  
+  &.warning {
+    color: $o400;
+  
+    &:hover {
+      background-color: rgba($color: $o500, $alpha: .1);
+    }
+  }
+
   &.disabled {
     background-color: transparent;
     border: none;
     color: $n100; 
   }
-}
 
-.dangerous {
-  @extend .default;
-  background-color: $r400;
-  border-color: $r400;
-
-  &:hover {
-    background-color: adjust-color($color: $r400, $saturation: 20%);
-    border-color: adjust-color($color: $r400, $saturation: 20%);
-    box-shadow: $shadow-up;
-  }
-}
-
-.warning {
-  @extend .default;
-  background-color: $o400;
-  border-color: $o400;
-  color: $n900;
-
-  &:hover {
-    background-color: adjust-color($color: $o400, $saturation: 20%);
-    border-color: adjust-color($color: $o400, $saturation: 20%);
-    box-shadow: $shadow-up;
+  & > .icon {
+    height: 1rem;
+    width: 1rem;
+    margin-right: .5rem;
   }
 }
 

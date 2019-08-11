@@ -299,7 +299,18 @@ class SimulationPage extends Component {
   }
 
   saveCurrentSimulation = () => {
-    postSaveSimulation()
+    const { configurations, alloys } = this.state
+    console.log(configurations)
+    const alloyStore = {
+      alloy_option: alloys.alloyOption,
+      alloys: {
+        parent: alloys.parent,
+        weld: alloys.weld,
+        mix: alloys.mix,
+      },
+    }
+    console.log(alloyStore)
+    postSaveSimulation(configurations, alloyStore)
   }
 
   render() {

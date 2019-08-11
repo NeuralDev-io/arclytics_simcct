@@ -102,12 +102,14 @@ services:
     image: arc_sim_mongo:1.0
     restart: always
     container_name: arc-mongo
+    # volumes:
+    #  - ./services/db/data/db:/data/db
     ports:
       - 27017:27017
     expose:
       - 27017
     environment:
-      - MONGO_DATA_DIR=/usr/data/db
+      - MONGO_DATA_DIR=/usr/data/dbz
       - MONGO_LOG_DIR=/dev/null
     networks:
       - host

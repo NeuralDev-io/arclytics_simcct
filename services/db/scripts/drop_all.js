@@ -1,4 +1,4 @@
 
-conn = new Mongo();
-db.adminCommand('listDatabases');
-db = conn.getDB('arc');
+// conn = new Mongo();
+// db.adminCommand('listDatabases');
+// db = conn.getDB('arc');

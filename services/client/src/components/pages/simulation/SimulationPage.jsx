@@ -126,7 +126,7 @@ class SimulationPage extends Component {
       // update state
       this.setState((prevState) => {
         const idx = prevState.alloys[nameArr[0]].compositions.findIndex(
-          elem => elem.symbol === nameArr[1]
+          elem => elem.symbol === nameArr[1],
         )
         const newComp = [...prevState.alloys[nameArr[0]].compositions]
         if (idx !== undefined) {
@@ -310,7 +310,7 @@ class SimulationPage extends Component {
     return (
       <React.Fragment>
         <AppBar active="sim" redirect={history.push} />
-        <ProfileQuestions/>
+        <ProfileQuestions />
         <div className={styles.compSidebar}>
           <CompSidebar
             values={alloys}
@@ -408,7 +408,7 @@ SimulationPage.propTypes = {
     })),
   })).isRequired,
   runSimConnect: PropTypes.func.isRequired,
-  history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,  
+  history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
 }
 
 const mapStateToProps = state => ({

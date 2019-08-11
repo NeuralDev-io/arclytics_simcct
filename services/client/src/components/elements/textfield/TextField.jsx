@@ -49,7 +49,7 @@ class TextField extends Component {
 
   handleChange = (e) => {
     const { onChange } = this.props
-    this.validate(e.target.value)
+    // this.validate(e.target.value)
     onChange(e.target.value)
   }
 

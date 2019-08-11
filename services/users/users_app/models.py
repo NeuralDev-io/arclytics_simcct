@@ -230,11 +230,11 @@ class AlloyType(EmbeddedDocument):
     mix = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
 
     def to_dict(self):
-        return {
-            'parent': self.parent.to_dict(),
-            'weld': self.weld.to_dict(),
-            'mix': self.mix.to_dict()
-        }
+        data = {}
+        if self.parent is not None: data['parent'] = self.parent.to_dict()
+        if self.weld is not None: data['weld'] = self.weld.to_dict()
+        if self.mix is not None: data['mix'] = self.mix.to_dict()
+        return data
 
 
 class AlloyStore(EmbeddedDocument):
@@ -482,11 +482,21 @@ class User(Document):
         return self.to_json()
 
 
-class SharedConfiguration(Document):
+class SharedSimulation(Document):
     owner = EmailField(required=True)
-    shared_date = DateTimeField()
-    configuration = EmbeddedDocumentField(document_type=Configuration)
-    # alloy_store = EmbeddedDocumentField(document_type=AlloyStore)
+    shared_date = DateTimeField(default=datetime.utcnow(), required=True)
+    configuration = EmbeddedDocumentField(
+        document_type=Configuration, required=True
+    )
+    alloy_store = EmbeddedDocumentField(document_type=AlloyStore, required=True)
+
+    def to_dict(self):
+        return {
+            # 'owner': self.owner,
+            # 'shared_date': str(self.shared_date),
+            'configuration': self.configuration.to_dict(),
+            'alloy_store': self.alloy_store.to_dict()
+        }
 
 
 

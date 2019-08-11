@@ -87,8 +87,6 @@ def validate_comp_elements(alloy_comp: list) -> Tuple[bool, list]:
 
 
 # ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
-
-
 class UserProfile(EmbeddedDocument):
     # Not having this for now until we can figure out where to store the photos
     # TODO(andrew@neuraldev.io): Uncomment Pillow dependencies Dockerfile to use
@@ -156,6 +154,11 @@ class AdminProfile(EmbeddedDocument):
             'mobile_number': self.mobile_number,
             'verified': self.verified
         }
+
+
+# TODO(andrew@neuraldev.io): Add these
+class SimulationResults(EmbeddedDocument):
+    pass
 
 
 class Configuration(EmbeddedDocument):
@@ -294,19 +297,36 @@ class AlloyStore(EmbeddedDocument):
         }
 
 
+class SavedSimulation(EmbeddedDocument):
+    oid = ObjectIdField(default=lambda: ObjectId(), primary_key=True)
+    configuration = EmbeddedDocumentField(
+        document_type=Configuration, required=True, null=False
+    )
+    alloy_store = EmbeddedDocumentField(
+        document_type=AlloyStore, required=True, null=False
+    )
+    # results = EmbeddedDocumentField(
+    #     document_type=SimulationResults, required=True, null=False
+    # )
+    created = DateTimeField(default=datetime.utcnow(), null=False)
+
+
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
 class User(Document):
+    # The following fields describe the attributes of a user
     email = EmailField(required=True, unique=True)
     password = StringField(
         default=None, max_length=64, null=False, min_length=6
     )
     first_name = StringField(required=True, max_length=255)
     last_name = StringField(required=True, max_length=255)
-    profile = EmbeddedDocumentField(document_type=UserProfile)
+    profile = EmbeddedDocumentField(document_type=UserProfile, default=None)
     admin_profile = EmbeddedDocumentField(
         document_type=AdminProfile, default=None
     )
 
+    # The following fields describe the simulation properties saved to a users
+    # Document for later retrieval
     last_configuration = EmbeddedDocumentField(
         document_type=Configuration, default=None
     )
@@ -315,9 +335,9 @@ class User(Document):
         document_type=AlloyStore, default=None
     )
 
-    # TODO(andrew@neuraldev.io -- Sprint 6): Make these
-    # saved_configurations = EmbeddedDocumentListField(
-    # document_type=Configurations)
+    saved_simulations = EmbeddedDocumentListField(
+        document_type=SavedSimulation
+    )
     saved_alloys = EmbeddedDocumentListField(document_type=Alloy)
 
     # Some rather useful metadata information that's not core to the

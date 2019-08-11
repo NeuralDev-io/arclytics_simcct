@@ -75,27 +75,27 @@ class TestSimCCTSession(BaseTestCase):
 
         self.assertNotEqual(petey_res, tony_res)
 
-    # def test_register_session_invalid_json_no_id(self):
-    #     tony = User(
-    #         email='tony@avengers.io', first_name='Tony', last_name='Stark'
-    #     )
-    #     tony.set_password('IAmIronMan')
-    #     tony.save()
-    #
-    #     token = tony.encode_auth_token(tony.id)
-    #
-    #     with self.assertRaises(SessionValidationError):
-    #         res = async_register_session("", str(token))
-    #
-    # def test_register_session_invalid_json_no_token(self):
-    #     tony = User(
-    #         email='tony@avengers.io', first_name='Tony', last_name='Stark'
-    #     )
-    #     tony.set_password('IAmIronMan')
-    #     tony.save()
-    #
-    #     with self.assertRaises(SessionValidationError):
-    #         res = async_register_session(tony, "")
+    def test_register_session_invalid_json_no_id(self):
+        tony = User(
+            email='tony@avengers.io', first_name='Tony', last_name='Stark'
+        )
+        tony.set_password('IAmIronMan')
+        tony.save()
+
+        token = tony.encode_auth_token(tony.id)
+
+        with self.assertRaises(SessionValidationError):
+            res = register_session("", str(token))
+
+    def test_register_session_invalid_json_no_token(self):
+        tony = User(
+            email='tony@avengers.io', first_name='Tony', last_name='Stark'
+        )
+        tony.set_password('IAmIronMan')
+        tony.save()
+
+        with self.assertRaises(SessionValidationError):
+            res = register_session(tony, "")
 
     def test_register_session_valid_configs(self):
         jane = User(

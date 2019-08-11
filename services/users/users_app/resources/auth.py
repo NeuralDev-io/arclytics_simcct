@@ -305,6 +305,17 @@ def async_register_session(user: User = None,
 
 
 def register_session(user: User = None, auth_token: str = None):
+    """We make an synchronous method to allow registering the user to a session
+    during login. This method allows the login endpoint to retrieve the session
+    key from the `/session/login` endpoint on the `simcct` server.
+
+    Args:
+        user: the `users_app.models.User` to create a session for.
+        auth_token: a stringified type of the User's JWT token.
+
+    Returns:
+        The response from the simcct server.
+    """
     # We now need to send a request to the simcct server to initiate
     # a session as a server-side store to save the last compositions/configs
     simcct_host = os.environ.get('SIMCCT_HOST', None)

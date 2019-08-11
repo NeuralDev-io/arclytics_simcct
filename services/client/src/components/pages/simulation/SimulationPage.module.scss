@@ -29,6 +29,11 @@
     h3 {
       margin-right: 1rem;
     }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: row;
+    }
   }
 
   .config {

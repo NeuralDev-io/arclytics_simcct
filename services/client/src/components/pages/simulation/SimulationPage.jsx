@@ -19,6 +19,7 @@ import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
 import Button from '../../elements/button'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
+import ProfileQuestions from '../../moleisms/profile-questions'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { TTT, CCT } from '../../moleisms/charts'
 import {
@@ -95,42 +96,24 @@ class SimulationPage extends Component {
         },
       }))
     } else if (name === 'parent' || name === 'weld') { // alloy composition is changed
-      if (value === null) {
-        // clear all elements
-        this.setState(prevState => ({
-          alloys: {
-            ...prevState.alloys,
-            parent: {
-              name: '',
-              compositions: [],
-            },
-          },
-        }))
-      } else {
-        // find composition
-        const alloy = {
-          name: value.value,
-          compositions: [
-            ...alloyList[alloyList.findIndex(a => a.name === value.value)].compositions,
-          ],
-        }
-        if (name === 'parent') {
-          // set to state
-          this.setState(prevState => ({
-            alloys: {
-              ...prevState.alloys,
-              [name]: alloy,
-            },
-          }))
-          // update session store on the server
-          const { alloys } = this.state
-          if (sessionStoreInit) {
-            updateComp(alloys.alloyOption, name, alloy)
-          } else {
-            initComp(alloys.alloyOption, name, alloy)
-          }
-        }
+      // find composition
+      const alloy = {
+        name: value.value,
+        compositions: [
+          ...alloyList[alloyList.findIndex(a => a.name === value.value)].compositions,
+        ],
       }
+      // set to state
+      this.setState(prevState => ({
+        alloys: {
+          ...prevState.alloys,
+          [name]: alloy,
+        },
+      }))
+      // update session store on the server
+      const { alloys } = this.state
+      if (sessionStoreInit) updateComp(alloys.alloyOption, name, alloy)
+      else initComp(alloys.alloyOption, name, alloy)
     } else if (name === 'dilution') {
       this.setState(prevState => ({
         alloys: {
@@ -327,6 +310,7 @@ class SimulationPage extends Component {
     return (
       <React.Fragment>
         <AppBar active="sim" redirect={history.push} />
+        <ProfileQuestions/>
         <div className={styles.compSidebar}>
           <CompSidebar
             values={alloys}
@@ -348,11 +332,10 @@ class SimulationPage extends Component {
               onClick={() => this.setState(prevState => ({
                 displayConfig: !prevState.displayConfig,
               }))}
-              IconComponent={props => (
-                displayConfig
-                  ? <ChevronUpIcon {...props} />
-                  : <ChevronDownIcon {...props} />
-              )}
+              IconComponent={(props) => {
+                if (displayConfig) return <ChevronUpIcon {...props} />
+                return <ChevronDownIcon {...props} />
+              }}
             >
               {displayConfig ? 'Collapse' : 'Expand'}
             </Button>

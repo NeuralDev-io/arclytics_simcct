@@ -29,7 +29,7 @@ from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
     DateTimeField, EmbeddedDocumentField, IntField, FloatField, DO_NOTHING,
     EmbeddedDocumentListField, queryset_manager, ObjectIdField, ReferenceField,
-    ValidationError
+    ValidationError, ListField
 )
 from flask import current_app, json
 
@@ -596,9 +596,6 @@ class SavedSimulation(Document):
 
     meta = {'collection': 'saved_simulations'}
 
-    # def clean(self):
-    #     pass
-
     def to_dict(self):
         return {
             '_id': str(self.id),
@@ -607,15 +604,27 @@ class SavedSimulation(Document):
             'created': str(self.created.isoformat())
         }
 
-    # def to_json(self, *args, **kwargs):
-    #     pass
-
     def __str__(self):
         return self.to_json()
 
 
-class SharedConfiguration(Document):
-    owner = EmailField(required=True)
-    shared_date = DateTimeField()
-    configuration = EmbeddedDocumentField(document_type=Configuration)
-    # alloy_store = EmbeddedDocumentField(document_type=AlloyStore)
+class SharedSimulation(Document):
+    owner_email = EmailField(required=True)
+    created_date = DateTimeField(default=datetime.utcnow(), required=True)
+    configuration = EmbeddedDocumentField(
+        document_type=Configuration, required=True
+    )
+    alloy_store = EmbeddedDocumentField(
+        document_type=AlloyStore, required=True
+    )
+
+    # add results
+    # add views but dont send in dict
+
+    def to_dict(self):
+        return {
+            'owner_email': self.owner_email,
+            'created_date': str(self.created_date),
+            'configuration': self.configuration.to_dict(),
+            'alloy_store': self.alloy_store.to_dict()
+        }

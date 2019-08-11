@@ -8,14 +8,13 @@
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
 
-__author__ = 'Andrew Che <@codeninja55>'
-__copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
+__author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
+__license__ = 'TBA'
+__version__ = '1.0.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = '{dev_status}'
+__status__ = 'development'
 __date__ = '2019.08.11'
 """save_simulation.py: 
 
@@ -23,9 +22,10 @@ This module defines the Resource for saving and retrieving a user's saved
 simulation to the their personal Document.
 """
 
+from bson import ObjectId
 from flask import request, Blueprint, json
 from flask_restful import Resource
-from mongoengine import ValidationError, FieldDoesNotExist
+from mongoengine import ValidationError, FieldDoesNotExist, DoesNotExist
 
 from users_app.extensions import api
 from users_app.middleware import authenticate
@@ -45,6 +45,17 @@ class SaveSimulationList(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self, user_id):
+        """The endpoint that exposes a POST HTTP method to created a saved
+        simulation in the saved_simulation collection with reference to the
+        `user_id` which is decoded from Authorization JWT by the middleware.
+
+        Args:
+            user_id: a valid user ObjectId passed from the middleware.
+
+        Returns:
+            A valid HTTP Response with a dict and a HTTP status code.
+        """
+
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
         post_data = request.get_json()
@@ -113,10 +124,33 @@ class SaveSimulationList(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self, user_id):
-        response = {'status': 'fail', 'message': 'Invalid payload.'}
+        """The endpoint that exposes a GET HTTP method to retrieve a list of
+        saved simulations with reference to the `user_id` passed in the params
+        from the saved_simulation collection.
 
-        # TODO(andrew@neuraldev.io): Add the graphs also
-        pass
+        Args:
+            user_id: a valid user ObjectId passed from the middleware.
+
+        Returns:
+            A valid HTTP Response with a dict and a HTTP status code.
+        """
+
+        # First we get the queryset via the in-built filter and exclude the
+        # user reference which would return a user id.
+        qs = SavedSimulation.objects(user=user_id).exclude('user')
+
+        if qs.count() == 0:
+            response = {
+                'status': 'fail',
+                'message': 'No saved simulations found.'
+            }
+            return response, 404
+
+        # We convert it to a list because the custom to_dict() method in the
+        # Document implementation provides a better date representation and to
+        # also maintain consistency with other endpoints that return _id.
+        saved_sim_list = [inst.to_dict() for inst in qs]
+        return {'status': 'success', 'data': saved_sim_list}, 200
 
 
 class SaveSimulationDetail(Resource):
@@ -124,12 +158,50 @@ class SaveSimulationDetail(Resource):
     method_decorators = {'get': [authenticate], 'delete': [authenticate]}
 
     # noinspection PyMethodMayBeStatic
-    def get(self, sim_id, user_id):
-        response = {'status': 'fail'}
+    def get(self, user_id, sim_id):
+        """The endpoint that exposes a GET HTTP method to retrieve a saved
+        simulation detail from the saved_simulation collection.
 
-        # TODO(andrew@neuraldev.io): Add the graphs also
-        pass
+        Args:
+            user_id: a valid user ObjectId passed from the middleware.
+            sim_id: a valid SavedSimulation ObjectId of the document.
+
+        Returns:
+            A valid HTTP Response with a dict and a HTTP status code.
+        """
+
+        if not ObjectId.is_valid(sim_id):
+            return {'status': 'fail', 'message': 'Invalid ObjectId.'}, 400
+
+        try:
+            qs = SavedSimulation.objects.get(id=sim_id)
+        except DoesNotExist as e:
+            return {'status': 'fail', 'message': 'Does not exist.'}, 404
+        return {'status': 'success', 'data': qs.to_dict()}, 200
+
+    # noinspection PyMethodMayBeStatic
+    def delete(self, user_id, sim_id):
+        """The endpoint that exposes a DELETE HTTP method to delete a saved
+        simulation from the saved_simulation collection.
+
+        Args:
+            user_id: a valid user ObjectId passed from the middleware.
+            sim_id: a valid SavedSimulation ObjectId of the document.
+
+        Returns:
+            A valid HTTP Response with a dict and a HTTP status code.
+        """
+        if not ObjectId.is_valid(sim_id):
+            return {'status': 'fail', 'message': 'Invalid ObjectId.'}, 400
+
+        try:
+            qs = SavedSimulation.objects.get(id=sim_id)
+        except DoesNotExist as e:
+            return {'status': 'fail', 'message': 'Does not exist.'}, 404
+
+        qs.delete()
+        return {'status': 'success'}, 202
 
 
-api.add_resource(SaveSimulationList, '/user/simulation/save')
+api.add_resource(SaveSimulationList, '/user/simulation')
 api.add_resource(SaveSimulationDetail, '/user/simulation/<sim_id>')

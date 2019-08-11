@@ -24,8 +24,9 @@ from typing import Union
 
 from flask import url_for
 from flask import current_app as app
-from itsdangerous import URLSafeTimedSerializer
+from itsdangerous import URLSafeTimedSerializer, JSONWebSignatureSerializer
 from itsdangerous.exc import BadSignature, SignatureExpired
+from users_app.models import SharedSimulation
 
 
 class URLTokenError(Exception):
@@ -73,9 +74,33 @@ def generate_url(endpoint, token):
     return url_for(endpoint, token=token, _external=True)
 
 
+def generate_url_with_signature(endpoint, signature):
+    return url_for(endpoint, signature=signature, _external=True)
+
+
 def generate_promotion_confirmation_token(admin_email: str, user_email: str
                                           ) -> Union[bool, list]:
     serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     return serializer.dumps(
         [admin_email, user_email], salt=app.config['SECURITY_PASSWORD_SALT']
     )
+
+
+def generate_shared_simulation_signature(sim_data: dict) -> Union[bool, list]:
+    serializer = JSONWebSignatureSerializer(app.config['SECRET_KEY'])
+    return serializer.dumps(
+        sim_data, salt=app.config['SECURITY_PASSWORD_SALT']
+    )
+
+
+def confirm_signature(signature) -> Union[bool, dict]:
+    serializer = JSONWebSignatureSerializer(app.config['SECRET_KEY'])
+    try:
+        sim_data = serializer.loads(
+            signature, salt=app.config['SECURITY_PASSWORD_SALT']
+        )
+    except BadSignature as e:
+        raise URLTokenError('Bad signature.')
+    except Exception as e:
+        raise URLTokenError('Token error.')
+    return sim_data

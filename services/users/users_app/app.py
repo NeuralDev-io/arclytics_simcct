@@ -35,6 +35,8 @@ from users_app.extensions import cors, bcrypt, ma, api
 from users_app.mongodb import MongoSingleton
 from users_app.resources.users import users_blueprint
 from users_app.resources.auth import auth_blueprint
+from users_app.resources.admin_auth import admin_blueprint
+from users_app.resources.share import share_blueprint
 from users_app.resources.user_alloys import user_alloys_blueprint
 from users_app.resources.last_simulation import last_simulation_blueprint
 from users_app.resources.save_simulation import save_simulation_blueprint
@@ -127,6 +129,8 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     app.register_blueprint(users_blueprint)
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(user_alloys_blueprint)
+    app.register_blueprint(admin_blueprint)
+    app.register_blueprint(share_blueprint)
     app.register_blueprint(last_simulation_blueprint)
     app.register_blueprint(save_simulation_blueprint)
 

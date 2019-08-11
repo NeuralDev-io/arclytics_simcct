@@ -1,4 +1,4 @@
-FROM mongo:4.0.10
+FROM mongo:4.0.11
 
 LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
 

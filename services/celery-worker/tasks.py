@@ -43,7 +43,7 @@ def log(msg: str):
 
 @celery.task(bind=True, soft_time_limit=20, max_retries=6)
 def send_email(
-    self, to: str, subject_suffix: str, html_template, text_template, **kwargs
+    self, to: list, subject_suffix: str, html_template, text_template, **kwargs
 ) -> Tuple[bool, str]:
     """A task to send an email.
 
@@ -61,10 +61,7 @@ def send_email(
     subject = '{} {}'.format(app.config['MAIL_SUBJECT_PREFIX'], subject_suffix)
 
     msg = Message(
-        subject=subject,
-        recipients=[to],
-        html=html_template,
-        body=text_template
+        subject=subject, recipients=to, html=html_template, body=text_template
     )
     status = False
     try:

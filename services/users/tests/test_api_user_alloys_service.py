@@ -233,7 +233,7 @@ class TestUserAlloyService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(data['message'], 'Alloy validation error.')
+            self.assertEqual(data['message'], 'Field does not exist error.')
             self.assertEqual(data['status'], 'fail')
             err = (
                 'The fields "{\'name\'}" do not exist on the document '
@@ -260,11 +260,11 @@ class TestUserAlloyService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(data['message'], 'Invalid element error.')
+            self.assertEqual(data['message'], 'Missing element error.')
             self.assertEqual(data['status'], 'fail')
             err = (
-                'ValidationError (Element) (symbol.Field is required: '
-                '["Element.symbol"]))'
+                "Missing elements ['C', 'Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', "
+                "'W', 'As', 'Fe']"
             )
             self.assertEqual(data['error'], err)
             self.assert400(res)
@@ -731,10 +731,10 @@ class TestUserAlloyService(BaseTestCase):
             )
             data = json.loads(res.data.decode())
             err = (
-                'ValidationError (Element) (symbol.Field is required: '
-                '["Element.weight"])'
+                "Missing elements ['Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', 'W', "
+                "'As', 'Fe']"
             )
-            self.assertEqual(data['message'], 'Invalid element error.')
+            self.assertEqual(data['message'], 'Missing element error.')
             self.assertIsNotNone(data.get('error', None))
             self.assertEqual(data['error'], err)
             self.assertEqual(data['status'], 'fail')
@@ -772,11 +772,11 @@ class TestUserAlloyService(BaseTestCase):
             data = json.loads(res.data.decode())
             # we want it to stop here because validation has not failed as we
             # expected it to.
-            self.assertEqual(data['message'], 'Invalid element symbol error.')
+            self.assertEqual(data['message'], 'Missing element error.')
             self.assertNotEqual(data['message'], 'No alloys found.')
             err = (
-                'ValidationError (Element) (Field does not match a valid '
-                'element symbol in the Periodic Table: ["symbol"])'
+                "Missing elements ['C', 'Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', "
+                "'W', 'As', 'Fe']"
             )
             self.assertIsNotNone(data.get('error', None))
             self.assertEqual(data['error'], err)

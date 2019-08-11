@@ -21,9 +21,7 @@ from marshmallow import ValidationError
 
 import settings
 from tests.test_api_base import BaseTestCase
-from sim_app.schemas import (
-    AlloySchema, ConfigurationsSchema
-)
+from sim_app.schemas import (AlloySchema, ConfigurationsSchema)
 
 _TEST_CONFIGS_PATH = Path(
     settings.BASE_DIR
@@ -123,7 +121,7 @@ class TestSchemas(BaseTestCase):
         """Ensure the schema validates the correct Periodic symbol."""
         alloy = {
             'name':
-                'Alloy-1001',
+            'Alloy-1001',
             'compositions': [
                 {
                     "symbol": "C",

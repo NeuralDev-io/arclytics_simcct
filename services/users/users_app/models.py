@@ -189,9 +189,7 @@ class Configuration(EmbeddedDocument):
     method = StringField(
         null=False, required=True, choices=('Li98', 'Kirkaldy83')
     )
-    grain_size = FloatField(
-        null=False, required=True, validation=not_negative
-    )
+    grain_size = FloatField(null=False, required=True, validation=not_negative)
     nucleation_start = FloatField(
         null=False, required=True, validation=within_percentage_bounds
     )
@@ -279,12 +277,12 @@ class Element(EmbeddedDocument):
         """
         # These ensure they are not missing.
         if not self.symbol:
-            msg = 'symbol.Field is required: ["Element.symbol"])'
+            msg = 'Field is required: ["Element.symbol"])'
             raise ElementInvalid(message=msg)
 
         if not self.weight == 0.0:
             if not self.weight:
-                msg = 'symbol.Field is required: ["Element.weight"]'
+                msg = 'Field is required: ["Element.weight"]'
                 raise ElementInvalid(message=msg)
 
         try:
@@ -324,11 +322,7 @@ class AlloyType(EmbeddedDocument):
     mix = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
 
     def to_dict(self):
-        data = {
-            'parent': None,
-            'weld': None,
-            'mix': None
-        }
+        data = {'parent': None, 'weld': None, 'mix': None}
 
         if self.parent is not None:
             data['parent'] = self.parent.to_dict()
@@ -341,7 +335,9 @@ class AlloyType(EmbeddedDocument):
 
 
 class AlloyStore(EmbeddedDocument):
-    alloy_option = StringField(required=True, choices=('parent', 'both', 'mix'))
+    alloy_option = StringField(
+        required=True, choices=('parent', 'both', 'mix')
+    )
     alloys = EmbeddedDocumentField(document_type=AlloyType, required=True)
 
     def to_dict(self):

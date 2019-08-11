@@ -22,16 +22,13 @@ login, and logout.
 
 import os
 import requests
-from socket import gaierror
 from datetime import datetime
 from typing import Tuple, Optional
-from threading import Thread
 
-from celery.states import PENDING
 from email_validator import validate_email, EmailNotValidError
 from flask import current_app as app
 from flask import (
-    Blueprint, jsonify, request, render_template, redirect, Response
+    Blueprint, jsonify, request, render_template, redirect
 )
 from mongoengine.errors import ValidationError, NotUniqueError
 

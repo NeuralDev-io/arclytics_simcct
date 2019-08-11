@@ -114,7 +114,7 @@ class LoginPage extends Component {
                       </Button>
                       <h6>
                         {' '}
-                        Don&apos;t have an account?
+                        Don&apos;t have an account?&nbsp;
                         <a className={styles.createAccount} href="http://localhost:3000/signup">
                             Sign up
                         </a>

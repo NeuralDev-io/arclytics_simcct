@@ -20,10 +20,10 @@ __date__ = '2019.07.06'
 """
 
 from functools import wraps
-from threading import Thread
 
 from bson import ObjectId
 from flask import request, jsonify
+from mongoengine import DoesNotExist
 
 from users_app.models import User
 
@@ -54,10 +54,12 @@ def authenticate(f):
             return response, 401
 
         # Validate the user is active
-        user = User.objects.get(id=resp)
-        if not user:
+        try:
+            user = User.objects.get(id=resp)
+        except DoesNotExist as e:
             response['message'] = 'User does not exist.'
             return response, 404
+
         if not user.active:
             response['message'] = 'This user account has been disabled.'
             return response, 401
@@ -93,8 +95,13 @@ def authenticate_flask(f):
             return jsonify(response), 401
 
         # Validate the user is active
-        user = User.objects.get(id=resp)
-        if not user or not user.active:
+        try:
+            user = User.objects.get(id=resp)
+        except DoesNotExist as e:
+            response['message'] = 'User does not exist.'
+            return jsonify(response), 404
+
+        if not user.active:
             response['message'] = 'This user account has been disabled.'
             return jsonify(response), 401
 
@@ -125,8 +132,13 @@ def authenticate_admin(f):
             response['message'] = resp
             return response, 401
 
-        admin = User.objects.get(id=resp)
-        if not admin or not admin.is_admin:
+        try:
+            admin = User.objects.get(id=resp)
+        except DoesNotExist as e:
+            response['message'] = 'User does not exist.'
+            return response, 404
+
+        if not admin.is_admin:
             response['message'] = 'Not authorized.'
             return response, 403
 
@@ -166,8 +178,13 @@ def logout_authenticate(f):
             return jsonify(response), 401
 
         # Validate the user is active
-        user = User.objects.get(id=resp)
-        if not user or not user.active:
+        try:
+            user = User.objects.get(id=resp)
+        except DoesNotExist as e:
+            response['message'] = 'User does not exist.'
+            return response, 404
+
+        if not user.active:
             response['message'] = 'This user does not exist.'
             return jsonify(response), 401
 

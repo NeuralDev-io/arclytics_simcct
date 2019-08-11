@@ -30,6 +30,8 @@ from mongoengine import (
     DateTimeField, EmbeddedDocumentField, IntField, FloatField, DO_NOTHING,
     EmbeddedDocumentListField, queryset_manager, ObjectIdField, ReferenceField,
     ValidationError
+    DateTimeField, EmbeddedDocumentField, IntField, FloatField, ListField,
+    EmbeddedDocumentListField, queryset_manager, ObjectIdField, ReferenceField
 )
 from flask import current_app, json
 
@@ -317,10 +319,14 @@ class Alloy(EmbeddedDocument):
 
 class AlloyType(EmbeddedDocument):
     parent = EmbeddedDocumentField(
-        document_type=Alloy, default=None, null=True
+        document_type=Alloy, default=None, null=True, required=True
     )
-    weld = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
-    mix = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
+    weld = EmbeddedDocumentField(
+        document_type=Alloy, default=None, null=True, required=True
+    )
+    mix = EmbeddedDocumentField(
+        document_type=Alloy, default=None, null=True, required=True
+    )
 
     def to_dict(self):
         data = {'parent': None, 'weld': None, 'mix': None}
@@ -581,6 +587,13 @@ class User(Document):
         return self.to_json()
 
 
+class SharedSimulation(Document):
+    owner_email = EmailField(required=True)
+    created_date = DateTimeField(default=datetime.utcnow(), required=True)
+    configuration = EmbeddedDocumentField(
+        document_type=Configuration, required=True
+    )
+    alloy_store = EmbeddedDocumentField(document_type=AlloyStore, required=True)
 class SavedSimulation(Document):
     user = ReferenceField(User, reverse_delete_rule=DO_NOTHING)
     configurations = EmbeddedDocumentField(
@@ -619,3 +632,14 @@ class SharedConfiguration(Document):
     shared_date = DateTimeField()
     configuration = EmbeddedDocumentField(document_type=Configuration)
     # alloy_store = EmbeddedDocumentField(document_type=AlloyStore)
+
+    # add results
+    # add views but dont send in dict
+
+    def to_dict(self):
+        return {
+            'owner_email': self.owner_email,
+            'created_date': str(self.created_date),
+            'configuration': self.configuration.to_dict(),
+            'alloy_store': self.alloy_store.to_dict()
+        }

@@ -27,22 +27,23 @@ from typing import Union, Tuple
 from bson import ObjectId
 from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
-    DateTimeField, EmbeddedDocumentField, IntField, FloatField,
-    EmbeddedDocumentListField, queryset_manager, ObjectIdField
+    DateTimeField, EmbeddedDocumentField, IntField, FloatField, DO_NOTHING,
+    EmbeddedDocumentListField, queryset_manager, ObjectIdField, ReferenceField,
+    ValidationError
 )
-from mongoengine.errors import ValidationError
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
 from users_app.extensions import bcrypt
 from users_app.utilities import (
     JSONEncoder, PeriodicTable, PasswordValidationError, ElementSymbolInvalid,
-    ElementInvalid
+    ElementInvalid, MissingElementError
 )
 
 logger = AppLogger(__name__)
 
 
+# ========== # FIELD CUSTOM VALIDATION # ========== #
 def validate_comp_elements(alloy_comp: list) -> Tuple[bool, list]:
     """We validate the alloy has all the elements that will be needed by the
     simulation algorithms using a hashed dictionary as it is much faster.
@@ -84,6 +85,28 @@ def validate_comp_elements(alloy_comp: list) -> Tuple[bool, list]:
         return False, missing_elem
     # The validation has succeeded
     return True, []
+
+
+def not_negative(val):
+    if val < 0.0:
+        raise ValidationError('Cannot be a negative number.')
+
+
+def greater_than_zero(val):
+    if val < 0.0 or val == 0:
+        raise ValidationError('Must be more than 0.0.')
+
+
+def not_over_100(val):
+    if val > 100.0:
+        raise ValidationError('Must be less than 100.0.')
+
+
+def within_percentage_bounds(val):
+    if val > 100.0:
+        raise ValidationError('Must be less than 100.0.')
+    if val < 0.0:
+        raise ValidationError('Must be more than 0.0.')
 
 
 # ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
@@ -162,21 +185,43 @@ class SimulationResults(EmbeddedDocument):
 
 
 class Configuration(EmbeddedDocument):
-    is_valid = BooleanField()
-    method = StringField(default='Li98')
-    grain_size = FloatField(default=0.0)
-    nucleation_start = FloatField(default=1.0)
-    nucleation_finish = FloatField(default=99.9)
-    auto_calculate_ms = BooleanField(default=False)
-    ms_temp = FloatField(default=0.0)
-    ms_rate_param = FloatField(default=0.0)
-    auto_calculate_bs = BooleanField(default=False)
-    bs_temp = FloatField()
-    auto_calculate_ae = BooleanField(default=False)
-    ae1_temp = FloatField(default=0.0)
-    ae3_temp = FloatField(default=0.0)
-    start_temp = IntField(default=900)
-    cct_cooling_rate = IntField(default=10)
+    is_valid = BooleanField(default=False, required=True, null=False)
+    method = StringField(
+        null=False, required=True, choices=('Li98', 'Kirkaldy83')
+    )
+    grain_size = FloatField(
+        null=False, required=True, validation=not_negative
+    )
+    nucleation_start = FloatField(
+        null=False, required=True, validation=within_percentage_bounds
+    )
+    nucleation_finish = FloatField(
+        null=False, required=True, validation=within_percentage_bounds
+    )
+    auto_calculate_ms = BooleanField(default=True, null=False, required=True)
+    auto_calculate_bs = BooleanField(default=True, null=False, required=True)
+    auto_calculate_ae = BooleanField(default=True, null=False, required=True)
+    ms_temp = FloatField(
+        default=0.0, null=False, required=True, validation=not_negative
+    )
+    ms_rate_param = FloatField(
+        default=0.0, null=False, required=True, validation=not_negative
+    )
+    bs_temp = FloatField(
+        default=0.0, null=False, required=True, validation=not_negative
+    )
+    ae1_temp = FloatField(
+        default=0.0, null=False, required=True, validation=not_negative
+    )
+    ae3_temp = FloatField(
+        default=0.0, null=False, required=True, validation=not_negative
+    )
+    start_temp = IntField(
+        default=900, null=False, required=True, validation=not_negative
+    )
+    cct_cooling_rate = IntField(
+        default=10, null=False, required=True, validation=not_negative
+    )
 
     def to_dict(self) -> dict:
         """
@@ -265,7 +310,7 @@ class Alloy(EmbeddedDocument):
         # comps = [el for el in self.compositions]
         valid, missing = validate_comp_elements(self.compositions)
         if not valid:
-            raise ValidationError(f'Missing elements {missing}')
+            raise MissingElementError(f'Missing elements {missing}')
 
     def __str__(self):
         return self.to_json()
@@ -279,15 +324,24 @@ class AlloyType(EmbeddedDocument):
     mix = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
 
     def to_dict(self):
-        return {
-            'parent': self.parent.to_dict(),
-            'weld': self.weld.to_dict(),
-            'mix': self.mix.to_dict()
+        data = {
+            'parent': None,
+            'weld': None,
+            'mix': None
         }
+
+        if self.parent is not None:
+            data['parent'] = self.parent.to_dict()
+        if self.weld is not None:
+            data['weld'] = self.weld.to_dict()
+        if self.mix is not None:
+            data['mix'] = self.mix.to_dict()
+
+        return data
 
 
 class AlloyStore(EmbeddedDocument):
-    alloy_option = StringField(required=True)
+    alloy_option = StringField(required=True, choices=('parent', 'both', 'mix'))
     alloys = EmbeddedDocumentField(document_type=AlloyType, required=True)
 
     def to_dict(self):
@@ -295,20 +349,6 @@ class AlloyStore(EmbeddedDocument):
             'alloy_option': self.alloy_option,
             'alloys': self.alloys.to_dict()
         }
-
-
-class SavedSimulation(EmbeddedDocument):
-    oid = ObjectIdField(default=lambda: ObjectId(), primary_key=True)
-    configuration = EmbeddedDocumentField(
-        document_type=Configuration, required=True, null=False
-    )
-    alloy_store = EmbeddedDocumentField(
-        document_type=AlloyStore, required=True, null=False
-    )
-    # results = EmbeddedDocumentField(
-    #     document_type=SimulationResults, required=True, null=False
-    # )
-    created = DateTimeField(default=datetime.utcnow(), null=False)
 
 
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
@@ -335,9 +375,6 @@ class User(Document):
         document_type=AlloyStore, default=None
     )
 
-    saved_simulations = EmbeddedDocumentListField(
-        document_type=SavedSimulation
-    )
     saved_alloys = EmbeddedDocumentListField(document_type=Alloy)
 
     # Some rather useful metadata information that's not core to the
@@ -542,6 +579,34 @@ class User(Document):
             A list with every Users Document object converted to dict.
         """
         return [obj.to_dict() for obj in queryset]
+
+    def __str__(self):
+        return self.to_json()
+
+
+class SavedSimulation(Document):
+    user = ReferenceField(User, reverse_delete_rule=DO_NOTHING)
+    configuration = EmbeddedDocumentField(
+        document_type=Configuration, required=True, null=False
+    )
+    alloy_store = EmbeddedDocumentField(
+        document_type=AlloyStore, required=True, null=False
+    )
+    # results = EmbeddedDocumentField(
+    #     document_type=SimulationResults, required=True, null=False
+    # )
+    created = DateTimeField(default=datetime.utcnow(), null=False)
+
+    meta = {'collection': 'saved_simulations'}
+
+    # def clean(self):
+    #     pass
+
+    # def to_dict(self):
+    #     pass
+
+    # def to_json(self, *args, **kwargs):
+    #     pass
 
     def __str__(self):
         return self.to_json()

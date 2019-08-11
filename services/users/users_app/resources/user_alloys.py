@@ -33,7 +33,9 @@ from mongoengine.errors import (
 from users_app.extensions import api
 from users_app.middleware import authenticate
 from users_app.models import Alloy, User
-from users_app.utilities import ElementSymbolInvalid, ElementInvalid
+from users_app.utilities import (
+    ElementSymbolInvalid, ElementInvalid, MissingElementError
+)
 
 user_alloys_blueprint = Blueprint('user_alloys', __name__)
 

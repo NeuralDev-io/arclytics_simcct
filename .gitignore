@@ -219,6 +219,7 @@ typings/
 ### Arclytics Custom ###
 .idea/
 
+services/db/data/
 *.db
 services/server/htmlcov/
 !services/swagger/dist/

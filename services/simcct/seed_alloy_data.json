@@ -74,6 +74,10 @@
                 {
                     "symbol": "P",
                     "weight": 0.007
+                },
+                {
+                    "symbol": "Fe",
+                    "weight": 0.0
                 }
 			]
 		},
@@ -150,6 +154,10 @@
                 },
                 {
                     "symbol": "P",
+                    "weight": 0.0
+                },
+                {
+                    "symbol": "Fe",
                     "weight": 0.0
                 }
 			]

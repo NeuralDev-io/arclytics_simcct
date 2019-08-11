@@ -33,14 +33,12 @@ from mongoengine.errors import ValidationError
 
 from logger.arc_logger import AppLogger
 from users_app.models import (
-    User, Configuration, SharedSimulation,
-    AlloyStore
+    User, Configuration, SharedSimulation, AlloyStore
 )
 from users_app.middleware import authenticate
 from users_app.extensions import api
 from users_app.token import (
-    URLTokenError,
-    generate_shared_simulation_signature,
+    URLTokenError, generate_shared_simulation_signature,
     generate_url_with_signature, confirm_signature
 )
 from users_app.utilities import ElementSymbolInvalid, ElementInvalid
@@ -259,12 +257,36 @@ class ShareSimulationEmail(Resource):
             celery.send_task(
                 'tasks.send_email',
                 kwargs={
-                    'to':
-                        [valid_email_list],
+                    'to': [valid_email_list],
                     'subject_suffix':
+                    f'{owner.first_name} {owner.last_name} '
+                    'has shared a configuration with you!',
+                    'html_template':
+                    render_template(
+                        'share_configuration.html',
+                        email=valid_email_list,
+                        owner_name=(f'{owner.first_name} {owner.last_name}'),
+                        config_url=simulation_url
+                    ),
+                    'text_template':
+                    render_template(
+                        'share_configuration.txt',
+                        email=valid_email_list,
+                        owner_name=(f'{owner.first_name} {owner.last_name}'),
+                        config_url=simulation_url
+                    ),
+                }
+            )
+        else:
+            for email in valid_email_list:
+                celery.send_task(
+                    'tasks.send_email',
+                    kwargs={
+                        'to': [email],
+                        'subject_suffix':
                         f'{owner.first_name} {owner.last_name} '
                         'has shared a configuration with you!',
-                    'html_template':
+                        'html_template':
                         render_template(
                             'share_configuration.html',
                             email=valid_email_list,
@@ -273,7 +295,7 @@ class ShareSimulationEmail(Resource):
                             ),
                             config_url=simulation_url
                         ),
-                    'text_template':
+                        'text_template':
                         render_template(
                             'share_configuration.txt',
                             email=valid_email_list,
@@ -282,36 +304,6 @@ class ShareSimulationEmail(Resource):
                             ),
                             config_url=simulation_url
                         ),
-                }
-            )
-        else:
-            for email in valid_email_list:
-                celery.send_task(
-                    'tasks.send_email',
-                    kwargs={
-                        'to':
-                            [email],
-                        'subject_suffix':
-                            f'{owner.first_name} {owner.last_name} '
-                            'has shared a configuration with you!',
-                        'html_template':
-                            render_template(
-                                'share_configuration.html',
-                                email=valid_email_list,
-                                owner_name=(
-                                    f'{owner.first_name} {owner.last_name}'
-                                ),
-                                config_url=simulation_url
-                            ),
-                        'text_template':
-                            render_template(
-                                'share_configuration.txt',
-                                email=valid_email_list,
-                                owner_name=(
-                                    f'{owner.first_name} {owner.last_name}'
-                                ),
-                                config_url=simulation_url
-                            ),
                     }
                 )
 
@@ -320,9 +312,9 @@ class ShareSimulationEmail(Resource):
         return response, 201
 
 
-@share_blueprint.route('/users/share/simulation/request/<signature>',
-                       methods=['GET']
-                       )
+@share_blueprint.route(
+    '/users/share/simulation/request/<signature>', methods=['GET']
+)
 def request_shared_simulation(signature):
     """
     When the user clicks on a link to view a shared configuration, we need to
@@ -330,7 +322,6 @@ def request_shared_simulation(signature):
     to the user. The point of this endpoint is to redirect them to a blank page
     on the front end which will request the configuration data from the backend.
     """
-
 
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
     client_host = os.environ.get('CLIENT_HOST')
@@ -346,9 +337,9 @@ def request_shared_simulation(signature):
     return custom_redir_response
 
 
-@share_blueprint.route('/users/share/simulation/view/<signature>',
-                       methods=['GET']
-                       )
+@share_blueprint.route(
+    '/users/share/simulation/view/<signature>', methods=['GET']
+)
 def view_shared_simulation(signature):
     """
     After we have established a client to communicate with, we can send the

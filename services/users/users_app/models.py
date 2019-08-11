@@ -319,12 +319,8 @@ class AlloyType(EmbeddedDocument):
     parent = EmbeddedDocumentField(
         document_type=Alloy, default=None, null=True
     )
-    weld = EmbeddedDocumentField(
-        document_type=Alloy, default=None, null=True
-    )
-    mix = EmbeddedDocumentField(
-        document_type=Alloy, default=None, null=True
-    )
+    weld = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
+    mix = EmbeddedDocumentField(document_type=Alloy, default=None, null=True)
 
     def to_dict(self):
         data = {'parent': None, 'weld': None, 'mix': None}
@@ -618,7 +614,9 @@ class SharedSimulation(Document):
     configuration = EmbeddedDocumentField(
         document_type=Configuration, required=True
     )
-    alloy_store = EmbeddedDocumentField(document_type=AlloyStore, required=True)
+    alloy_store = EmbeddedDocumentField(
+        document_type=AlloyStore, required=True
+    )
 
     # add results
     # add views but dont send in dict

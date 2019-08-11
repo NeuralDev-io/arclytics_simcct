@@ -37,8 +37,8 @@ from users_app.models import (
 from users_app.token import (
     generate_confirmation_token, generate_url,
     generate_promotion_confirmation_token,
-    generate_shared_simulation_signature,
-    generate_url_with_signature, confirm_signature
+    generate_shared_simulation_signature, generate_url_with_signature,
+    confirm_signature
 )
 
 logger = AppLogger(__name__)
@@ -349,7 +349,8 @@ class TestUserService(BaseTestCase):
                 'Jedi Council Member.'
             )
             self.assertEqual(
-                data['data']['profile']['sci_tech_exp'], 'Flying is for Droids.'
+                data['data']['profile']['sci_tech_exp'],
+                'Flying is for Droids.'
             )
             self.assertEqual(
                 data['data']['profile']['phase_transform_exp'], 'Prequels.'
@@ -427,7 +428,8 @@ class TestUserService(BaseTestCase):
                 'Much to learn, I still have.'
             )
             self.assertEqual(
-                data['data']['profile']['phase_transform_exp'], 'I am a puppet.'
+                data['data']['profile']['phase_transform_exp'],
+                'I am a puppet.'
             )
             self.assertEqual(
                 data['data']['admin_profile']['mobile_number'], '1234567890'
@@ -497,7 +499,9 @@ class TestUserService(BaseTestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
             self.assertEqual(data['data']['first_name'], 'Emperor')
-            self.assertEqual(data['data']['profile']['aim'], 'Rule the Galaxy.')
+            self.assertEqual(
+                data['data']['profile']['aim'], 'Rule the Galaxy.'
+            )
             self.assertEqual(
                 data['data']['profile']['phase_transform_exp'], 'Sith Lord.'
             )
@@ -1337,12 +1341,10 @@ class TestUserService(BaseTestCase):
             last_name='Matthews'
         )
         admin.set_password('testing123')
-        admin.verified=True
-        admin.is_admin=True
+        admin.verified = True
+        admin.is_admin = True
         admin_profile = AdminProfile(
-            position='Jedi Master',
-            mobile_number=None,
-            verified=True
+            position='Jedi Master', mobile_number=None, verified=True
         )
         admin.admin_profile = admin_profile
         admin.save()
@@ -1353,18 +1355,13 @@ class TestUserService(BaseTestCase):
             last_name='Jnr'
         )
         user.set_password('testing123')
-        user.verified=True
+        user.verified = True
         user.save()
 
-        token = generate_promotion_confirmation_token(
-            admin.email, user.email
-        )
+        token = generate_promotion_confirmation_token(admin.email, user.email)
         url = generate_url('admin.cancel_promotion', token)
         with current_app.test_client() as client:
-            resp = client.get(
-                url,
-                content_type='application/json'
-            )
+            resp = client.get(url, content_type='application/json')
 
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
@@ -1380,10 +1377,7 @@ class TestUserService(BaseTestCase):
         url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(
-                url,
-                content_type='application/json'
-            )
+            resp = client.get(url, content_type='application/json')
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1397,10 +1391,7 @@ class TestUserService(BaseTestCase):
         url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(
-                url,
-                content_type='application/json'
-            )
+            resp = client.get(url, content_type='application/json')
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1417,10 +1408,7 @@ class TestUserService(BaseTestCase):
         url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(
-                url,
-                content_type='application/json'
-            )
+            resp = client.get(url, content_type='application/json')
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1445,16 +1433,11 @@ class TestUserService(BaseTestCase):
         user.verified = True
         user.save()
 
-        token = generate_promotion_confirmation_token(
-            admin.email, user.email
-        )
+        token = generate_promotion_confirmation_token(admin.email, user.email)
         url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(
-                url,
-                content_type='application/json'
-            )
+            resp = client.get(url, content_type='application/json')
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 401)
@@ -1465,16 +1448,12 @@ class TestUserService(BaseTestCase):
 
     def test_cancel_promotion_admin_dne(self):
         token = generate_promotion_confirmation_token(
-            'arclyticstestadmin@gmail.com',
-            'arclyticstestuser@gmail.com'
+            'arclyticstestadmin@gmail.com', 'arclyticstestuser@gmail.com'
         )
         url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(
-                url,
-                content_type='application/json'
-            )
+            resp = client.get(url, content_type='application/json')
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1489,16 +1468,12 @@ class TestUserService(BaseTestCase):
         test_admin.set_password('testing123'),
         test_admin.save()
         token = generate_promotion_confirmation_token(
-            'arclyticstestadmin@gmail.com',
-            'arclyticstestuser@gmail.com'
+            'arclyticstestadmin@gmail.com', 'arclyticstestuser@gmail.com'
         )
         url = generate_url('admin.cancel_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(
-                url,
-                content_type='application/json'
-            )
+            resp = client.get(url, content_type='application/json')
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1514,9 +1489,7 @@ class TestUserService(BaseTestCase):
         admin.verified = True
         # admin.is_admin = True
         admin_profile = AdminProfile(
-            position='Jedi Master',
-            mobile_number=None,
-            verified=True
+            position='Jedi Master', mobile_number=None, verified=True
         )
         admin.admin_profile = admin_profile
         admin.save()
@@ -1530,9 +1503,7 @@ class TestUserService(BaseTestCase):
         user.verified = True
         # user.is_admin=True
         user_admin_profile = AdminProfile(
-            position='Jedi Knight.',
-            mobile_number=None,
-            verified=False
+            position='Jedi Knight.', mobile_number=None, verified=False
         )
         user.admin_profile = user_admin_profile
         user.admin_profile.promoted_by = admin.id
@@ -1542,10 +1513,7 @@ class TestUserService(BaseTestCase):
         url = generate_url('admin.verify_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(
-                url,
-                content_type='application/json'
-            )
+            resp = client.get(url, content_type='application/json')
 
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
@@ -1562,15 +1530,10 @@ class TestUserService(BaseTestCase):
 
     def test_verify_promotion_user_dne(self):
         token = generate_confirmation_token('arclyticstestuser@gmail.com')
-        url = generate_url(
-            'admin.verify_promotion', token
-        )
+        url = generate_url('admin.verify_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(
-                url,
-                content_type='application/json'
-            )
+            resp = client.get(url, content_type='application/json')
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1586,15 +1549,10 @@ class TestUserService(BaseTestCase):
         test_user.save()
 
         token = generate_confirmation_token(test_user.email)
-        url = generate_url(
-            'admin.verify_promotion', token
-        )
+        url = generate_url('admin.verify_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(
-                url,
-                content_type='application/json'
-            )
+            resp = client.get(url, content_type='application/json')
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1607,19 +1565,14 @@ class TestUserService(BaseTestCase):
             last_name='Testuser'
         )
         test_user.set_password('testing123')
-        test_user.verified=True
+        test_user.verified = True
         test_user.save()
 
         token = generate_confirmation_token(test_user.email)
-        url = generate_url(
-            'admin.verify_promotion', token
-        )
+        url = generate_url('admin.verify_promotion', token)
 
         with current_app.test_client() as client:
-            resp = client.get(
-                url,
-                content_type='application/json'
-            )
+            resp = client.get(url, content_type='application/json')
 
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
@@ -1770,13 +1723,13 @@ class TestUserService(BaseTestCase):
                                     'name': 'Parent Name'
                                 },
                                 'weld': {
-                                    'name': 'Weld Name',
+                                    'name':
+                                    'Weld Name',
                                     'compositions': [
                                         {
                                             'symbol': 'Li',
                                             'weight': 6.941
-                                        },
-                                        {
+                                        }, {
                                             'symbol': 'Be',
                                             'weight': 9.012
                                         }
@@ -2041,39 +1994,39 @@ class TestUserService(BaseTestCase):
                             'alloy_option': 'Option String',
                             'alloys': {
                                 'parent': {
-                                    'name': 'Parent Name',
+                                    'name':
+                                    'Parent Name',
                                     'compositions': [
                                         {
                                             'symbol': 'H',
                                             'weight': 1.008
-                                        },
-                                        {
+                                        }, {
                                             'symbol': 'He',
                                             'weight': 4.003
                                         }
                                     ]
                                 },
                                 'weld': {
-                                    'name': 'Weld Name',
+                                    'name':
+                                    'Weld Name',
                                     'compositions': [
                                         {
                                             'symbol': 'Li',
                                             'weight': 6.941
-                                        },
-                                        {
+                                        }, {
                                             'symbol': 'Be',
                                             'weight': 9.012
                                         }
                                     ]
                                 },
                                 'mix': {
-                                    'name': 'Mix Name',
+                                    'name':
+                                    'Mix Name',
                                     'compositions': [
                                         {
                                             'symbol': 'B',
                                             'weight': 10.811
-                                        },
-                                        {
+                                        }, {
                                             'symbol': 'C',
                                             'weight': 12.011
                                         }
@@ -2131,39 +2084,39 @@ class TestUserService(BaseTestCase):
                             'alloy_option': 'Option String',
                             'alloys': {
                                 'parent': {
-                                    'name': 'Parent Name',
+                                    'name':
+                                    'Parent Name',
                                     'compositions': [
                                         {
                                             'symbol': 'H',
                                             'weight': 1.008
-                                        },
-                                        {
+                                        }, {
                                             'symbol': 'He',
                                             'weight': 4.003
                                         }
                                     ]
                                 },
                                 'weld': {
-                                    'name': 'Weld Name',
+                                    'name':
+                                    'Weld Name',
                                     'compositions': [
                                         {
                                             'symbol': 'Li',
                                             'weight': 6.941
-                                        },
-                                        {
+                                        }, {
                                             'symbol': 'Be',
                                             'weight': 9.012
                                         }
                                     ]
                                 },
                                 'mix': {
-                                    'name': 'Mix Name',
+                                    'name':
+                                    'Mix Name',
                                     'compositions': [
                                         {
                                             'symbol': 'B',
                                             'weight': 10.811
-                                        },
-                                        {
+                                        }, {
                                             'symbol': 'C',
                                             'weight': 12.011
                                         }
@@ -2180,9 +2133,7 @@ class TestUserService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(
-                data['message'], 'Invalid email address type.'
-            )
+            self.assertEqual(data['message'], 'Invalid email address type.')
 
     def test_share_configuration_email_invalid_email(self):
         luke = User(
@@ -2223,39 +2174,39 @@ class TestUserService(BaseTestCase):
                             'alloy_option': 'Option String',
                             'alloys': {
                                 'parent': {
-                                    'name': 'Parent Name',
+                                    'name':
+                                    'Parent Name',
                                     'compositions': [
                                         {
                                             'symbol': 'H',
                                             'weight': 1.008
-                                        },
-                                        {
+                                        }, {
                                             'symbol': 'He',
                                             'weight': 4.003
                                         }
                                     ]
                                 },
                                 'weld': {
-                                    'name': 'Weld Name',
+                                    'name':
+                                    'Weld Name',
                                     'compositions': [
                                         {
                                             'symbol': 'Li',
                                             'weight': 6.941
-                                        },
-                                        {
+                                        }, {
                                             'symbol': 'Be',
                                             'weight': 9.012
                                         }
                                     ]
                                 },
                                 'mix': {
-                                    'name': 'Mix Name',
+                                    'name':
+                                    'Mix Name',
                                     'compositions': [
                                         {
                                             'symbol': 'B',
                                             'weight': 10.811
-                                        },
-                                        {
+                                        }, {
                                             'symbol': 'C',
                                             'weight': 12.011
                                         }

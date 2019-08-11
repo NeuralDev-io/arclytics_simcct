@@ -13,6 +13,7 @@
  */
 
 export const login = async (values, resolve, reject) => {
+  console.log(values.email)
   fetch('http://localhost:8000/auth/login', {
     method: 'POST',
     mode: 'cors',

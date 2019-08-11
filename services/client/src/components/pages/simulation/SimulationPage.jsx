@@ -19,6 +19,7 @@ import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
 import Button from '../../elements/button'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
+import ProfileQuestions from '../../moleisms/profile-questions'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { TTT, CCT } from '../../moleisms/charts'
 import {
@@ -309,6 +310,7 @@ class SimulationPage extends Component {
     return (
       <React.Fragment>
         <AppBar active="sim" redirect={history.push} />
+        <ProfileQuestions/>
         <div className={styles.compSidebar}>
           <CompSidebar
             values={alloys}

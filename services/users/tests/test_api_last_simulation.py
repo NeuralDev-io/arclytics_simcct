@@ -17,6 +17,7 @@ Test the Last Simulation Resources.
 """
 
 import unittest
+from copy import deepcopy
 from pathlib import Path
 
 from flask import json
@@ -144,7 +145,7 @@ class TestLastSimulation(BaseTestCase):
     def test_create_last_invalid_configs_missing(self):
         with app.test_client() as client:
             token = self.login(client)
-            configs = _TEST_JSON['configurations'].copy()
+            configs = deepcopy(_TEST_JSON['configurations'])
 
             configs.pop('method')
             configs.pop('grain_size')
@@ -173,7 +174,7 @@ class TestLastSimulation(BaseTestCase):
     def test_create_last_invalid_configs_bad_method(self):
         with app.test_client() as client:
             token = self.login(client)
-            configs = CONFIGS.copy()
+            configs = deepcopy(CONFIGS)
             configs['method'] = 'KirkaldyAndLi2019'
 
             res = client.post(
@@ -200,7 +201,7 @@ class TestLastSimulation(BaseTestCase):
     def test_create_last_invalid_configs_bad_nuc(self):
         with app.test_client() as client:
             token = self.login(client)
-            configs = CONFIGS.copy()
+            configs = deepcopy(CONFIGS)
             configs['nucleation_start'] = -1
             configs['nucleation_finish'] = 101
 
@@ -229,7 +230,7 @@ class TestLastSimulation(BaseTestCase):
     def test_create_last_invalid_configs_negative_trans_temps(self):
         with app.test_client() as client:
             token = self.login(client)
-            configs = CONFIGS.copy()
+            configs = deepcopy(CONFIGS)
             configs['ms_temp'] = -1
             configs['ms_rate_param'] = -1
             configs['bs_temp'] = -1
@@ -298,7 +299,7 @@ class TestLastSimulation(BaseTestCase):
     def test_create_last_invalid_alloy_missing_elem(self):
         with app.test_client() as client:
             token = self.login(client)
-            comp = COMP.copy()
+            comp = deepcopy(COMP)
             del comp[-1]
 
             alloy_store = {
@@ -327,6 +328,84 @@ class TestLastSimulation(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assertEqual(data['error'], "Missing elements ['Fe']")
             self.assertEqual(data['message'], "Missing element error.")
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+    def test_create_last_invalid_alloy_bad_elem(self):
+        with app.test_client() as client:
+            token = self.login(client)
+            comp = deepcopy(COMP)
+            comp.append({'symbol': 'Vb', 'weight': 0.0})
+
+            alloy_store = {
+                'alloy_option': 'parent',
+                'alloys': {
+                    'parent': {
+                        'name': 'Pym Alloy',
+                        'compositions': comp
+                    },
+                    'weld': None,
+                    'mix': None
+                }
+            }
+
+            res = client.post(
+                '/user/last/simulation',
+                data=json.dumps(
+                    {
+                        'configurations': CONFIGS,
+                        'alloy_store': alloy_store
+                    }
+                ),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            err = (
+                'ValidationError (Element) (Field does not match a valid '
+                'element symbol in the Periodic Table: ["symbol"])'
+            )
+            self.assertEqual(data['error'], err)
+            self.assertEqual(data['message'], "Invalid element symbol error.")
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+    def test_create_last_invalid_alloy_bad_elem_weight(self):
+        with app.test_client() as client:
+            token = self.login(client)
+            comp = deepcopy(COMP)
+            comp.append({'symbol': 'Li', 'weight': -1})
+
+            alloy_store = {
+                'alloy_option': 'parent',
+                'alloys': {
+                    'parent': {
+                        'name': 'Pym Alloy',
+                        'compositions': comp
+                    },
+                    'weld': None,
+                    'mix': None
+                }
+            }
+
+            res = client.post(
+                '/user/last/simulation',
+                data=json.dumps(
+                    {
+                        'configurations': CONFIGS,
+                        'alloy_store': alloy_store
+                    }
+                ),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            err = (
+                "ValidationError (AlloyStore:None) (parent.compositions.19."
+                "weight.Cannot be a negative number.: ['alloys'])"
+            )
+            self.assertEqual(data['error'], err)
+            self.assertEqual(data['message'], "Model schema validation error.")
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
@@ -448,7 +527,7 @@ class TestLastSimulation(BaseTestCase):
             self.assertTrue(data.get('data', None))
             self.assertDictEqual(data['data']['last_configurations'], CONFIGS)
 
-            expected_alloy_store = ALLOY_STORE.copy()
+            expected_alloy_store = deepcopy(ALLOY_STORE)
             _id = data['data']['last_alloy_store']['alloys']['parent']['_id']
             expected_alloy_store['alloys']['parent']['_id'] = _id
             self.assertDictEqual(

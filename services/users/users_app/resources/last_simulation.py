@@ -116,6 +116,10 @@ class LastSimulation(Resource):
 
         response['status'] = 'success'
         response['message'] = 'Saved Alloy Store, Configurations and Results.'
+        response['data'] = {
+            'last_configuration': user.last_configuration.to_dict(),
+            'last_alloy_store': user.last_alloy_store.to_dict()
+        }
         return response, 201
 
     # noinspection PyMethodMayBeStatic

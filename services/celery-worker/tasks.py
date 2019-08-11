@@ -61,10 +61,7 @@ def send_email(
     subject = '{} {}'.format(app.config['MAIL_SUBJECT_PREFIX'], subject_suffix)
 
     msg = Message(
-        subject=subject,
-        recipients=to,
-        html=html_template,
-        body=text_template
+        subject=subject, recipients=to, html=html_template, body=text_template
     )
     status = False
     try:

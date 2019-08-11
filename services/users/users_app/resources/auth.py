@@ -178,8 +178,7 @@ def register_user() -> Tuple[dict, int]:
         task = celery.send_task(
             'tasks.send_email',
             kwargs={
-                'to':
-                [email],
+                'to': [email],
                 'subject_suffix':
                 'Please Confirm Your Email',
                 'html_template':
@@ -589,8 +588,7 @@ def reset_password_email() -> Tuple[dict, int]:
     celery.send_task(
         'tasks.send_email',
         kwargs={
-            'to':
-            [user.email],
+            'to': [user.email],
             'subject_suffix':
             'Reset your Arclytics Sim password',
             'html_template':

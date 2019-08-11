@@ -31,9 +31,7 @@ from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
 from logger.arc_logger import AppLogger
-from users_app.models import (
-    User, UserProfile
-)
+from users_app.models import (User, UserProfile)
 from users_app.middleware import authenticate, authenticate_admin
 from users_app.extensions import api
 

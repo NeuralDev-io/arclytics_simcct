@@ -94,7 +94,7 @@ class CompTable extends Component {
             isDisabled={value === undefined}
           />
         ),
-        Footer: () => <span className={styles.footerText}>{parentTotal}</span>,
+        Footer: <span className={styles.footerText}>{parentTotal}</span>,
       },
       {
         Header: 'Alloy 2',
@@ -110,7 +110,7 @@ class CompTable extends Component {
             isDisabled={value === undefined}
           />
         ),
-        Footer: () => <span className={styles.footerText}>{weldTotal}</span>,
+        Footer: <span className={styles.footerText}>{weldTotal}</span>,
       },
       {
         Header: 'Mix',
@@ -121,7 +121,7 @@ class CompTable extends Component {
           return <span>{value}</span>
         },
         width: 40,
-        Footer: mixTotal,
+        Footer: <span className={styles.footerText}>{mixTotal}</span>,
       },
     ]
 

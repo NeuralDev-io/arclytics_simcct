@@ -41,6 +41,20 @@ const ConfigForm = (props) => {
                 onChange={val => onChange('grain_size_ASTM', val)}
                 value={values.grain_size_ASTM}
                 length="short"
+                validation={[
+                  {
+                    constraint: value => (value.length !== 0),
+                    message: 'Can not be empty',
+                  },
+                  {
+                    constraint: value => (!isNaN(value)),
+                    message: 'Must be a number',
+                  },
+                  {
+                    constraint: value => (parseFloat(value) > 0),
+                    message: 'Can not be less than 0',
+                  },
+                ]}
               />
             </div>
             <div className="input-row">
@@ -52,6 +66,20 @@ const ConfigForm = (props) => {
                 value={values.grain_size_diameter}
                 length="short"
                 suffix="μ"
+                validation={[
+                  {
+                    constraint: value => (value.length !== 0),
+                    message: 'Can not be empty',
+                  },
+                  {
+                    constraint: value => (!isNaN(value)),
+                    message: 'Must be a number',
+                  },
+                  {
+                    constraint: value => (parseFloat(value) > 0),
+                    message: 'Can not be less than 0',
+                  },
+                ]}
               />
             </div>
           </div>
@@ -72,6 +100,20 @@ const ConfigForm = (props) => {
                   value={values.ae1_temp}
                   length="short"
                   suffix="°C"
+                  validation={[
+                    {
+                      constraint: value => (value.length !== 0),
+                      message: 'Can not be empty',
+                    },
+                    {
+                      constraint: value => (!isNaN(value)),
+                      message: 'Must be a number',
+                    },
+                    {
+                      constraint: value => (parseFloat(value) > 0),
+                      message: 'Can not be less than 0',
+                    },
+                  ]}
                 />
               </div>
               <div className="input-row">
@@ -83,6 +125,20 @@ const ConfigForm = (props) => {
                   value={values.ae3_temp}
                   length="short"
                   suffix="°C"
+                  validation={[
+                    {
+                      constraint: value => (value.length !== 0),
+                      message: 'Can not be empty',
+                    },
+                    {
+                      constraint: value => (!isNaN(value)),
+                      message: 'Must be a number',
+                    },
+                    {
+                      constraint: value => (parseFloat(value) > 0),
+                      message: 'Can not be less than 0',
+                    },
+                  ]}
                 />
               </div>
             </div>
@@ -105,6 +161,20 @@ const ConfigForm = (props) => {
                   value={values.bs_temp}
                   length="short"
                   suffix="°C"
+                  validation={[
+                    {
+                      constraint: value => (value.length !== 0),
+                      message: 'Can not be empty',
+                    },
+                    {
+                      constraint: value => (!isNaN(value)),
+                      message: 'Must be a number',
+                    },
+                    {
+                      constraint: value => (parseFloat(value) > 0),
+                      message: 'Can not be less than 0',
+                    },
+                  ]}
                 />
               </div>
             </div>
@@ -127,6 +197,20 @@ const ConfigForm = (props) => {
                   value={values.ms_temp}
                   length="short"
                   suffix="°C"
+                  validation={[
+                    {
+                      constraint: value => (value.length !== 0),
+                      message: 'Can not be empty',
+                    },
+                    {
+                      constraint: value => (!isNaN(value)),
+                      message: 'Must be a number',
+                    },
+                    {
+                      constraint: value => (parseFloat(value) > 0),
+                      message: 'Can not be less than 0',
+                    },
+                  ]}
                 />
               </div>
               <div className="input-row">
@@ -137,6 +221,20 @@ const ConfigForm = (props) => {
                   onChange={val => onChange('ms_rate_param', val)}
                   value={values.ms_rate_param}
                   length="short"
+                  validation={[
+                    {
+                      constraint: value => (value.length !== 0),
+                      message: 'Can not be empty',
+                    },
+                    {
+                      constraint: value => (!isNaN(value)),
+                      message: 'Must be a number',
+                    },
+                    {
+                      constraint: value => (parseFloat(value) > 0),
+                      message: 'Can not be less than 0',
+                    },
+                  ]}
                 />
               </div>
             </div>
@@ -161,6 +259,20 @@ const ConfigForm = (props) => {
               value={values.nucleation_start}
               length="short"
               suffix="%"
+              validation={[
+                {
+                  constraint: value => (value.length !== 0),
+                  message: 'Can not be empty',
+                },
+                {
+                  constraint: value => (!isNaN(value)),
+                  message: 'Must be a number',
+                },
+                {
+                  constraint: value => (parseFloat(value) > 0),
+                  message: 'Can not be less than 0',
+                },
+              ]}
             />
           </div>
           <div className="input-row">
@@ -172,6 +284,20 @@ const ConfigForm = (props) => {
               value={values.nucleation_finish}
               length="short"
               suffix="%"
+              validation={[
+                {
+                  constraint: value => (value.length !== 0),
+                  message: 'Can not be empty',
+                },
+                {
+                  constraint: value => (!isNaN(value)),
+                  message: 'Must be a number',
+                },
+                {
+                  constraint: value => (parseFloat(value) > 0),
+                  message: 'Can not be less than 0',
+                },
+              ]}
             />
           </div>
         </div>
@@ -182,28 +308,28 @@ const ConfigForm = (props) => {
 
 ConfigForm.propTypes = {
   values: PropTypes.shape({
-    method: PropTypes.string.isRequired,
-    alloy: PropTypes.string.isRequired,
+    method: PropTypes.string,
+    alloy: PropTypes.string,
     grain_size_ASTM: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.number,
-    ]).isRequired,
+    ]),
     grain_size_diameter: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.number,
-    ]).isRequired,
-    nucleation_start: PropTypes.number.isRequired,
-    nucleation_finish: PropTypes.number.isRequired,
-    auto_calculate_bs: PropTypes.bool.isRequired,
-    auto_calculate_ms: PropTypes.bool.isRequired,
-    ms_temp: PropTypes.number.isRequired,
-    ms_rate_param: PropTypes.number.isRequired,
-    bs_temp: PropTypes.number.isRequired,
-    auto_calculate_ae: PropTypes.bool.isRequired,
-    ae1_temp: PropTypes.number.isRequired,
-    ae3_temp: PropTypes.number.isRequired,
-    start_temp: PropTypes.number.isRequired,
-    cct_cooling_rate: PropTypes.number.isRequired,
+    ]),
+    nucleation_start: PropTypes.number,
+    nucleation_finish: PropTypes.number,
+    auto_calculate_bs: PropTypes.bool,
+    auto_calculate_ms: PropTypes.bool,
+    ms_temp: PropTypes.number,
+    ms_rate_param: PropTypes.number,
+    bs_temp: PropTypes.number,
+    auto_calculate_ae: PropTypes.bool,
+    ae1_temp: PropTypes.number,
+    ae3_temp: PropTypes.number,
+    start_temp: PropTypes.number,
+    cct_cooling_rate: PropTypes.number,
   }).isRequired,
   onChange: PropTypes.func.isRequired,
 }

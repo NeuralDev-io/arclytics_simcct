@@ -333,21 +333,23 @@ class SimulationPage extends Component {
           />
         </div>
         <div className={styles.main}>
-          <header className={styles.config}>
-            <h3>Configurations</h3>
-            <Button
-              appearance="text"
-              onClick={() => this.setState(prevState => ({
-                displayConfig: !prevState.displayConfig,
-              }))}
-              IconComponent={(props) => {
-                if (displayConfig) return <ChevronUpIcon {...props} />
-                return <ChevronDownIcon {...props} />
-              }}
-            >
-              {displayConfig ? 'Collapse' : 'Expand'}
-            </Button>
-            <div className={styles.actionButtons}>
+          <header>
+            <div className={styles.config}>
+              <h3>Configurations</h3>
+              <Button
+                appearance="text"
+                onClick={() => this.setState(prevState => ({
+                  displayConfig: !prevState.displayConfig,
+                }))}
+                IconComponent={(props) => {
+                  if (displayConfig) return <ChevronUpIcon {...props} />
+                  return <ChevronDownIcon {...props} />
+                }}
+              >
+                {displayConfig ? 'Collapse' : 'Expand'}
+              </Button>
+            </div>
+            <div className={styles.actions}>
               <Button
                 appearance="text"
                 onClick={() => console.log('SHARE NOW')}

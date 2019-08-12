@@ -321,20 +321,14 @@ class AlloyStore(Resource):
             response['message'] = 'No valid key in the alloy was provided.'
             return response, 400
 
-        # Let's validate the Alloy follows our schema
-        try:
-            alloy = AlloySchema().load(alloy)
-        except ValidationError as e:
-            response['errors'] = str(e.messages)
-            response['message'] = 'Alloy failed schema validation.'
-            return response, 400
-
         sid, session_store = SimSessionService().load_session(session_key)
 
         if sid is None:
             response['errors'] = session_store
             response['message'] = 'Unable to load session from Redis.'
             return response, 401
+
+        logger.debug(session_store)
 
         if not session_store:
             response['message'] = 'Unable to retrieve data from Redis.'
@@ -482,7 +476,13 @@ class AlloyStore(Resource):
             response['data']['ae3_temp'] = ae3
 
         session_store['configurations'] = sess_configs
-        SimSessionService().save_session(sid, session_store)
+
+        try:
+            SimSessionService().save_session(sid, session_store)
+        except SaveSessionError as e:
+            response['errors'] = str(e.msg)
+            response['message'] = 'Unable to save to session store.'
+            return response, 500
 
         response['status'] = 'success'
         headers = {

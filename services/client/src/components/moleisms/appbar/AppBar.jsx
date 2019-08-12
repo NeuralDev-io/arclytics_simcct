@@ -42,7 +42,7 @@ const AppBar = (props) => {
         </a>
       </div>
       <div>
-        <UserIcon 
+        <UserIcon
           className={`${styles.navIcon} ${active === 'user' && styles.active}`}
           onClick={() => {
             redirect('/profile')

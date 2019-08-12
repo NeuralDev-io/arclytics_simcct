@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import ChevronLeft from 'react-feather/dist/icons/chevron-left'
 import ChevronRight from 'react-feather/dist/icons/chevron-right'
@@ -6,9 +6,11 @@ import Button from '../button'
 
 import styles from './Pagination.module.scss'
 
-class Pagination extends React.Component {
-  componentWillReceiveProps(nextProps) {
-    this.changePage(nextProps.page + 1)
+class Pagination extends Component {
+  componentDidUpdate = (prevProps) => {
+    const { page } = this.props
+    if (prevProps.page !== page)
+    this.changePage(page + 1)
   }
 
   changePage = (newPage) => {

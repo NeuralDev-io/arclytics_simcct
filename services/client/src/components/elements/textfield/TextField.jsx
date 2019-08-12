@@ -68,7 +68,6 @@ class TextField extends Component {
     const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${err !== '' && styles.error} ${className || ''}`
 
     return (
-      /*<div className={styles.container}>*/
       <div>
         <input
           {...other}

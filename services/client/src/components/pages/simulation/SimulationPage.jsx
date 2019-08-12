@@ -16,6 +16,9 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
 import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
+import Share2Icon from 'react-feather/dist/icons/share-2'
+import SaveIcon from 'react-feather/dist/icons/save'
+import UploadIcon from 'react-feather/dist/icons/upload'
 import Button from '../../elements/button'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
@@ -30,6 +33,7 @@ import {
   updateMsBsAe,
   getMsBsAe,
 } from '../../../api/sim/SessionConfigs'
+import { postSaveSimulation } from '../../../api/sim/SessionSaveSim'
 import { runSim } from '../../../state/ducks/sim/actions'
 
 import styles from './SimulationPage.module.scss'
@@ -294,6 +298,21 @@ class SimulationPage extends Component {
     }
   }
 
+  saveCurrentSimulation = () => {
+    const { configurations, alloys } = this.state
+    console.log(configurations)
+    const alloyStore = {
+      alloy_option: alloys.alloyOption,
+      alloys: {
+        parent: alloys.parent,
+        weld: alloys.weld,
+        mix: alloys.mix,
+      },
+    }
+    console.log(alloyStore)
+    postSaveSimulation(configurations, alloyStore)
+  }
+
   render() {
     const {
       displayConfig,
@@ -310,7 +329,7 @@ class SimulationPage extends Component {
     return (
       <React.Fragment>
         <AppBar active="sim" redirect={history.push} />
-        <ProfileQuestions />
+        {/* <ProfileQuestions /> */}
         <div className={styles.compSidebar}>
           <CompSidebar
             values={alloys}
@@ -325,20 +344,50 @@ class SimulationPage extends Component {
           />
         </div>
         <div className={styles.main}>
-          <header className={styles.config}>
-            <h3>Configurations</h3>
-            <Button
-              appearance="text"
-              onClick={() => this.setState(prevState => ({
-                displayConfig: !prevState.displayConfig,
-              }))}
-              IconComponent={(props) => {
-                if (displayConfig) return <ChevronUpIcon {...props} />
-                return <ChevronDownIcon {...props} />
-              }}
-            >
-              {displayConfig ? 'Collapse' : 'Expand'}
-            </Button>
+          <header>
+            <div className={styles.config}>
+              <h3>Configurations</h3>
+              <Button
+                appearance="text"
+                onClick={() => this.setState(prevState => ({
+                  displayConfig: !prevState.displayConfig,
+                }))}
+                IconComponent={(props) => {
+                  if (displayConfig) return <ChevronUpIcon {...props} />
+                  return <ChevronDownIcon {...props} />
+                }}
+              >
+                {displayConfig ? 'Collapse' : 'Expand'}
+              </Button>
+            </div>
+            <div className={styles.actions}>
+              <Button
+                appearance="text"
+                onClick={() => console.log('SHARE NOW')}
+                IconComponent={props => <Share2Icon {...props} />}
+              >
+                SHARE
+              </Button>
+
+              <Button
+                appearance="outline"
+                type="button"
+                onClick={this.saveCurrentSimulation}
+                IconComponent={props => <SaveIcon {...props} />}
+              >
+                SAVE
+              </Button>
+
+              <Button
+                appearance="outline"
+                type="button"
+                onClick={() => console.log('LOAD NOW')}
+                IconComponent={props => <UploadIcon {...props} />}
+              >
+                LOAD
+              </Button>
+            </div>
+
           </header>
           <div className={styles.configForm} style={{ display: displayConfig ? 'block' : 'none' }}>
             <ConfigForm

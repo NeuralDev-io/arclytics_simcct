@@ -91,8 +91,11 @@ class SimSessionService(object):
         # The storage value dumped to JSON format
         redis_value = json.dumps(dict(session_data))
 
+        # converts global expiry time in minutes to seconds
         expiry_duration = self._get_expiry_duration()
+        # adds the expiry to the current time and gets a Date object.
         expiry_date = datetime.utcnow() + expiry_duration
+        # Use datetime to convert to seconds
         expires_in_seconds = int(expiry_duration.total_seconds())
 
         # This is used as the key that differentiates the session in Redis

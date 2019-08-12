@@ -43,6 +43,16 @@ class Simulation(Resource):
 
         # First we need to make sure they logged in and are in a current session
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
         if session_configs is None:
             response['message'] = 'No previous session configurations was set.'

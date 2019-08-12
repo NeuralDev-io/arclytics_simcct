@@ -30,6 +30,7 @@ from sim_app.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, MissingElementError
 from logger.arc_logger import AppLogger
+from sim_app.sim_session import SaveSessionError
 
 logger = AppLogger(__name__)
 
@@ -162,6 +163,16 @@ class AlloyStore(Resource):
             return response, 400
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_store['alloy_store'] = valid_store
 
         # In this situation, we always need to auto calculate and set the
@@ -222,7 +233,13 @@ class AlloyStore(Resource):
         default_configs['ae3_temp'] = ae3
 
         session_store['configurations'] = default_configs
-        SimSessionService().save_session(sid, session_store)
+
+        try:
+            SimSessionService().save_session(sid, session_store)
+        except SaveSessionError as e:
+            response['errors'] = str(e.msg)
+            response['message'] = 'Unable to save to session store.'
+            return response, 500
 
         response['data'] = {
             'ms_temp': ms_temp,
@@ -314,6 +331,15 @@ class AlloyStore(Resource):
 
         sid, session_store = SimSessionService().load_session(session_key)
 
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         # We get what's currently stored in the session and we update it
         sess_alloy_store = session_store.get('alloy_store')
 
@@ -387,7 +413,14 @@ class AlloyStore(Resource):
         ):
             # If we are only updating the alloy_store in the session, we access
             # Redis at this point and save it.
-            SimSessionService().save_session(sid, session_store)
+            try:
+                SimSessionService().save_session(sid, session_store)
+            except SaveSessionError as e:
+                response['errors'] = str(e.msg)
+                response['message'] = 'Unable to save to session store.'
+                return response, 500
+
+
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'
             return response, 200

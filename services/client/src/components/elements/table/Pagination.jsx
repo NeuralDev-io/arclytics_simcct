@@ -9,8 +9,7 @@ import styles from './Pagination.module.scss'
 class Pagination extends Component {
   componentDidUpdate = (prevProps) => {
     const { page } = this.props
-    if (prevProps.page !== page)
-    this.changePage(page + 1)
+    if (prevProps.page !== page) this.changePage(page + 1)
   }
 
   changePage = (newPage) => {

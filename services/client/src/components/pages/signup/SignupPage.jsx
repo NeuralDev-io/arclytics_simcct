@@ -174,11 +174,8 @@ class SignupPage extends Component {
           </Formik>
           <div>
             <h6>
-              {' '}
-Already have an account?
+              Already have an account?
               <a href="http://localhost:3000/signin" className={styles.signIn}> Sign in </a>
-              {' '}
-
             </h6>
           </div>
         </div>

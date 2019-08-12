@@ -151,8 +151,9 @@ class SimSessionService(object):
             time=expires_in_seconds
         )
 
-    def load_session(self, session_key: str
-                     ) -> Union[Tuple[str, dict], Tuple[None, dict]]:
+    def load_session(
+            self, session_key: str
+    ) -> Union[Tuple[str, dict], Tuple[None, str]]:
         """We load the User's current Session from the Redis datastore by
         taking in a session key and decoding it to generate the session ID.
 
@@ -165,16 +166,16 @@ class SimSessionService(object):
         sid, expiry_timestamp = self._decode_sid_and_expiry_from(session_key)
 
         if not expiry_timestamp:
-            return None, {}
+            return None, 'Cannot decode timestamp from Session key.'
 
         # We access the Redis Datastore and get the Session data and it's
         # Time To Live (TTL) value of the current store
         redis_value, redis_key_ttl = self._get_redis_value_and_ttl_of(sid)
         if not redis_value:
-            return None, {}
+            return None, 'Cannot retrieve data from Redis.'
 
         if self._expiry_timestamp_not_match(expiry_timestamp, redis_key_ttl):
-            return None, {}
+            return None, 'Session timestamp does not match Redis TTL.'
 
         # Return the data as a dict and the sid to be used later for saving
         return sid, json.loads(redis_value.decode())

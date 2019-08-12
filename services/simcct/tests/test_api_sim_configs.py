@@ -452,10 +452,10 @@ class TestSimConfigurations(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assert404(res)
             self.assertEqual(
-                data['message'], 'No previous session configurations was set.'
+                data['message'], 'Unable to load session from Redis.'
             )
+            self.assert401(res)
             self.assertEqual(data['status'], 'fail')
 
     def test_auto_update_ms_kirkaldy_method(self):
@@ -611,11 +611,11 @@ class TestSimConfigurations(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assert404(res)
-            self.assertEqual(data['status'], 'fail')
             self.assertEqual(
-                data['message'], 'No previous session configurations was set.'
+                data['message'], 'Unable to load session from Redis.'
             )
+            self.assertEqual(data['status'], 'fail')
+            self.assert401(res)
 
     def test_on_configs_change_invalid_schema(self):
         """Ensure if we send no valid data we get an error response."""
@@ -715,11 +715,11 @@ class TestSimConfigurations(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assert404(res)
-            self.assertEquals(data['status'], 'fail')
             self.assertEquals(
-                data['message'], 'No previous session configurations was set.'
+                data['message'], 'Unable to load session from Redis.'
             )
+            self.assert401(res)
+            self.assertEquals(data['status'], 'fail')
 
     def test_update_bs_no_prev_configs(self):
         """Ensure if there is no prev. configs BS payload does not pass."""
@@ -739,11 +739,11 @@ class TestSimConfigurations(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assert404(res)
-            self.assertEquals(data['status'], 'fail')
             self.assertEquals(
-                data['message'], 'No previous session configurations was set.'
+                data['message'], 'Unable to load session from Redis.'
             )
+            self.assertEquals(data['status'], 'fail')
+            self.assert401(res)
 
     def test_update_ms(self):
         """Ensure a valid payload of MS will do just as we expect."""
@@ -871,11 +871,11 @@ class TestSimConfigurations(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assert404(res)
             self.assertEquals(data['status'], 'fail')
             self.assertEquals(
-                data['message'], 'No previous session configurations was set.'
+                data['message'], 'Unable to load session from Redis.'
             )
+            self.assert401(res)
 
     def test_update_ae(self):
         """Ensure a valid payload of MS and BS will do just as we expect."""

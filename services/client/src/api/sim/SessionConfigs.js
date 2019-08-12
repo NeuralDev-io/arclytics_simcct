@@ -60,7 +60,7 @@ export const updateConfigMethod = (value) => {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'Session': localStorage.getItem('session'),
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({ method: value }),
@@ -77,7 +77,7 @@ export const updateConfig = (reqBody) => {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      'Session': localStorage.getItem('session'),
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(reqBody),
@@ -90,11 +90,11 @@ export const updateConfig = (reqBody) => {
 }
 
 export const updateMsBsAe = (name, reqBody) => {
-  fetch(`http://localhost:8001/${name}`, {
+  fetch(`http://localhost:8001/configs/${name}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'Session': localStorage.getItem('session'),
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(reqBody),
@@ -107,11 +107,11 @@ export const updateMsBsAe = (name, reqBody) => {
 }
 
 export const getMsBsAe = (name, callback) => {
-  fetch(`http://localhost:8001/${name}`, {
+  fetch(`http://localhost:8001/configs/${name}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Session': localStorage.getItem('session'),
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })

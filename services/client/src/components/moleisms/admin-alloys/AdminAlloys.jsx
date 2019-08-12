@@ -109,7 +109,7 @@ AdminAlloys.propTypes = {
   getAlloysConnect: PropTypes.func.isRequired,
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   alloyList: state.alloys.list,
 })
 

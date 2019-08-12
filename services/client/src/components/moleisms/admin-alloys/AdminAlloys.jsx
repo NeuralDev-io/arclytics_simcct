@@ -83,6 +83,7 @@ class AdminAlloys extends Component {
           </Button>
         </div>
         <Table
+          className="-highlight"
           data={alloyList}
           columns={columns}
           pageSize={alloyList.length > 10 ? 10 : alloyList.length}

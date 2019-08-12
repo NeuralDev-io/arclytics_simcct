@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { createUserProfile } from '../../../state/ducks/persist/actions'
+import { updateUserProfile } from '../../../state/ducks/persist/actions'
 import Select from '../../elements/select'
 import Button from '../../elements/button'
 
@@ -47,7 +47,7 @@ class ProfileQuestions extends Component{
         "phase_transform_exp": question4.value
       }
     })
-    // this.setState({showQuestions: false}) TODO: remember to uncomment
+    this.setState({showQuestions: false}) 
   }
 
   handleSkip = () => {
@@ -67,14 +67,14 @@ class ProfileQuestions extends Component{
       question3, question3Select,
       question4, question4Select,
       showQuestions} = this.state
-    const { profile, createUserProfile } = this.props
+    const { profile } = this.props
     return(
       <Modal clicked={this.handleSkip} className={styles.modalQuestions} show={!profile && showQuestions}>
-      <div className={styles.content}>
-        <div className={styles.header}>
-        <h3>More about you...</h3>
-        Help us understand our user
-        </div>
+        <div className={styles.content}>
+          <div className={styles.header}>
+            <h3>More about you...</h3>
+            Help us understand our user
+          </div>
 
         <div className={styles.questions}>
           <div className={styles.question}>
@@ -89,6 +89,7 @@ class ProfileQuestions extends Component{
               onChange={value => this.handleChange('question1', value )}
             />
           </div>
+
           <div className={styles.question}>
             <h6 className={styles.questionText}> What is the highest level of education have you studied? </h6>
             <Select
@@ -101,8 +102,9 @@ class ProfileQuestions extends Component{
               onChange={value => this.handleChange('question2', value )}
             />
           </div>
+
           <div className={styles.question}>
-            <h6 className={styles.questionText}> What is your experience with solid-state phase transformation? </h6>
+            <h6 className={styles.questionText}>What is your experience with solid-state phase transformation?</h6>
             <Select
               type="question3"
               name="question3"
@@ -113,6 +115,7 @@ class ProfileQuestions extends Component{
               onChange={value => this.handleChange('question3', value )}
             />
           </div>
+
           <div className={styles.question}>
             <h6 className={styles.questionText}> What is your experience with scientific software? </h6>
             <Select
@@ -130,7 +133,7 @@ class ProfileQuestions extends Component{
             <Button classname={styles.skip} appearance="outline" onClick={this.handleSkip}> SKIP </Button>
             <Button className={styles.send} isDisabled={!(question1 && question2 && question3 && question4)} onClick={this.handleSubmit} > SEND </Button>
         </div>
-      </div> 
+      </div>
     </Modal>
     )
     
@@ -144,7 +147,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = {
-  createUserProfileConnect: createUserProfile,
+  createUserProfileConnect: updateUserProfile,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProfileQuestions)

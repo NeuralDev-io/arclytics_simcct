@@ -329,7 +329,7 @@ class SimulationPage extends Component {
     return (
       <React.Fragment>
         <AppBar active="sim" redirect={history.push} />
-        {/* <ProfileQuestions /> */}
+        <ProfileQuestions />
         <div className={styles.compSidebar}>
           <CompSidebar
             values={alloys}

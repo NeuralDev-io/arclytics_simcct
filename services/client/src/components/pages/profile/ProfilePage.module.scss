@@ -30,6 +30,11 @@ $bg-img: url('../../../assets/background_img-min.png');
   width: calc(100% - calc(4rem + 27vw));
   padding: 2.5rem 0rem 2.5rem 2.5rem;
 
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+
+
   // @media screen and (max-width: 1720px) {
   //   margin-left: calc(4rem + 430px);
   //   width: calc(100% - calc(4rem + 430px));
@@ -141,9 +146,39 @@ $bg-img: url('../../../assets/background_img-min.png');
 .deleteWarning{
   margin-bottom: 1.5rem;
 }
-
+.about{
+  .questions {
+    display: flex;
+    flex-flow: column;
+    justify-content: space-betweeens;
+    
+    .question{
+      margin-bottom: 2.5rem;
+      width: 45rem;
+  
+      .questionText{
+        margin-bottom:1.25rem;
+      }
+    }
+  }
+}
 
 .delete{
   color: $r400;
   cursor: pointer;
+}
+
+.deleteModal{
+  margin: 3rem 3.5rem 3rem 3.5rem;
+  width: 37.31rem;
+  input{
+    margin-top: 1.5rem;
+  }
+  .deleteButtons{
+    margin-top: 1.8125rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+  }
 }

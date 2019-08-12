@@ -29,6 +29,7 @@ from pathlib import Path
 import coverage
 import redis
 from flask.cli import FlaskGroup
+from prettytable import PrettyTable
 from pymongo import MongoClient
 
 import settings
@@ -68,11 +69,18 @@ def seed_alloy_db():
 
     from sim_app.schemas import AlloySchema
     data = AlloySchema(many=True).load(json_data['alloys'])
-    print(db)  # Check the correct database -- arc_dev
+    # Check the correct database -- arc_dev
+    print('Seeding alloys to <{}> database:'.format(db.name))
     db.alloys.insert_many(data)
-    import pprint
+
+    tbl = PrettyTable(['Symbol', 'Weight'])
+
     for alloy in db.alloys.find():
-        pprint.pprint(alloy)
+        print(f"Alloy name: {alloy['name']}")
+        for el in alloy['compositions']:
+            tbl.add_row((el['symbol'], el['weight']))
+        print(tbl)
+        tbl.clear_rows()
 
 
 @cli.command('flush')

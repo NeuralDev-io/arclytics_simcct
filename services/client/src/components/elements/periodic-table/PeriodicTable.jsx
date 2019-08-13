@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import data from './data'
 import { buttonize } from '../../../utils/accessibility'
 
@@ -8,21 +9,19 @@ class PeriodicTable extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      active: {},
       hovering: 0,
     }
   }
 
   handleToggleElement = (number) => {
-    this.setState((prevState) => {
-      const newActive = prevState.active
-      if (newActive[number] !== undefined) {
-        delete newActive[number]
-      } else {
-        newActive[number] = true
-      }
-      return { active: newActive }
-    })
+    const { elements, onToggleElement } = this.props
+    let newElements = [...elements]
+    if (elements.includes(number)) {
+      newElements = newElements.filter(n => n !== number)
+    } else {
+      newElements.push(number)
+    }
+    onToggleElement(number, newElements)
   }
 
   handleMouseEnter = number => this.setState({ hovering: number })
@@ -39,7 +38,8 @@ class PeriodicTable extends Component {
       atomic_mass, // eslint-disable-line
       category,
     } = elem
-    const { active, hovering } = this.state
+    const { hovering } = this.state
+    const { elements = [] } = this.props
     let popupPos = ''
     if (xpos <= 9 && ypos <= 5) popupPos = 'popupTopRight'
     if (xpos > 9 && ypos <= 5) popupPos = 'popupTopLeft'
@@ -69,12 +69,12 @@ class PeriodicTable extends Component {
         onMouseLeave={() => this.handleMouseLeave(number)}
         {...buttonize(() => this.handleToggleElement(number))}
       >
-        <div className={`${styles.element} ${styles[colour()]} ${typeof active[number] !== 'undefined' && styles.active}`}>
+        <div className={`${styles.element} ${styles[colour()]} ${elements.includes(number) && styles.active}`}>
           <span className={styles.number}>{number}</span>
           <span className={styles.symbol}>{symbol}</span>
         </div>
         <div
-          className={`${styles[popupPos]} animate-fadein`}
+          className={`${styles[popupPos]}`}
           style={{ display: hovering === number ? 'block' : 'none' }}
         >
           <div className={styles.elementDetail}>
@@ -96,6 +96,15 @@ class PeriodicTable extends Component {
       </div>
     )
   }
+}
+
+PeriodicTable.propTypes = {
+  elements: PropTypes.arrayOf(PropTypes.number),
+  onToggleElement: PropTypes.func.isRequired,
+}
+
+PeriodicTable.defaultProps = {
+  elements: [],
 }
 
 export default PeriodicTable

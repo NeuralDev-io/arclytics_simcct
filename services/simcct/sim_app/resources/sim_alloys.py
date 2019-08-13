@@ -404,7 +404,6 @@ class AlloyStore(Resource):
                 response['message'] = 'Unable to save to session store.'
                 return response, 500
 
-
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'
             return response, 200

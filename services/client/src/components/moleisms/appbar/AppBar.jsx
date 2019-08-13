@@ -45,7 +45,7 @@ const AppBar = (props) => {
         <a
           id="user"
           className={`${styles.navIcon} ${active === 'user' && styles.active}`}
-          href="/profile"
+          href="/user"
         >
           <UserIcon className={styles.icon} />
         </a>

@@ -13,6 +13,7 @@ class CompSidebar extends Component {
       values,
       onChange,
       onSimulate,
+      storeInit,
     } = this.props
 
     return (
@@ -30,6 +31,7 @@ class CompSidebar extends Component {
           onClick={onSimulate}
           length="long"
           className={styles.btn}
+          isDisabled={!storeInit}
         >
           RUN
         </Button>
@@ -78,6 +80,7 @@ CompSidebar.propTypes = {
   }).isRequired,
   onChange: PropTypes.func.isRequired,
   onSimulate: PropTypes.func.isRequired,
+  storeInit: PropTypes.bool.isRequired,
 }
 
 export default CompSidebar

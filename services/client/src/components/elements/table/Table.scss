@@ -263,7 +263,7 @@
   background: rgba(0, 0, 0, 0.03);
 }
 .ReactTable.-highlight .rt-tbody .rt-tr-group:not(.-padRow):hover {
-  background: $ag50;
+  background: $n10;
 }
 .ReactTable .-pagination {
   z-index: 1;
@@ -365,8 +365,8 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  -webkit-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, 50%);
+  transform: translate(-50%, 50%);
   background: transparent;
   transition: all 0.3s ease;
   z-index: 1;
@@ -462,10 +462,6 @@
           padding: 0 .25rem;
         }
       }
-
-      &:hover {
-        background-color: $n10;
-      }
     }
   }
 
@@ -480,18 +476,6 @@
       .rt-td {
         @extend .text--sub2;
         padding: 0 .25rem;
-      }
-    }
-  }
-
-  &.-highlight {
-    .rt-body {
-      .rt-tr-group:hover {
-        background-color: $ag50;
-
-        .rt-tr {
-          background-color: $ag50;
-        }
       }
     }
   }

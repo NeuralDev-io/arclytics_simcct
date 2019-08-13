@@ -74,6 +74,16 @@ class Configurations(Resource):
 
         # If there are changes to be made, then we will get the session store.
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         sess_configs = session_store.get('configurations')
         if sess_configs is None:
             response['message'] = 'No previous session configurations was set.'
@@ -145,6 +155,16 @@ class ConfigsMethod(Resource):
             return response, 400
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
 
         if not session_configs:
@@ -193,6 +213,16 @@ class MartensiteStart(Resource):
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
 
         if not session_configs:
@@ -277,6 +307,16 @@ class MartensiteStart(Resource):
             return response, 400
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations', None)
 
         if not session_configs:
@@ -320,6 +360,16 @@ class BainiteStart(Resource):
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
 
         if not session_configs:
@@ -395,6 +445,16 @@ class BainiteStart(Resource):
             return response, 400
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
@@ -434,6 +494,16 @@ class Austenite(Resource):
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
 
         if not session_configs:
@@ -508,6 +578,16 @@ class Austenite(Resource):
             return response, 400
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
 
         if session_configs is None:

@@ -28,36 +28,26 @@ class ProfilePage extends Component {
       email: props.user.email,
       firstName: props.user.first_name, //just in case we implement demo mode
       lastName: props.user.last_name,
-      question1:  props.user.profile ? { label:props.user.profile.aim , value: 'opt21'} : null,
+      question1:  props.user.profile ? { label:props.user.profile.aim , value: props.user.profile.aim } : null,
       question1Select: [
-        { label: 'To defeat the huns', value: 'opt11'},
-        { label: 'Option 2', value: 'opt12'},
+        { label: 'Option 1', value: 'Option 1'},
+        { label: 'Option 2', value: 'Option 2'},
       ],
-      question2: null,
+      question2: props.user.profile ? { label:props.user.profile.sci_tech_exp , value: props.user.profile.sci_tech_exp } : null,
       question2Select: [
-        { label: 'Be a man training montage', value: 'opt21'},
-        { label: 'Option 2', value: 'opt22'},
+        { label: 'Option 1', value: 'Option 1'},
+        { label: 'Option 2', value: 'Option 2'},
       ],
-      question3: null,
+      question3: props.user.profile ? { label:props.user.profile.phase_transform_exp , value: props.user.profile.phase_transform_exp } : null,
       question3Select: [
-        { label: 'Swords', value: 'opt31'},
-        { label: 'Option 2', value: 'opt32'},
+        { label: 'Option 1', value: 'Option 1'},
+        { label: 'Option 2', value: 'Option 2'},
       ],
       currPassword: null,
       newPassword: null,
       cnfrmPassword: null,
       showDelete: false,
-      editProfile: false,
-    }
-  }
-
-  componentDidUpdate = (prevState) => {
-    const {firstName, lastName, occOptions } = this.state
-    //Checks for changes
-    if (this.state.firstname !== prevState.firstName) {
-      this.props.updateUserProfileConnect({
-        "firstName": firstName 
-      })
+      edit: false,
     }
   }
 
@@ -72,7 +62,18 @@ class ProfilePage extends Component {
 
   
   handleEdit = () => {
-    this.state.editProfile ? this.setState({editProfile: false}) : this.setState({editProfile: true}) 
+    const { user } = this.props
+    this.state.edit ? 
+    this.setState({
+      firstName: user.first_name, //just in case we implement demo mode
+      lastName: user.last_name,
+      question1:  user.profile ? {label:user.profile.aim , value:user.profile.aim} : null,
+      question2: user.profile ? {label:user.profile.sci_tech_exp , value: user.profile.sci_tech_exp} : null,
+      question3: user.profile ? {label:user.profile.phase_transform_exp , value: user.profile.phase_transform_exp} : null,
+      edit: false
+    }) 
+    :   
+      this.setState({edit: true}) 
   }
 
 
@@ -93,6 +94,7 @@ class ProfilePage extends Component {
         phase_transform_exp: question3 ? question3.value : null
       }
     })
+    this.setState({ edit: false })
   }
 
   render() {
@@ -110,7 +112,7 @@ class ProfilePage extends Component {
       newPassword, 
       cnfrmPassword, 
       showDelete,
-      editProfile,
+      edit,
     } = this.state
     const { user } = this.props
     return (
@@ -125,26 +127,29 @@ class ProfilePage extends Component {
         </div>
 
         <div className={styles.main}> 
+          
           <div className={styles.general}>
             <h4 className={styles.header}>General</h4>
-            <div className={styles.row}>
-              <h6 className={styles.column}> Email </h6> 
-              <div className={styles.column}> <h6 className={styles.emailText}> {email} </h6> </div>   
-            </div>
-            <div className={styles.row}>
-              <h6  className={styles.leftCol}>First name</h6>
-              <div className={styles.column}>
-               <TextField
-                  type="firstName"
-                  name="firstName"
-                  value={firstName}
-                  placeholder="First Name"
-                  length="short"
-                  onChange={value => this.handleChange('firstName', value)}
-                />
-              </div>       
+            <div className={styles.generalFields}>
+              <div className={styles.row}>
+                <h6 className={styles.column}> Email </h6> 
+                <div className={styles.column}> <h6 className={styles.emailText}> {email} </h6> </div>   
               </div>
-            <div className={styles.row}>
+              <div className={styles.row}>
+                <h6  className={styles.leftCol}>First name</h6>
+                <div className={styles.column}>
+                <TextField
+                    type="firstName"
+                    name="firstName"
+                    value={firstName}
+                    placeholder="First Name"
+                    length="short"
+                    isDisabled={!edit}
+                    onChange={value => this.handleChange('firstName', value)}
+                  />
+                </div>       
+                </div>
+              <div className={styles.row}>
               <h6 className={styles.column}> Last name </h6>
               <div className={styles.column}>
                 <TextField
@@ -153,10 +158,14 @@ class ProfilePage extends Component {
                   value={lastName}
                   placeholder="Last Name"
                   length="short"
+                  isDisabled={!edit}
                   onChange={value => this.handleChange('lastName', value )}
                 />
               </div> 
             </div>     
+            </div>
+       
+            <div className={styles.profilePicture}> Profile Picture </div>
           </div>
        
           <div className={styles.about}>
@@ -171,12 +180,13 @@ class ProfilePage extends Component {
                   value= {question1}
                   options={question1Select}
                   length="stretch"
+                  isDisabled={!edit}
                   onChange={value => this.handleChange('question1', value )}
                 />
               </div>
 
               <div className={styles.question}>
-                <h6 className={styles.questionText}> What is your experience iwth solid-state phase transformation?  </h6>
+                <h6 className={styles.questionText}> What is your experience with solid-state phase transformation?  </h6>
                 <Select
                   type="question2"
                   name="question2"
@@ -184,6 +194,7 @@ class ProfilePage extends Component {
                   value= {question2}
                   options={question2Select}
                   length="stretch"
+                  isDisabled={!edit}
                   onChange={value => this.handleChange('question2', value )}
                 />
               </div>
@@ -197,6 +208,7 @@ class ProfilePage extends Component {
                   value= {question3}
                   options={question3Select}
                   length="stretch"
+                  isDisabled={!edit}
                   onChange={value => this.handleChange('question3', value )}
                 />
               </div>
@@ -204,10 +216,12 @@ class ProfilePage extends Component {
           </div>
           
           <div>
-           <Button onClick={this.handleEdit}> Edit </Button> 
-           
-            <Button onClick={this.updateUser}> Save </Button> 
-           {/* <Button onClick={this.handleEdit('editProfile', (!editProfile))}> Cancel </Button>  */}
+              {!edit ? ( <div className={styles.editButtons}> <Button onClick={this.handleEdit}> Edit </Button> </div>) : ('')} 
+              {edit ? (
+              <div className={styles.editButtons}> 
+                <Button onClick={this.updateUser}> Save </Button>
+                <Button className={styles.cancel}appearance="outline" onClick={this.handleEdit}> Cancel </Button> 
+              </div>) : ('')} 
           </div>
 
 

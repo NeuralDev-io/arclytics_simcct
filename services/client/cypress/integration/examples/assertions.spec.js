@@ -1,4 +1,4 @@
-/// <reference types="Cypress" />
+// / <reference types="Cypress" />
 
 context('Assertions', () => {
   beforeEach(() => {
@@ -97,7 +97,7 @@ context('Assertions', () => {
         .should(($div) => {
           expect($div).to.have.length(1)
 
-          const className = $div[0].className
+          const { className } = $div[0]
 
           expect(className).to.match(/heading-/)
         })
@@ -117,7 +117,7 @@ context('Assertions', () => {
             throw new Error('Did not find 1 element')
           }
 
-          const className = $div[0].className
+          const { className } = $div[0]
 
           if (!className.match(/heading-/)) {
             throw new Error(`Could not find class "heading-" in ${className}`)
@@ -137,7 +137,7 @@ context('Assertions', () => {
        * useful before comparing text with spaces and different capitalization.
        * @param {string} s Text to normalize
       */
-      const normalizeText = (s) => s.replace(/\s/g, '').toLowerCase()
+      const normalizeText = s => s.replace(/\s/g, '').toLowerCase()
 
       cy.get('.two-elements')
         .find('.first')

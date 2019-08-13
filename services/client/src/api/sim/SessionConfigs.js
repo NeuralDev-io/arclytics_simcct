@@ -90,7 +90,7 @@ export const updateConfig = (reqBody) => {
 }
 
 export const updateMsBsAe = (name, reqBody) => {
-  fetch(`http://localhost:8001/${name}`, {
+  fetch(`http://localhost:8001/configs/${name}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -107,7 +107,7 @@ export const updateMsBsAe = (name, reqBody) => {
 }
 
 export const getMsBsAe = (name, callback) => {
-  fetch(`http://localhost:8001/${name}`, {
+  fetch(`http://localhost:8001/configs/${name}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

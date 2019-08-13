@@ -13,11 +13,12 @@ class CompSidebar extends Component {
       values,
       onChange,
       onSimulate,
+      storeInit,
     } = this.props
 
     return (
       <div className={styles.sidebar}>
-        <h3>Composition</h3>
+        <h4>Composition</h4>
         <CompForm
           values={values}
           onChange={onChange}
@@ -30,6 +31,7 @@ class CompSidebar extends Component {
           onClick={onSimulate}
           length="long"
           className={styles.btn}
+          isDisabled={!storeInit}
         >
           RUN
         </Button>
@@ -78,6 +80,7 @@ CompSidebar.propTypes = {
   }).isRequired,
   onChange: PropTypes.func.isRequired,
   onSimulate: PropTypes.func.isRequired,
+  storeInit: PropTypes.bool.isRequired,
 }
 
 export default CompSidebar

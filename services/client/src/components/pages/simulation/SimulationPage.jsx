@@ -117,7 +117,10 @@ class SimulationPage extends Component {
       // update session store on the server
       const { alloys } = this.state
       if (sessionStoreInit) updateComp(alloys.alloyOption, name, alloy)
-      else initComp(alloys.alloyOption, name, alloy)
+      else {
+        initComp(alloys.alloyOption, name, alloy)
+        this.setState({ sessionStoreInit: true })
+      }
     } else if (name === 'dilution') {
       this.setState(prevState => ({
         alloys: {
@@ -295,6 +298,14 @@ class SimulationPage extends Component {
       // update in server session store
       const nameArr = name.split('_')
       getMsBsAe(nameArr[2], this.setState)
+    } else {
+      this.setState(prevState => ({
+        configurations: {
+          ...prevState.configurations,
+          [name]: value,
+        },
+      }))
+      updateConfig({ [name]: value })
     }
   }
 
@@ -315,6 +326,7 @@ class SimulationPage extends Component {
 
   render() {
     const {
+      sessionStoreInit,
       displayConfig,
       displayProfile,
       displayUserCurve,
@@ -334,6 +346,7 @@ class SimulationPage extends Component {
           <CompSidebar
             values={alloys}
             onChange={this.handleCompChange}
+            storeInit={sessionStoreInit}
             onSimulate={() => {
               console.log({
                 configurations,
@@ -346,7 +359,7 @@ class SimulationPage extends Component {
         <div className={styles.main}>
           <header>
             <div className={styles.config}>
-              <h3>Configurations</h3>
+              <h4>Configurations</h4>
               <Button
                 appearance="text"
                 onClick={() => this.setState(prevState => ({
@@ -387,7 +400,6 @@ class SimulationPage extends Component {
                 LOAD
               </Button>
             </div>
-
           </header>
           <div className={styles.configForm} style={{ display: displayConfig ? 'block' : 'none' }}>
             <ConfigForm
@@ -396,7 +408,7 @@ class SimulationPage extends Component {
             />
           </div>
           <div className={styles.results}>
-            <h3>Results</h3>
+            <h4>Results</h4>
             <div className={styles.charts}>
               <div className={styles.line}>
                 <h5>TTT</h5>
@@ -411,7 +423,7 @@ class SimulationPage extends Component {
           <div className={styles.custom}>
             <div>
               <header className={styles.profile}>
-                <h3>User profile</h3>
+                <h4>User profile</h4>
                 <Button
                   appearance="text"
                   onClick={() => this.setState(prevState => ({

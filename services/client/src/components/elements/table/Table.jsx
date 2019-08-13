@@ -23,12 +23,13 @@ const Table = (props) => {
   const {
     hideDivider = false,
     condensed = false,
+    className = '',
     ...otherProps
   } = props
   return (
     <ReactTable
       {...otherProps}
-      className={`${hideDivider ? 'rt-hide-divider' : ''} ${condensed ? 'condensed' : ''}`}
+      className={`${hideDivider ? 'rt-hide-divider' : ''} ${condensed ? 'condensed' : ''} ${className}`}
       PaginationComponent={Pagination}
     />
   )
@@ -37,11 +38,13 @@ const Table = (props) => {
 Table.propTypes = {
   hideDivider: PropTypes.bool,
   condensed: PropTypes.bool,
+  className: PropTypes.string,
 }
 
 Table.defaultProps = {
   hideDivider: false,
   condensed: false,
+  className: '',
 }
 
 export default Table

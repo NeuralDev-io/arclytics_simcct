@@ -129,7 +129,7 @@ class CompTable extends Component {
       <Table
         data={tableData}
         columns={columns}
-        pageSize={tableData.length !== 0 ? Math.round((containerHeight - 148) / 56) : 0}
+        pageSize={tableData.length !== 0 ? Math.floor((containerHeight - 148) / 56) : 0}
         showPageSizeOptions={false}
         showPagination={tableData.length !== 0}
         resizable={false}

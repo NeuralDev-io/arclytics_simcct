@@ -359,7 +359,7 @@ class SimulationPage extends Component {
         <div className={styles.main}>
           <header>
             <div className={styles.config}>
-              <h3>Configurations</h3>
+              <h4>Configurations</h4>
               <Button
                 appearance="text"
                 onClick={() => this.setState(prevState => ({
@@ -408,7 +408,7 @@ class SimulationPage extends Component {
             />
           </div>
           <div className={styles.results}>
-            <h3>Results</h3>
+            <h4>Results</h4>
             <div className={styles.charts}>
               <div className={styles.line}>
                 <h5>TTT</h5>
@@ -423,7 +423,7 @@ class SimulationPage extends Component {
           <div className={styles.custom}>
             <div>
               <header className={styles.profile}>
-                <h3>User profile</h3>
+                <h4>User profile</h4>
                 <Button
                   appearance="text"
                   onClick={() => this.setState(prevState => ({

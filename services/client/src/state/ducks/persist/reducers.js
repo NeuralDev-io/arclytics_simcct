@@ -1,5 +1,6 @@
 import {
   GET_USER_PROFILE,
+  CREATE_USER_PROFILE,
   UPDATE_USER_PROFILE
 } from './types'
 
@@ -19,6 +20,17 @@ const reducer = (state = initialState, action) => {
           ...state.user,
           ...action.payload,
         },
+      }
+      case CREATE_USER_PROFILE:
+      return {
+        ...state,
+        user:{
+          ...state.user,
+          profile:{
+            ...state.profile,
+            ...action.payload
+          }
+        }
       }
     case UPDATE_USER_PROFILE:
       return {

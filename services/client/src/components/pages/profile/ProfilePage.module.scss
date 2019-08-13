@@ -44,9 +44,16 @@ $bg-img: url('../../../assets/background_img-min.png');
 
 .header{
   margin-bottom: 2.5rem;
+  width: 100vw;
 }
 
 .general{
+  display: flex;
+  flex-flow: row;
+  flex-wrap: wrap;
+}
+
+.generalFields{
   width: 22rem;
   margin-bottom: 2.5rem;
   display: flex;
@@ -78,8 +85,8 @@ $bg-img: url('../../../assets/background_img-min.png');
 
 
 .profilePicture{
-  margin-top: calc(7.5rem - 2.5rem);
-  margin-right: calc(30.71vw);
+  // margin-top: calc(7.5rem - 2.5rem);
+  // margin-right: calc(30.71vw);
   float:right;
   text-align: center;
   background: grey;
@@ -160,6 +167,16 @@ $bg-img: url('../../../assets/background_img-min.png');
         margin-bottom:1.25rem;
       }
     }
+  }
+}
+
+.editButtons{
+  display: flex;
+  flex-flow: row;
+  justify-content: flex-end;
+  width: 35rem;
+  .cancel{
+    margin-left: 2rem;
   }
 }
 

@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { updateUserProfile } from '../../../state/ducks/persist/actions'
+import { createUserProfile } from '../../../state/ducks/persist/actions'
 import Select from '../../elements/select'
 import Button from '../../elements/button'
 
@@ -14,22 +14,22 @@ class ProfileQuestions extends Component{
     this.state = {
       question1: null,
       question1Select: [
-        { label: 'To defeat the huns', value: 'opt11'},
+        { label: 'To defeat the huns', value: 'To defeat the huns'},
         { label: 'Option 2', value: 'opt12'},
       ],
       question2: null,
       question2Select: [
-        { label: 'Be a man training montage', value: 'opt21'},
+        { label: 'Be a man training montage', value: 'Be a man training montage'},
         { label: 'Option 2', value: 'opt22'},
       ],
       question3: null,
       question3Select: [
-        { label: 'Swords', value: 'opt31'},
+        { label: 'Swords', value: 'Swords'},
         { label: 'Option 2', value: 'opt32'},
       ],
       question4: null,
       question4Select: [
-        { label: 'Fireworks', value: 'opt41'},
+        { label: 'Fireworks', value: 'Fireworks'},
         { label: 'Option 2', value: 'opt42'},
       ],
       showQuestions: true
@@ -40,12 +40,10 @@ class ProfileQuestions extends Component{
     const { question1, question2, question3, question4 } = this.state
     // console.log(question1.value, question2.value, question3.value, question4.value)
     this.props.createUserProfileConnect({ 
-      profile: {
-        aim: question1.value, 
-        highest_education: question2.value, 
-        sci_tech_exp: question3.value, 
-        phase_transform_exp: question4.value
-      }
+        aim: question1.label, 
+        highest_education: question2.label, 
+        sci_tech_exp: question3.label, 
+        phase_transform_exp: question4.label
     })
     this.setState({showQuestions: false}) 
   }
@@ -147,7 +145,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = {
-  createUserProfileConnect: updateUserProfile,
+  createUserProfileConnect: createUserProfile,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProfileQuestions)

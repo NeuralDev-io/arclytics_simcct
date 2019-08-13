@@ -31,7 +31,7 @@ from mongoengine.connection import (
 
 from settings import DEFAULT_LOGGER
 from users_app.utilities import JSONEncoder
-from users_app.extensions import cors, bcrypt, ma, api
+from users_app.extensions import cors, bcrypt, api
 from users_app.mongodb import MongoSingleton
 from users_app.resources.users import users_blueprint
 from users_app.resources.auth import auth_blueprint
@@ -166,7 +166,6 @@ def extensions(app) -> None:
     """
     cors.init_app(app)
     bcrypt.init_app(app)
-    ma.init_app(app)
     api.init_app(app)
 
     return None

@@ -285,7 +285,7 @@ class SimSessionService(object):
             # TODO(andrew@neuraldev.io): Find a way to refresh the session key
             #  for the client if the expiry is getting within 10 minutes.
             #  For now, we just accept it within 2 hours.
-            logger.debug(str(abs(int(expiry_timestamp) - timestamp_from_ttl)))
+            # logger.debug(str(abs(int(expiry_timestamp) - timestamp_from_ttl)))
             # This checks the time difference between the timestamps in seconds
             return abs(int(expiry_timestamp) - timestamp_from_ttl) > 3600
         except (ValueError, TypeError):

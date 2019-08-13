@@ -33,7 +33,7 @@ import coverage
 
 import settings
 from users_app.app import create_app, get_flask_mongo
-from users_app.models import User, AdminProfile
+from users_app.models import User, AdminProfile, Alloy
 
 COV = coverage.coverage(
     branch=True,
@@ -89,20 +89,28 @@ def seed_user_db():
     from mongoengine.connection import get_db
     db = get_db('default')
 
-    path = Path(settings.BASE_DIR) / 'seed_user_data.json'
-    if os.path.isfile(path):
-        with open(path) as f:
-            data = json.load(f)
+    user_data_path = Path(settings.BASE_DIR) / 'seed_user_data.json'
+    alloy_data_path = Path(settings.BASE_DIR) / 'seed_alloy_data.json'
+    if os.path.isfile(user_data_path):
+        with open(user_data_path) as f:
+            user_data = json.load(f)
+    if os.path.isfile(alloy_data_path):
+        with open(alloy_data_path) as f:
+            alloy_data = json.load(f)
 
-    tbl = PrettyTable(['No.', 'Email', 'Name', 'Admin'])
+    tbl = PrettyTable(['No.', 'Email', 'Name', 'Admin', 'Alloys'])
     print('Seeding users to <{}> database:'.format(db.name))
-    for i, u in enumerate(data):
+    for i, u in enumerate(user_data):
         new_user = User(
             email=u['email'],
             first_name=u['first_name'],
             last_name=u['last_name']
         )
         new_user.set_password(u['password'])
+
+        if u['first_name'] == 'Tony' or u['first_name'] == 'Natasha':
+            for alloy in alloy_data['alloys']:
+                new_user.saved_alloys.create(**alloy)
 
         if u.get('is_admin', False):
             profile = AdminProfile(
@@ -117,8 +125,9 @@ def seed_user_db():
         tbl.add_row(
             (
                 str(i + 1), u['email'],
-                '{} {}'.format(u['first_name'],
-                               u['last_name']), new_user.is_admin
+                '{} {}'.format(u['first_name'], u['last_name']),
+                new_user.is_admin,
+                new_user.saved_alloys.count()
             )
         )
     tbl.align['Name'] = 'l'

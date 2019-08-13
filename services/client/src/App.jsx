@@ -33,7 +33,6 @@ function App() {
             render={props => <AdminPage {...props} />}
           />
           <Route
-            exact
             path="/user"
             render={props => <UserPage {...props} />}
           />

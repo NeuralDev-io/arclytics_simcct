@@ -73,8 +73,6 @@ class ProfilePage extends Component {
     const { user } = this.props
     return (
       <React.Fragment>
-        <AppBar active="user" redirect={this.props.history.push} />
-
         <div className={styles.main}>
           <div className={styles.profilePicture}> profile picture </div>
           <div className={styles.general}>

@@ -294,22 +294,6 @@ class AlloyStore(Resource):
         # Database based on what is available with the alloy_option and
         # alloy_type. From the client, we expect these two keys to at the
         # very least be in the request body. Otherwise we won't do anything.
-        if alloy_option not in ['single', 'both', 'mix']:
-            response['message'] = (
-                'Alloy option not one of '
-                '["single" | "both" | "mix"].'
-            )
-            return response, 400
-
-        if not alloy_type or not isinstance(alloy_type, str):
-            response['message'] = 'No alloy type was provided.'
-            return response, 400
-
-        if alloy_type not in ['parent', 'weld', 'mix']:
-            response['message'] = (
-                'Alloy type not one of ["parent" | "weld" | "mix"].'
-            )
-            return response, 400
 
         if not alloy:
             response['message'] = 'No alloy was provided.'
@@ -319,6 +303,12 @@ class AlloyStore(Resource):
         # check that
         if not alloy.get('name', None) and not alloy.get('compositions', None):
             response['message'] = 'No valid key in the alloy was provided.'
+            return response, 400
+
+        if not isinstance(alloy.get('compositions'), list):
+            response['message'] = (
+                'Valid compositions must be provided as a list.'
+            )
             return response, 400
 
         sid, session_store = SimSessionService().load_session(session_key)

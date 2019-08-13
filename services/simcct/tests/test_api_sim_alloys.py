@@ -303,11 +303,11 @@ class TestSimConfigurations(BaseTestCase):
             data = json.loads(res.data.decode())
 
             self.assertEqual(
-                data['message'], 'Alloy failed schema validation.'
+                data['message'],
+                'Valid compositions must be provided as a list.'
             )
             self.assert400(res)
             self.assertEqual(data['status'], 'fail')
-            self.assertTrue(data['errors'])
             _, session_store = SimSessionService().load_session(s_key)
             session_comp = session_store.get('alloy_store')
             self.assertNotEqual(session_comp, new_comp)

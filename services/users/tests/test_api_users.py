@@ -768,6 +768,102 @@ class TestUserService(BaseTestCase):
                 data['message'], 'User is not verified as an admin.'
             )
 
+    def test_post_user_profile(self):
+        """Test post to user profile is successful"""
+        jabba = User(
+            email='jabba@hutt.io', first_name='Jabba', last_name='The Hutt'
+        )
+        jabba.set_password('ThereWillBeNoBargain')
+        jabba.save()
+
+        token = log_test_user_in(self, jabba, 'ThereWillBeNoBargain')
+
+        with self.client:
+            resp = self.client.post(
+                '/user/profile',
+                data=json.dumps(
+                    {
+                        'aim': 'Find Han Solo.',
+                        'highest_education': 'Hutt school of fatness.',
+                        'sci_tech_exp': 'PHD.',
+                        'phase_transform_exp': 'PHD.'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 201)
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(data['data']['aim'], 'Find Han Solo.')
+            self.assertEqual(
+                data['data']['highest_education'], 'Hutt school of fatness.'
+            )
+            self.assertEqual(data['data']['sci_tech_exp'], 'PHD.')
+            self.assertEqual(data['data']['phase_transform_exp'], 'PHD.')
+
+            updated_user = User.objects.get(email=jabba.email)
+            profile_obj = json.loads(updated_user.profile.to_json())
+            self.assertEqual(profile_obj['aim'], 'Find Han Solo.')
+            self.assertEqual(
+                profile_obj['highest_education'], 'Hutt school of fatness.'
+            )
+            self.assertEqual(profile_obj['sci_tech_exp'], 'PHD.')
+            self.assertEqual(profile_obj['phase_transform_exp'], 'PHD.')
+
+    def test_post_user_profile_no_data(self):
+        """Test empty post is unsuccessful"""
+        lando = User(
+            email='lando@calrissian.io',
+            first_name='Lando',
+            last_name='Calrissian'
+        )
+        lando.set_password('TheShieldIsStillUp')
+        lando.save()
+
+        token = log_test_user_in(self, lando, 'TheShieldIsStillUp')
+
+        with self.client:
+            resp = self.client.post(
+                '/user/profile',
+                data=json.dumps(''),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'Invalid payload.')
+
+    def test_post_user_profile_missing_data(self):
+        """Test incomplete post is unsuccessful"""
+        boba = User(email='boba@fett.com', first_name='Boba', last_name='Fett')
+        boba.set_password('NoGoodToMeDead')
+        boba.save()
+
+        token = log_test_user_in(self, boba, 'NoGoodToMeDead')
+
+        with self.client:
+            resp = self.client.post(
+                '/user/profile',
+                data=json.dumps(
+                    {
+                        'highest_education': 'Bounty Hunter Academy.',
+                        'sci_tech_exp': 'Weapons Expert.',
+                        'phase_transform_exp': 'Limited.'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+
+
     def test_disable_account(self):
         """Test disable account is successful"""
         kylo = User(

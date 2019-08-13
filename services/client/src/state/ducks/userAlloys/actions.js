@@ -30,6 +30,7 @@ export const postUserAlloy = () => (alloy, dispatch) => {
       // TODO(andrew@neuraldev.io): Should consider giving the user another change
       //  to post or change the alloy rather than throwing an error.
     })
+    .catch(err => console.log(err))
 }
 
 export const getUserAlloys = () => (dispatch) => {

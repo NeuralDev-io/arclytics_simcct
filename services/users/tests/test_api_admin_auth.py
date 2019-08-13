@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# test_api_users.py
+# test_api_admin_auth.py
 #
 # Attributions:
 # [1]
@@ -15,33 +15,28 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.03'
-"""test_api_users.py: 
+"""test_api_admin_auth.py: 
 
-This script will run all tests on the Users endpoints.
+This script will run all tests on the Admin create and account disable 
+endpoints.
 """
 
 import json
 import unittest
-from datetime import datetime
 
-from bson import ObjectId
 from flask import current_app
 from itsdangerous import URLSafeTimedSerializer
 
 from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
-from users_app.models import (
-    User, UserProfile, AdminProfile, Element, Alloy, Configuration,
-    SharedSimulation, AlloyType, AlloyStore
-)
+from users_app.models import (User, AdminProfile)
 from users_app.token import (
     generate_confirmation_token, generate_url,
-    generate_promotion_confirmation_token,
-    generate_shared_simulation_signature, generate_url_with_signature,
-    confirm_signature
+    generate_promotion_confirmation_token
 )
 
 logger = AppLogger(__name__)
+
 
 # TODO(davidmatthews1004@gmail.com) If possible, import this so its not
 #  repeated.
@@ -58,6 +53,7 @@ def log_test_user_in(self, user: User, password: str) -> str:
         )
         token = json.loads(resp_login.data.decode())['token']
         return token
+
 
 class TestAdminCreateService(BaseTestCase):
     """Tests for Admin creation and disable account endpoints"""

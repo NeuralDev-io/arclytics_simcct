@@ -22,24 +22,13 @@ This script will run all tests on the Users endpoints.
 
 import json
 import unittest
-from datetime import datetime
 
 from bson import ObjectId
 from flask import current_app
-from itsdangerous import URLSafeTimedSerializer
 
 from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
-from users_app.models import (
-    User, UserProfile, AdminProfile, Element, Alloy, Configuration,
-    SharedSimulation, AlloyType, AlloyStore
-)
-from users_app.token import (
-    generate_confirmation_token, generate_url,
-    generate_promotion_confirmation_token,
-    generate_shared_simulation_signature, generate_url_with_signature,
-    confirm_signature
-)
+from users_app.models import (User, UserProfile, AdminProfile)
 
 logger = AppLogger(__name__)
 

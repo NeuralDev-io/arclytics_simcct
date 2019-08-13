@@ -5,8 +5,6 @@ import {
 
 const initialState = {
   user: {
-    first_name: 'fakeName',
-    last_name: 'fakeLast',
     admin: true,
     profile: null
   },

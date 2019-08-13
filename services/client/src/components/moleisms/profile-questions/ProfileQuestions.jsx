@@ -40,11 +40,11 @@ class ProfileQuestions extends Component{
     const { question1, question2, question3, question4 } = this.state
     // console.log(question1.value, question2.value, question3.value, question4.value)
     this.props.createUserProfileConnect({ 
-      "profile": {
-        "aim": question1.value, 
-        "highest_education": question2.value, 
-        "sci_tech_exp": question3.value, 
-        "phase_transform_exp": question4.value
+      profile: {
+        aim: question1.value, 
+        highest_education: question2.value, 
+        sci_tech_exp: question3.value, 
+        phase_transform_exp: question4.value
       }
     })
     this.setState({showQuestions: false}) 

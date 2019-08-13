@@ -31,6 +31,11 @@ class AdminAlloys extends Component {
   render() {
     const { alloyList } = this.props
     const { name } = this.state
+
+    console.log(alloyList, name)
+    const tableData = alloyList.filter(a => a.name.includes(name))
+    console.log(tableData)
+
     const columns = [
       {
         Header: 'Alloy name',
@@ -59,6 +64,7 @@ class AdminAlloys extends Component {
         width: 210,
       },
     ]
+
     return (
       <div className={styles.container}>
         <h3>Alloy database</h3>
@@ -67,6 +73,7 @@ class AdminAlloys extends Component {
             <span>Search</span>
             <TextField
               type="text"
+              length="long"
               name="name"
               placeholder="Alloy name"
               value={name}
@@ -84,11 +91,11 @@ class AdminAlloys extends Component {
         </div>
         <Table
           className="-highlight"
-          data={alloyList}
+          data={tableData}
           columns={columns}
-          pageSize={alloyList.length > 10 ? 10 : alloyList.length}
+          pageSize={tableData.length > 10 ? 10 : tableData.length}
           showPageSizeOptions={false}
-          showPagination={alloyList.length !== 0}
+          showPagination={tableData.length !== 0}
           resizable={false}
           condensed
         />

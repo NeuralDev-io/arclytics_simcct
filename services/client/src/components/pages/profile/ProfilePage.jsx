@@ -25,19 +25,10 @@ class ProfilePage extends Component {
         https://stackoverflow.com/questions/51206488/how-to-set-component-state-conditionally
     */
     this.state = {
-      email: "example@example.com",
+      email: props.user.email,
       firstName: props.user.first_name, //just in case we implement demo mode
       lastName: props.user.last_name,
-      occOptions:[
-        { label: 'Student', value: 'student'},
-        { label: 'Work', value: 'work'},
-      ],
-      occupation: null,
-      eduOptions: [
-        { label: 'Be a man training montage', value: 'opt21'},
-        { label: 'Option 2', value: 'opt22'},
-      ],
-      question1: null,
+      question1:  props.user.profile ? { label:props.user.profile.aim , value: 'opt21'} : null,
       question1Select: [
         { label: 'To defeat the huns', value: 'opt11'},
         { label: 'Option 2', value: 'opt12'},
@@ -52,11 +43,11 @@ class ProfilePage extends Component {
         { label: 'Swords', value: 'opt31'},
         { label: 'Option 2', value: 'opt32'},
       ],
-      education: props.user.profile ? { label:props.user.profile.highest_education , value: 'opt21'} : null,
       currPassword: null,
       newPassword: null,
       cnfrmPassword: null,
       showDelete: false,
+      editProfile: false,
     }
   }
 
@@ -79,32 +70,47 @@ class ProfilePage extends Component {
     this.state.showDelete ? this.setState({showDelete: false}) : this.setState({showDelete: true}) 
   }
 
+  
+  handleEdit = () => {
+    this.state.editProfile ? this.setState({editProfile: false}) : this.setState({editProfile: true}) 
+  }
+
+
   handleChange = (name, value) => {
     this.setState({
       [name]: value
     })
   }
 
-  // handleOnBlur = (name, value) => {
-  //   this.state[name]
-  // }
+  updateUser = () => {
+    const {firstName, lastName, question1, question2, question3} = this.state
+    this.props.updateUserProfileConnect({
+      first_name: firstName,
+      last_name: lastName,
+      profile:{
+        aim: question1 ? question1.value : null,
+        sci_tech_exp: question2 ? question2.value : null,
+        phase_transform_exp: question3 ? question3.value : null
+      }
+    })
+  }
 
   render() {
     const { 
       firstName,
       lastName,
+      email,
       question1,
       question1Select,
       question2,
       question2Select,
       question3,
       question3Select,
-      question4,
-      question4Select, 
       currPassword, 
       newPassword, 
       cnfrmPassword, 
       showDelete,
+      editProfile,
     } = this.state
     const { user } = this.props
     return (
@@ -123,7 +129,7 @@ class ProfilePage extends Component {
             <h4 className={styles.header}>General</h4>
             <div className={styles.row}>
               <h6 className={styles.column}> Email </h6> 
-              <div className={styles.column}> <h6 className={styles.emailText}> {user.email} </h6> </div>   
+              <div className={styles.column}> <h6 className={styles.emailText}> {email} </h6> </div>   
             </div>
             <div className={styles.row}>
               <h6  className={styles.leftCol}>First name</h6>
@@ -138,24 +144,23 @@ class ProfilePage extends Component {
                 />
               </div>       
               </div>
-              <div className={styles.row}>
-                <h6 className={styles.column}> Last name </h6>
-                <div className={styles.column}>
-                  <TextField
-                    type="lastName"
-                    name="lastName"
-                    value={lastName}
-                    placeholder="Last Name"
-                    length="short"
-                    onChange={value => this.handleChange('lastName', value )}
-                  />
-                </div> 
-              </div>     
-            </div>
+            <div className={styles.row}>
+              <h6 className={styles.column}> Last name </h6>
+              <div className={styles.column}>
+                <TextField
+                  type="lastName"
+                  name="lastName"
+                  value={lastName}
+                  placeholder="Last Name"
+                  length="short"
+                  onChange={value => this.handleChange('lastName', value )}
+                />
+              </div> 
+            </div>     
+          </div>
        
-
           <div className={styles.about}>
-            <h4> About yourself </h4>
+            <h4 className={styles.header}> About yourself </h4>
             <div className={styles.questions}>
               <div className={styles.question}>
                 <h6 className={styles.questionText}> What sentence best describes you? </h6>
@@ -171,7 +176,7 @@ class ProfilePage extends Component {
               </div>
 
               <div className={styles.question}>
-                <h6 className={styles.questionText}> What sentence best describes you? </h6>
+                <h6 className={styles.questionText}> What is your experience iwth solid-state phase transformation?  </h6>
                 <Select
                   type="question2"
                   name="question2"
@@ -184,7 +189,7 @@ class ProfilePage extends Component {
               </div>
 
               <div className={styles.question}>
-                <h6 className={styles.questionText}> What sentence best describes you? </h6>
+                <h6 className={styles.questionText}> What is your experiece with scientific software? </h6>
                 <Select
                   type="question2"
                   name="question2"
@@ -197,6 +202,14 @@ class ProfilePage extends Component {
               </div>
             </div>
           </div>
+          
+          <div>
+           <Button onClick={this.handleEdit}> Edit </Button> 
+           
+            <Button onClick={this.updateUser}> Save </Button> 
+           {/* <Button onClick={this.handleEdit('editProfile', (!editProfile))}> Cancel </Button>  */}
+          </div>
+
 
           <div className={styles.security}>
             <h4 className={styles.header}>Security</h4>

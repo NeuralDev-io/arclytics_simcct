@@ -8,17 +8,18 @@ import styles from './UserSidebar.module.scss'
 class UserSidebar extends Component {
   constructor(props) {
     super(props)
+    // We get the URL from the current window object and split on '/'
     const pathArr = window.location.pathname.split('/')
 
     this.state = {
+      // Get the last element which is basically the same ID name in the below defined
+      // navigation links to set the className style on it to make it `active`
       active: pathArr[pathArr.length - 1],
     }
   }
 
   render() {
     const { active } = this.state
-    console.log(active)
-
     return (
       <div className={styles.sidebar}>
         <h4>User</h4>

@@ -8,18 +8,18 @@ class UncontrolledPeriodicTable extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      active: {},
+      active: [],
       hovering: 0,
     }
   }
 
   handleToggleElement = (number) => {
-    this.setState((prevState) => {
-      const newActive = prevState.active
-      if (newActive[number] !== undefined) {
-        delete newActive[number]
+    this.setState(({ active }) => {
+      let newActive = active
+      if (active.includes(number)) {
+        newActive = active.filter(n => n !== number)
       } else {
-        newActive[number] = true
+        newActive.push(number)
       }
       return { active: newActive }
     })
@@ -69,7 +69,7 @@ class UncontrolledPeriodicTable extends Component {
         onMouseLeave={() => this.handleMouseLeave(number)}
         {...buttonize(() => this.handleToggleElement(number))}
       >
-        <div className={`${styles.element} ${styles[colour()]} ${typeof active[number] !== 'undefined' && styles.active}`}>
+        <div className={`${styles.element} ${styles[colour()]} ${active.includes(number) && styles.active}`}>
           <span className={styles.number}>{number}</span>
           <span className={styles.symbol}>{symbol}</span>
         </div>

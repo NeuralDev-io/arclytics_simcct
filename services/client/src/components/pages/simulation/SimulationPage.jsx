@@ -109,12 +109,12 @@ class SimulationPage extends Component {
         ],
       }
       // set to state
-      this.setState(prevState => ({
-        alloys: {
-          ...prevState.alloys,
-          [name]: alloy,
-        },
-      }))
+      // this.setState(prevState => ({
+      //   alloys: {
+      //     ...prevState.alloys,
+      //     [name]: alloy,
+      //   },
+      // }))
       // update session store on the server
       const { alloys } = this.state
       // if session store is already initiated, update it
@@ -125,7 +125,12 @@ class SimulationPage extends Component {
         initComp(alloys.alloyOption, name, alloy)
           .then(
             (data) => {
+              // set to state alloy + configs
               this.setState(prevState => ({
+                alloys: {
+                  ...prevState.alloys,
+                  [name]: alloy,
+                },
                 configurations: {
                   ...prevState.configurations,
                   ...data,

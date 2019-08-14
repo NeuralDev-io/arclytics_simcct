@@ -33,6 +33,7 @@ import {
   updateMsBsAe,
   getMsBsAe,
 } from '../../../api/sim/SessionConfigs'
+import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 import { postSaveSimulation } from '../../../api/sim/SessionSaveSim'
 import { runSim } from '../../../state/ducks/sim/actions'
 
@@ -234,13 +235,14 @@ class SimulationPage extends Component {
         // update in server session store with value = 0
         updateConfig({ grain_size: 0 })
       } else {
-        // TODO: do some calculation here to convert unit of grain size
+        // convert unit of grain size
+        const grainSizeDiameter = ASTM2Dia(parseFloat(value))
         // set value to state
         this.setState(prevState => ({
           configurations: {
             ...prevState.configurations,
             grain_size_ASTM: value,
-            grain_size_diameter: value,
+            grain_size_diameter: grainSizeDiameter,
           },
         }))
 
@@ -261,18 +263,19 @@ class SimulationPage extends Component {
         // update in server session store with value = 0
         updateConfig({ grain_size: 0 })
       } else {
-        // TODO: do some calculation here to convert unit of grain size
+        // convert unit of grain size
+        const grainSizeASTM = dia2ASTM(parseFloat(value))
         // set value to state
         this.setState(prevState => ({
           configurations: {
             ...prevState.configurations,
-            grain_size_ASTM: value,
+            grain_size_ASTM: grainSizeASTM,
             grain_size_diameter: value,
           },
         }))
 
         // update in server session store
-        updateConfig({ grain_size: parseFloat(value) })
+        updateConfig({ grain_size: parseFloat(grainSizeASTM) })
       }
     } else if (name === 'displayUserCurve') {
       this.setState(prevState => ({ displayUserCurve: !prevState.displayUserCurve }))

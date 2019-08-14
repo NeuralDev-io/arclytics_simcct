@@ -62,8 +62,6 @@ class ShareSimulationLink(Resource):
         # Get post data
         data = request.get_json()
 
-        #json .dumps and then make mongo obj using from json
-
         # Ensure payload is not empty
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not data:
@@ -75,11 +73,9 @@ class ShareSimulationLink(Resource):
         configuration = data.get('configuration', None)
         alloy_store = data.get('alloy_store', None)
 
-        # Validate the request simulate data using the database model and
-        # validate method
+        # Validate the request simulation data. Validation is done by the
+        # clean() methods for each object/document in users_app/models.py.
         try:
-            # Create a Configuration object and an Alloy Store object from the
-            # values in the request
             config_object = Configuration(**configuration)
             alloy_store_object = AlloyStore(**alloy_store)
             shared_simulation_object = SharedSimulation(
@@ -89,10 +85,6 @@ class ShareSimulationLink(Resource):
                 alloy_store=alloy_store_object
             )
             shared_simulation_object.save()
-        except KeyError as e:
-            response['errors'] = str(e)
-            response['message'] = 'Key error.'
-            return response, 400
         except ValidationError as e:
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
@@ -110,6 +102,8 @@ class ShareSimulationLink(Resource):
             response['message'] = 'Alloy is missing essential elements.'
             return response, 400
 
+        # Create a token that contains the ObjectId for the shared simulation
+        # and put it in a link/url that can be sent back to the frontend.
         simulation_token = generate_shared_simulation_token(
             str(shared_simulation_object.id)
         )
@@ -126,7 +120,7 @@ class ShareSimulationLink(Resource):
 class ShareSimulationEmail(Resource):
     """
     Allow a user to generate a link that can be used to share configurations
-    and send that link out to a list of email addresses.
+    and send that link out to a list of email addresses provided.
     """
 
     method_decorators = {'post': [authenticate]}
@@ -144,8 +138,7 @@ class ShareSimulationEmail(Resource):
         owner = User.objects.get(id=resp)
         shared_date = datetime.utcnow()
 
-        # Get the email address (string) or list of email addresses (list) from
-        # the response and validate them.
+        # Get the email address/addresses from the response and validate them.
         email_list = data.get('email_list', None)
         if not email_list:
             response['message'] = 'No email addresses provided.'
@@ -154,38 +147,34 @@ class ShareSimulationEmail(Resource):
         if isinstance(email_list, list):
             for email in email_list:
                 try:
-                    # validate and get info
                     v = validate_email(email)
-                    # replace with normalized form
                     valid_email_list.append(v['email'])
                 except EmailNotValidError as e:
-                    # email is not valid, exception message is human-readable
                     response['error'] = str(e)
                     response['message'] = 'Invalid email.'
                     return response, 400
         elif isinstance(email_list, str):
             try:
-                # validate and get info
                 v = validate_email(email_list)
-                # replace with normalized form
                 valid_email_list.append(v['email'])
             except EmailNotValidError as e:
-                # email is not valid, exception message is human-readable
                 response['error'] = str(e)
                 response['message'] = 'Invalid email.'
                 return response, 400
+        # If the provided value for email address is neither a string nor a
+        # list, it is invalid.
         else:
             response['message'] = 'Invalid email address type.'
             return response, 400
 
+        # Get the configuration and alloy_store information from the request so
+        # we can attempt to make a SharedSimulation object out of it.
         configuration = data.get('configuration', None)
         alloy_store = data.get('alloy_store', None)
 
-        # Validate the request simulate data using the database model and
-        # validate method
+        # Validate the request simulation data. Validation is done by the
+        # clean() methods for each object/document in users_app/models.py.
         try:
-            # Create a Configuration object and an Alloy Store object from the
-            # values in the request
             config_object = Configuration(**configuration)
             alloy_store_object = AlloyStore(**alloy_store)
             shared_simulation_object = SharedSimulation(
@@ -195,10 +184,6 @@ class ShareSimulationEmail(Resource):
                 alloy_store=alloy_store_object
             )
             shared_simulation_object.save()
-        except KeyError as e:
-            response['errors'] = str(e)
-            response['message'] = 'Key error.'
-            return response, 400
         except ValidationError as e:
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
@@ -216,6 +201,8 @@ class ShareSimulationEmail(Resource):
             response['message'] = 'Alloy is missing essential elements.'
             return response, 400
 
+        # Create a token that contains the ObjectId for the shared simulation
+        # and put it in a link/url that can be sent back to the frontend.
         simulation_token = generate_shared_simulation_token(
             str(shared_simulation_object.id)
         )
@@ -223,6 +210,8 @@ class ShareSimulationEmail(Resource):
             'share.request_shared_simulation', simulation_token
         )
 
+        # Send email/emails to the email address/addresses provided in the
+        # request with the link to the shared simulation.
         from celery_runner import celery
         # if isinstance(valid_email_list, str):
         celery.send_task(
@@ -249,43 +238,15 @@ class ShareSimulationEmail(Resource):
                 ),
             }
         )
-        # else:
-        #     for email in valid_email_list:
-        #         celery.send_task(
-        #             'tasks.send_email',
-        #             kwargs={
-        #                 'to': [email],
-        #                 'subject_suffix':
-        #                 f'{owner.first_name} {owner.last_name} '
-        #                 'has shared a configuration with you!',
-        #                 'html_template':
-        #                 render_template(
-        #                     'share_configuration.html',
-        #                     email=valid_email_list,
-        #                     owner_name=(
-        #                         f'{owner.first_name} {owner.last_name}'
-        #                     ),
-        #                     config_url=simulation_url
-        #                 ),
-        #                 'text_template':
-        #                 render_template(
-        #                     'share_configuration.txt',
-        #                     email=valid_email_list,
-        #                     owner_name=(
-        #                         f'{owner.first_name} {owner.last_name}'
-        #                     ),
-        #                     config_url=simulation_url
-        #                 ),
-        #             }
-        #         )
 
         response['status'] = 'success'
         response['message'] = 'Email(s) sent.'
+        response['link'] = simulation_url
         return response, 201
 
 
 @share_blueprint.route(
-    '/users/share/simulation/request/<token>', methods=['GET']
+    '/user/share/simulation/request/<token>', methods=['GET']
 )
 def request_shared_simulation(token):
     """
@@ -309,23 +270,26 @@ def request_shared_simulation(token):
     return custom_redir_response
 
 
-@share_blueprint.route('/users/share/simulation/view/<token>', methods=['GET'])
+@share_blueprint.route('/user/share/simulation/view/<token>', methods=['GET'])
 def view_shared_simulation(token):
     """
+    Requests to this endpoint should be sent by the blank page described in
+    request_shared_simulation() (above).
     After we have established a client to communicate with, we can send the
-    shared data to the client
+    shared data to the client.
     """
 
-    # Ensure payload is not empty
     response = {'status': 'fail', 'message': 'Invalid payload.'}
-    # if not data:
-    #     return jsonify(response), 400
 
     # Extract the data
+    # Comment to Andrew -- I'm not sure if this is even possible. I haven't been
+    # able to get a test to trigger this condition. I have left it in just to be
+    # safe.
     if not token:
-        response['message'] = 'Signature not provided.'
+        response['message'] = 'Token not provided.'
         return jsonify(response), 400
 
+    # Try to decode the token and get the simulation id from it.
     try:
         sim_id = confirm_simulation_token(token)
     except URLTokenError as e:
@@ -333,10 +297,15 @@ def view_shared_simulation(token):
         response['message'] = 'Invalid token.'
         return jsonify(response), 400
 
+    # If the id decoded from the simulation does not exist, we must inform the
+    # client. This could occur if a SharedSimulation document in the database
+    # has been deleted since a link has been generated for it.
     if not SharedSimulation.objects(id=sim_id):
         response['message'] = 'Simulation does not exist.'
         return jsonify(response), 404
 
+    # Using the do_dict() method for the SharedSimulation document in
+    # users_app/models.py to put the sim data into the response body.
     shared_simulation = SharedSimulation.objects.get(id=sim_id)
     data = shared_simulation.to_dict()
 

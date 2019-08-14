@@ -1,0 +1,14 @@
+@import '../../../styles/colors_light';
+@import '../../../styles/typography';
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  display: flex;
+  flex-direction: row;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+}

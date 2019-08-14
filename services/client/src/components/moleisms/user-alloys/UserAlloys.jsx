@@ -34,17 +34,28 @@ class UserAlloys extends Component {
     super(props)
     this.state = {
       name: '',
+      addModal: false,
+      editModal: false,
+      deleteModal: false,
     }
   }
 
   componentDidMount() {
+    // Put a guard on this page if there's no token.
+    if (!localStorage.getItem('token')) {
+      this.props.history.push('/signin')
+    }
     // When the component mounts, we need to get the list of alloys with API first.
     const { alloyList, getAlloysConnect } = this.props
     if (!alloyList || alloyList.length === 0) getAlloysConnect()
   }
 
+  handleShowModal = type => this.setState({ [`${type}Modal`]: true })
+
+  handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
+
   handleAlloyOperation = (data, option) => {
-    const { deleteAlloysConnect } = this.props
+    const { getAlloysConnect, deleteAlloysConnect } = this.props
 
     if (option === 'add') console.log('add')
 
@@ -56,16 +67,15 @@ class UserAlloys extends Component {
     }
 
     if (option === 'delete') {
-      console.log('delete')
-      console.log(data.name)
-      console.log(data.alloyId)
-      deleteAlloysConnect(data.alloyId)
+      this.handleShowModal('delete')
+      // deleteAlloysConnect(data.alloyId)
+      // getAlloysConnect()
     }
   }
 
   render() {
     const { alloyList } = this.props
-    const { name } = this.state
+    const { name, deleteModal } = this.state
 
     // Prepare the data for the Table component
     // const tableData = alloyList.filter(a => a.name.includes(name))
@@ -75,7 +85,6 @@ class UserAlloys extends Component {
       name: alloy.name,
       compositions: alloy.compositions,
     }))
-    console.log(tableData)
     const columns = [
       {
         Header: 'Alloy name',
@@ -142,6 +151,8 @@ class UserAlloys extends Component {
           resizable={false}
           condensed
         />
+
+        {/*<AlloyModal show={deleteModal} onClose={() => this.handleCloseModal('delete')} />*/}
       </div>
     )
   }
@@ -149,6 +160,7 @@ class UserAlloys extends Component {
 
 // Type annotate props
 UserAlloys.propTypes = {
+  history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
   alloyList: PropTypes.arrayOf(PropTypes.shape({
     _id: PropTypes.string,
     name: PropTypes.string,

@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 
 import AppBar from '../../moleisms/appbar'
 import UserSidebar from '../../moleisms/user-sidebar'
-import ProfilePage from '../profile'
+import ProfilePage from '../user-profile'
 import UserAlloys from '../../moleisms/user-alloys'
 import UserSavedSimulations from '../../moleisms/user-sim'
 

@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import Button from '../../elements/button'
 import Modal from '../../elements/modal'
@@ -6,11 +6,7 @@ import Modal from '../../elements/modal'
 import styles from './UserAlloyDeleteModal.module.scss'
 
 
-class UserAlloyDeleteModal extends Component {
-  constructor(props) {
-    super(props)
-  }
-
+class UserAlloyDeleteModal extends PureComponent {
   render() {
     const { show, onClose, onConfirm } = this.props
 

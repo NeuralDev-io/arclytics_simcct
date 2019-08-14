@@ -8,6 +8,7 @@ import Table from '../../elements/table'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import AlloyModal from './AlloyModal'
+import AlloyDeleteModal from './AlloyDeleteModal'
 import { getGlobalAlloys } from '../../../state/ducks/alloys/actions'
 
 import styles from './AdminAlloys.module.scss'
@@ -19,6 +20,7 @@ class AdminAlloys extends Component {
       name: '',
       compositions: [],
       addModal: false,
+      deleteModal: false,
     }
   }
 
@@ -38,7 +40,12 @@ class AdminAlloys extends Component {
 
   render() {
     const { globalAlloys } = this.props
-    const { name, compositions, addModal } = this.state
+    const {
+      name,
+      compositions,
+      addModal,
+      deleteModal,
+    } = this.state
 
     const tableData = globalAlloys.filter(a => a.name.includes(name))
 
@@ -59,6 +66,7 @@ class AdminAlloys extends Component {
               Edit
             </Button>
             <Button
+              onClick={() => this.handleShowModal('delete')}
               appearance="text"
               color="dangerous"
               IconComponent={props => <TrashIcon {...props} />}
@@ -105,7 +113,16 @@ class AdminAlloys extends Component {
           resizable={false}
           condensed
         />
-        <AlloyModal compositions={compositions} show={addModal} onClose={() => this.handleCloseModal('add')} />
+        <AlloyModal
+          compositions={compositions}
+          show={addModal}
+          onClose={() => this.handleCloseModal('add')}
+        />
+        <AlloyDeleteModal
+          show={deleteModal}
+          onClose={() => this.handleCloseModal('delete')}
+          onConfirm={() => console.log('Delete Confirmed')}
+        />
       </div>
     )
   }

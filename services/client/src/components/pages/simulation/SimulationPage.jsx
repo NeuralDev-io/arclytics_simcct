@@ -89,7 +89,7 @@ class SimulationPage extends Component {
   }
 
   handleCompChange = (name, value) => {
-    const { alloyList } = this.props
+    const { globalAlloys } = this.props
     const { sessionStoreInit } = this.state
 
     if (name === 'alloyOption') { // alloy option is changed
@@ -104,7 +104,7 @@ class SimulationPage extends Component {
       const alloy = {
         name: value.value,
         compositions: [
-          ...alloyList[alloyList.findIndex(a => a.name === value.value)].compositions,
+          ...globalAlloys[globalAlloys.findIndex(a => a.name === value.value)].compositions,
         ],
       }
       // set to state
@@ -457,7 +457,7 @@ class SimulationPage extends Component {
 }
 
 SimulationPage.propTypes = {
-  alloyList: PropTypes.arrayOf(PropTypes.shape({
+  globalAlloys: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string,
     compositions: PropTypes.arrayOf(PropTypes.shape({
       name: PropTypes.string,
@@ -473,7 +473,7 @@ SimulationPage.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  alloyList: state.alloys.list,
+  globalAlloys: state.alloys.global,
 })
 
 const mapDispatchToProps = {

@@ -8,7 +8,7 @@ import Table from '../../elements/table'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import AlloyModal from './AlloyModal'
-import { getAlloys } from '../../../state/ducks/alloys/actions'
+import { getGlobalAlloys } from '../../../state/ducks/alloys/actions'
 
 import styles from './AdminAlloys.module.scss'
 
@@ -23,8 +23,8 @@ class AdminAlloys extends Component {
   }
 
   componentDidMount = () => {
-    const { alloyList, getAlloysConnect } = this.props
-    if (!alloyList || alloyList.length === 0) getAlloysConnect()
+    const { globalAlloys, getGlobalAlloysConnect } = this.props
+    if (!globalAlloys || globalAlloys.length === 0) getGlobalAlloysConnect()
   }
 
   handleShowModal = type => this.setState({ [`${type}Modal`]: true })
@@ -37,10 +37,10 @@ class AdminAlloys extends Component {
   }
 
   render() {
-    const { alloyList } = this.props
+    const { globalAlloys } = this.props
     const { name, compositions, addModal } = this.state
 
-    const tableData = alloyList.filter(a => a.name.includes(name))
+    const tableData = globalAlloys.filter(a => a.name.includes(name))
 
     const columns = [
       {
@@ -112,7 +112,7 @@ class AdminAlloys extends Component {
 }
 
 AdminAlloys.propTypes = {
-  alloyList: PropTypes.arrayOf(PropTypes.shape({
+  globalAlloys: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string,
     compositions: PropTypes.arrayOf(PropTypes.shape({
       name: PropTypes.string,
@@ -120,15 +120,15 @@ AdminAlloys.propTypes = {
       weight: PropTypes.number,
     })),
   })).isRequired,
-  getAlloysConnect: PropTypes.func.isRequired,
+  getGlobalAlloysConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
-  alloyList: state.alloys.list,
+  globalAlloys: state.alloys.global,
 })
 
 const mapDispatchToProps = {
-  getAlloysConnect: getAlloys,
+  getGlobalAlloysConnect: getGlobalAlloys,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdminAlloys)

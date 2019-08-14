@@ -162,7 +162,7 @@ class SignupPage extends Component {
                       }
                     </h6>
                   </div>
-           
+
                   <div className={styles.signUpButton}>
                     <Button name="SIGN UP" appearance="default" type="submit" length="small" disabled={isSubmitting}> SIGNUP </Button>
                   </div>

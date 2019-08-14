@@ -1,4 +1,4 @@
-/// <reference types="Cypress" />
+// / <reference types="Cypress" />
 
 context('Actions', () => {
   beforeEach(() => {
@@ -17,9 +17,9 @@ context('Actions', () => {
       .type('{del}{selectall}{backspace}')
 
       // .type() with key modifiers
-      .type('{alt}{option}') //these are equivalent
-      .type('{ctrl}{control}') //these are equivalent
-      .type('{meta}{command}{cmd}') //these are equivalent
+      .type('{alt}{option}') // these are equivalent
+      .type('{ctrl}{control}') // these are equivalent
+      .type('{meta}{command}{cmd}') // these are equivalent
       .type('{shift}')
 
       // Delay each keypress by 0.1 sec
@@ -37,14 +37,16 @@ context('Actions', () => {
     // https://on.cypress.io/focus
     cy.get('.action-focus').focus()
       .should('have.class', 'focus')
-      .prev().should('have.attr', 'style', 'color: orange;')
+      .prev()
+      .should('have.attr', 'style', 'color: orange;')
   })
 
   it('.blur() - blur off a DOM element', () => {
     // https://on.cypress.io/blur
     cy.get('.action-blur').type('About to blur').blur()
       .should('have.class', 'error')
-      .prev().should('have.attr', 'style', 'color: red;')
+      .prev()
+      .should('have.attr', 'style', 'color: red;')
   })
 
   it('.clear() - clears an input or textarea element', () => {
@@ -178,7 +180,7 @@ context('Actions', () => {
     cy.get('.action-select').select('apples')
 
     cy.get('.action-select-multiple')
-    .select(['apples', 'oranges', 'bananas'])
+      .select(['apples', 'oranges', 'bananas'])
 
     // Select option(s) with matching value
     cy.get('.action-select').select('fr-bananas')
@@ -228,12 +230,12 @@ context('Actions', () => {
     cy.get('.trigger-input-range')
       .invoke('val', 25)
       .trigger('change')
-      .get('input[type=range]').siblings('p')
+      .get('input[type=range]')
+      .siblings('p')
       .should('have.text', '25')
   })
 
   it('cy.scrollTo() - scroll the window or element to a position', () => {
-
     // https://on.cypress.io/scrollTo
 
     // You can scroll to 9 specific positions of an element:

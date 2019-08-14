@@ -1,4 +1,4 @@
-/// <reference types="Cypress" />
+// / <reference types="Cypress" />
 
 context('Spies, Stubs, and Clock', () => {
   it('cy.spy() - wrap a method in a spy', () => {
@@ -6,7 +6,7 @@ context('Spies, Stubs, and Clock', () => {
     cy.visit('https://example.cypress.io/commands/spies-stubs-clocks')
 
     const obj = {
-      foo () {},
+      foo() {},
     }
 
     const spy = cy.spy(obj, 'foo').as('anyArgs')
@@ -24,7 +24,7 @@ context('Spies, Stubs, and Clock', () => {
        * Prints the argument passed
        * @param x {any}
       */
-      foo (x) {
+      foo(x) {
         console.log('obj.foo called with', x)
       },
     }
@@ -52,7 +52,7 @@ context('Spies, Stubs, and Clock', () => {
        * @param a {string}
        * @param b {string}
       */
-      foo (a, b) {
+      foo(a, b) {
         console.log('a', a, 'b', b)
       },
     }

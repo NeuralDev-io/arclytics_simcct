@@ -67,7 +67,7 @@ export const logout = (callback) => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Session': localStorage.getItem('session'),
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })

@@ -363,7 +363,7 @@ class SimConfiguration(object):
 
         return table
 
-    def __str__(self):
+    def __str__(self) -> str:
         comp_ = self._pretty_str_tables(self.comp)
 
         return """

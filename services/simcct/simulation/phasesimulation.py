@@ -844,6 +844,8 @@ class PhaseSimulation(object):
             if xf > 1.0:
                 xf = 0.9999999
 
+            # TODO(andrew@neuraldev.io): Figure out why there is a division by
+            #  Zero error at this point always.
             sig_int_ferrite = self._de_integrator(
                 sig_int_ferrite, 0.0, xf, 0.000000000000001, err, nn, 1
             )

@@ -60,7 +60,8 @@ class UserAlloys extends Component {
   handleCloseModal = type => this.setState({ [`${type}Modal`]: false, currentAlloy: {} })
 
   handleAlloyOperation = (option) => {
-    const { getAlloysConnect, deleteAlloysConnect } = this.props
+    const { deleteAlloysConnect } = this.props
+    const { currentAlloy } = this.state
 
     if (option === 'add') console.log('add')
 
@@ -68,7 +69,7 @@ class UserAlloys extends Component {
 
     if (option === 'delete') {
       this.handleCloseModal('delete')
-      deleteAlloysConnect(this.state.currentAlloy.alloyId)
+      deleteAlloysConnect(currentAlloy.alloyId)
     }
   }
 

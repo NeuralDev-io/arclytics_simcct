@@ -105,7 +105,10 @@ class AdminAlloys extends Component {
           resizable={false}
           condensed
         />
-        <AlloyModal compositions={compositions} show={addModal} onClose={() => this.handleCloseModal('add')} />
+        <AlloyModal
+          compositions={compositions}
+          show={addModal}
+          onClose={() => this.handleCloseModal('add')} />
       </div>
     )
   }

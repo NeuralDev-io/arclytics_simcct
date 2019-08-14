@@ -7,7 +7,7 @@
  */
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { updateUserProfile } from '../../../state/ducks/persist/actions'
+import { createUserProfile, updateUserProfile } from '../../../state/ducks/persist/actions'
 
 import TextField from '../../elements/textfield'
 import Select from '../../elements/select'
@@ -48,10 +48,9 @@ class ProfilePage extends Component {
         { label: 'Q4 Option 1', value: 'Q4 Option 1'},
         { label: 'Q4 Option 2', value: 'Q4 Option 2'},
       ],
-      currPassword: null,
-      newPassword: null,
-      cnfrmPassword: null,
+      updateError: null,
       edit: false,
+
     }
   }
 
@@ -60,11 +59,6 @@ class ProfilePage extends Component {
       this.props.history.push('/signin')
   }
 
-  handleDeleteModal = () => {
-    this.state.showDelete ? this.setState({showDelete: false}) : this.setState({showDelete: true}) 
-  }
-
-  
   handleEdit = () => {
     const { user } = this.props
     this.state.edit ? 
@@ -75,30 +69,53 @@ class ProfilePage extends Component {
       question2: user.profile ? {label:user.profile.highest_education, value: user.profile.highest_education} : null,
       question3: user.profile ? {label:user.profile.sci_tech_exp , value: user.profile.sci_tech_exp} : null,
       question4: user.profile ? {label:user.profile.phase_transform_exp , value: user.profile.phase_transform_exp} : null,
-      edit: false
+      edit: false,
+      updateError: null 
     }) 
     :   
       this.setState({edit: true}) 
   }
 
-
   handleChange = (name, value) => {
-    this.setState({
+      this.setState({
       [name]: value
     })
   }
 
   updateUser = () => {
     const {firstName, lastName, question1, question2, question3, question4} = this.state
-    this.props.updateUserProfileConnect({
-      first_name: firstName,
-      last_name: lastName,
-        aim: question1 ? question1.value : null,
-        highest_education: question2 ? question2.value: null,
-        sci_tech_exp: question2 ? question3.value : null,
-        phase_transform_exp: question3 ? question4.value : null
-    })
-    this.setState({ edit: false })
+    const { user } = this.props
+
+    if (!user.profile){
+      if (!(question1 && question2 && question3 && question4)){
+        this.setState({
+          updateError: "Must answer all questions to save"
+        })
+      } 
+      else if (question1 && question2 && question3 && question4){
+        this.props.createUserProfileConnect({
+          aim: question1.value, 
+          highest_education: question2.value, 
+          sci_tech_exp: question3.value, 
+          phase_transform_exp: question4.value
+        })
+        this.props.updateUserProfileConnect({
+          first_name: firstName,
+          last_name: lastName,
+        })
+        this.setState({ edit: false, updateError: null })
+      }      
+    } else if (user.profile){
+      this.props.updateUserProfileConnect({
+        first_name: firstName,
+        last_name: lastName,
+          aim: question1 ? question1.value : null,
+          highest_education: question2 ? question2.value: null,
+          sci_tech_exp: question2 ? question3.value : null,
+          phase_transform_exp: question3 ? question4.value : null
+      })
+      this.setState({ edit: false, updateError: null })
+    }
   }
 
   render() {
@@ -114,6 +131,7 @@ class ProfilePage extends Component {
       question3Select,
       question4,
       question4Select,
+      updateError,
       edit,
     } = this.state
     const { user } = this.props
@@ -228,7 +246,7 @@ class ProfilePage extends Component {
               </div>
             </div>
           </div>
-          
+          <h6 className={styles.updateError}>{updateError}</h6>
           <div className={styles.editButtons}>
               {!edit ? ( <> <Button onClick={this.handleEdit}> Edit </Button> </>) : ('')} 
               {edit ? (
@@ -237,7 +255,6 @@ class ProfilePage extends Component {
                 <Button className={styles.cancel}appearance="outline" onClick={this.handleEdit}> Cancel </Button> 
               </>) : ('')} 
           </div>
-
 
           <div className={styles.security}>
             <h4 className={styles.header}>Security</h4>
@@ -257,6 +274,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   updateUserProfileConnect: updateUserProfile,
+  createUserProfileConnect: createUserProfile,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProfilePage)

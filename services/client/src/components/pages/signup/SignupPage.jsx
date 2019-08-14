@@ -51,8 +51,7 @@ class SignupPage extends Component {
               })
               promise.then((data) => {
                 // If response is successful
-                localStorage.setItem('token', data.token)
-                this.props.history.push('/')
+                this.props.history.push('/signin')
                 setSubmitting(false)
               })
                 .catch((err) => {

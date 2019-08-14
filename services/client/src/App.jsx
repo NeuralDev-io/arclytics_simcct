@@ -7,6 +7,7 @@ import SignupPage from './components/pages/signup/SignupPage'
 import SimulationPage from './components/pages/simulation'
 import AdminPage from './components/pages/admin'
 import ProfilePage from './components/pages/profile'
+import ProfileQuestionsPage from './components/pages/profile-questions'
 
 import './App.scss'
 
@@ -27,6 +28,11 @@ function App() {
             exact
             path="/"
             render={props => <SimulationPage {...props} />}
+          />
+          <Route
+            exact
+            path="/profileQuestions"
+            render={props => <ProfileQuestionsPage {...props} />}
           />
           <Route
             exact

@@ -26,7 +26,7 @@ $bg-img: url('../../../assets/background_img-min.png');
 
 
 .main {
-  margin-left: 24.25vw;
+  margin-left: calc(4rem + 24.25vw);
   width: calc(100% - calc(4rem + 27vw));
   padding: 2.5rem 0rem 2.5rem 2.5rem;
 
@@ -80,7 +80,6 @@ $bg-img: url('../../../assets/background_img-min.png');
 
 } 
 
-
 .security{
   margin-bottom: 3.5rem;
   display: flex;
@@ -104,7 +103,7 @@ $bg-img: url('../../../assets/background_img-min.png');
     justify-content: space-betweeens;
     
     .question{
-      margin-bottom: 2.5rem;
+      margin-bottom: 2.3rem;
       width: 35rem;
   
       .questionText{
@@ -112,6 +111,14 @@ $bg-img: url('../../../assets/background_img-min.png');
       }
     }
   }
+}
+
+.updateError{
+  width:35rem;
+  color: $r500;
+  text-align: right;
+  margin-bottom: 1rem;
+  height: 1.25rem;
 }
 
 .editButtons{

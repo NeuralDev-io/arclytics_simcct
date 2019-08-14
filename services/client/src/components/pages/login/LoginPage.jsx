@@ -49,7 +49,10 @@ class LoginPage extends Component {
                 localStorage.setItem('session', data.session)
                 const { getUserProfileConnect, history } = this.props
                 getUserProfileConnect()
-                history.push('/')
+                
+                //If the user has a profile
+                this.props.profile ? history.push('/') : history.push('/profileQuestions')
+
                 setSubmitting(false)
               })
                 .catch(() => {
@@ -135,10 +138,22 @@ class LoginPage extends Component {
 LoginPage.propTypes = {
   getUserProfileConnect: PropTypes.func.isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+  profile: PropTypes.shape({ 
+    aim: PropTypes.string,
+    highest_education: PropTypes.string,
+    sci_tech_exp: PropTypes.string,
+    phase_transform_exp: PropTypes.string
+  })
 }
 
 const mapDispatchToProps = {
   getUserProfileConnect: getUserProfile,
 }
 
-export default connect(null, mapDispatchToProps)(LoginPage)
+const mapStateToProps = state => ({
+  profile: state.persist.user.profile
+
+})
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(LoginPage)

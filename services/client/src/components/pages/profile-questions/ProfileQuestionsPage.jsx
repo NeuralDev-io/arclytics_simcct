@@ -1,57 +1,62 @@
+/**
+ * Profile Page
+ *
+ * @version 0.0.0
+ * @author Arvy Salazar
+ * @github Xaraox
+ */
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { createUserProfile } from '../../../state/ducks/persist/actions'
+
 import Select from '../../elements/select'
 import Button from '../../elements/button'
-
-import styles from './ProfileQuestions.module.scss'
-
 import Modal from '../../elements/modal'
 
-class ProfileQuestions extends Component{
+import styles from './ProfileQuestionsPage.module.scss'
+
+class ProfileQuestionsPage extends Component {
   constructor(props){
     super(props)
     this.state = {
       question1: null,
       question1Select: [
-        { label: 'To defeat the huns', value: 'To defeat the huns'},
-        { label: 'Option 2', value: 'opt12'},
+        { label: 'Q1 Option 1', value: 'Q1 Option 1'},
+        { label: 'Q1 Option 2', value: 'Q1 Option 2'},
       ],
       question2: null,
       question2Select: [
-        { label: 'Be a man training montage', value: 'Be a man training montage'},
-        { label: 'Option 2', value: 'opt22'},
+        { label: 'Q2 Option 1', value: 'Q2 Option 1'},
+        { label: 'Q2 Option 2', value: 'Q2 Option 2'},
       ],
       question3: null,
       question3Select: [
-        { label: 'Swords', value: 'Swords'},
-        { label: 'Option 2', value: 'opt32'},
+        { label: 'Q3 Option 1', value: 'Q3 Option 1'},
+        { label: 'Q3 Option 2', value: 'Q3 Option 2'},
       ],
       question4: null,
       question4Select: [
-        { label: 'Fireworks', value: 'Fireworks'},
-        { label: 'Option 2', value: 'opt42'},
-      ],
-      showQuestions: true
+        { label: 'Q4 Option 1', value: 'Q4 Option 1'},
+        { label: 'Q4 Option 2', value: 'Q4 Option 2'},
+      ]
     }
+  }
+
+  handleSkip = () => {
+    this.props.history.push('/')
   }
 
   handleSubmit = () => {
     const { question1, question2, question3, question4 } = this.state
-    // console.log(question1.value, question2.value, question3.value, question4.value)
     this.props.createUserProfileConnect({ 
         aim: question1.label, 
         highest_education: question2.label, 
         sci_tech_exp: question3.label, 
         phase_transform_exp: question4.label
     })
-    this.setState({showQuestions: false}) 
+    this.props.history.push('/')
   }
-
-  handleSkip = () => {
-    this.state.showQuestions ? this.setState({showQuestions: false}) : this.setState({showQuestions: true})
-  }
-
+  
   handleChange = (name, value) => {
     this.setState({
       [name]: value
@@ -60,14 +65,17 @@ class ProfileQuestions extends Component{
 
   render(){
     const { 
-      question1, question1Select, 
-      question2, question2Select, 
-      question3, question3Select,
-      question4, question4Select,
-      showQuestions} = this.state
-    const { profile } = this.props
-    return(
-      <Modal clicked={this.handleSkip} className={styles.modalQuestions} show={!profile && showQuestions}>
+      question1,
+      question1Select,
+      question2,
+      question2Select,
+      question3,
+      question3Select,
+      question4,
+      question4Select,
+    } = this.state
+      return (
+        <Modal clicked={this.handleSkip} className={styles.modalQuestions} show={true}>
         <div className={styles.content}>
           <div className={styles.header}>
             <h3>More about you...</h3>
@@ -133,19 +141,15 @@ class ProfileQuestions extends Component{
         </div>
       </div>
     </Modal>
-    )
-    
+      )
   }
 }
 
-//TODO: proptypes
-
 const mapStateToProps = state => ({
-  profile: state.persist.user.profile
 })
 
 const mapDispatchToProps = {
   createUserProfileConnect: createUserProfile,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProfileQuestions)
+export default connect(mapStateToProps, mapDispatchToProps)(ProfileQuestionsPage)

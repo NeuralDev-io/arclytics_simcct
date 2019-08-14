@@ -3,10 +3,14 @@ import {
   CREATE_GLOBAL_ALLOY,
   UPDATE_GLOBAL_ALLOY,
   DELETE_GLOBAL_ALLOY,
+  GET_USER_ALLOYS,
+  CREATE_USER_ALLOY,
+  UPDATE_USER_ALLOY,
+  DELETE_USER_ALLOY,
 } from './types'
 
-export const getGlobalAlloys = () => (dispatch) => {
-  fetch('http://localhost:8001/global/alloys', {
+const getAlloys = type => (dispatch) => {
+  fetch(`http://localhost:8001/${type}/alloys`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -19,7 +23,7 @@ export const getGlobalAlloys = () => (dispatch) => {
       if (data.status === 'fail') throw new Error(data.message)
       if (data.status === 'success') {
         dispatch({
-          type: GET_GLOBAL_ALLOYS,
+          type: type === 'global' ? GET_GLOBAL_ALLOYS : GET_USER_ALLOYS,
           payload: data.alloys,
         })
       }
@@ -27,8 +31,8 @@ export const getGlobalAlloys = () => (dispatch) => {
     .catch(err => console.log(err))
 }
 
-export const createGlobalAlloy = alloy => (dispatch) => {
-  fetch('http://localhost:8001/global/alloys', {
+const createAlloy = (type, alloy) => (dispatch) => {
+  fetch(`http://localhost:8001/${type}/alloys`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -41,7 +45,7 @@ export const createGlobalAlloy = alloy => (dispatch) => {
       if (data.status === 'fail') throw new Error(data.message)
       if (data.status === 'success') {
         dispatch({
-          type: CREATE_GLOBAL_ALLOY,
+          type: type === 'global' ? CREATE_GLOBAL_ALLOY : CREATE_USER_ALLOY,
           payload: {
             ...alloy,
             _id: data._id, // eslint-disable-line
@@ -52,8 +56,8 @@ export const createGlobalAlloy = alloy => (dispatch) => {
     .catch(err => console.log(err))
 }
 
-export const updateGlobalAlloy = alloy => (dispatch) => {
-  fetch('http://localhost:8001/global/alloys', {
+const updateAlloy = (type, alloy) => (dispatch) => {
+  fetch(`http://localhost:8001/${type}/alloys`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -66,7 +70,7 @@ export const updateGlobalAlloy = alloy => (dispatch) => {
       if (data.status === 'fail') throw new Error(data.message)
       if (data.status === 'success') {
         dispatch({
-          type: UPDATE_GLOBAL_ALLOY,
+          type: type === 'global' ? UPDATE_GLOBAL_ALLOY : UPDATE_USER_ALLOY,
           payload: data.data,
         })
       }
@@ -74,8 +78,8 @@ export const updateGlobalAlloy = alloy => (dispatch) => {
     .catch(err => console.log(err))
 }
 
-export const deleteGlobalAlloy = alloyId => (dispatch) => {
-  fetch(`http://localhost:8001/global/alloys/${alloyId}`, {
+const deleteAlloy = (type, alloyId) => (dispatch) => {
+  fetch(`http://localhost:8001/${type}/alloys/${alloyId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -87,10 +91,25 @@ export const deleteGlobalAlloy = alloyId => (dispatch) => {
       if (data.status === 'fail') throw new Error(data.message)
       if (data.status === 'success') {
         dispatch({
-          type: DELETE_GLOBAL_ALLOY,
+          type: type === 'global' ? DELETE_GLOBAL_ALLOY : DELETE_USER_ALLOY,
           payload: alloyId,
         })
       }
     })
     .catch(err => console.log(err))
+}
+
+export const getGlobalAlloys = () => getAlloys('global')
+export const createGlobalAlloys = alloy => createAlloy('global', alloy)
+export const updateGlobalAlloys = alloy => updateAlloy('global', alloy)
+export const deleteGlobalAlloys = alloyId => deleteAlloy('global', alloyId)
+
+export const getUserAlloys = () => getAlloys('user')
+export const createUserAlloy = alloy => createAlloy('user', alloy)
+export const updateUserAlloy = alloy => updateUserAlloy('user', alloy)
+export const deleteUserAlloy = alloyId => deleteUserAlloy('user', alloyId)
+
+export const getAllAlloys = () => {
+  getAlloys('global')
+  getAlloys('user')
 }

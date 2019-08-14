@@ -19,6 +19,7 @@ import TrashIcon from 'react-feather/dist/icons/trash-2'
 import Table from '../../elements/table'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
+import UserAlloyDeleteModal from './UserAlloyDeleteModal'
 import {
   postUserAlloy,
   getUserAlloys,
@@ -152,7 +153,7 @@ class UserAlloys extends Component {
           condensed
         />
 
-        {/*<AlloyModal show={deleteModal} onClose={() => this.handleCloseModal('delete')} />*/}
+        <UserAlloyDeleteModal show={deleteModal} onClose={() => this.handleCloseModal('delete')} />
       </div>
     )
   }

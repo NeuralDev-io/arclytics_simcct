@@ -1,0 +1,33 @@
+@import '../../../styles/colors_light';
+@import '../../../styles/typography';
+
+.modal {
+  display: flex;
+  flex-flow: row nowrap;
+  height: fit-content;
+
+  .content {
+    display: flex;
+    flex-flow: column nowrap;
+    width: fit-content;
+
+    .textDisplay {
+      align-self: center;
+    }
+
+    .buttonGroup {
+      display: flex;
+      flex-flow: row nowrap;
+      margin-top: 2rem;
+      align-self: flex-end;
+
+      Button {
+        margin-right: 0.75rem;
+      }
+
+      Button:last-of-type {
+        margin-right: 0;
+      }
+    }
+  }
+}

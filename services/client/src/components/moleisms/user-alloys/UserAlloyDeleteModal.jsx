@@ -11,14 +11,10 @@ class UserAlloyDeleteModal extends Component {
   // eslint-disable-next-line no-useless-constructor
   constructor(props) {
     super(props)
-    const { confirm } = this.props
-
-    this.state = { confirm: false }
   }
 
   render() {
-    const { show, onClose } = this.props
-    const { confirm } = this.state
+    const { show, onClose, onConfirm } = this.props
 
     return (
       <Modal show={show} className={styles.modal}>
@@ -42,7 +38,7 @@ class UserAlloyDeleteModal extends Component {
               appearance="text"
               length="long"
               color="dangerous"
-              onClick={() => this.setState({ confirm: true })}
+              onClick={onConfirm}
             >
               Confirm Delete
             </Button>
@@ -55,8 +51,8 @@ class UserAlloyDeleteModal extends Component {
 
 UserAlloyDeleteModal.propTypes = {
   show: PropTypes.bool.isRequired,
-  confirm: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
 }
 
 export default UserAlloyDeleteModal

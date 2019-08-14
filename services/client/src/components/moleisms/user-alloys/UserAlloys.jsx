@@ -35,6 +35,7 @@ class UserAlloys extends Component {
     super(props)
     this.state = {
       name: '',
+      currentAlloy: {},
       addModal: false,
       editModal: false,
       deleteModal: false,
@@ -51,25 +52,24 @@ class UserAlloys extends Component {
     if (!alloyList || alloyList.length === 0) getAlloysConnect()
   }
 
-  handleShowModal = type => this.setState({ [`${type}Modal`]: true })
+  // We change the boolean that shows the Modal for the correct Modal Option
+  // but we also set the current Rows Original alloy data to currentAlloy so the
+  // callback can update/delete the right one.
+  handleShowModal = (type, alloy) => this.setState({ [`${type}Modal`]: true, currentAlloy: alloy })
 
-  handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
+  // Do the reverse of above and remove currentAlloy
+  handleCloseModal = type => this.setState({ [`${type}Modal`]: false, currentAlloy: {} })
 
-  handleAlloyOperation = (data, option) => {
+  handleAlloyOperation = (option) => {
     const { getAlloysConnect, deleteAlloysConnect } = this.props
 
     if (option === 'add') console.log('add')
 
-    if (option === 'edit') {
-      console.log('edit')
-      console.log(data.name)
-      console.log(data.alloyId)
-      console.log(data.compositions)
-    }
+    if (option === 'edit') console.log('edit')
 
     if (option === 'delete') {
-      this.handleShowModal('delete')
-      // deleteAlloysConnect(data.alloyId)
+      this.handleCloseModal('delete')
+      deleteAlloysConnect(this.state.currentAlloy.alloyId)
       // getAlloysConnect()
     }
   }
@@ -98,7 +98,7 @@ class UserAlloys extends Component {
           <div className={styles.actions}>
             <Button
               appearance="text"
-              onClick={() => this.handleAlloyOperation(original, 'edit')}
+              onClick={() => this.handleShowModal('edit')}
               length="short"
               IconComponent={props => <EditIcon {...props} />}
             >
@@ -106,7 +106,7 @@ class UserAlloys extends Component {
             </Button>
             <Button
               appearance="text"
-              onClick={() => this.handleAlloyOperation(original, 'delete')}
+              onClick={() => this.handleShowModal('delete', original)}
               color="dangerous"
               IconComponent={props => <TrashIcon {...props} />}
             >
@@ -135,7 +135,7 @@ class UserAlloys extends Component {
           </div>
           <Button
             appearance="outline"
-            onClick={() => this.handleAlloyOperation('', 'add')}
+            onClick={() => this.handleShowModal('add')}
             IconComponent={props => <PlusIcon {...props} />}
             length="short"
           >
@@ -153,7 +153,11 @@ class UserAlloys extends Component {
           condensed
         />
 
-        <UserAlloyDeleteModal show={deleteModal} onClose={() => this.handleCloseModal('delete')} />
+        <UserAlloyDeleteModal
+          show={deleteModal}
+          onConfirm={() => this.handleAlloyOperation('delete')}
+          onClose={() => this.handleCloseModal('delete')}
+        />
       </div>
     )
   }
@@ -171,6 +175,15 @@ UserAlloys.propTypes = {
       weight: PropTypes.number,
     })),
   })).isRequired,
+  currentAlloy: PropTypes.shape({
+    alloyId: PropTypes.string,
+    name: PropTypes.string,
+    compositions: PropTypes.arrayOf(PropTypes.shape({
+      name: PropTypes.string,
+      symbol: PropTypes.string,
+      weight: PropTypes.number,
+    })),
+  }).isRequired,
   getAlloysConnect: PropTypes.func.isRequired,
   deleteAlloysConnect: PropTypes.func.isRequired,
 }

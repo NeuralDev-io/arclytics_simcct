@@ -108,8 +108,3 @@ export const getUserAlloys = () => getAlloys('user')
 export const createUserAlloy = alloy => createAlloy('user', alloy)
 export const updateUserAlloy = alloy => updateUserAlloy('user', alloy)
 export const deleteUserAlloy = alloyId => deleteUserAlloy('user', alloyId)
-
-export const getAllAlloys = () => {
-  getAlloys('global')
-  getAlloys('user')
-}

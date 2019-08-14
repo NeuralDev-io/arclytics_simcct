@@ -108,13 +108,6 @@ class SimulationPage extends Component {
           ...globalAlloys[globalAlloys.findIndex(a => a.name === value.value)].compositions,
         ],
       }
-      // set to state
-      // this.setState(prevState => ({
-      //   alloys: {
-      //     ...prevState.alloys,
-      //     [name]: alloy,
-      //   },
-      // }))
       // update session store on the server
       const { alloys } = this.state
       // if session store is already initiated, update it

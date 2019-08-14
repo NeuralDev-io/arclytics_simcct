@@ -21,7 +21,6 @@ class SignupPage extends Component {
     if (localStorage.getItem('token')) this.props.history.push('/')
   }
 
-
   render() {
     return (
       <div className={styles.outer}>

@@ -1,3 +1,15 @@
+/**
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * A component that displays the list of User Alloys from the User's Document
+ * with associated operations including create, update, and delete.
+ *
+ * @version 0.2.0
+ * @author Andrew Che
+ */
+
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -11,7 +23,7 @@ import {
   postUserAlloy,
   getUserAlloys,
   getUserAlloyDetail,
-  deleteUserAlloys,
+  deleteUserAlloy,
   putUserAlloy
 } from '../../../state/ducks/userAlloys/actions'
 
@@ -31,10 +43,24 @@ class UserAlloys extends Component {
     if (!alloyList || alloyList.length === 0) getAlloysConnect()
   }
 
-  handleAlloyOperation = (option) => {
+  handleAlloyOperation = (data, option) => {
+    const { deleteAlloysConnect } = this.props
+
     if (option === 'add') console.log('add')
-    if (option === 'edit') console.log('edit')
-    if (option === 'delete') console.log('delete')
+
+    if (option === 'edit') {
+      console.log('edit')
+      console.log(data.name)
+      console.log(data.alloyId)
+      console.log(data.compositions)
+    }
+
+    if (option === 'delete') {
+      console.log('delete')
+      console.log(data.name)
+      console.log(data.alloyId)
+      deleteAlloysConnect(data.alloyId)
+    }
   }
 
   render() {
@@ -42,7 +68,14 @@ class UserAlloys extends Component {
     const { name } = this.state
 
     // Prepare the data for the Table component
-    const tableData = alloyList.filter(a => a.name.includes(name))
+    // const tableData = alloyList.filter(a => a.name.includes(name))
+    const tableData = alloyList.map(alloy => ({
+      // eslint-disable-next-line no-underscore-dangle
+      alloyId: alloy._id,
+      name: alloy.name,
+      compositions: alloy.compositions,
+    }))
+    console.log(tableData)
     const columns = [
       {
         Header: 'Alloy name',
@@ -50,11 +83,12 @@ class UserAlloys extends Component {
       },
       {
         Header: '',
-        Cell: (
+        // Each cell gets the original data passed to it from the tableData mapping
+        Cell: (({ original }) => (
           <div className={styles.actions}>
             <Button
               appearance="text"
-              onClick={() => this.handleAlloyOperation('edit')}
+              onClick={() => this.handleAlloyOperation(original, 'edit')}
               length="short"
               IconComponent={props => <EditIcon {...props} />}
             >
@@ -62,14 +96,14 @@ class UserAlloys extends Component {
             </Button>
             <Button
               appearance="text"
-              onClick={() => this.handleAlloyOperation('delete')}
+              onClick={() => this.handleAlloyOperation(original, 'delete')}
               color="dangerous"
               IconComponent={props => <TrashIcon {...props} />}
             >
               Delete
             </Button>
           </div>
-        ),
+        )),
         width: 210,
       },
     ]
@@ -91,7 +125,7 @@ class UserAlloys extends Component {
           </div>
           <Button
             appearance="outline"
-            onClick={() => this.handleAlloyOperation('add')}
+            onClick={() => this.handleAlloyOperation('', 'add')}
             IconComponent={props => <PlusIcon {...props} />}
             length="short"
           >
@@ -125,6 +159,7 @@ UserAlloys.propTypes = {
     })),
   })).isRequired,
   getAlloysConnect: PropTypes.func.isRequired,
+  deleteAlloysConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -134,6 +169,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   getAlloysConnect: getUserAlloys,
+  deleteAlloysConnect: deleteUserAlloy,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserAlloys)

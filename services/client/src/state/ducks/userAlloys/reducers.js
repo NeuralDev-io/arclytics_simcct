@@ -7,24 +7,21 @@ import {
 } from './types'
 
 const initialState = {
-  list: [], // For when the response is a list of alloys in RETRIEVE_USER_ALLOYS.
+  list: [], // A list to be passed to the any component that wants to display all of alloys
 }
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case CREATE_USER_ALLOY: {
+    case CREATE_USER_ALLOY:
       // If postUserAlloy() dispatches to create a new alloy.
-      console.log(action.payload)
-      // eslint-disable-next-line no-case-declarations
       return {
         ...state,
-        // basically just append the new alloy to the list
+        // basically just append the new alloy returned in the response to the list
         list: [
           ...state.list,
           action.payload,
         ],
       }
-    }
     case RETRIEVE_USER_ALLOYS:
       // If getUserAlloys() dispatches to get a list of user alloys.
       return {

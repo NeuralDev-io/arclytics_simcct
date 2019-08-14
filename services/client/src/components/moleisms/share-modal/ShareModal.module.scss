@@ -1,0 +1,49 @@
+@import '../../../styles/colors_light';
+@import '../../../styles/typography';
+
+.modal {
+  position: fixed;
+  right: 18rem !important;
+  top: 2.1rem !important;
+  //padding: 0 !important;
+  padding: 3.5rem 2.5rem 2rem 2.5rem !important;
+  width: 25vw !important;
+  //height: fit-content !important;
+
+  header {
+    display: flex;
+    flex-direction: row;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+
+    h3 {
+      position: absolute;
+      top: .75rem;
+      left: 2.5rem;
+    }
+  }
+
+  .closeButton {
+    position: absolute;
+    top: .75rem;
+    right: 1rem;
+  }
+
+  .content {
+    //display: flex;
+    //flex-flow: column nowrap;
+    //width: fit-content;
+  }
+
+  .linkButtonContainer {
+    flex-direction: row;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .emailButtonContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}

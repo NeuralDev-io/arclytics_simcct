@@ -7,5 +7,3 @@ export const GET_USER_ALLOYS = 'alloys/GET_USER_ALLOYS'
 export const CREATE_USER_ALLOY = 'alloys/CREATE_USER_ALLOY'
 export const UPDATE_USER_ALLOY = 'alloys/UPDATE_USER_ALLOY'
 export const DELETE_USER_ALLOY = 'alloys/DELETE_USER_ALLOY'
-
-export const GET_ALL_ALLOYS = 'alloys/GET_ALL_ALLOYS'

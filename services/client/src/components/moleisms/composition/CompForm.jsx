@@ -73,7 +73,8 @@ class CompForm extends Component {
             placeholder="Choose composition"
             options={compOptions}
             value={
-              compOptions[compOptions.findIndex(c => c.value === values.parent.name)]
+              globalOptions[globalOptions.findIndex(c => c.value === values.parent.name)]
+              || userOptions[userOptions.findIndex(c => c.value === values.parent.name)]
               || null
             }
             length="stretch"
@@ -89,7 +90,8 @@ class CompForm extends Component {
             placeholder="Choose composition"
             options={compOptions}
             value={
-              compOptions[compOptions.findIndex(c => c.value === values.weld.name)]
+              globalOptions[globalOptions.findIndex(c => c.value === values.weld.name)]
+              || userOptions[userOptions.findIndex(c => c.value === values.weld.name)]
               || null
             }
             length="stretch"

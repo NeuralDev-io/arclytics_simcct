@@ -90,7 +90,7 @@ class AlloyModal extends Component {
     const { elements } = this.state
     const { show, onClose } = this.props
     return (
-      <Modal show={show} className={styles.modal} onClose={onClose}>
+      <Modal show={show} className={styles.modal} onClose={onClose} withCloseIcon>
         <div className={styles.periodic}>
           <PeriodicTable elements={elements} onToggleElement={this.handleToggleElement} />
         </div>

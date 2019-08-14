@@ -1,34 +1,58 @@
 @import '../../../styles/colors_light';
 @import '../../../styles/animation';
 
-.default {
+.container {
   position: fixed;
+  left: 0;
+  top: 0;
   z-index: -500;
-  background-color: $n0;
-  width: fit-content;
-  box-shadow: 0 3px 6px rgba($color: #000000, $alpha: .15);
-  padding: 2.5rem 2rem;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border-radius: 5px;
-  box-sizing: border-box;
   opacity: 0;
+  width: 100vw;
+  height: 100vh;
   transition: $ease-in-cubic all .4s;
-  max-height: 95vh;
-  overflow-y: auto;
 
-  &.show{
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: center;
+
+  &.show {
     opacity: 1;
     z-index: 9999;
   }
 }
 
-.Backdrop {
+.modalContainer {
+  z-index: 1;
+  position: relative;
+
+  .modal {
+    background-color: $n0;
+    width: fit-content;
+    box-shadow: 0 3px 6px rgba($color: #000000, $alpha: .15);
+    padding: 2rem 2rem;
+    border-radius: 5px;
+    box-sizing: border-box;
+    transition: $ease-in-cubic all .4s;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+
+  .closeButton {
+    position: absolute;
+    top: .75rem;
+    right: 1rem;
+  }
+
+  &.withCloseIcon {
+    .modal { padding: 3.5rem 2.5rem 2rem 2.5rem; }
+  }
+}
+
+.backdrop {
   width: 100%;
   height: 100%;
   position: fixed;
-  z-index: 100;
   left: 0;
   top: 0;
   background-color: rgba(0,0,0, 0.5);

@@ -12,8 +12,9 @@ const initialState = {
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case CREATE_USER_ALLOY:
+    case CREATE_USER_ALLOY: {
       // If postUserAlloy() dispatches to create a new alloy.
+      console.log(action.payload)
       // eslint-disable-next-line no-case-declarations
       return {
         ...state,
@@ -23,6 +24,7 @@ const reducer = (state = initialState, action) => {
           action.payload,
         ],
       }
+    }
     case RETRIEVE_USER_ALLOYS:
       // If getUserAlloys() dispatches to get a list of user alloys.
       return {

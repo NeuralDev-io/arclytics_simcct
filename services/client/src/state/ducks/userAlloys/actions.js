@@ -47,7 +47,6 @@ export const getUserAlloys = () => (dispatch) => {
       if (data.status === 'fail') throw new Error(data.message)
       if (data.status === 'success') {
         // Dispatch the response to the reducer
-        console.log(data)
         dispatch({
           type: RETRIEVE_USER_ALLOYS,
           payload: data.data, // Response returns {"status": "success", "data": [...]}

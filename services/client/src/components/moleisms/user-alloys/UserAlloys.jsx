@@ -32,16 +32,16 @@ class UserAlloys extends Component {
   }
 
   handleAlloyOperation = (option) => {
-    if (option.value === 'edit') console.log('edit')
-    if (option.value === 'delete') console.log('delete')
+    if (option === 'add') console.log('add')
+    if (option === 'edit') console.log('edit')
+    if (option === 'delete') console.log('delete')
   }
 
   render() {
     const { alloyList } = this.props
     const { name } = this.state
 
-    console.log(alloyList)
-
+    // Prepare the data for the Table component
     const tableData = alloyList.filter(a => a.name.includes(name))
     const columns = [
       {
@@ -54,6 +54,7 @@ class UserAlloys extends Component {
           <div className={styles.actions}>
             <Button
               appearance="text"
+              onClick={() => this.handleAlloyOperation('edit')}
               length="short"
               IconComponent={props => <EditIcon {...props} />}
             >
@@ -61,6 +62,7 @@ class UserAlloys extends Component {
             </Button>
             <Button
               appearance="text"
+              onClick={() => this.handleAlloyOperation('delete')}
               color="dangerous"
               IconComponent={props => <TrashIcon {...props} />}
             >
@@ -89,7 +91,7 @@ class UserAlloys extends Component {
           </div>
           <Button
             appearance="outline"
-            onClick={() => {}}
+            onClick={() => this.handleAlloyOperation('add')}
             IconComponent={props => <PlusIcon {...props} />}
             length="short"
           >
@@ -126,7 +128,8 @@ UserAlloys.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  alloyList: state.alloys.list,
+  // Ensure you use the default export name  from '../../../ducks/index.js'
+  alloyList: state.userAlloys.list,
 })
 
 const mapDispatchToProps = {

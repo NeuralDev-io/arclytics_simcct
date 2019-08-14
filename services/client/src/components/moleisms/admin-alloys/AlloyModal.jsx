@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import XIcon from 'react-feather/dist/icons/x'
-import { IconButton } from '../../elements/button'
 import Modal from '../../elements/modal'
 import TextField from '../../elements/textfield'
 import PeriodicTable, { PeriodicTableData } from '../../elements/periodic-table'
@@ -92,16 +90,11 @@ class AlloyModal extends Component {
     const { elements } = this.state
     const { show, onClose } = this.props
     return (
-      <Modal show={show} className={styles.modal}>
+      <Modal show={show} className={styles.modal} onClose={onClose} withCloseIcon>
         <div className={styles.periodic}>
           <PeriodicTable elements={elements} onToggleElement={this.handleToggleElement} />
         </div>
         <div className={styles.content}>
-          <IconButton
-            onClick={onClose}
-            Icon={props => <XIcon {...props} />}
-            className={styles.closeButton}
-          />
           <div className={styles.elementContainer}>
             {this.renderElements()}
           </div>

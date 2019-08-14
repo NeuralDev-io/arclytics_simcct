@@ -426,10 +426,7 @@ class SimulationPage extends Component {
       alloys,
       shareModal,
     } = this.state
-    const {
-      runSimConnect,
-      history,
-    } = this.props
+    const { history } = this.props
 
     return (
       <React.Fragment>

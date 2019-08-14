@@ -1,0 +1,5 @@
+export const CREATE_USER_ALLOY = 'userAlloys/CREATE_USER_ALLOY'
+export const RETRIEVE_USER_ALLOYS = 'userAlloys/RETRIEVE_USER_ALLOYS'
+export const RETRIEVE_USER_ALLOY_DETAIL = 'userAlloys/RETRIEVE_USER_ALLOY_DETAIL'
+export const UPDATE_USER_ALLOY = 'userAlloys/UPDATE_USER_ALLOY'
+export const DELETE_USER_ALLOY = 'userAlloys/DELETE_USER_ALLOY'

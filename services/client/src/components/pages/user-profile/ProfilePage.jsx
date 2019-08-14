@@ -20,9 +20,9 @@ class ProfilePage extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      email: 'example@example.com',
-      firstName: null,
-      lastName: null,
+      email: '',
+      firstName: '',
+      lastName: '',
       occOptions: [
         { label: 'Student', value: 'student' },
         { label: 'Work', value: 'work' },
@@ -45,6 +45,7 @@ class ProfilePage extends Component {
   }
 
   handleDeleteModal = () => {
+    // eslint-disable-next-line no-unused-expressions
     this.state.showDelete ? this.setState({ showDelete: false }) : this.setState({ showDelete: true })
   }
 
@@ -72,15 +73,6 @@ class ProfilePage extends Component {
     const { user } = this.props
     return (
       <React.Fragment>
-        <AppBar active="profile" redirect={this.props.history.push} />
-        <div className={styles.Sidebar}>
-          <h3>User Settings</h3>
-          <div className={styles.navList}>
-            <div> Account settings </div>
-            <div> User Account </div>
-          </div>
-        </div>
-
         <div className={styles.main}>
           <div className={styles.profilePicture}> profile picture </div>
           <div className={styles.general}>
@@ -203,10 +195,15 @@ class ProfilePage extends Component {
           </div>
           <div>
             <h5 className={styles.deleteWarning}>Delete your account</h5>
-            <h6 className={styles.deleteWarning}>Once you delete your account, there is no going back. Please be certain</h6>
-            <h6 className={styles.delete} onClick={this.handleDeleteModal}>Delete my account</h6>
+            <h6 className={styles.deleteWarning}>
+              Once you delete your account, there is no going back. Please be certain
+            </h6>
+            <h6 className={styles.delete} onClick={this.handleDeleteModal}>
+              Delete my account
+            </h6>
             <Modal name="deleteModal" show={showDelete} clicked={this.handleDeleteModal}>
-            All of your data will be lost. Are you sure you want to delete your account? Please enter your password to confirm
+              All of your data will be lost. Are you sure you want to delete your account?
+              Please enter your password to confirm
               <TextField
                 type="password"
                 name="cnfrmDelete"
@@ -228,7 +225,6 @@ const mapStateToProps = state => ({
   user: state.persist.user,
 })
 
-const mapDispatchToProps = {
-}
+const mapDispatchToProps = {}
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProfilePage)

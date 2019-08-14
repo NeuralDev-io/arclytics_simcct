@@ -50,7 +50,10 @@ const reducer = (state = initialState, action) => {
     case DELETE_USER_ALLOY:
       // If deleteUserAlloy() dispatches, there's nothing to return because
       // a fail of this method would throw a new Error()
-      return state
+      return {
+        ...state,
+        list: [...state.list],
+      }
     default:
       return state
   }

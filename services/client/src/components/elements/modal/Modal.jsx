@@ -16,8 +16,11 @@ const Modal = (props) => {
 
   return (
     <div>
-      {/* TODO: (arvy@neuraldev.io) Since there are tutorials later on might want to change the backdrop as another component */}
-      {show ? (<div className={styles.Backdrop} {...buttonize(clicked)} />) : ('')}
+      {/*
+        * TODO: (arvy@neuraldev.io) Since there are tutorials later on might
+        *  want to change the backdrop as another component
+        */}
+      {show ? (<div className={styles.Backdrop} onClick={clicked} />) : ('')}
       <div className={classname} show={show}>
         {children}
       </div>

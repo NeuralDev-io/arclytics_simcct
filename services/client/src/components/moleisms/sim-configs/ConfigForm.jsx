@@ -100,6 +100,7 @@ const ConfigForm = (props) => {
                   value={values.ae1_temp}
                   length="short"
                   suffix="°C"
+                  isDisabled={values.auto_calculate_ae}
                   // validation={[
                   //   {
                   //     constraint: value => (value.length !== 0),
@@ -125,6 +126,7 @@ const ConfigForm = (props) => {
                   value={values.ae3_temp}
                   length="short"
                   suffix="°C"
+                  isDisabled={values.auto_calculate_ae}
                   // validation={[
                   //   {
                   //     constraint: value => (value.length !== 0),
@@ -161,6 +163,7 @@ const ConfigForm = (props) => {
                   value={values.ms_temp}
                   length="short"
                   suffix="°C"
+                  isDisabled={values.auto_calculate_ms}
                   // validation={[
                   //   {
                   //     constraint: value => (value.length !== 0),
@@ -185,6 +188,7 @@ const ConfigForm = (props) => {
                   onChange={val => onChange('ms_rate_param', val)}
                   value={values.ms_rate_param}
                   length="short"
+                  isDisabled={values.auto_calculate_ms}
                   // validation={[
                   //   {
                   //     constraint: value => (value.length !== 0),
@@ -221,6 +225,7 @@ const ConfigForm = (props) => {
                   value={values.bs_temp}
                   length="short"
                   suffix="°C"
+                  isDisabled={values.auto_calculate_bs}
                   // validation={[
                   //   {
                   //     constraint: value => (value.length !== 0),

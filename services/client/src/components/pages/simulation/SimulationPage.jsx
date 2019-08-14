@@ -33,6 +33,7 @@ import {
   updateMsBsAe,
   getMsBsAe,
 } from '../../../api/sim/SessionConfigs'
+import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 import { postSaveSimulation } from '../../../api/sim/SessionSaveSim'
 import { runSim } from '../../../state/ducks/sim/actions'
 
@@ -54,7 +55,7 @@ class SimulationPage extends Component {
         nucleation_finish: 99.9,
         auto_calculate_bs: true,
         auto_calculate_ms: true,
-        ms_rate_param: 5.378,
+        ms_rate_param: 0.0168,
         ms_temp: 0.0,
         bs_temp: 0.0,
         auto_calculate_ae: true,
@@ -107,18 +108,45 @@ class SimulationPage extends Component {
           ...globalAlloys[globalAlloys.findIndex(a => a.name === value.value)].compositions,
         ],
       }
-      // set to state
-      this.setState(prevState => ({
-        alloys: {
-          ...prevState.alloys,
-          [name]: alloy,
-        },
-      }))
       // update session store on the server
       const { alloys } = this.state
+      // if session store is already initiated, update it
+      // otherwise, initiate a new session store with new Comp and update
+      // the session config
       if (sessionStoreInit) updateComp(alloys.alloyOption, name, alloy)
       else {
         initComp(alloys.alloyOption, name, alloy)
+          .then(
+            (data) => {
+              // set to state alloy + configs
+              this.setState(prevState => ({
+                alloys: {
+                  ...prevState.alloys,
+                  [name]: alloy,
+                },
+                configurations: {
+                  ...prevState.configurations,
+                  ...data,
+                },
+              }))
+            },
+            err => console.log(err),
+          )
+        const { configurations } = this.state
+        const {
+          grain_size_ASTM,
+          grain_size_diameter,
+          nucleation_start,
+          nucleation_finish,
+          cct_cooling_rate,
+        } = configurations
+        updateConfig({
+          grain_size_ASTM,
+          grain_size_diameter,
+          nucleation_start,
+          nucleation_finish,
+          cct_cooling_rate,
+        })
         this.setState({ sessionStoreInit: true })
       }
     } else if (name === 'dilution') {
@@ -164,6 +192,17 @@ class SimulationPage extends Component {
             },
           ],
         })
+          .then(
+            (data) => {
+              this.setState(prevState => ({
+                configurations: {
+                  ...prevState.configurations,
+                  ...data,
+                },
+              }))
+            },
+            err => console.log(err),
+          )
       }
     }
   }
@@ -194,13 +233,14 @@ class SimulationPage extends Component {
         // update in server session store with value = 0
         updateConfig({ grain_size: 0 })
       } else {
-        // TODO: do some calculation here to convert unit of grain size
+        // convert unit of grain size
+        const grainSizeDiameter = ASTM2Dia(parseFloat(value))
         // set value to state
         this.setState(prevState => ({
           configurations: {
             ...prevState.configurations,
             grain_size_ASTM: value,
-            grain_size_diameter: value,
+            grain_size_diameter: grainSizeDiameter,
           },
         }))
 
@@ -221,18 +261,19 @@ class SimulationPage extends Component {
         // update in server session store with value = 0
         updateConfig({ grain_size: 0 })
       } else {
-        // TODO: do some calculation here to convert unit of grain size
+        // convert unit of grain size
+        const grainSizeASTM = dia2ASTM(parseFloat(value))
         // set value to state
         this.setState(prevState => ({
           configurations: {
             ...prevState.configurations,
-            grain_size_ASTM: value,
+            grain_size_ASTM: grainSizeASTM,
             grain_size_diameter: value,
           },
         }))
 
         // update in server session store
-        updateConfig({ grain_size: parseFloat(value) })
+        updateConfig({ grain_size: parseFloat(grainSizeASTM) })
       }
     } else if (name === 'displayUserCurve') {
       this.setState(prevState => ({ displayUserCurve: !prevState.displayUserCurve }))
@@ -297,7 +338,41 @@ class SimulationPage extends Component {
 
       // update in server session store
       const nameArr = name.split('_')
-      getMsBsAe(nameArr[2], this.setState)
+      // if auto calculate is turned ON, we have to make GET request to get
+      // the new auto-calculated values. If they are turned OFF, make PUT
+      // request to update the configs with custom values - quirk of the API
+      if (value) {
+        getMsBsAe(nameArr[2])
+          .then(
+            (data) => {
+              this.setState(prevState => ({
+                configurations: {
+                  ...prevState.configurations,
+                  ...data,
+                },
+              }))
+            },
+            err => console.log(err),
+          )
+      } else {
+        // form the request body based on which of bs, ms or ae was updated
+        const { configurations } = this.state
+        let data = {}
+        if (name === 'auto_calculate_ae') {
+          data = {
+            ae1_temp: configurations.ae1_temp,
+            ae3_temp: configurations.ae3_temp,
+          }
+        }
+        if (name === 'auto_calculate_bs') data = { bs_temp: configurations.bs_temp }
+        if (name === 'auto_calculate_ms') {
+          data = {
+            ms_temp: configurations.ms_temp,
+            ms_rate_param: configurations.ms_rate_param,
+          }
+        }
+        updateMsBsAe(nameArr[2], data)
+      }
     } else {
       this.setState(prevState => ({
         configurations: {

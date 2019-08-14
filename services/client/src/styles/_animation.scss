@@ -34,7 +34,7 @@ $ease-in-out-circ: cubic-bezier(.785, .135, .15, .86);
 
 .animate-fadein {
   animation-name: fadein;
-  animation-duration: .6s;
+  animation-duration: .4s;
   animation-timing-function: $ease-in-quad;
 }
 

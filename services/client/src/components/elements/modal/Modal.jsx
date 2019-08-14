@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { buttonize } from '../../../utils/accessibility'
 
 import styles from './Modal.module.scss'
 
@@ -11,12 +12,12 @@ const Modal = (props) => {
     clicked,
   } = props
 
-  const classname = `${className || ''} ${styles.default} ${show ? styles.show : ''} `
+  const classname = `${styles.default} ${show ? styles.show : ''} ${className || ''}`
 
   return (
     <div>
       {/* TODO: (arvy@neuraldev.io) Since there are tutorials later on might want to change the backdrop as another component */}
-      {show ? (<div className={styles.Backdrop} onClick={clicked} />) : ('')}
+      {show ? (<div className={styles.Backdrop} {...buttonize(clicked)} />) : ('')}
       <div className={classname} show={show}>
         {children}
       </div>

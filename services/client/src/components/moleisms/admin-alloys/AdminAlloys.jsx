@@ -7,6 +7,7 @@ import TrashIcon from 'react-feather/dist/icons/trash-2'
 import Table from '../../elements/table'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
+import AlloyModal from './AlloyModal'
 import { getAlloys } from '../../../state/ducks/alloys/actions'
 
 import styles from './AdminAlloys.module.scss'
@@ -16,6 +17,8 @@ class AdminAlloys extends Component {
     super(props)
     this.state = {
       name: '',
+      compositions: [],
+      addModal: false,
     }
   }
 
@@ -24,17 +27,20 @@ class AdminAlloys extends Component {
     if (!alloyList || alloyList.length === 0) getAlloysConnect()
   }
 
-  handleAlloyAction = (option) => {
-    if (option.value === 'edit') prompt('edit')
+  handleShowModal = type => this.setState({ [`${type}Modal`]: true })
+
+  handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
+
+  handleAddAlloy = () => {
+    this.setState({ compositions: [] })
+    this.handleShowModal('add')
   }
 
   render() {
     const { alloyList } = this.props
-    const { name } = this.state
+    const { name, compositions, addModal } = this.state
 
-    console.log(alloyList, name)
     const tableData = alloyList.filter(a => a.name.includes(name))
-    console.log(tableData)
 
     const columns = [
       {
@@ -82,7 +88,7 @@ class AdminAlloys extends Component {
           </div>
           <Button
             appearance="outline"
-            onClick={() => {}}
+            onClick={this.handleAddAlloy}
             IconComponent={props => <PlusIcon {...props} />}
             length="short"
           >
@@ -99,6 +105,7 @@ class AdminAlloys extends Component {
           resizable={false}
           condensed
         />
+        <AlloyModal compositions={compositions} show={addModal} onClose={() => this.handleCloseModal('add')} />
       </div>
     )
   }

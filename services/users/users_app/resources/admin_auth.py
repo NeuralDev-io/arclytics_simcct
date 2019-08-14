@@ -15,9 +15,10 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.08.11'
-"""users.py: 
+"""admin_auth.py: 
 
-TODO
+This file defines all the API resource routes and controller definitions for 
+Sharing endpoints using the Flask Resource inheritance model.
 """
 
 import os

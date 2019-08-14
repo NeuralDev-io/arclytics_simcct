@@ -1,14 +1,12 @@
+/* eslint-disable camelcase */
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
- *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
  * Composition sidebar
  *
- * @version 0.0.0
- * @author Dalton Le
+ * @version 0.8.0
+ * @author Dalton Le and Andrew Che
  */
 
 import React, { Component } from 'react'
@@ -22,7 +20,7 @@ import UploadIcon from 'react-feather/dist/icons/upload'
 import Button from '../../elements/button'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
-import ProfileQuestions from '../../moleisms/profile-questions'
+import ShareModal from '../../moleisms/share-modal'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { TTT, CCT } from '../../moleisms/charts'
 import {
@@ -80,6 +78,7 @@ class SimulationPage extends Component {
         },
         dilution: 0,
       },
+      shareModal: false,
     }
   }
 
@@ -384,6 +383,23 @@ class SimulationPage extends Component {
     }
   }
 
+  // TODO(andrew@neuraldev.io): Just for testing.
+  // Probably need to use this to do some validation checks before trying to run sim.
+  runSimulation = () => {
+    const { runSimConnect } = this.props
+    updateConfig({
+      nucleation_start: 0.0,
+      nucleation_finish: 99.9,
+      cct_cooling_rate: 10,
+      start_temp: 900,
+    })
+    runSimConnect()
+  }
+
+  handleShowModal = type => this.setState({ [`${type}Modal`]: true })
+
+  handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
+
   saveCurrentSimulation = () => {
     const { configurations, alloys } = this.state
     console.log(configurations)
@@ -399,6 +415,7 @@ class SimulationPage extends Component {
     postSaveSimulation(configurations, alloyStore)
   }
 
+
   render() {
     const {
       sessionStoreInit,
@@ -407,6 +424,7 @@ class SimulationPage extends Component {
       displayUserCurve,
       configurations,
       alloys,
+      shareModal,
     } = this.state
     const {
       runSimConnect,
@@ -416,7 +434,6 @@ class SimulationPage extends Component {
     return (
       <React.Fragment>
         <AppBar active="sim" redirect={history.push} />
-        {/* <ProfileQuestions /> */}
         <div className={styles.compSidebar}>
           <CompSidebar
             values={alloys}
@@ -427,7 +444,7 @@ class SimulationPage extends Component {
                 configurations,
                 alloys,
               })
-              runSimConnect()
+              this.runSimulation()
             }}
           />
         </div>
@@ -451,7 +468,7 @@ class SimulationPage extends Component {
             <div className={styles.actions}>
               <Button
                 appearance="text"
-                onClick={() => console.log('SHARE NOW')}
+                onClick={() => this.handleShowModal('share')}
                 IconComponent={props => <Share2Icon {...props} />}
               >
                 SHARE
@@ -526,6 +543,12 @@ class SimulationPage extends Component {
             </div>
           </div>
         </div>
+
+        <ShareModal
+          show={shareModal}
+          onClose={() => this.handleCloseModal('share')}
+          onConfirm={() => console.log('Sharing Confirmed')}
+        />
       </React.Fragment>
     )
   }

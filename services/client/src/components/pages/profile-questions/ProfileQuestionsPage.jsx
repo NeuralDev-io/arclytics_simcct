@@ -16,29 +16,29 @@ import Modal from '../../elements/modal'
 import styles from './ProfileQuestionsPage.module.scss'
 
 class ProfileQuestionsPage extends Component {
-  constructor(props){
+  constructor(props) {
     super(props)
     this.state = {
       question1: null,
       question1Select: [
-        { label: 'Q1 Option 1', value: 'Q1 Option 1'},
-        { label: 'Q1 Option 2', value: 'Q1 Option 2'},
+        { label: 'Q1 Option 1', value: 'Q1 Option 1' },
+        { label: 'Q1 Option 2', value: 'Q1 Option 2' },
       ],
       question2: null,
       question2Select: [
-        { label: 'Q2 Option 1', value: 'Q2 Option 1'},
-        { label: 'Q2 Option 2', value: 'Q2 Option 2'},
+        { label: 'Q2 Option 1', value: 'Q2 Option 1' },
+        { label: 'Q2 Option 2', value: 'Q2 Option 2' },
       ],
       question3: null,
       question3Select: [
-        { label: 'Q3 Option 1', value: 'Q3 Option 1'},
-        { label: 'Q3 Option 2', value: 'Q3 Option 2'},
+        { label: 'Q3 Option 1', value: 'Q3 Option 1' },
+        { label: 'Q3 Option 2', value: 'Q3 Option 2' },
       ],
       question4: null,
       question4Select: [
-        { label: 'Q4 Option 1', value: 'Q4 Option 1'},
-        { label: 'Q4 Option 2', value: 'Q4 Option 2'},
-      ]
+        { label: 'Q4 Option 1', value: 'Q4 Option 1' },
+        { label: 'Q4 Option 2', value: 'Q4 Option 2' },
+      ],
     }
   }
 
@@ -47,24 +47,26 @@ class ProfileQuestionsPage extends Component {
   }
 
   handleSubmit = () => {
-    const { question1, question2, question3, question4 } = this.state
-    this.props.createUserProfileConnect({ 
-        aim: question1.label, 
-        highest_education: question2.label, 
-        sci_tech_exp: question3.label, 
-        phase_transform_exp: question4.label
+    const {
+      question1, question2, question3, question4,
+    } = this.state
+    this.props.createUserProfileConnect({
+      aim: question1.label,
+      highest_education: question2.label,
+      sci_tech_exp: question3.label,
+      phase_transform_exp: question4.label,
     })
     this.props.history.push('/')
   }
-  
+
   handleChange = (name, value) => {
     this.setState({
-      [name]: value
+      [name]: value,
     })
   }
 
-  render(){
-    const { 
+  render() {
+    const {
       question1,
       question1Select,
       question2,
@@ -74,74 +76,74 @@ class ProfileQuestionsPage extends Component {
       question4,
       question4Select,
     } = this.state
-      return (
-        <Modal clicked={this.handleSkip} className={styles.modalQuestions} show={true}>
+    return (
+      <Modal clicked={this.handleSkip} className={styles.modalQuestions} show>
         <div className={styles.content}>
           <div className={styles.header}>
             <h3>More about you...</h3>
             Help us understand our user
           </div>
 
-        <div className={styles.questions}>
-          <div className={styles.question}>
-            <h6 className={styles.questionText}> What sentence best describes you? </h6>
-            <Select
-              type="question1"
-              name="question1"
-              placeholder="---"
-              value= {question1}
-              options={question1Select}
-              length="stretch"
-              onChange={value => this.handleChange('question1', value )}
-            />
-          </div>
+          <div className={styles.questions}>
+            <div className={styles.question}>
+              <h6 className={styles.questionText}> What sentence best describes you? </h6>
+              <Select
+                type="question1"
+                name="question1"
+                placeholder="---"
+                value={question1}
+                options={question1Select}
+                length="stretch"
+                onChange={value => this.handleChange('question1', value)}
+              />
+            </div>
 
-          <div className={styles.question}>
-            <h6 className={styles.questionText}> What is the highest level of education have you studied? </h6>
-            <Select
-              type="question2"
-              name="question2"
-              placeholder="---"
-              value= {question2}
-              options={question2Select}
-              length="stretch"
-              onChange={value => this.handleChange('question2', value )}
-            />
-          </div>
+            <div className={styles.question}>
+              <h6 className={styles.questionText}> What is the highest level of education have you studied? </h6>
+              <Select
+                type="question2"
+                name="question2"
+                placeholder="---"
+                value={question2}
+                options={question2Select}
+                length="stretch"
+                onChange={value => this.handleChange('question2', value)}
+              />
+            </div>
 
-          <div className={styles.question}>
-            <h6 className={styles.questionText}>What is your experience with solid-state phase transformation?</h6>
-            <Select
-              type="question3"
-              name="question3"
-              placeholder="---"
-              value= {question3}
-              options={question3Select}
-              length="stretch"
-              onChange={value => this.handleChange('question3', value )}
-            />
-          </div>
+            <div className={styles.question}>
+              <h6 className={styles.questionText}>What is your experience with solid-state phase transformation?</h6>
+              <Select
+                type="question3"
+                name="question3"
+                placeholder="---"
+                value={question3}
+                options={question3Select}
+                length="stretch"
+                onChange={value => this.handleChange('question3', value)}
+              />
+            </div>
 
-          <div className={styles.question}>
-            <h6 className={styles.questionText}> What is your experience with scientific software? </h6>
-            <Select
-              type="question4"
-              name="question4"
-              placeholder="---"
-              value= {question4}
-              options={question4Select}
-              length="stretch"
-              onChange={value => this.handleChange('question4', value)}
-            />
+            <div className={styles.question}>
+              <h6 className={styles.questionText}> What is your experience with scientific software? </h6>
+              <Select
+                type="question4"
+                name="question4"
+                placeholder="---"
+                value={question4}
+                options={question4Select}
+                length="stretch"
+                onChange={value => this.handleChange('question4', value)}
+              />
+            </div>
           </div>
-        </div>
-        <div className={styles.buttons}>
+          <div className={styles.buttons}>
             <Button classname={styles.skip} appearance="outline" onClick={this.handleSkip}> SKIP </Button>
-            <Button className={styles.send} isDisabled={!(question1 && question2 && question3 && question4)} onClick={this.handleSubmit} > SEND </Button>
+            <Button className={styles.send} isDisabled={!(question1 && question2 && question3 && question4)} onClick={this.handleSubmit}> SEND </Button>
+          </div>
         </div>
-      </div>
-    </Modal>
-      )
+      </Modal>
+    )
   }
 }
 

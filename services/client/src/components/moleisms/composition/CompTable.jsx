@@ -19,7 +19,7 @@ class CompTable extends Component {
       weld,
     } = data
 
-    let tableData = parent.compositions.map(elem => ({
+    const tableData = parent.compositions.map(elem => ({
       symbol: elem.symbol,
       parent: elem.weight,
       weld: undefined,

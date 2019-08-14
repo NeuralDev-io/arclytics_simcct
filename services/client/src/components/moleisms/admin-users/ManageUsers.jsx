@@ -21,12 +21,12 @@ ManageUsers.propTypes = {
 
 }
 
-const mapStateToProps = (state) => ({
-  
+const mapStateToProps = state => ({
+
 })
 
 const mapDispatchToProps = {
-  
+
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ManageUsers)

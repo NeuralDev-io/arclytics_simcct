@@ -48,7 +48,7 @@ const AppBar = (props) => {
             redirect('/profile')
           }}
         />
-       <LogOutIcon
+        <LogOutIcon
           className={styles.navIcon}
           onClick={() => {
             logout()

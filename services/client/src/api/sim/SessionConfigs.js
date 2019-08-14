@@ -13,7 +13,7 @@
  * @author Dalton Le
  */
 
-export const initComp = (option, type, alloy) => {
+export const initComp = (option, type, alloy) => new Promise((resolve, reject) => {
   fetch('http://localhost:8001/alloys/update', {
     method: 'POST',
     headers: {
@@ -30,11 +30,12 @@ export const initComp = (option, type, alloy) => {
     .then(res => res.json())
     .then((data) => {
       if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'success') resolve(data.data)
     })
-    .catch(err => console.log(err))
-}
+    .catch(err => reject(err))
+})
 
-export const updateComp = (option, type, alloy) => {
+export const updateComp = (option, type, alloy) => new Promise((resolve, reject) => {
   fetch('http://localhost:8001/alloys/update', {
     method: 'PATCH',
     headers: {
@@ -51,9 +52,10 @@ export const updateComp = (option, type, alloy) => {
     .then(res => res.json())
     .then((data) => {
       if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'success') resolve(data.data)
     })
-    .catch(err => console.log(err))
-}
+    .catch(err => reject(err))
+})
 
 export const updateConfigMethod = (value) => {
   fetch('http://localhost:8001/configs/method/update', {
@@ -106,7 +108,7 @@ export const updateMsBsAe = (name, reqBody) => {
     .catch(err => console.log(err))
 }
 
-export const getMsBsAe = (name, callback) => {
+export const getMsBsAe = name => new Promise((resolve, reject) => {
   fetch(`http://localhost:8001/configs/${name}`, {
     method: 'GET',
     headers: {
@@ -117,17 +119,8 @@ export const getMsBsAe = (name, callback) => {
   })
     .then(res => res.json())
     .then((data) => {
-      const { status, ...others } = data
-      if (status === 'fail') throw new Error(data.message)
-      if (status === 'success') {
-        // use callback function to set state to SimulationPage
-        callback(prevState => ({
-          configurations: {
-            ...prevState.configurations,
-            ...others,
-          },
-        }))
-      }
+      if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'success') resolve(data.data)
     })
-    .catch(err => console.log(err))
-}
+    .catch(err => reject(err))
+})

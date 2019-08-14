@@ -21,7 +21,7 @@ class UserAlloyDeleteModal extends Component {
     const { confirm } = this.state
 
     return (
-      <Modal show={show} className={styles.modal}>
+      <Modal show={show} className={styles.modal} withCloseIcon onClose={onClose}>
         <div className={styles.content}>
           <span className={styles.textDisplay}>
             Are you sure you would like to delete this alloy?

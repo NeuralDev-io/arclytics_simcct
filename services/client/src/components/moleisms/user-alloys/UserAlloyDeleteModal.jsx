@@ -6,9 +6,7 @@ import Modal from '../../elements/modal'
 import styles from './UserAlloyDeleteModal.module.scss'
 
 
-// eslint-disable-next-line react/prefer-stateless-function
 class UserAlloyDeleteModal extends Component {
-  // eslint-disable-next-line no-useless-constructor
   constructor(props) {
     super(props)
   }

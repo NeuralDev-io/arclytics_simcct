@@ -110,7 +110,7 @@ class AlloysList(Resource):
         if len(alloys) == 0:
             return response, 404
 
-        response['alloys'] = alloys
+        response['data'] = alloys
         response['status'] = 'success'
         response.pop('message')
         return response, 200

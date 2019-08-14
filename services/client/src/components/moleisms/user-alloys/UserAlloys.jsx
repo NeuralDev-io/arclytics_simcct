@@ -21,12 +21,11 @@ import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import UserAlloyDeleteModal from './UserAlloyDeleteModal'
 import {
-  postUserAlloy,
+  createUserAlloy,
   getUserAlloys,
-  getUserAlloyDetail,
+  updateUserAlloy,
   deleteUserAlloy,
-  putUserAlloy
-} from '../../../state/ducks/userAlloys/actions'
+} from '../../../state/ducks/alloys/actions'
 
 import styles from './UserAlloys.module.scss'
 
@@ -70,7 +69,6 @@ class UserAlloys extends Component {
     if (option === 'delete') {
       this.handleCloseModal('delete')
       deleteAlloysConnect(this.state.currentAlloy.alloyId)
-      // getAlloysConnect()
     }
   }
 
@@ -190,7 +188,7 @@ UserAlloys.propTypes = {
 
 const mapStateToProps = state => ({
   // Ensure you use the default export name  from '../../../ducks/index.js'
-  alloyList: state.userAlloys.list,
+  alloyList: state.alloys.user,
 })
 
 const mapDispatchToProps = {

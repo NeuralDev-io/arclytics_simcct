@@ -9,22 +9,23 @@ import {
   DELETE_USER_ALLOY,
 } from './types'
 
+const getPort = type => (type === 'global' ? 8001 : 8000)
+
 const getAlloys = type => (dispatch) => {
-  fetch(`http://localhost:8001/${type}/alloys`, {
+  fetch(`http://localhost:${getPort(type)}/${type}/alloys`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())
-    .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
-      if (data.status === 'success') {
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'success') {
         dispatch({
           type: type === 'global' ? GET_GLOBAL_ALLOYS : GET_USER_ALLOYS,
-          payload: data.alloys,
+          payload: res.alloys || [],
         })
       }
     })
@@ -32,7 +33,7 @@ const getAlloys = type => (dispatch) => {
 }
 
 const createAlloy = (type, alloy) => (dispatch) => {
-  fetch(`http://localhost:8001/${type}/alloys`, {
+  fetch(`http://localhost:${getPort(type)}/${type}/alloys`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -41,14 +42,14 @@ const createAlloy = (type, alloy) => (dispatch) => {
     body: JSON.stringify(alloy),
   })
     .then(res => res.json())
-    .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
-      if (data.status === 'success') {
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'success') {
         dispatch({
           type: type === 'global' ? CREATE_GLOBAL_ALLOY : CREATE_USER_ALLOY,
           payload: {
             ...alloy,
-            _id: data._id, // eslint-disable-line
+            _id: res.data._id, // eslint-disable-line
           },
         })
       }
@@ -57,7 +58,7 @@ const createAlloy = (type, alloy) => (dispatch) => {
 }
 
 const updateAlloy = (type, alloy) => (dispatch) => {
-  fetch(`http://localhost:8001/${type}/alloys`, {
+  fetch(`http://localhost:${getPort(type)}/${type}/alloys`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -66,12 +67,12 @@ const updateAlloy = (type, alloy) => (dispatch) => {
     body: JSON.stringify(alloy),
   })
     .then(res => res.json())
-    .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
-      if (data.status === 'success') {
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'success') {
         dispatch({
           type: type === 'global' ? UPDATE_GLOBAL_ALLOY : UPDATE_USER_ALLOY,
-          payload: data.data,
+          payload: res.data,
         })
       }
     })
@@ -79,7 +80,7 @@ const updateAlloy = (type, alloy) => (dispatch) => {
 }
 
 const deleteAlloy = (type, alloyId) => (dispatch) => {
-  fetch(`http://localhost:8001/${type}/alloys/${alloyId}`, {
+  fetch(`http://localhost:${getPort(type)}/${type}/alloys/${alloyId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -87,9 +88,9 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
     },
   })
     .then(res => res.json())
-    .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
-      if (data.status === 'success') {
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'success') {
         dispatch({
           type: type === 'global' ? DELETE_GLOBAL_ALLOY : DELETE_USER_ALLOY,
           payload: alloyId,

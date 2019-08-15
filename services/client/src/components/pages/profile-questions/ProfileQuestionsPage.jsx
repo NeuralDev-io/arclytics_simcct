@@ -1,59 +1,62 @@
+/**
+ * Profile Page
+ *
+ * @version 0.0.0
+ * @author Arvy Salazar
+ * @github Xaraox
+ */
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { createUserProfile } from '../../../state/ducks/persist/actions'
+
 import Select from '../../elements/select'
 import Button from '../../elements/button'
-
-import styles from './ProfileQuestions.module.scss'
-
 import Modal from '../../elements/modal'
 
-class ProfileQuestions extends Component {
+import styles from './ProfileQuestionsPage.module.scss'
+
+class ProfileQuestionsPage extends Component {
   constructor(props) {
     super(props)
     this.state = {
       question1: null,
       question1Select: [
-        { label: 'To defeat the huns', value: 'opt11' },
-        { label: 'Option 2', value: 'opt12' },
+        { label: 'Q1 Option 1', value: 'Q1 Option 1' },
+        { label: 'Q1 Option 2', value: 'Q1 Option 2' },
       ],
       question2: null,
       question2Select: [
-        { label: 'Be a man training montage', value: 'opt21' },
-        { label: 'Option 2', value: 'opt22' },
+        { label: 'Q2 Option 1', value: 'Q2 Option 1' },
+        { label: 'Q2 Option 2', value: 'Q2 Option 2' },
       ],
       question3: null,
       question3Select: [
-        { label: 'Swords', value: 'opt31' },
-        { label: 'Option 2', value: 'opt32' },
+        { label: 'Q3 Option 1', value: 'Q3 Option 1' },
+        { label: 'Q3 Option 2', value: 'Q3 Option 2' },
       ],
       question4: null,
       question4Select: [
-        { label: 'Fireworks', value: 'opt41' },
-        { label: 'Option 2', value: 'opt42' },
+        { label: 'Q4 Option 1', value: 'Q4 Option 1' },
+        { label: 'Q4 Option 2', value: 'Q4 Option 2' },
       ],
-      showQuestions: true,
     }
+  }
+
+  handleSkip = () => {
+    this.props.history.push('/')
   }
 
   handleSubmit = () => {
     const {
       question1, question2, question3, question4,
     } = this.state
-    // console.log(question1.value, question2.value, question3.value, question4.value)
     this.props.createUserProfileConnect({
-      profile: {
-        aim: question1.value,
-        highest_education: question2.value,
-        sci_tech_exp: question3.value,
-        phase_transform_exp: question4.value,
-      },
+      aim: question1.label,
+      highest_education: question2.label,
+      sci_tech_exp: question3.label,
+      phase_transform_exp: question4.label,
     })
-    // this.setState({showQuestions: false}) TODO: remember to uncomment
-  }
-
-  handleSkip = () => {
-    this.state.showQuestions ? this.setState({ showQuestions: false }) : this.setState({ showQuestions: true })
+    this.props.history.push('/')
   }
 
   handleChange = (name, value) => {
@@ -64,19 +67,21 @@ class ProfileQuestions extends Component {
 
   render() {
     const {
-      question1, question1Select,
-      question2, question2Select,
-      question3, question3Select,
-      question4, question4Select,
-      showQuestions,
+      question1,
+      question1Select,
+      question2,
+      question2Select,
+      question3,
+      question3Select,
+      question4,
+      question4Select,
     } = this.state
-    const { profile, createUserProfile } = this.props
     return (
-      <Modal clicked={this.handleSkip} className={styles.modalQuestions} show={!profile && showQuestions}>
+      <Modal clicked={this.handleSkip} className={styles.modalQuestions} show>
         <div className={styles.content}>
           <div className={styles.header}>
             <h3>More about you...</h3>
-        Help us understand our user
+            Help us understand our user
           </div>
 
           <div className={styles.questions}>
@@ -92,6 +97,7 @@ class ProfileQuestions extends Component {
                 onChange={value => this.handleChange('question1', value)}
               />
             </div>
+
             <div className={styles.question}>
               <h6 className={styles.questionText}> What is the highest level of education have you studied? </h6>
               <Select
@@ -104,8 +110,9 @@ class ProfileQuestions extends Component {
                 onChange={value => this.handleChange('question2', value)}
               />
             </div>
+
             <div className={styles.question}>
-              <h6 className={styles.questionText}> What is your experience with solid-state phase transformation? </h6>
+              <h6 className={styles.questionText}>What is your experience with solid-state phase transformation?</h6>
               <Select
                 type="question3"
                 name="question3"
@@ -116,6 +123,7 @@ class ProfileQuestions extends Component {
                 onChange={value => this.handleChange('question3', value)}
               />
             </div>
+
             <div className={styles.question}>
               <h6 className={styles.questionText}> What is your experience with scientific software? </h6>
               <Select
@@ -139,14 +147,11 @@ class ProfileQuestions extends Component {
   }
 }
 
-// TODO: proptypes
-
 const mapStateToProps = state => ({
-  profile: state.persist.user.profile,
 })
 
 const mapDispatchToProps = {
   createUserProfileConnect: createUserProfile,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProfileQuestions)
+export default connect(mapStateToProps, mapDispatchToProps)(ProfileQuestionsPage)

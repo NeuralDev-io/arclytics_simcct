@@ -21,7 +21,6 @@ class SignupPage extends Component {
     if (localStorage.getItem('token')) this.props.history.push('/')
   }
 
-
   render() {
     return (
       <div className={styles.outer}>
@@ -52,8 +51,7 @@ class SignupPage extends Component {
               })
               promise.then((data) => {
                 // If response is successful
-                localStorage.setItem('token', data.token)
-                this.props.history.push('/')
+                this.props.history.push('/signin')
                 setSubmitting(false)
               })
                 .catch((err) => {

@@ -26,9 +26,14 @@ $bg-img: url('../../../assets/background_img-min.png');
 
 
 .main {
-  margin-left: calc(4rem + 24.25vw);
+  margin-left: calc(4rem);
   width: calc(100% - calc(4rem + 27vw));
   padding: 2.5rem 0rem 2.5rem 2.5rem;
+
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+
 
   // @media screen and (max-width: 1720px) {
   //   margin-left: calc(4rem + 430px);
@@ -38,12 +43,14 @@ $bg-img: url('../../../assets/background_img-min.png');
 }
 
 .header{
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
+  width: 100vw;
 }
 
-.general{
-  width: 22rem;
-  margin-bottom: 3.5rem;
+
+.generalFields{
+  width: 35rem;
+  margin-bottom: 2.5rem;
   display: flex;
   flex-flow: column;
   justify-content: space-between;
@@ -53,13 +60,6 @@ $bg-img: url('../../../assets/background_img-min.png');
     flex-wrap: wrap;
     width:100%;
     margin-bottom: 1rem;
-  }
-  
-  .column{
-    display: flex;
-    flex-direction: column;
-    flex-basis: 100%;
-    flex: 1;
   }
 
   .leftCol{
@@ -69,22 +69,16 @@ $bg-img: url('../../../assets/background_img-min.png');
     flex-basis: 100%;
     flex: 1;
   }
+  
+  .rightCol{
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    flex: 3;
+  }
+
+
 } 
-
-
-.profilePicture{
-  margin-top: calc(7.5rem - 2.5rem);
-  margin-right: calc(30.71vw);
-  float:right;
-  text-align: center;
-  background: grey;
-  border-color:grey;
-  border-radius: 50%;
-  width: 8.5rem;
-  height: 8.5rem;
-  overflow:hidden;
-}
-
 
 .security{
   margin-bottom: 3.5rem;
@@ -93,57 +87,47 @@ $bg-img: url('../../../assets/background_img-min.png');
   justify-content: space-between;
   width: 22.5vw;
 
-  h5{
+  h5, h6{
     margin-bottom: 1.5rem;
-  }
+  } 
 
+  .resetPassword{
+    width: 100%;
+  }
+}
+
+.about{
+  .questions {
+    display: flex;
+    flex-flow: column;
+    justify-content: space-betweeens;
+    
+    .question{
+      margin-bottom: 2.3rem;
+      width: 35rem;
   
-  .securityRow{
-    display: flex;
-    flex-flow: row;
-    justify-content: space-between;
-  }
-
-  .row{
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    width:100%;
-    margin-bottom: 1rem;
-  }
-  .currPwd{
-    padding-top: 0.4rem;
-    display: flex;
-    flex-direction: column;
-    flex-basis: 100%;
-    flex: 1;
-  }
-
-  .newPwd{
-    display: flex;
-    flex-direction: column;
-    flex-basis: 100%;
-    flex: 1;
-  }
-
-  .cnfrmPwd{
-    display: flex;
-    flex-direction: column;
-    flex-basis: 100%;
-    flex: 1;
+      .questionText{
+        margin-bottom:1.25rem;
+      }
+    }
   }
 }
 
-.deleteHeader{
-  margin-bottom: 1.5rem;
+.updateError{
+  width:35rem;
+  color: $r500;
+  text-align: right;
+  margin-bottom: 1rem;
+  height: 1.25rem;
 }
 
-.deleteWarning{
-  margin-bottom: 1.5rem;
-}
-
-
-.delete{
-  color: $r400;
-  cursor: pointer;
+.editButtons{
+  display: flex;
+  flex-flow: row;
+  justify-content: flex-end;
+  width: 35rem;
+  margin-bottom: 1rem;
+  .cancel{
+    margin-left: 2rem;
+  }
 }

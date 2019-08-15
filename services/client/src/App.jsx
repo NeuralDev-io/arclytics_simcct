@@ -6,6 +6,7 @@ import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
 import SimulationPage from './components/pages/simulation'
 import AdminPage from './components/pages/admin'
+import ProfileQuestionsPage from './components/pages/profile-questions'
 import UserPage from './components/pages/user'
 
 import './App.scss'
@@ -28,6 +29,10 @@ function App() {
             path="/"
             render={props => <SimulationPage {...props} />}
           />
+          <Route
+            path="/profileQuestions"
+            render={props => <ProfileQuestionsPage {...props}/>}
+          />            
           <Route
             path="/admin"
             render={props => <AdminPage {...props} />}

@@ -85,10 +85,6 @@ class ShareSimulationLink(Resource):
                 alloy_store=alloy_store_object
             )
             shared_simulation_object.save()
-        except ValidationError as e:
-            response['errors'] = str(e)
-            response['message'] = 'Validation error.'
-            return response, 400
         except ElementSymbolInvalid as e:
             response['errors'] = str(e)
             response['message'] = 'Element Symbol Invalid.'
@@ -100,6 +96,10 @@ class ShareSimulationLink(Resource):
         except MissingElementError as e:
             response['errors'] = str(e)
             response['message'] = 'Alloy is missing essential elements.'
+            return response, 400
+        except ValidationError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Validation error.'
             return response, 400
 
         # Create a token that contains the ObjectId for the shared simulation
@@ -226,14 +226,14 @@ class ShareSimulationEmail(Resource):
                 render_template(
                     'share_configuration.html',
                     email=valid_email_list,
-                    owner_name=(f'{owner.first_name} {owner.last_name}'),
+                    owner_name=f'{owner.first_name} {owner.last_name}',
                     config_url=simulation_url
                 ),
                 'text_template':
                 render_template(
                     'share_configuration.txt',
                     email=valid_email_list,
-                    owner_name=(f'{owner.first_name} {owner.last_name}'),
+                    owner_name=f'{owner.first_name} {owner.last_name}',
                     config_url=simulation_url
                 ),
             }

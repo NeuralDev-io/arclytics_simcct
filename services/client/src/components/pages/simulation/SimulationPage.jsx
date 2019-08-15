@@ -112,8 +112,10 @@ class SimulationPage extends Component {
       // if session store is already initiated, update it
       // otherwise, initiate a new session store with new Comp and update
       // the session config
-      if (sessionStoreInit) updateComp(alloys.alloyOption, name, alloy)
-      else {
+      if (sessionStoreInit) {
+        updateComp(alloys.alloyOption, name, alloy)
+          .catch(err => console.log(err))
+      } else {
         initComp(alloys.alloyOption, name, alloy)
           .then(
             (data) => {

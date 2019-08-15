@@ -134,14 +134,12 @@ class SimulationPage extends Component {
         const { configurations } = this.state
         const {
           grain_size_ASTM,
-          grain_size_diameter,
           nucleation_start,
           nucleation_finish,
           cct_cooling_rate,
         } = configurations
         updateConfig({
-          grain_size_ASTM,
-          grain_size_diameter,
+          grain_size: grain_size_ASTM,
           nucleation_start,
           nucleation_finish,
           cct_cooling_rate,

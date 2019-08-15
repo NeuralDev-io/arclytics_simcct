@@ -22,10 +22,13 @@ class AdminAlloys extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      name: '',
       alloyId: '',
-      compositions: [],
       searchName: '',
+      currentAlloy: {
+        _id: '',
+        compositions: [],
+        name: '',
+      },
       addModal: false,
       deleteModal: false,
       editModal: false,
@@ -42,7 +45,15 @@ class AdminAlloys extends Component {
   handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
 
   showAddAlloy = () => {
-    this.setState({ compositions: [] })
+    const defaultElements = ['C', 'Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', 'W', 'As', 'Fe']
+    const compositions = defaultElements.map(sym => ({ symbol: sym, weight: 0 }))
+    this.setState({
+      currentAlloy: {
+        _id: '',
+        compositions,
+        name: '',
+      },
+    })
     this.handleShowModal('add')
   }
 
@@ -52,13 +63,7 @@ class AdminAlloys extends Component {
   }
 
   showEditAlloy = (alloy) => {
-    console.log(alloy)
-    this.setState({
-      alloyId: alloy._id, // eslint-disable-line
-      name: alloy.name,
-      compositions: alloy.compositions,
-    })
-    console.log(this.state)
+    this.setState({ currentAlloy: alloy })
     this.handleShowModal('edit')
   }
 
@@ -69,9 +74,13 @@ class AdminAlloys extends Component {
   }
 
   editAlloy = (alloy) => {
-    // const { createGlobalAlloysConnect } = this.props
-    // createGlobalAlloysConnect(alloy)
-    console.log(alloy)
+    const { updateGlobalAlloysConnect } = this.props
+    const { currentAlloy } = this.state
+    updateGlobalAlloysConnect({
+      _id: currentAlloy._id, // eslint-disable-line
+      ...alloy,
+    })
+    this.handleCloseModal('edit')
   }
 
   deleteAlloy = (alloyId) => {
@@ -80,12 +89,13 @@ class AdminAlloys extends Component {
     this.handleCloseModal('delete')
   }
 
+  handleAlloyChange = alloy => this.setState({ currentAlloy: alloy })
+
   render() {
     const { globalAlloys } = this.props
     const {
       alloyId,
-      name,
-      compositions,
+      currentAlloy,
       searchName,
       addModal,
       deleteModal,
@@ -160,15 +170,15 @@ class AdminAlloys extends Component {
           condensed
         />
         <AlloyModal
-          compositions={compositions}
-          name={name}
+          alloy={currentAlloy}
+          onChange={this.handleAlloyChange}
           show={addModal}
           onClose={() => this.handleCloseModal('add')}
           onSave={alloy => this.addAlloy(alloy)}
         />
         <AlloyModal
-          compositions={compositions}
-          name={name}
+          alloy={currentAlloy}
+          onChange={this.handleAlloyChange}
           show={editModal}
           onClose={() => this.handleCloseModal('edit')}
           onSave={(alloy => this.editAlloy(alloy))}

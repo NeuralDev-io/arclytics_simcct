@@ -40,6 +40,7 @@
     height: 1rem;
     width: 1rem;
     margin-right: .5rem;
+    flex-shrink: 0;
   }
 
   &.dangerous {
@@ -114,6 +115,7 @@
     height: 1rem;
     width: 1rem;
     margin-right: .5rem;
+    flex-shrink: 0;
   }
 }
 
@@ -162,6 +164,7 @@
     height: 1rem;
     width: 1rem;
     margin-right: .5rem;
+    flex-shrink: 0;
   }
 }
 

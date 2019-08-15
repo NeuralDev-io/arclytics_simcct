@@ -184,9 +184,14 @@ def admin_session_and_token_required(f):
 
         sid, session_store = SimSessionService().load_session(session_key)
 
-        if not session_store:
-            response['message'] = 'User does not have a Session'
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
             return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
 
         if not session_store.get('is_admin'):
             response['message'] = 'User does not have privilege rights.'

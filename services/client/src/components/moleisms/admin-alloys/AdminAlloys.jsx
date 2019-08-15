@@ -7,7 +7,9 @@ import TrashIcon from 'react-feather/dist/icons/trash-2'
 import Table from '../../elements/table'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
-import { getAlloys } from '../../../state/ducks/alloys/actions'
+import AlloyModal from './AlloyModal'
+import AlloyDeleteModal from './AlloyDeleteModal'
+import { getGlobalAlloys } from '../../../state/ducks/alloys/actions'
 
 import styles from './AdminAlloys.module.scss'
 
@@ -16,21 +18,37 @@ class AdminAlloys extends Component {
     super(props)
     this.state = {
       name: '',
+      compositions: [],
+      addModal: false,
+      deleteModal: false,
     }
   }
 
   componentDidMount = () => {
-    const { alloyList, getAlloysConnect } = this.props
-    if (!alloyList || alloyList.length === 0) getAlloysConnect()
+    const { globalAlloys, getGlobalAlloysConnect } = this.props
+    if (!globalAlloys || globalAlloys.length === 0) getGlobalAlloysConnect()
   }
 
-  handleAlloyAction = (option) => {
-    if (option.value === 'edit') prompt('edit')
+  handleShowModal = type => this.setState({ [`${type}Modal`]: true })
+
+  handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
+
+  handleAddAlloy = () => {
+    this.setState({ compositions: [] })
+    this.handleShowModal('add')
   }
 
   render() {
-    const { alloyList } = this.props
-    const { name } = this.state
+    const { globalAlloys } = this.props
+    const {
+      name,
+      compositions,
+      addModal,
+      deleteModal,
+    } = this.state
+
+    const tableData = globalAlloys.filter(a => a.name.includes(name))
+
     const columns = [
       {
         Header: 'Alloy name',
@@ -48,6 +66,7 @@ class AdminAlloys extends Component {
               Edit
             </Button>
             <Button
+              onClick={() => this.handleShowModal('delete')}
               appearance="text"
               color="dangerous"
               IconComponent={props => <TrashIcon {...props} />}
@@ -59,6 +78,7 @@ class AdminAlloys extends Component {
         width: 210,
       },
     ]
+
     return (
       <div className={styles.container}>
         <h3>Alloy database</h3>
@@ -67,6 +87,7 @@ class AdminAlloys extends Component {
             <span>Search</span>
             <TextField
               type="text"
+              length="long"
               name="name"
               placeholder="Alloy name"
               value={name}
@@ -75,7 +96,7 @@ class AdminAlloys extends Component {
           </div>
           <Button
             appearance="outline"
-            onClick={() => {}}
+            onClick={this.handleAddAlloy}
             IconComponent={props => <PlusIcon {...props} />}
             length="short"
           >
@@ -83,13 +104,24 @@ class AdminAlloys extends Component {
           </Button>
         </div>
         <Table
-          data={alloyList}
+          className="-highlight"
+          data={tableData}
           columns={columns}
-          pageSize={alloyList.length > 10 ? 10 : alloyList.length}
+          pageSize={tableData.length > 10 ? 10 : tableData.length}
           showPageSizeOptions={false}
-          showPagination={alloyList.length !== 0}
+          showPagination={tableData.length !== 0}
           resizable={false}
           condensed
+        />
+        <AlloyModal
+          compositions={compositions}
+          show={addModal}
+          onClose={() => this.handleCloseModal('add')}
+        />
+        <AlloyDeleteModal
+          show={deleteModal}
+          onClose={() => this.handleCloseModal('delete')}
+          onConfirm={() => console.log('Delete Confirmed')}
         />
       </div>
     )
@@ -97,7 +129,7 @@ class AdminAlloys extends Component {
 }
 
 AdminAlloys.propTypes = {
-  alloyList: PropTypes.arrayOf(PropTypes.shape({
+  globalAlloys: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string,
     compositions: PropTypes.arrayOf(PropTypes.shape({
       name: PropTypes.string,
@@ -105,15 +137,15 @@ AdminAlloys.propTypes = {
       weight: PropTypes.number,
     })),
   })).isRequired,
-  getAlloysConnect: PropTypes.func.isRequired,
+  getGlobalAlloysConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
-  alloyList: state.alloys.list,
+  globalAlloys: state.alloys.global,
 })
 
 const mapDispatchToProps = {
-  getAlloysConnect: getAlloys,
+  getGlobalAlloysConnect: getGlobalAlloys,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdminAlloys)

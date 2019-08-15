@@ -617,10 +617,6 @@ def reset_password_email() -> Tuple[dict, int]:
 @logout_authenticate
 def logout(user_id, token, session_key) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
-    # FIXME(andrew@neuraldev.io): There seems to be a huge issue with this
-    #  as in testing, or possibly even live, there seems to be no cross-server
-    #  session storage of the user.
-
     response = {'status': 'success', 'message': 'Successfully logged out.'}
 
     simcct_host = os.environ.get('SIMCCT_HOST', None)
@@ -633,11 +629,12 @@ def logout(user_id, token, session_key) -> Tuple[dict, int]:
         }
     )
 
-    # print(simcct_resp)
     if simcct_resp.json().get('status', 'fail') == 'fail':
-        raise SimCCTBadServerLogout(
-            f'Unable to logout the user_id: {user_id} from the SimCCT server'
-        )
+        # raise SimCCTBadServerLogout(
+        #     f'Unable to logout the user_id: {user_id} from the SimCCT server'
+        # )
+        response['message'] = 'Unable to logout the user from the SimCCT server'
+        return jsonify(response), 500
 
     return jsonify(response), 202
 

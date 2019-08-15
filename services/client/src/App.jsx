@@ -6,8 +6,7 @@ import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
 import SimulationPage from './components/pages/simulation'
 import AdminPage from './components/pages/admin'
-import ProfilePage from './components/pages/profile'
-import ProfileQuestionsPage from './components/pages/profile-questions'
+import UserPage from './components/pages/user'
 
 import './App.scss'
 
@@ -30,18 +29,12 @@ function App() {
             render={props => <SimulationPage {...props} />}
           />
           <Route
-            exact
-            path="/profileQuestions"
-            render={props => <ProfileQuestionsPage {...props} />}
-          />
-          <Route
-            exact
-            path="/profile"
-            render={props => <ProfilePage {...props} />}
-          />
-          <Route
             path="/admin"
             render={props => <AdminPage {...props} />}
+          />
+          <Route
+            path="/user"
+            render={props => <UserPage {...props} />}
           />
         </Switch>
       </div>

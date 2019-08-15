@@ -526,7 +526,7 @@ class TestSessionService(BaseTestCase):
                 self.session_key
             )
             self.assertIsNone(sid)
-            self.assertFalse(session_store)
+            self.assertEqual(session_store, 'Cannot retrieve data from Redis.')
 
 
 if __name__ == '__main__':

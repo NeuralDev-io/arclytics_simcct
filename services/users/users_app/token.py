@@ -86,18 +86,16 @@ def generate_promotion_confirmation_token(admin_email: str, user_email: str
     )
 
 
-def generate_shared_simulation_signature(sim_data: dict) -> Union[bool, list]:
-    serializer = JSONWebSignatureSerializer(app.config['SECRET_KEY'])
-    return serializer.dumps(
-        sim_data, salt=app.config['SECURITY_PASSWORD_SALT']
-    )
+def generate_shared_simulation_token(sim_id: dict) -> Union[bool, list]:
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return serializer.dumps(sim_id, salt=app.config['SECURITY_PASSWORD_SALT'])
 
 
-def confirm_signature(signature) -> Union[bool, dict]:
-    serializer = JSONWebSignatureSerializer(app.config['SECRET_KEY'])
+def confirm_simulation_token(token) -> Union[bool, dict]:
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     try:
         sim_data = serializer.loads(
-            signature, salt=app.config['SECURITY_PASSWORD_SALT']
+            token, salt=app.config['SECURITY_PASSWORD_SALT']
         )
     except BadSignature as e:
         raise URLTokenError('Bad signature.')

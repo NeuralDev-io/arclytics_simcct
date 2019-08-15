@@ -6,7 +6,7 @@ import {
 
 const initialState = {
   user: {
-    admin: true,
+    admin: false,
     profile: null,
   },
 }

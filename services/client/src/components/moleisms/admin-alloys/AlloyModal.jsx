@@ -105,7 +105,13 @@ class AlloyModal extends Component {
 }
 
 AlloyModal.propTypes = {
-  compositions: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  compositions: PropTypes.arrayOf(PropTypes.shape({
+    symbol: PropTypes.string,
+    weight: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+    ]),
+  })).isRequired,
   show: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
 }

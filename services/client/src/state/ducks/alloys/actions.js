@@ -82,6 +82,7 @@ const createAlloy = (type, alloy) => (dispatch) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(alloy),
@@ -107,6 +108,7 @@ const updateAlloy = (type, alloy) => (dispatch) => {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(alloy),
@@ -143,6 +145,7 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })

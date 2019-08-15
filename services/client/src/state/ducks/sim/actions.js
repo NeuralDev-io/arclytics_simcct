@@ -12,12 +12,12 @@ export const runSim = () => (dispatch) => {
     },
   })
     .then(res => res.json())
-    .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
-      if (data.status === 'success') {
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'success') {
         dispatch({
           type: RUN_SIM,
-          payload: data,
+          payload: res.data,
         })
       }
     })

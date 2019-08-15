@@ -479,15 +479,16 @@ class SimulationPage extends Component {
                 appearance="text"
                 onClick={() => this.handleShowModal('share')}
                 IconComponent={props => <Share2Icon {...props} />}
+                isDisabled={!sessionStoreInit}
               >
                 SHARE
               </Button>
-
               <Button
                 appearance="outline"
                 type="button"
                 onClick={this.saveCurrentSimulation}
                 IconComponent={props => <SaveIcon {...props} />}
+                isDisabled={!sessionStoreInit}
               >
                 SAVE
               </Button>

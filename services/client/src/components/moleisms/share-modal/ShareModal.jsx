@@ -62,9 +62,10 @@ class ShareModal extends PureComponent {
       .then((res) => {
         this.setState({ shareUrlLink: res.link, linkCopyDisabled: false })
       })
+      .catch(err => console.log(err))
   }
 
-  copyToClipboard = (e) => {
+  copyToClipboard = () => {
     // TODO(andrew@neuraldev.io): Check if this works for other browsers.
     const { shareUrlLink } = this.state
     navigator.clipboard.writeText(shareUrlLink).then(() => {
@@ -184,7 +185,6 @@ class ShareModal extends PureComponent {
                 ref={textfield => this.textField = textfield}
                 isDisabled
               />
-
               <div className={styles.linkButtonContainer}>
                 <Button
                   onClick={this.onUrlLinkSubmit}
@@ -196,7 +196,7 @@ class ShareModal extends PureComponent {
                   GENERATE
                 </Button>
                 <Button
-                  onClick={e => this.copyToClipboard(e)}
+                  onClick={this.copyToClipboard}
                   name="copyLinkSubmit"
                   type="button"
                   appearance="outline"

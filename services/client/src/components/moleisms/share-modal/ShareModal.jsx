@@ -8,6 +8,7 @@ import Button, { IconButton } from '../../elements/button'
 import Modal from '../../elements/modal'
 import TextField from '../../elements/textfield'
 import TextArea from '../../elements/textarea'
+import { getShareUrlLink } from '../../../api/sim/SessionShareSim'
 
 import styles from './ShareModal.module.scss'
 
@@ -21,6 +22,8 @@ class ShareModal extends PureComponent {
       expandedExport: false,
       linkCopyDisabled: true,
       emailSubmitDisabled: true,
+      shareUrlLink: '',
+      copyLinkSuccess: '',
     }
   }
 
@@ -34,6 +37,41 @@ class ShareModal extends PureComponent {
     console.log('Email Submitted')
   }
 
+  onUrlLinkSubmit = () => {
+    const { configurations, alloys } = this.props
+    const alloyStore = {
+      alloy_option: alloys.alloyOption,
+      alloys: {
+        parent: alloys.parent,
+        weld: null,
+        mix: null,
+      },
+    }
+
+    const { grain_size_ASTM, grain_size_diameter, ...others } = configurations
+    const validConfigs = {
+      ...others,
+      grain_size: grain_size_ASTM,
+    }
+
+    console.log('ShareModal:')
+    console.log(configurations)
+    console.log(alloyStore)
+
+    getShareUrlLink(validConfigs, alloyStore)
+      .then((res) => {
+        this.setState({ shareUrlLink: res.link, linkCopyDisabled: false })
+      })
+  }
+
+  copyToClipboard = (e) => {
+    // TODO(andrew@neuraldev.io): Check if this works for other browsers.
+    const { shareUrlLink } = this.state
+    navigator.clipboard.writeText(shareUrlLink).then(() => {
+      this.setState({ copyLinkSuccess: 'Copied!' })
+    })
+  }
+
   render() {
     const { show, onClose } = this.props
     const {
@@ -42,6 +80,8 @@ class ShareModal extends PureComponent {
       expandedExport,
       linkCopyDisabled,
       emailSubmitDisabled,
+      shareUrlLink,
+      copyLinkSuccess,
     } = this.state
 
     return (
@@ -60,6 +100,7 @@ class ShareModal extends PureComponent {
         </header>
         <div>
           <Accordion>
+            {/* Email */}
             <AccordionSection
               title="By email"
               id="email"
@@ -127,7 +168,7 @@ class ShareModal extends PureComponent {
                 </Button>
               </div>
             </AccordionSection>
-
+            {/* Link */}
             <AccordionSection
               title="By URL link"
               id="url"
@@ -137,15 +178,16 @@ class ShareModal extends PureComponent {
               <TextField
                 type="text"
                 name="urlLink"
-                // onChange={e => setFieldValue('email', e)}
-                placeholder="URL Link"
+                placeholder={linkCopyDisabled ? 'Generate a URL link to copy' : 'URL Link'}
                 length="stretch"
+                value={shareUrlLink}
+                ref={textfield => this.textField = textfield}
                 isDisabled
               />
 
               <div className={styles.linkButtonContainer}>
                 <Button
-                  onClick={() => console.log('Copy Link')}
+                  onClick={this.onUrlLinkSubmit}
                   name="generateLinkSubmit"
                   type="button"
                   appearance="outline"
@@ -154,7 +196,7 @@ class ShareModal extends PureComponent {
                   GENERATE
                 </Button>
                 <Button
-                  onClick={() => console.log('Copy Link')}
+                  onClick={e => this.copyToClipboard(e)}
                   name="copyLinkSubmit"
                   type="button"
                   appearance="outline"
@@ -163,9 +205,10 @@ class ShareModal extends PureComponent {
                 >
                   COPY LINK
                 </Button>
+                <span>{copyLinkSuccess}</span>
               </div>
             </AccordionSection>
-
+            {/* Export */}
             <AccordionSection
               title="By exporting to file"
               id="export"
@@ -203,7 +246,6 @@ class ShareModal extends PureComponent {
 ShareModal.propTypes = {
   show: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
 }
 
 export default ShareModal

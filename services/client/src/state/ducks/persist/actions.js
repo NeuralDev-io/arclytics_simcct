@@ -26,9 +26,9 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
 }
 
 export const createUserProfile = values => (dispatch) => {
-  console.log(values.profile.aim, values.profile.highest_education, values.profile.sci_tech_exp, values.profile.phase_transform_exp)
-  fetch('http://localhost:8000/user', {
-    method: 'PATCH',
+  // values = {aim, highest_education, sci_texh_exp, phas_transform_exp}
+  fetch('http://localhost:8000/user/profile', {
+    method: 'POST',
     mode: 'cors',
     headers: {
       'Content-Type': 'application/json',
@@ -50,8 +50,9 @@ export const createUserProfile = values => (dispatch) => {
 }
 
 export const updateUserProfile = values => (dispatch) => {
-  fetch('http://localhost:8000/user_profile', {
+  fetch('http://localhost:8000/user', {
     method: 'PATCH',
+    mode: 'cors',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${localStorage.getItem('token')}`,

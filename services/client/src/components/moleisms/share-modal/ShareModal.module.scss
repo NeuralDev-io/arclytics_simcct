@@ -7,7 +7,7 @@
   top: 2.1rem !important;
   //padding: 0 !important;
   padding: 3.5rem 2.5rem 2rem 2.5rem !important;
-  width: 25vw !important;
+  width: 35vw !important;
   //height: fit-content !important;
 
   header {
@@ -15,17 +15,18 @@
     flex-direction: row;
     flex-flow: row nowrap;
     justify-content: space-between;
+    margin-top: 0.5rem;
 
     h3 {
       position: absolute;
-      top: .75rem;
+      top: 1.5rem;
       left: 2.5rem;
     }
   }
 
   .closeButton {
     position: absolute;
-    top: .75rem;
+    top: 1.5rem;
     right: 1rem;
   }
 
@@ -38,10 +39,24 @@
   .linkButtonContainer {
     flex-direction: row;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
+
+    Button {
+        margin-right: 0.75rem;
+      }
+
+    Button:last-of-type {
+      margin-right: 0;
+    }
   }
 
   .emailButtonContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+
+  .exportButtonContainer {
     display: flex;
     flex-direction: row;
     justify-content: flex-end;

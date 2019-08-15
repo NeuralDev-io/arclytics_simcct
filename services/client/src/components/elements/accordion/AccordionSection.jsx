@@ -37,7 +37,7 @@ class AccordionSection extends PureComponent {
             }
           }}
         >
-          <h4>{title}</h4>
+          <h6>{title}</h6>
           {expanded ? (
             <ChevronUpIcon />
           ) : (
@@ -45,6 +45,7 @@ class AccordionSection extends PureComponent {
           ) }
         </div>
         <div
+          className={styles.childrenContainer}
           role="region"
           aria-labelledby={labelId}
           id={sectionId}

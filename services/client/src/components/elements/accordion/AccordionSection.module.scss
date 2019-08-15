@@ -11,4 +11,10 @@
   flex-direction: row;
   flex-flow: row nowrap;
   justify-content: space-between;
+  margin: 1.5rem 0;
+}
+
+.childrenContainer * {
+//  TODO(andrew@neuraldev.io): Update this later if we need to do anything.
+  margin: 0.25rem 0;
 }

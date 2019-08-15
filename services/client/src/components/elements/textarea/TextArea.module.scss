@@ -1,4 +1,5 @@
 @import '../../../styles/colors_light';
+@import '../../../styles/typography';
 
 .container {
   display: flex;
@@ -11,14 +12,17 @@
   }
 }
 
-.input {
+.textarea {
   // remove default styles
   border: none;
   outline: none;
 
+  // remove resizeable
+  resize: none;
+
   // layout
   width: 7.5rem;
-  height: 2.25rem;
+  height: auto;
   padding: .5rem .75rem;
 
   // border
@@ -31,6 +35,7 @@
 
   &::placeholder {
     color: $n600;
+    font-family: $font-primary;
   }
 
   &:hover:not([disabled]) {

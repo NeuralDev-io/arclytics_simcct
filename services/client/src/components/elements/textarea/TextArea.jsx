@@ -5,16 +5,18 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
- * Text field component
+ * Text area component
  *
- * @version 0.0.0
+ * @version 0.1.0
  * @author Andrew Che
  */
 
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
-import styles from './TextField.module.scss'
+import styles from './TextArea.module.scss'
+
+// TODO(andrew@neuraldev.io): Complete documentation.
 
 class TextArea extends Component {
   constructor(props) {
@@ -24,31 +26,8 @@ class TextArea extends Component {
     }
   }
 
-  validate = (value) => {
-    const { validation } = this.props
-    // console.log(validation)
-    // console.log(value)
-    const BreakException = {}
-    try {
-      validation.forEach((valObj) => {
-        // console.log('start validation')
-        if (!valObj.constraint(value)) {
-          this.setState({ err: valObj.message })
-          // console.log('validation = false')
-          throw BreakException
-        } else {
-          this.setState({ err: '' })
-          // console.log('validation = true')
-        }
-      })
-    } catch (ex) {
-      if (ex !== BreakException) throw ex
-    }
-  }
-
   handleChange = (e) => {
     const { onChange } = this.props
-    // this.validate(e.target.value)
     onChange(e.target.value)
   }
 
@@ -56,21 +35,23 @@ class TextArea extends Component {
     const {
       placeholder = 'Input',
       isDisabled = false,
-      type = 'text',
       className = '',
       value = '',
       length = 'default',
+      cols,
+      rows,
       name,
       ...other
     } = this.props
     const { err } = this.state
-    const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${err !== '' && styles.error} ${className || ''}`
+    const classname = `${styles.textarea} ${length === 'default' ? '' : styles[length]} ${err !== '' && styles.error} ${className || ''}`
 
     return (
       <div>
-        <input
+        <textarea
           {...other}
-          type={type}
+          cols={cols}
+          rows={rows}
           className={classname}
           placeholder={placeholder}
           name={name}
@@ -92,21 +73,21 @@ TextArea.propTypes = {
     PropTypes.string,
     PropTypes.number,
   ]),
-  type: PropTypes.string,
   placeholder: PropTypes.string,
   isDisabled: PropTypes.bool,
   className: PropTypes.string,
-  validation: PropTypes.string,
-
+  cols: PropTypes.number,
+  rows: PropTypes.number,
 }
 
 TextArea.defaultProps = {
-  type: 'text',
   length: 'default',
   placeholder: 'Input',
   isDisabled: false,
   className: '',
   value: '',
+  cols: 0,
+  rows: 10,
 }
 
 export default TextArea

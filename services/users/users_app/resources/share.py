@@ -6,7 +6,7 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['David Matthews <@tree1004']
+__author__ = ['David Matthews <@tree1004>']
 
 __credits__ = ['']
 __license__ = 'TBA'
@@ -70,7 +70,7 @@ class ShareSimulationLink(Resource):
         # Extract the data
         owner = User.objects.get(id=resp)
         shared_date = datetime.utcnow()
-        configuration = data.get('configuration', None)
+        configuration = data.get('configurations', None)
         alloy_store = data.get('alloy_store', None)
 
         # Validate the request simulation data. Validation is done by the
@@ -169,7 +169,7 @@ class ShareSimulationEmail(Resource):
 
         # Get the configuration and alloy_store information from the request so
         # we can attempt to make a SharedSimulation object out of it.
-        configuration = data.get('configuration', None)
+        configuration = data.get('configurations', None)
         alloy_store = data.get('alloy_store', None)
 
         # Validate the request simulation data. Validation is done by the

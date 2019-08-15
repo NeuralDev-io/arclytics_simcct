@@ -1,14 +1,13 @@
-import React, { PureComponent, useState } from 'react'
+import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import { Formik } from 'formik'
 import XIcon from 'react-feather/dist/icons/x'
-import { loginValidation } from '../../../utils/ValidationHelper'
-import { login } from '../../../utils/AuthenticationHelper'
 import Accordion from '../../elements/accordion'
 import AccordionSection from '../../elements/accordion/AccordionSection'
 import Button, { IconButton } from '../../elements/button'
 import Modal from '../../elements/modal'
 import TextField from '../../elements/textfield'
+import TextArea from '../../elements/textarea'
 
 import styles from './ShareModal.module.scss'
 
@@ -17,7 +16,7 @@ class ShareModal extends PureComponent {
   constructor(props) {
     super(props)
     this.state = {
-      expandedEmail: true,
+      expandedEmail: false,
       expandedUrl: true,
       expandedExport: false,
       linkCopyDisabled: true,
@@ -36,7 +35,7 @@ class ShareModal extends PureComponent {
   }
 
   render() {
-    const { show, onClose, onConfirm } = this.props
+    const { show, onClose } = this.props
     const {
       expandedEmail,
       expandedUrl,
@@ -50,7 +49,6 @@ class ShareModal extends PureComponent {
         show={show}
         className={styles.modal}
         onClose={onClose}
-        withCloseIcon
       >
         <header>
           <h3>Share</h3>
@@ -63,7 +61,7 @@ class ShareModal extends PureComponent {
         <div>
           <Accordion>
             <AccordionSection
-              title="Email"
+              title="By email"
               id="email"
               expanded={expandedEmail}
               onToggle={() => this.toggleSection('Email')}
@@ -99,7 +97,7 @@ class ShareModal extends PureComponent {
                         </div>
 
                         <div className={styles.message}>
-                          <TextField
+                          <TextArea
                             type="text"
                             name="message"
                             // onChange={e => setFieldValue('', e)}
@@ -131,7 +129,7 @@ class ShareModal extends PureComponent {
             </AccordionSection>
 
             <AccordionSection
-              title="URL Link"
+              title="By URL link"
               id="url"
               expanded={expandedUrl}
               onToggle={() => this.toggleSection('Url')}
@@ -142,6 +140,7 @@ class ShareModal extends PureComponent {
                 // onChange={e => setFieldValue('email', e)}
                 placeholder="URL Link"
                 length="stretch"
+                isDisabled
               />
 
               <div className={styles.linkButtonContainer}>
@@ -168,7 +167,7 @@ class ShareModal extends PureComponent {
             </AccordionSection>
 
             <AccordionSection
-              title="Export to File"
+              title="By exporting to file"
               id="export"
               expanded={expandedExport}
               onToggle={() => this.toggleSection('Export')}
@@ -176,14 +175,14 @@ class ShareModal extends PureComponent {
               <TextField
                 type="text"
                 name="filename"
-                // onChange={e => setFieldValue('email', e)}
+                onChange={() => console.log('Export typed')}
                 placeholder="File name"
                 length="stretch"
               />
 
               <div className={styles.exportButtonContainer}>
                 <Button
-                  onClick={() => console.log('Copy Link')}
+                  onClick={() => console.log('Export Link')}
                   name="exportFileSubmit"
                   type="button"
                   appearance="outline"

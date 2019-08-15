@@ -56,10 +56,9 @@ class AdminAlloys extends Component {
   }
 
   deleteAlloy = (alloyId) => {
-    // const { deleteGlobalAlloysConnect } = this.props
-    // deleteGlobalAlloysConnect(alloyId)
-    console.log('Delete alloy: ', alloyId)
-    // this.handleCloseModal('delete')
+    const { deleteGlobalAlloysConnect } = this.props
+    deleteGlobalAlloysConnect(alloyId)
+    this.handleCloseModal('delete')
   }
 
   render() {

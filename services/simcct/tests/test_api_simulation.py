@@ -137,11 +137,11 @@ class TestSimulationService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assert404(res)
-            self.assertEqual(data['status'], 'fail')
             self.assertEqual(
-                data['message'], 'No previous session configurations was set.'
+                data['message'], 'Unable to load session from Redis.'
             )
+            self.assertEqual(data['status'], 'fail')
+            self.assert401(res)
 
     def test_simulate_no_prev_alloy(self):
         """Ensure that if the user does not have a previous alloy it fails."""

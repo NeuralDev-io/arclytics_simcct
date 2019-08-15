@@ -29,6 +29,9 @@ from sim_app.middleware import token_and_session_required
 from sim_app.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration
 from simulation.phasesimulation import PhaseSimulation
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
 
 sim_blueprint = Blueprint('simulation', __name__)
 
@@ -43,6 +46,16 @@ class Simulation(Resource):
 
         # First we need to make sure they logged in and are in a current session
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
         if session_configs is None:
             response['message'] = 'No previous session configurations was set.'
@@ -85,8 +98,13 @@ class Simulation(Resource):
             configs=session_configs, compositions=alloy['compositions']
         )
 
+        logger.pprint(alloy)
+        logger.pprint(session_configs)
+
         sim = PhaseSimulation(sim_configs=sim_configs)
 
+        # TODO(andrew@neuraldev.io): add a Division by Zero check here or find
+        #  out what is causing it and raise a custom Exception.
         # Running these in parallel with threading
         ttt_process = Thread(sim.ttt())
         cct_process = Thread(sim.cct())

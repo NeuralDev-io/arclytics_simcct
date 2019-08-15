@@ -11,9 +11,15 @@ class AlloyDeleteModal extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      passwordValid: false,
+      // passwordValid: false,
       password: '',
     }
+  }
+
+  handleSubmit = (e, alloyId) => {
+    e.preventDefault()
+    const { onConfirm } = this.props
+    onConfirm(alloyId)
   }
 
   render() {
@@ -21,13 +27,12 @@ class AlloyDeleteModal extends Component {
       alloyId,
       show,
       onClose,
-      onConfirm,
     } = this.props
-    const { password, passwordValid } = this.state
+    const { password } = this.state
 
     return (
       <Modal show={show} className={styles.modal} withCloseIcon onClose={onClose}>
-        <form className={styles.content} onSubmit={() => onConfirm(alloyId)}>
+        <form className={styles.content} onSubmit={e => this.handleSubmit(e, alloyId)}>
           <span className={styles.textDisplay}>
             Are you sure you would like to delete this alloy?
           </span>
@@ -61,8 +66,7 @@ class AlloyDeleteModal extends Component {
               appearance="text"
               length="long"
               color="dangerous"
-              onClick={() => onConfirm(alloyId)}
-              isDisabled={!passwordValid}
+              isDisabled={password === ''}
             >
               Confirm Delete
             </Button>

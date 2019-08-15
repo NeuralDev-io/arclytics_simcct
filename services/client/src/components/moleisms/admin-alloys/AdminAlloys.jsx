@@ -25,8 +25,10 @@ class AdminAlloys extends Component {
       name: '',
       alloyId: '',
       compositions: [],
+      searchName: '',
       addModal: false,
       deleteModal: false,
+      editModal: false,
     }
   }
 
@@ -49,7 +51,24 @@ class AdminAlloys extends Component {
     this.handleShowModal('delete')
   }
 
+  showEditAlloy = (alloy) => {
+    console.log(alloy)
+    this.setState({
+      alloyId: alloy._id, // eslint-disable-line
+      name: alloy.name,
+      compositions: alloy.compositions,
+    })
+    console.log(this.state)
+    this.handleShowModal('edit')
+  }
+
   addAlloy = (alloy) => {
+    const { createGlobalAlloysConnect } = this.props
+    createGlobalAlloysConnect(alloy)
+    this.handleCloseModal('add')
+  }
+
+  editAlloy = (alloy) => {
     // const { createGlobalAlloysConnect } = this.props
     // createGlobalAlloysConnect(alloy)
     console.log(alloy)
@@ -67,11 +86,13 @@ class AdminAlloys extends Component {
       alloyId,
       name,
       compositions,
+      searchName,
       addModal,
       deleteModal,
+      editModal,
     } = this.state
 
-    const tableData = globalAlloys.filter(a => a.name.includes(name))
+    const tableData = globalAlloys.filter(a => a.name.includes(searchName))
 
     const columns = [
       {
@@ -83,6 +104,7 @@ class AdminAlloys extends Component {
         Cell: ({ original }) => (
           <div className={styles.actions}>
             <Button
+              onClick={() => this.showEditAlloy(original)}
               appearance="text"
               length="short"
               IconComponent={props => <EditIcon {...props} />}
@@ -112,10 +134,10 @@ class AdminAlloys extends Component {
             <TextField
               type="text"
               length="long"
-              name="name"
+              name="searchName"
               placeholder="Alloy name"
-              value={name}
-              onChange={value => this.setState({ name: value })}
+              value={searchName}
+              onChange={value => this.setState({ searchName: value })}
             />
           </div>
           <Button
@@ -139,9 +161,17 @@ class AdminAlloys extends Component {
         />
         <AlloyModal
           compositions={compositions}
+          name={name}
           show={addModal}
           onClose={() => this.handleCloseModal('add')}
           onSave={alloy => this.addAlloy(alloy)}
+        />
+        <AlloyModal
+          compositions={compositions}
+          name={name}
+          show={editModal}
+          onClose={() => this.handleCloseModal('edit')}
+          onSave={(alloy => this.editAlloy(alloy))}
         />
         <AlloyDeleteModal
           alloyId={alloyId}

@@ -13,7 +13,12 @@ class AlloyModal extends Component {
     const { compositions = [], name } = this.props
     const elements = []
     const stateComp = []
-    compositions.forEach((elem) => {
+    let comp = [...compositions]
+    if (compositions.length === 0) {
+      const defaultElements = ['C', 'Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', 'W', 'As', 'Fe']
+      comp = defaultElements.map(sym => ({ symbol: sym, weight: 0 }))
+    }
+    comp.forEach((elem) => {
       const element = PeriodicTableData.find(e => e.symbol === elem.symbol)
       elements.push(element.number)
       stateComp.push({
@@ -76,7 +81,7 @@ class AlloyModal extends Component {
 
     const alloyComp = compositions.map(a => ({
       symbol: a.symbol,
-      weight: a.weight,
+      weight: parseFloat(a.weight),
     }))
     onSave({
       name,

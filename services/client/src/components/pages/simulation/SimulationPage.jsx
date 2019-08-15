@@ -113,8 +113,10 @@ class SimulationPage extends Component {
       // if session store is already initiated, update it
       // otherwise, initiate a new session store with new Comp and update
       // the session config
-      if (sessionStoreInit) updateComp(alloys.alloyOption, name, alloy)
-      else {
+      if (sessionStoreInit) {
+        updateComp(alloys.alloyOption, name, alloy)
+          .catch(err => console.log(err))
+      } else {
         initComp(alloys.alloyOption, name, alloy)
           .then(
             (data) => {
@@ -477,15 +479,16 @@ class SimulationPage extends Component {
                 appearance="text"
                 onClick={() => this.handleShowModal('share')}
                 IconComponent={props => <Share2Icon {...props} />}
+                isDisabled={!sessionStoreInit}
               >
                 SHARE
               </Button>
-
               <Button
                 appearance="outline"
                 type="button"
                 onClick={this.saveCurrentSimulation}
                 IconComponent={props => <SaveIcon {...props} />}
+                isDisabled={!sessionStoreInit}
               >
                 SAVE
               </Button>

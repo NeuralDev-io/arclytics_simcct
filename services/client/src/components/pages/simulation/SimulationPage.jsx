@@ -385,11 +385,18 @@ class SimulationPage extends Component {
   // Probably need to use this to do some validation checks before trying to run sim.
   runSimulation = () => {
     const { runSimConnect } = this.props
+    const { configurations } = this.state
+    const {
+      grain_size_ASTM,
+      nucleation_start,
+      nucleation_finish,
+      cct_cooling_rate,
+    } = configurations
     updateConfig({
-      nucleation_start: 0.0,
-      nucleation_finish: 99.9,
-      cct_cooling_rate: 10,
-      start_temp: 900,
+      grain_size: grain_size_ASTM,
+      nucleation_start,
+      nucleation_finish,
+      cct_cooling_rate,
     })
     runSimConnect()
   }

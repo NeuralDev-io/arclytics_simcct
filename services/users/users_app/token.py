@@ -86,7 +86,7 @@ def generate_promotion_confirmation_token(admin_email: str, user_email: str
     )
 
 
-def generate_shared_simulation_token(sim_id: dict) -> Union[bool, list]:
+def generate_shared_simulation_token(sim_id: str) -> Union[bool, list]:
     serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     return serializer.dumps(sim_id, salt=app.config['SECURITY_PASSWORD_SALT'])
 

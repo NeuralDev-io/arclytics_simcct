@@ -33,6 +33,7 @@ import {
 } from '../../../api/sim/SessionConfigs'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 import { postSaveSimulation } from '../../../api/sim/SessionSaveSim'
+import { getShareUrlLink, sendShareEmail } from '../../../api/sim/SessionShareSim'
 import { runSim } from '../../../state/ducks/sim/actions'
 
 import styles from './SimulationPage.module.scss'
@@ -418,10 +419,14 @@ class SimulationPage extends Component {
         mix: alloys.mix,
       },
     }
+    const { grain_size_ASTM, grain_size_diameter, ...others } = configurations
+    const validConfigs = {
+      ...others,
+      grain_size: grain_size_ASTM,
+    }
     console.log(alloyStore)
-    postSaveSimulation(configurations, alloyStore)
+    postSaveSimulation(validConfigs, alloyStore)
   }
-
 
   render() {
     const {
@@ -551,7 +556,8 @@ class SimulationPage extends Component {
         <ShareModal
           show={shareModal}
           onClose={() => this.handleCloseModal('share')}
-          onConfirm={() => console.log('Sharing Confirmed')}
+          configurations={configurations}
+          alloys={alloys}
         />
       </React.Fragment>
     )

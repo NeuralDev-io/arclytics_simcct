@@ -337,7 +337,7 @@ class AlloyType(EmbeddedDocument):
 
 class AlloyStore(EmbeddedDocument):
     alloy_option = StringField(
-        required=True, choices=('parent', 'both', 'mix')
+        required=True, choices=('single', 'both', 'mix')
     )
     alloys = EmbeddedDocumentField(document_type=AlloyType, required=True)
 

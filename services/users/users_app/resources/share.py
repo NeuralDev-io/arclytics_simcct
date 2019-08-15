@@ -139,7 +139,7 @@ class ShareSimulationEmail(Resource):
         shared_date = datetime.utcnow()
 
         # Get the email address/addresses from the response and validate them.
-        email_list = data.get('email_list', None)
+        email_list = data.get('emails', None)
         if not email_list:
             response['message'] = 'No email addresses provided.'
             return response, 400
@@ -172,16 +172,23 @@ class ShareSimulationEmail(Resource):
         configuration = data.get('configurations', None)
         alloy_store = data.get('alloy_store', None)
 
+        # We also provide the user an opportunity to send an optional message
+        optional_msg = data.get('message', None)
+        if not optional_msg:
+            optional_msg = ''
+
         # Validate the request simulation data. Validation is done by the
         # clean() methods for each object/document in users_app/models.py.
         try:
             config_object = Configuration(**configuration)
             alloy_store_object = AlloyStore(**alloy_store)
             shared_simulation_object = SharedSimulation(
-                owner_email=owner.email,
-                created_date=shared_date,
-                configuration=config_object,
-                alloy_store=alloy_store_object
+                **{
+                    'owner_email': owner.email,
+                    'created_date': shared_date,
+                    'configuration': config_object,
+                    'alloy_store': alloy_store_object
+                }
             )
             shared_simulation_object.save()
         except ValidationError as e:
@@ -227,6 +234,7 @@ class ShareSimulationEmail(Resource):
                     'share_configuration.html',
                     email=valid_email_list,
                     owner_name=f'{owner.first_name} {owner.last_name}',
+                    optional_message=optional_msg,
                     config_url=simulation_url
                 ),
                 'text_template':
@@ -234,6 +242,7 @@ class ShareSimulationEmail(Resource):
                     'share_configuration.txt',
                     email=valid_email_list,
                     owner_name=f'{owner.first_name} {owner.last_name}',
+                    optional_message=optional_msg,
                     config_url=simulation_url
                 ),
             }

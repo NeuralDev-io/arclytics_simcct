@@ -14,25 +14,53 @@ const CCT = (props) => {
   if (data !== undefined) {
     chartData = [
       {
-        x: data['Ferrite-nuc'].time,
-        y: data['Ferrite-nuc'].temp,
+        x: data.ferrite_nucleation.time,
+        y: data.ferrite_nucleation.temp,
         name: 'Ferrite nucleation',
         mode: 'line',
         marker: { color: colours.o500 },
       },
       {
-        x: data['Ferrite-comp'].time,
-        y: data['Ferrite-comp'].temp,
+        x: data.ferrite_completion.time,
+        y: data.ferrite_completion.temp,
         name: 'Ferrite completion',
         mode: 'line',
         marker: { color: colours.l500 },
       },
       {
-        x: data['Pearlite-nuc'].time,
-        y: data['Pearlite-nuc'].temp,
+        x: data.pearlite_nucleation.time,
+        y: data.pearlite_nucleation.temp,
         name: 'Pearlite nucleation',
         mode: 'line',
         marker: { color: colours.g500 },
+      },
+      {
+        x: data.pearlite_completion.time,
+        y: data.pearlite_completion.temp,
+        name: 'Pearlite completion',
+        mode: 'line',
+        marker: { color: colours.t500 },
+      },
+      {
+        x: data.bainite_nucleation.time,
+        y: data.bainite_nucleation.temp,
+        name: 'Bainite nucleation',
+        mode: 'line',
+        marker: { color: colours.b500 },
+      },
+      {
+        x: data.bainite_completion.time,
+        y: data.bainite_completion.temp,
+        name: 'Bainite completion',
+        mode: 'line',
+        marker: { color: colours.i500 },
+      },
+      {
+        x: data.martensite.time,
+        y: data.martensite.temp,
+        name: 'Martensite',
+        mode: 'line',
+        marker: { color: colours.v500 },
       },
     ]
   }
@@ -60,7 +88,7 @@ CCT.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  data: state.sim.results['CCT Data'],
+  data: state.sim.results.CCT,
 })
 
 export default withDimension({

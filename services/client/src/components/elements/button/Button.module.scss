@@ -152,6 +152,10 @@
     background-color: transparent;
     border: none;
     color: $n100; 
+
+    &:hover {
+      background-color: transparent;
+    }
   }
 
   & > .icon {

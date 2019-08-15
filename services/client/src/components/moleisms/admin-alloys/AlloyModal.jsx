@@ -5,14 +5,20 @@ import TextField from '../../elements/textfield'
 import PeriodicTable, { PeriodicTableData } from '../../elements/periodic-table'
 
 import styles from './AlloyModal.module.scss'
+import Button from '../../elements/button';
 
 class AlloyModal extends Component {
   constructor(props) {
     super(props)
-    const { compositions = [] } = this.props
+    const { compositions = [], name } = this.props
     const elements = []
     const stateComp = []
-    compositions.forEach((elem) => {
+    let comp = [...compositions]
+    if (compositions.length === 0) {
+      const defaultElements = ['C', 'Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', 'W', 'As', 'Fe']
+      comp = defaultElements.map(sym => ({ symbol: sym, weight: 0 }))
+    }
+    comp.forEach((elem) => {
       const element = PeriodicTableData.find(e => e.symbol === elem.symbol)
       elements.push(element.number)
       stateComp.push({
@@ -22,6 +28,7 @@ class AlloyModal extends Component {
       })
     })
     this.state = {
+      name,
       elements,
       compositions: stateComp,
     }
@@ -68,6 +75,20 @@ class AlloyModal extends Component {
     })
   }
 
+  handleSaveAlloy = () => {
+    const { compositions, name } = this.state
+    const { onSave } = this.props
+
+    const alloyComp = compositions.map(a => ({
+      symbol: a.symbol,
+      weight: parseFloat(a.weight),
+    }))
+    onSave({
+      name,
+      compositions: alloyComp,
+    })
+  }
+
   renderElements = () => {
     const { compositions } = this.state
     if (compositions.length === 0) {
@@ -87,7 +108,7 @@ class AlloyModal extends Component {
   }
 
   render() {
-    const { elements } = this.state
+    const { elements, name } = this.state
     const { show, onClose } = this.props
     return (
       <Modal show={show} className={styles.modal} onClose={onClose} withCloseIcon>
@@ -95,9 +116,30 @@ class AlloyModal extends Component {
           <PeriodicTable elements={elements} onToggleElement={this.handleToggleElement} />
         </div>
         <div className={styles.content}>
-          <div className={styles.elementContainer}>
-            {this.renderElements()}
+          <div>
+            <div className={`input-col ${styles.name}`}>
+              <h6>Alloy name</h6>
+              <TextField
+                onChange={val => this.setState({ name: val })}
+                type="text"
+                name="name"
+                placeholder="Alloy name..."
+                length="stretch"
+                value={name}
+              />
+            </div>
+            <div className={styles.elementContainer}>
+              {this.renderElements()}
+            </div>
           </div>
+          <Button
+            type="button"
+            onClick={this.handleSaveAlloy}
+            className={styles.saveButton}
+            length="long"
+          >
+            SAVE
+          </Button>
         </div>
       </Modal>
     )
@@ -105,9 +147,17 @@ class AlloyModal extends Component {
 }
 
 AlloyModal.propTypes = {
-  compositions: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  compositions: PropTypes.arrayOf(PropTypes.shape({
+    symbol: PropTypes.string,
+    weight: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+    ]),
+  })).isRequired,
+  name: PropTypes.string.isRequired,
   show: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
 }
 
 export default AlloyModal

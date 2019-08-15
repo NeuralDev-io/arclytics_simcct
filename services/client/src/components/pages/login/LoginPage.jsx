@@ -21,7 +21,7 @@ import styles from './LoginPage.module.scss'
 
 class LoginPage extends Component {
   componentDidMount = () => {
-    if (localStorage.getItem('token')) this.props.history.push('/') // eslint-disable-line
+    if (localStorage.getItem('token')) this.props.profile ? history.push('/') : history.push('/profileQuestions')// eslint-disable-line
   }
 
   render() {

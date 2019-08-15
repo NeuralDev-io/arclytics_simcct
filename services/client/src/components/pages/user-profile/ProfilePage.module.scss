@@ -26,7 +26,7 @@ $bg-img: url('../../../assets/background_img-min.png');
 
 
 .main {
-  margin-left: calc(4rem + 24.25vw);
+  margin-left: calc(4rem);
   width: calc(100% - calc(4rem + 27vw));
   padding: 2.5rem 0rem 2.5rem 2.5rem;
 
@@ -49,7 +49,7 @@ $bg-img: url('../../../assets/background_img-min.png');
 
 
 .generalFields{
-  width: 26rem;
+  width: 35rem;
   margin-bottom: 2.5rem;
   display: flex;
   flex-flow: column;
@@ -74,7 +74,7 @@ $bg-img: url('../../../assets/background_img-min.png');
     display: flex;
     flex-direction: column;
     flex-basis: 100%;
-    flex: 2;
+    flex: 3;
   }
 
 

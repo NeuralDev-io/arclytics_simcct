@@ -42,11 +42,13 @@ class ManageUsers extends Component {
         Header: 'Admin',
         accessor: 'admin',
         Cell: ({ value }) => <span>{value ? 'Yes' : 'No'}</span>,
+        width: 80,
       },
       {
         Header: 'Verified',
         accessor: 'verified',
         Cell: ({ value }) => <span>{value ? 'Yes' : 'No'}</span>,
+        width: 80,
       },
       {
         Header: '',

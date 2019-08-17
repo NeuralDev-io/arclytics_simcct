@@ -852,7 +852,6 @@ class TestUserService(BaseTestCase):
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(data['status'], 'fail')
 
-
     def test_disable_account(self):
         """Test disable account is successful"""
         kylo = User(
@@ -860,6 +859,7 @@ class TestUserService(BaseTestCase):
         )
         kylo.set_password('LetStarWarsDie')
         kylo.save()
+
 
 if __name__ == '__main__':
     unittest.main()

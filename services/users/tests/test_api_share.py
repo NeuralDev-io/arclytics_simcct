@@ -74,7 +74,7 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configuration': {
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -91,7 +91,7 @@ class TestShareService(BaseTestCase):
                             'cct_cooling_rate': 1
                         },
                         'alloy_store': {
-                            'alloy_option': 'parent',
+                            'alloy_option': 'single',
                             'alloys': {
                                 'parent': {
                                     'name':
@@ -294,7 +294,7 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configuration': {
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -488,7 +488,7 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configuration': {
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -683,7 +683,7 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configuration': {
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -778,7 +778,7 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configuration': {
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -790,7 +790,7 @@ class TestShareService(BaseTestCase):
                             'cct_cooling_rate': 1
                         },
                         'alloy_store': {
-                            'alloy_option': 'parent'
+                            'alloy_option': 'single'
                         }
                     }
                 ),
@@ -813,9 +813,11 @@ class TestShareService(BaseTestCase):
         """
 
         luke = User(
-            email='luke@skywalker.io',
-            first_name='Luke',
-            last_name='Skywalker'
+            **{
+                'email': 'luke@skywalker.io',
+                'first_name': 'Luke',
+                'last_name': 'Skywalker'
+            }
         )
         luke.set_password('NeverJoinYou')
         luke.verified = True
@@ -828,8 +830,8 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/email',
                 data=json.dumps(
                     {
-                        'email_list': 'davidmatthews1004@gmail.com',
-                        'configuration': {
+                        'emails': ['davidmatthews1004@gmail.com'],
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -846,7 +848,7 @@ class TestShareService(BaseTestCase):
                             'cct_cooling_rate': 1
                         },
                         'alloy_store': {
-                            'alloy_option': 'parent',
+                            'alloy_option': 'single',
                             'alloys': {
                                 'parent': {
                                     'name':
@@ -986,9 +988,9 @@ class TestShareService(BaseTestCase):
             )
 
             data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 201)
-            self.assertEqual(data['status'], 'success')
             self.assertEqual(data['message'], 'Email(s) sent.')
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(resp.status_code, 201)
             shared_simulation = SharedSimulation.objects.get(
                 owner_email=luke.email
             )
@@ -1025,11 +1027,11 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/email',
                 data=json.dumps(
                     {
-                        'email_list': [
+                        'emails': [
                             'davidmatthews1004@gmail.com',
                             'brickmatic479@gmail.com'
                         ],
-                        'configuration': {
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -1046,7 +1048,7 @@ class TestShareService(BaseTestCase):
                             'cct_cooling_rate': 1
                         },
                         'alloy_store': {
-                            'alloy_option': 'parent',
+                            'alloy_option': 'single',
                             'alloys': {
                                 'parent': {
                                     'name':
@@ -1221,7 +1223,7 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/email',
                 data=json.dumps(
                     {
-                        'configuration': {
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -1314,8 +1316,8 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/email',
                 data=json.dumps(
                     {
-                        'email_list': 1234,
-                        'configuration': {
+                        'emails': [1234],
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -1382,9 +1384,11 @@ class TestShareService(BaseTestCase):
             )
 
             data = json.loads(resp.data.decode())
+            self.assertEqual(
+                data['message'], 'An email address is invalid in the list.'
+            )
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'Invalid email address type.')
 
     def test_share_configuration_email_invalid_email(self):
         """
@@ -1408,8 +1412,8 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/email',
                 data=json.dumps(
                     {
-                        'email_list': 'invalidemail@com',
-                        'configuration': {
+                        'emails': ['invalidemail@com'],
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -1487,9 +1491,11 @@ class TestShareService(BaseTestCase):
         """
 
         luke = User(
-            email='luke@skywalker.io',
-            first_name='Luke',
-            last_name='Skywalker'
+            **{
+                'email': 'luke@skywalker.io',
+                'first_name': 'Luke',
+                'last_name': 'Skywalker'
+            }
         )
         luke.set_password('NeverJoinYou')
         luke.verified = True
@@ -1502,9 +1508,9 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/email',
                 data=json.dumps(
                     {
-                        'email_list':
+                        'emails':
                         ['invalidemail@com', 'brickmatic479@gmail.com'],
-                        'configuration': {
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -1597,7 +1603,7 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configuration': {
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -1614,7 +1620,7 @@ class TestShareService(BaseTestCase):
                             'cct_cooling_rate': 1
                         },
                         'alloy_store': {
-                            'alloy_option': 'parent',
+                            'alloy_option': 'single',
                             'alloys': {
                                 'parent': {
                                     'name':
@@ -1791,7 +1797,7 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configuration': {
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -1808,7 +1814,7 @@ class TestShareService(BaseTestCase):
                             'cct_cooling_rate': 1
                         },
                         'alloy_store': {
-                            'alloy_option': 'parent',
+                            'alloy_option': 'single',
                             'alloys': {
                                 'parent': {
                                     'name':
@@ -1965,9 +1971,9 @@ class TestShareService(BaseTestCase):
             self.assertEqual(resp_view.status_code, 200)
             self.assertEqual(data['status'], 'success')
             self.assertEqual(data['data']['owner_email'], luke.email)
-            self.assertEqual(data['data']['configuration']['ms_temp'], 0.2)
+            self.assertEqual(data['data']['configurations']['ms_temp'], 0.2)
             self.assertEqual(
-                data['data']['alloy_store']['alloy_option'], 'parent'
+                data['data']['alloy_store']['alloy_option'], 'single'
             )
             self.assertEqual(
                 data['data']['alloy_store']['alloys']['parent']['compositions']
@@ -2037,7 +2043,7 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configuration': {
+                        'configurations': {
                             'method': 'Li98',
                             'grain_size': 0.1,
                             'nucleation_start': 1.1,
@@ -2054,7 +2060,7 @@ class TestShareService(BaseTestCase):
                             'cct_cooling_rate': 1
                         },
                         'alloy_store': {
-                            'alloy_option': 'parent',
+                            'alloy_option': 'single',
                             'alloys': {
                                 'parent': {
                                     'name':

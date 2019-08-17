@@ -624,6 +624,6 @@ class SharedSimulation(Document):
         return {
             'owner_email': self.owner_email,
             'created_date': str(self.created_date),
-            'configuration': self.configuration.to_dict(),
+            'configurations': self.configuration.to_dict(),
             'alloy_store': self.alloy_store.to_dict()
         }

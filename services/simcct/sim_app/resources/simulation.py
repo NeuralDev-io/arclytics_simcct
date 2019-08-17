@@ -98,9 +98,6 @@ class Simulation(Resource):
             configs=session_configs, compositions=alloy['compositions']
         )
 
-        logger.pprint(alloy)
-        logger.pprint(session_configs)
-
         sim = PhaseSimulation(sim_configs=sim_configs)
 
         # TODO(andrew@neuraldev.io): add a Division by Zero check here or find

@@ -1,6 +1,6 @@
 # Arclytics Sim
 
-This is the CSIT321 Arclytics Sim Flask RESTful API server and React client source code repository.
+This is the CSIT321 Arclytics Sim source code repository.
 
 Arclytics Sim (pronounced *ark-lit-icks*) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool.
 
@@ -17,8 +17,9 @@ The API provides mathematical algorithms for computing both the Li (98) and Kirk
 
 * [Getting started](#Getting Started)
   * [Prerequisites](#Prerequisites)
-  * [Virtual Environment](#Virtual Environment)
-  * [Database](#Database)
+    * [Installing Anaconda](#Installing Anaconda)
+    * [Installing Docker](#Installing Docker)
+    * [Docker and Docker Compose (Short) Cheatsheet](#Docker and Docker Compose (Short) Cheatsheet)
 * [Tests and Examples](#Tests and Examples)
 * [Deployment](#Deployment)
 * [Versioning](#Versioning)
@@ -36,9 +37,9 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Under the hood, Arclytics Sim uses the  virtual environment and  container for our [PostgreSQL](https://hub.docker.com/_/postgres) database. 
+Under the hood, Arclytics Sim uses the Docker containers as we develop with a microservices architecture. The infrastructure is built using Container as a Service (CaaS) with `docker-compose`. To ensure you can run the application in development, you will need to install the dependencies with the versions listed below. 
 
-Under the hood, Arclytics Sim will use the following technologies and tools:
+Arclytics Sim will use the following technologies and tools:
 
 * [Anaconda](https://www.anaconda.com/)
 * [Docker](https://www.docker.com/)
@@ -47,24 +48,20 @@ Under the hood, Arclytics Sim will use the following technologies and tools:
 * [Kubernetes](https://kubernetes.io/docs/home/)
 * [Flask](http://flask.pocoo.org/)
 * [NodeJS](https://nodejs.org/en/)
-* npm
-* React
-* Plotly
+* [npm](https://www.npmjs.com/)
+* [React](https://reactjs.org/)
+* [Plotly](https://plot.ly/)
+* [Redis](https://redis.io/)
+* [MongoDB](https://www.mongodb.com/)
 * [Swagger](https://swagger.io/docs/)
 
-To ensure this works properly, you will need the following versions as a minimum (TBA):
+To ensure this application in development works properly, you will need the following dependency versions as a minimum:
 
 ```
-conda >= 4.6.12
-docker >= 18.09.6
-docker-compose >= 1.24.0
-flask >= 
-Flask-RESTful >= 
-MongoDB >= 4.0.10
-nodejs >= 10.15.3
-Flask-Testing
-gunicorn
-nginx
+conda >= 4.7.11
+docker >= 19.03.1
+docker-compose >= 1.24.1
+nodejs >= 10.16.2
 ```
 
 
@@ -80,9 +77,9 @@ Once installed, if you are using Linux/macOS, open the terminal to create a virt
 
 #### Installing Docker
 
-To get the database running, install Docker from [here](https://www.docker.com/get-started). From here, select **Download for Windows** or **Download for Mac**. It will ask you to login or create an account before you can download. Once you have create an account, please select **Get Docker Desktop for Windows (stable)**. During installation, **DO NOT** select the option for Windows containers.
+To get the containers running, install Docker from [here](https://www.docker.com/get-started). From here, select **Download for Windows** or **Download for Mac**. It will ask you to login or create an account before you can download. Once you have create an account, please select **Get Docker Desktop for Windows (stable)**. During installation, **DO NOT** select the option for Windows containers.
 
-If you're using **Linux** (Ubuntu/Cent OS), you can also follow [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04)to install Docker from the terminal.
+If you're using **Linux** (Ubuntu/Cent OS), you can also follow [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04) to install Docker from the terminal.
 
 Optionally, you can download and use the Docker GUI by downloading Kitematic from [here](https://docs.docker.com/toolbox/toolbox_install_windows/) for Windows.
 
@@ -90,246 +87,183 @@ Optionally, you can download and use the Docker GUI by downloading Kitematic fro
 
 
 
-### Virtual Environment
-
-To clone the environment, you will need the following packages:
-
-```
-name: arclytics
-channels:
-  - anaconda
-  - conda-forge
-  - nodefaults
-dependencies:
-  - django=2.1.7
-  - djangorestframework=3.9.2
-  - nodejs=10.15.3
-  - numpy=1.16.2
-  - psycopg2=2.7.6.1
-  - python=3.7.2
-```
-
-
-
-#### Creating new Env
-
-To install the development environment, the following steps will be required. 
-
-**Linux/macOS**
-
-```bash
-$ conda create --name arclytics python=3.7 flask conda-forge::nodejs=10.15.3 -c anaconda
-$ conda activate arclytics
-```
-
-**Windows**
-
-```powershell
-> conda create --name arclytics python=3.7 flask conda-forge::nodejs=10.15.3 -c anaconda
-> conda activate arclytics
-```
-
-
-#### (Optional) Installing from Environment YAML
-
-You could also install from the provided `environment-dev.yml`.
-
-##### Windows/Linux/macOS
-
-```
-$ conda env create -f environment-dev.yml
-$ conda activate arclytics
-```
-
-#### Installing necessary packages in Anaconda environment
-
-With conda environment being activated, the following command can be executed in Linux.
-
-```bash
-(arclytics) $ cd /services/server
-(arclytics) $ pip install -r requirements.txt
-(arclytics) $ cd ../client
-(arclytics) $ npm install
-```
-
-
-
-### Database
-
-For this project, we have made our own Docker image for a Postgres container so we can have more control over the initialisation
-script used. We can also further extend this image down the track to inlcude testing.
-
-The original Docker Postgres documentation can be found [here](https://hub.docker.com/_/postgres). The Docker repository for the 
-image made by <@codeninja55\> can be found [here](https://cloud.docker.com/u/codeninja55/repository/docker/codeninja55/arc-postgres).
-
-You can download the images from this Docker repo by using the following command in Command Prompt or PowerShell (Windows) or Terminal (macOS and Linux). The examples below will be shown in Windows but will be the same for macOS and Linux.
-
-##### Windows
-
-```powershell
-> docker pull codeninja55/arc-postgres:latest
-```
-
-The `latest` tag will always be maintained for the current version we will be using in development so you can safely use
-this tag as it will be maintained internally. 
-
-**1)** Test that you have pulled the correct Docker version and Postgres image:
-
-```powershell
-> docker -v 
-Docker version 18.09.2, build 6247962
-
-> docker images
-REPOSITORY                 TAG                 IMAGE ID            CREATED                  SIZE
-codeninja55/arc-postgres   10.7                3ce38d11ff5d        Less than a second ago   230MB
-codeninja55/arc-postgres   latest              3ce38d11ff5d        Less than a second ago   230MB
-```
-
-**2)** Create a Postgres Docker container:
-
-```powershell
-> docker run -p 5432:5432 --name arclytics_db -e POSTGRES_PASSWORD=ENDGAME -d codeninja55/arc-postgres:latest
-981cbe28648b4bf08f61b94634bd67e4341ac65cfd4cd6e01ef85874ef301d17
-```
-Where:
-
-* `-p 5432:5432` connects the exposed Docker port 5432 to your local port 5432
-* `--name` is the name of the container you have created.
-* `-e POSTGRES_PASSWORD=ENDGAME` sets the environment variable for superuser password for PostgreSQL.
-* `-d codeninja55/arc-postgres:latest`  the Docker image 
-
-
-To test if the container is running properly:
-
-```powershell
-> docker ps
-CONTAINER ID        IMAGE                             COMMAND                  CREATED             STATUS              PORTS                    NAMES
-981cbe28648b        codeninja55/arc-postgres:latest   "docker-entrypoint.s…"   29 seconds ago      Up 28 seconds       0.0.0.0:5432->5432/tcp   arclytics_db
-```
-
-This container has been created with an init script that can be found in `arclytics_sim/docker-postgres/init/init-user-db.sh`
-
-```bash
-#!/bin/bash
-set -e
-
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-    CREATE USER neuraldev;
-    ALTER USER neuraldev WITH PASSWORD 'THANOS';
-    CREATE DATABASE arclytics;
-    GRANT ALL PRIVILEGES ON DATABASE arclytics TO neuraldev;
-EOSQL
-```
-
-It will create the `neuraldev` user that is set as the user in Django settings. 
-
-Optionally, you can connect to the running container and run some queries using the psql shell:
-
-```powershell
-> docker exec -it arclytics_db psql -d arclytics -U neuraldev
-```
-Where:
-* Usage: `docker exec [OPTIONS] CONTAINER COMMAND [ARG...]`
-* `-i` is the interactive flag to keep the `stdin` open even if not attached.
-* `-t` is the flag to allocate a pseudo-TTY
-* `psql` will open the psql shell
-
-This will connect to the database `-d arclytics` with the user `-U neuraldev`. Alternatively, you can use the following to connect
-to the default `postgres` database with the superuser account `-U postgres`.  
-
-```powershell
-> docker exec -it arclytics_db psql -U postgres
-```
-
-Some common PostgreSQL commands can be found in [POSTGRES_BASICS.md](./docs/POSTGRES_BASICS.md).
-
-
-If you ever need to run the init script again, you can do so with the following commands.
-
-Ensure you are in the main `arclytics_sim` directory.
-
-```powershell
-> docker cp docker-postgres\init-user-db.sql Arclytics_Sim:/docker-entrypoint-initdb.d/init-user-db.sql
-> docker exec -u postgres arclytics_db psql postgres postgres -f docker-entrypoint-initdb.d/init-user-db.sql
-```
-**NOTE:** Using Windows backslashes in this command. 
-
-That should create everything for you without you ever having to connect to the psql shell (unless you screw up and have to go in there to delete it of course). 
-
-**3)** If necessary, change the Django settings file to use the running Postgres Docker container instance.
-
-This is what you will see in the default `settings.py`.
-
-```python
-DATABASES = {
-	'default': {
-    	'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-     }
-}	
-```
-
-Change `settings.py` as follows:
-
-```python
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'arclytics',                      
-        'USER': 'neuraldev',
-        'PASSWORD': 'THANOS',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-```
-
-*Note:* the Docker PSQL runs on port 5432.
-
-
-
-#### Docker (Short) Cheatsheet
+#### Docker and Docker Compose (Short) Cheatsheet
 
 Some handy Docker commands:
 
-**Starting a container**
+**Building the containers only**
 
 ```powershell
-> docker start <container name>
+> docker-compose build
 ```
-**Stopping a container**
+
+* Additionally, you can add the name of the service from `docker-compose.yml` to build only those services (i.e. `docker-compose build client` will only build the `client` server).
+
+**Starting and building the containers**
 
 ```powershell
-> docker stop <container name>
+> docker-compose up -d --build
+```
+* `-d` (optional): run the containers in detached mode without `stdout` and `stderr` to the terminal.
+* `--build` (optional): will build the images from the `Dockerfile` or rebuild from the Docker cache.
+
+**Stopping the containers**
+
+```powershell
+> docker-compose down
 ```
 
 **Listing all running containers**
 
 ```powershell
 > docker ps -a
+
+CONTAINER ID        IMAGE                        COMMAND                  CREATED              STATUS              PORTS                                      NAMES
+deba49685ca4        arc_sim_client:1.0           "docker-entrypoint.s…"   About a minute ago   Up About a minute   0.0.0.0:3000->3000/tcp                     arc-client
+30d29a1eeee9        arc_sim_users_service:1.0    "/docker-entrypoint.…"   About a minute ago   Up About a minute   0.0.0.0:8000->8000/tcp                     arc-users
+c34f86790ad8        arc_simcct_service:1.0       "/docker-entrypoint.…"   About an hour ago    Up About an hour    0.0.0.0:8001->8001/tcp                     arc-simcct
+b9e0c572a505        arc_sim_swagger:1.0          "sh /usr/share/nginx…"   3 days ago           Up 8 hours          80/tcp, 3001/tcp, 0.0.0.0:3001->8080/tcp   swagger-ui
+2f2edc1b1ef7        arc_sim_celery_service:1.0   "/bin/sh -c 'celery …"   4 days ago           Up 8 hours          0.0.0.0:5555->5555/tcp                     arc-celery
+ae1cc5ab4e68        arc_sim_mongo:1.0            "docker-entrypoint.s…"   5 days ago           Up 11 hours         0.0.0.0:27017->27017/tcp                   arc-mongo
+dab8694ce845        arc_sim_redis:1.0            "docker-entrypoint.s…"   5 days ago           Up 11 hours         0.0.0.0:6379->6379/tcp                     arc-redis
 ```
 
 **Listing all containers**
 
 ```powershell
 > docker container ls -a
-CONTAINER ID        IMAGE                             COMMAND                  CREATED             STATUS                      PORTS               NAMES
-981cbe28648b        codeninja55/arc-postgres:latest   "docker-entrypoint.s…"   9 minutes ago       Exited (0) 12 seconds ago                       arclytics_db
+
+CONTAINER ID        IMAGE                        COMMAND                  CREATED              STATUS              PORTS                                      NAMES
+deba49685ca4        arc_sim_client:1.0           "docker-entrypoint.s…"   About a minute ago   Up About a minute   0.0.0.0:3000->3000/tcp                     arc-client
+30d29a1eeee9        arc_sim_users_service:1.0    "/docker-entrypoint.…"   About a minute ago   Up About a minute   0.0.0.0:8000->8000/tcp                     arc-users
+c34f86790ad8        arc_simcct_service:1.0       "/docker-entrypoint.…"   About an hour ago    Up About an hour    0.0.0.0:8001->8001/tcp                     arc-simcct
+b9e0c572a505        arc_sim_swagger:1.0          "sh /usr/share/nginx…"   3 days ago           Up 8 hours          80/tcp, 3001/tcp, 0.0.0.0:3001->8080/tcp   swagger-ui
+2f2edc1b1ef7        arc_sim_celery_service:1.0   "/bin/sh -c 'celery …"   4 days ago           Up 8 hours          0.0.0.0:5555->5555/tcp                     arc-celery
+ae1cc5ab4e68        arc_sim_mongo:1.0            "docker-entrypoint.s…"   5 days ago           Up 11 hours         0.0.0.0:27017->27017/tcp                   arc-mongo
+dab8694ce845        arc_sim_redis:1.0            "docker-entrypoint.s…"   5 days ago           Up 11 hours         0.0.0.0:6379->6379/tcp                     arc-redis
 ```
 
 **Deleting a container**
 
 ```powershell
-> docker stop arclytics_db
-arclytics_db
+> docker stop arc-users
+
+arc-users
 
 > docker container ls -a
-CONTAINER ID        IMAGE                             COMMAND                  CREATED             STATUS                      PORTS               NAMES
-981cbe28648b        codeninja55/arc-postgres:latest   "docker-entrypoint.s…"   9 minutes ago       Exited (0) 12 seconds ago                       arclytics_db
 
-> docker rm arclytics_db
-arclytics_db
+CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS                        PORTS                                      NAMES
+deba49685ca4        arc_sim_client:1.0           "docker-entrypoint.s…"   2 minutes ago       Up 2 minutes                  0.0.0.0:3000->3000/tcp                     arc-client
+30d29a1eeee9        arc_sim_users_service:1.0    "/docker-entrypoint.…"   2 minutes ago       Exited (137) 20 seconds ago                                              arc-users
+c34f86790ad8        arc_simcct_service:1.0       "/docker-entrypoint.…"   About an hour ago   Up About an hour              0.0.0.0:8001->8001/tcp                     arc-simcct
+b9e0c572a505        arc_sim_swagger:1.0          "sh /usr/share/nginx…"   3 days ago          Up 8 hours                    80/tcp, 3001/tcp, 0.0.0.0:3001->8080/tcp   swagger-ui
+2f2edc1b1ef7        arc_sim_celery_service:1.0   "/bin/sh -c 'celery …"   4 days ago          Up 8 hours                    0.0.0.0:5555->5555/tcp                     arc-celery
+ae1cc5ab4e68        arc_sim_mongo:1.0            "docker-entrypoint.s…"   5 days ago          Up 11 hours                   0.0.0.0:27017->27017/tcp                   arc-mongo
+dab8694ce845        arc_sim_redis:1.0            "docker-entrypoint.s…"   5 days ago          Up 11 hours                   0.0.0.0:6379->6379/tcp                     arc-redis
+
+> docker rm arc-users
+arc-users
 ```
+
+**Listing images**
+
+```powershell
+> docker image ls
+
+REPOSITORY               TAG                 IMAGE ID            CREATED             SIZE
+arc_sim_swagger          1.0                 a947b052fd96        2 minutes ago       51.9MB
+arc_sim_client           1.0                 9d7dc017c538        2 minutes ago       895MB
+arc_sim_users_service    1.0                 379664ae171b        3 minutes ago       437MB
+arc_sim_mongo            1.0                 bba28f4d4781        4 minutes ago       413MB
+arc_sim_celery_service   1.0                 bd19e8562da4        4 minutes ago       113MB
+arc_simcct_service       1.0                 fb648c779cd3        5 minutes ago       618MB
+arc_sim_redis            1.0                 e2e646c03358        7 minutes ago       98.2MB
+redis                    5.0.5               f7302e4ab3a8        3 days ago          98.2MB
+node                     10.16.2-alpine      4f877c96a193        8 days ago          76.4MB
+mongo                    4.0.11              f7adfc4dbcf5        2 weeks ago         413MB
+python                   3.7.3-alpine        2caaa0e9feab        7 weeks ago         87.2MB
+nginx                    1.15-alpine         dd025cdfe837        3 months ago        16.1MB
+continuumio/miniconda3   4.6.14              6b5cf97566c3        3 months ago        457MB
+```
+
+**Deleting an image**
+
+```powershell
+> docker image ls
+
+REPOSITORY               TAG                 IMAGE ID            CREATED              SIZE
+arc_sim_users_service    1.0                 0f4bcade4bb2        36 seconds ago       437MB
+arc_sim_redis            1.0                 bd601c214682        About a minute ago   98.2MB
+arc_simcct_service       1.0                 e3e25a676e12        About an hour ago    618MB
+redis                    5.0.5               f7302e4ab3a8        3 days ago           98.2MB
+arc_sim_swagger          1.0                 aa9244f9f297        4 days ago           51.9MB
+arc_sim_client           1.0                 c6d1f45bc149        4 days ago           895MB
+arc_sim_mongo            1.0                 d24defd62cde        5 days ago           413MB
+arc_sim_celery_service   1.0                 4e73c62a6fef        5 days ago           114MB
+<none>                   <none>              c13142733b7c        5 days ago           98.2MB
+node                     10.16.2-alpine      4f877c96a193        8 days ago           76.4MB
+mongo                    4.0.11              f7adfc4dbcf5        2 weeks ago          413MB
+python                   3.7.3-alpine        2caaa0e9feab        7 weeks ago          87.2MB
+nginx                    1.15-alpine         dd025cdfe837        3 months ago         16.1MB
+continuumio/miniconda3   4.6.14              6b5cf97566c3        3 months ago         457MB
+
+> docker rmi arc_sim_client:1.0
+
+Untagged: arc_sim_client:1.0
+Deleted: sha256:c6d1f45bc149b8db2770eba21777c959b5bfc921c3a3991f9c0f623c9159af43
+Deleted: sha256:9ad449dad936d6d1fb85e0aad3336d74e69d1cdde564b1636d2b7f17eb2c85ce
+Deleted: sha256:49136c36390f8f6e4bd90e9985242bb6cb36e206e2b259431ab6923ce51d714f
+Deleted: sha256:4db8f1460fb3290ed3e34dc42cc7c8a0de209b7c18a0c990cd5e4467eafa4e0c
+Deleted: sha256:b51ca30788fcbc359def2f103f5bb2f8839425185dfb95b776f1c7b6476baa8d
+Deleted: sha256:50f6ac821285606cb49c2428b3e4ca8f0d9e89328962e7b59e38bb2a829bfdba
+Deleted: sha256:8fc65493a9f6fbf180bd6a5a47cfbc93055d1cb42ab7c4a4fdb71a21087deb0a
+Deleted: sha256:5766a395bbe0412c8ffb8ff4e24c00794ea9b07c76f43657e0912dd0ec8f33bf
+Deleted: sha256:958bb1f5842f6330ad2ea8eeb633503876eecd478a89f8148a3fa33e70e70bf6
+Deleted: sha256:3d36c828a9be725296e18896e481ffad5ce8f484b6ff5e89dce263d417e66e1c
+Deleted: sha256:6a4aa8af193491a252079823dd5384557fd257d73c3c0c35ec2cf061b7ecf06f
+Deleted: sha256:18dfa78f60e26b931323b716039d0b84486e88bac9f8ffcccb0e3e539d8da3f8
+Deleted: sha256:4a59b9bd8832a96c1e0d9bbdd37a89c39e2d0714347fd4fab2ae24988fb5b8f7
+Deleted: sha256:94365d65019fc4ed58e14270ea5c9f33f2d38ab109669064950a933c79a5b756
+Deleted: sha256:bdede403bfe892437f9612de019c52af60b552c200073e40f62ac175e242d522
+Deleted: sha256:d9346bd1a028a61ba23007ddd284b844f4f03c1495fc90415ddac212d6e1a100
+```
+
+**Pruning Stopped Containers, Images, Networks, and Dependencies**
+
+```powershell
+> docker container prune -f
+
+> docker image prune -f
+
+> docker system prune -f 
+
+> docker system prune -af
+```
+
+**Using Docker Logs**
+
+```powershell
+> docker logs arc-users
+
+Waiting for Mongo...
+Mongo started.
+Arclytics Sim Users Service Flask Server Information for e038fe5bd85d
+Started on 08/17/19 03:41:01 PM UTC by 
+ENVIRONMENT VARIABLES:
+FLASK_APP: Arclytics Sim Users Service
+FLASK_ENV: development
+APP_SETTINGS: configs.flask_conf.DevelopmentConfig
+Starting Flask server...
+
+ * Environment: development
+ * Debug mode: on
+ * Running on http://0.0.0.0:8000/ (Press CTRL+C to quit)
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 285-812-959
+```
+
+
 
 *NOTE:* You cannot have two containers of the same name so if you are updating a container, you will need to delete it first before you can create a new one.
 
@@ -339,32 +273,62 @@ P.S. If you want to learn more about Docker click [here](https://docs.docker.com
 
 ### Running the server
 
-**IMPORTANT!!!** You must start the Docker container with this command every time you run Django.
+**IMPORTANT!!!** You must start the Docker container with this command every time you run.
 
 ```bash
-$ docker start arclytics_db
-```
-
-To run the Django server:
-
-```bash
-(arclytics) $ cd arclytics
-(arclytics) $ python manage.py runserver 8000
-```
-
-If running the server for the first time, please ensure you migrate the database and create a superuser by doing:
-```bash
-(arclytics) $ cd arclytics
-(arclytics) $ python manage.py migrate
-(arclytics) $ python create_superuser.py
-(arclytics) $ python manage.py runserver 8000
+$ docker-compose up -d
 ```
 
 
 
 ## Tests and Examples
 
-* TBC
+To run the tests, you can use `docker-compose exec` or run the shell script `run_tests.sh`.
+
+To do so manually:
+
+```powershell
+> docker-compose exec users python manage.py test
+```
+
+* This will run the tests for the `users` server without coverage.
+* Currently there are no `client` tests to use.
+
+This will run the tests with coverage:
+
+```powershell
+> docker-compose exec simcct python manage.py test_coverage
+```
+
+
+
+To use the shell script (you must have a UNIX shell):
+
+```bash
+$ ./run_tests.sh --help
+
+Usage: run_tests.sh [OPTIONS] COMMAND
+
+A CLI script for running unit tests on the Arclytics Sim Docker Orchestration.
+
+Options:
+  -b, --build      Build the Docker containers before running tests.
+  -t, --tty        Attach a pseudo-TTY to the tests.
+  -c, --coverage   Run the unit tests with coverage.
+
+Commands:
+  all         Run all unit tests for Arclytics Sim
+  server      Run the server-side unit tests.
+  client      Run the client-side unit tests.
+  users       Run only the users tests.
+  simcct      Run only the simcct tests.
+```
+
+For example, this will run the tests for the Flask back-ends only with coverage:
+
+```shell
+$ ./run_tests.sh -c server
+```
 
 
 
@@ -427,5 +391,4 @@ We thank the following organisations, departments, and individuals for their kin
 
 We also thank the open source community for making available awesome packages and libraries for our ease of development and deployment. The following are used under the hood of Arclytics Sim:
 
-* [NumPy](http://www.numpy.org/) - the fundamental package for scientific computing with Python.
-* [PostgreSQL](https://www.postgresql.org/) - a powerful, open-source object-relational database system.
+* TBC

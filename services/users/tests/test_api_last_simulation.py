@@ -52,13 +52,11 @@ class TestLastSimulation(BaseTestCase):
     user = None
 
     def setUp(self) -> None:
-        self.user = User(
-            **{
-                'first_name': 'Henry',
-                'last_name': 'Pym',
-                'email': 'hank@pymtechnologies.com'
-            }
-        )
+        self.user = User(**{
+            'first_name': 'Henry',
+            'last_name': 'Pym',
+            'email': 'hank@pymtechnologies.com'
+        })
         self.user.set_password('Subatomic!')
         self.user.verified = True
         self.user.save()
@@ -454,13 +452,11 @@ class TestLastSimulation(BaseTestCase):
 
     def test_get_detail_empty_no_last_configs(self):
         with app.test_client() as client:
-            user = User(
-                **{
-                    'first_name': 'Janet',
-                    'last_name': 'van Dyne',
-                    'email': 'janet@pymtechnologies.com'
-                }
-            )
+            user = User(**{
+                'first_name': 'Janet',
+                'last_name': 'van Dyne',
+                'email': 'janet@pymtechnologies.com'
+            })
             user.set_password('Subatomic!')
             user.verified = True
             user.save()
@@ -482,13 +478,11 @@ class TestLastSimulation(BaseTestCase):
 
     def test_get_detail_empty_no_last_alloy(self):
         with app.test_client() as client:
-            user = User(
-                **{
-                    'first_name': 'Janet',
-                    'last_name': 'van Dyne',
-                    'email': 'janet@pymtechnologies.com'
-                }
-            )
+            user = User(**{
+                'first_name': 'Janet',
+                'last_name': 'van Dyne',
+                'email': 'janet@pymtechnologies.com'
+            })
             user.set_password('Subatomic!')
             user.verified = True
             user.last_configuration = Configuration(**CONFIGS)

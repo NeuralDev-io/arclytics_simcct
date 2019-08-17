@@ -58,6 +58,7 @@ class ShareSimulationLink(Resource):
 
     method_decorators = {'post': [authenticate]}
 
+    # noinspection PyMethodMayBeStatic
     def post(self, resp) -> Tuple[dict, int]:
         # Get post data
         data = request.get_json()
@@ -73,11 +74,17 @@ class ShareSimulationLink(Resource):
         configuration = data.get('configurations', None)
         alloy_store = data.get('alloy_store', None)
 
+        if not configuration or not alloy_store:
+            response['message'] = 'Configurations or Alloy Store not sent.'
+            return response, 400
+
         # Validate the request simulation data. Validation is done by the
         # clean() methods for each object/document in users_app/models.py.
         try:
             config_object = Configuration(**configuration)
+            config_object.validate(clean=True)
             alloy_store_object = AlloyStore(**alloy_store)
+            alloy_store_object.validate(clean=True)
             shared_simulation_object = SharedSimulation(
                 owner_email=owner.email,
                 created_date=shared_date,
@@ -125,6 +132,7 @@ class ShareSimulationEmail(Resource):
 
     method_decorators = {'post': [authenticate]}
 
+    # noinspection PyMethodMayBeStatic
     def post(self, resp) -> Tuple[dict, int]:
         # Get post data
         data = request.get_json()
@@ -143,8 +151,23 @@ class ShareSimulationEmail(Resource):
         if not email_list:
             response['message'] = 'No email addresses provided.'
             return response, 400
+        if not isinstance(email_list, list):
+            response['message'] = 'Invalid email address type.'
+            return response, 400
+        if not all(isinstance(email, str) for email in email_list):
+            response['message'] = 'An email address is invalid in the list.'
+            return response, 400
+
         valid_email_list = []
-        if isinstance(email_list, list):
+        if len(email_list) == 1:
+            try:
+                v = validate_email(email_list[0])
+                valid_email_list.append(v['email'])
+            except EmailNotValidError as e:
+                response['error'] = str(e)
+                response['message'] = 'Invalid email.'
+                return response, 400
+        else:
             for email in email_list:
                 try:
                     v = validate_email(email)
@@ -153,24 +176,15 @@ class ShareSimulationEmail(Resource):
                     response['error'] = str(e)
                     response['message'] = 'Invalid email.'
                     return response, 400
-        elif isinstance(email_list, str):
-            try:
-                v = validate_email(email_list)
-                valid_email_list.append(v['email'])
-            except EmailNotValidError as e:
-                response['error'] = str(e)
-                response['message'] = 'Invalid email.'
-                return response, 400
-        # If the provided value for email address is neither a string nor a
-        # list, it is invalid.
-        else:
-            response['message'] = 'Invalid email address type.'
-            return response, 400
 
         # Get the configuration and alloy_store information from the request so
         # we can attempt to make a SharedSimulation object out of it.
         configuration = data.get('configurations', None)
         alloy_store = data.get('alloy_store', None)
+
+        if not configuration or not alloy_store:
+            response['message'] = 'Configurations or Alloy Store not sent.'
+            return response, 400
 
         # We also provide the user an opportunity to send an optional message
         optional_msg = data.get('message', None)
@@ -181,7 +195,9 @@ class ShareSimulationEmail(Resource):
         # clean() methods for each object/document in users_app/models.py.
         try:
             config_object = Configuration(**configuration)
+            config_object.validate(clean=True)
             alloy_store_object = AlloyStore(**alloy_store)
+            alloy_store_object.validate(clean=True)
             shared_simulation_object = SharedSimulation(
                 **{
                     'owner_email': owner.email,
@@ -225,26 +241,26 @@ class ShareSimulationEmail(Resource):
             'tasks.send_email',
             kwargs={
                 'to':
-                valid_email_list,
+                    valid_email_list,
                 'subject_suffix':
-                f'{owner.first_name} {owner.last_name} '
-                'has shared a configuration with you!',
+                    f'{owner.first_name} {owner.last_name} '
+                    'has shared a configuration with you!',
                 'html_template':
-                render_template(
-                    'share_configuration.html',
-                    email=valid_email_list,
-                    owner_name=f'{owner.first_name} {owner.last_name}',
-                    optional_message=optional_msg,
-                    config_url=simulation_url
-                ),
+                    render_template(
+                        'share_configuration.html',
+                        email=valid_email_list,
+                        owner_name=f'{owner.first_name} {owner.last_name}',
+                        optional_message=optional_msg,
+                        config_url=simulation_url
+                    ),
                 'text_template':
-                render_template(
-                    'share_configuration.txt',
-                    email=valid_email_list,
-                    owner_name=f'{owner.first_name} {owner.last_name}',
-                    optional_message=optional_msg,
-                    config_url=simulation_url
-                ),
+                    render_template(
+                        'share_configuration.txt',
+                        email=valid_email_list,
+                        owner_name=f'{owner.first_name} {owner.last_name}',
+                        optional_message=optional_msg,
+                        config_url=simulation_url
+                    ),
             }
         )
 

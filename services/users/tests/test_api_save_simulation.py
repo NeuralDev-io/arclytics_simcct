@@ -34,7 +34,7 @@ with open(_TEST_CONFIGS_PATH, 'r') as f:
 CONFIGS = _TEST_JSON['configurations']
 COMP = _TEST_JSON['compositions']
 ALLOY_STORE = {
-    'alloy_option': 'parent',
+    'alloy_option': 'single',
     'alloys': {
         'parent': {
             'name': 'Pym Alloy',
@@ -243,16 +243,16 @@ class TestSaveSimulationService(BaseTestCase):
             configs2['method'] = 'Kirkaldy83'
             alloy_store2['alloys']['parent']['compositions'][0]['weight'] = 0.5
 
-            saved_sim1 = SavedSimulation(
-                user=self.user,
-                configurations=Configuration(**CONFIGS),
-                alloy_store=AlloyStore(**ALLOY_STORE)
-            ).save()
-            saved_sim2 = SavedSimulation(
-                user=self.user,
-                configurations=Configuration(**configs2),
-                alloy_store=AlloyStore(**alloy_store2)
-            ).save()
+            saved_sim1 = SavedSimulation(**{
+                'user': self.user,
+                'configurations': Configuration(**CONFIGS),
+                'alloy_store': AlloyStore(**ALLOY_STORE)
+            }).save()
+            saved_sim2 = SavedSimulation(**{
+                'user': self.user,
+                'configurations': Configuration(**configs2),
+                'alloy_store': AlloyStore(**alloy_store2)
+            }).save()
 
             res = client.get(
                 '/user/simulation',

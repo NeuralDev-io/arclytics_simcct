@@ -156,9 +156,8 @@ class SimSessionService(object):
             time=expires_in_seconds
         )
 
-    def load_session(
-            self, session_key: str
-    ) -> Union[Tuple[str, dict], Tuple[None, str]]:
+    def load_session(self, session_key: str
+                     ) -> Union[Tuple[str, dict], Tuple[None, str]]:
         """We load the User's current Session from the Redis datastore by
         taking in a session key and decoding it to generate the session ID.
 

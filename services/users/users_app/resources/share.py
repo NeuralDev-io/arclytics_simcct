@@ -241,26 +241,26 @@ class ShareSimulationEmail(Resource):
             'tasks.send_email',
             kwargs={
                 'to':
-                    valid_email_list,
+                valid_email_list,
                 'subject_suffix':
-                    f'{owner.first_name} {owner.last_name} '
-                    'has shared a configuration with you!',
+                f'{owner.first_name} {owner.last_name} '
+                'has shared a configuration with you!',
                 'html_template':
-                    render_template(
-                        'share_configuration.html',
-                        email=valid_email_list,
-                        owner_name=f'{owner.first_name} {owner.last_name}',
-                        optional_message=optional_msg,
-                        config_url=simulation_url
-                    ),
+                render_template(
+                    'share_configuration.html',
+                    email=valid_email_list,
+                    owner_name=f'{owner.first_name} {owner.last_name}',
+                    optional_message=optional_msg,
+                    config_url=simulation_url
+                ),
                 'text_template':
-                    render_template(
-                        'share_configuration.txt',
-                        email=valid_email_list,
-                        owner_name=f'{owner.first_name} {owner.last_name}',
-                        optional_message=optional_msg,
-                        config_url=simulation_url
-                    ),
+                render_template(
+                    'share_configuration.txt',
+                    email=valid_email_list,
+                    owner_name=f'{owner.first_name} {owner.last_name}',
+                    optional_message=optional_msg,
+                    config_url=simulation_url
+                ),
             }
         )
 

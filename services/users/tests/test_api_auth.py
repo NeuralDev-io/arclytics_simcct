@@ -21,8 +21,8 @@ import unittest
 
 from flask import current_app
 
-from users_app.models import User
 from tests.test_api_base import BaseTestCase
+from users_app.models import User
 from users_app.resources.auth import SimCCTBadServerLogout
 from users_app.resources.auth import register_session
 
@@ -30,32 +30,64 @@ from users_app.resources.auth import register_session
 class TestAuthEndpoints(BaseTestCase):
     """This module tests all the authentication endpoints and middleware."""
 
-    # def test_user_registration(self):
-    #     """Ensure we can register a user."""
-    #     resp = self.client.post(
-    #         '/auth/register',
-    #         data=json.dumps(
-    #             {
-    #                 'email': 'dummy@arclytics.neuraldev.io',
-    #                 'first_name': 'Natasha',
-    #                 'last_name': 'Romanoff',
-    #                 'password': 'RedInMyLedger'
-    #             }
-    #         ),
-    #         content_type='application/json'
-    #     )
-    #     data = json.loads(resp.data.decode())
-    #     self.assertTrue(data['status'] == 'success')
-    #     self.assertTrue(data['message'] == 'User has been registered.')
-    #     self.assertTrue(data['token'])
-    #     self.assertTrue(resp.content_type == 'application/json')
-    #     self.assertEqual(resp.status_code, 201)
+    user = None
+
+    def setUp(self) -> None:
+        self.user = User(
+            **{
+                'first_name': 'Nick',
+                'last_name': 'Fury',
+                'email': 'fury@arclytics.io'
+            }
+        )
+        self.user.set_password('BothEyesOpen!')
+        self.user.verified = True
+        self.user.save()
+
+    def tearDown(self) -> None:
+        self.user.delete()
+
+    @staticmethod
+    def login(client, email='fury@arclytics.io', password='BothEyesOpen!'):
+        resp_login = client.post(
+            '/auth/login',
+            data=json.dumps({
+                'email': email,
+                'password': password
+            }),
+            content_type='application/json'
+        )
+        token = json.loads(resp_login.data.decode())['token']
+        return token
+
+    def test_user_registration(self):
+        """Ensure we can register a user."""
+        resp = self.client.post(
+            '/auth/register',
+            data=json.dumps(
+                {
+                    'email': 'dummy@arclytics.neuraldev.io',
+                    'first_name': 'Natasha',
+                    'last_name': 'Romanoff',
+                    'password': 'RedInMyLedger'
+                }
+            ),
+            content_type='application/json'
+        )
+        data = json.loads(resp.data.decode())
+        self.assertTrue(data['status'] == 'success')
+        self.assertTrue(data['message'] == 'User has been registered.')
+        self.assertTrue(data['token'])
+        self.assertTrue(resp.content_type == 'application/json')
+        self.assertEqual(resp.status_code, 201)
 
     def test_user_registration_duplicate_email(self):
         user = User(
-            email='green_machine@avengers.io',
-            first_name='Bruce',
-            last_name='Banner'
+            **{
+                'email': 'green_machine@avengers.io',
+                'first_name': 'Bruce',
+                'last_name': 'Banner'
+            }
         )
         user.set_password('HulkSmash!')
         user.save()
@@ -162,14 +194,20 @@ class TestAuthEndpoints(BaseTestCase):
         """Ensure we can login as users after they have registered."""
         with self.client:
             peter = User(
-                email='spiderman@newavenger.io',
-                first_name='Peter',
-                last_name='Parker'
+                **{
+                    'email': 'spiderman@newavenger.io',
+                    'first_name': 'Peter',
+                    'last_name': 'Parker'
+                }
             )
             peter.set_password('SpideySenses')
             peter.save()
             tony = User(
-                email='tony@avengers.io', first_name='Tony', last_name='Stark'
+                **{
+                    'email': 'tony@avengers.io',
+                    'first_name': 'Tony',
+                    'last_name': 'Stark'
+                }
             )
             tony.set_password('IAmIronMan')
             tony.save()
@@ -226,9 +264,11 @@ class TestAuthEndpoints(BaseTestCase):
         Ensure if bad details are given, it will fail with appropriate messages.
         """
         user = User(
-            email='war_machine@avengers.io',
-            first_name='James',
-            last_name='Rhodey'
+            **{
+                'email': 'war_machine@avengers.io',
+                'first_name': 'James',
+                'last_name': 'Rhodey'
+            }
         )
         user.set_password('test123')
         user.save()
@@ -279,9 +319,11 @@ class TestAuthEndpoints(BaseTestCase):
     def test_invalid_user_login(self):
         with self.client:
             user = User(
-                email='ant_man@avengers.io',
-                first_name='Scott',
-                last_name='Lang'
+                **{
+                    'email': 'ant_man@avengers.io',
+                    'first_name': 'Scott',
+                    'last_name': 'Lang'
+                }
             )
             user.set_password('ILoveCassie')
             user.save()
@@ -324,9 +366,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_bad_auth_token_encoding(self):
         user = User(
-            email='metal_arm@newavengers.io',
-            first_name='Bucky',
-            last_name='Barnes'
+            **{
+                'email': 'metal_arm@newavengers.io',
+                'first_name': 'Bucky',
+                'last_name': 'Barnes'
+            }
         )
         user.set_password('badpassword')
         user.save()
@@ -352,9 +396,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_valid_logout(self):
         user = User(
-            email='falcon@newavengers.io',
-            first_name='Sam',
-            last_name='Wilson'
+            **{
+                'email': 'falcon@newavengers.io',
+                'first_name': 'Sam',
+                'last_name': 'Wilson'
+            }
         )
         user.set_password('NewCaptainAmerica')
         user.save()
@@ -391,9 +437,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_invalid_logout_expired_token(self):
         user = User(
-            email='tchalla@newavengers.io',
-            first_name='Tchalla',
-            last_name='Wakandan'
+            **{
+                'email': 'tchalla@newavengers.io',
+                'first_name': "T'challa",
+                'last_name': 'Wakandan'
+            }
         )
         user.set_password('SomebodyGetThatManAShield!')
         user.save()
@@ -411,7 +459,7 @@ class TestAuthEndpoints(BaseTestCase):
             )
             # invalid token logout
             token = json.loads(resp_login.data.decode())['token']
-            response = self.client.get(
+            self.client.get(
                 '/auth/logout',
                 headers={
                     'Authorization': 'Bearer {token}'.format(token=token)
@@ -421,22 +469,23 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_invalid_logout(self):
         with self.client:
-            response = self.client.get(
+            self.client.get(
                 '/auth/logout', headers={'Authorization': 'Bearer invalid'}
             )
             self.assertRaises(SimCCTBadServerLogout)
 
     def test_invalid_auth_header(self):
         with self.client:
-            response = self.client.get('/auth/logout', headers={})
+            self.client.get('/auth/logout', headers={})
             self.assertRaises(SimCCTBadServerLogout)
 
     def test_user_status(self):
-
         user = User(
-            email='scarlet_witch@avengers.io',
-            first_name='Wanda',
-            last_name='Maximoff'
+            **{
+                'email': 'scarlet_witch@avengers.io',
+                'first_name': 'Wanda',
+                'last_name': 'Maximoff'
+            }
         )
         user.set_password('YouTookEverythingFromMe!')
         user.save()
@@ -480,9 +529,11 @@ class TestAuthEndpoints(BaseTestCase):
     def test_invalid_logout_inactive(self):
         """Ensure if user is not active, they cannot logout."""
         user = User(
-            email='most_hated_avenger@disney.com',
-            first_name='Carol',
-            last_name='Danvers'
+            **{
+                'email': 'most_hated_avenger@disney.com',
+                'first_name': 'Carol',
+                'last_name': 'Danvers'
+            }
         )
         user.set_password('OnlyHereBecauseOfFeminism')
         user.save()
@@ -519,9 +570,11 @@ class TestAuthEndpoints(BaseTestCase):
     def test_invalid_status_inactive(self):
         """Ensure if user is not active they can't get a status."""
         user = User(
-            email='daredevil@marvel.io',
-            first_name='Matthew',
-            last_name='Murdock'
+            **{
+                'email': 'daredevil@marvel.io',
+                'first_name': 'Matthew',
+                'last_name': 'Murdock'
+            }
         )
         user.set_password('BlindLawyer')
         user.save()
@@ -550,6 +603,231 @@ class TestAuthEndpoints(BaseTestCase):
                 data['message'] == 'This user account has been disabled.'
             )
             self.assertEqual(response.status_code, 401)
+
+    def test_change_pw_empty_json(self):
+        with current_app.test_client() as client:
+            token = self.login(client)
+
+            res = client.put(
+                '/auth/password/change',
+                data=json.dumps({}),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Invalid payload.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+    def test_change_pw_no_old_pw(self):
+        with current_app.test_client() as client:
+            token = self.login(client)
+
+            res = client.put(
+                '/auth/password/change',
+                data=json.dumps({'password': ''}),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'], 'Must provide the current password.'
+            )
+            self.assertEqual(data['status'], 'fail')
+            self.assert401(res)
+
+    def test_change_pw_missing_other_pw(self):
+        with current_app.test_client() as client:
+            token = self.login(client)
+
+            res = client.put(
+                '/auth/password/change',
+                data=json.dumps({
+                    'password': 'BothEyesOpen!',
+                    'new_password': 'LastTimeITrustedSomeone'
+                }),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'], 'Must provide a password and confirm password.'
+            )
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+            res = client.put(
+                '/auth/password/change',
+                data=json.dumps({
+                    'password': 'BothEyesOpen!',
+                    'confirm_password': 'LastTimeITrustedSomeone'
+                }),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'], 'Must provide a password and confirm password.'
+            )
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+    def test_change_pw_invalid_pw(self):
+        with current_app.test_client() as client:
+            token = self.login(client)
+
+            res = client.put(
+                '/auth/password/change',
+                data=json.dumps({
+                    'password': 'BothEyesOpen!',
+                    'new_password': 'bad',
+                    'confirm_password': 'bad'
+                }),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'The password is invalid.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+    def test_change_pw_not_matching_pw(self):
+        with current_app.test_client() as client:
+            token = self.login(client)
+
+            res = client.put(
+                '/auth/password/change',
+                data=json.dumps({
+                    'password': 'BothEyesOpen!',
+                    'new_password': 'Justascratch',
+                    'confirm_password': 'JustaScratch!'
+                }),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Passwords do not match.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+    def test_change_pw_bad_current_pw(self):
+        with current_app.test_client() as client:
+            token = self.login(client)
+
+            res = client.put(
+                '/auth/password/change',
+                data=json.dumps({
+                    'password': 'WhosACutie..',
+                    'new_password': 'JustaScratch!',
+                    'confirm_password': 'JustaScratch!'
+                }),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Password is not correct.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert401(res)
+
+    def test_change_pw_inactive_user(self):
+        hill = User(
+            **{
+                'first_name': 'Maria',
+                'last_name': 'Hill',
+                'email': 'mariahill@arclytics.io'
+            }
+        )
+        hill.set_password('#EyeCandy')
+        hill.verified = True
+        hill.save()
+
+        with current_app.test_client() as client:
+            token = self.login(client, email=hill.email, password='#EyeCandy')
+
+            hill.reload()
+            hill.active = False
+            hill.save()
+
+            res = client.put(
+                '/auth/password/change',
+                data=json.dumps({
+                    'password': '#EyeCandy',
+                    'new_password': 'RogerThat',
+                    'confirm_password': 'RogerThat'
+                }),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'], 'This user account has been disabled.'
+            )
+            self.assertEqual(data['status'], 'fail')
+            self.assert401(res)
+
+    def test_change_pw_unverified_user(self):
+        sif = User(
+            **{
+                'first_name': 'Lady',
+                'last_name': 'Sif',
+                'email': 'sif@arclytics.io'
+            }
+        )
+        sif.set_password('WarriorsThree$')
+        sif.verified = False
+        sif.save()
+
+        with current_app.test_client() as client:
+            token = self.login(
+                client, email=sif.email, password='WarriorsThree$'
+            )
+
+            res = client.put(
+                '/auth/password/change',
+                data=json.dumps({
+                    'password': 'WarriorsThree$',
+                    'new_password': 'Charge!!!',
+                    'confirm_password': 'Charge!!!'
+                }),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'], 'User needs to verify account.'
+            )
+            self.assertEqual(data['status'], 'fail')
+            self.assert401(res)
+
+    def test_change_pw_success(self):
+        fury = User(
+            **{
+                'first_name': 'Nick',
+                'last_name': 'Fury',
+                'email': 'admin@arclytics.io'
+            }
+        )
+        fury.set_password('RealFury!')
+        fury.verified = True
+        fury.save()
+
+        with current_app.test_client() as client:
+            token = self.login(client, email=fury.email, password='RealFury!')
+
+            res = client.put(
+                '/auth/password/change',
+                data=json.dumps({
+                    'password': 'RealFury!',
+                    'new_password': 'BothEyesOpen!',
+                    'confirm_password': 'BothEyesOpen!'
+                }),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Successfully changed password.')
+            self.assertEqual(data['status'], 'success')
+            self.assert200(res)
 
 
 if __name__ == '__main__':

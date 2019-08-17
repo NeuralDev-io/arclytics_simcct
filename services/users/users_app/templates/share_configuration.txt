@@ -11,7 +11,7 @@ To view this configuration, pleas click the link below:
 {{ config_url }}
 
 If you need additional assistance, or you did not make this change,
-please contact help@neuraldev.io.
+please contact help@arclytics.io.
 
 Cheers,
 The Arclytics Team

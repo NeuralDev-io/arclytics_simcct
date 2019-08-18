@@ -51,28 +51,28 @@ class Plots(object):
     ) -> None:
         self.cct = {
             'ferrite_nucleation': {
-                'time': trim_zeros(ferrite_nucleation[:, 0]).tolist(),
-                'temp': trim_zeros(ferrite_nucleation[:, 1]).tolist()
+                'time': ferrite_nucleation[:, 0].tolist(),
+                'temp': ferrite_nucleation[:, 1].tolist()
             },
             'ferrite_completion': {
-                'time': trim_zeros(ferrite_completion[:, 0]).tolist(),
-                'temp': trim_zeros(ferrite_completion[:, 1]).tolist()
+                'time': ferrite_completion[:, 0].tolist(),
+                'temp': ferrite_completion[:, 1].tolist()
             },
             'pearlite_nucleation': {
-                'time': trim_zeros(pearlite_nucleation[:, 0]).tolist(),
-                'temp': trim_zeros(pearlite_nucleation[:, 1]).tolist()
+                'time': pearlite_nucleation[:, 0].tolist(),
+                'temp': pearlite_nucleation[:, 1].tolist()
             },
             'pearlite_completion': {
-                'time': trim_zeros(pearlite_completion[:, 0]).tolist(),
-                'temp': trim_zeros(pearlite_completion[:, 1]).tolist()
+                'time': pearlite_completion[:, 0].tolist(),
+                'temp': pearlite_completion[:, 1].tolist()
             },
             'bainite_nucleation': {
-                'time': trim_zeros(bainite_nucleation[:, 0]).tolist(),
-                'temp': trim_zeros(bainite_nucleation[:, 1]).tolist()
+                'time': bainite_nucleation[:, 0].tolist(),
+                'temp': bainite_nucleation[:, 1].tolist()
             },
             'bainite_completion': {
-                'time': trim_zeros(bainite_completion[:, 0]).tolist(),
-                'temp': trim_zeros(bainite_completion[:, 1]).tolist()
+                'time': bainite_completion[:, 0].tolist(),
+                'temp': bainite_completion[:, 1].tolist()
             },
             'martensite': {
                 'time': martensite[:, 0].tolist(),
@@ -86,32 +86,32 @@ class Plots(object):
     ) -> None:
         self.ttt = {
             'ferrite_start': {
-                'time': trim_zeros(ferrite_start[:, 0]).tolist(),
-                'temp': trim_zeros(ferrite_start[:, 1]).tolist()
+                'time': ferrite_start[:, 0].tolist(),
+                'temp': ferrite_start[:, 1].tolist()
             },
             'ferrite_finish': {
-                'time': trim_zeros(ferrite_finish[:, 0]).tolist(),
-                'temp': trim_zeros(ferrite_finish[:, 1]).tolist()
+                'time': ferrite_finish[:, 0].tolist(),
+                'temp': ferrite_finish[:, 1].tolist()
             },
             'pearlite_start': {
-                'time': trim_zeros(pearlite_start[:, 0]).tolist(),
-                'temp': trim_zeros(pearlite_start[:, 1]).tolist()
+                'time': pearlite_start[:, 0].tolist(),
+                'temp': pearlite_start[:, 1].tolist()
             },
             'pearlite_finish': {
-                'time': trim_zeros(pearlite_finish[:, 0]).tolist(),
-                'temp': trim_zeros(pearlite_finish[:, 1]).tolist()
+                'time': pearlite_finish[:, 0].tolist(),
+                'temp': pearlite_finish[:, 1].tolist()
             },
             'bainite_start': {
-                'time': trim_zeros(bainite_start[:, 0]).tolist(),
-                'temp': trim_zeros(bainite_start[:, 1]).tolist()
+                'time': bainite_start[:, 0].tolist(),
+                'temp': bainite_start[:, 1].tolist()
             },
             'bainite_finish': {
-                'time': trim_zeros(bainite_finish[:, 0]).tolist(),
-                'temp': trim_zeros(bainite_finish[:, 1]).tolist()
+                'time': bainite_finish[:, 0].tolist(),
+                'temp': bainite_finish[:, 1].tolist()
             },
             'martensite': {
-                'time': trim_zeros(martensite[:, 0]).tolist(),
-                'temp': trim_zeros(martensite[:, 1]).tolist()
+                'time': martensite[:, 0].tolist(),
+                'temp': martensite[:, 1].tolist()
             }
         }
 

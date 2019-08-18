@@ -195,7 +195,7 @@ class PhaseSimulation(object):
         # Watt et. al. 88)
         if self.xfe >= 1.0:
             # logger.error('XFE has to be below 1.0')
-            print('XFE has to be below 1.0')
+            raise ConfigurationError('XFE has to be below 1.0')
 
         # Kirkaldy:
         # [0,0], [0,1], [0,2] spots for starting precipitation

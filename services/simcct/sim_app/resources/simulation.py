@@ -121,8 +121,6 @@ class Simulation(Resource):
             'CCT': sim.plots_data.get_cct_plot_data()
         }
 
-        logger.debug(data)
-
         response['status'] = 'success'
         response['data'] = data
         return response, 200

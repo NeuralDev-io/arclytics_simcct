@@ -27,8 +27,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from logger.arc_logger import AppLogger
-
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
@@ -37,7 +35,6 @@ env_path = os.path.join(BASE_DIR, '.env')
 if os.path.isfile(env_path):
     load_dotenv(env_path)
 
-DEFAULT_LOGGER = AppLogger('ARCLYTICS')
 APP_CONFIGS = None
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'
 DATE_FMT = '%Y-%m-%d'

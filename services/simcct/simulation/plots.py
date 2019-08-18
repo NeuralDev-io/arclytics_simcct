@@ -9,7 +9,7 @@
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
-__version__ = '0.7/.0'
+__version__ = '0.7.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
@@ -19,18 +19,37 @@ __date__ = '2019.07.01'
 {Description}
 """
 
-from numpy import trim_zeros
+import csv
+import numpy as np
+from typing import Union
 
 
 class Plots(object):
     """
-    This class is used to store TTT and CCT plotting data. There will also be some helper instance methods
-    to allow plotting with Plotly or printing to stdout.
+    This class is used to store TTT and CCT plotting data. There will also be
+    some helper instance methods to allow plotting with Plotly or printing to
+    stdout.
     """
 
     def __init__(self):
         self.ttt = None
         self.cct = None
+
+        self.ttt_fcs: Union[np.ndarray, None] = None
+        self.ttt_fcf: Union[np.ndarray, None] = None
+        self.ttt_pcs: Union[np.ndarray, None] = None
+        self.ttt_pcf: Union[np.ndarray, None] = None
+        self.ttt_bcs: Union[np.ndarray, None] = None
+        self.ttt_bcf: Union[np.ndarray, None] = None
+        self.ttt_msf: Union[np.ndarray, None] = None
+
+        self.cct_fcs: Union[np.ndarray, None] = None
+        self.cct_fcf: Union[np.ndarray, None] = None
+        self.cct_pcs: Union[np.ndarray, None] = None
+        self.cct_pcf: Union[np.ndarray, None] = None
+        self.cct_bcs: Union[np.ndarray, None] = None
+        self.cct_bcf: Union[np.ndarray, None] = None
+        self.cct_msf: Union[np.ndarray, None] = None
 
     @classmethod
     def from_json(cls):
@@ -45,8 +64,9 @@ class Plots(object):
         pass
 
     def set_cct_plot_data(
-        self, ferrite_nucleation, ferrite_completion, pearlite_nucleation,
-        pearlite_completion, bainite_nucleation, bainite_completion, martensite
+            self, ferrite_nucleation, ferrite_completion, pearlite_nucleation,
+            pearlite_completion, bainite_nucleation, bainite_completion,
+            martensite
     ) -> None:
         self.cct = {
             'ferrite_nucleation': {
@@ -80,45 +100,70 @@ class Plots(object):
         }
 
     def set_ttt_plot_data(
-        self, ferrite_start, ferrite_finish, pearlite_start, pearlite_finish,
-        bainite_start, bainite_finish, martensite
+            self, ferrite_start, ferrite_finish, pearlite_start,
+            pearlite_finish,
+            bainite_start, bainite_finish, martensite
     ) -> None:
-        self.ttt = {
-            'ferrite_start': {
-                'time': ferrite_start[:, 0].tolist(),
-                'temp': ferrite_start[:, 1].tolist()
-            },
-            'ferrite_finish': {
-                'time': ferrite_finish[:, 0].tolist(),
-                'temp': ferrite_finish[:, 1].tolist()
-            },
-            'pearlite_start': {
-                'time': pearlite_start[:, 0].tolist(),
-                'temp': pearlite_start[:, 1].tolist()
-            },
-            'pearlite_finish': {
-                'time': pearlite_finish[:, 0].tolist(),
-                'temp': pearlite_finish[:, 1].tolist()
-            },
-            'bainite_start': {
-                'time': bainite_start[:, 0].tolist(),
-                'temp': bainite_start[:, 1].tolist()
-            },
-            'bainite_finish': {
-                'time': bainite_finish[:, 0].tolist(),
-                'temp': bainite_finish[:, 1].tolist()
-            },
-            'martensite': {
-                'time': martensite[:, 0].tolist(),
-                'temp': martensite[:, 1].tolist()
-            }
-        }
+        self.ttt_fcs = ferrite_start
+        self.ttt_fcf = ferrite_finish
+        self.ttt_pcs = pearlite_start
+        self.ttt_pcf = pearlite_finish
+        self.ttt_bcs = bainite_start
+        self.ttt_bcf = bainite_finish
+        self.ttt_msf = martensite
 
     def get_cct_plot_data(self) -> dict:
         return self.cct
 
     def get_ttt_plot_data(self) -> dict:
-        return self.ttt
+        ferrite_nucleation_x = []
+        ferrite_nucleation_y = []
+
+        for i, v in enumerate(self.ttt_fcs[:, 0]):
+            if self.ttt_fcs[i, 0] > 0:
+                ferrite_nucleation_x.append(self.ttt_fcs[i, 0])
+                ferrite_nucleation_y.append(self.ttt_fcs[i, 1])
+
+        ferrite_completion_x = []
+        ferrite_completion_y = []
+
+        for i, v in enumerate(self.ttt_fcf[:, 0]):
+            if self.ttt_fcf[i, 0] > 0:
+                ferrite_completion_x.append(self.ttt_fcf[i, 0])
+                ferrite_completion_y.append(self.ttt_fcf[i, 1])
+
+        ttt = {
+            'ferrite_nucleation': {
+                'time': ferrite_nucleation_x,
+                'temp': ferrite_nucleation_y
+            },
+            'ferrite_completion': {
+                'time': ferrite_completion_x,
+                'temp': ferrite_completion_y
+            },
+            'pearlite_nucleation': {
+                'time': self.ttt_pcs[:, 0].tolist(),
+                'temp': self.ttt_pcs[:, 1].tolist()
+            },
+            'pearlite_completion': {
+                'time': self.ttt_pcf[:, 0].tolist(),
+                'temp': self.ttt_pcf[:, 1].tolist()
+            },
+            'bainite_nucleation': {
+                'time': self.ttt_bcs[:, 0].tolist(),
+                'temp': self.ttt_bcs[:, 1].tolist()
+            },
+            'bainite_completion': {
+                'time': self.ttt_bcf[:, 0].tolist(),
+                'temp': self.ttt_bcf[:, 1].tolist()
+            },
+            'martensite': {
+                'time': self.ttt_msf[:, 0].tolist(),
+                'temp': self.ttt_msf[:, 1].tolist()
+            }
+        }
+
+        return ttt
 
     def plot_cct(self):
         # plot with plotly
@@ -143,14 +188,88 @@ class Plots(object):
 
         return 'Error'
 
-    @staticmethod
-    def to_csv(plot: str = '', path: str = '') -> None:
-        if plot.lower() == 'cct':
-            # csv export cct
-            pass
-        elif plot.lower() == 'ttt':
-            # csv export ttt
-            pass
+    def to_csv(self, plot: str = '', path: str = '') -> None:
+
+        ttt_data = zip(*[
+            self.ttt['ferrite_nucleation']['time'],
+            self.ttt['ferrite_nucleation']['temp'],
+            self.ttt['ferrite_completion']['time'],
+            self.ttt['ferrite_completion']['temp'],
+            self.ttt['pearlite_nucleation']['time'],
+            self.ttt['pearlite_nucleation']['temp'],
+            self.ttt['pearlite_completion']['time'],
+            self.ttt['pearlite_completion']['temp'],
+            self.ttt['bainite_nucleation']['time'],
+            self.ttt['bainite_nucleation']['temp'],
+            self.ttt['bainite_completion']['time'],
+            self.ttt['bainite_completion']['temp'],
+            self.ttt['martensite']['time'],
+            self.ttt['martensite']['temp'],
+        ])
+
+        cct_data = zip(*[
+            self.cct['ferrite_nucleation']['time'],
+            self.cct['ferrite_nucleation']['temp'],
+            self.cct['ferrite_completion']['time'],
+            self.cct['ferrite_completion']['temp'],
+            self.cct['pearlite_nucleation']['time'],
+            self.cct['pearlite_nucleation']['temp'],
+            self.cct['pearlite_completion']['time'],
+            self.cct['pearlite_completion']['temp'],
+            self.cct['bainite_nucleation']['time'],
+            self.cct['bainite_nucleation']['temp'],
+            self.cct['bainite_completion']['time'],
+            self.cct['bainite_completion']['temp'],
+            self.cct['martensite']['time'],
+            self.cct['martensite']['temp'],
+        ])
+
+        with open(path, mode='w') as f:
+            writer = csv.writer(f, delimiter=',')
+
+            if plot.lower() == 'ttt' or plot.lower() == 'both':
+                # csv export ttt
+                writer.writerow(['TTT'])
+                writer.writerow(
+                    [
+                        'ferrite_nucleation', 'ferrite_nucleation',
+                        'ferrite_completion', 'ferrite_completion',
+                        'pearlite_nucleation', 'pearlite_nucleation',
+                        'pearlite_completion', 'pearlite_completion',
+                        'bainite_nucleation', 'bainite_nucleation',
+                        'bainite_completion', 'bainite_completion',
+                        'martensite', 'martensite'
+                    ]
+                )
+
+                writer.writerow(
+                    ['x', 'y', 'x', 'y', 'x', 'y', 'x', 'y',
+                     'x', 'y', 'x', 'y', 'x', 'y']
+                )
+                for r in ttt_data:
+                    writer.writerow(r)
+
+            if plot.lower() == 'cct' or plot.lower() == 'both':
+                # csv export cct
+                writer.writerow(['CCT'])
+                writer.writerow(
+                    [
+                        'ferrite_nucleation', 'ferrite_nucleation',
+                        'ferrite_completion', 'ferrite_completion',
+                        'pearlite_nucleation', 'pearlite_nucleation',
+                        'pearlite_completion', 'pearlite_completion',
+                        'bainite_nucleation', 'bainite_nucleation',
+                        'bainite_completion', 'bainite_completion',
+                        'martensite', 'martensite'
+                    ]
+                )
+
+                writer.writerow(
+                    ['x', 'y', 'x', 'y', 'x', 'y', 'x', 'y',
+                     'x', 'y', 'x', 'y', 'x', 'y']
+                )
+                for r in cct_data:
+                    writer.writerow(r)
 
     @staticmethod
     def to_pickle(plot: str = '', path: str = ''):

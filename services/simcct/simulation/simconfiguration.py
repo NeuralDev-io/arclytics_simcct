@@ -52,7 +52,7 @@ class SimConfiguration(object):
 
         if debug:
             with open(_TEST_CONFIGS) as config_f:
-                sim_configs = json.load(config_f, parse_float=np.float64)
+                sim_configs = json.load(config_f, parse_float=np.float32)
             configs = sim_configs['configurations']
             compositions = sim_configs['compositions']
 

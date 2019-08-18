@@ -91,17 +91,17 @@ class PhaseSimulation(object):
             self.ae1 = round(sim_configs.ae1)
 
     def ttt(self) -> None:
-        integrated2_mat = np.zeros((4, 11), dtype=np.float64)
+        integrated2_mat = np.zeros((4, 11), dtype=np.float32)
 
         self._vol_phantom_frac2(integrated2_mat)
 
         # ========= FERRITE PHASE ========= #
-        fcs_mat = np.zeros((10001, 2), dtype=np.float64)  # Ferrite Curve Start
-        fcf_mat = np.zeros(
-            (10001, 2), dtype=np.float64
-        )  # Ferrite Curve Finish
+        # Ferrite Curve Start
+        fcs_mat = np.zeros((5000, 2), dtype=np.float32)
+        # Ferrite Curve Finish
+        fcf_mat = np.zeros((5000, 2), dtype=np.float32)
 
-        for i in range(1, 3):
+        for i in range(0, 3):
             temp_curr = self.bs - 50
             count_fn = 0
             while temp_curr < (self.ae3 - 1):
@@ -118,14 +118,12 @@ class PhaseSimulation(object):
                 temp_curr = temp_curr + 1
 
         # ========= PEARLITE PHASE ========= #
-        pcs_mat = np.zeros(
-            (10001, 2), dtype=np.float64
-        )  # Pearlite curve start
-        pcf_mat = np.zeros(
-            (10001, 2), dtype=np.float64
-        )  # Pearlite curve finish
+        # Pearlite curve start
+        pcs_mat = np.zeros((5000, 2), dtype=np.float32)
+        # Pearlite curve finish
+        pcf_mat = np.zeros((5000, 2), dtype=np.float32)
 
-        for i in range(1, 3):
+        for i in range(0, 3):
             temp_curr = self.bs - 50
             count_pn = 0
 
@@ -142,12 +140,12 @@ class PhaseSimulation(object):
                 temp_curr = temp_curr + 1
 
         # ========= BAINITE PHASE ========= #
-        bcs_mat = np.zeros((10001, 2), dtype=np.float64)  # Bainite curve start
-        bcf_mat = np.zeros(
-            (10001, 2), dtype=np.float64
-        )  # Bainite curve finish
+        # Bainite curve start
+        bcs_mat = np.zeros((5000, 2), dtype=np.float32)
+        # Bainite curve finish
+        bcf_mat = np.zeros((5000, 2), dtype=np.float32)
 
-        for i in range(1, 3):
+        for i in range(0, 3):
             count_bn = 0
             temp_curr = self.ms
 
@@ -164,7 +162,8 @@ class PhaseSimulation(object):
                 temp_curr = temp_curr + 1
 
         # ========= MARTENSITE ========= #
-        msf_mat = np.zeros((3, 2), dtype=np.float64)  # Martensite curve start
+        # Martensite curve start
+        msf_mat = np.zeros((5000, 2), dtype=np.float32)
         temp_curr = self.ms
         torr = self._torr_calc2(Phase.M, temp_curr, integrated2_mat, i=1)
         # Uses Bainite cutoff time. So uses the Bainite phase as the argument
@@ -222,20 +221,20 @@ class PhaseSimulation(object):
         # Can hold 100000 time/temperature points for Ferrite nucleation
         # temperature
         # Ferrite
-        cct_record_f_mat = np.zeros((10000, 2), dtype=np.float64)
+        cct_record_f_mat = np.zeros((1000, 2), dtype=np.float32)
         # Pearlite
-        cct_record_p_mat = np.zeros((10000, 2), dtype=np.float64)
+        cct_record_p_mat = np.zeros((1000, 2), dtype=np.float32)
         # Bainite
-        cct_record_b_mat = np.zeros((10000, 2), dtype=np.float64)
+        cct_record_b_mat = np.zeros((1000, 2), dtype=np.float32)
         # Can hold 100000 time/temperature points for Ferrite finish temperature
         # Ferrite
-        cct_record_f_end_mat = np.zeros((10000, 2), dtype=np.float64)
+        cct_record_f_end_mat = np.zeros((1000, 2), dtype=np.float32)
         # Pearlite
-        cct_record_p_end_mat = np.zeros((10000, 2), dtype=np.float64)
+        cct_record_p_end_mat = np.zeros((1000, 2), dtype=np.float32)
         # Bainite
-        cct_record_b_end_mat = np.zeros((10000, 2), dtype=np.float64)
+        cct_record_b_end_mat = np.zeros((1000, 2), dtype=np.float32)
         # Martensite
-        cct_record_m_mat = np.zeros((2, 2), dtype=np.float64)
+        cct_record_m_mat = np.zeros((1000, 2), dtype=np.float32)
 
         # Counters
         ii_f, ii_p, ii_b, ii_m = 0, 0, 0, 0
@@ -352,8 +351,8 @@ class PhaseSimulation(object):
                     )
 
                     if nuc_frac_ferrite > 1.0:
-                        cct_record_f_mat[ii_f, 0] = time  # y-axis
-                        cct_record_f_mat[ii_f, 1] = temp_curr  # x-axis
+                        cct_record_f_mat[ii_f, 0] = time  # x-axis
+                        cct_record_f_mat[ii_f, 1] = temp_curr  # y-axis
                         ii_f = ii_f + 1
                         # trigger to stop recoding for ferrite for current
                         # cooling rate
@@ -470,7 +469,7 @@ class PhaseSimulation(object):
         cct_record_m_mat[0, 1] = self.ms
         # first recorded bainite transformation time point
         cct_record_m_mat[1, 0] = cct_record_b_end_mat[0, 0]
-        cct_record_b_mat[1, 1] = self.ms
+        cct_record_m_mat[1, 1] = self.ms
 
         self.plots_data.set_cct_plot_data(
             ferrite_nucleation=cct_record_f_mat,

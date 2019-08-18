@@ -26,11 +26,8 @@ ortho-equilibrium methods.
 
 import math
 import numpy as np
-# from logger.arc_logger import AppLogger
 from simulation.utilities import linear_fit
 from simulation.periodic import PeriodicTable as PT
-
-# logger = AppLogger(__name__)
 
 # ========== # CONSTANTS # ========== #
 R = np.float64(1.9858)
@@ -169,8 +166,6 @@ def ae3_set_carbon(t0: float, ai_vect: np.array, wt_mat: np.ndarray,
         e_mat = dgi22()
 
         p, gi = np.float64(0.0), np.float64(0.0)
-        e_aust1i, e_aust11 = None, None  # UP's
-        e_alpha1i, e_alpha11 = None, None  # DOWN's
 
         # Loop ID's below (M) reset for SimCCT array definitions.
         # Note - M in the loop below has to be consistent between elements in
@@ -516,10 +511,10 @@ def eta2li96() -> np.ndarray:
     Returns:
         A constant numpy.ndarray matrix
     """
-    # TODO: Why has Dr. Bendeich made his array 20x6 when he only ever needs
-    #  20x5  -- MUST BE SET
     # initiated with all zeroes so if not used already set properly
     b_mat = np.zeros((20, 6), dtype=np.float64)
+
+    # These are from tables in papers.
 
     # Mn - Li96
     b_mat[1, 5] = -4811
@@ -608,9 +603,9 @@ def eta2li96() -> np.ndarray:
 
 
 def dgi22() -> np.ndarray:
-    """
-    Data for alloying element free energy changes (DELTA G(I)) [Ferrite-Austenite transformation]
-    p.146 in Li thesis for equivalent? (note: Li's values give different results)
+    """Data for alloying element free energy changes (DELTA G(I)) [Ferrite-
+    Austenite transformation] p.146 in Li thesis for equivalent? (note: Li's
+    values give different results)
 
     Key:
     All coefficients here are for Delta G (Gibbs free energy change) for ferrite
@@ -623,8 +618,9 @@ def dgi22() -> np.ndarray:
     Returns:
         A constant numpy.ndarray matrix
     """
-
     _ee_mat = np.zeros((20, 5), dtype=np.float64)
+
+    # These are from tables in papers.
 
     # Mn
     _ee_mat[1, 1] = -26650.0
@@ -804,6 +800,5 @@ def ae3_multi_carbon(wt: np.ndarray,
         # Update C wt% and repeat
         c = c + 0.01
 
-    # NOTE: Results passed back for clarity but numpy.ndarray are updated by
-    #  reference
+    # Results passed back for clarity but np.ndarray are updated by reference
     return wt, results

@@ -292,9 +292,9 @@ class TestXfe(BaseConfigurationTest):
         self.assertAlmostEqual(xfe, 0.94621026894865523, 10)
 
 
-class TestSimulation(BaseConfigurationTest):
+class TestTimeTemperatureTransformation(BaseConfigurationTest):
     def setUp(self):
-        super(TestSimulation, self).setUp()
+        super(TestTimeTemperatureTransformation, self).setUp()
         self.simulation = PhaseSimulation(self.sim_inst, debug=True)
         self.simulation.ttt()
         self.integrated2_mat = None

@@ -25,6 +25,7 @@ from tests.test_api_base import BaseTestCase
 from users_app.models import User
 from users_app.resources.auth import SimCCTBadServerLogout
 from users_app.resources.auth import register_session
+from tests.test_api_users import log_test_user_in
 
 
 class TestAuthEndpoints(BaseTestCase):
@@ -828,6 +829,112 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(data['message'], 'Successfully changed password.')
             self.assertEqual(data['status'], 'success')
             self.assert200(res)
+
+    def test_change_email_success(self):
+        obiwan = User(
+            email='obiwankenobi@arclytics.com',
+            first_name='Obi-Wan',
+            last_name='Kenobi'
+        )
+        obiwan.set_password('TVShowPlease')
+        obiwan.save()
+
+        token = log_test_user_in(self, obiwan, 'TVShowPlease')
+
+        with self.client:
+            resp = self.client.put(
+                '/auth/email/change',
+                data=json.dumps({
+                    'new_email': 'brickmatic479@gmail.com'
+                }),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(data['message'], 'Email changed.')
+            self.assertEqual(data['new_email'], 'brickmatic479@gmail.com')
+
+            obi_updated = User.objects.get(id=obiwan.id)
+            self.assertEqual(obi_updated.email, 'brickmatic479@gmail.com')
+
+    def test_change_email_empty_payload(self):
+        obiwan = User(
+            email='obiwankenobi@arclytics.io',
+            first_name='Obi-Wan',
+            last_name='Kenobi'
+        )
+        obiwan.set_password('TVShowPlease')
+        obiwan.save()
+
+        token = log_test_user_in(self, obiwan, 'TVShowPlease')
+
+        with self.client:
+            resp = self.client.put(
+                '/auth/email/change',
+                data=json.dumps(''),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'Invalid payload.')
+
+    def test_change_email_no_email(self):
+        vader = User(
+            email='darthvader@arclytics.io',
+            first_name='Darth',
+            last_name='Vader'
+        )
+        vader.set_password('AllTooEasy')
+        vader.save()
+
+        token = log_test_user_in(self, vader, 'AllTooEasy')
+
+        with self.client:
+            resp = self.client.put(
+                '/auth/email/change',
+                data=json.dumps({
+                    'some_invalid_key': 'some_value'
+                }),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'No new email given.')
+
+    def test_change_email_invalid_email(self):
+        jabba = User(
+            email='jabba@arclytics.io',
+            first_name='Jabba',
+            last_name='The Hutt'
+        )
+        jabba.set_password('AllTooEasy')
+        jabba.save()
+
+        token = log_test_user_in(self, jabba, 'AllTooEasy')
+
+        with self.client:
+            resp = self.client.put(
+                '/auth/email/change',
+                data=json.dumps({
+                    'new_email': 'invalid_hutt.com'
+                }),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'Invalid email.')
 
 
 if __name__ == '__main__':

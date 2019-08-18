@@ -28,25 +28,9 @@ from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
 from users_app.models import User, SharedSimulation
 from users_app.token import (generate_shared_simulation_token, generate_url)
+from tests.test_api_users import log_test_user_in
 
 logger = AppLogger(__name__)
-
-
-# TODO(davidmatthews1004@gmail.com) If possible, import this from test_api_users
-#  so its not repeated.
-def log_test_user_in(self, user: User, password: str) -> str:
-    """Log in a test user and return their token"""
-    with self.client:
-        resp_login = self.client.post(
-            '/auth/login',
-            data=json.dumps({
-                'email': user.email,
-                'password': password
-            }),
-            content_type='application/json'
-        )
-        token = json.loads(resp_login.data.decode())['token']
-        return token
 
 
 class TestShareService(BaseTestCase):

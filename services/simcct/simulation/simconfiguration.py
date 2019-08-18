@@ -20,7 +20,6 @@ __package__ = 'simulation'
 {Description}
 """
 
-import os
 import json
 from pathlib import Path
 from typing import Union
@@ -28,14 +27,12 @@ from typing import Union
 import numpy as np
 from prettytable import PrettyTable
 
-from simulation.utilities import Method
+from settings import BASE_DIR
+from simulation.utilities import Method, ConfigurationError
 from simulation.ae3_utilities import ae3_single_carbon, ae3_multi_carbon
-from simulation.periodic import PeriodicTable as pt
+from simulation.periodic import PeriodicTable
 
-BASE = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
-)
-_TEST_CONFIGS = Path(BASE) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 
 
 class SimConfiguration(object):
@@ -62,7 +59,7 @@ class SimConfiguration(object):
         if compositions is not None:
             self.comp = self.get_compositions(compositions)
             if self.comp is False:
-                raise Exception('Compositions conversion error.')
+                raise ConfigurationError('Compositions conversion error.')
 
         if configs is not None:
             self.method = (
@@ -98,9 +95,9 @@ class SimConfiguration(object):
         # FIXME(andrew@neuraldev.io): This needs to be better implemented to
         #  raise errors.
         if self.ae1 < 0.0 or self.ae3 < 0.0:
-            raise Exception('Ae1 and Ae3 temperatures not yet set.')
+            raise ConfigurationError('Ae1 and Ae3 temperatures not yet set.')
         if self.ms_temp < 0.0 or self.bs_temp < 0.0:
-            raise Exception('MS and BS temperatures not yet set.')
+            raise ConfigurationError('MS and BS temperatures not yet set.')
 
     def auto_ms(self) -> None:
         """
@@ -163,11 +160,11 @@ class SimConfiguration(object):
             s = e['symbol']
 
             # We skip out if we hit 'C' or 'Fe' so we can add them later.
-            if s == pt.C.name:
+            if s == PeriodicTable.C.name:
                 c_weight = e['weight']
                 continue
 
-            if s == pt.Fe.name:
+            if s == PeriodicTable.Fe.name:
                 fe_weight = e['weight']
                 continue
 
@@ -175,15 +172,15 @@ class SimConfiguration(object):
             # as we expect it. Will raise a KeyError exception if symbol names
             # don't match. We return False and check it later.
             try:
-                elem_symbol = pt[s].name
-            except KeyError as e:
-                return False
+                elem_symbol = PeriodicTable[s].name
+            except KeyError:
+                raise ConfigurationError('Element Symbol Error.')
             comp[idx] = (elem_symbol, e['weight'])
             idx = idx + 1
 
         # Now we add carbon and iron at the beginning and end respectively
-        comp[0] = (pt.C.name, c_weight)
-        comp[-1] = (pt.Fe.name, fe_weight)
+        comp[0] = (PeriodicTable.C.name, c_weight)
+        comp[-1] = (PeriodicTable.Fe.name, fe_weight)
         return comp
 
     # TODO(andrew@neuraldev.io -- Sprint 6): Do some validation for these
@@ -195,12 +192,12 @@ class SimConfiguration(object):
         the MS temperature.
         """
         # ensure we are getting the value and not the list by using index 0
-        c = comp[comp['symbol'] == pt.C.name]['weight'][0]
-        mn = comp[comp['symbol'] == pt.Mn.name]['weight'][0]
-        ni = comp[comp['symbol'] == pt.Ni.name]['weight'][0]
-        cr = comp[comp['symbol'] == pt.Cr.name]['weight'][0]
-        mo = comp[comp['symbol'] == pt.Mo.name]['weight'][0]
-        si = comp[comp['symbol'] == pt.Si.name]['weight'][0]
+        c = comp[comp['symbol'] == PeriodicTable.C.name]['weight'][0]
+        mn = comp[comp['symbol'] == PeriodicTable.Mn.name]['weight'][0]
+        ni = comp[comp['symbol'] == PeriodicTable.Ni.name]['weight'][0]
+        cr = comp[comp['symbol'] == PeriodicTable.Cr.name]['weight'][0]
+        mo = comp[comp['symbol'] == PeriodicTable.Mo.name]['weight'][0]
+        si = comp[comp['symbol'] == PeriodicTable.Si.name]['weight'][0]
 
         if method != Method.Li98 and method != Method.Kirkaldy83:
             return -1
@@ -223,13 +220,13 @@ class SimConfiguration(object):
         MS temperature.
         """
         # ensure we are getting the value and not the list by using index 0
-        c = comp[comp['symbol'] == pt.C.name]['weight'][0]
-        mn = comp[comp['symbol'] == pt.Mn.name]['weight'][0]
-        ni = comp[comp['symbol'] == pt.Ni.name]['weight'][0]
-        cr = comp[comp['symbol'] == pt.Cr.name]['weight'][0]
-        mo = comp[comp['symbol'] == pt.Mo.name]['weight'][0]
-        co = comp[comp['symbol'] == pt.Co.name]['weight'][0]
-        si = comp[comp['symbol'] == pt.Si.name]['weight'][0]
+        c = comp[comp['symbol'] == PeriodicTable.C.name]['weight'][0]
+        mn = comp[comp['symbol'] == PeriodicTable.Mn.name]['weight'][0]
+        ni = comp[comp['symbol'] == PeriodicTable.Ni.name]['weight'][0]
+        cr = comp[comp['symbol'] == PeriodicTable.Cr.name]['weight'][0]
+        mo = comp[comp['symbol'] == PeriodicTable.Mo.name]['weight'][0]
+        co = comp[comp['symbol'] == PeriodicTable.Co.name]['weight'][0]
+        si = comp[comp['symbol'] == PeriodicTable.Si.name]['weight'][0]
 
         if method != Method.Li98 and method != Method.Kirkaldy83:
             return -1
@@ -250,11 +247,11 @@ class SimConfiguration(object):
 
     @staticmethod
     def get_ms_alpha(comp: np.ndarray = None) -> float:
-        c = comp['weight'][comp['symbol'] == pt.C.name][0]
-        mn = comp['weight'][comp['symbol'] == pt.Mn.name][0]
-        ni = comp['weight'][comp['symbol'] == pt.Ni.name][0]
-        cr = comp['weight'][comp['symbol'] == pt.Cr.name][0]
-        mo = comp['weight'][comp['symbol'] == pt.Mo.name][0]
+        c = comp['weight'][comp['symbol'] == PeriodicTable.C.name][0]
+        mn = comp['weight'][comp['symbol'] == PeriodicTable.Mn.name][0]
+        ni = comp['weight'][comp['symbol'] == PeriodicTable.Ni.name][0]
+        cr = comp['weight'][comp['symbol'] == PeriodicTable.Cr.name][0]
+        mo = comp['weight'][comp['symbol'] == PeriodicTable.Mo.name][0]
 
         return (
             0.0224 - (0.0107 * c) - (0.0007 * mn) - (0.00005 * ni) -
@@ -263,15 +260,15 @@ class SimConfiguration(object):
 
     @staticmethod
     def calc_ae1_ae3(comp: np.ndarray = None) -> (np.float, np.float):
-        c = comp[comp['symbol'] == pt.C.name]['weight'][0]
-        ni = comp[comp['symbol'] == pt.Ni.name]['weight'][0]
-        si = comp[comp['symbol'] == pt.Si.name]['weight'][0]
-        w = comp[comp['symbol'] == pt.W.name]['weight'][0]
-        mn = comp[comp['symbol'] == pt.Mn.name]['weight'][0]
-        cr = comp[comp['symbol'] == pt.Cr.name]['weight'][0]
+        c = comp[comp['symbol'] == PeriodicTable.C.name]['weight'][0]
+        ni = comp[comp['symbol'] == PeriodicTable.Ni.name]['weight'][0]
+        si = comp[comp['symbol'] == PeriodicTable.Si.name]['weight'][0]
+        w = comp[comp['symbol'] == PeriodicTable.W.name]['weight'][0]
+        mn = comp[comp['symbol'] == PeriodicTable.Mn.name]['weight'][0]
+        cr = comp[comp['symbol'] == PeriodicTable.Cr.name]['weight'][0]
         # `as` is a keyword you can't use so must use `_as`
-        _as = comp[comp['symbol'] == pt.As.name]['weight'][0]
-        mo = comp[comp['symbol'] == pt.Mo.name]['weight'][0]
+        _as = comp[comp['symbol'] == PeriodicTable.As.name]['weight'][0]
+        mo = comp[comp['symbol'] == PeriodicTable.Mo.name]['weight'][0]
         # Do the calculations
         # 1. Equations of Andrews (1965)
         ae1 = (
@@ -322,7 +319,7 @@ class SimConfiguration(object):
         results_mat = np.zeros((1000, 22), dtype=np.float64)
         # reserve the initial carbon wt% as the main routine is passing back
         # another value despite being set "ByVal"
-        wt_c = wt['weight'][wt['symbol'] == pt.C.name][0]
+        wt_c = wt['weight'][wt['symbol'] == PeriodicTable.C.name][0]
 
         # Find Ae3 for array of Carbon contents form 0.00 to 0.96 wt%
         # UPDATE wt, Results to CALL Ae3MultiC(wt, Results)

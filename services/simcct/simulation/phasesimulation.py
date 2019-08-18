@@ -27,7 +27,9 @@ import enum
 
 import numpy as np
 
-from simulation.utilities import Method, sort_ccr
+from simulation.utilities import (
+    Method, sort_ccr, ConfigurationError, SimulationError
+)
 from simulation.simconfiguration import SimConfiguration
 from simulation.plots import Plots
 from simulation.periodic import PeriodicTable as pt
@@ -48,9 +50,10 @@ class PhaseSimulation(object):
     def __init__(self, sim_configs: SimConfiguration = None, debug=False):
         if sim_configs is not None:
 
-            # FIXME(andrew@neuraldev.io): Do this more nicely
             if not sim_configs.ae_check:
-                raise Exception('No Ae1 and Ae3 value has been provided.')
+                raise ConfigurationError(
+                    'No Ae1 and Ae3 value has been provided.'
+                )
 
             self.configs = sim_configs
             # We only ever use one of "parent," "weld," or "mix"
@@ -61,27 +64,22 @@ class PhaseSimulation(object):
 
             if self.start_percent > 1.0 or self.finish_percent > 1.0:
                 # logger.debug("Start or Finish percent must be a fraction.")
-                print("Start or Finish percent must be a fraction.")
+                raise ConfigurationError(
+                    'Start or Finish percent must be a fraction.'
+                )
 
             self.ms = round(sim_configs.ms_temp)
             self.bs = round(sim_configs.bs_temp)
             self.g = sim_configs.grain_size
 
-            # if not sim_configs.ae_check:
-            #     logger.error(
-            #         "To run the simulation, the Austenite values (Ae1 and "
-            #         "Ae3) are required. "
-            #     )
-
             self.ae1 = round(sim_configs.ae1)
             self.ae3 = sim_configs.ae3
             self.xfe = sim_configs.xfe
 
-        # else:
-        #     logger.error(
-        #         "Need a configurations instance to run a CCT and TTT "
-        #         "simulation. "
-        #     )
+        else:
+            raise SimulationError(
+                'Need a configurations instance to run simulation.'
+            )
 
         # Use an object of Plots instance to store the plot data
         self.plots_data = Plots()
@@ -565,7 +563,7 @@ class PhaseSimulation(object):
 
         if self.xfe >= 1.0:
             # logger.error('XFE has to be below 1.0')
-            print('XFE has to be below 1.0')
+            raise ConfigurationError('XFE has to be below 1.0')
 
         # Kirkaldy:
         # [0,0], [0,1], [0,2] spots for starting precipitation

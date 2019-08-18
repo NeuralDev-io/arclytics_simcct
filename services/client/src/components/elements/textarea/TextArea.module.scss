@@ -1,0 +1,86 @@
+@import '../../../styles/colors_light';
+@import '../../../styles/typography';
+
+.container {
+  display: flex;
+  flex-flow: column nowrap;
+
+  & > span {
+    color: $r500;
+    margin-top: .25rem;
+  }
+}
+
+textarea {
+  // remove default styles
+  border: none;
+  outline: none;
+  font-family: $font-primary;
+
+  // remove resizeable
+  resize: none;
+
+  // layout
+  width: 7.5rem;
+  height: auto;
+  padding: .5rem .75rem;
+
+  // border
+  border-radius: 6px;
+  border: 1px solid transparent;
+
+  // colour
+  background-color: $n10;
+  color: $n900;
+
+  &::placeholder {
+    color: $n600;
+    font-family: $font-primary;
+  }
+
+  &:hover:not([disabled]) {
+    background-color: $n20;
+  }
+
+  &:focus {
+    background-color: $n0;
+    border-color: $ag500;
+  }
+
+  &:disabled {
+    color: $n300;
+
+    &::placeholder {
+      color: $n300;
+    }
+  }
+}
+
+.short {
+  width: 7rem;
+}
+
+.long {
+  width: 10rem;
+}
+
+.stretch {
+  width: 100%
+}
+
+.error {
+  background-color: rgba($color: $r500, $alpha: 0.1);
+  border: 1px solid $r500;
+
+  &:hover {
+    background-color: rgba($color: $r500, $alpha: 0.2);
+    border-color: 1px solid $r500;
+  }
+  &:hover:not([disabled]) {
+    background-color: rgba($color: $r500, $alpha: 0.2);
+  }
+  &:focus {
+    background-color: $n0;
+    border-color: $r500;
+  }
+}

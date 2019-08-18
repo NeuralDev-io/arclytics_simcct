@@ -13,7 +13,6 @@
  */
 
 export const login = async (values, resolve, reject) => {
-  console.log(values.email)
   fetch('http://localhost:8000/auth/login', {
     method: 'POST',
     mode: 'cors',
@@ -67,7 +66,7 @@ export const logout = (callback) => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Session': localStorage.getItem('session'),
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })

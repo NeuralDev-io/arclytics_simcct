@@ -100,6 +100,7 @@ const ConfigForm = (props) => {
                   value={values.ae1_temp}
                   length="short"
                   suffix="°C"
+                  isDisabled={values.auto_calculate_ae}
                   // validation={[
                   //   {
                   //     constraint: value => (value.length !== 0),
@@ -125,6 +126,7 @@ const ConfigForm = (props) => {
                   value={values.ae3_temp}
                   length="short"
                   suffix="°C"
+                  isDisabled={values.auto_calculate_ae}
                   // validation={[
                   //   {
                   //     constraint: value => (value.length !== 0),
@@ -150,42 +152,6 @@ const ConfigForm = (props) => {
             />
           </div>
           <div>
-            <h6>Bainite start/stop</h6>
-            <div className={styles.configGroup}>
-              <div className="input-row">
-                <span>BS</span>
-                <TextFieldExtra
-                  type="text"
-                  name="bs_temp"
-                  onChange={val => onChange('bs_temp', val)}
-                  value={values.bs_temp}
-                  length="short"
-                  suffix="°C"
-                  // validation={[
-                  //   {
-                  //     constraint: value => (value.length !== 0),
-                  //     message: 'Can not be empty',
-                  //   },
-                  //   {
-                  //     constraint: value => (!isNaN(value)),
-                  //     message: 'Must be a number',
-                  //   },
-                  //   {
-                  //     constraint: value => (parseFloat(value) > 0),
-                  //     message: 'Can not be less than 0',
-                  //   },
-                  // ]}
-                />
-              </div>
-            </div>
-            <Checkbox
-              name="auto_calculate_bs"
-              onChange={val => onChange('auto_calculate_bs', val)}
-              isChecked={values.auto_calculate_bs}
-              label="Auto-calculate BS"
-            />
-          </div>
-          <div>
             <h6>Martensite start/stop</h6>
             <div className={styles.configGroup}>
               <div className="input-row">
@@ -197,6 +163,7 @@ const ConfigForm = (props) => {
                   value={values.ms_temp}
                   length="short"
                   suffix="°C"
+                  isDisabled={values.auto_calculate_ms}
                   // validation={[
                   //   {
                   //     constraint: value => (value.length !== 0),
@@ -221,6 +188,7 @@ const ConfigForm = (props) => {
                   onChange={val => onChange('ms_rate_param', val)}
                   value={values.ms_rate_param}
                   length="short"
+                  isDisabled={values.auto_calculate_ms}
                   // validation={[
                   //   {
                   //     constraint: value => (value.length !== 0),
@@ -243,6 +211,43 @@ const ConfigForm = (props) => {
               onChange={val => onChange('auto_calculate_ms', val)}
               isChecked={values.auto_calculate_ms}
               label="Auto-calculate MS"
+            />
+          </div>
+          <div>
+            <h6>Bainite start/stop</h6>
+            <div className={styles.configGroup}>
+              <div className="input-row">
+                <span>BS</span>
+                <TextFieldExtra
+                  type="text"
+                  name="bs_temp"
+                  onChange={val => onChange('bs_temp', val)}
+                  value={values.bs_temp}
+                  length="short"
+                  suffix="°C"
+                  isDisabled={values.auto_calculate_bs}
+                  // validation={[
+                  //   {
+                  //     constraint: value => (value.length !== 0),
+                  //     message: 'Can not be empty',
+                  //   },
+                  //   {
+                  //     constraint: value => (!isNaN(value)),
+                  //     message: 'Must be a number',
+                  //   },
+                  //   {
+                  //     constraint: value => (parseFloat(value) > 0),
+                  //     message: 'Can not be less than 0',
+                  //   },
+                  // ]}
+                />
+              </div>
+            </div>
+            <Checkbox
+              name="auto_calculate_bs"
+              onChange={val => onChange('auto_calculate_bs', val)}
+              isChecked={values.auto_calculate_bs}
+              label="Auto-calculate BS"
             />
           </div>
         </div>

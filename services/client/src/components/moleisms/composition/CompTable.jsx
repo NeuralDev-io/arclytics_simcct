@@ -19,7 +19,7 @@ class CompTable extends Component {
       weld,
     } = data
 
-    let tableData = parent.compositions.map(elem => ({
+    const tableData = parent.compositions.map(elem => ({
       symbol: elem.symbol,
       parent: elem.weight,
       weld: undefined,
@@ -78,7 +78,7 @@ class CompTable extends Component {
         // eslint-disable-next-line
         Cell: ({ value }) => (<span className={styles.symbol}>{value}</span>),
         width: 80,
-        Footer: 'Total',
+        Footer: tableData.length !== 0 && 'Total',
       },
       {
         Header: 'Alloy 1',
@@ -94,7 +94,7 @@ class CompTable extends Component {
             isDisabled={value === undefined}
           />
         ),
-        Footer: <span className={styles.footerText}>{parentTotal}</span>,
+        Footer: tableData.length !== 0 && <span className={styles.footerText}>{parentTotal}</span>,
       },
       {
         Header: 'Alloy 2',
@@ -110,7 +110,7 @@ class CompTable extends Component {
             isDisabled={value === undefined}
           />
         ),
-        Footer: <span className={styles.footerText}>{weldTotal}</span>,
+        Footer: tableData.length !== 0 && <span className={styles.footerText}>{weldTotal}</span>,
       },
       {
         Header: 'Mix',
@@ -121,7 +121,7 @@ class CompTable extends Component {
           return <span>{value}</span>
         },
         width: 40,
-        Footer: <span className={styles.footerText}>{mixTotal}</span>,
+        Footer: tableData.length !== 0 && <span className={styles.footerTextMix}>{mixTotal}</span>,
       },
     ]
 
@@ -129,7 +129,7 @@ class CompTable extends Component {
       <Table
         data={tableData}
         columns={columns}
-        pageSize={Math.round((containerHeight - 124) / 56)}
+        pageSize={tableData.length !== 0 ? Math.floor((containerHeight - 148) / 56) : 0}
         showPageSizeOptions={false}
         showPagination={tableData.length !== 0}
         resizable={false}

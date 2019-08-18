@@ -24,10 +24,10 @@ from flask import Blueprint, request
 from flask_restful import Resource
 
 from sim_app.extensions import api
-from sim_app.sim_session import SimSessionService
+from sim_app.sim_session import SimSessionService, SaveSessionError
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
-from sim_app.middleware import token_required_flask, token_and_session_required
+from sim_app.middleware import token_and_session_required
 
 configs_blueprint = Blueprint('sim_configurations', __name__)
 
@@ -74,6 +74,16 @@ class Configurations(Resource):
 
         # If there are changes to be made, then we will get the session store.
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         sess_configs = session_store.get('configurations')
         if sess_configs is None:
             response['message'] = 'No previous session configurations was set.'
@@ -100,7 +110,13 @@ class Configurations(Resource):
             sess_configs['cct_cooling_rate'] = cct_cool_rate
 
         session_store['configurations'] = sess_configs
-        SimSessionService().save_session(sid, session_store)
+
+        try:
+            SimSessionService().save_session(sid, session_store)
+        except SaveSessionError as e:
+            response['errors'] = str(e.msg)
+            response['message'] = 'Unable to save to session store.'
+            return response, 500
 
         response['status'] = 'success'
         response['message'] = 'Setup configurations values have been updated.'
@@ -145,6 +161,16 @@ class ConfigsMethod(Resource):
             return response, 400
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
 
         if not session_configs:
@@ -157,7 +183,13 @@ class ConfigsMethod(Resource):
             session_configs['method'] = Method.Kirkaldy83.name
 
         session_store['configurations'] = session_configs
-        SimSessionService().save_session(sid, session_store)
+
+        try:
+            SimSessionService().save_session(sid, session_store)
+        except SaveSessionError as e:
+            response['errors'] = str(e.msg)
+            response['message'] = 'Unable to save to session store.'
+            return response, 500
 
         response['status'] = 'success'
         response['message'] = f'Changed to {method} method.'
@@ -193,6 +225,16 @@ class MartensiteStart(Resource):
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
 
         if not session_configs:
@@ -238,7 +280,13 @@ class MartensiteStart(Resource):
         session_configs['ms_temp'] = ms_temp
         session_configs['ms_rate_param'] = ms_rate_param
         session_store['configurations'] = session_configs
-        SimSessionService().save_session(sid, session_store)
+
+        try:
+            SimSessionService().save_session(sid, session_store)
+        except SaveSessionError as e:
+            response['errors'] = str(e.msg)
+            response['message'] = 'Unable to save to session store.'
+            return response, 500
 
         response['status'] = 'success'
         response.pop('message')
@@ -277,6 +325,16 @@ class MartensiteStart(Resource):
             return response, 400
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations', None)
 
         if not session_configs:
@@ -287,7 +345,13 @@ class MartensiteStart(Resource):
         session_configs['ms_temp'] = ms_temp
         session_configs['ms_rate_param'] = ms_rate_param
         session_store['configurations'] = session_configs
-        SimSessionService().save_session(sid, session_store)
+
+        try:
+            SimSessionService().save_session(sid, session_store)
+        except SaveSessionError as e:
+            response['errors'] = str(e.msg)
+            response['message'] = 'Unable to save to session store.'
+            return response, 500
 
         return {'status': 'success'}, 202
 
@@ -320,6 +384,16 @@ class BainiteStart(Resource):
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
 
         if not session_configs:
@@ -361,7 +435,13 @@ class BainiteStart(Resource):
         # Save the new calculated BS and MS to the Session store
         session_configs['bs_temp'] = bs_temp
         session_store['configurations'] = session_configs
-        SimSessionService().save_session(sid, session_store)
+
+        try:
+            SimSessionService().save_session(sid, session_store)
+        except SaveSessionError as e:
+            response['errors'] = str(e.msg)
+            response['message'] = 'Unable to save to session store.'
+            return response, 500
 
         response['status'] = 'success'
         response.pop('message')
@@ -395,6 +475,16 @@ class BainiteStart(Resource):
             return response, 400
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
@@ -403,7 +493,13 @@ class BainiteStart(Resource):
         session_configs['auto_calculate_bs'] = False
         session_configs['bs_temp'] = bs_temp
         session_store[f'configurations'] = session_configs
-        SimSessionService().save_session(sid, session_store)
+
+        try:
+            SimSessionService().save_session(sid, session_store)
+        except SaveSessionError as e:
+            response['errors'] = str(e.msg)
+            response['message'] = 'Unable to save to session store.'
+            return response, 500
 
         return {'status': 'success'}, 202
 
@@ -434,6 +530,16 @@ class Austenite(Resource):
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
 
         if not session_configs:
@@ -469,7 +575,13 @@ class Austenite(Resource):
         session_configs['ae1_temp'] = ae1
         session_configs['ae3_temp'] = ae3
         session_store['configurations'] = session_configs
-        SimSessionService().save_session(sid, session_store)
+
+        try:
+            SimSessionService().save_session(sid, session_store)
+        except SaveSessionError as e:
+            response['errors'] = str(e.msg)
+            response['message'] = 'Unable to save to session store.'
+            return response, 500
 
         response['status'] = 'success'
         response.pop('message')
@@ -508,6 +620,16 @@ class Austenite(Resource):
             return response, 400
 
         sid, session_store = SimSessionService().load_session(session_key)
+
+        if sid is None:
+            response['errors'] = session_store
+            response['message'] = 'Unable to load session from Redis.'
+            return response, 401
+
+        if not session_store:
+            response['message'] = 'Unable to retrieve data from Redis.'
+            return response, 500
+
         session_configs = session_store.get('configurations')
 
         if session_configs is None:
@@ -518,7 +640,13 @@ class Austenite(Resource):
         session_configs['ae1_temp'] = ae1_temp
         session_configs['ae3_temp'] = ae3_temp
         session_store['configurations'] = session_configs
-        SimSessionService().save_session(sid, session_store)
+
+        try:
+            SimSessionService().save_session(sid, session_store)
+        except SaveSessionError as e:
+            response['errors'] = str(e.msg)
+            response['message'] = 'Unable to save to session store.'
+            return response, 500
 
         return {'status': 'success'}, 202
 

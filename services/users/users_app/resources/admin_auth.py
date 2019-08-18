@@ -15,9 +15,10 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.08.11'
-"""users.py: 
+"""admin_auth.py: 
 
-TODO
+This file defines all the API resource routes and controller definitions for 
+Sharing endpoints using the Flask Resource inheritance model.
 """
 
 import os
@@ -30,7 +31,7 @@ from flask_restful import Resource
 
 from logger.arc_logger import AppLogger
 from users_app.models import (User, AdminProfile)
-from users_app.middleware import authenticate, authenticate_admin
+from users_app.middleware import authenticate_admin
 from users_app.extensions import api
 from users_app.token import (
     generate_confirmation_token, generate_url, confirm_token, URLTokenError,
@@ -47,6 +48,7 @@ class AdminCreate(Resource):
 
     method_decorators = {'post': [authenticate_admin]}
 
+    # noinspection PyMethodMayBeStatic
     def post(self, resp):
         """Make a user an administrator"""
         post_data = request.get_json()
@@ -161,7 +163,7 @@ class AdminCreate(Resource):
                     promotion_verification_url=promotion_verification_url,
                     email=user.email,
                     position=position,
-                    user_name=(f'{user.first_name} {user.last_name}')
+                    user_name=f'{user.first_name} {user.last_name}'
                 ),
                 'text_template':
                 render_template(
@@ -169,7 +171,7 @@ class AdminCreate(Resource):
                     promotion_verification_url=promotion_verification_url,
                     email=user.email,
                     position=position,
-                    user_name=(f'{user.first_name} {user.last_name}')
+                    user_name=f'{user.first_name} {user.last_name}'
                 )
             }
         )
@@ -317,15 +319,15 @@ def verify_promotion(token):
             render_template(
                 'promotion_verified.html',
                 email=promoter.email,
-                promoter_name=(f'{promoter.first_name} {promoter.last_name}'),
-                user_name=(f'{user.first_name} {user.last_name}')
+                promoter_name=f'{promoter.first_name} {promoter.last_name}',
+                user_name=f'{user.first_name} {user.last_name}'
             ),
             'text_template':
             render_template(
                 'promotion_verified.txt',
                 email=promoter.email,
-                promoter_name=(f'{promoter.first_name} {promoter.last_name}'),
-                user_name=(f'{user.first_name} {user.last_name}')
+                promoter_name=f'{promoter.first_name} {promoter.last_name}',
+                user_name=f'{user.first_name} {user.last_name}'
             )
         }
     )
@@ -348,6 +350,7 @@ class DisableAccount(Resource):
 
     method_decorators = {'put': [authenticate_admin]}
 
+    # noinspection PyMethodMayBeStatic
     def put(self, resp):
         post_data = request.get_json()
 

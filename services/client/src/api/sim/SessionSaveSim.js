@@ -14,7 +14,7 @@
  */
 
 // TODO(andrew@neuraldev.io): Find out why trying to get env from Docker no work
-const usersServer = process.env.USERS_HOST
+// const usersServer = process.env.USERS_HOST
 
 export const postSaveSimulation = (configs, alloyStore) => {
   /**
@@ -47,7 +47,6 @@ export const postSaveSimulation = (configs, alloyStore) => {
 }
 
 // TODO(andrew@neuraldev.io): Fix this to dispatch the data back to component
-/** @const  */
 export const getSavedSimulationList = () => {
   /**
    * API call to `users` server to retrieve the user's list of saved simulations.

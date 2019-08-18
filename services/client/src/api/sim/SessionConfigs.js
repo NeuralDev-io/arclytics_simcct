@@ -13,7 +13,7 @@
  * @author Dalton Le
  */
 
-export const initComp = (option, type, alloy) => {
+export const initComp = (option, type, alloy) => new Promise((resolve, reject) => {
   fetch('http://localhost:8001/alloys/update', {
     method: 'POST',
     headers: {
@@ -30,11 +30,12 @@ export const initComp = (option, type, alloy) => {
     .then(res => res.json())
     .then((data) => {
       if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'success') resolve(data.data)
     })
-    .catch(err => console.log(err))
-}
+    .catch(err => reject(err))
+})
 
-export const updateComp = (option, type, alloy) => {
+export const updateComp = (option, type, alloy) => new Promise((resolve, reject) => {
   fetch('http://localhost:8001/alloys/update', {
     method: 'PATCH',
     headers: {
@@ -51,16 +52,17 @@ export const updateComp = (option, type, alloy) => {
     .then(res => res.json())
     .then((data) => {
       if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'success') resolve(data.data)
     })
-    .catch(err => console.log(err))
-}
+    .catch(err => reject(err))
+})
 
 export const updateConfigMethod = (value) => {
   fetch('http://localhost:8001/configs/method/update', {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'Session': localStorage.getItem('session'),
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({ method: value }),
@@ -77,7 +79,7 @@ export const updateConfig = (reqBody) => {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      'Session': localStorage.getItem('session'),
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(reqBody),
@@ -90,11 +92,11 @@ export const updateConfig = (reqBody) => {
 }
 
 export const updateMsBsAe = (name, reqBody) => {
-  fetch(`http://localhost:8001/${name}`, {
+  fetch(`http://localhost:8001/configs/${name}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'Session': localStorage.getItem('session'),
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(reqBody),
@@ -106,28 +108,19 @@ export const updateMsBsAe = (name, reqBody) => {
     .catch(err => console.log(err))
 }
 
-export const getMsBsAe = (name, callback) => {
-  fetch(`http://localhost:8001/${name}`, {
+export const getMsBsAe = name => new Promise((resolve, reject) => {
+  fetch(`http://localhost:8001/configs/${name}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Session': localStorage.getItem('session'),
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())
     .then((data) => {
-      const { status, ...others } = data
-      if (status === 'fail') throw new Error(data.message)
-      if (status === 'success') {
-        // use callback function to set state to SimulationPage
-        callback(prevState => ({
-          configurations: {
-            ...prevState.configurations,
-            ...others,
-          },
-        }))
-      }
+      if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'success') resolve(data.data)
     })
-    .catch(err => console.log(err))
-}
+    .catch(err => reject(err))
+})

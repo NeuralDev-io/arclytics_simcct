@@ -27,7 +27,7 @@ const data = [
     electron_configuration: '1s1',
     electron_affinity: 72.769,
     electronegativity_pauling: 2.2,
-    ionization_energies: [1312.0]
+    ionization_energies: [1312.0],
   },
   {
     name: 'Helium',
@@ -56,7 +56,7 @@ const data = [
     electron_configuration: '1s2',
     electron_affinity: -48,
     electronegativity_pauling: null,
-    ionization_energies: [2372.3, 5250.5]
+    ionization_energies: [2372.3, 5250.5],
   },
   {
     name: 'Lithium',
@@ -84,7 +84,7 @@ const data = [
     electron_configuration: '1s2 2s1',
     electron_affinity: 59.6326,
     electronegativity_pauling: 0.98,
-    ionization_energies: [520.2, 7298.1, 11815.0]
+    ionization_energies: [520.2, 7298.1, 11815.0],
   },
   {
     name: 'Beryllium',
@@ -112,7 +112,7 @@ const data = [
     electron_configuration: '1s2 2s2',
     electron_affinity: -48,
     electronegativity_pauling: 1.57,
-    ionization_energies: [899.5, 1757.1, 14848.7, 21006.6]
+    ionization_energies: [899.5, 1757.1, 14848.7, 21006.6],
   },
   {
     name: 'Boron',
@@ -140,7 +140,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p1',
     electron_affinity: 26.989,
     electronegativity_pauling: 2.04,
-    ionization_energies: [800.6, 2427.1, 3659.7, 25025.8, 32826.7]
+    ionization_energies: [800.6, 2427.1, 3659.7, 25025.8, 32826.7],
   },
   {
     name: 'Carbon',
@@ -168,7 +168,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p2',
     electron_affinity: 121.7763,
     electronegativity_pauling: 2.55,
-    ionization_energies: [1086.5, 2352.6, 4620.5, 6222.7, 37831, 47277.0]
+    ionization_energies: [1086.5, 2352.6, 4620.5, 6222.7, 37831, 47277.0],
   },
   {
     name: 'Nitrogen',
@@ -196,7 +196,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p3',
     electron_affinity: -6.8,
     electronegativity_pauling: 3.04,
-    ionization_energies: [1402.3, 2856, 4578.1, 7475.0, 9444.9, 53266.6, 64360]
+    ionization_energies: [1402.3, 2856, 4578.1, 7475.0, 9444.9, 53266.6, 64360],
   },
   {
     name: 'Oxygen',
@@ -232,8 +232,8 @@ const data = [
       10989.5,
       13326.5,
       71330,
-      84078.0
-    ]
+      84078.0,
+    ],
   },
   {
     name: 'Fluorine',
@@ -270,8 +270,8 @@ const data = [
       15164.1,
       17868,
       92038.1,
-      106434.3
-    ]
+      106434.3,
+    ],
   },
   {
     name: 'Neon',
@@ -310,8 +310,8 @@ const data = [
       19999.0,
       23069.5,
       115379.5,
-      131432
-    ]
+      131432,
+    ],
   },
   {
     name: 'Sodium',
@@ -350,8 +350,8 @@ const data = [
       25496,
       28932,
       141362,
-      159076
-    ]
+      159076,
+    ],
   },
   {
     name: 'Magnesium',
@@ -391,8 +391,8 @@ const data = [
       31653,
       35458,
       169988,
-      189368
-    ]
+      189368,
+    ],
   },
   {
     name: 'Aluminium',
@@ -433,8 +433,8 @@ const data = [
       38473,
       42647,
       201266,
-      222316
-    ]
+      222316,
+    ],
   },
   {
     name: 'Silicon',
@@ -476,8 +476,8 @@ const data = [
       45962,
       50502,
       235196,
-      257923
-    ]
+      257923,
+    ],
   },
   {
     name: 'Phosphorus',
@@ -520,8 +520,8 @@ const data = [
       54110,
       59024,
       271791,
-      296195
-    ]
+      296195,
+    ],
   },
   {
     name: 'Sulfur',
@@ -565,8 +565,8 @@ const data = [
       62930,
       68216,
       311048,
-      337138
-    ]
+      337138,
+    ],
   },
   {
     name: 'Chlorine',
@@ -612,8 +612,8 @@ const data = [
       72341,
       78095,
       352994,
-      380760
-    ]
+      380760,
+    ],
   },
   {
     name: 'Argon',
@@ -660,8 +660,8 @@ const data = [
       82473,
       88576,
       397605,
-      427066
-    ]
+      427066,
+    ],
   },
   {
     name: 'Potassium',
@@ -708,8 +708,8 @@ const data = [
       93400,
       99710,
       444880,
-      476063
-    ]
+      476063,
+    ],
   },
   {
     name: 'Calcium',
@@ -757,8 +757,8 @@ const data = [
       104900,
       111711,
       494850,
-      527762
-    ]
+      527762,
+    ],
   },
   {
     name: 'Scandium',
@@ -807,8 +807,8 @@ const data = [
       117000,
       124270,
       547530,
-      582163
-    ]
+      582163,
+    ],
   },
   {
     name: 'Titanium',
@@ -858,8 +858,8 @@ const data = [
       129900,
       137530,
       602930,
-      639294
-    ]
+      639294,
+    ],
   },
   {
     name: 'Vanadium',
@@ -910,8 +910,8 @@ const data = [
       143400,
       151440,
       661050,
-      699144
-    ]
+      699144,
+    ],
   },
   {
     name: 'Chromium',
@@ -963,8 +963,8 @@ const data = [
       157700,
       166090,
       721870,
-      761733
-    ]
+      761733,
+    ],
   },
   {
     name: 'Manganese',
@@ -1017,8 +1017,8 @@ const data = [
       172500,
       181380,
       785450,
-      827067
-    ]
+      827067,
+    ],
   },
   {
     name: 'Iron',
@@ -1072,8 +1072,8 @@ const data = [
       188100,
       195200,
       851800,
-      895161
-    ]
+      895161,
+    ],
   },
   {
     name: 'Cobalt',
@@ -1128,8 +1128,8 @@ const data = [
       204500,
       214100,
       920870,
-      966023
-    ]
+      966023,
+    ],
   },
   {
     name: 'Nickel',
@@ -1185,8 +1185,8 @@ const data = [
       221400,
       231490,
       992718,
-      1039668
-    ]
+      1039668,
+    ],
   },
   {
     name: 'Copper',
@@ -1243,8 +1243,8 @@ const data = [
       239100,
       249660,
       1067358,
-      1116105
-    ]
+      1116105,
+    ],
   },
   {
     name: 'Zinc',
@@ -1293,8 +1293,8 @@ const data = [
       59700,
       67300,
       71200,
-      179100
-    ]
+      179100,
+    ],
   },
   {
     name: 'Gallium',
@@ -1322,7 +1322,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p1',
     electron_affinity: 41,
     electronegativity_pauling: 1.81,
-    ionization_energies: [578.8, 1979.3, 2963, 6180]
+    ionization_energies: [578.8, 1979.3, 2963, 6180],
   },
   {
     name: 'Germanium',
@@ -1350,7 +1350,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p2',
     electron_affinity: 118.9352,
     electronegativity_pauling: 2.01,
-    ionization_energies: [762, 1537.5, 3302.1, 4411, 9020]
+    ionization_energies: [762, 1537.5, 3302.1, 4411, 9020],
   },
   {
     name: 'Arsenic',
@@ -1378,7 +1378,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p3',
     electron_affinity: 77.65,
     electronegativity_pauling: 2.18,
-    ionization_energies: [947.0, 1798, 2735, 4837, 6043, 12310]
+    ionization_energies: [947.0, 1798, 2735, 4837, 6043, 12310],
   },
   {
     name: 'Selenium',
@@ -1406,7 +1406,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p4',
     electron_affinity: 194.9587,
     electronegativity_pauling: 2.55,
-    ionization_energies: [941.0, 2045, 2973.7, 4144, 6590, 7880, 14990]
+    ionization_energies: [941.0, 2045, 2973.7, 4144, 6590, 7880, 14990],
   },
   {
     name: 'Bromine',
@@ -1434,7 +1434,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p5',
     electron_affinity: 324.537,
     electronegativity_pauling: 2.96,
-    ionization_energies: [1139.9, 2103, 3470, 4560, 5760, 8550, 9940, 18600]
+    ionization_energies: [1139.9, 2103, 3470, 4560, 5760, 8550, 9940, 18600],
   },
   {
     name: 'Krypton',
@@ -1493,8 +1493,8 @@ const data = [
       282500,
       296200,
       311400,
-      326200
-    ]
+      326200,
+    ],
   },
   {
     name: 'Rubidium',
@@ -1532,8 +1532,8 @@ const data = [
       9570,
       13120,
       14500,
-      26740
-    ]
+      26740,
+    ],
   },
   {
     name: 'Strontium',
@@ -1572,8 +1572,8 @@ const data = [
       11800,
       15600,
       17100,
-      31270
-    ]
+      31270,
+    ],
   },
   {
     name: 'Yttrium',
@@ -1613,8 +1613,8 @@ const data = [
       14110,
       18400,
       19900,
-      36090
-    ]
+      36090,
+    ],
   },
   {
     name: 'Zirconium',
@@ -1642,7 +1642,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d2 5s2',
     electron_affinity: 41.806,
     electronegativity_pauling: 1.33,
-    ionization_energies: [640.1, 1270, 2218, 3313, 7752, 9500]
+    ionization_energies: [640.1, 1270, 2218, 3313, 7752, 9500],
   },
   {
     name: 'Niobium',
@@ -1670,7 +1670,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d4 5s1',
     electron_affinity: 88.516,
     electronegativity_pauling: 1.6,
-    ionization_energies: [652.1, 1380, 2416, 3700, 4877, 9847, 12100]
+    ionization_energies: [652.1, 1380, 2416, 3700, 4877, 9847, 12100],
   },
   {
     name: 'Molybdenum',
@@ -1728,8 +1728,8 @@ const data = [
       133800,
       139800,
       148100,
-      154500
-    ]
+      154500,
+    ],
   },
   {
     name: 'Technetium',
@@ -1757,7 +1757,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d5 5s2',
     electron_affinity: 53,
     electronegativity_pauling: 1.9,
-    ionization_energies: [702, 1470, 2850]
+    ionization_energies: [702, 1470, 2850],
   },
   {
     name: 'Ruthenium',
@@ -1785,7 +1785,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d7 5s1',
     electron_affinity: 100.96,
     electronegativity_pauling: 2.2,
-    ionization_energies: [710.2, 1620, 2747]
+    ionization_energies: [710.2, 1620, 2747],
   },
   {
     name: 'Rhodium',
@@ -1813,7 +1813,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d8 5s1',
     electron_affinity: 110.27,
     electronegativity_pauling: 2.28,
-    ionization_energies: [719.7, 1740, 2997]
+    ionization_energies: [719.7, 1740, 2997],
   },
   {
     name: 'Palladium',
@@ -1841,7 +1841,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10',
     electron_affinity: 54.24,
     electronegativity_pauling: 2.2,
-    ionization_energies: [804.4, 1870, 3177]
+    ionization_energies: [804.4, 1870, 3177],
   },
   {
     name: 'Silver',
@@ -1869,7 +1869,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s1',
     electron_affinity: 125.862,
     electronegativity_pauling: 1.93,
-    ionization_energies: [731.0, 2070, 3361]
+    ionization_energies: [731.0, 2070, 3361],
   },
   {
     name: 'Cadmium',
@@ -1897,7 +1897,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2',
     electron_affinity: -68,
     electronegativity_pauling: 1.69,
-    ionization_energies: [867.8, 1631.4, 3616]
+    ionization_energies: [867.8, 1631.4, 3616],
   },
   {
     name: 'Indium',
@@ -1925,7 +1925,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p1',
     electron_affinity: 37.043,
     electronegativity_pauling: 1.78,
-    ionization_energies: [558.3, 1820.7, 2704, 5210]
+    ionization_energies: [558.3, 1820.7, 2704, 5210],
   },
   {
     name: 'Tin',
@@ -1953,7 +1953,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p2',
     electron_affinity: 107.2984,
     electronegativity_pauling: 1.96,
-    ionization_energies: [708.6, 1411.8, 2943.0, 3930.3, 7456]
+    ionization_energies: [708.6, 1411.8, 2943.0, 3930.3, 7456],
   },
   {
     name: 'Antimony',
@@ -1981,7 +1981,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p3',
     electron_affinity: 101.059,
     electronegativity_pauling: 2.05,
-    ionization_energies: [834, 1594.9, 2440, 4260, 5400, 10400]
+    ionization_energies: [834, 1594.9, 2440, 4260, 5400, 10400],
   },
   {
     name: 'Tellurium',
@@ -2009,7 +2009,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p4',
     electron_affinity: 190.161,
     electronegativity_pauling: 2.1,
-    ionization_energies: [869.3, 1790, 2698, 3610, 5668, 6820, 13200]
+    ionization_energies: [869.3, 1790, 2698, 3610, 5668, 6820, 13200],
   },
   {
     name: 'Iodine',
@@ -2037,7 +2037,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p5',
     electron_affinity: 295.1531,
     electronegativity_pauling: 2.66,
-    ionization_energies: [1008.4, 1845.9, 3180]
+    ionization_energies: [1008.4, 1845.9, 3180],
   },
   {
     name: 'Xenon',
@@ -2066,7 +2066,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p6',
     electron_affinity: -77,
     electronegativity_pauling: 2.6,
-    ionization_energies: [1170.4, 2046.4, 3099.4]
+    ionization_energies: [1170.4, 2046.4, 3099.4],
   },
   {
     name: 'Cesium',
@@ -2094,7 +2094,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p6 6s1',
     electron_affinity: 45.505,
     electronegativity_pauling: 0.79,
-    ionization_energies: [375.7, 2234.3, 3400]
+    ionization_energies: [375.7, 2234.3, 3400],
   },
   {
     name: 'Barium',
@@ -2122,7 +2122,7 @@ const data = [
     electron_configuration: '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p6 6s2',
     electron_affinity: 13.954,
     electronegativity_pauling: 0.89,
-    ionization_energies: [502.9, 965.2, 3600]
+    ionization_energies: [502.9, 965.2, 3600],
   },
   {
     name: 'Lanthanum',
@@ -2151,7 +2151,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 5s2 5p6 5d1 6s2',
     electron_affinity: 53,
     electronegativity_pauling: 1.1,
-    ionization_energies: [538.1, 1067, 1850.3, 4819, 5940]
+    ionization_energies: [538.1, 1067, 1850.3, 4819, 5940],
   },
   {
     name: 'Cerium',
@@ -2180,7 +2180,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f1 5s2 5p6 5d1 6s2',
     electron_affinity: 55,
     electronegativity_pauling: 1.12,
-    ionization_energies: [534.4, 1050, 1949, 3547, 6325, 7490]
+    ionization_energies: [534.4, 1050, 1949, 3547, 6325, 7490],
   },
   {
     name: 'Praseodymium',
@@ -2209,7 +2209,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f3 5s2 5p6 6s2',
     electron_affinity: 93,
     electronegativity_pauling: 1.13,
-    ionization_energies: [527, 1020, 2086, 3761, 5551]
+    ionization_energies: [527, 1020, 2086, 3761, 5551],
   },
   {
     name: 'Neodymium',
@@ -2238,7 +2238,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f4 5s2 5p6 6s2',
     electron_affinity: 184.87,
     electronegativity_pauling: 1.14,
-    ionization_energies: [533.1, 1040, 2130, 3900]
+    ionization_energies: [533.1, 1040, 2130, 3900],
   },
   {
     name: 'Promethium',
@@ -2267,7 +2267,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f5 5s2 5p6 6s2',
     electron_affinity: 12.45,
     electronegativity_pauling: 1.13,
-    ionization_energies: [540, 1050, 2150, 3970]
+    ionization_energies: [540, 1050, 2150, 3970],
   },
   {
     name: 'Samarium',
@@ -2296,7 +2296,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f6 5s2 5p6 6s2',
     electron_affinity: 15.63,
     electronegativity_pauling: 1.17,
-    ionization_energies: [544.5, 1070, 2260, 3990]
+    ionization_energies: [544.5, 1070, 2260, 3990],
   },
   {
     name: 'Europium',
@@ -2325,7 +2325,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f7 5s2 5p6 6s2',
     electron_affinity: 11.2,
     electronegativity_pauling: 1.2,
-    ionization_energies: [547.1, 1085, 2404, 4120]
+    ionization_energies: [547.1, 1085, 2404, 4120],
   },
   {
     name: 'Gadolinium',
@@ -2354,7 +2354,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f7 5s2 5p6 5d1 6s2',
     electron_affinity: 13.22,
     electronegativity_pauling: 1.2,
-    ionization_energies: [593.4, 1170, 1990, 4250]
+    ionization_energies: [593.4, 1170, 1990, 4250],
   },
   {
     name: 'Terbium',
@@ -2383,7 +2383,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f9 5s2 5p6 6s2',
     electron_affinity: 112.4,
     electronegativity_pauling: 1.1,
-    ionization_energies: [565.8, 1110, 2114, 3839]
+    ionization_energies: [565.8, 1110, 2114, 3839],
   },
   {
     name: 'Dysprosium',
@@ -2412,7 +2412,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f10 5s2 5p6 6s2',
     electron_affinity: 33.96,
     electronegativity_pauling: 1.22,
-    ionization_energies: [573.0, 1130, 2200, 3990]
+    ionization_energies: [573.0, 1130, 2200, 3990],
   },
   {
     name: 'Holmium',
@@ -2441,7 +2441,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f11 5s2 5p6 6s2',
     electron_affinity: 32.61,
     electronegativity_pauling: 1.23,
-    ionization_energies: [581.0, 1140, 2204, 4100]
+    ionization_energies: [581.0, 1140, 2204, 4100],
   },
   {
     name: 'Erbium',
@@ -2470,7 +2470,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f12 5s2 5p6 6s2',
     electron_affinity: 30.1,
     electronegativity_pauling: 1.24,
-    ionization_energies: [589.3, 1150, 2194, 4120]
+    ionization_energies: [589.3, 1150, 2194, 4120],
   },
   {
     name: 'Thulium',
@@ -2499,7 +2499,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f13 5s2 5p6 6s2',
     electron_affinity: 99,
     electronegativity_pauling: 1.25,
-    ionization_energies: [596.7, 1160, 2285, 4120]
+    ionization_energies: [596.7, 1160, 2285, 4120],
   },
   {
     name: 'Ytterbium',
@@ -2528,7 +2528,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 6s2',
     electron_affinity: -1.93,
     electronegativity_pauling: 1.1,
-    ionization_energies: [603.4, 1174.8, 2417, 4203]
+    ionization_energies: [603.4, 1174.8, 2417, 4203],
   },
   {
     name: 'Lutetium',
@@ -2557,7 +2557,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d1 6s2',
     electron_affinity: 33.4,
     electronegativity_pauling: 1.27,
-    ionization_energies: [523.5, 1340, 2022.3, 4370, 6445]
+    ionization_energies: [523.5, 1340, 2022.3, 4370, 6445],
   },
   {
     name: 'Hafnium',
@@ -2587,7 +2587,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d2 6s2',
     electron_affinity: 17.18,
     electronegativity_pauling: 1.3,
-    ionization_energies: [658.5, 1440, 2250, 3216]
+    ionization_energies: [658.5, 1440, 2250, 3216],
   },
   {
     name: 'Tantalum',
@@ -2617,7 +2617,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d3 6s2',
     electron_affinity: 31,
     electronegativity_pauling: 1.5,
-    ionization_energies: [761, 1500]
+    ionization_energies: [761, 1500],
   },
   {
     name: 'Tungsten',
@@ -2646,7 +2646,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d4 6s2',
     electron_affinity: 78.76,
     electronegativity_pauling: 2.36,
-    ionization_energies: [770, 1700]
+    ionization_energies: [770, 1700],
   },
   {
     name: 'Rhenium',
@@ -2675,7 +2675,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d5 6s2',
     electron_affinity: 5.8273,
     electronegativity_pauling: 1.9,
-    ionization_energies: [760, 1260, 2510, 3640]
+    ionization_energies: [760, 1260, 2510, 3640],
   },
   {
     name: 'Osmium',
@@ -2704,7 +2704,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d6 6s2',
     electron_affinity: 103.99,
     electronegativity_pauling: 2.2,
-    ionization_energies: [840, 1600]
+    ionization_energies: [840, 1600],
   },
   {
     name: 'Iridium',
@@ -2733,7 +2733,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d7 6s2',
     electron_affinity: 150.94,
     electronegativity_pauling: 2.2,
-    ionization_energies: [880, 1600]
+    ionization_energies: [880, 1600],
   },
   {
     name: 'Platinum',
@@ -2762,7 +2762,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d9 6s1',
     electron_affinity: 205.041,
     electronegativity_pauling: 2.28,
-    ionization_energies: [870, 1791]
+    ionization_energies: [870, 1791],
   },
   {
     name: 'Gold',
@@ -2791,7 +2791,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 6s1',
     electron_affinity: 222.747,
     electronegativity_pauling: 2.54,
-    ionization_energies: [890.1, 1980]
+    ionization_energies: [890.1, 1980],
   },
   {
     name: 'Mercury',
@@ -2820,7 +2820,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 6s2',
     electron_affinity: -48,
     electronegativity_pauling: 2.0,
-    ionization_energies: [1007.1, 1810, 3300]
+    ionization_energies: [1007.1, 1810, 3300],
   },
   {
     name: 'Thallium',
@@ -2849,7 +2849,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 6s2 6p1',
     electron_affinity: 36.4,
     electronegativity_pauling: 1.62,
-    ionization_energies: [589.4, 1971, 2878]
+    ionization_energies: [589.4, 1971, 2878],
   },
   {
     name: 'Lead',
@@ -2878,7 +2878,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 6s2 6p2',
     electron_affinity: 34.4204,
     electronegativity_pauling: 1.87,
-    ionization_energies: [715.6, 1450.5, 3081.5, 4083, 6640]
+    ionization_energies: [715.6, 1450.5, 3081.5, 4083, 6640],
   },
   {
     name: 'Bismuth',
@@ -2907,7 +2907,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 6s2 6p3',
     electron_affinity: 90.924,
     electronegativity_pauling: 2.02,
-    ionization_energies: [703, 1610, 2466, 4370, 5400, 8520]
+    ionization_energies: [703, 1610, 2466, 4370, 5400, 8520],
   },
   {
     name: 'Polonium',
@@ -2936,7 +2936,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 6s2 6p4',
     electron_affinity: 136,
     electronegativity_pauling: 2.0,
-    ionization_energies: [812.1]
+    ionization_energies: [812.1],
   },
   {
     name: 'Astatine',
@@ -2965,7 +2965,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 6s2 6p5',
     electron_affinity: 233,
     electronegativity_pauling: 2.2,
-    ionization_energies: [899.003]
+    ionization_energies: [899.003],
   },
   {
     name: 'Radon',
@@ -2995,7 +2995,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 6s2 6p6',
     electron_affinity: -68,
     electronegativity_pauling: 2.2,
-    ionization_energies: [1037]
+    ionization_energies: [1037],
   },
   {
     name: 'Francium',
@@ -3024,7 +3024,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s24p6 4d10 4f14 5s2 5p6 5d10 6s2 6p6 7s1',
     electron_affinity: 46.89,
     electronegativity_pauling: 0.79,
-    ionization_energies: [380]
+    ionization_energies: [380],
   },
   {
     name: 'Radium',
@@ -3053,7 +3053,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 6s2 6p6 7s2',
     electron_affinity: 9.6485,
     electronegativity_pauling: 0.9,
-    ionization_energies: [509.3, 979.0]
+    ionization_energies: [509.3, 979.0],
   },
   {
     name: 'Actinium',
@@ -3082,7 +3082,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 6s2 6p6 6d1 7s2',
     electron_affinity: 33.77,
     electronegativity_pauling: 1.1,
-    ionization_energies: [499, 1170]
+    ionization_energies: [499, 1170],
   },
   {
     name: 'Thorium',
@@ -3111,7 +3111,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 6s2 6p6 6d2 7s2',
     electron_affinity: 112.72,
     electronegativity_pauling: 1.3,
-    ionization_energies: [587, 1110, 1930, 2780]
+    ionization_energies: [587, 1110, 1930, 2780],
   },
   {
     name: 'Protactinium',
@@ -3140,7 +3140,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f2 6s2 6p6 6d1 7s2',
     electron_affinity: 53.03,
     electronegativity_pauling: 1.5,
-    ionization_energies: [568]
+    ionization_energies: [568],
   },
   {
     name: 'Uranium',
@@ -3169,7 +3169,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f3 6s2 6p6 6d1 7s2',
     electron_affinity: 50.94,
     electronegativity_pauling: 1.38,
-    ionization_energies: [597.6, 1420]
+    ionization_energies: [597.6, 1420],
   },
   {
     name: 'Neptunium',
@@ -3198,7 +3198,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f4 6s2 6p6 6d1 7s2',
     electron_affinity: 45.85,
     electronegativity_pauling: 1.36,
-    ionization_energies: [604.5]
+    ionization_energies: [604.5],
   },
   {
     name: 'Plutonium',
@@ -3227,7 +3227,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f6 6s2 6p6 7s2',
     electron_affinity: -48.33,
     electronegativity_pauling: 1.28,
-    ionization_energies: [584.7]
+    ionization_energies: [584.7],
   },
   {
     name: 'Americium',
@@ -3257,7 +3257,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f7 6s2 6p6 7s2',
     electron_affinity: 9.93,
     electronegativity_pauling: 1.13,
-    ionization_energies: [578]
+    ionization_energies: [578],
   },
   {
     name: 'Curium',
@@ -3286,7 +3286,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f7 6s2 6p6 6d1 7s2',
     electron_affinity: 27.17,
     electronegativity_pauling: 1.28,
-    ionization_energies: [581]
+    ionization_energies: [581],
   },
   {
     name: 'Berkelium',
@@ -3315,7 +3315,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f9 6s2 6p6 7s2',
     electron_affinity: -165.24,
     electronegativity_pauling: 1.3,
-    ionization_energies: [601]
+    ionization_energies: [601],
   },
   {
     name: 'Californium',
@@ -3344,7 +3344,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f10 6s2 6p6 7s2',
     electron_affinity: -97.31,
     electronegativity_pauling: 1.3,
-    ionization_energies: [608]
+    ionization_energies: [608],
   },
   {
     name: 'Einsteinium',
@@ -3373,7 +3373,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f11 6s2 6p6 7s2',
     electron_affinity: -28.6,
     electronegativity_pauling: 1.3,
-    ionization_energies: [619]
+    ionization_energies: [619],
   },
   {
     name: 'Fermium',
@@ -3402,7 +3402,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f12 6s2 6p6 7s2',
     electron_affinity: 33.96,
     electronegativity_pauling: 1.3,
-    ionization_energies: [627]
+    ionization_energies: [627],
   },
   {
     name: 'Mendelevium',
@@ -3431,7 +3431,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f13 6s2 6p6 7s2',
     electron_affinity: 93.91,
     electronegativity_pauling: 1.3,
-    ionization_energies: [635]
+    ionization_energies: [635],
   },
   {
     name: 'Nobelium',
@@ -3460,7 +3460,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 7s2',
     electron_affinity: -223.22,
     electronegativity_pauling: 1.3,
-    ionization_energies: [642]
+    ionization_energies: [642],
   },
   {
     name: 'Lawrencium',
@@ -3489,7 +3489,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 7s2 7p1',
     electron_affinity: -30.04,
     electronegativity_pauling: 1.3,
-    ionization_energies: [470]
+    ionization_energies: [470],
   },
   {
     name: 'Rutherfordium',
@@ -3518,7 +3518,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d2 7s2',
     electron_affinity: null,
     electronegativity_pauling: null,
-    ionization_energies: [580]
+    ionization_energies: [580],
   },
   {
     name: 'Dubnium',
@@ -3547,7 +3547,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d3 7s2',
     electron_affinity: null,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   {
     name: 'Seaborgium',
@@ -3576,7 +3576,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d4 7s2',
     electron_affinity: null,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   {
     name: 'Bohrium',
@@ -3605,7 +3605,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d5 7s2',
     electron_affinity: null,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   {
     name: 'Hassium',
@@ -3634,7 +3634,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d6 7s2',
     electron_affinity: null,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   {
     name: 'Meitnerium',
@@ -3663,7 +3663,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d7 7s2',
     electron_affinity: null,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   {
     name: 'Darmstadtium',
@@ -3692,7 +3692,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d8 7s2',
     electron_affinity: null,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   {
     name: 'Roentgenium',
@@ -3721,7 +3721,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d9 7s2',
     electron_affinity: 151.0,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   {
     name: 'Copernicium',
@@ -3750,7 +3750,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d10 7s2',
     electron_affinity: null,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   {
     name: 'Nihonium',
@@ -3779,7 +3779,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d10 7s2 7p1',
     electron_affinity: 66.6,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   {
     name: 'Flerovium',
@@ -3808,7 +3808,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d10 7s2 7p2',
     electron_affinity: null,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   {
     name: 'Moscovium',
@@ -3837,7 +3837,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d10 7s2 7p3',
     electron_affinity: 35.3,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   {
     name: 'Livermorium',
@@ -3866,7 +3866,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d10 7s2 7p4',
     electron_affinity: 74.9,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   {
     name: 'Tennessine',
@@ -3895,7 +3895,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d10 7s2 7p5',
     electron_affinity: 165.9,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   {
     name: 'Oganesson',
@@ -3924,7 +3924,7 @@ const data = [
       '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 4d10 4f14 5s2 5p6 5d10 5f14 6s2 6p6 6d10 7s2 7p6',
     electron_affinity: 5.40318,
     electronegativity_pauling: null,
-    ionization_energies: []
+    ionization_energies: [],
   },
   // {
   //   name: 'Ununennium',

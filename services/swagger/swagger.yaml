@@ -293,7 +293,18 @@ paths:
                       phase_transform_exp: "Not Very Much"
                       position: "Former Directory of S.H.I.E.L.D."
                       mobile_number: "+61 490 909 090"
-        '401':
+        400:
+          description: "An invalid request body has been sent."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid keys':
+                  value:
+                    status: "fail"
+                    message: "Payload does not have any valid keys."
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -3715,3 +3726,5 @@ tags:
     description: "Endpoints that update the Session store of the user's configurations."
   - name: Simulation
     description: Endpoints that manage simulation activities.
+  - name: Saved Simulation
+    description: "Endpoints for users to save a Simulation with Configurations, Alloy Store, and Results."

@@ -33,7 +33,6 @@ import {
 } from '../../../api/sim/SessionConfigs'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 import { postSaveSimulation } from '../../../api/sim/SessionSaveSim'
-import { getShareUrlLink, sendShareEmail } from '../../../api/sim/SessionShareSim'
 import { runSim } from '../../../state/ducks/sim/actions'
 
 import styles from './SimulationPage.module.scss'
@@ -388,7 +387,7 @@ class SimulationPage extends Component {
   // Probably need to use this to do some validation checks before trying to run sim.
   runSimulation = () => {
     const { runSimConnect } = this.props
-    const { configurations } = this.state
+    const { configurations, alloys } = this.state
     const {
       grain_size_ASTM,
       nucleation_start,
@@ -401,6 +400,9 @@ class SimulationPage extends Component {
       nucleation_finish,
       cct_cooling_rate,
     })
+
+    console.log('Simulation: ', configurations, alloys)
+
     runSimConnect()
   }
 
@@ -512,11 +514,13 @@ class SimulationPage extends Component {
           <div className={styles.results}>
             <h4>Results</h4>
             <div className={styles.charts}>
+              {/* NOTE: TTT Child Component */}
               <div className={styles.line}>
                 <h5>TTT</h5>
                 <TTT />
               </div>
               <div className={styles.line}>
+                {/* NOTE: CCT Child Component */}
                 <h5>CCT</h5>
                 <CCT />
               </div>

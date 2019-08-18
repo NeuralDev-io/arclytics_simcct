@@ -642,32 +642,38 @@ class TestAuthEndpoints(BaseTestCase):
 
             res = client.put(
                 '/auth/password/change',
-                data=json.dumps({
-                    'password': 'BothEyesOpen!',
-                    'new_password': 'LastTimeITrustedSomeone'
-                }),
+                data=json.dumps(
+                    {
+                        'password': 'BothEyesOpen!',
+                        'new_password': 'LastTimeITrustedSomeone'
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(
-                data['message'], 'Must provide a password and confirm password.'
+                data['message'],
+                'Must provide a password and confirm password.'
             )
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
             res = client.put(
                 '/auth/password/change',
-                data=json.dumps({
-                    'password': 'BothEyesOpen!',
-                    'confirm_password': 'LastTimeITrustedSomeone'
-                }),
+                data=json.dumps(
+                    {
+                        'password': 'BothEyesOpen!',
+                        'confirm_password': 'LastTimeITrustedSomeone'
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(
-                data['message'], 'Must provide a password and confirm password.'
+                data['message'],
+                'Must provide a password and confirm password.'
             )
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
@@ -678,11 +684,13 @@ class TestAuthEndpoints(BaseTestCase):
 
             res = client.put(
                 '/auth/password/change',
-                data=json.dumps({
-                    'password': 'BothEyesOpen!',
-                    'new_password': 'bad',
-                    'confirm_password': 'bad'
-                }),
+                data=json.dumps(
+                    {
+                        'password': 'BothEyesOpen!',
+                        'new_password': 'bad',
+                        'confirm_password': 'bad'
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -697,11 +705,13 @@ class TestAuthEndpoints(BaseTestCase):
 
             res = client.put(
                 '/auth/password/change',
-                data=json.dumps({
-                    'password': 'BothEyesOpen!',
-                    'new_password': 'Justascratch',
-                    'confirm_password': 'JustaScratch!'
-                }),
+                data=json.dumps(
+                    {
+                        'password': 'BothEyesOpen!',
+                        'new_password': 'Justascratch',
+                        'confirm_password': 'JustaScratch!'
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -716,11 +726,13 @@ class TestAuthEndpoints(BaseTestCase):
 
             res = client.put(
                 '/auth/password/change',
-                data=json.dumps({
-                    'password': 'WhosACutie..',
-                    'new_password': 'JustaScratch!',
-                    'confirm_password': 'JustaScratch!'
-                }),
+                data=json.dumps(
+                    {
+                        'password': 'WhosACutie..',
+                        'new_password': 'JustaScratch!',
+                        'confirm_password': 'JustaScratch!'
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -750,11 +762,13 @@ class TestAuthEndpoints(BaseTestCase):
 
             res = client.put(
                 '/auth/password/change',
-                data=json.dumps({
-                    'password': '#EyeCandy',
-                    'new_password': 'RogerThat',
-                    'confirm_password': 'RogerThat'
-                }),
+                data=json.dumps(
+                    {
+                        'password': '#EyeCandy',
+                        'new_password': 'RogerThat',
+                        'confirm_password': 'RogerThat'
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -784,18 +798,18 @@ class TestAuthEndpoints(BaseTestCase):
 
             res = client.put(
                 '/auth/password/change',
-                data=json.dumps({
-                    'password': 'WarriorsThree$',
-                    'new_password': 'Charge!!!',
-                    'confirm_password': 'Charge!!!'
-                }),
+                data=json.dumps(
+                    {
+                        'password': 'WarriorsThree$',
+                        'new_password': 'Charge!!!',
+                        'confirm_password': 'Charge!!!'
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'], 'User needs to verify account.'
-            )
+            self.assertEqual(data['message'], 'User needs to verify account.')
             self.assertEqual(data['status'], 'fail')
             self.assert401(res)
 
@@ -816,11 +830,13 @@ class TestAuthEndpoints(BaseTestCase):
 
             res = client.put(
                 '/auth/password/change',
-                data=json.dumps({
-                    'password': 'RealFury!',
-                    'new_password': 'BothEyesOpen!',
-                    'confirm_password': 'BothEyesOpen!'
-                }),
+                data=json.dumps(
+                    {
+                        'password': 'RealFury!',
+                        'new_password': 'BothEyesOpen!',
+                        'confirm_password': 'BothEyesOpen!'
+                    }
+                ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )

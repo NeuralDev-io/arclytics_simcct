@@ -81,8 +81,8 @@ class TestAe1nAe3(BaseConfigurationTest):
                             dtype=np.float64).astype(np.float64).item()
         self.assertAlmostEqual(self.wt_pc, 2.21, 2)
 
-        self.wt_c = self.sim_inst.comp['weight'][self.sim_inst.comp['symbol'] ==
-                                                 'C'][0]
+        self.wt_c = self.sim_inst.comp['weight'][self.sim_inst.comp['symbol']
+                                                 == 'C'][0]
         self.wt_pc = self.wt_pc + self.wt_c
         self.assertAlmostEqual(self.wt_pc, 2.254, 3)
 
@@ -245,7 +245,7 @@ class TestXfe(BaseConfigurationTest):
         self.results_mat = None
         self.wt_c = 0.0
         self.ceut = 0.0
-        self.cf = self.sim_inst.cf
+        # self.cf = self.sim_inst.cf
 
     def test_ae3_multi_carbon(self):
         # Do 2 iterations of the for loop and check the results for results
@@ -253,23 +253,23 @@ class TestXfe(BaseConfigurationTest):
         wt = self.sim_inst.comp.copy()
 
         self.wt_c = wt['weight'][wt['symbol'] == 'C'][0]
-        self.results_mat = np.zeros((1000, 22), dtype=np.float64)
+        self.results_mat = np.zeros((1000, 22), dtype=np.float32)
 
         ae3_multi_carbon(wt, self.results_mat)
 
-        self.assertAlmostEqual(self.results_mat[0, 0], 0, 8)
-        self.assertAlmostEqual(self.results_mat[0, 1], 869.853324584521, 8)
-        self.assertAlmostEqual(self.results_mat[0, 2], 910.690613312279, 8)
-        self.assertAlmostEqual(self.results_mat[0, 3], -0.00111210865060011, 8)
-        self.assertAlmostEqual(self.results_mat[0, 4], 0.000627505594071084, 8)
+        self.assertAlmostEqual(self.results_mat[0, 0], 0, 4)
+        self.assertAlmostEqual(self.results_mat[0, 1], 869.853324, 4)
+        self.assertAlmostEqual(self.results_mat[0, 2], 910.690613, 4)
+        self.assertAlmostEqual(self.results_mat[0, 3], -0.001112108, 4)
+        self.assertAlmostEqual(self.results_mat[0, 4], 0.0006275055, 4)
         self.assertAlmostEqual(self.results_mat[0, 5], 1, 8)
 
-        self.assertAlmostEqual(self.results_mat[1, 0], 0.01, 8)
-        self.assertAlmostEqual(self.results_mat[1, 1], 863.8233624987, 8)
-        self.assertAlmostEqual(self.results_mat[1, 2], 904.97196331503, 8)
-        self.assertAlmostEqual(self.results_mat[1, 3], -0.00111734265308321, 8)
-        self.assertAlmostEqual(self.results_mat[1, 4], 0.00060366887082998, 8)
-        self.assertAlmostEqual(self.results_mat[1, 5], 1, 8)
+        self.assertAlmostEqual(self.results_mat[1, 0], 0.01, 4)
+        self.assertAlmostEqual(self.results_mat[1, 1], 863.82336, 4)
+        self.assertAlmostEqual(self.results_mat[1, 2], 904.97196, 4)
+        self.assertAlmostEqual(self.results_mat[1, 3], -0.00111734, 4)
+        self.assertAlmostEqual(self.results_mat[1, 4], 0.000603668, 4)
+        self.assertAlmostEqual(self.results_mat[1, 5], 1, 4)
 
     def test_ceut(self):
         # Test the XfeMethod2 section where self.ceut is changed.
@@ -302,7 +302,7 @@ class TestTimeTemperatureTransformation(BaseConfigurationTest):
     def test_vol_phantom_frac2(self):
         self.integrated2_mat = np.zeros((4, 11), dtype=np.float64)
 
-        self.simulation.test_vol_phantom_frac2(self.integrated2_mat)
+        self.simulation._vol_phantom_frac2(self.integrated2_mat)
 
         if self.sim_inst.method == Method.Li98:
             # START precipitation
@@ -359,73 +359,71 @@ class TestTimeTemperatureTransformation(BaseConfigurationTest):
         """ Checks the first 2 values. """
         self.test_vol_phantom_frac2()
 
-        self.simulation.test_vol_phantom_frac2(self.integrated2_mat)
-
-        torr = 0.0
+        self.simulation._vol_phantom_frac2(self.integrated2_mat)
 
         tcurr = (round(self.sim_inst.bs_temp) - 50)
 
         #  Phase F start
-        torr = self.simulation.test_torr_calc2(
-            torr, Phase.F, tcurr, self.integrated2_mat, 1
+        torr = self.simulation._torr_calc2(
+            Phase.F, tcurr, self.integrated2_mat, 1
         )
         self.assertAlmostEqual(torr, 3.056444385041388, 10)
-        torr = self.simulation.test_torr_calc2(
-            torr, Phase.F, tcurr + 1, self.integrated2_mat, 1
+        torr = self.simulation._torr_calc2(
+            Phase.F, tcurr + 1, self.integrated2_mat, 1
         )
         self.assertAlmostEqual(torr, 3.01585390138463, 10)
         #  Phase F finish
-        torr = self.simulation.test_torr_calc2(
-            torr, Phase.F, tcurr, self.integrated2_mat, 2
+        torr = self.simulation._torr_calc2(
+            Phase.F, tcurr, self.integrated2_mat, 2
         )
         self.assertAlmostEqual(torr, 53.529223452826173, 10)
-        torr = self.simulation.test_torr_calc2(
-            torr, Phase.F, tcurr + 1, self.integrated2_mat, 2
+        torr = self.simulation._torr_calc2(
+            Phase.F, tcurr + 1, self.integrated2_mat, 2
         )
         self.assertAlmostEqual(torr, 52.818339564228445, 10)
 
         # Phase P start
-        torr = self.simulation.test_torr_calc2(
-            torr, Phase.P, tcurr, self.integrated2_mat, 1
+        torr = self.simulation._torr_calc2(
+            Phase.P, tcurr, self.integrated2_mat, 1
         )
         self.assertAlmostEqual(torr, 330.41439902451839, 10)
-        torr = self.simulation.test_torr_calc2(
-            torr, Phase.P, tcurr + 1, self.integrated2_mat, 1
+        torr = self.simulation._torr_calc2(
+            Phase.P, tcurr + 1, self.integrated2_mat, 1
         )
         self.assertAlmostEqual(torr, 328.30774976008854, 10)
         # Phase P Finish
-        torr = self.simulation.test_torr_calc2(
-            torr, Phase.P, tcurr, self.integrated2_mat, 2
+        torr = self.simulation._torr_calc2(
+            Phase.P, tcurr, self.integrated2_mat, 2
         )
         self.assertAlmostEqual(torr, 1185.5588352491131, 10)
-        torr = self.simulation.test_torr_calc2(
-            torr, Phase.P, tcurr + 1, self.integrated2_mat, 2
+        torr = self.simulation._torr_calc2(
+            Phase.P, tcurr + 1, self.integrated2_mat, 2
         )
         self.assertAlmostEqual(torr, 1177.9999738447998, 10)
 
         tcurr = round(self.sim_inst.ms_temp)
         # Phase B start
-        torr = self.simulation.test_torr_calc2(
-            torr, Phase.B, tcurr, self.integrated2_mat, 1
+        torr = self.simulation._torr_calc2(
+            Phase.B, tcurr, self.integrated2_mat, 1
         )
         self.assertAlmostEqual(torr, 0.083850562945195328, 10)
-        torr = self.simulation.test_torr_calc2(
-            torr, Phase.B, tcurr + 1, self.integrated2_mat, 1
+        torr = self.simulation._torr_calc2(
+            Phase.B, tcurr + 1, self.integrated2_mat, 1
         )
         self.assertAlmostEqual(torr, 0.0834184750169105, 10)
         # Phase finish
-        torr = self.simulation.test_torr_calc2(
-            torr, Phase.B, tcurr, self.integrated2_mat, 2
+        torr = self.simulation._torr_calc2(
+            Phase.B, tcurr, self.integrated2_mat, 2
         )
         self.assertAlmostEqual(torr, 1.6276460213092019, 10)
-        torr = self.simulation.test_torr_calc2(
-            torr, Phase.B, tcurr + 1, self.integrated2_mat, 2
+        torr = self.simulation._torr_calc2(
+            Phase.B, tcurr + 1, self.integrated2_mat, 2
         )
         self.assertAlmostEqual(torr, 1.6192586453319149, 10)
         # Phase M
         tcurr = round(self.sim_inst.ms_temp)
-        torr = self.simulation.test_torr_calc2(
-            torr, Phase.M, tcurr, self.integrated2_mat, 1
+        torr = self.simulation._torr_calc2(
+            Phase.M, tcurr, self.integrated2_mat, 1
         )
         self.assertAlmostEqual(torr, 0.083850562945195328, 10)
 
@@ -445,7 +443,7 @@ class TestTimeTemperatureTransformation(BaseConfigurationTest):
         # ===== Test for method 1 ===== #
         xf = self.sim_inst.nuc_start * self.sim_inst.xfe
         sig_int_ferrite = None
-        sig_int_ferrite = self.simulation.test_de_integrator(
+        sig_int_ferrite = self.simulation._de_integrator(
             sig_int_ferrite, 0.0, xf, 0.000000000000001, err, nn, method=1
         )
         self.assertAlmostEqual(sig_int_ferrite, 0.10097017653666272, 10)
@@ -453,33 +451,32 @@ class TestTimeTemperatureTransformation(BaseConfigurationTest):
         # ===== Test for method 2 ===== #
         xf = self.sim_inst.nuc_start / self.sim_inst.xfe
         sig_int_ferrite = None
-        sig_int_ferrite = self.simulation.test_de_integrator(
+        sig_int_ferrite = self.simulation._de_integrator(
             sig_int_ferrite, 0.0, xf, 0.000000000000001, err, nn, 2
         )
         self.assertAlmostEqual(sig_int_ferrite, 0.65227162834046781, 10)
         # ===== Test for method 3 ===== #
         xb = self.sim_inst.nuc_start
         sig_int_bainite = None
-        sig_int_bainite = self.simulation.test_de_integrator(
+        sig_int_bainite = self.simulation._de_integrator(
             sig_int_bainite, 0.0, xb, 0.000000000000001, err, nn, 3
         )
         self.assertAlmostEqual(sig_int_bainite, 0.64064546121071431, 10)
 
     def test_sigmoid2(self):
         self.assertAlmostEqual(
-            self.simulation.test_sigmoid2(0.49950000000000006),
-            1.3195087024781862, 10
+            self.simulation._sigmoid2(0.49950000000000006), 1.3195087024781862,
+            10
         )
 
     def test_imoid(self):
         self.assertAlmostEqual(
-            self.simulation.test_imoid(0.49950000000000006),
-            1.5874026393706624, 10
+            self.simulation._imoid(0.49950000000000006), 1.5874026393706624, 10
         )
 
     def test_imoid_prime2(self):
         self.assertAlmostEqual(
-            self.simulation.test_imoid_prime2(0.49950000000000006),
+            self.simulation._imoid_prime2(0.49950000000000006),
             3.2311093572469849, 10
         )
 
@@ -493,10 +490,10 @@ class TestCoolingCurveTemperature(BaseConfigurationTest):
 
     def test_ccr(self):
         integrated2_mat = np.zeros((4, 11), dtype=np.float64)
-        self.simulation.test_vol_phantom_frac2(integrated2_mat)
+        self.simulation._vol_phantom_frac2(integrated2_mat)
         ccr_mat = np.zeros((3, 2), dtype=np.float64)
 
-        self.simulation.test_critical_cooling_rate(
+        self.simulation._critical_cooling_rate(
             ccr_mat, self.simulation.ms, self.simulation.bs,
             self.simulation.ae1, self.simulation.ae3, integrated2_mat
         )
@@ -511,9 +508,6 @@ class TestCoolingCurveTemperature(BaseConfigurationTest):
         self.assertAlmostEqual(ccr_mat[2, 1], 41.167590371658619, 10)
 
         self.sorted_ccr = sort_ccr(ccr_mat=ccr_mat)
-
-    def test_cct(self):
-        res = self.simulation
 
 
 if __name__ == '__main__':

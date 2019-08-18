@@ -34,6 +34,7 @@ from itsdangerous import (
     SignatureExpired
 )
 
+from sim_app.utilities import JSONEncoder
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -136,7 +137,9 @@ class SimSessionService(object):
             raise SaveSessionError()
 
         # The storage value dumped to JSON format
-        redis_value = json.dumps(dict(session_data))
+        # We use our customer JSON Encoder to ensure that numpy.floats get
+        # serialized properly
+        redis_value = JSONEncoder().encode(dict(session_data))
 
         # TODO(andrew@neuraldev.io): Doing the refresh without generating a new
         #  Session Key that has a expiration encoded within will cause the two

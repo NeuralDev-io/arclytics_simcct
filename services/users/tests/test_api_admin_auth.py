@@ -371,7 +371,7 @@ class TestAdminCreateService(BaseTestCase):
                 '/admin/create',
                 data=json.dumps(
                     {
-                        'email': 'invalidbiggs@dot.com',
+                        'email': 'invalidbiggs@abcdefghijklmopqrstuvwxyz.com',
                         'position': 'Red Three'
                     }
                 ),

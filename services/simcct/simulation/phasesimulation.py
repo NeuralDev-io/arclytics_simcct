@@ -486,13 +486,13 @@ class PhaseSimulation(object):
 
         # We first start by doing some setup
         # Define array to hold time and temperature data
-        user_cool_mat = np.zeros((10000, 2), dtype=np.float64)
+        user_cool_mat = np.zeros((10001, 2), dtype=np.float64)
         # Count will set the array ID for each increment during cooling
         count = 0
         # Get the requested cooling rate
         cooling_rate = self.configs.cct_cooling_rate
         if cooling_rate < 0:
-            print("[DEBUG] Don't be silly")
+            raise SimulationError("Don't be silly with negative Cooling Rate.")
 
         ms = self.configs.ms_temp
         ms_rate_param = self.configs.ms_rate_param
@@ -652,7 +652,7 @@ class PhaseSimulation(object):
         )
 
     @staticmethod
-    def _get_sx_integral(x):
+    def _get_sx_integral(x) -> float:
         if (x >= 0.00) and (x < 0.01):
             return 1.7635 * x**0.6118
         if (x >= 0.01) and (x < 0.5):

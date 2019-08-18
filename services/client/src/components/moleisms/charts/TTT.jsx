@@ -12,27 +12,91 @@ const TTT = (props) => {
   const { containerWidth, containerHeight, data } = props // eslint-disable-line
   let chartData = []
   if (data !== undefined) {
+    console.log(data)
     chartData = [
       {
-        x: data['Ferrite-nuc'].time,
-        y: data['Ferrite-nuc'].temp,
+        x: data.ferrite_nucleation.time,
+        y: data.ferrite_nucleation.temp,
         name: 'Ferrite nucleation',
-        mode: 'line',
-        marker: { color: colours.o500 },
+        mode: 'lines+markers',
+        type: 'scattergl',
+        marker: {
+          color: colours.o500,
+          width: 1,
+          line: { width: 1, color: 'rgb(0, 0, 0' },
+        },
       },
       {
-        x: data['Ferrite-comp'].time,
-        y: data['Ferrite-comp'].temp,
+        x: data.ferrite_completion.time,
+        y: data.ferrite_completion.temp,
         name: 'Ferrite completion',
-        mode: 'line',
-        marker: { color: colours.l500 },
+        mode: 'lines+markers',
+        type: 'scattergl',
+        marker: {
+          color: colours.l500,
+          width: 1,
+          line: { width: 1, color: 'rgb(0, 0, 0' },
+        },
       },
       {
-        x: data['Pearlite-nuc'].time,
-        y: data['Pearlite-nuc'].temp,
+        x: data.pearlite_nucleation.time,
+        y: data.pearlite_nucleation.temp,
         name: 'Pearlite nucleation',
-        mode: 'line',
-        marker: { color: colours.g500 },
+        mode: 'lines+markers',
+        type: 'scattergl',
+        marker: {
+          color: colours.g500,
+          width: 1,
+          line: { width: 1, color: 'rgb(0, 0, 0' },
+        },
+      },
+      {
+        x: data.pearlite_completion.time,
+        y: data.pearlite_completion.temp,
+        name: 'Pearlite completion',
+        mode: 'lines+markers',
+        type: 'scattergl',
+        marker: {
+          color: colours.t500,
+          width: 1,
+          line: { width: 1, color: 'rgb(0, 0, 0' },
+        },
+      },
+      {
+        x: data.bainite_nucleation.time,
+        y: data.bainite_nucleation.temp,
+        name: 'Bainite nucleation',
+        mode: 'lines+markers',
+        type: 'scattergl',
+        marker: {
+          color: colours.b500,
+          width: 1,
+          line: { width: 1, color: 'rgb(0, 0, 0' },
+        },
+      },
+      {
+        x: data.bainite_completion.time,
+        y: data.bainite_completion.temp,
+        name: 'Bainite completion',
+        mode: 'lines+markers',
+        type: 'scattergl',
+        marker: {
+          color: colours.i500,
+          width: 1,
+          line: { width: 1, color: 'rgb(0, 0, 0' },
+        },
+      },
+      {
+        x: data.martensite.time,
+        y: data.martensite.temp,
+        name: 'Martensite nucleation',
+        mode: 'lines+markers',
+        type: 'scattergl',
+        marker: {
+          color: colours.v500,
+          width: 1,
+          line: { width: 1, color: 'rgb(0, 0, 0' },
+        },
       },
     ]
   }
@@ -60,7 +124,7 @@ TTT.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  data: state.sim.results['TTT Data'],
+  data: state.sim.results.TTT,
 })
 
 export default withDimension({

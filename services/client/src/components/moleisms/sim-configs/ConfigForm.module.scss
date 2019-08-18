@@ -10,7 +10,7 @@
 }
 
 .second {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 
   & > h5 {
     margin-bottom: 1rem;
@@ -22,7 +22,8 @@
     justify-content: flex-start;
 
     & > div {
-      margin-right: 3rem;
+      margin-right: 5rem;
+      margin-bottom: 1.5rem;
     }
 
     & > div > h6 {
@@ -31,12 +32,18 @@
 
     & > div > .configGroup {
       display: flex;
-      flex-flow: row wrap;
-      align-items: center;
+      flex-flow: column wrap;
+      align-items: flex-start;
       margin-bottom: .75rem;
 
-      & > div:first-of-type {
-        margin-right: 1.5rem;
+      & > div:nth-of-type(2) {
+        // margin-left: 1.5rem;
+      }
+
+      & > div {
+        margin-bottom: .5rem;
+        width: 100%;
+        justify-content: space-between;
       }
     }
   }

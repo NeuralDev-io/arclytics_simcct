@@ -1,13 +1,13 @@
 import {
   GET_USER_PROFILE,
   CREATE_USER_PROFILE,
-  UPDATE_USER_PROFILE
+  UPDATE_USER_PROFILE,
 } from './types'
 
 const initialState = {
   user: {
     admin: false,
-    profile: null
+    profile: null,
   },
 }
 
@@ -24,18 +24,21 @@ const reducer = (state = initialState, action) => {
     case CREATE_USER_PROFILE:
       return {
         ...state,
-        user:{
+        user: {
           ...state.user,
-          ...action.payload
-        }
+          profile: {
+            ...state.profile,
+            ...action.payload,
+          },
+        },
       }
     case UPDATE_USER_PROFILE:
       return {
         ...state,
-        user:{
+        user: {
           ...state.user,
-          ...action.payload
-        }
+          ...action.payload,
+        },
       }
     default:
       return state

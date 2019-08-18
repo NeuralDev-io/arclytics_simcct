@@ -337,7 +337,7 @@ class AlloyType(EmbeddedDocument):
 
 class AlloyStore(EmbeddedDocument):
     alloy_option = StringField(
-        required=True, choices=('parent', 'both', 'mix')
+        required=True, choices=('single', 'both', 'mix')
     )
     alloys = EmbeddedDocumentField(document_type=AlloyType, required=True)
 
@@ -418,7 +418,6 @@ class User(Document):
             profile = self.profile.to_dict()
 
         user = {
-            '_id': str(self.id),
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
@@ -625,6 +624,6 @@ class SharedSimulation(Document):
         return {
             'owner_email': self.owner_email,
             'created_date': str(self.created_date),
-            'configuration': self.configuration.to_dict(),
+            'configurations': self.configuration.to_dict(),
             'alloy_store': self.alloy_store.to_dict()
         }

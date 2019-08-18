@@ -188,7 +188,6 @@ class TestUserModel(BaseTestCase):
         user.set_password('IAmIronMan')
         user.save()
         user_dict = user.to_dict()
-        self.assertTrue(user_dict['_id'], user.id)
         self.assertTrue(user_dict, dict)
 
     def test_to_json(self):

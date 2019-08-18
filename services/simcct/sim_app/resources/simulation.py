@@ -41,7 +41,7 @@ class Simulation(Resource):
     method_decorators = {'get': [token_and_session_required]}
 
     # noinspection PyMethodMayBeStatic
-    def get(self, token, session_key):
+    def get(self, _, session_key):
         response = {'status': 'fail'}
 
         # First we need to make sure they logged in and are in a current session
@@ -105,9 +105,11 @@ class Simulation(Resource):
         # Running these in parallel with threading
         ttt_process = Thread(sim.ttt())
         cct_process = Thread(sim.cct())
+        user_cooling_process = Thread(sim.user_cooling_curve())
         # Starting CCT first because it takes longer.
         cct_process.start()
         ttt_process.start()
+        user_cooling_process.start()
 
         # Now we stop the main thread to wait for them to finish.
         ttt_process.join()

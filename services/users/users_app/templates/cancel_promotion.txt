@@ -7,7 +7,7 @@ If you would like to cancel the promotion, please click the link below:
 
 {{ promotion_cancellation_url }}
 
-If you need additional assistance, please contact help@neuraldev.io.
+If you need additional assistance, please contact help@arclytics.io.
 
 
 Cheers,

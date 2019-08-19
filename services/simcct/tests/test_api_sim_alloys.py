@@ -184,9 +184,9 @@ class TestSimConfigurations(BaseTestCase):
             )
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 201)
-            self.assertEqual(trans_temps['ms_temp'], 520.388)
-            self.assertEqual(trans_temps['ms_rate_param'], 0.0219292)
-            self.assertEqual(trans_temps['bs_temp'], 634.448)
+            self.assertAlmostEqual(trans_temps['ms_temp'], 520.388, 3)
+            self.assertAlmostEqual(trans_temps['ms_rate_param'], 0.0219292, 3)
+            self.assertAlmostEqual(trans_temps['bs_temp'], 634.448, 3)
             self.assertAlmostEqual(trans_temps['ae1_temp'], 719.259259259, 4)
             self.assertAlmostEqual(trans_temps['ae3_temp'], 887.130506988, 4)
 
@@ -385,7 +385,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assertAlmostEqual(sess_configs['ms_rate_param'], 0.02069, 4)
             self.assertAlmostEqual(sess_configs['bs_temp'], 563.2380, 4)
             self.assertAlmostEqual(sess_configs['ae1_temp'], 700.90196, 4)
-            self.assertAlmostEqual(sess_configs['ae3_temp'], 845.83721, 4)
+            self.assertAlmostEqual(sess_configs['ae3_temp'], 845.83715, 4)
 
             # Now we change the compositions and make sure it's all updated
             # with the composition change

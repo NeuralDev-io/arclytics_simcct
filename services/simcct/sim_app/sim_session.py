@@ -34,6 +34,7 @@ from itsdangerous import (
     SignatureExpired
 )
 
+from sim_app.utilities import JSONEncoder
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -89,7 +90,7 @@ class SimSessionService(object):
         """
 
         # The storage value dumped to JSON format
-        redis_value = json.dumps(dict(session_data))
+        redis_value = JSONEncoder().encode(dict(session_data))
 
         # converts global expiry time in minutes to seconds
         expiry_duration = self._get_expiry_duration()
@@ -136,7 +137,9 @@ class SimSessionService(object):
             raise SaveSessionError()
 
         # The storage value dumped to JSON format
-        redis_value = json.dumps(dict(session_data))
+        # We use our customer JSON Encoder to ensure that numpy.floats get
+        # serialized properly
+        redis_value = JSONEncoder().encode(dict(session_data))
 
         # TODO(andrew@neuraldev.io): Doing the refresh without generating a new
         #  Session Key that has a expiration encoded within will cause the two
@@ -156,9 +159,8 @@ class SimSessionService(object):
             time=expires_in_seconds
         )
 
-    def load_session(
-            self, session_key: str
-    ) -> Union[Tuple[str, dict], Tuple[None, str]]:
+    def load_session(self, session_key: str
+                     ) -> Union[Tuple[str, dict], Tuple[None, str]]:
         """We load the User's current Session from the Redis datastore by
         taking in a session key and decoding it to generate the session ID.
 
@@ -182,8 +184,10 @@ class SimSessionService(object):
         if self._expiry_timestamp_not_match(expiry_timestamp, redis_key_ttl):
             return None, 'Session timestamp does not match Redis TTL.'
 
+        sess_data = json.loads(redis_value.decode())
+
         # Return the data as a dict and the sid to be used later for saving
-        return sid, json.loads(redis_value.decode())
+        return sid, sess_data
 
     def clean_redis_session(self, session_key: str) -> None:
         """Used to remove the Session from the Redis datastore.

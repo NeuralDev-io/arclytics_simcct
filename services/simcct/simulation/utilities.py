@@ -38,6 +38,16 @@ class Alloy(enum.Enum):
     mix = 3
 
 
+class ConfigurationError(Exception):
+    def __init__(self, message=''):
+        super(ConfigurationError, self).__init__(message)
+
+
+class SimulationError(Exception):
+    def __init__(self, message=''):
+        super(SimulationError, self).__init__(message)
+
+
 class ElementSymbolInvalid(Exception):
     """Raises an Exception if the Element does not conform to a valid symbol
     as used in the Periodic Table of Elements.

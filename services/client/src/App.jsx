@@ -32,7 +32,7 @@ function App() {
           <Route
             path="/profileQuestions"
             render={props => <ProfileQuestionsPage {...props}/>}
-          />            
+          />
           <Route
             path="/admin"
             render={props => <AdminPage {...props} />}

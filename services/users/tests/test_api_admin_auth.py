@@ -371,7 +371,7 @@ class TestAdminCreateService(BaseTestCase):
                 '/admin/create',
                 data=json.dumps(
                     {
-                        'email': 'invalidbiggs@dot.com',
+                        'email': 'invalidbiggs@abcdefghijklmopqrstuvwxyz.com',
                         'position': 'Red Three'
                     }
                 ),
@@ -379,9 +379,9 @@ class TestAdminCreateService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
+            self.assertEqual(data['message'], 'Invalid email.')
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(resp.status_code, 400)
-            self.assertEqual(data['message'], 'Invalid email.')
 
     def test_create_unverified_admin(self):
         """Test create admin from unverified user is unsuccessful"""

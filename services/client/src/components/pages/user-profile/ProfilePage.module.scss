@@ -91,16 +91,13 @@ $bg-img: url('../../../assets/background_img-min.png');
     margin-bottom: 1.5rem;
   } 
 
-  .resetPassword{
-    width: 100%;
-  }
 }
 
 .about{
   .questions {
     display: flex;
     flex-flow: column;
-    justify-content: space-betweeens;
+    justify-content: space-betweeen;
     
     .question{
       margin-bottom: 2.3rem;
@@ -128,6 +125,10 @@ $bg-img: url('../../../assets/background_img-min.png');
   width: 35rem;
   margin-bottom: 1rem;
   .cancel{
-    margin-left: 2rem;
+    margin-left: 0.5rem;
   }
+}
+
+.dataAndPersonal{
+  width: 35rem;
 }

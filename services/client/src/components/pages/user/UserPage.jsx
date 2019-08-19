@@ -20,8 +20,7 @@ class UserPage extends Component {
   redirect = () => {}
 
   render() {
-    const { history, user } = this.props
-    console.log(user)
+    const { history } = this.props
     return (
       <React.Fragment>
         <AppBar active="user" redirect={history.push} />
@@ -31,7 +30,7 @@ class UserPage extends Component {
         </div>
         <div className={styles.main}>
           {/* Define the routes for the right panel. */}
-          <Route path="/user/profile" render={props => <ProfilePage {...props} user={user} />} />
+          <Route path="/user/profile" render={props => <ProfilePage {...props} />} />
           <Route path="/user/alloys" render={props => <UserAlloys {...props} />} />
           <Route path="/user/simulations" render={props => <UserSavedSimulations {...props} />} />
         </div>

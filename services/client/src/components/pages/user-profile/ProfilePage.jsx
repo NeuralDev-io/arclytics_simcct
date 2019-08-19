@@ -8,8 +8,11 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import MailIcon from 'react-feather/dist/icons/mail'
-import { createUserProfile, updateUserProfile } from '../../../state/ducks/persist/actions'
+import {
+  getUserProfile,
+  createUserProfile,
+  updateUserProfile,
+} from '../../../state/ducks/users/action'
 
 import TextField from '../../elements/textfield'
 import Select from '../../elements/select'
@@ -20,77 +23,72 @@ import styles from './ProfilePage.module.scss'
 class ProfilePage extends Component {
   constructor(props) {
     super(props)
-    /*
-        check if profile is null before accessing it
-        https://stackoverflow.com/questions/51206488/how-to-set-component-state-conditionally
-    */
-    const { user } = props
-    // console.log(user)
     this.state = {
-      email: user.admin,
-      firstName: user.first_name, // just in case we implement demo mode
-      lastName: user.last_name,
-      question1: user.profile
-        ? {label: user.profile.aim, value: user.profile.aim}
-        : null,
+      email: '',
+      firstName: '', 
+      lastName: '',
+      question1: '',
       question1Select: [
         { label: 'Q1 Option 1', value: 'Q1 Option 1' },
         { label: 'Q1 Option 2', value: 'Q1 Option 2' },
       ],
-      question2: props.user.profile 
-        ? {label: user.profile.highest_education, value: user.profile.highest_education}
-        : null,
+      question2: '',
       question2Select: [
         { label: 'Q2 Option 1', value: 'Q2 Option 1' },
         { label: 'Q2 Option 2', value: 'Q2 Option 2' },
       ],
-      question3: user.profile 
-        ? {label: user.profile.sci_tech_exp, value: user.profile.sci_tech_exp}
-        : null,
+      question3: '',
       question3Select: [
         { label: 'Q3 Option 1', value: 'Q3 Option 1' },
         { label: 'Q3 Option 2', value: 'Q3 Option 2' },
       ],
-      question4: user.profile 
-        ? {label: user.profile.phase_transform_exp, value: user.profile.phase_transform_exp}
-        : null,
+      question4: '',
       question4Select: [
         { label: 'Q4 Option 1', value: 'Q4 Option 1' },
         { label: 'Q4 Option 2', value: 'Q4 Option 2' },
       ],
+      currPwd: '',
+      newPwd: '',
+      cnfrmPwd: '',
+      pwdOrEmail: false,
       updateError: null,
       edit: false,
     }
   }
 
   componentDidMount = () => {
+    //TODO: Make a user api call here and map it 
+    const { history } = this.props
     if (!localStorage.getItem('token')) {
-      this.props.history.push('/signin') // eslint-disable-line
+      history.push('/signin') // eslint-disable-line
     }
   }
 
   handleEdit = () => {
     const { user } = this.props
-    this.state.edit
-      ? this.setState({
-        firstName: user.first_name, // just in case we implement demo mode
+    const { edit } = this.state
+    if (edit) { 
+      this.setState({ 
+        firstName: user.firsName, // just in case we implement demo mode
         lastName: user.last_name,
-        question1: user.profile 
+        question1: user.profile
           ? { label: user.profile.aim, value: user.profile.aim }
           : null,
-        question2: user.profile
-          ? { label: user.profile.highest_education, value: user.profile.highest_education }
-          : null,
+        question2: user.profile ? 
+          { label: user.profile.highest_education, value: user.profile.highest_education }: 
+          null,
         question3: user.profile
           ? { label: user.profile.sci_tech_exp, value: user.profile.sci_tech_exp }
           : null,
-        question4: user.profile
-          ? { label: user.profile.phase_transform_exp, value: user.profile.phase_transform_exp }
-          : null,
+        question4: user.profile ? 
+          { label: user.profile.phase_transform_exp, value: user.profile.phase_transform_exp }: 
+          null,
         edit: false,
         updateError: null,
       })
-      : this.setState({ edit: true })
+    } else {
+      this.setState({ edit: true })
+    }
   }
 
   handleChange = (name, value) => {
@@ -137,11 +135,8 @@ class ProfilePage extends Component {
   }
 
   render() {
-
     const {
       firstName,
-      lastName,
-      email,
       question1,
       question1Select,
       question2,
@@ -152,53 +147,55 @@ class ProfilePage extends Component {
       question4Select,
       updateError,
       edit,
+      pwdOrEmail,
+      currPwd,
+      newPwd,
+      cnfrmPwd,
+      isCurrPwdCorrect,
     } = this.state
-    console.log(email)
-    const { history, user } = this.props
+    const { user } = this.props
     return (
       <React.Fragment>
-
         <div className={styles.main}>
-
-            <h4 className={styles.header}>General</h4>
-            <div className={styles.generalFields}>
-              <div className={styles.row}>
-                <h6 className={styles.leftCol}> Email </h6>
-                <div className={styles.rightCol}>
-                  <h6>
-                    {user.email}
-                  </h6>
-                </div>
-              </div>
-              <div className={styles.row}>
-                <h6 className={styles.leftCol}>First name</h6>
-                <div className={styles.rightCol}>
-                  <TextField
-                    type="firstName"
-                    name="firstName"  
-                    value={firstName}
-                    placeholder="First Name"
-                    length="stretch"
-                    isDisabled={!edit}
-                    onChange={value => this.handleChange('firstName', value)}
-                  />
-                </div>
-              </div>
-              <div className={styles.row}>
-                <h6 className={styles.leftCol}> Last name </h6>
-                <div className={styles.rightCol}>
-                  <TextField
-                    type="lastName"
-                    name="lastName"
-                    value={lastName}
-                    placeholder="Last Name"
-                    length="stretch"
-                    isDisabled={!edit}
-                    onChange={value => this.handleChange('lastName', value)}
-                  />
-                </div>
+          <h4 className={styles.header}>General</h4>
+          <div className={styles.generalFields}>
+            <div className={styles.row}>
+              <h6 className={styles.leftCol}> Email </h6>
+              <div className={styles.rightCol}>
+                <h6>
+                  {user.email}
+                </h6>
               </div>
             </div>
+            <div className={styles.row}>
+              <h6 className={styles.leftCol}>First name</h6>
+              <div className={styles.rightCol}>
+                <TextField
+                  type="firstName"
+                  name="firstName"
+                  value={firstName}
+                  placeholder="First Name"
+                  length="stretch"
+                  isDisabled={!edit}
+                  onChange={value => this.handleChange('firstName', value)}
+                />
+              </div>
+            </div>
+            <div className={styles.row}>
+              <h6 className={styles.leftCol}> Last name </h6>
+              <div className={styles.rightCol}>
+                <TextField
+                  type="lastName"
+                  name="lastName"
+                  value={user.last_name}
+                  placeholder="Last Name"
+                  length="stretch"
+                  isDisabled={!edit}
+                  onChange={value => this.handleChange('lastName', value)}
+                />
+              </div>
+            </div>
+          </div>
 
           <div className={styles.about}>
             <h4 className={styles.header}> About yourself </h4>
@@ -268,27 +265,88 @@ class ProfilePage extends Component {
           </div>
           <h6 className={styles.updateError}>{updateError}</h6>
           <div className={styles.editButtons}>
-            {!edit ? (
-              <>
-                {' '}
-                <Button onClick={this.handleEdit}> Edit </Button>
-                {' '}
-              </>
-            ) : ('')}
-            {edit ? (
-              <>
-                <Button onClick={this.updateUser}> Save </Button>
-                <Button className={styles.cancel} appearance="outline" onClick={this.handleEdit}> Cancel </Button>
-              </>
-            ) : ('')}
+            { 
+              !edit ? (
+                <>
+                  {' '}
+                  <Button onClick={this.handleEdit}> Edit </Button>
+                  {' '}
+                </>
+              )
+                : (
+                  <>
+                    <Button onClick={this.updateUser}> Save </Button>
+                    <Button className={styles.cancel} appearance="outline" onClick={this.handleEdit}> Cancel </Button>
+                  </>
+                )
+            }
+            
           </div>
 
           <div className={styles.security}>
             <h4 className={styles.header}>Security</h4>
-            <h5>Change your password</h5>
-            <h6> Click the button below to send a password reset email for this account. </h6>
-            <Button className={styles.resetPassword} length="large" IconComponent={props => <MailIcon {...props} />}> RESET YOUR PASSWORD </Button>
+            {
+                pwdOrEmail ? (
+                  <div>
+                    <h6> Change Password </h6>
+                    <TextField
+                      type="currPwd"
+                      name="currPwd"
+                      value={currPwd}
+                      placeholder="Current Password"
+                      length="stretch"
+                      onChange={value => this.handleChange('currPwd', value)}
+                    />
+                    <TextField
+                      type="newPwd"
+                      name="newPwd"
+                      value={newPwd}
+                      placeholder="New Password"
+                      length="stretch"
+                      isDisabled={isCurrPwdCorrect}
+                      onChange={value => this.handleChange('newPwd', value)}
+                    />
+                    <TextField
+                      type="cnfrmPwd"
+                      name="cnfrmPwd"
+                      value={cnfrmPwd}
+                      placeholder="Confirm Password"
+                      length="stretch"
+                      isDisabled={isCurrPwdCorrect}
+                      onChange={value => this.handleChange('cnfrmPwd', value)}
+                    />
+                  </div>
+                )
+                  : (
+                    <div>
+                      <h6>Change Email</h6>
+                      <TextField
+                        type="Change Email"
+                        name="Change Email"
+                        onChange={value => this.handleChange('cnfrmPwd', value)}
+                      />
+                    </div>
+                  )
+            }
+            <Button
+              className={styles.pwdOrEmail}
+              onClick={pwdOrEmail => this.handleChange('pwdOrEmail', !pwdOrEmail)}
+              appearance={ pwdOrEmail ? ('default') : ('outline')}
+              length="large"
+            >
+              {pwdOrEmail ? (' Change your Email ?') : ('Change your passsword ?')}
+            </Button>
           </div>
+          <div className={styles.dataAndPersonal}>
+            <h4 className={styles.header}> Data and Personalisation </h4>
+            <h6>
+              Your data, activities and preferences that help make Arclytics Sim service more 
+              useful for you.
+            </h6>
+
+            <Button> Review </Button>
+          </div>
+
         </div>
       </React.Fragment>
     )
@@ -300,12 +358,12 @@ ProfilePage.propTypes = {
     first_name: PropTypes.string,
     last_name: PropTypes.string,
     email: PropTypes.string,
-    profile: PropTypes.arrayOf(PropTypes.shape({
+    profile: PropTypes.shape({
       aim: PropTypes.string,
       highest_education: PropTypes.string,
       sci_tech_exp: PropTypes.string,
       phase_transform_exp: PropTypes.string,
-    })),
+    }),
   })).isRequired,
   updateUserProfileConnect: PropTypes.func.isRequired,
   createUserProfileConnect: PropTypes.func.isRequired,
@@ -313,10 +371,11 @@ ProfilePage.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  // user: state.persist.user,
+  user: state.persist.user,
 })
 
 const mapDispatchToProps = {
+  getUserProfileConnect: getUserProfile,
   updateUserProfileConnect: updateUserProfile,
   createUserProfileConnect: createUserProfile,
 }

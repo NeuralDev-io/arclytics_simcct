@@ -70,7 +70,7 @@ class TestAdminCreateService(BaseTestCase):
 
         with self.client:
             resp_disable = self.client.put(
-                '/user/disable',
+                '/disable/user',
                 data=json.dumps({'email': 'kyloren@gmail.com'}),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
@@ -102,7 +102,7 @@ class TestAdminCreateService(BaseTestCase):
 
         with self.client:
             resp = self.client.put(
-                '/user/disable',
+                '/disable/user',
                 data=json.dumps(''),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
@@ -132,7 +132,7 @@ class TestAdminCreateService(BaseTestCase):
 
         with self.client:
             resp = self.client.put(
-                '/user/disable',
+                '/disable/user',
                 data=json.dumps({'email': 'c3p0@protocol.com'}),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
@@ -164,7 +164,7 @@ class TestAdminCreateService(BaseTestCase):
 
         with self.client:
             resp_disable = self.client.put(
-                '/user/disable',
+                '/disable/user',
                 data=json.dumps({'invalid_key': 'invalid_data'}),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
@@ -196,7 +196,7 @@ class TestAdminCreateService(BaseTestCase):
 
         with self.client:
             resp_disable = self.client.put(
-                '/user/disable',
+                '/disable/user',
                 data=json.dumps({'email': 'invalid_email.com'}),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
@@ -223,8 +223,7 @@ class TestAdminCreateService(BaseTestCase):
                 'admin.confirm_disable_account', account_disable_token
             )
             resp = client.get(
-                account_disable_url,
-                content_type='application/json'
+                account_disable_url, content_type='application/json'
             )
             mongo_client = MongoClient(os.environ.get('MONGO_URI'))
             db = mongo_client['arc_test']
@@ -245,15 +244,10 @@ class TestAdminCreateService(BaseTestCase):
 
     def test_confirm_disable_account_invalid_token(self):
         invalid_token = 'aaaaaaaaaaaaaaaaaaaaaaaa'
-        url = generate_url(
-            'admin.confirm_disable_account', invalid_token
-        )
+        url = generate_url('admin.confirm_disable_account', invalid_token)
 
         with self.client:
-            resp = self.client.get(
-                url,
-                content_type='application/json'
-            )
+            resp = self.client.get(url, content_type='application/json')
 
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 400)
@@ -261,9 +255,7 @@ class TestAdminCreateService(BaseTestCase):
 
     def test_confirm_disable_account_user_dne(self):
         kylo = User(
-            email='kyloren@arclytics.io',
-            first_name='Kylo',
-            last_name='Ren'
+            email='kyloren@arclytics.io', first_name='Kylo', last_name='Ren'
         )
         kylo.set_password('LetThePastDie')
         kylo.save()
@@ -274,8 +266,7 @@ class TestAdminCreateService(BaseTestCase):
         kylo.delete()
         with self.client:
             resp = self.client.get(
-                account_disable_url,
-                content_type='application/json'
+                account_disable_url, content_type='application/json'
             )
 
             data = json.loads(resp.data.decode())

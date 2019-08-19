@@ -23,6 +23,9 @@ This script will run all tests on the sharing endpoints.
 import os
 import json
 import unittest
+from pathlib import Path
+import settings
+from copy import deepcopy
 
 from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
@@ -31,6 +34,13 @@ from users_app.token import (generate_shared_simulation_token, generate_url)
 from tests.test_api_users import log_test_user_in
 
 logger = AppLogger(__name__)
+
+_TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'tests' / 'share_sim_data.json'
+with open(_TEST_CONFIGS_PATH, 'r') as f:
+    _TEST_JSON = json.load(f)
+
+CONFIGS = _TEST_JSON['configurations']
+ALLOY_STORE = _TEST_JSON['alloy_store']
 
 
 class TestShareService(BaseTestCase):
@@ -58,156 +68,8 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'single',
-                            'alloys': {
-                                'parent': {
-                                    'name':
-                                    'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        }, {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name':
-                                    'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        }, {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name':
-                                    'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        }, {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -273,173 +135,22 @@ class TestShareService(BaseTestCase):
 
         token = log_test_user_in(self, luke, 'NeverJoinYou')
 
+        alloy_store = deepcopy(ALLOY_STORE)
+        # invalid element symbol
+        alloy_store['alloys']['parent']['compositions'].append(
+            {
+                'symbol': 'DM',
+                'weight': 4.003
+            }
+        )
+
         with self.client:
             resp = self.client.post(
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'parent',
-                            'alloys': {
-                                'parent': {
-                                    'name':
-                                    'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        },
-                                        {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        },
-                                        {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        },
-                                        {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        },
-                                        {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        },
-                                        {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        },
-                                        {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        },
-                                        {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        },
-                                        {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        },
-                                        {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        },
-                                        {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        },
-                                        {
-                                            # Invalid element symbol 'DM'
-                                            'symbol': 'DM',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name':
-                                    'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        }, {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name':
-                                    'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        }, {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
+                        'configurations': CONFIGS,
+                        'alloy_store': alloy_store
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -467,173 +178,19 @@ class TestShareService(BaseTestCase):
 
         token = log_test_user_in(self, luke, 'NeverJoinYou')
 
+        alloy_store = deepcopy(ALLOY_STORE)
+        # invalid element, no symbol
+        alloy_store['alloys']['parent']['compositions'].append(
+            {'weight': 4.003}
+        )
+
         with self.client:
             resp = self.client.post(
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'parent',
-                            'alloys': {
-                                'parent': {
-                                    'name':
-                                    'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        },
-                                        {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        },
-                                        {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        },
-                                        {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        },
-                                        {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        },
-                                        {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        },
-                                        {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        },
-                                        {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        },
-                                        {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        },
-                                        {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        },
-                                        {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        },
-                                        {
-                                            # Invalid element, does not contain
-                                            # 'symbol' key
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name':
-                                    'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        }, {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name':
-                                    'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        }, {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
+                        'configurations': CONFIGS,
+                        'alloy_store': alloy_store
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -662,71 +219,18 @@ class TestShareService(BaseTestCase):
 
         token = log_test_user_in(self, luke, 'NeverJoinYou')
 
+        alloy_store = deepcopy(ALLOY_STORE)
+        del alloy_store['alloys']['parent']['compositions'][0]
+        del alloy_store['alloys']['weld']['compositions'][0]
+        del alloy_store['alloys']['mix']['compositions'][0]
+
         with self.client:
             resp = self.client.post(
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'parent',
-                            'alloys': {
-                                'parent': {
-                                    'name':
-                                    'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        }, {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name':
-                                    'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        }, {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name':
-                                    'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        }, {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
+                        'configurations': CONFIGS,
+                        'alloy_store': alloy_store
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -762,17 +266,7 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
+                        'configurations': CONFIGS,
                         'alloy_store': {
                             'alloy_option': 'single'
                         }
@@ -815,156 +309,8 @@ class TestShareService(BaseTestCase):
                 data=json.dumps(
                     {
                         'emails': ['davidmatthews1004@gmail.com'],
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'single',
-                            'alloys': {
-                                'parent': {
-                                    'name':
-                                    'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        }, {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name':
-                                    'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        }, {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name':
-                                    'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        }, {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -1015,156 +361,10 @@ class TestShareService(BaseTestCase):
                             'davidmatthews1004@gmail.com',
                             'brickmatic479@gmail.com'
                         ],
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'single',
-                            'alloys': {
-                                'parent': {
-                                    'name':
-                                    'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        }, {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name':
-                                    'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        }, {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name':
-                                    'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        }, {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
+                        'configurations':
+                        CONFIGS,
+                        'alloy_store':
+                        ALLOY_STORE
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -1207,66 +407,8 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/email',
                 data=json.dumps(
                     {
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'Option String',
-                            'alloys': {
-                                'parent': {
-                                    'name':
-                                    'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        }, {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name':
-                                    'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        }, {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name':
-                                    'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        }, {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -1301,66 +443,8 @@ class TestShareService(BaseTestCase):
                 data=json.dumps(
                     {
                         'emails': [1234],
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'Option String',
-                            'alloys': {
-                                'parent': {
-                                    'name':
-                                    'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        }, {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name':
-                                    'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        }, {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name':
-                                    'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        }, {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -1397,66 +481,8 @@ class TestShareService(BaseTestCase):
                 data=json.dumps(
                     {
                         'emails': ['invalidemail@com'],
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'Option String',
-                            'alloys': {
-                                'parent': {
-                                    'name':
-                                    'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        }, {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name':
-                                    'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        }, {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name':
-                                    'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        }, {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -1494,66 +520,8 @@ class TestShareService(BaseTestCase):
                     {
                         'emails':
                         ['invalidemail@com', 'brickmatic479@gmail.com'],
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'Option String',
-                            'alloys': {
-                                'parent': {
-                                    'name':
-                                    'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        }, {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name':
-                                    'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        }, {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name':
-                                    'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        }, {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -1587,156 +555,8 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'single',
-                            'alloys': {
-                                'parent': {
-                                    'name':
-                                    'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        }, {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name':
-                                    'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        }, {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name':
-                                    'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        }, {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -1781,156 +601,8 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'single',
-                            'alloys': {
-                                'parent': {
-                                    'name':
-                                    'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        }, {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name':
-                                    'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        }, {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name':
-                                    'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        }, {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -1985,7 +657,7 @@ class TestShareService(BaseTestCase):
             )
             self.assertEqual(
                 data['data']['alloy_store']['alloys']['mix']['compositions']
-                [11]['weight'], 12.011
+                [11]['weight'], 14.01
             )
 
     def test_view_shared_simulation_invalid_token(self):
@@ -2027,156 +699,8 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/link',
                 data=json.dumps(
                     {
-                        'configurations': {
-                            'method': 'Li98',
-                            'grain_size': 0.1,
-                            'nucleation_start': 1.1,
-                            'nucleation_finish': 99.8,
-                            'auto_calculate_ms': False,
-                            'ms_temp': 0.2,
-                            'ms_rate_param': 0.3,
-                            'auto_calculate_bs': False,
-                            'bs_temp': 0.4,
-                            'auto_calculate_ae': False,
-                            'ae1_temp': 0.5,
-                            'ae3_temp': 0.6,
-                            'start_temp': 7,
-                            'cct_cooling_rate': 1
-                        },
-                        'alloy_store': {
-                            'alloy_option': 'single',
-                            'alloys': {
-                                'parent': {
-                                    'name':
-                                    'Parent Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'H',
-                                            'weight': 1.008
-                                        }, {
-                                            'symbol': 'He',
-                                            'weight': 4.003
-                                        }
-                                    ]
-                                },
-                                'weld': {
-                                    'name':
-                                    'Weld Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'Li',
-                                            'weight': 6.941
-                                        }, {
-                                            'symbol': 'Be',
-                                            'weight': 9.012
-                                        }
-                                    ]
-                                },
-                                'mix': {
-                                    'name':
-                                    'Mix Name',
-                                    'compositions': [
-                                        {
-                                            'symbol': 'C',
-                                            'weight': 12.01
-                                        }, {
-                                            'symbol': 'Mn',
-                                            'weight': 54.94
-                                        }, {
-                                            'symbol': 'Ni',
-                                            'weight': 58.69
-                                        }, {
-                                            'symbol': 'Cr',
-                                            'weight': 52.00
-                                        }, {
-                                            'symbol': 'Mo',
-                                            'weight': 95.94
-                                        }, {
-                                            'symbol': 'Si',
-                                            'weight': 28.09
-                                        }, {
-                                            'symbol': 'Co',
-                                            'weight': 58.93
-                                        }, {
-                                            'symbol': 'W',
-                                            'weight': 183.84
-                                        }, {
-                                            'symbol': 'As',
-                                            'weight': 74.92
-                                        }, {
-                                            'symbol': 'Fe',
-                                            'weight': 55.84
-                                        }, {
-                                            'symbol': 'B',
-                                            'weight': 10.811
-                                        }, {
-                                            'symbol': 'C',
-                                            'weight': 12.011
-                                        }
-                                    ]
-                                },
-                            }
-                        }
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},

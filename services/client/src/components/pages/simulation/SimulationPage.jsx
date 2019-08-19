@@ -393,12 +393,14 @@ class SimulationPage extends Component {
       nucleation_start,
       nucleation_finish,
       cct_cooling_rate,
+      start_temp,
     } = configurations
     updateConfig({
       grain_size: grain_size_ASTM,
       nucleation_start,
       nucleation_finish,
       cct_cooling_rate,
+      start_temp,
     })
 
     console.log('Simulation: ', configurations, alloys)

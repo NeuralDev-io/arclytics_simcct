@@ -8,8 +8,12 @@ import { layout, config } from './utils/chartConfig'
 import colours from '../../../styles/_colors_light.scss'
 import styles from './CCT.module.scss'
 
-const CCT = (props) => {
-  const { containerWidth, containerHeight, data } = props // eslint-disable-line
+const CCT = ({
+  containerHeight,
+  containerWidth,
+  data,
+  showUserCurve,
+}) => {
   let chartData = []
   if (data !== undefined) {
     chartData = [
@@ -63,6 +67,16 @@ const CCT = (props) => {
         marker: { color: colours.v500 },
       },
     ]
+
+    // if (showUserCurve) {
+    //   chartData.push({
+    //     x: data.user_cooling_curve.time,
+    //     y: data.user_cooling_curve.temp,
+    //     name: 'User cooling curve',
+    //     mode: 'line',
+    //     marker: { color: colours.r500 },
+    //   })
+    // }
   }
 
   if (chartData.length === 0) {

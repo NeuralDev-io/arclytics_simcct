@@ -394,24 +394,23 @@ class DisableAccount(Resource):
         celery.send_task(
             'tasks.send_email',
             kwargs={
-                'to':
-                    [admin.email],
+                'to': [admin.email],
                 'subject_suffix':
-                    f'Confirm disable account action',
+                f'Confirm disable account action',
                 'html_template':
-                    render_template(
-                        'confirm_disable_account.html',
-                        admin_name=f'{admin.first_name} {admin.last_name}',
-                        user_name=f'{user.first_name} {user.last_name}',
-                        account_disable_url=account_disable_url
-                    ),
+                render_template(
+                    'confirm_disable_account.html',
+                    admin_name=f'{admin.first_name} {admin.last_name}',
+                    user_name=f'{user.first_name} {user.last_name}',
+                    account_disable_url=account_disable_url
+                ),
                 'text_template':
-                    render_template(
-                        'confirm_disable_account.txt',
-                        admin_name=f'{admin.first_name} {admin.last_name}',
-                        user_name=f'{user.first_name} {user.last_name}',
-                        account_disable_url=account_disable_url
-                    ),
+                render_template(
+                    'confirm_disable_account.txt',
+                    admin_name=f'{admin.first_name} {admin.last_name}',
+                    user_name=f'{user.first_name} {user.last_name}',
+                    account_disable_url=account_disable_url
+                ),
             }
         )
 
@@ -420,7 +419,7 @@ class DisableAccount(Resource):
         return response, 200
 
 
-@admin_blueprint.route('/admin/disable/confirm/<token>', methods=['GET'])
+@admin_blueprint.route('/disable/user/confirm/<token>', methods=['GET'])
 def confirm_disable_account(token):
     """
     Allow an Admin user to confirm that they want to disable a user's account
@@ -455,17 +454,17 @@ def confirm_disable_account(token):
         kwargs={
             'to': [user.email],
             'subject_suffix':
-                'Your Account has been disabled.',
+            'Your Account has been disabled.',
             'html_template':
-                render_template(
-                    'account_disabled.html',
-                    user_name=f'{user.first_name} {user.last_name}'
-                ),
+            render_template(
+                'account_disabled.html',
+                user_name=f'{user.first_name} {user.last_name}'
+            ),
             'text_template':
-                render_template(
-                    'account_disabled.txt',
-                    user_name=f'{user.first_name} {user.last_name}'
-                )
+            render_template(
+                'account_disabled.txt',
+                user_name=f'{user.first_name} {user.last_name}'
+            )
         }
     )
 
@@ -484,4 +483,4 @@ def confirm_disable_account(token):
 
 
 api.add_resource(AdminCreate, '/admin/create')
-api.add_resource(DisableAccount, '/user/disable')
+api.add_resource(DisableAccount, '/disable/user')

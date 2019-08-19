@@ -679,21 +679,21 @@ def change_password(user_id):
             kwargs={
                 'to': [user.email],
                 'subject_suffix':
-                    'Your Arclytics Sim password has been changed',
+                'Your Arclytics Sim password has been changed',
                 'html_template':
-                    render_template(
-                        'change_password.html',
-                        change_datetime=datetime.utcnow().isoformat(),
-                        email=user.email,
-                        user_name=f'{user.first_name} {user.last_name}'
-                    ),
+                render_template(
+                    'change_password.html',
+                    change_datetime=datetime.utcnow().isoformat(),
+                    email=user.email,
+                    user_name=f'{user.first_name} {user.last_name}'
+                ),
                 'text_template':
-                    render_template(
-                        'change_password.txt',
-                        change_datetime=datetime.utcnow().isoformat(),
-                        email=user.email,
-                        user_name=f'{user.first_name} {user.last_name}'
-                    )
+                render_template(
+                    'change_password.txt',
+                    change_datetime=datetime.utcnow().isoformat(),
+                    email=user.email,
+                    user_name=f'{user.first_name} {user.last_name}'
+                )
             }
         )
 
@@ -743,19 +743,19 @@ def change_email(user_id) -> Tuple[dict, int]:
         kwargs={
             'to': [valid_new_email],
             'subject_suffix':
-                'Your have changed your email address!',
+            'Your have changed your email address!',
             'html_template':
-                render_template(
-                    'change_email.html',
-                    user_name=f'{user.first_name} {user.last_name}',
-                    confirm_url=confirm_url
-                ),
+            render_template(
+                'change_email.html',
+                user_name=f'{user.first_name} {user.last_name}',
+                confirm_url=confirm_url
+            ),
             'text_template':
-                render_template(
-                    'change_email.txt',
-                    user_name=f'{user.first_name} {user.last_name}',
-                    confirm_url=confirm_url
-                )
+            render_template(
+                'change_email.txt',
+                user_name=f'{user.first_name} {user.last_name}',
+                confirm_url=confirm_url
+            )
         }
     )
 

@@ -115,8 +115,8 @@ class Results(object):
                 'temp': np.trim_zeros(self.cct_bcf[:, 1]).tolist()
             },
             'martensite': {
-                'time': np.trim_zeros(self.cct_msf[:, 0]).tolist(),
-                'temp': np.trim_zeros(self.cct_msf[:, 1]).tolist()
+                'time': self.cct_msf[:, 0].tolist(),
+                'temp': self.cct_msf[:, 1].tolist()
             }
         }
 
@@ -147,8 +147,8 @@ class Results(object):
                 'temp': np.trim_zeros(self.ttt_bcf[:, 1]).tolist()
             },
             'martensite': {
-                'time': np.trim_zeros(self.ttt_msf[:, 0]).tolist(),
-                'temp': np.trim_zeros(self.ttt_msf[:, 1]).tolist()
+                'time': self.ttt_msf[:, 0].tolist(),
+                'temp': self.ttt_msf[:, 1].tolist()
             }
         }
 

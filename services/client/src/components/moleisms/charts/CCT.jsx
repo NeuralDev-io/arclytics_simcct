@@ -76,9 +76,9 @@ const CCT = ({
         name: 'User cooling curve',
         mode: 'line',
         marker: {
-          width: 4,
+          size: 10,
           color: colours.r500,
-          line: { width: 4 },
+          line: { width: 10, color: colours.r500 },
         },
       })
     }

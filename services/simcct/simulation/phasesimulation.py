@@ -166,15 +166,15 @@ class PhaseSimulation(object):
 
         # ========= MARTENSITE ========= #
         # Martensite curve start
-        msf_mat = np.zeros((1000, 2), dtype=np.float32)
+        msf_mat = np.zeros((2, 2), dtype=np.float32)
         temp_curr = self.ms
         torr = self._torr_calc2(Phase.M, temp_curr, integral_mat, i=1)
         # Uses Bainite cutoff time. So uses the Bainite phase as the argument
 
-        msf_mat[1, 0] = np.float32(0.001)
+        msf_mat[0, 0] = np.float32(0.001)
+        msf_mat[0, 1] = self.ms
+        msf_mat[1, 0] = torr
         msf_mat[1, 1] = self.ms
-        msf_mat[2, 0] = torr
-        msf_mat[2, 1] = self.ms
 
         self.plots_data.set_ttt_plot_data(
             ferrite_nucleation=fcs_mat,
@@ -233,8 +233,6 @@ class PhaseSimulation(object):
         cct_record_p_end_mat = np.zeros((1000, 2), dtype=np.float32)
         # Bainite completion
         cct_record_b_end_mat = np.zeros((1000, 2), dtype=np.float32)
-        # Martensite completion
-        cct_record_m_mat = np.zeros((1000, 2), dtype=np.float32)
 
         # Counters
         ii_f, ii_p, ii_b, ii_m = 0, 0, 0, 0
@@ -283,12 +281,10 @@ class PhaseSimulation(object):
 
             # Now within fixed Temperature path
             # Reset the nucleation volume fractions to 0.0 for new cooling rate
-            nuc_frac_austenite = np.float64(1.0)
             nuc_frac_ferrite = np.float32(0)
             nuc_frac_pearlite = np.float32(0)
             nuc_frac_bainite = np.float32(0)
             # Reset the nucleation volume fractions to 0.0 for new cooling rate
-            nuc_frac_austenite_end = np.float64(1.0)
             nuc_frac_ferrite_end = np.float32(0)
             nuc_frac_pearlite_end = np.float32(0)
             nuc_frac_bainite_end = np.float32(0)
@@ -459,11 +455,16 @@ class PhaseSimulation(object):
                 time = time + increm_time
 
         # ==================== # MARTENSITE # ==================== #
-        cct_record_m_mat[0, 0] = 0.001
-        cct_record_m_mat[0, 1] = self.ms
+        # Martensite completion
+        cct_record_m_mat = np.array(
+            [[0.001, self.ms], [cct_record_b_end_mat[0, 0], self.ms]],
+            dtype=np.float32
+        )
+        # cct_record_m_mat[0, 0] = 0.001
+        # cct_record_m_mat[0, 1] = self.ms
         # first recorded bainite transformation time point
-        cct_record_m_mat[1, 0] = cct_record_b_end_mat[0, 0]
-        cct_record_m_mat[1, 1] = self.ms
+        # cct_record_m_mat[1, 0] = cct_record_b_end_mat[0, 0]
+        # cct_record_m_mat[1, 1] = self.ms
 
         # No we are below the Martensite temperature and all remaining
         # Austenite will convert to Martensite (unless we have a reheating step

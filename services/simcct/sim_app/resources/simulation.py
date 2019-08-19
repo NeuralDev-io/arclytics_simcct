@@ -51,7 +51,7 @@ class Simulation(Resource):
         sid, session_store = SimSessionService().load_session(session_key)
 
         logger.debug('Session Store')
-        logger.debug(session_store)
+        logger.pprint(session_store)
 
         if sid is None:
             response['errors'] = session_store
@@ -84,11 +84,11 @@ class Simulation(Resource):
 
         # We need to validate ae1, ae3, ms, and bs temperatures because if we do
         # the calculations for CCT/TTT will cause many problems.
-        if (not configs['ae1_temp'] > 0.0 or not configs['ae3_temp'] > 0.0):
+        if not configs['ae1_temp'] > 0.0 or not configs['ae3_temp'] > 0.0:
             response['message'] = 'Ae1 and Ae3 value cannot be less than 0.0.'
             return response, 400
 
-        if (not configs['ms_temp'] > 0.0 or not configs['bs_temp'] > 0.0):
+        if not configs['ms_temp'] > 0.0 or not configs['bs_temp'] > 0.0:
             response['message'] = 'MS and BS value cannot be less than 0.0.'
             return response, 400
 
@@ -118,30 +118,33 @@ class Simulation(Resource):
         # TIMER START
         start = time.time()
         # Running these in parallel with threading
-        ttt_process = Thread(sim.ttt())
-        cct_process = Thread(sim.cct())
-        user_cooling_process = Thread(sim.user_cooling_curve())
+        # ttt_process = Thread(sim.ttt())
+        # cct_process = Thread(sim.cct())
+        # user_cooling_process = Thread(sim.user_cooling_curve())
         # Starting CCT first because it takes longer.
-        cct_process.start()
-        ttt_process.start()
-        user_cooling_process.start()
+        # cct_process.start()
+        # ttt_process.start()
+        # user_cooling_process.start()
 
         # Now we stop the main thread to wait for them to finish.
-        user_cooling_process.join()
+        # user_cooling_process.join()
+        sim.user_cooling_curve()
         user_cooling_time = time.time()
-        ttt_process.join()
+        # ttt_process.join()
+        sim.ttt()
         ttt_time = time.time()
-        cct_process.join()
+        # cct_process.join()
+        sim.cct()
         total_time = time.time()
 
-        # TODO(andrew@neuraldev.io): We need to store the results in the Session
-        #  store at some point as well.
+        # TODO(andrew@neuraldev.io): We need to store the results in the
+        #  Session store at some point as well.
 
         logger.debug(
             f'User Cooling Curve Simulation Time: {user_cooling_time - start}'
         )
-        logger.debug(f'TTT Simulation Time: {ttt_time - start}')
-        logger.debug(f'CCT Simulation Time: {total_time - start}')
+        logger.debug(f'TTT Simulation Time: {ttt_time - user_cooling_time}')
+        logger.debug(f'CCT Simulation Time: {total_time - ttt_time}')
         logger.debug('Total Simulation Time: {}'.format(total_time - start))
 
         data = {

@@ -8,8 +8,12 @@ import { layout, config } from './utils/chartConfig'
 import colours from '../../../styles/_colors_light.scss'
 import styles from './CCT.module.scss'
 
-const CCT = (props) => {
-  const { containerWidth, containerHeight, data } = props // eslint-disable-line
+const CCT = ({
+  containerHeight,
+  containerWidth,
+  data,
+  showUserCurve,
+}) => {
   let chartData = []
   if (data !== undefined) {
     chartData = [
@@ -98,6 +102,16 @@ const CCT = (props) => {
         },
       },
     ]
+
+    // if (showUserCurve) {
+    //   chartData.push({
+    //     x: data.user_cooling_curve.time,
+    //     y: data.user_cooling_curve.temp,
+    //     name: 'User cooling curve',
+    //     mode: 'line',
+    //     marker: { color: colours.r500 },
+    //   })
+    // }
   }
 
   if (chartData.length === 0) {
@@ -107,19 +121,43 @@ const CCT = (props) => {
   return (
     <Plot
       data={chartData}
-      layout={layout(containerWidth, containerHeight)}
+      layout={{
+        ...layout(containerWidth, containerHeight),
+        xaxis: {
+          type: 'log',
+          autorange: true,
+        },
+        yaxis: {
+          type: 'log',
+          autorange: true,
+        },
+      }}
       config={config}
     />
   )
 }
 
+const linePropTypes = PropTypes.shape({
+  temp: PropTypes.arrayOf(PropTypes.number),
+  time: PropTypes.arrayOf(PropTypes.number),
+})
+
 CCT.propTypes = {
+  showUserCurve: PropTypes.bool.isRequired,
   // props given by withDimension()
   containerWidth: PropTypes.number.isRequired,
   containerHeight: PropTypes.number.isRequired,
   // props given by connect()
-  data: PropTypes.object.isRequired, // eslint-disable-line
-  // TODO: will add later
+  data: PropTypes.shape({
+    ferrite_nucleation: linePropTypes,
+    ferrite_completion: linePropTypes,
+    pearlite_nucleation: linePropTypes,
+    pearlite_completion: linePropTypes,
+    bainite_nucleation: linePropTypes,
+    bainite_completion: linePropTypes,
+    martensite: linePropTypes,
+    // user_cooling_curve: linePropTypes,
+  }).isRequired,
 }
 
 const mapStateToProps = state => ({

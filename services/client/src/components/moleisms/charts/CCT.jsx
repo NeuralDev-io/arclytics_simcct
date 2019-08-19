@@ -90,25 +90,39 @@ const CCT = ({
         ...layout(containerWidth, containerHeight),
         xaxis: {
           type: 'log',
-          autorange: true
+          autorange: true,
         },
         yaxis: {
           type: 'log',
-          autorange: true
-        }
+          autorange: true,
+        },
       }}
       config={config}
     />
   )
 }
 
+const linePropTypes = PropTypes.shape({
+  temp: PropTypes.arrayOf(PropTypes.number),
+  time: PropTypes.arrayOf(PropTypes.number),
+})
+
 CCT.propTypes = {
+  showUserCurve: PropTypes.bool.isRequired,
   // props given by withDimension()
   containerWidth: PropTypes.number.isRequired,
   containerHeight: PropTypes.number.isRequired,
   // props given by connect()
-  data: PropTypes.object.isRequired, // eslint-disable-line
-  // TODO: will add later
+  data: PropTypes.shape({
+    ferrite_nucleation: linePropTypes,
+    ferrite_completion: linePropTypes,
+    pearlite_nucleation: linePropTypes,
+    pearlite_completion: linePropTypes,
+    bainite_nucleation: linePropTypes,
+    bainite_completion: linePropTypes,
+    martensite: linePropTypes,
+    // user_cooling_curve: linePropTypes,
+  }).isRequired,
 }
 
 const mapStateToProps = state => ({

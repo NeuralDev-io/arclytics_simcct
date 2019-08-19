@@ -24,7 +24,7 @@ import numpy as np
 from typing import Union
 
 
-class Plots(object):
+class Results(object):
     """
     This class is used to store TTT and CCT plotting data. There will also be
     some helper instance methods to allow plotting with Plotly or printing to
@@ -34,6 +34,8 @@ class Plots(object):
     def __init__(self):
         self.ttt = None
         self.cct = None
+
+        self.user_cooling_curve: Union[np.ndarray, None] = None
 
         self.ttt_fcs: Union[np.ndarray, None] = None
         self.ttt_fcf: Union[np.ndarray, None] = None
@@ -59,111 +61,102 @@ class Plots(object):
     def from_csv(cls):
         pass
 
-    @classmethod
-    def from_pickle(cls):
-        pass
-
     def set_cct_plot_data(
         self, ferrite_nucleation, ferrite_completion, pearlite_nucleation,
         pearlite_completion, bainite_nucleation, bainite_completion, martensite
     ) -> None:
-        self.cct = {
-            'ferrite_nucleation': {
-                'time': ferrite_nucleation[:, 0].tolist(),
-                'temp': ferrite_nucleation[:, 1].tolist()
-            },
-            'ferrite_completion': {
-                'time': ferrite_completion[:, 0].tolist(),
-                'temp': ferrite_completion[:, 1].tolist()
-            },
-            'pearlite_nucleation': {
-                'time': pearlite_nucleation[:, 0].tolist(),
-                'temp': pearlite_nucleation[:, 1].tolist()
-            },
-            'pearlite_completion': {
-                'time': pearlite_completion[:, 0].tolist(),
-                'temp': pearlite_completion[:, 1].tolist()
-            },
-            'bainite_nucleation': {
-                'time': bainite_nucleation[:, 0].tolist(),
-                'temp': bainite_nucleation[:, 1].tolist()
-            },
-            'bainite_completion': {
-                'time': bainite_completion[:, 0].tolist(),
-                'temp': bainite_completion[:, 1].tolist()
-            },
-            'martensite': {
-                'time': martensite[:, 0].tolist(),
-                'temp': martensite[:, 1].tolist()
-            }
-        }
+        self.cct_fcs = ferrite_nucleation
+        self.cct_fcf = ferrite_completion
+        self.cct_pcs = pearlite_nucleation
+        self.cct_pcf = pearlite_completion
+        self.cct_bcs = bainite_nucleation
+        self.cct_bcf = bainite_completion
+        self.cct_msf = martensite
 
     def set_ttt_plot_data(
-        self, ferrite_start, ferrite_finish, pearlite_start, pearlite_finish,
-        bainite_start, bainite_finish, martensite
+        self, ferrite_nucleation, ferrite_completion, pearlite_nucleation,
+        pearlite_completion, bainite_nucleation, bainite_completion, martensite
     ) -> None:
-        self.ttt_fcs = ferrite_start
-        self.ttt_fcf = ferrite_finish
-        self.ttt_pcs = pearlite_start
-        self.ttt_pcf = pearlite_finish
-        self.ttt_bcs = bainite_start
-        self.ttt_bcf = bainite_finish
+        self.ttt_fcs = ferrite_nucleation
+        self.ttt_fcf = ferrite_completion
+        self.ttt_pcs = pearlite_nucleation
+        self.ttt_pcf = pearlite_completion
+        self.ttt_bcs = bainite_nucleation
+        self.ttt_bcf = bainite_completion
         self.ttt_msf = martensite
 
+    def set_user_cool_plot_data(self, user_cooling_data) -> None:
+        self.user_cooling_curve = user_cooling_data
+
     def get_cct_plot_data(self) -> dict:
-        # TODO(andrew@neuraldev.io): Need to trim these lists.
-        return self.cct
-
-    def get_ttt_plot_data(self) -> dict:
-        # ferrite_nucleation_x = []
-        # ferrite_nucleation_y = []
-        #
-        # for i, v in enumerate(self.ttt_fcs[:, 0]):
-        #     if self.ttt_fcs[i, 0] > 0:
-        #         ferrite_nucleation_x.append(self.ttt_fcs[i, 0])
-        #         ferrite_nucleation_y.append(self.ttt_fcs[i, 1])
-        #
-        # ferrite_completion_x = []
-        # ferrite_completion_y = []
-        #
-        # for i, v in enumerate(self.ttt_fcf[:, 0]):
-        #     if self.ttt_fcf[i, 0] > 0:
-        #         ferrite_completion_x.append(self.ttt_fcf[i, 0])
-        #         ferrite_completion_y.append(self.ttt_fcf[i, 1])
-
-        # TODO(andrew@neuraldev.io): Need to trim these lists.
-        ttt = {
+        return {
             'ferrite_nucleation': {
-                'time': self.ttt_fcs[:, 0].tolist(),
-                'temp': self.ttt_fcs[:, 1].tolist()
+                'time': np.trim_zeros(self.cct_fcs[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.cct_fcs[:, 1]).tolist()
             },
             'ferrite_completion': {
-                'time': self.ttt_fcf[:, 0].tolist(),
-                'temp': self.ttt_fcf[:, 1].tolist()
+                'time': np.trim_zeros(self.cct_fcf[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.cct_fcf[:, 1]).tolist()
             },
             'pearlite_nucleation': {
-                'time': self.ttt_pcs[:, 0].tolist(),
-                'temp': self.ttt_pcs[:, 1].tolist()
+                'time': np.trim_zeros(self.cct_pcs[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.cct_pcs[:, 1]).tolist()
             },
             'pearlite_completion': {
-                'time': self.ttt_pcf[:, 0].tolist(),
-                'temp': self.ttt_pcf[:, 1].tolist()
+                'time': np.trim_zeros(self.cct_pcf[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.cct_pcf[:, 1]).tolist()
             },
             'bainite_nucleation': {
-                'time': self.ttt_bcs[:, 0].tolist(),
-                'temp': self.ttt_bcs[:, 1].tolist()
+                'time': np.trim_zeros(self.cct_bcs[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.cct_bcs[:, 1]).tolist()
             },
             'bainite_completion': {
-                'time': self.ttt_bcf[:, 0].tolist(),
-                'temp': self.ttt_bcf[:, 1].tolist()
+                'time': np.trim_zeros(self.cct_bcf[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.cct_bcf[:, 1]).tolist()
             },
             'martensite': {
-                'time': self.ttt_msf[:, 0].tolist(),
-                'temp': self.ttt_msf[:, 1].tolist()
+                'time': np.trim_zeros(self.cct_msf[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.cct_msf[:, 1]).tolist()
             }
         }
 
-        return ttt
+    def get_ttt_plot_data(self) -> dict:
+        return {
+            'ferrite_nucleation': {
+                'time': np.trim_zeros(self.ttt_fcs[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.ttt_fcs[:, 1]).tolist()
+            },
+            'ferrite_completion': {
+                'time': np.trim_zeros(self.ttt_fcf[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.ttt_fcf[:, 1]).tolist()
+            },
+            'pearlite_nucleation': {
+                'time': np.trim_zeros(self.ttt_pcs[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.ttt_pcs[:, 1]).tolist()
+            },
+            'pearlite_completion': {
+                'time': np.trim_zeros(self.ttt_pcf[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.ttt_pcf[:, 1]).tolist()
+            },
+            'bainite_nucleation': {
+                'time': np.trim_zeros(self.ttt_bcs[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.ttt_bcs[:, 1]).tolist()
+            },
+            'bainite_completion': {
+                'time': np.trim_zeros(self.ttt_bcf[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.ttt_bcf[:, 1]).tolist()
+            },
+            'martensite': {
+                'time': np.trim_zeros(self.ttt_msf[:, 0]).tolist(),
+                'temp': np.trim_zeros(self.ttt_msf[:, 1]).tolist()
+            }
+        }
+
+    def get_user_cool_plot_data(self) -> dict:
+        return {
+            'time': np.trim_zeros(self.user_cooling_curve[:, 0]).tolist(),
+            'temp': np.trim_zeros(self.user_cooling_curve[:, 1]).tolist()
+        }
 
     def plot_cct(self):
         # plot with plotly
@@ -189,7 +182,6 @@ class Plots(object):
         return 'Error'
 
     def to_csv(self, plot: str = '', path: str = '') -> None:
-
         ttt_data = zip(
             *[
                 self.ttt['ferrite_nucleation']['time'],

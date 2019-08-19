@@ -12,6 +12,7 @@ const CCT = ({
   containerHeight,
   containerWidth,
   data,
+  userData,
   showUserCurve,
 }) => {
   let chartData = []
@@ -21,97 +22,66 @@ const CCT = ({
         x: data.ferrite_nucleation.time,
         y: data.ferrite_nucleation.temp,
         name: 'Ferrite nucleation',
-        mode: 'lines+markers',
-        type: 'scattergl',
-        marker: {
-          color: colours.o500,
-          width: 1,
-          line: { width: 1, color: 'rgb(0, 0, 0' },
-        },
+        mode: 'line',
+        marker: { color: colours.o500 },
       },
       {
         x: data.ferrite_completion.time,
         y: data.ferrite_completion.temp,
         name: 'Ferrite completion',
-        mode: 'lines+markers',
-        type: 'scattergl',
-        marker: {
-          color: colours.l500,
-          width: 1,
-          line: { width: 1, color: 'rgb(0, 0, 0' },
-        },
+        mode: 'line',
+        marker: { color: colours.l500 },
       },
       {
         x: data.pearlite_nucleation.time,
         y: data.pearlite_nucleation.temp,
         name: 'Pearlite nucleation',
-        mode: 'lines+markers',
-        type: 'scattergl',
-        marker: {
-          color: colours.g500,
-          width: 1,
-          line: { width: 1, color: 'rgb(0, 0, 0' },
-        },
+        mode: 'line',
+        marker: { color: colours.g500 },
       },
       {
         x: data.pearlite_completion.time,
         y: data.pearlite_completion.temp,
         name: 'Pearlite completion',
-        mode: 'lines+markers',
-        type: 'scattergl',
-        marker: {
-          color: colours.t500,
-          width: 1,
-          line: { width: 1, color: 'rgb(0, 0, 0' },
-        },
+        mode: 'line',
+        marker: { color: colours.t500 },
       },
       {
         x: data.bainite_nucleation.time,
         y: data.bainite_nucleation.temp,
         name: 'Bainite nucleation',
-        mode: 'lines+markers',
-        type: 'scattergl',
-        marker: {
-          color: colours.b500,
-          width: 1,
-          line: { width: 1, color: 'rgb(0, 0, 0' },
-        },
+        mode: 'line',
+        marker: { color: colours.b500 },
       },
       {
         x: data.bainite_completion.time,
         y: data.bainite_completion.temp,
         name: 'Bainite completion',
-        mode: 'lines+markers',
-        type: 'scattergl',
-        marker: {
-          color: colours.i500,
-          width: 1,
-          line: { width: 1, color: 'rgb(0, 0, 0' },
-        },
+        mode: 'line',
+        marker: { color: colours.i500 },
       },
       {
         x: data.martensite.time,
         y: data.martensite.temp,
         name: 'Martensite',
-        mode: 'lines+markers',
-        type: 'scattergl',
-        marker: {
-          color: colours.v500,
-          width: 1,
-          line: { width: 1, color: 'rgb(0, 0, 0' },
-        },
+        mode: 'line',
+        marker: { color: colours.v500 },
       },
     ]
 
-    // if (showUserCurve) {
-    //   chartData.push({
-    //     x: data.user_cooling_curve.time,
-    //     y: data.user_cooling_curve.temp,
-    //     name: 'User cooling curve',
-    //     mode: 'line',
-    //     marker: { color: colours.r500 },
-    //   })
-    // }
+    if (showUserCurve) {
+      chartData.push({
+        x: userData.time,
+        y: userData.temp,
+        name: 'User cooling curve',
+        mode: 'line',
+        marker: {
+          width: 4,
+          color: colours.r500,
+          line: { width: 4 },
+        },
+      })
+    }
   }
 
   if (chartData.length === 0) {
@@ -128,7 +98,7 @@ const CCT = ({
           autorange: true,
         },
         yaxis: {
-          type: 'log',
+          type: 'normal',
           autorange: true,
         },
       }}
@@ -162,6 +132,7 @@ CCT.propTypes = {
 
 const mapStateToProps = state => ({
   data: state.sim.results.CCT,
+  userData: state.sim.results.user_cooling_curve,
 })
 
 export default withDimension({

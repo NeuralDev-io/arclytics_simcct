@@ -4,7 +4,6 @@
 .container {
   display: flex;
   flex-flow: column nowrap;
-  //height: 60px;
 
   & > span {
     color: $r500;
@@ -12,10 +11,11 @@
   }
 }
 
-.textarea {
+textarea {
   // remove default styles
   border: none;
   outline: none;
+  font-family: $font-primary;
 
   // remove resizeable
   resize: none;

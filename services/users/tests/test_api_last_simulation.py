@@ -36,7 +36,7 @@ with open(_TEST_CONFIGS_PATH, 'r') as f:
 CONFIGS = _TEST_JSON['configurations']
 COMP = _TEST_JSON['compositions']
 ALLOY_STORE = {
-    'alloy_option': 'parent',
+    'alloy_option': 'single',
     'alloys': {
         'parent': {
             'name': 'Pym Alloy',
@@ -52,11 +52,13 @@ class TestLastSimulation(BaseTestCase):
     user = None
 
     def setUp(self) -> None:
-        self.user = User(**{
-            'first_name': 'Henry',
-            'last_name': 'Pym',
-            'email': 'hank@pymtechnologies.com'
-        })
+        self.user = User(
+            **{
+                'first_name': 'Henry',
+                'last_name': 'Pym',
+                'email': 'hank@pymtechnologies.com'
+            }
+        )
         self.user.set_password('Subatomic!')
         self.user.verified = True
         self.user.save()
@@ -289,7 +291,7 @@ class TestLastSimulation(BaseTestCase):
             data = json.loads(res.data.decode())
             err = (
                 "ValidationError (AlloyStore:None) (Value must be one of "
-                "('parent', 'both', 'mix'): ['alloy_option'])"
+                "('single', 'both', 'mix'): ['alloy_option'])"
             )
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
@@ -401,8 +403,10 @@ class TestLastSimulation(BaseTestCase):
             )
             data = json.loads(res.data.decode())
             err = (
-                "ValidationError (AlloyStore:None) (parent.compositions.19."
-                "weight.Cannot be a negative number.: ['alloys'])"
+                "ValidationError (AlloyStore:None) (Value must be one of "
+                "('single', 'both', 'mix'): ['alloy_option'] parent."
+                "compositions.19.weight.Cannot be a negative number.: "
+                "['alloys'])"
             )
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], "Model schema validation error.")
@@ -450,11 +454,13 @@ class TestLastSimulation(BaseTestCase):
 
     def test_get_detail_empty_no_last_configs(self):
         with app.test_client() as client:
-            user = User(**{
-                'first_name': 'Janet',
-                'last_name': 'van Dyne',
-                'email': 'janet@pymtechnologies.com'
-            })
+            user = User(
+                **{
+                    'first_name': 'Janet',
+                    'last_name': 'van Dyne',
+                    'email': 'janet@pymtechnologies.com'
+                }
+            )
             user.set_password('Subatomic!')
             user.verified = True
             user.save()
@@ -476,11 +482,13 @@ class TestLastSimulation(BaseTestCase):
 
     def test_get_detail_empty_no_last_alloy(self):
         with app.test_client() as client:
-            user = User(**{
-                'first_name': 'Janet',
-                'last_name': 'van Dyne',
-                'email': 'janet@pymtechnologies.com'
-            })
+            user = User(
+                **{
+                    'first_name': 'Janet',
+                    'last_name': 'van Dyne',
+                    'email': 'janet@pymtechnologies.com'
+                }
+            )
             user.set_password('Subatomic!')
             user.verified = True
             user.last_configuration = Configuration(**CONFIGS)
@@ -505,7 +513,7 @@ class TestLastSimulation(BaseTestCase):
         with app.test_client() as client:
             token = self.login(client)
 
-            client.post(
+            post_res = client.post(
                 '/user/last/simulation',
                 data=json.dumps(
                     {
@@ -515,6 +523,11 @@ class TestLastSimulation(BaseTestCase):
                 ),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
+            )
+            data = json.loads(post_res.data.decode())
+            self.assertEqual(
+                data['message'],
+                'Saved Alloy Store, Configurations and Results.'
             )
 
             res = client.get(

@@ -31,7 +31,7 @@ class BaseConfig:
 
     # Flask Email
     MAIL_SUBJECT_PREFIX = '[Arclytics]'
-    MAIL_DEFAULT_SENDER = 'Arclytics Team <admin@neuraldev.io>'
+    MAIL_DEFAULT_SENDER = 'Arclytics Team <admin@arclytics.io>'
     MAIL_SERVER = os.environ.get('MAIL_SERVER', None)
     MAIL_PORT = os.environ.get('MAIL_PORT', None)
     MAIL_USE_TLS = True

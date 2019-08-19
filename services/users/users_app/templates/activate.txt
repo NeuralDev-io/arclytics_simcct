@@ -7,7 +7,7 @@ the URL in your browser.
 
 {{ confirm_url }}
 
-If you are having trouble with this process, please contact our team at help@neuraldev.io.
+If you are having trouble with this process, please contact our team at help@arclytics.io.
 We're here to help.
 
 

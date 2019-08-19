@@ -12,6 +12,7 @@ const CCT = ({
   containerHeight,
   containerWidth,
   data,
+  userData,
   showUserCurve,
 }) => {
   let chartData = []
@@ -68,15 +69,19 @@ const CCT = ({
       },
     ]
 
-    // if (showUserCurve) {
-    //   chartData.push({
-    //     x: data.user_cooling_curve.time,
-    //     y: data.user_cooling_curve.temp,
-    //     name: 'User cooling curve',
-    //     mode: 'line',
-    //     marker: { color: colours.r500 },
-    //   })
-    // }
+    if (showUserCurve) {
+      chartData.push({
+        x: userData.time,
+        y: userData.temp,
+        name: 'User cooling curve',
+        mode: 'line',
+        marker: {
+          size: 10,
+          color: colours.r500,
+          line: { width: 10, color: colours.r500 },
+        },
+      })
+    }
   }
 
   if (chartData.length === 0) {
@@ -93,7 +98,7 @@ const CCT = ({
           autorange: true,
         },
         yaxis: {
-          type: 'log',
+          type: 'normal',
           autorange: true,
         },
       }}
@@ -127,6 +132,7 @@ CCT.propTypes = {
 
 const mapStateToProps = state => ({
   data: state.sim.results.CCT,
+  userData: state.sim.results.user_cooling_curve,
 })
 
 export default withDimension({

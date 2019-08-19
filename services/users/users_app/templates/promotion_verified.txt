@@ -3,7 +3,7 @@ Hi {{ promoter_name }},
 We are emailing to let you know that {{ user_name }} has
 acknowledged the promotion which you have them.
 
-If you need additional assistance, or you did not make this change, please contact help@neuraldev.io.
+If you need additional assistance, or you did not make this change, please contact help@arclytics.io.
 
 
 Cheers,

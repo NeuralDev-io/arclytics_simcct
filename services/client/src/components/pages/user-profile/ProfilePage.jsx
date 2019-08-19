@@ -25,34 +25,37 @@ class ProfilePage extends Component {
         https://stackoverflow.com/questions/51206488/how-to-set-component-state-conditionally
     */
     const { user } = props
+    // TODO(arvy@neuraldev.io): Get the user details.
+    //  Then populate your fields.
+    //  Map the state to the returned user details data.
     // console.log(user)
     this.state = {
       email: user.admin,
       firstName: user.first_name, // just in case we implement demo mode
       lastName: user.last_name,
       question1: user.profile
-        ? {label: user.profile.aim, value: user.profile.aim}
+        ? { label: user.profile.aim, value: user.profile.aim }
         : null,
       question1Select: [
         { label: 'Q1 Option 1', value: 'Q1 Option 1' },
         { label: 'Q1 Option 2', value: 'Q1 Option 2' },
       ],
-      question2: props.user.profile 
-        ? {label: user.profile.highest_education, value: user.profile.highest_education}
+      question2: props.user.profile
+        ? { label: user.profile.highest_education, value: user.profile.highest_education }
         : null,
       question2Select: [
         { label: 'Q2 Option 1', value: 'Q2 Option 1' },
         { label: 'Q2 Option 2', value: 'Q2 Option 2' },
       ],
-      question3: user.profile 
-        ? {label: user.profile.sci_tech_exp, value: user.profile.sci_tech_exp}
+      question3: user.profile
+        ? { label: user.profile.sci_tech_exp, value: user.profile.sci_tech_exp }
         : null,
       question3Select: [
         { label: 'Q3 Option 1', value: 'Q3 Option 1' },
         { label: 'Q3 Option 2', value: 'Q3 Option 2' },
       ],
-      question4: user.profile 
-        ? {label: user.profile.phase_transform_exp, value: user.profile.phase_transform_exp}
+      question4: user.profile
+        ? { label: user.profile.phase_transform_exp, value: user.profile.phase_transform_exp }
         : null,
       question4Select: [
         { label: 'Q4 Option 1', value: 'Q4 Option 1' },
@@ -75,7 +78,7 @@ class ProfilePage extends Component {
       ? this.setState({
         firstName: user.first_name, // just in case we implement demo mode
         lastName: user.last_name,
-        question1: user.profile 
+        question1: user.profile
           ? { label: user.profile.aim, value: user.profile.aim }
           : null,
         question2: user.profile
@@ -137,7 +140,6 @@ class ProfilePage extends Component {
   }
 
   render() {
-
     const {
       firstName,
       lastName,
@@ -160,45 +162,45 @@ class ProfilePage extends Component {
 
         <div className={styles.main}>
 
-            <h4 className={styles.header}>General</h4>
-            <div className={styles.generalFields}>
-              <div className={styles.row}>
-                <h6 className={styles.leftCol}> Email </h6>
-                <div className={styles.rightCol}>
-                  <h6>
-                    {user.email}
-                  </h6>
-                </div>
-              </div>
-              <div className={styles.row}>
-                <h6 className={styles.leftCol}>First name</h6>
-                <div className={styles.rightCol}>
-                  <TextField
-                    type="firstName"
-                    name="firstName"  
-                    value={firstName}
-                    placeholder="First Name"
-                    length="stretch"
-                    isDisabled={!edit}
-                    onChange={value => this.handleChange('firstName', value)}
-                  />
-                </div>
-              </div>
-              <div className={styles.row}>
-                <h6 className={styles.leftCol}> Last name </h6>
-                <div className={styles.rightCol}>
-                  <TextField
-                    type="lastName"
-                    name="lastName"
-                    value={lastName}
-                    placeholder="Last Name"
-                    length="stretch"
-                    isDisabled={!edit}
-                    onChange={value => this.handleChange('lastName', value)}
-                  />
-                </div>
+          <h4 className={styles.header}>General</h4>
+          <div className={styles.generalFields}>
+            <div className={styles.row}>
+              <h6 className={styles.leftCol}> Email </h6>
+              <div className={styles.rightCol}>
+                <h6>
+                  {user.email}
+                </h6>
               </div>
             </div>
+            <div className={styles.row}>
+              <h6 className={styles.leftCol}>First name</h6>
+              <div className={styles.rightCol}>
+                <TextField
+                  type="firstName"
+                  name="firstName"
+                  value={firstName}
+                  placeholder="First Name"
+                  length="stretch"
+                  isDisabled={!edit}
+                  onChange={value => this.handleChange('firstName', value)}
+                />
+              </div>
+            </div>
+            <div className={styles.row}>
+              <h6 className={styles.leftCol}> Last name </h6>
+              <div className={styles.rightCol}>
+                <TextField
+                  type="lastName"
+                  name="lastName"
+                  value={lastName}
+                  placeholder="Last Name"
+                  length="stretch"
+                  isDisabled={!edit}
+                  onChange={value => this.handleChange('lastName', value)}
+                />
+              </div>
+            </div>
+          </div>
 
           <div className={styles.about}>
             <h4 className={styles.header}> About yourself </h4>

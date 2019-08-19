@@ -522,7 +522,7 @@ class SimulationPage extends Component {
               <div className={styles.line}>
                 {/* NOTE: CCT Child Component */}
                 <h5>CCT</h5>
-                <CCT />
+                <CCT showUserCurve={displayUserCurve} />
               </div>
             </div>
           </div>

@@ -23,7 +23,7 @@ pipelines:
             - docker-compose up -d --build simcct users redis mongodb client
             # This should start the test runner for the API server
 #            - ./run_tests.sh -c -t server
-            - docker-compose exec -T users python manage.py test
+#            - docker-compose exec -T users python manage.py test
 #            - docker-compose exec -T simcct python manage.py test
             - docker-compose down
 

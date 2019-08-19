@@ -72,7 +72,17 @@ const TTT = (props) => {
   return (
     <Plot
       data={chartData}
-      layout={layout(containerWidth, containerHeight)}
+      layout={{
+        ...layout(containerWidth, containerHeight),
+        xaxis: {
+          type: 'log',
+          autorange: true
+        },
+        yaxis: {
+          type: 'log',
+          autorange: true
+        }
+      }}
       config={config}
     />
   )

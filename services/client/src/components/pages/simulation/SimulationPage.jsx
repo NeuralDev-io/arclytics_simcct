@@ -112,8 +112,10 @@ class SimulationPage extends Component {
       // if session store is already initiated, update it
       // otherwise, initiate a new session store with new Comp and update
       // the session config
-      if (sessionStoreInit) updateComp(alloys.alloyOption, name, alloy)
-      else {
+      if (sessionStoreInit) {
+        updateComp(alloys.alloyOption, name, alloy)
+          .catch(err => console.log(err))
+      } else {
         initComp(alloys.alloyOption, name, alloy)
           .then(
             (data) => {
@@ -134,14 +136,12 @@ class SimulationPage extends Component {
         const { configurations } = this.state
         const {
           grain_size_ASTM,
-          grain_size_diameter,
           nucleation_start,
           nucleation_finish,
           cct_cooling_rate,
         } = configurations
         updateConfig({
-          grain_size_ASTM,
-          grain_size_diameter,
+          grain_size: grain_size_ASTM,
           nucleation_start,
           nucleation_finish,
           cct_cooling_rate,
@@ -387,12 +387,24 @@ class SimulationPage extends Component {
   // Probably need to use this to do some validation checks before trying to run sim.
   runSimulation = () => {
     const { runSimConnect } = this.props
+    const { configurations, alloys } = this.state
+    const {
+      grain_size_ASTM,
+      nucleation_start,
+      nucleation_finish,
+      cct_cooling_rate,
+      start_temp,
+    } = configurations
     updateConfig({
-      nucleation_start: 0.0,
-      nucleation_finish: 99.9,
-      cct_cooling_rate: 10,
-      start_temp: 900,
+      grain_size: grain_size_ASTM,
+      nucleation_start,
+      nucleation_finish,
+      cct_cooling_rate,
+      start_temp,
     })
+
+    console.log('Simulation: ', configurations, alloys)
+
     runSimConnect()
   }
 
@@ -411,10 +423,14 @@ class SimulationPage extends Component {
         mix: alloys.mix,
       },
     }
+    const { grain_size_ASTM, grain_size_diameter, ...others } = configurations
+    const validConfigs = {
+      ...others,
+      grain_size: grain_size_ASTM,
+    }
     console.log(alloyStore)
-    postSaveSimulation(configurations, alloyStore)
+    postSaveSimulation(validConfigs, alloyStore)
   }
-
 
   render() {
     const {
@@ -426,10 +442,7 @@ class SimulationPage extends Component {
       alloys,
       shareModal,
     } = this.state
-    const {
-      runSimConnect,
-      history,
-    } = this.props
+    const { history } = this.props
 
     return (
       <React.Fragment>
@@ -470,15 +483,16 @@ class SimulationPage extends Component {
                 appearance="text"
                 onClick={() => this.handleShowModal('share')}
                 IconComponent={props => <Share2Icon {...props} />}
+                isDisabled={!sessionStoreInit}
               >
                 SHARE
               </Button>
-
               <Button
                 appearance="outline"
                 type="button"
                 onClick={this.saveCurrentSimulation}
                 IconComponent={props => <SaveIcon {...props} />}
+                isDisabled={!sessionStoreInit}
               >
                 SAVE
               </Button>
@@ -502,13 +516,15 @@ class SimulationPage extends Component {
           <div className={styles.results}>
             <h4>Results</h4>
             <div className={styles.charts}>
+              {/* NOTE: TTT Child Component */}
               <div className={styles.line}>
                 <h5>TTT</h5>
                 <TTT />
               </div>
               <div className={styles.line}>
+                {/* NOTE: CCT Child Component */}
                 <h5>CCT</h5>
-                <CCT />
+                <CCT showUserCurve={displayUserCurve} />
               </div>
             </div>
           </div>
@@ -547,7 +563,8 @@ class SimulationPage extends Component {
         <ShareModal
           show={shareModal}
           onClose={() => this.handleCloseModal('share')}
-          onConfirm={() => console.log('Sharing Confirmed')}
+          configurations={configurations}
+          alloys={alloys}
         />
       </React.Fragment>
     )

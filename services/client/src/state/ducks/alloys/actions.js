@@ -83,6 +83,7 @@ const createAlloy = (type, alloy) => (dispatch) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(alloy),
@@ -104,13 +105,17 @@ const createAlloy = (type, alloy) => (dispatch) => {
 }
 
 const updateAlloy = (type, alloy) => (dispatch) => {
-  fetch(`http://localhost:${getPort(type)}/${type}/alloys`, {
+  fetch(`http://localhost:${getPort(type)}/${type}/alloys/${alloy._id}`, { // eslint-disable-line
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
-    body: JSON.stringify(alloy),
+    body: JSON.stringify({
+      name: alloy.name,
+      compositions: alloy.compositions,
+    }),
   })
     .then(res => res.json())
     .then((res) => {
@@ -144,6 +149,7 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
+      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })

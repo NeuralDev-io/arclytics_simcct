@@ -57,7 +57,6 @@ def log_test_user_in(self, user: User, password: str) -> str:
 
 class TestAdminCreateService(BaseTestCase):
     """Tests for Admin creation and disable account endpoints"""
-
     def test_disable_account(self):
         """Test disable account is successful"""
         kylo = User(

@@ -1108,7 +1108,7 @@ class PhaseSimulation(object):
         # ========================================================== #
         # ==================== # PEARLITE CCR # ==================== #
         # ========================================================== #
-        torr_p, ccr_pcs, ccr_pcf = np.float(0.0), np.float(0.0), np.float(0.0)
+        torr_p, ccr_pcs, ccr_pcf = 0.0, 0.0, 0.0
         time_accumulate = 0
         temp_curr = self.bs
 
@@ -1146,7 +1146,7 @@ class PhaseSimulation(object):
         # ========================================================= #
         # ==================== # FERRITE CCR # ==================== #
         # ========================================================= #
-        torr_f, ccr_fcs, ccr_fcf = np.float(0.0), np.float(0.0), np.float(0.0)
+        torr_f, ccr_fcs, ccr_fcf = 0.0, 0.0, 0.0
         time_accumulate = 0
 
         # Start at Bainite temperature and work up to Bainite limit

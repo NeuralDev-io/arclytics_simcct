@@ -126,8 +126,8 @@ CCT.propTypes = {
     bainite_nucleation: linePropTypes,
     bainite_completion: linePropTypes,
     martensite: linePropTypes,
-    // user_cooling_curve: linePropTypes,
   }).isRequired,
+  userData: linePropTypes.isRequired,
 }
 
 const mapStateToProps = state => ({

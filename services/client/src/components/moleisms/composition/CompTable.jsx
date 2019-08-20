@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import withDimension from 'react-dimensions'
+import AutoSizer from 'react-virtualized-auto-sizer'
 import Table from '../../elements/table'
 import { SelfControlledTextField } from '../../elements/textfield'
 
@@ -12,7 +12,7 @@ class CompTable extends Component {
   }
 
   render() {
-    const { data, onChange, containerHeight } = this.props
+    const { data, onChange } = this.props
     const {
       alloyOption,
       parent,
@@ -126,23 +126,29 @@ class CompTable extends Component {
     ]
 
     return (
-      <Table
-        data={tableData}
-        columns={columns}
-        pageSize={tableData.length !== 0 ? Math.floor((containerHeight - 148) / 56) : 0}
-        showPageSizeOptions={false}
-        showPagination={tableData.length !== 0}
-        resizable={false}
-        hideDivider
-        condensed
-      />
+      <AutoSizer disableWidth>
+        {({ height }) => {
+          const pageSize = tableData.length !== 0 ? Math.floor((height - 148) / 56) : 0
+          return (
+            <Table
+              data={tableData}
+              columns={columns}
+              pageSize={pageSize}
+              key={pageSize}
+              showPageSizeOptions={false}
+              showPagination={tableData.length !== 0}
+              resizable={false}
+              hideDivider
+              condensed
+            />
+          )
+        }}
+      </AutoSizer>
     )
   }
 }
 
 CompTable.propTypes = {
-  // props given by withDimension()
-  containerHeight: PropTypes.number.isRequired,
   data: PropTypes.shape({
     alloyOption: PropTypes.string,
     parent: PropTypes.shape({
@@ -183,6 +189,4 @@ CompTable.propTypes = {
   onChange: PropTypes.func.isRequired,
 }
 
-export default withDimension({
-  className: styles.wrapper,
-})(CompTable)
+export default CompTable

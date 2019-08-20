@@ -19,14 +19,14 @@
 .default {
   @extend .base;
   // default buton style
-  background-color: $ag500;
-  border: 2px solid $ag500;
+  background-color: $arc500;
+  border: 2px solid $arc500;
   color: $n0;
   box-shadow: $base-shadow;
 
   &:hover {
-    background-color: adjust-color($color: $ag500, $saturation: 20%);
-    border-color: adjust-color($color: $ag500, $saturation: 20%);
+    background-color: adjust-color($color: $arc500, $saturation: 20%);
+    border-color: adjust-color($color: $arc500, $saturation: 20%);
     box-shadow: $shadow-up;
   }
 
@@ -70,13 +70,13 @@
 .outline {
   @extend .base;
   background-color: transparent;
-  color: $ag500;
-  border: 2px solid $ag500;
+  color: $arc500;
+  border: 2px solid $arc500;
   box-shadow: none;
 
   &:hover {
-    background-color: adjust-color($color: $ag500, $saturation: 20%);
-    border-color: adjust-color($color: $ag500, $saturation: 20%);
+    background-color: adjust-color($color: $arc500, $saturation: 20%);
+    border-color: adjust-color($color: $arc500, $saturation: 20%);
     box-shadow: none;
     color: $n0;
   }
@@ -122,7 +122,7 @@
 .text {
   @extend .base;
   background-color: transparent;
-  color: $ag500;
+  color: $arc500;
   border: none;
   box-shadow: none;
 

@@ -66,9 +66,19 @@
 
       .line {
         flex-basis: 45%;
+        min-height: 25rem;
+        max-height: 30rem;
+        z-index: 1001;
+        position: relative;
+        display: flex;
+        flex-flow: column;
 
         & > h5 {
           margin-bottom: .5rem;
+        }
+
+        & > div {
+          flex-grow: 1;
         }
       }
     }

@@ -1,9 +1,11 @@
 import {
-  GET_USERS,
+  GET_USER_PROFILE,
+  CREATE_USER_PROFILE,
+  UPDATE_USER_PROFILE,
 } from './types'
 
-export const getUsers = () => (dispatch) => {
-  fetch('http://localhost:8000/users', {
+export const getUserProfile = () => (dispatch) => { // eslint-disable-line
+  fetch('http://localhost:8000/user', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -11,18 +13,60 @@ export const getUsers = () => (dispatch) => {
     },
   })
     .then(res => res.json())
-    .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
-      if (res.status === 'success') {
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'success') {
         dispatch({
-          type: GET_USERS,
-          payload: res.data.users || [],
+          type: GET_USER_PROFILE,
+          payload: data.data,
         })
       }
     })
     .catch(err => console.log(err))
 }
 
-export const updateUser = () => (dispatch) => {
+export const createUserProfile = values => (dispatch) => {
+  fetch('http://localhost:8000/user/profile', {
+    method: 'POST',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify(values),
+  })
+    .then(res => res.json())
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'success') {
+        dispatch({
+          type: CREATE_USER_PROFILE,
+          payload: data.data,
+        })
+      }
+    })
+    .catch(err => console.log(err))
+}
 
+export const updateUserProfile = values => (dispatch) => {
+  fetch('http://localhost:8000/user', {
+    method: 'PATCH',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify(values),
+  })
+    .then(res => res.json())
+    .then((data) => {
+      if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'success') {
+        dispatch({
+          type: UPDATE_USER_PROFILE,
+          payload: data.data,
+        })
+      }
+    })
+    .catch(err => console.log(err))
 }

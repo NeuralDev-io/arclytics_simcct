@@ -3,9 +3,11 @@ import PropTypes from 'prop-types'
 import { Route } from 'react-router-dom'
 import { connect } from 'react-redux'
 
+import { getUserProfile } from '../../../state/ducks/users/actions'
+
 import AppBar from '../../moleisms/appbar'
 import UserSidebar from '../../moleisms/user-sidebar'
-import ProfilePage from '../user-profile'
+import ProfilePage from '../../moleisms/user-profile'
 import UserAlloys from '../../moleisms/user-alloys'
 import UserSavedSimulations from '../../moleisms/user-sim'
 
@@ -21,10 +23,12 @@ class UserPage extends Component {
   componentDidMount() {
     const { history } = this.props
     history.push('/user/profile')
+    getUserProfile()
   }
 
   render() {
-    const { history } = this.props
+    // this.props.getUserProfileConnect()
+    const { history, user } = this.props
     return (
       <React.Fragment>
         <AppBar active="user" redirect={history.push} />
@@ -34,7 +38,7 @@ class UserPage extends Component {
         </div>
         <div className={styles.main}>
           {/* Define the routes for the right panel. */}
-          <Route path="/user/profile" render={props => <ProfilePage {...props} />} />
+          <Route path="/user/profile" render={props => <ProfilePage {...props} userProf={user}/>} />
           <Route path="/user/alloys" render={props => <UserAlloys {...props} />} />
           <Route path="/user/simulations" render={props => <UserSavedSimulations {...props} />} />
         </div>
@@ -48,9 +52,11 @@ UserPage.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  user: state.persist.user,
+  user: state.user,
 })
 
-const mapDispatchToProps = {}
+const mapDispatchToProps = {
+  getUserProfileConnect: getUserProfile,
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserPage)

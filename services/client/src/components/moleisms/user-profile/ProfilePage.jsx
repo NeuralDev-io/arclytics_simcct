@@ -12,7 +12,7 @@ import {
   getUserProfile,
   createUserProfile,
   updateUserProfile,
-} from '../../../state/ducks/users/action'
+} from '../../../state/ducks/users/actions'
 
 import TextField from '../../elements/textfield'
 import Select from '../../elements/select'
@@ -25,7 +25,7 @@ class ProfilePage extends Component {
     super(props)
     this.state = {
       email: '',
-      firstName: '', 
+      firstName: '',
       lastName: '',
       question1: '',
       question1Select: [
@@ -53,23 +53,30 @@ class ProfilePage extends Component {
       pwdOrEmail: false,
       updateError: null,
       edit: false,
+      newEmail,
     }
   }
 
   componentDidMount = () => {
-    //TODO: Make a user api call here and map it 
-    const { history } = this.props
+    const { history, getUserProfileConnect, user } = this.props
     if (!localStorage.getItem('token')) {
       history.push('/signin') // eslint-disable-line
+    } else {
+      this.setState({
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+      })
     }
   }
 
   handleEdit = () => {
     const { user } = this.props
     const { edit } = this.state
+    console.log(user)
     if (edit) { 
       this.setState({ 
-        firstName: user.firsName, // just in case we implement demo mode
+        firstName: user.firstName,
         lastName: user.last_name,
         question1: user.profile
           ? { label: user.profile.aim, value: user.profile.aim }
@@ -136,7 +143,9 @@ class ProfilePage extends Component {
 
   render() {
     const {
+      email,
       firstName,
+      lastName,
       question1,
       question1Select,
       question2,
@@ -152,6 +161,7 @@ class ProfilePage extends Component {
       newPwd,
       cnfrmPwd,
       isCurrPwdCorrect,
+      newEmail,
     } = this.state
     const { user } = this.props
     return (
@@ -187,7 +197,7 @@ class ProfilePage extends Component {
                 <TextField
                   type="lastName"
                   name="lastName"
-                  value={user.last_name}
+                  value={lastName}
                   placeholder="Last Name"
                   length="stretch"
                   isDisabled={!edit}
@@ -315,6 +325,9 @@ class ProfilePage extends Component {
                       isDisabled={isCurrPwdCorrect}
                       onChange={value => this.handleChange('cnfrmPwd', value)}
                     />
+                    <Button>
+                      Submit
+                    </Button>
                   </div>
                 )
                   : (
@@ -323,15 +336,20 @@ class ProfilePage extends Component {
                       <TextField
                         type="Change Email"
                         name="Change Email"
-                        onChange={value => this.handleChange('cnfrmPwd', value)}
+                        value={newEmail}
+                        length="stretch"
+                        onChange={value => this.handleChange('newEmail', value)}
                       />
+                      <Button>
+                        Verify new email
+                      </Button>
                     </div>
                   )
             }
             <Button
               className={styles.pwdOrEmail}
-              onClick={pwdOrEmail => this.handleChange('pwdOrEmail', !pwdOrEmail)}
-              appearance={ pwdOrEmail ? ('default') : ('outline')}
+              onClick={() => this.handleChange('pwdOrEmail', !pwdOrEmail)}
+              appearance={pwdOrEmail ? ('default') : ('outline')}
               length="large"
             >
               {pwdOrEmail ? (' Change your Email ?') : ('Change your passsword ?')}
@@ -365,13 +383,16 @@ ProfilePage.propTypes = {
       phase_transform_exp: PropTypes.string,
     }),
   })).isRequired,
+  getUserProfileConnect: PropTypes.func.isRequired,
   updateUserProfileConnect: PropTypes.func.isRequired,
   createUserProfileConnect: PropTypes.func.isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
 }
 
+
 const mapStateToProps = state => ({
-  user: state.persist.user,
+  user: state.user.user,
+  first_name: state.user.first_name,
 })
 
 const mapDispatchToProps = {
@@ -379,5 +400,6 @@ const mapDispatchToProps = {
   updateUserProfileConnect: updateUserProfile,
   createUserProfileConnect: createUserProfile,
 }
+
 
 export default connect(mapStateToProps, mapDispatchToProps)(ProfilePage)

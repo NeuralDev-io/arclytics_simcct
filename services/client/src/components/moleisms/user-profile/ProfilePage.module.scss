@@ -80,18 +80,6 @@ $bg-img: url('../../../assets/background_img-min.png');
 
 } 
 
-.security{
-  margin-bottom: 3.5rem;
-  display: flex;
-  flex-flow: column;
-  justify-content: space-between;
-  width: 22.5vw;
-
-  h5, h6{
-    margin-bottom: 1.5rem;
-  } 
-
-}
 
 .about{
   .questions {
@@ -107,6 +95,22 @@ $bg-img: url('../../../assets/background_img-min.png');
         margin-bottom:1.25rem;
       }
     }
+  }
+}
+
+
+.security{
+  margin-bottom: 3.5rem;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+  width: 35rem;
+
+  h5, h6{
+    margin-bottom: 1.5rem;
+  }
+  .pwdOrEmail{
+    align-self: flex-end;
   }
 }
 

@@ -156,6 +156,7 @@ class CompTable extends Component {
               resizable={false}
               hideDivider
               condensed
+              loading={data.isLoading}
             />
           )
         }}
@@ -166,6 +167,7 @@ class CompTable extends Component {
 
 CompTable.propTypes = {
   data: PropTypes.shape({
+    isLoading: PropTypes.bool.isRequired,
     alloyOption: PropTypes.string,
     parent: PropTypes.shape({
       name: PropTypes.string,

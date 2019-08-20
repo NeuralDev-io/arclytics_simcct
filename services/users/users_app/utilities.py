@@ -54,6 +54,24 @@ class PasswordValidationError(Exception):
               self).__init__('A password must be set before saving.')
 
 
+class URLTokenError(Exception):
+    """
+    A custom exception to be raised from any itsdangerous package exceptions.
+    """
+
+    def __init__(self, msg: str = None):
+        super(URLTokenError, self).__init__(msg)
+
+
+class URLTokenExpired(Exception):
+    """
+    Custom exception to be raised from any itsdangerous package exceptions.
+    """
+
+    def __init__(self, msg: str = None):
+        super(URLTokenExpired, self).__init__(msg)
+
+
 class ElementSymbolInvalid(Exception):
     """Raises an Exception if the Element does not conform to a valid symbol
     as used in the Periodic Table of Elements.

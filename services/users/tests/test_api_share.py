@@ -51,7 +51,6 @@ def log_test_user_in(self, user: User, password: str) -> str:
 
 class TestShareService(BaseTestCase):
     """Test for sharing simulations via link and email"""
-
     def test_share_configuration_link_success(self):
         """
         Ensure a user is able to obtain a shareable link for valid simulation

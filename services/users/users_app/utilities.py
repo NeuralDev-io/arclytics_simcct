@@ -80,6 +80,21 @@ class MissingElementError(Exception):
         super(MissingElementError, self).__init__(message)
 
 
+class DuplicateElementError(Exception):
+    """
+    Raises an Exception if there is a duplicate element in an alloy, i.e. there
+    are two or more elements in an alloy with the same symbol.
+    """
+
+    default_err = (
+        'ValidationError (Alloy) (Alloy cannot have multiple elements with the'
+        'chemical symbol)'
+    )
+
+    def __init(self, message=default_err):
+        super(DuplicateElementError, self).__init__(message)
+
+
 class SimpleUTC(tzinfo):
     def tzname(self, dt: Optional[datetime]) -> Optional[str]:
         return 'UTC'

@@ -37,7 +37,7 @@ from logger.arc_logger import AppLogger
 from users_app.extensions import bcrypt
 from users_app.utilities import (
     JSONEncoder, PeriodicTable, PasswordValidationError, ElementSymbolInvalid,
-    ElementInvalid, MissingElementError
+    ElementInvalid, MissingElementError, DuplicateElementError
 )
 
 logger = AppLogger(__name__)
@@ -107,6 +107,16 @@ def within_percentage_bounds(val):
         raise ValidationError('Must be less than 100.0.')
     if val < 0.0:
         raise ValidationError('Must be more than 0.0.')
+
+
+def validate_no_duplicate_elements(alloy_comp: list) -> Tuple[bool, str]:
+    used_elements = []
+    for el in alloy_comp:
+        if el['symbol'] in used_elements:
+            return False, el['symbol']
+        else:
+            used_elements.append(el['symbol'])
+    return True, None
 
 
 # ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
@@ -310,6 +320,12 @@ class Alloy(EmbeddedDocument):
         valid, missing = validate_comp_elements(self.compositions)
         if not valid:
             raise MissingElementError(f'Missing elements {missing}')
+
+        no_duplicates, duplicate = validate_no_duplicate_elements(
+            self.compositions
+        )
+        if not no_duplicates:
+            raise DuplicateElementError(f'Duplicate element {duplicate}')
 
     def __str__(self):
         return self.to_json()

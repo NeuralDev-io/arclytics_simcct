@@ -18,7 +18,6 @@ class CompSidebar extends Component {
 
   render() {
     const {
-      values,
       onChange,
       onSimulate,
       storeInit,
@@ -44,13 +43,11 @@ class CompSidebar extends Component {
         </header>
         <div style={{ display: showSettings ? 'block' : 'none' }}>
           <CompForm
-            values={values}
             onChange={onChange}
           />
         </div>
         <div className={styles.table}>
           <CompTable
-            data={values}
             onChange={onChange}
           />
         </div>
@@ -68,43 +65,6 @@ class CompSidebar extends Component {
 }
 
 CompSidebar.propTypes = {
-  values: PropTypes.shape({
-    alloyOption: PropTypes.string,
-    parent: PropTypes.shape({
-      name: PropTypes.string,
-      compositions: PropTypes.arrayOf(PropTypes.shape({
-        symbol: PropTypes.string,
-        weight: PropTypes.oneOfType([
-          PropTypes.string,
-          PropTypes.number,
-        ]),
-      })),
-    }),
-    weld: PropTypes.shape({
-      name: PropTypes.string,
-      compositions: PropTypes.arrayOf(PropTypes.shape({
-        symbol: PropTypes.string,
-        weight: PropTypes.oneOfType([
-          PropTypes.string,
-          PropTypes.number,
-        ]),
-      })),
-    }),
-    mix: PropTypes.shape({
-      name: PropTypes.string,
-      compositions: PropTypes.arrayOf(PropTypes.shape({
-        symbol: PropTypes.string,
-        weight: PropTypes.oneOfType([
-          PropTypes.string,
-          PropTypes.number,
-        ]),
-      })),
-    }),
-    dilution: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.number,
-    ]),
-  }).isRequired,
   onChange: PropTypes.func.isRequired,
   onSimulate: PropTypes.func.isRequired,
   storeInit: PropTypes.bool.isRequired,

@@ -1,18 +1,34 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import Table from '../../elements/table'
 import { SelfControlledTextField } from '../../elements/textfield'
+import { updateComp } from '../../../state/ducks/sim/actions'
 
 import styles from './CompTable.module.scss'
 
 class CompTable extends Component {
-  updateComp = (name, value) => {
+  handleChangeComp = (type, symbol, value) => {
+    const { data, updateCompConnect } = this.props
+    const alloy = { ...data[type] }
+    const idx = alloy.compositions.findIndex(elem => elem.symbol === symbol)
+    const newComp = alloy.compositions
+    if (idx !== -1) {
+      newComp[idx] = {
+        ...newComp[idx],
+        weight: value,
+      }
+    }
 
+    updateCompConnect(data.alloyOption, type, {
+      ...alloy,
+      compositions: newComp,
+    })
   }
 
   render() {
-    const { data, onChange } = this.props
+    const { data } = this.props
     const {
       alloyOption,
       parent,
@@ -85,8 +101,9 @@ class CompTable extends Component {
         Cell: ({ row, value }) => (
           <SelfControlledTextField
             type="text"
+            key={row.symbol}
             name={`parent_${row.symbol}`}
-            onBlur={e => onChange(`parent_${row.symbol}`, e.target.value)}
+            onBlur={e => this.handleChangeComp('parent', row.symbol, e.target.value)}
             defaultValue={value || '0.0'}
             length="stretch"
             isDisabled={value === undefined}
@@ -100,8 +117,9 @@ class CompTable extends Component {
         Cell: ({ row, value }) => (
           <SelfControlledTextField
             type="text"
+            key={row.symbol}
             name={`weld_${row.symbol}`}
-            onBlur={e => onChange(`weld_${row.symbol}`, e.target.value)}
+            onBlur={e => this.handleChangeComp('weld', row.symbol, e.target.value)}
             defaultValue={value || '0.0'}
             length="stretch"
             isDisabled={value === undefined}
@@ -184,7 +202,15 @@ CompTable.propTypes = {
       PropTypes.number,
     ]),
   }).isRequired,
-  onChange: PropTypes.func.isRequired,
+  updateCompConnect: PropTypes.func.isRequired,
 }
 
-export default CompTable
+const mapStateToProps = state => ({
+  data: state.sim.alloys,
+})
+
+const mapDispatchToProps = {
+  updateCompConnect: updateComp,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(CompTable)

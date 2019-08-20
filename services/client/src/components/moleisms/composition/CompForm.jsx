@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import Select from '../../elements/select'
 import { TextFieldExtra } from '../../elements/textfield'
 import { getGlobalAlloys, getUserAlloys } from '../../../state/ducks/alloys/actions'
+import { updateAlloyOption, initSession, updateDilution } from '../../../state/ducks/sim/actions'
 
 import styles from './CompForm.module.scss'
 
@@ -23,12 +24,33 @@ class CompForm extends Component {
     }
   }
 
+  handleChangeAlloy = (name, option) => {
+    const {
+      simAlloys,
+      initSessionConnect,
+    } = this.props
+    const alloy = this.findAlloy(option.value)
+
+    initSessionConnect(simAlloys.alloyOption, name, alloy)
+  }
+
+  findAlloy = (id) => {
+    const { globalAlloys, userAlloys } = this.props
+    let idx = globalAlloys.findIndex(a => a._id === id)
+    if (idx === -1) {
+      idx = userAlloys.findIndex(a => a._id === id)
+      return userAlloys[idx]
+    }
+    return globalAlloys[idx]
+  }
+
   render() {
     const {
       globalAlloys,
       userAlloys,
-      values,
-      onChange,
+      simAlloys,
+      updateAlloyOptionConnect,
+      updateDilutionConnect,
     } = this.props
 
     const alloyOptions = [
@@ -37,8 +59,8 @@ class CompForm extends Component {
       { label: 'Diluted mix', value: 'mix' },
     ]
 
-    const globalOptions = globalAlloys.map(alloy => ({ label: alloy.name, value: alloy.name }))
-    const userOptions = userAlloys.map(alloy => ({ label: alloy.name, value: alloy.name }))
+    const globalOptions = globalAlloys.map(alloy => ({ label: alloy.name, value: alloy._id }))
+    const userOptions = userAlloys.map(alloy => ({ label: alloy.name, value: alloy._id }))
     const compOptions = [
       {
         label: 'Global alloys',
@@ -59,11 +81,11 @@ class CompForm extends Component {
             placeholder="Choose alloy"
             options={alloyOptions}
             value={
-              alloyOptions[alloyOptions.findIndex(o => o.value === values.alloyOption)]
+              alloyOptions[alloyOptions.findIndex(o => o.value === simAlloys.alloyOption)]
               || null
             }
             length="long"
-            onChange={val => onChange('alloyOption', val)}
+            onChange={val => updateAlloyOptionConnect(val.value)}
           />
         </div>
         <div className="input-col">
@@ -73,45 +95,45 @@ class CompForm extends Component {
             placeholder="Choose composition"
             options={compOptions}
             value={
-              globalOptions[globalOptions.findIndex(c => c.value === values.parent.name)]
-              || userOptions[userOptions.findIndex(c => c.value === values.parent.name)]
+              globalOptions[globalOptions.findIndex(c => c.value === simAlloys.parent._id)]
+              || userOptions[userOptions.findIndex(c => c.value === simAlloys.parent._id)]
               || null
             }
             length="stretch"
-            onChange={val => onChange('parent', val)}
+            onChange={val => this.handleChangeAlloy('parent', val)}
             className={styles.select}
             isSearchable
           />
         </div>
         <div className="input-col">
-          <h6 className={`${values.alloyOption === 'single' && 'text--disabled'}`}>Alloy 2</h6>
+          <h6 className={`${simAlloys.alloyOption === 'single' && 'text--disabled'}`}>Alloy 2</h6>
           <Select
             name="weld"
             placeholder="Choose composition"
             options={compOptions}
             value={
-              globalOptions[globalOptions.findIndex(c => c.value === values.weld.name)]
-              || userOptions[userOptions.findIndex(c => c.value === values.weld.name)]
+              globalOptions[globalOptions.findIndex(c => c.value === simAlloys.weld._id)]
+              || userOptions[userOptions.findIndex(c => c.value === simAlloys.weld._id)]
               || null
             }
             length="stretch"
-            onChange={val => onChange('weld', val)}
+            onChange={val => this.handleChangeAlloy('weld', val)}
             className={styles.select}
-            isDisabled={values.alloyOption === 'single'}
+            isDisabled={simAlloys.alloyOption === 'single'}
             isSearchable
           />
         </div>
         <div className="input-col">
-          <h6 className={`${(values.alloyOption === 'single' || values.alloyOption === 'both') && 'text--disabled'}`}>Dilution</h6>
+          <h6 className={`${(simAlloys.alloyOption === 'single' || simAlloys.alloyOption === 'both') && 'text--disabled'}`}>Dilution</h6>
           <TextFieldExtra
             type="text"
             name="dilution"
             placeholder="Dilution"
-            value={values.dilution}
+            value={simAlloys.dilution}
             length="short"
-            onChange={val => onChange('dilution', val)}
+            onChange={val => updateDilutionConnect(val)}
             suffix="%"
-            isDisabled={values.alloyOption === 'single' || values.alloyOption === 'both'}
+            isDisabled={simAlloys.alloyOption === 'single' || simAlloys.alloyOption === 'both'}
           />
         </div>
       </form>
@@ -120,7 +142,8 @@ class CompForm extends Component {
 }
 
 CompForm.propTypes = {
-  values: PropTypes.shape({
+  // props from connect()
+  simAlloys: PropTypes.shape({
     alloyOption: PropTypes.string,
     parent: PropTypes.shape({
       name: PropTypes.string,
@@ -157,7 +180,6 @@ CompForm.propTypes = {
       PropTypes.number,
     ]),
   }).isRequired,
-  onChange: PropTypes.func.isRequired,
   globalAlloys: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string,
     compositions: PropTypes.arrayOf(PropTypes.shape({
@@ -176,16 +198,23 @@ CompForm.propTypes = {
   })).isRequired,
   getGlobalAlloysConnect: PropTypes.func.isRequired,
   getUserAlloysConnect: PropTypes.func.isRequired,
+  updateAlloyOptionConnect: PropTypes.func.isRequired,
+  initSessionConnect: PropTypes.func.isRequired,
+  updateDilutionConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
   globalAlloys: state.alloys.global,
   userAlloys: state.alloys.user,
+  simAlloys: state.sim.alloys,
 })
 
 const mapDispatchToProps = {
   getGlobalAlloysConnect: getGlobalAlloys,
   getUserAlloysConnect: getUserAlloys,
+  updateAlloyOptionConnect: updateAlloyOption,
+  initSessionConnect: initSession,
+  updateDilutionConnect: updateDilution,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(CompForm)

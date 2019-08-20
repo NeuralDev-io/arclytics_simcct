@@ -98,7 +98,7 @@ class Configurations(Resource):
             sess_configs['nucleation_start'] = float(nuc_start)
 
         nuc_finish = patch_data.get('nucleation_finish', None)
-        if nuc_start:
+        if nuc_finish:
             sess_configs['nucleation_finish'] = float(nuc_finish)
 
         start_temp = patch_data.get('start_temp', None)

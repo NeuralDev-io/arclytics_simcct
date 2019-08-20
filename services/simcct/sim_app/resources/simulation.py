@@ -151,7 +151,7 @@ class Simulation(Resource):
         data = {
             'TTT': sim.plots_data.get_ttt_plot_data(),
             'CCT': sim.plots_data.get_cct_plot_data(),
-            'user_cooling_curve': sim.plots_data.get_user_cool_plot_data()
+            'USER': sim.plots_data.get_user_cool_plot_data()
         }
 
         response['status'] = 'success'

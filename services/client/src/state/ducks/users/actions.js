@@ -1,13 +1,12 @@
 import {
-  RUN_SIM,
+  GET_USERS,
 } from './types'
 
-export const runSim = () => (dispatch) => {
-  fetch('http://localhost:8001/simulate', {
+export const getUsers = () => (dispatch) => {
+  fetch('http://localhost:8000/users', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
@@ -16,14 +15,14 @@ export const runSim = () => (dispatch) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
         dispatch({
-          type: RUN_SIM,
-          payload: res.data,
+          type: GET_USERS,
+          payload: res.data.users || [],
         })
       }
     })
     .catch(err => console.log(err))
 }
 
-export const getAlloy = alloyId => (dispatch) => {
-  // get one a alloy
+export const updateUser = () => (dispatch) => {
+
 }

@@ -9,7 +9,12 @@ import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import AlloyModal from './AlloyModal'
 import AlloyDeleteModal from './AlloyDeleteModal'
-import { getGlobalAlloys } from '../../../state/ducks/alloys/actions'
+import {
+  getGlobalAlloys,
+  createGlobalAlloys,
+  updateGlobalAlloys,
+  deleteGlobalAlloys,
+} from '../../../state/ducks/alloys/actions'
 
 import styles from './AdminAlloys.module.scss'
 
@@ -17,10 +22,16 @@ class AdminAlloys extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      name: '',
-      compositions: [],
+      alloyId: '',
+      searchName: '',
+      currentAlloy: {
+        _id: '',
+        compositions: [],
+        name: '',
+      },
       addModal: false,
       deleteModal: false,
+      editModal: false,
     }
   }
 
@@ -33,21 +44,65 @@ class AdminAlloys extends Component {
 
   handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
 
-  handleAddAlloy = () => {
-    this.setState({ compositions: [] })
+  showAddAlloy = () => {
+    const defaultElements = ['C', 'Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', 'W', 'As', 'Fe']
+    const compositions = defaultElements.map(sym => ({ symbol: sym, weight: 0 }))
+    this.setState({
+      currentAlloy: {
+        _id: '',
+        compositions,
+        name: '',
+      },
+    })
     this.handleShowModal('add')
   }
+
+  showDeleteAlloy = (alloy) => {
+    this.setState({ alloyId: alloy._id }) // eslint-disable-line
+    this.handleShowModal('delete')
+  }
+
+  showEditAlloy = (alloy) => {
+    this.setState({ currentAlloy: alloy })
+    this.handleShowModal('edit')
+  }
+
+  addAlloy = (alloy) => {
+    const { createGlobalAlloysConnect } = this.props
+    createGlobalAlloysConnect(alloy)
+    this.handleCloseModal('add')
+  }
+
+  editAlloy = (alloy) => {
+    const { updateGlobalAlloysConnect } = this.props
+    const { currentAlloy } = this.state
+    updateGlobalAlloysConnect({
+      _id: currentAlloy._id, // eslint-disable-line
+      ...alloy,
+    })
+    this.handleCloseModal('edit')
+  }
+
+  deleteAlloy = (alloyId) => {
+    const { deleteGlobalAlloysConnect } = this.props
+    deleteGlobalAlloysConnect(alloyId)
+    this.handleCloseModal('delete')
+  }
+
+  handleAlloyChange = alloy => this.setState({ currentAlloy: alloy })
 
   render() {
     const { globalAlloys } = this.props
     const {
-      name,
-      compositions,
+      alloyId,
+      currentAlloy,
+      searchName,
       addModal,
       deleteModal,
+      editModal,
     } = this.state
 
-    const tableData = globalAlloys.filter(a => a.name.includes(name))
+    const tableData = globalAlloys.filter(a => a.name.includes(searchName))
 
     const columns = [
       {
@@ -56,9 +111,10 @@ class AdminAlloys extends Component {
       },
       {
         Header: '',
-        Cell: (
+        Cell: ({ original }) => (
           <div className={styles.actions}>
             <Button
+              onClick={() => this.showEditAlloy(original)}
               appearance="text"
               length="short"
               IconComponent={props => <EditIcon {...props} />}
@@ -66,7 +122,7 @@ class AdminAlloys extends Component {
               Edit
             </Button>
             <Button
-              onClick={() => this.handleShowModal('delete')}
+              onClick={() => this.showDeleteAlloy(original)}
               appearance="text"
               color="dangerous"
               IconComponent={props => <TrashIcon {...props} />}
@@ -88,15 +144,15 @@ class AdminAlloys extends Component {
             <TextField
               type="text"
               length="long"
-              name="name"
+              name="searchName"
               placeholder="Alloy name"
-              value={name}
-              onChange={value => this.setState({ name: value })}
+              value={searchName}
+              onChange={value => this.setState({ searchName: value })}
             />
           </div>
           <Button
             appearance="outline"
-            onClick={this.handleAddAlloy}
+            onClick={this.showAddAlloy}
             IconComponent={props => <PlusIcon {...props} />}
             length="short"
           >
@@ -114,14 +170,24 @@ class AdminAlloys extends Component {
           condensed
         />
         <AlloyModal
-          compositions={compositions}
+          alloy={currentAlloy}
+          onChange={this.handleAlloyChange}
           show={addModal}
           onClose={() => this.handleCloseModal('add')}
+          onSave={alloy => this.addAlloy(alloy)}
+        />
+        <AlloyModal
+          alloy={currentAlloy}
+          onChange={this.handleAlloyChange}
+          show={editModal}
+          onClose={() => this.handleCloseModal('edit')}
+          onSave={(alloy => this.editAlloy(alloy))}
         />
         <AlloyDeleteModal
+          alloyId={alloyId}
           show={deleteModal}
           onClose={() => this.handleCloseModal('delete')}
-          onConfirm={() => console.log('Delete Confirmed')}
+          onConfirm={id => this.deleteAlloy(id)}
         />
       </div>
     )
@@ -138,6 +204,9 @@ AdminAlloys.propTypes = {
     })),
   })).isRequired,
   getGlobalAlloysConnect: PropTypes.func.isRequired,
+  createGlobalAlloysConnect: PropTypes.func.isRequired,
+  updateGlobalAlloysConnect: PropTypes.func.isRequired,
+  deleteGlobalAlloysConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -146,6 +215,9 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   getGlobalAlloysConnect: getGlobalAlloys,
+  createGlobalAlloysConnect: createGlobalAlloys,
+  updateGlobalAlloysConnect: updateGlobalAlloys,
+  deleteGlobalAlloysConnect: deleteGlobalAlloys,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdminAlloys)

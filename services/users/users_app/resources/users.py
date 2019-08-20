@@ -21,12 +21,11 @@ This file defines all the API resource routes and controller definitions using
 the Flask Resource inheritance model.
 """
 
-import os
 from datetime import datetime
 
 from typing import Tuple
 
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
@@ -43,6 +42,7 @@ logger = AppLogger(__name__)
 class PingTest(Resource):
     """Just a sanity check"""
 
+    # noinspection PyMethodMayBeStatic
     def get(self) -> Tuple[dict, int]:
         response = {'status': 'success', 'message': 'pong'}
         return response, 200
@@ -53,6 +53,7 @@ class UserList(Resource):
 
     method_decorators = {'get': [authenticate_admin]}
 
+    # noinspection PyMethodMayBeStatic
     def get(self, resp) -> Tuple[dict, int]:
         """Get all users only available to admins."""
         user_list = User.as_dict
@@ -65,11 +66,13 @@ class Users(Resource):
 
     method_decorators = {'get': [authenticate], 'patch': [authenticate]}
 
+    # noinspection PyMethodMayBeStatic
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
         response = {'status': 'success', 'data': user.to_dict()}
         return response, 200
 
+    # noinspection PyMethodMayBeStatic
     def patch(self, resp) -> Tuple[dict, int]:
         # Get patch data
         data = request.get_json()
@@ -219,10 +222,9 @@ class Users(Resource):
 class UserProfiles(Resource):
     """Create/Retrieve/Update User's profile details"""
 
-    method_decorators = {
-        'post': [authenticate]
-    }
+    method_decorators = {'post': [authenticate]}
 
+    # noinspection PyMethodMayBeStatic
     def post(self, resp) -> Tuple[dict, int]:
         # Get post data
         data = request.get_json()

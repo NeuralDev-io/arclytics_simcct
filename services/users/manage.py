@@ -126,8 +126,8 @@ def seed_user_db():
         tbl.add_row(
             (
                 str(i + 1), u['email'],
-                '{} {}'.format(u['first_name'], u['last_name']),
-                new_user.is_admin,
+                '{} {}'.format(u['first_name'],
+                               u['last_name']), new_user.is_admin,
                 new_user.saved_alloys.count()
             )
         )

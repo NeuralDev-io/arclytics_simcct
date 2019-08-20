@@ -17,7 +17,11 @@ class UserPage extends Component {
    * and a right panel with pages for user profile, alloys database, and saved
    * simulations.
    */
-  redirect = () => {}
+
+  componentDidMount() {
+    const { history } = this.props
+    history.push('/user/profile')
+  }
 
   render() {
     const { history } = this.props

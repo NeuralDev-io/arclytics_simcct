@@ -318,8 +318,6 @@ class AlloyStore(Resource):
             response['message'] = 'Unable to load session from Redis.'
             return response, 401
 
-        logger.debug(session_store)
-
         if not session_store:
             response['message'] = 'Unable to retrieve data from Redis.'
             return response, 500

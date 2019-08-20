@@ -17,11 +17,7 @@ class CompSidebar extends Component {
   }
 
   render() {
-    const {
-      onChange,
-      onSimulate,
-      storeInit,
-    } = this.props
+    const { onSimulate, sessionIsInitialised } = this.props
     const { showSettings } = this.state
 
     return (
@@ -42,20 +38,16 @@ class CompSidebar extends Component {
           </Button>
         </header>
         <div style={{ display: showSettings ? 'block' : 'none' }}>
-          <CompForm
-            onChange={onChange}
-          />
+          <CompForm />
         </div>
         <div className={styles.table}>
-          <CompTable
-            onChange={onChange}
-          />
+          <CompTable />
         </div>
         <Button
           onClick={onSimulate}
           length="long"
           className={styles.btn}
-          isDisabled={!storeInit}
+          isDisabled={!sessionIsInitialised}
         >
           RUN
         </Button>
@@ -65,9 +57,8 @@ class CompSidebar extends Component {
 }
 
 CompSidebar.propTypes = {
-  onChange: PropTypes.func.isRequired,
   onSimulate: PropTypes.func.isRequired,
-  storeInit: PropTypes.bool.isRequired,
+  sessionIsInitialised: PropTypes.bool.isRequired,
 }
 
 export default CompSidebar

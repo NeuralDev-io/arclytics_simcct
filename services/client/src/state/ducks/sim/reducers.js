@@ -7,6 +7,7 @@ import {
 } from './types'
 
 const initialState = {
+  isInitialised: false,
   results: {},
   configurations: {
     method: 'Li98',
@@ -59,6 +60,7 @@ const reducer = (state = initialState, action) => {
         // set new alloy and auto-calculated fields in state
         return ({
           ...state,
+          isInitialised: true,
           alloys: {
             ...state.alloys,
             [action.alloyType]: action.alloy,

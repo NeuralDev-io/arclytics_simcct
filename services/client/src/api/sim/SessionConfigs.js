@@ -28,10 +28,9 @@ export const initComp = (option, type, alloy) => new Promise((resolve, reject) =
     }),
   })
     .then(res => res.json())
-    .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
-      if (data.status === 'success') resolve(data.data)
-      console.log(data)
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'success') resolve(res.data)
     })
     .catch(err => reject(err))
 })
@@ -51,9 +50,9 @@ export const updateComp = (option, type, alloy) => new Promise((resolve, reject)
     }),
   })
     .then(res => res.json())
-    .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
-      if (data.status === 'success') resolve(data.data)
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'success') resolve(res.data)
     })
     .catch(err => reject(err))
 })
@@ -69,8 +68,8 @@ export const updateConfigMethod = (value) => {
     body: JSON.stringify({ method: value }),
   })
     .then(res => res.json())
-    .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
     })
     .catch(err => console.log(err))
 }
@@ -86,8 +85,8 @@ export const updateConfig = (reqBody) => {
     body: JSON.stringify(reqBody),
   })
     .then(res => res.json())
-    .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
     })
     .catch(err => console.log(err))
 }
@@ -103,8 +102,8 @@ export const updateMsBsAe = (name, reqBody) => {
     body: JSON.stringify(reqBody),
   })
     .then(res => res.json())
-    .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
     })
     .catch(err => console.log(err))
 }
@@ -119,9 +118,9 @@ export const getMsBsAe = name => new Promise((resolve, reject) => {
     },
   })
     .then(res => res.json())
-    .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
-      if (data.status === 'success') resolve(data.data)
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'success') resolve(res.data)
     })
     .catch(err => reject(err))
 })

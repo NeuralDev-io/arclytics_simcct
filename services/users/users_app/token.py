@@ -27,15 +27,7 @@ from flask import current_app as app
 from itsdangerous import URLSafeTimedSerializer, JSONWebSignatureSerializer
 from itsdangerous.exc import BadSignature, SignatureExpired
 from users_app.models import SharedSimulation
-
-
-class URLTokenError(Exception):
-    """
-    A custom exception to be raised from any itsdangerous package exceptions.
-    """
-
-    def __init__(self, msg: str = None):
-        super(URLTokenError, self).__init__(msg)
+from users_app.utilities import URLTokenError, URLTokenExpired
 
 
 def generate_confirmation_token(email: str):
@@ -64,7 +56,7 @@ def confirm_token(token: bytes, expiration: int = 3600) -> Union[bool, str]:
     except BadSignature as e:
         raise URLTokenError('Bad signature.')
     except SignatureExpired as e:
-        raise URLTokenError('Signature expired.')
+        raise URLTokenExpired('Signature expired.')
     except Exception as e:
         raise URLTokenError('Token error.')
     return email

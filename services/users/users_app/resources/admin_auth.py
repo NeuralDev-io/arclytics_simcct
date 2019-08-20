@@ -25,7 +25,7 @@ import os
 from datetime import datetime
 
 from email_validator import validate_email, EmailNotValidError
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify, request, render_template, redirect
 from flask import current_app as app
 from flask_restful import Resource
 
@@ -37,6 +37,7 @@ from users_app.token import (
     generate_confirmation_token, generate_url, confirm_token, URLTokenError,
     generate_promotion_confirmation_token
 )
+from users_app.utilities import URLTokenExpired
 
 logger = AppLogger(__name__)
 
@@ -188,6 +189,8 @@ def cancel_promotion(token):
 
     response = {'status': 'fail', 'message': 'Invalid token.'}
 
+    client_host = os.environ.get('CLIENT_HOST')
+
     # Decode the token from the email to confirm it was the right one
     try:
         # The token was encoded with the admin and user email as a list so
@@ -196,6 +199,9 @@ def cancel_promotion(token):
     except URLTokenError as e:
         response['error'] = str(e)
         return jsonify(response), 400
+    except URLTokenExpired as e:
+        response['error'] = e
+        return redirect(f'http://{client_host}/tokenexpired', code=302)
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -247,7 +253,6 @@ def cancel_promotion(token):
     target_user.save()
 
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
-    client_host = os.environ.get('CLIENT_HOST')
     # We can make our own redirect response by doing the following
     custom_redir_response = app.response_class(
         status=302, mimetype='application/json'
@@ -268,12 +273,17 @@ def verify_promotion(token):
 
     response = {'status': 'fail', 'message': 'Invalid token.'}
 
+    client_host = os.environ.get('CLIENT_HOST')
+
     # Decode the token from the email to confirm it was the right one
     try:
         email = confirm_token(token)
     except URLTokenError as e:
         response['error'] = str(e)
         return jsonify(response), 400
+    except URLTokenExpired as e:
+        response['error'] = e
+        return redirect(f'http://{client_host}/tokenexpired', code=302)
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -332,7 +342,6 @@ def verify_promotion(token):
     )
 
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
-    client_host = os.environ.get('CLIENT_HOST')
     # We can make our own redirect response by doing the following
     custom_redir_response = app.response_class(
         status=302, mimetype='application/json'
@@ -427,12 +436,17 @@ def confirm_disable_account(token):
     """
     response = {'status': 'fail', 'message': 'Invalid token.'}
 
+    client_host = os.environ.get('CLIENT_HOST')
+
     # Decode the token from the email to confirm it was the right one
     try:
         email = confirm_token(token)
     except URLTokenError as e:
         response['error'] = str(e)
         return jsonify(response), 400
+    except URLTokenExpired as e:
+        response['error'] = e
+        return redirect(f'http://{client_host}/tokenexpired', code=302)
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -469,7 +483,6 @@ def confirm_disable_account(token):
     )
 
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
-    client_host = os.environ.get('CLIENT_HOST')
     # We can make our own redirect response by doing the following
     custom_redir_response = app.response_class(
         status=302, mimetype='application/json'

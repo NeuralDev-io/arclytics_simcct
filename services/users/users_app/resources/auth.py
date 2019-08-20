@@ -35,8 +35,9 @@ from users_app.extensions import bcrypt
 from users_app.middleware import (authenticate_flask, logout_authenticate)
 from users_app.models import User
 from users_app.token import (
-    URLTokenError, confirm_token, generate_confirmation_token, generate_url
+    confirm_token, generate_confirmation_token, generate_url
 )
+from users_app.utilities import URLTokenError, URLTokenExpired
 
 logger = AppLogger(__name__)
 
@@ -77,12 +78,18 @@ def confirm_email(token):
     """
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+    client_host = os.environ.get('CLIENT_HOST')
+
     # We must confirm the token by decoding it
     try:
         email = confirm_token(token)
     except URLTokenError as e:
         response['error'] = e
         return jsonify(response), 400
+    except URLTokenExpired as e:
+        response['error'] = e
+        # TODO(davidmatthews1004@gmail.com) redirect to a different page.
+        return redirect(f'http://{client_host}/tokenexpired', code=302)
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -96,19 +103,24 @@ def confirm_email(token):
     response.pop('message')
     # TODO(andrew@neuraldev.io): Need to check how to change this during
     #  during production and using Ingress/Load balancing for Kubernetes
-    client_host = os.environ.get('CLIENT_HOST')
-    return redirect('http://localhost:3000/signin', code=302)
+    return redirect(f'http://{client_host}/signin', code=302)
 
 
 @auth_blueprint.route('/confirmadmin/<token>', methods=['GET'])
 def confirm_email_admin(token):
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+    client_host = os.environ.get('CLIENT_HOST')
+
     try:
         email = confirm_token(token)
     except URLTokenError as e:
         response['error'] = e
         return jsonify(response), 400
+    except URLTokenExpired as e:
+        response['error'] = e
+        # TODO(davidmatthews1004@gmail.com) redirect to a different page.
+        return redirect(f'http://{client_host}/tokenexpired', code=302)
     except Exception as e:
         return jsonify(response), 400
 
@@ -120,7 +132,6 @@ def confirm_email_admin(token):
     response.pop('message')
     # TODO(davidmatthews1004@gmail.com): Need to check how to change this during
     #  during production and using Ingress/Load balancing for Kubernetes
-    client_host = os.environ.get('CLIENT_HOST')
     return redirect(f'http://{client_host}:3000/signin', code=302)
 
 

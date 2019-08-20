@@ -463,6 +463,7 @@ SimulationPage.propTypes = {
   })).isRequired,
   runSimConnect: PropTypes.func.isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+  isInitialised: PropTypes.bool.isRequired,
 }
 
 const mapStateToProps = state => ({

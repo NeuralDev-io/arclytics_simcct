@@ -31,6 +31,7 @@ export const initComp = (option, type, alloy) => new Promise((resolve, reject) =
     .then((data) => {
       if (data.status === 'fail') throw new Error(data.message)
       if (data.status === 'success') resolve(data.data)
+      console.log(data)
     })
     .catch(err => reject(err))
 })

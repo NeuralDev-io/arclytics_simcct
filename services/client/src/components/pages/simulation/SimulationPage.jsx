@@ -39,7 +39,6 @@ class SimulationPage extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      sessionStoreInit: false,
       displayConfig: true,
       displayProfile: true,
       displayUserCurve: true,
@@ -314,7 +313,6 @@ class SimulationPage extends Component {
 
   render() {
     const {
-      sessionStoreInit,
       displayConfig,
       displayProfile,
       displayUserCurve,
@@ -322,14 +320,14 @@ class SimulationPage extends Component {
       alloys,
       shareModal,
     } = this.state
-    const { history } = this.props
+    const { history, isInitialised } = this.props
 
     return (
       <React.Fragment>
         <AppBar active="sim" redirect={history.push} />
         <div className={styles.compSidebar}>
           <CompSidebar
-            storeInit={sessionStoreInit}
+            sessionIsInitialised={isInitialised}
             onSimulate={() => {
               console.log({
                 configurations,
@@ -360,7 +358,7 @@ class SimulationPage extends Component {
                 appearance="text"
                 onClick={() => this.handleShowModal('share')}
                 IconComponent={props => <Share2Icon {...props} />}
-                isDisabled={!sessionStoreInit}
+                isDisabled={!isInitialised}
               >
                 SHARE
               </Button>
@@ -369,11 +367,10 @@ class SimulationPage extends Component {
                 type="button"
                 onClick={this.saveCurrentSimulation}
                 IconComponent={props => <SaveIcon {...props} />}
-                isDisabled={!sessionStoreInit}
+                isDisabled={!isInitialised}
               >
                 SAVE
               </Button>
-
               <Button
                 appearance="outline"
                 type="button"
@@ -470,6 +467,7 @@ SimulationPage.propTypes = {
 
 const mapStateToProps = state => ({
   globalAlloys: state.alloys.global,
+  isInitialised: state.sim.isInitialised,
 })
 
 const mapDispatchToProps = {

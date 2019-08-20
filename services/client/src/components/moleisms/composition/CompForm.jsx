@@ -142,6 +142,7 @@ class CompForm extends Component {
 }
 
 CompForm.propTypes = {
+  // props from connect()
   simAlloys: PropTypes.shape({
     alloyOption: PropTypes.string,
     parent: PropTypes.shape({

@@ -12,7 +12,7 @@ class CompSidebar extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      showSettings: false,
+      showSettings: true,
     }
   }
 

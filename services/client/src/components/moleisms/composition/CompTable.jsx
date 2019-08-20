@@ -75,7 +75,6 @@ class CompTable extends Component {
       {
         Header: 'Elements',
         accessor: 'symbol',
-        // eslint-disable-next-line
         Cell: ({ value }) => (<span className={styles.symbol}>{value}</span>),
         width: 80,
         Footer: tableData.length !== 0 && 'Total',
@@ -83,12 +82,11 @@ class CompTable extends Component {
       {
         Header: 'Alloy 1',
         accessor: 'parent',
-        // eslint-disable-next-line
         Cell: ({ row, value }) => (
           <SelfControlledTextField
             type="text"
-            name={`parent_${row.symbol}`} // eslint-disable-line
-            onBlur={e => onChange(`parent_${row.symbol}`, e.target.value)} // eslint-disable-line
+            name={`parent_${row.symbol}`}
+            onBlur={e => onChange(`parent_${row.symbol}`, e.target.value)}
             defaultValue={value || '0.0'}
             length="stretch"
             isDisabled={value === undefined}
@@ -99,12 +97,11 @@ class CompTable extends Component {
       {
         Header: 'Alloy 2',
         accessor: 'weld',
-        // eslint-disable-next-line
         Cell: ({ row, value }) => (
           <SelfControlledTextField
             type="text"
-            name={`weld_${row.symbol}`} // eslint-disable-line
-            onBlur={e => onChange(`weld_${row.symbol}`, e.target.value)} // eslint-disable-line
+            name={`weld_${row.symbol}`}
+            onBlur={e => onChange(`weld_${row.symbol}`, e.target.value)}
             defaultValue={value || '0.0'}
             length="stretch"
             isDisabled={value === undefined}
@@ -115,7 +112,6 @@ class CompTable extends Component {
       {
         Header: 'Mix',
         accessor: 'mix',
-        // eslint-disable-next-line
         Cell: ({ value }) => {
           if (value === undefined) return <span className="text--disabled">0.0</span>
           return <span>{value}</span>
@@ -128,12 +124,14 @@ class CompTable extends Component {
     return (
       <AutoSizer disableWidth>
         {({ height }) => {
-          const pageSize = tableData.length !== 0 ? Math.floor((height - 148) / 56) : 0
+          const pageSize = tableData.length !== 0 ? Math.floor((height - 148) / 52) : 0
           return (
             <Table
               data={tableData}
               columns={columns}
               pageSize={pageSize}
+              // The `key` props is added here to force ReactTable to re-render
+              // every time height and pageSize is changed
               key={pageSize}
               showPageSizeOptions={false}
               showPagination={tableData.length !== 0}

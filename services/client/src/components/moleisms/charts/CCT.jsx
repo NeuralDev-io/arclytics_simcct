@@ -11,7 +11,7 @@ import styles from './CCT.module.scss'
 const CCT = ({
   data,
   userData,
-  showUserCurve,
+  displayUserCurve,
 }) => {
   let chartData = []
   if (data !== undefined) {
@@ -67,7 +67,7 @@ const CCT = ({
       },
     ]
 
-    if (showUserCurve) {
+    if (displayUserCurve) {
       chartData.push({
         x: userData.time,
         y: userData.temp,
@@ -115,7 +115,7 @@ const linePropTypes = PropTypes.shape({
 })
 
 CCT.propTypes = {
-  showUserCurve: PropTypes.bool.isRequired,
+  displayUserCurve: PropTypes.bool.isRequired,
   // props given by connect()
   data: PropTypes.shape({
     ferrite_nucleation: linePropTypes,
@@ -132,6 +132,7 @@ CCT.propTypes = {
 const mapStateToProps = state => ({
   data: state.sim.results.CCT,
   userData: state.sim.results.user_cooling_curve,
+  displayUserCurve: state.sim.displayUserCurve,
 })
 
 export default connect(mapStateToProps, {})(CCT)

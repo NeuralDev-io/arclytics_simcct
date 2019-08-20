@@ -23,15 +23,7 @@ import CompSidebar from '../../moleisms/composition'
 import ShareModal from '../../moleisms/share-modal'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { TTT, CCT } from '../../moleisms/charts'
-import {
-  updateConfigMethod,
-  updateConfig,
-  updateMsBsAe,
-  getMsBsAe,
-} from '../../../api/sim/SessionConfigs'
-import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 import { postSaveSimulation } from '../../../api/sim/SessionSaveSim'
-import { runSim } from '../../../state/ducks/sim/actions'
 
 import styles from './SimulationPage.module.scss'
 
@@ -41,40 +33,6 @@ class SimulationPage extends Component {
     this.state = {
       displayConfig: true,
       displayProfile: true,
-      displayUserCurve: true,
-      configurations: {
-        method: 'Li98',
-        grain_size_ASTM: 8.0,
-        grain_size_diameter: 0.202,
-        nucleation_start: 1.0,
-        nucleation_finish: 99.9,
-        auto_calculate_bs: true,
-        auto_calculate_ms: true,
-        ms_rate_param: 0.0168,
-        ms_temp: 0.0,
-        bs_temp: 0.0,
-        auto_calculate_ae: true,
-        ae1_temp: 0.0,
-        ae3_temp: 0.0,
-        start_temp: 900,
-        cct_cooling_rate: 10,
-      },
-      alloys: {
-        alloyOption: 'single',
-        parent: {
-          name: '',
-          compositions: [],
-        },
-        weld: {
-          name: '',
-          compositions: [],
-        },
-        mix: {
-          name: '',
-          compositions: [],
-        },
-        dilution: 0,
-      },
       shareModal: false,
     }
   }
@@ -83,208 +41,6 @@ class SimulationPage extends Component {
     if (!localStorage.getItem('token')) {
       this.props.history.push('/signin') // eslint-disable-line
     }
-  }
-
-  handleConfigChange = (name, value) => {
-    if (name === 'method') {
-      // set new value to state
-      this.setState(prevState => ({
-        configurations: {
-          ...prevState.configurations,
-          [name]: value.value,
-        },
-      }))
-
-      // update method in session store on server
-      updateConfigMethod(value.value)
-    } else if (name === 'grain_size_ASTM') {
-      if (value === '') {
-        // set value to state
-        this.setState(prevState => ({
-          configurations: {
-            ...prevState.configurations,
-            grain_size_ASTM: '',
-            grain_size_diameter: '',
-          },
-        }))
-
-        // update in server session store with value = 0
-        updateConfig({ grain_size: 0 })
-      } else {
-        // convert unit of grain size
-        const grainSizeDiameter = ASTM2Dia(parseFloat(value))
-        // set value to state
-        this.setState(prevState => ({
-          configurations: {
-            ...prevState.configurations,
-            grain_size_ASTM: value,
-            grain_size_diameter: grainSizeDiameter,
-          },
-        }))
-
-        // update in server session store
-        updateConfig({ grain_size: parseFloat(value) })
-      }
-    } else if (name === 'grain_size_diameter') {
-      if (value === '') {
-        // set value to state
-        this.setState(prevState => ({
-          configurations: {
-            ...prevState.configurations,
-            grain_size_ASTM: '',
-            grain_size_diameter: '',
-          },
-        }))
-
-        // update in server session store with value = 0
-        updateConfig({ grain_size: 0 })
-      } else {
-        // convert unit of grain size
-        const grainSizeASTM = dia2ASTM(parseFloat(value))
-        // set value to state
-        this.setState(prevState => ({
-          configurations: {
-            ...prevState.configurations,
-            grain_size_ASTM: grainSizeASTM,
-            grain_size_diameter: value,
-          },
-        }))
-
-        // update in server session store
-        updateConfig({ grain_size: parseFloat(grainSizeASTM) })
-      }
-    } else if (name === 'displayUserCurve') {
-      this.setState(prevState => ({ displayUserCurve: !prevState.displayUserCurve }))
-    } else if (name === 'ms_temp' || name === 'ms_rate_param') {
-      const { configurations } = this.state
-      const data = {
-        ms_temp: configurations.ms_temp,
-        ms_rate_param: configurations.ms_rate_param,
-      }
-
-      // update state
-      this.setState(prevState => ({
-        configurations: {
-          ...prevState.configurations,
-          [name]: value,
-        },
-      }))
-
-      // update in server session store
-      updateMsBsAe('ms', {
-        ...data,
-        [name]: value,
-      })
-    } else if (name === 'bs_temp') {
-      this.setState(prevState => ({
-        configurations: {
-          ...prevState.configurations,
-          [name]: value,
-        },
-      }))
-
-      // update in server session store
-      updateMsBsAe('bs', { [name]: value })
-    } else if (name === 'ae1_temp' || name === 'ae3_temp') {
-      const { configurations } = this.state
-      const data = {
-        ae1_temp: configurations.ae1_temp,
-        ae3_temp: configurations.ae3_temp,
-      }
-
-      // update state
-      this.setState(prevState => ({
-        configurations: {
-          ...prevState.configurations,
-          [name]: value,
-        },
-      }))
-
-      // update in server session store
-      updateMsBsAe('ae', {
-        ...data,
-        [name]: value,
-      })
-    } else if (name === 'auto_calculate_ms' || name === 'auto_calculate_bs'
-      || name === 'auto_calculate_ae') {
-      this.setState(prevState => ({
-        configurations: {
-          ...prevState.configurations,
-          [name]: value,
-        },
-      }))
-
-      // update in server session store
-      const nameArr = name.split('_')
-      // if auto calculate is turned ON, we have to make GET request to get
-      // the new auto-calculated values. If they are turned OFF, make PUT
-      // request to update the configs with custom values - quirk of the API
-      if (value) {
-        getMsBsAe(nameArr[2])
-          .then(
-            (data) => {
-              this.setState(prevState => ({
-                configurations: {
-                  ...prevState.configurations,
-                  ...data,
-                },
-              }))
-            },
-            err => console.log(err),
-          )
-      } else {
-        // form the request body based on which of bs, ms or ae was updated
-        const { configurations } = this.state
-        let data = {}
-        if (name === 'auto_calculate_ae') {
-          data = {
-            ae1_temp: configurations.ae1_temp,
-            ae3_temp: configurations.ae3_temp,
-          }
-        }
-        if (name === 'auto_calculate_bs') data = { bs_temp: configurations.bs_temp }
-        if (name === 'auto_calculate_ms') {
-          data = {
-            ms_temp: configurations.ms_temp,
-            ms_rate_param: configurations.ms_rate_param,
-          }
-        }
-        updateMsBsAe(nameArr[2], data)
-      }
-    } else {
-      this.setState(prevState => ({
-        configurations: {
-          ...prevState.configurations,
-          [name]: value,
-        },
-      }))
-      updateConfig({ [name]: value })
-    }
-  }
-
-  // TODO(andrew@neuraldev.io): Just for testing.
-  // Probably need to use this to do some validation checks before trying to run sim.
-  runSimulation = () => {
-    const { runSimConnect } = this.props
-    const { configurations, alloys } = this.state
-    const {
-      grain_size_ASTM,
-      nucleation_start,
-      nucleation_finish,
-      cct_cooling_rate,
-      start_temp,
-    } = configurations
-    updateConfig({
-      grain_size: grain_size_ASTM,
-      nucleation_start,
-      nucleation_finish,
-      cct_cooling_rate,
-      start_temp,
-    })
-
-    console.log('Simulation: ', configurations, alloys)
-
-    runSimConnect()
   }
 
   handleShowModal = type => this.setState({ [`${type}Modal`]: true })
@@ -315,10 +71,8 @@ class SimulationPage extends Component {
     const {
       displayConfig,
       displayProfile,
-      displayUserCurve,
-      configurations,
-      alloys,
       shareModal,
+      runSimConnect,
     } = this.state
     const { history, isInitialised } = this.props
 
@@ -328,12 +82,7 @@ class SimulationPage extends Component {
         <div className={styles.compSidebar}>
           <CompSidebar
             sessionIsInitialised={isInitialised}
-            onSimulate={() => {
-              console.log({
-                configurations,
-              })
-              this.runSimulation()
-            }}
+            onSimulate={runSimConnect}
           />
         </div>
         <div className={styles.main}>
@@ -382,10 +131,7 @@ class SimulationPage extends Component {
             </div>
           </header>
           <div className={styles.configForm} style={{ display: displayConfig ? 'block' : 'none' }}>
-            <ConfigForm
-              values={configurations}
-              onChange={this.handleConfigChange}
-            />
+            <ConfigForm />
           </div>
           <div className={styles.results}>
             <h4>Results</h4>
@@ -401,7 +147,7 @@ class SimulationPage extends Component {
                 {/* NOTE: CCT Child Component */}
                 <h5>CCT</h5>
                 <div>
-                  <CCT showUserCurve={displayUserCurve} />
+                  <CCT />
                 </div>
               </div>
             </div>
@@ -425,25 +171,16 @@ class SimulationPage extends Component {
                 </Button>
               </header>
               <div style={{ display: displayProfile ? 'block' : 'none' }}>
-                <UserProfileConfig
-                  values={{
-                    start_temp: configurations.start_temp,
-                    cct_cooling_rate: configurations.cct_cooling_rate,
-                    displayUserCurve,
-                  }}
-                  onChange={this.handleConfigChange}
-                />
+                <UserProfileConfig />
               </div>
             </div>
           </div>
         </div>
 
-        {/* <ShareModal
+        <ShareModal
           show={shareModal}
           onClose={() => this.handleCloseModal('share')}
-          configurations={configurations}
-          alloys={alloys}
-        /> */}
+        />
       </React.Fragment>
     )
   }
@@ -461,7 +198,6 @@ SimulationPage.propTypes = {
       ]),
     })),
   })).isRequired,
-  runSimConnect: PropTypes.func.isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
   isInitialised: PropTypes.bool.isRequired,
 }
@@ -471,8 +207,6 @@ const mapStateToProps = state => ({
   isInitialised: state.sim.isInitialised,
 })
 
-const mapDispatchToProps = {
-  runSimConnect: runSim,
-}
+const mapDispatchToProps = {}
 
 export default connect(mapStateToProps, mapDispatchToProps)(SimulationPage)

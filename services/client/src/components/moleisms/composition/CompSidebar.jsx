@@ -1,10 +1,12 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
 import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
 import CompForm from './CompForm'
 import CompTable from './CompTable'
 import Button from '../../elements/button'
+import { runSim } from '../../../state/ducks/sim/actions'
 
 import styles from './CompSidebar.module.scss'
 
@@ -17,7 +19,7 @@ class CompSidebar extends Component {
   }
 
   render() {
-    const { onSimulate, sessionIsInitialised } = this.props
+    const { runSimConnect, sessionIsInitialised } = this.props
     const { showSettings } = this.state
 
     return (
@@ -44,7 +46,7 @@ class CompSidebar extends Component {
           <CompTable />
         </div>
         <Button
-          onClick={onSimulate}
+          onClick={runSimConnect}
           length="long"
           className={styles.btn}
           isDisabled={!sessionIsInitialised}
@@ -57,8 +59,12 @@ class CompSidebar extends Component {
 }
 
 CompSidebar.propTypes = {
-  onSimulate: PropTypes.func.isRequired,
+  runSimConnect: PropTypes.func.isRequired,
   sessionIsInitialised: PropTypes.bool.isRequired,
 }
 
-export default CompSidebar
+const mapDispatchToProps = {
+  runSimConnect: runSim,
+}
+
+export default connect(null, mapDispatchToProps)(CompSidebar)

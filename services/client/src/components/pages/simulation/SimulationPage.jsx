@@ -24,8 +24,6 @@ import ShareModal from '../../moleisms/share-modal'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { TTT, CCT } from '../../moleisms/charts'
 import {
-  initComp,
-  updateComp,
   updateConfigMethod,
   updateConfig,
   updateMsBsAe,
@@ -85,124 +83,6 @@ class SimulationPage extends Component {
   componentDidMount = () => {
     if (!localStorage.getItem('token')) {
       this.props.history.push('/signin') // eslint-disable-line
-    }
-  }
-
-  handleCompChange = (name, value) => {
-    const { globalAlloys } = this.props
-    const { sessionStoreInit } = this.state
-
-    if (name === 'alloyOption') { // alloy option is changed
-      this.setState(prevState => ({
-        alloys: {
-          ...prevState.alloys,
-          alloyOption: value.value,
-        },
-      }))
-    } else if (name === 'parent' || name === 'weld') { // alloy composition is changed
-      // find composition
-      const alloy = {
-        name: value.value,
-        compositions: [
-          ...globalAlloys[globalAlloys.findIndex(a => a.name === value.value)].compositions,
-        ],
-      }
-      // update session store on the server
-      const { alloys } = this.state
-      // if session store is already initiated, update it
-      // otherwise, initiate a new session store with new Comp and update
-      // the session config
-      if (sessionStoreInit) {
-        updateComp(alloys.alloyOption, name, alloy)
-          .catch(err => console.log(err))
-      } else {
-        initComp(alloys.alloyOption, name, alloy)
-          .then(
-            (data) => {
-              // set to state alloy + configs
-              this.setState(prevState => ({
-                alloys: {
-                  ...prevState.alloys,
-                  [name]: alloy,
-                },
-                configurations: {
-                  ...prevState.configurations,
-                  ...data,
-                },
-              }))
-            },
-            err => console.log(err),
-          )
-        const { configurations } = this.state
-        const {
-          grain_size_ASTM,
-          nucleation_start,
-          nucleation_finish,
-          cct_cooling_rate,
-        } = configurations
-        updateConfig({
-          grain_size: grain_size_ASTM,
-          nucleation_start,
-          nucleation_finish,
-          cct_cooling_rate,
-        })
-        this.setState({ sessionStoreInit: true })
-      }
-    } else if (name === 'dilution') {
-      this.setState(prevState => ({
-        alloys: {
-          ...prevState.alloys,
-          dilution: value,
-        },
-      }))
-    } else { // weight of an element is changed
-      const nameArr = name.split('_')
-      // update state
-      this.setState((prevState) => {
-        const idx = prevState.alloys[nameArr[0]].compositions.findIndex(
-          elem => elem.symbol === nameArr[1],
-        )
-        const newComp = [...prevState.alloys[nameArr[0]].compositions]
-        if (idx !== undefined) {
-          newComp[idx] = {
-            ...newComp[idx],
-            weight: value,
-          }
-        }
-        return {
-          alloys: {
-            ...prevState.alloys,
-            [nameArr[0]]: {
-              ...prevState.alloys[nameArr[0]],
-              compositions: newComp,
-            },
-          },
-        }
-      })
-      // update session store on the server
-      if (nameArr[0] === 'parent') {
-        const { alloys } = this.state
-        updateComp(alloys.alloyOption, nameArr[0], {
-          name: alloys[nameArr[0]].name,
-          compositions: [
-            {
-              symbol: nameArr[1],
-              weight: parseFloat(value),
-            },
-          ],
-        })
-          .then(
-            (data) => {
-              this.setState(prevState => ({
-                configurations: {
-                  ...prevState.configurations,
-                  ...data,
-                },
-              }))
-            },
-            err => console.log(err),
-          )
-      }
     }
   }
 
@@ -449,13 +329,10 @@ class SimulationPage extends Component {
         <AppBar active="sim" redirect={history.push} />
         <div className={styles.compSidebar}>
           <CompSidebar
-            values={alloys}
-            onChange={this.handleCompChange}
             storeInit={sessionStoreInit}
             onSimulate={() => {
               console.log({
                 configurations,
-                alloys,
               })
               this.runSimulation()
             }}
@@ -564,12 +441,12 @@ class SimulationPage extends Component {
           </div>
         </div>
 
-        <ShareModal
+        {/* <ShareModal
           show={shareModal}
           onClose={() => this.handleCloseModal('share')}
           configurations={configurations}
           alloys={alloys}
-        />
+        /> */}
       </React.Fragment>
     )
   }

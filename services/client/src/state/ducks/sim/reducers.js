@@ -4,10 +4,14 @@ import {
   UPDATE_COMP,
   UPDATE_ALLOY_OPTION,
   UPDATE_DILUTION,
+  UPDATE_CONFIG_METHOD,
+  UPDATE_CONFIG,
+  UPDATE_DISPLAY_USER_CURVE,
 } from './types'
 
 const initialState = {
   isInitialised: false,
+  displayUserCurve: true,
   results: {},
   configurations: {
     method: 'Li98',
@@ -112,6 +116,27 @@ const reducer = (state = initialState, action) => {
           dilution: action.payload,
         },
       }
+    case UPDATE_CONFIG_METHOD:
+      return {
+        ...state,
+        configurations: {
+          ...state.configurations,
+          method: action.payload,
+        },
+      }
+    case UPDATE_CONFIG:
+      return {
+        ...state,
+        configurations: {
+          ...state.configurations,
+          ...action.payload,
+        },
+      }
+    case UPDATE_DISPLAY_USER_CURVE:
+      return {
+        ...state,
+        displayUserCurve: action.payload,
+      } 
     case RUN_SIM:
       return {
         ...state,

@@ -1,7 +1,6 @@
 export const UPDATE_CONFIG_METHOD = 'sim/UPDATE_CONFIG_METHOD'
 export const UPDATE_CONFIG = 'sim/UPDATE_CONFIG'
-export const UPDATE_MS_BS_AE = 'sim/UPDATE_MS_BS_AE'
-export const GET_MS_BS_AE = 'sim/GET_MS_BS_AE'
+export const UPDATE_DISPLAY_USER_CURVE = 'sim/UPDATE_DISPLAY_USER_CURVE'
 
 export const INIT_SESSION = 'sim/INIT_SESSION'
 export const UPDATE_ALLOY_OPTION = 'sim/UPDATE_ALLOY_OPTION'

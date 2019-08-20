@@ -13,6 +13,7 @@
  */
 import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import { Formik } from 'formik'
 import XIcon from 'react-feather/dist/icons/x'
 import Accordion from '../../elements/accordion'
@@ -324,4 +325,9 @@ ShareModal.propTypes = {
   }).isRequired,
 }
 
-export default ShareModal
+const mapStateToProps = state => ({
+  alloys: state.sim.alloys,
+  configurations: state.sim.configurations,
+})
+
+export default connect(mapStateToProps, {})(ShareModal)

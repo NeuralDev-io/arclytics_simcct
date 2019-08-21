@@ -506,7 +506,7 @@ ProfilePage.propTypes = {
 
 
 const mapStateToProps = state => ({
-  user: state.user.user,
+  user: state.self.user,
 })
 
 const mapDispatchToProps = {

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import SaveIcon from 'react-feather/dist/icons/save'
@@ -11,31 +11,59 @@ import { saveSimulation } from '../../../state/ducks/self/actions'
 
 import styles from './SaveSimButton.module.scss'
 
-const SaveSimButton = ({ isSessionInitialised, saveSimulationConnect }) => {
-  return (
-    <AttachModal position="topRight" overlap>
-      <Button
-        appearance="outline"
-        type="button"
-        onClick={() => {}}
-        IconComponent={props => <SaveIcon {...props} />}
-        isDisabled={!isSessionInitialised}
+class SaveSimButton extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      visible: false,
+    }
+  }
+
+  handleShowModal = () => this.setState({ visible: true })
+
+  handleCloseModal = () => this.setState({ visible: false })
+
+  saveSim = () => {
+    const { saveSimulationConnect } = this.props
+    this.handleCloseModal()
+    saveSimulationConnect()
+  }
+
+  render() {
+    const { isSessionInitialised } = this.props
+    const { visible } = this.state
+
+    return (
+      <AttachModal
+        visible={visible}
+        handleClose={this.handleCloseModal}
+        handleShow={this.handleShowModal}
+        position="topRight"
+        overlap
       >
-        SAVE
-      </Button>
-      <div className={styles.optionList}>
-        <h4>Save simulation</h4>
-        <div className={styles.option} {...buttonize(saveSimulationConnect)}>
-          <ServerIcon className={styles.icon} />
-          <span>Save to your account</span>
+        <Button
+          appearance="outline"
+          type="button"
+          onClick={() => {}}
+          IconComponent={props => <SaveIcon {...props} />}
+          isDisabled={!isSessionInitialised}
+        >
+          SAVE
+        </Button>
+        <div className={styles.optionList}>
+          <h4>Save simulation</h4>
+          <div className={styles.option} {...buttonize(this.saveSim)}>
+            <ServerIcon className={styles.icon} />
+            <span>Save to your account</span>
+          </div>
+          <div className={styles.option}>
+            <FileIcon className={styles.icon} />
+            <span>Save to file</span>
+          </div>
         </div>
-        <div className={styles.option}>
-          <FileIcon className={styles.icon} />
-          <span>Save to file</span>
-        </div>
-      </div>
-    </AttachModal>
-  )
+      </AttachModal>
+    )
+  }
 }
 
 SaveSimButton.propTypes = {

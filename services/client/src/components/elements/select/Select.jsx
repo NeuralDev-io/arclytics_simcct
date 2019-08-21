@@ -108,8 +108,8 @@ const Select = (props) => {
         ...theme,
         colors: {
           ...theme.colors,
-          primary: colours.ag500,
-          primary25: colours.ag50,
+          primary: colours.arc500,
+          primary25: colours.arc50,
         },
       })}
       {...other}

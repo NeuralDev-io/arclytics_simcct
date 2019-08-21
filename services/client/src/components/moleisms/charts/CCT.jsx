@@ -69,8 +69,8 @@ const CCT = ({
 
     if (displayUserCurve) {
       chartData.push({
-        x: userData.time,
-        y: userData.temp,
+        x: userData.user_cooling_curve.time,
+        y: userData.user_cooling_curve.temp,
         name: 'User cooling curve',
         mode: 'line',
         marker: {
@@ -128,15 +128,16 @@ CCT.propTypes = {
   }).isRequired,
   userData: PropTypes.shape({
     user_cooling_curve: linePropTypes,
-    user_phase_fraction_data: linePropTypes,
+    user_phase_fraction_data: PropTypes.array,
     slider_time_field: PropTypes.number,
     slider_temp_field: PropTypes.number,
+    slider_max: PropTypes.number,
   }).isRequired,
 }
 
 const mapStateToProps = state => ({
   data: state.sim.results.CCT,
-  userData: state.sim.results.USER.user_cooling_curve,
+  userData: state.sim.results.USER,
   displayUserCurve: state.sim.displayUserCurve,
 })
 

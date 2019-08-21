@@ -136,6 +136,7 @@ class TextFieldEmail extends Component {
     } = this.props
     const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${className || ''}`
 
+    // TODO: ADD STYLING
     return (
       <div>
         <!--Email Chips-->

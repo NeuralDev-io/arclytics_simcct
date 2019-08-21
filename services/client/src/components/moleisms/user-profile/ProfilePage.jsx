@@ -365,9 +365,17 @@ class ProfilePage extends Component {
 
           <div className={styles.security}>
             <h4 className={styles.header}>Security</h4>
+            <Button
+              className={styles.pwdOrEmail}
+              onClick={() => this.handleChange('pwdOrEmail', !pwdOrEmail)}
+              appearance={pwdOrEmail ? ('default') : ('outline')}
+              length="large"
+            >
+              {pwdOrEmail ? (' Change your Email ?') : ('Change your passsword ?')}
+            </Button>
             {
                 pwdOrEmail ? (
-                  <div>
+                  <div className={styles.changePassword}>
                     <h6> Change Password password must be 6 letters long </h6>
                     <TextField
                       type="currPwd"
@@ -396,14 +404,14 @@ class ProfilePage extends Component {
                       isDisabled={!isCurrPwdCorrect}
                       onChange={value => this.handleChange('cnfrmPwd', value)}
                     />
-                    <Button onClick={() => this.s()}>
+                    <Button onClick={() => this.submitNewPassword()}>
                       Submit
                     </Button>
                   </div>
                 )
                   : (
-                    <div>
-                      <h6>Change Email</h6>
+                    <div className={styles.changeEmail}>
+                      <h6>Change Email. A request to change your email will be sent to the specified email address in the textfield below </h6>
                       <div className={styles.row}>
                         <div className={styles.lCol}>
                           Email
@@ -415,25 +423,17 @@ class ProfilePage extends Component {
                             value={newEmail}
                             length="stretch"
                             onChange={value => this.handleChange('newEmail', value)}
+                            err={emailErr}
                           />
                         </div>
                       </div>
-                      <h6>{emailErr}</h6>
-                      <Button onClick={() => this.handleUpdateEmail(newEmail)}>
+                      <Button className={styles.submitEmail} onClick={() => this.handleUpdateEmail(newEmail)}>
                         Verify new email
                       </Button>
 
                     </div>
                   )
             }
-            <Button
-              className={styles.pwdOrEmail}
-              onClick={() => this.handleChange('pwdOrEmail', !pwdOrEmail)}
-              appearance={pwdOrEmail ? ('default') : ('outline')}
-              length="large"
-            >
-              {pwdOrEmail ? (' Change your Email ?') : ('Change your passsword ?')}
-            </Button>
           </div>
           <div className={styles.dataAndPersonal}>
             <h4 className={styles.header}> Data and Personalisation </h4>

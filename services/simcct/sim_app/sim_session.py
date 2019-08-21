@@ -63,7 +63,6 @@ def utc_timestamp_by_second(utc_date_time: datetime) -> int:
 
 class SimSessionService(object):
     """The interface defines how a service for Simulation Session."""
-
     def __init__(self):
         """On initialisation, the service just stores a Redis connection."""
         # Initialise the connection to Redis so the methods can use it

@@ -21,8 +21,8 @@ defined by Dr. Bendeich but re-written to conform to Object-Oriented
 programming.
 """
 
-import math
 import enum
+from math import pow, sqrt, log, exp, atan
 
 import numpy as np
 
@@ -30,8 +30,9 @@ from simulation.utilities import (
     Method, sort_ccr, ConfigurationError, SimulationError
 )
 from simulation.simconfiguration import SimConfiguration
-from simulation.results import Results
-from simulation.periodic import PeriodicTable as pt
+from simulation.results import ResultsData, DynamicNdarray
+# noinspection PyPep8Naming
+from simulation.periodic import PeriodicTable as PT
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -48,7 +49,6 @@ class PhaseSimulation(object):
     """
     This class encapsulates the methods necessary to calculate CCT and TTT.
     """
-
     def __init__(self, sim_configs: SimConfiguration = None, debug=False):
         if sim_configs is not None:
             if not sim_configs.ae_check:
@@ -85,7 +85,17 @@ class PhaseSimulation(object):
             )
 
         # Use an object of Plots instance to store the plot data
-        self.plots_data = Results()
+        self.plots_data = ResultsData()
+
+        # This is used multiple times so we will initialise it once here.
+        # Kirkaldy:
+        # [0,0], [0,1], [0,2] spots for starting precipitation
+        # [1,0], [1,1], [1,2] spots for finishing precipitation
+        # Li98:
+        # [2,0], [2,1], [2,2] spots for starting precipitation
+        # [3,0], [3,1], [3,2] spots for finishing precipitation
+        self.integral_mat = np.zeros((4, 11), dtype=np.float32)
+        self._vol_phantom_frac2(self.integral_mat)
 
         if debug:
             self.comp = sim_configs.comp.copy()
@@ -94,96 +104,118 @@ class PhaseSimulation(object):
             self.ae1 = round(sim_configs.ae1)
 
     def ttt(self) -> None:
-        integral_mat = np.zeros((4, 11), dtype=np.float32)
+        # Number of rows to store results
+        n_rows = 100
 
-        self._vol_phantom_frac2(integral_mat)
+        # Can hold 500 time/temperature points for each phase nucleation
+        # and completion. Will be dynamic and double its size as we reach
+        # 75% capacity.
 
         # ========= FERRITE PHASE ========= #
-        # Ferrite Curve Start
-        fcs_mat = np.zeros((1000, 2), dtype=np.float32)
-        # Ferrite Curve Finish
-        fcf_mat = np.zeros((1000, 2), dtype=np.float32)
+        # Ferrite Curve start and finish
+        fcs_mat = DynamicNdarray(shape=(n_rows, 2))
+        fcf_mat = DynamicNdarray(shape=(n_rows, 2))
 
         for i in range(0, 3):
             temp_curr = self.bs - 50
-            count_fn = 0
+            idx_fn = 0
             while temp_curr < (self.ae3 - 1):
-                torr = self._torr_calc2(Phase.F, temp_curr, integral_mat, i)
+                torr = self._torr_calc2(
+                    phase=Phase.F,
+                    tcurr=temp_curr,
+                    integral_mat=self.integral_mat,
+                    i=i
+                )
 
                 if i == 1:
-                    fcs_mat[count_fn, 0] = torr
-                    fcs_mat[count_fn, 1] = temp_curr
+                    fcs_mat[idx_fn, 0] = torr
+                    fcs_mat[idx_fn, 1] = temp_curr
                 else:
-                    fcf_mat[count_fn, 0] = torr
-                    fcf_mat[count_fn, 1] = temp_curr
+                    fcf_mat[idx_fn, 0] = torr
+                    fcf_mat[idx_fn, 1] = temp_curr
 
-                count_fn = count_fn + 1
+                idx_fn = idx_fn + 1
                 temp_curr = temp_curr + 1
 
         # ========= PEARLITE PHASE ========= #
-        # Pearlite curve start
-        pcs_mat = np.zeros((1000, 2), dtype=np.float32)
-        # Pearlite curve finish
-        pcf_mat = np.zeros((1000, 2), dtype=np.float32)
+        # Pearlite curve start and finish
+        pcs_mat = DynamicNdarray(shape=(n_rows, 2))
+        pcf_mat = DynamicNdarray(shape=(n_rows, 2))
 
         for i in range(0, 3):
             temp_curr = self.bs - 50
-            count_pn = 0
+            idx_pn = 0
 
             while temp_curr < (self.ae1 - 1):
-                torr = self._torr_calc2(Phase.P, temp_curr, integral_mat, i)
-                if i is 1:
-                    pcs_mat[count_pn, 0] = torr
-                    pcs_mat[count_pn, 1] = temp_curr
-                else:
-                    pcf_mat[count_pn, 0] = torr
-                    pcf_mat[count_pn, 1] = temp_curr
+                torr = self._torr_calc2(
+                    phase=Phase.P,
+                    tcurr=temp_curr,
+                    integral_mat=self.integral_mat,
+                    i=i
+                )
 
-                count_pn = count_pn + 1
+                if i is 1:
+                    pcs_mat[idx_pn, 0] = torr
+                    pcs_mat[idx_pn, 1] = temp_curr
+                else:
+                    pcf_mat[idx_pn, 0] = torr
+                    pcf_mat[idx_pn, 1] = temp_curr
+
+                idx_pn = idx_pn + 1
                 temp_curr = temp_curr + 1
 
         # ========= BAINITE PHASE ========= #
-        # Bainite curve start
-        bcs_mat = np.zeros((1000, 2), dtype=np.float32)
-        # Bainite curve finish
-        bcf_mat = np.zeros((1000, 2), dtype=np.float32)
+        # Bainite curve start and finish
+        bcs_mat = DynamicNdarray(shape=(n_rows, 2))
+        bcf_mat = DynamicNdarray(shape=(n_rows, 2))
 
         for i in range(0, 3):
-            count_bn = 0
             temp_curr = self.ms
+            idx_bn = 0
 
             while temp_curr < (self.bs - 1):
-                torr = self._torr_calc2(Phase.B, temp_curr, integral_mat, i)
+                torr = self._torr_calc2(
+                    phase=Phase.B,
+                    tcurr=temp_curr,
+                    integral_mat=self.integral_mat,
+                    i=i
+                )
 
                 if i is 1:
-                    bcs_mat[count_bn, 0] = torr
-                    bcs_mat[count_bn, 1] = temp_curr
+                    bcs_mat[idx_bn, 0] = torr
+                    bcs_mat[idx_bn, 1] = temp_curr
                 else:
-                    bcf_mat[count_bn, 0] = torr
-                    bcf_mat[count_bn, 1] = temp_curr
-                count_bn = count_bn + 1
+                    bcf_mat[idx_bn, 0] = torr
+                    bcf_mat[idx_bn, 1] = temp_curr
+                idx_bn = idx_bn + 1
                 temp_curr = temp_curr + 1
 
         # ========= MARTENSITE ========= #
         # Martensite curve start
-        msf_mat = np.zeros((2, 2), dtype=np.float32)
+        msf_mat = DynamicNdarray(shape=(2, 2))
         temp_curr = self.ms
-        torr = self._torr_calc2(Phase.M, temp_curr, integral_mat, i=1)
+        torr = self._torr_calc2(
+            phase=Phase.M,
+            tcurr=temp_curr,
+            integral_mat=self.integral_mat,
+            i=1
+        )
         # Uses Bainite cutoff time. So uses the Bainite phase as the argument
 
-        msf_mat[0, 0] = np.float32(0.001)
+        msf_mat[0, 0] = 0.001
         msf_mat[0, 1] = self.ms
         msf_mat[1, 0] = torr
         msf_mat[1, 1] = self.ms
 
+        # noinspection PyUnboundLocalVariable
         self.plots_data.set_ttt_plot_data(
-            ferrite_nucleation=fcs_mat,
-            ferrite_completion=fcf_mat,
-            pearlite_nucleation=pcs_mat,
-            pearlite_completion=pcf_mat,
-            bainite_nucleation=bcs_mat,
-            bainite_completion=bcf_mat,
-            martensite=msf_mat
+            ferrite_nucleation=fcs_mat[:(idx_fn-1), :],
+            ferrite_completion=fcf_mat[:(idx_fn-1), :],
+            pearlite_nucleation=pcs_mat[:(idx_pn-1), :],
+            pearlite_completion=pcf_mat[:(idx_pn-1), :],
+            bainite_nucleation=bcs_mat[:(idx_bn-1), :],
+            bainite_completion=bcf_mat[:(idx_bn-1), :],
+            martensite=msf_mat[:]
         )
 
     def cct(self) -> None:
@@ -198,16 +230,11 @@ class PhaseSimulation(object):
         if self.xfe >= 1.0:
             raise ConfigurationError('XFE has to be below 1.0')
 
-        # Kirkaldy:
-        # [0,0], [0,1], [0,2] spots for starting precipitation
-        # [1,0], [1,1], [1,2] spots for finishing precipitation
-        # Li98:
-        # [2,0], [2,1], [2,2] spots for starting precipitation
-        # [3,0], [3,1], [3,2] spots for finishing precipitation
-        integral_mat = np.zeros((4, 11), dtype=np.float32)
+        # The integrals for relevant % transformed at nucleation and completion
+        # was initialised and run at instantiation of this instance.
 
-        # Get integrals for relevant % transformed at nucleation and completion
-        self._vol_phantom_frac2(integral_mat)
+        # Number of rows to store results
+        n_rows = 500
 
         # ========== # TIME LOOP # ========== #
         # The time increments can be
@@ -218,25 +245,23 @@ class PhaseSimulation(object):
         # cooling from initial temperature to Ae3 only involves potential
         # grain growth
 
-        # Can hold 100000 time/temperature points for Ferrite nucleation
-        # temperature
-        # TODO(andrew@neuraldev.io): Reshape this after it has reached 75% full
-        # Ferrite nucleation
-        cct_record_f_mat = np.zeros((1000, 2), dtype=np.float32)
-        # Pearlite nucleation
-        cct_record_p_mat = np.zeros((1000, 2), dtype=np.float32)
-        # Bainite nucleation
-        cct_record_b_mat = np.zeros((1000, 2), dtype=np.float32)
-        # Ferrite completion
-        cct_record_f_end_mat = np.zeros((1000, 2), dtype=np.float32)
-        # Pearlite completion
-        cct_record_p_end_mat = np.zeros((1000, 2), dtype=np.float32)
-        # Bainite completion
-        cct_record_b_end_mat = np.zeros((1000, 2), dtype=np.float32)
+        # Can hold 500 time/temperature points for each phase nucleation
+        # and completion. Will be dynamic and double its size as we reach
+        # 75% capacity.
+
+        # Ferrite nucleation and completion
+        cct_record_f_mat = DynamicNdarray(shape=(n_rows, 2))
+        cct_record_f_end_mat = DynamicNdarray(shape=(n_rows, 2))
+        # Pearlite nucleation and completion
+        cct_record_p_mat = DynamicNdarray(shape=(n_rows, 2))
+        cct_record_p_end_mat = DynamicNdarray(shape=(n_rows, 2))
+        # Bainite nucleation and completion
+        cct_record_b_mat = DynamicNdarray(shape=(n_rows, 2))
+        cct_record_b_end_mat = DynamicNdarray(shape=(n_rows, 2))
 
         # Counters
-        ii_f, ii_p, ii_b, ii_m = 0, 0, 0, 0
-        ii_f_end, ii_p_end, ii_b_end, ii_m_end = 0, 0, 0, 0
+        idx_f, idx_p, idx_b, idx_m = 0, 0, 0, 0
+        idx_f_end, idx_p_end, idx_b_end, idx_m_end = 0, 0, 0, 0
 
         # Find the critical cooling rates for each phase
         # Storage for critical cooling rates
@@ -244,7 +269,7 @@ class PhaseSimulation(object):
         # CCR[0,0] - ferrite-init, CCR[0,1] - ferrite-finish
         # CCR(1,0] - pearlite-init, CCR[1,1] - pearlite-finish
         # CCR[2,0] - bainite-init, CCR[2,1] - bainite-finish
-        self._critical_cooling_rate(ccr_mat, integral_mat)
+        self._critical_cooling_rate(ccr_mat, self.integral_mat)
         # Sort Critical cooling rates from lowest to highest
         sorted_ccr = sort_ccr(ccr_mat)
 
@@ -281,13 +306,13 @@ class PhaseSimulation(object):
 
             # Now within fixed Temperature path
             # Reset the nucleation volume fractions to 0.0 for new cooling rate
-            nuc_frac_ferrite = np.float32(0)
-            nuc_frac_pearlite = np.float32(0)
-            nuc_frac_bainite = np.float32(0)
+            nuc_frac_ferrite = 0.0
+            nuc_frac_pearlite = 0.0
+            nuc_frac_bainite = 0.0
             # Reset the nucleation volume fractions to 0.0 for new cooling rate
-            nuc_frac_ferrite_end = np.float32(0)
-            nuc_frac_pearlite_end = np.float32(0)
-            nuc_frac_bainite_end = np.float32(0)
+            nuc_frac_ferrite_end = 0.0
+            nuc_frac_pearlite_end = 0.0
+            nuc_frac_bainite_end = 0.0
 
             # Reset the triggers for the current cooling rate (may not have
             # been tripped on previous cooling rate)
@@ -333,7 +358,7 @@ class PhaseSimulation(object):
                     torr_f = self._torr_calc2(
                         phase=Phase.F,
                         tcurr=temp_curr,
-                        integral_mat=integral_mat,
+                        integral_mat=self.integral_mat,
                         i=1
                     )
                     # Add up the cumulative fraction of ferrite converted
@@ -343,9 +368,9 @@ class PhaseSimulation(object):
                     )
 
                     if nuc_frac_ferrite > 1.0:
-                        cct_record_f_mat[ii_f, 0] = time  # x-axis
-                        cct_record_f_mat[ii_f, 1] = temp_curr  # y-axis
-                        ii_f = ii_f + 1
+                        cct_record_f_mat[idx_f, 0] = time  # x-axis
+                        cct_record_f_mat[idx_f, 1] = temp_curr  # y-axis
+                        idx_f = idx_f + 1
                         # trigger to stop recoding for ferrite for current
                         # cooling rate
                         stop_f = True
@@ -355,7 +380,7 @@ class PhaseSimulation(object):
                     torr_f_end = self._torr_calc2(
                         phase=Phase.F,
                         tcurr=temp_curr,
-                        integral_mat=integral_mat,
+                        integral_mat=self.integral_mat,
                         i=2
                     )
                     nuc_frac_ferrite_end = nuc_frac_ferrite_end + (
@@ -364,9 +389,9 @@ class PhaseSimulation(object):
                     # Record current point and stop looking for this phase at
                     # current cooling rate.
                     if nuc_frac_ferrite_end > 1.0:
-                        cct_record_f_end_mat[ii_f_end, 0] = time
-                        cct_record_f_end_mat[ii_f_end, 1] = temp_curr
-                        ii_f_end = ii_f_end + 1
+                        cct_record_f_end_mat[idx_f_end, 0] = time
+                        cct_record_f_end_mat[idx_f_end, 1] = temp_curr
+                        idx_f_end = idx_f_end + 1
                         stop_f_end = True
 
                 # =============== # Look for PEARLITE START # =============== #
@@ -374,7 +399,7 @@ class PhaseSimulation(object):
                     torr_p = self._torr_calc2(
                         phase=Phase.P,
                         tcurr=temp_curr,
-                        integral_mat=integral_mat,
+                        integral_mat=self.integral_mat,
                         i=1
                     )
                     # Add up the cumulative fraction of pearlite converted
@@ -384,9 +409,9 @@ class PhaseSimulation(object):
                     )
 
                     if nuc_frac_pearlite > 1.0:
-                        cct_record_p_mat[ii_p, 0] = time
-                        cct_record_p_mat[ii_p, 1] = temp_curr
-                        ii_p = ii_p + 1
+                        cct_record_p_mat[idx_p, 0] = time
+                        cct_record_p_mat[idx_p, 1] = temp_curr
+                        idx_p = idx_p + 1
                         # trigger to stop recoding for ferrite for current
                         # cooling rate
                         stop_p = True
@@ -396,7 +421,7 @@ class PhaseSimulation(object):
                     torr_p_end = self._torr_calc2(
                         phase=Phase.P,
                         tcurr=temp_curr,
-                        integral_mat=integral_mat,
+                        integral_mat=self.integral_mat,
                         i=2
                     )
                     nuc_frac_pearlite_end = nuc_frac_pearlite_end + (
@@ -404,9 +429,9 @@ class PhaseSimulation(object):
                     )
 
                     if nuc_frac_pearlite_end > 1.0:
-                        cct_record_p_end_mat[ii_p_end, 0] = time
-                        cct_record_p_end_mat[ii_p_end, 1] = temp_curr
-                        ii_p_end = ii_p_end + 1
+                        cct_record_p_end_mat[idx_p_end, 0] = time
+                        cct_record_p_end_mat[idx_p_end, 1] = temp_curr
+                        idx_p_end = idx_p_end + 1
                         stop_p_end = True
 
                 # =============== # Look for BAINITE START # =============== #
@@ -414,7 +439,7 @@ class PhaseSimulation(object):
                     torr_b = self._torr_calc2(
                         phase=Phase.B,
                         tcurr=temp_curr,
-                        integral_mat=integral_mat,
+                        integral_mat=self.integral_mat,
                         i=1
                     )
                     # Add up the cumulative fraction of bainite converted
@@ -424,9 +449,9 @@ class PhaseSimulation(object):
                     )
 
                     if nuc_frac_bainite > 1.0:
-                        cct_record_b_mat[ii_b, 0] = time
-                        cct_record_b_mat[ii_b, 1] = temp_curr
-                        ii_b = ii_b + 1
+                        cct_record_b_mat[idx_b, 0] = time
+                        cct_record_b_mat[idx_b, 1] = temp_curr
+                        idx_b = idx_b + 1
                         stop_b = True
 
                 # =============== # Look for BAINITE FINISH # =============== #
@@ -434,7 +459,7 @@ class PhaseSimulation(object):
                     torr_b_end = self._torr_calc2(
                         phase=Phase.B,
                         tcurr=temp_curr,
-                        integral_mat=integral_mat,
+                        integral_mat=self.integral_mat,
                         i=2
                     )
                     nuc_frac_bainite_end = nuc_frac_bainite_end + (
@@ -442,9 +467,9 @@ class PhaseSimulation(object):
                     )
 
                     if nuc_frac_bainite_end > 1.0:
-                        cct_record_b_end_mat[ii_b_end, 0] = time
-                        cct_record_b_end_mat[ii_b_end, 1] = temp_curr
-                        ii_b_end = ii_b_end + 1
+                        cct_record_b_end_mat[idx_b_end, 0] = time
+                        cct_record_b_end_mat[idx_b_end, 1] = temp_curr
+                        idx_b_end = idx_b_end + 1
                         stop_b_end = True
 
                 # Stopping condition
@@ -456,15 +481,11 @@ class PhaseSimulation(object):
 
         # ==================== # MARTENSITE # ==================== #
         # Martensite completion
-        cct_record_m_mat = np.array(
-            [[0.001, self.ms], [cct_record_b_end_mat[0, 0], self.ms]],
-            dtype=np.float32
-        )
-        # cct_record_m_mat[0, 0] = 0.001
-        # cct_record_m_mat[0, 1] = self.ms
-        # first recorded bainite transformation time point
-        # cct_record_m_mat[1, 0] = cct_record_b_end_mat[0, 0]
-        # cct_record_m_mat[1, 1] = self.ms
+        cct_record_m_mat = DynamicNdarray(shape=(2, 2))
+        cct_record_m_mat[0, 0] = 0.001
+        cct_record_m_mat[0, 1] = self.ms
+        cct_record_m_mat[1, 0] = cct_record_b_end_mat[0, 0]
+        cct_record_m_mat[1, 1] = self.ms
 
         # No we are below the Martensite temperature and all remaining
         # Austenite will convert to Martensite (unless we have a reheating step
@@ -473,21 +494,20 @@ class PhaseSimulation(object):
 
         # Store the data in a Results Object
         self.plots_data.set_cct_plot_data(
-            ferrite_nucleation=cct_record_f_mat,
-            ferrite_completion=cct_record_f_end_mat,
-            pearlite_nucleation=cct_record_p_mat,
-            pearlite_completion=cct_record_p_end_mat,
-            bainite_nucleation=cct_record_b_mat,
-            bainite_completion=cct_record_b_end_mat,
-            martensite=cct_record_m_mat
+            ferrite_nucleation=cct_record_f_mat[:(idx_f-1), :],
+            ferrite_completion=cct_record_f_end_mat[:(idx_f_end-1), :],
+            pearlite_nucleation=cct_record_p_mat[:(idx_p-1), :],
+            pearlite_completion=cct_record_p_end_mat[:(idx_p_end-1), :],
+            bainite_nucleation=cct_record_b_mat[:(idx_b-1), :],
+            bainite_completion=cct_record_b_end_mat[:(idx_b_end-1), :],
+            martensite=cct_record_m_mat[:]
         )
 
     def user_cooling_curve(self) -> None:
 
         # We first start by doing some setup
         # Define array to hold time and temperature data
-        # TODO(andrew@neuraldev.io): Reshape this after it has reached 75% full
-        user_cool_mat = np.zeros((1000, 2), dtype=np.float32)
+        user_cool_mat = DynamicNdarray(shape=(1000, 2))
         # Count will set the array ID for each increment during cooling
         count = 0
         # Get the requested cooling rate
@@ -512,64 +532,47 @@ class PhaseSimulation(object):
         # TODO(andrew@neuraldev.io): Make these dynamic
         # ========== # Setup for Phase Fraction Monitoring # ========== #
         # 0=Austenite, 1=Ferrite, 2=Pearlite, 3=Bainite, 4=Martensite
-        phase_frac_mat = np.zeros((10000, 6), dtype=np.float32)
+        phase_frac_mat = DynamicNdarray(shape=(1000, 5))
         # initiate fraction values (actual % of the phase formed) at time 0
-        phase_frac_mat[0, 0] = np.float32(1.0)  # its all austenite at the start
-        # phase_frac_mat[0, 1] = 0.0
-        # phase_frac_mat[0, 2] = 0.0
-        # phase_frac_mat[0, 3] = 0.0
-        # phase_frac_mat[0, 4] = 0.0
-        # phase_frac_mat[0, 5] = 0.0
+        phase_frac_mat[0, 0] = 1.0  # its all austenite at the start
+        # note: Dr. Bendeich sets phase_frac_mat[0, 1:6] to 0 so make sure
+        # you always use np.zeros()
 
         # 0=Austenite, 1=Ferrite, 2=Pearlite, 3=Bainite, 4=Martensite
         # initiate nucleation ratios values (proportion of nucleation time
         # completed) at time 0
-        phase_nuc_ratio = np.zeros((10000, 6), dtype=np.float32)
-        # phase_nuc_ratio[0, 1] = 0.0
-        # phase_nuc_ratio[0, 2] = 0.0
-        # phase_nuc_ratio[0, 3] = 0.0
-        # phase_nuc_ratio[0, 4] = 0.0
-        # phase_nuc_ratio[0, 5] = 0.0
+        phase_nuc_ratio = DynamicNdarray(shape=(1000, 5))
+        # note: Dr. Bendeich sets phase_nuc_ratio[0, 1:6] to 0 so make sure
+        # you always use np.zeros()
 
         # 0=Austenite, 1=Ferrite, 2=Pearlite, 3=Bainite, 4=Martensite
         # initiate completion ratios values (proportion of nucleation time
         # completed) at time 0
-        phase_complete_ratio = np.zeros((10000, 6), dtype=np.float32)
-        # phase_complete_ratio[0, 1] = 0.0
-        # phase_complete_ratio[0, 2] = 0.0
-        # phase_complete_ratio[0, 3] = 0.0
-        # phase_complete_ratio[0, 4] = 0.0
-        # phase_complete_ratio[0, 5] = 0.0
+        phase_complete_ratio = DynamicNdarray(shape=(1000, 5))
+        # note: Dr. Bendeich sets phase_complete_ratio[0, 1:6] to 0 so make sure
+        # you always use np.zeros()
 
         # 0=Austenite, 1=Ferrite, 2=Pearlite, 3=Bainite, 4=Martensite
-        # initiate fraction values (actual % of the phase formed) at time 0
-        phase_vol = np.zeros((10000, 6), dtype=np.float32)
-        phase_vol[0, 0] = 100.0
-        # phase_vol[0, 1] = 0.0
-        # phase_vol[0, 2] = 0.0
-        # phase_vol[0, 3] = 0.0
-        # phase_vol[0, 4] = 0.0
-        # phase_vol[0, 5] = 0.0
+        # Initiate fraction values (actual % of the phase formed) at time 0
+        # would by default be phase_vol[0, 0:5] = 0 since we use np.zeros()
+        # NOTE: THIS IS THE PIE CHART DATA
+        phase_vol = DynamicNdarray(shape=(1000, 5))
+        phase_vol[0, 0] = 100.0  # Austenite
+        # note: Dr. Bendeich sets phase_vol[0, 1:6] to 0 so make sure
+        # you always use np.zeros()
 
         if self.xfe >= 1.0:
             raise ConfigurationError('XFE has to be below 1.0')
 
-        # Kirkaldy:
-        # [0,0], [0,1], [0,2] spots for starting precipitation
-        # [1,0], [1,1], [1,2] spots for finishing precipitation
-        # Li98:
-        # [2,0], [2,1], [2,2] spots for starting precipitation
-        # [3,0], [3,1], [3,2] spots for finishing precipitation
-        integral_mat = np.zeros((4, 11), dtype=np.float64)
-
-        # Get integrals for relevant % transformed at nucleation and completion
-        self._vol_phantom_frac2(integral_mat)
+        # The integrals for relevant % transformed at nucleation and completion
+        # was initialised and run at instantiation of this instance.
 
         # = # Set loop for all time intervals until cooling is finished # = #
 
         # Modified for new Martensite transformation method (Koistinen and
         # Marburger)
-        # MS - 200 : run down to current Martensite temp. (MS) - 200 deg.C
+        # MS - 20 : run down to current Martensite temp. (MS) - 20 deg.C
+        # note: temp_curr is cooling, i.e. going down from temp_peak
         while temp_curr > 20:
             # record current temperature and time in storage array
             user_cool_mat[count, 0] = time
@@ -586,7 +589,7 @@ class PhaseSimulation(object):
                     phase_c_ratio=phase_complete_ratio,
                     phase_frac=phase_frac_mat,
                     phase_vol=phase_vol,
-                    integral_mat=integral_mat,
+                    integral_mat=self.integral_mat,
                     cnt=count
                 )
 
@@ -595,39 +598,42 @@ class PhaseSimulation(object):
             temp_curr = self._next_temp(temp_curr, cooling_rate, increm_time)
             time = time + increm_time
 
+        # Trim the user cool curve to the max count it reaches
+        n_max = count - 1
+        user_cool_mat = user_cool_mat[:n_max, :]
         # Store the data in a Results Object
+        # phase_vol: 0=Austenite, 1=Ferrite, 2=Pearlite, 3=Bainite, 4=Martensite
+        # phase_vol.shape = (n,5)
         self.plots_data.set_user_cool_plot_data(
-            user_cooling_data=user_cool_mat
+            user_cooling_curve=user_cool_mat,
+            user_phase_fraction_data=phase_vol[:n_max, :],
+            slider_time_field=user_cool_mat[-1, 0],
+            slider_temp_field=user_cool_mat[-1, 1]
         )
 
     @staticmethod
     def _sigmoid2(x) -> float:
-        return float(
-            1 / (math.pow(x, (0.4 * (1 - x))) * math.pow((1 - x), (0.4 * x)))
-        )
+        return float(1 / (pow(x, (0.4 * (1 - x))) * pow((1 - x), (0.4 * x))))
 
     @staticmethod
     def _imoid(x) -> float:
         """Kirkaldy 1983 method I(X)."""
         return float(
-            1 / (
-                math.pow(x, (2.0 *
-                             (1 - x) / 3)) * math.pow((1 - x), (2.0 * x / 3))
-            )
+            1 / (pow(x, (2.0 * (1 - x) / 3)) * pow((1 - x), (2.0 * x / 3)))
         )
 
     def _imoid_prime2(self, x: float) -> float:
         """This is the specific Kirkaldy implementation for I(X) used in the
         "sluggish" Kinetic Bainite reaction rate. """
-        c = self.comp['weight'][self.comp['symbol'] == pt.C.name][0]
-        ni = self.comp['weight'][self.comp['symbol'] == pt.Ni.name][0]
-        cr = self.comp['weight'][self.comp['symbol'] == pt.Cr.name][0]
-        mo = self.comp['weight'][self.comp['symbol'] == pt.Mo.name][0]
-        mn = self.comp['weight'][self.comp['symbol'] == pt.Mn.name][0]
+        c = self.comp['weight'][self.comp['symbol'] == PT.C.name][0]
+        ni = self.comp['weight'][self.comp['symbol'] == PT.Ni.name][0]
+        cr = self.comp['weight'][self.comp['symbol'] == PT.Cr.name][0]
+        mo = self.comp['weight'][self.comp['symbol'] == PT.Mo.name][0]
+        mn = self.comp['weight'][self.comp['symbol'] == PT.Mn.name][0]
 
         numerator = float(
-            math.exp(
-                math.pow(x, 2) * (
+            exp(
+                pow(x, 2) * (
                     (1.9 * c) + (2.5 * mn) + (0.9 * ni) + (1.7 * cr) +
                     (4.0 * mo) - 2.6
                 )
@@ -644,17 +650,14 @@ class PhaseSimulation(object):
         if b < 0:
             return float(
                 1 / (
-                    math.pow(x, (2.0 * (1 - x) / 3.0)) *
-                    math.pow((1 - x), (2.0 * x / 3.0))
+                    pow(x,
+                        (2.0 * (1 - x) / 3.0)) * pow((1 - x), (2.0 * x / 3.0))
                 )
             )
 
         return float(
-            numerator / (
-                math.pow(x,
-                         (2.0 *
-                          (1 - x) / 3.0)) * math.pow((1 - x), (2.0 * x / 3.0))
-            )
+            numerator /
+            (pow(x, (2.0 * (1 - x) / 3.0)) * pow((1 - x), (2.0 * x / 3.0)))
         )
 
     @staticmethod
@@ -668,6 +671,7 @@ class PhaseSimulation(object):
         if (x >= 0.95) and (x <= 1.0):
             return 2383.21 * x**3 - 6891.57 * x**2 + 6646 * x - 2135.57
 
+    # noinspection PyUnusedLocal,SpellCheckingInspection
     def _de_integrator(self, i, a, b, eps, err, nn, method) -> float:
         """Double Exponential Transformation.
 
@@ -689,13 +693,13 @@ class PhaseSimulation(object):
         efs = 0.1
         hoff = 8.5
         # ======================================== #
-        pi2 = 2 * math.atan(1.0)
-        epsln = 1 - math.log(efs * eps)
-        epsh = math.sqrt(efs * eps)
+        pi2 = 2 * atan(1.0)
+        epsln = 1 - log(efs * eps)
+        epsh = sqrt(efs * eps)
         h0 = hoff / epsln
-        ehp = math.exp(h0)
+        ehp = exp(h0)
         ehm = 1 / ehp
-        epst = math.exp(-ehm * epsln)
+        epst = exp(-ehm * epsln)
         ba = b - a
         ir = 0.0
         fa = 0.0
@@ -720,11 +724,11 @@ class PhaseSimulation(object):
             irback = ir
             t = h * 0.5
             while True:
-                em = math.exp(t)
+                em = exp(t)
                 ep = pi2 * em
                 em = pi2 / em
                 while True:
-                    xw = 1 / (1 + math.exp(ep - em))
+                    xw = 1 / (1 + exp(ep - em))
                     xa = ba * xw
                     wg = xa * (1 - xw)
 
@@ -825,8 +829,6 @@ class PhaseSimulation(object):
             integrated_mat[2, 6] = xp
 
             sig_int_pearlite, sig_int_pearlite_t = 0, 0
-            # TODO: sig_int_pearlite_t is not used. Ask if it can be removed
-            # sig_int_pearlite_t = self.__get_sx_integral(xp)
             sig_int_pearlite = self._de_integrator(
                 sig_int_pearlite, 0.0, xp, 0.000000000000001, err, nn, 1
             )
@@ -930,16 +932,16 @@ class PhaseSimulation(object):
 
     def _torr_calc2(
         self, phase: Phase, tcurr: float, integral_mat: np.ndarray, i: int
-    ) -> np.float32:
+    ) -> float:
         r_gas = 1.985
 
         wt = self.comp
-        c = wt['weight'][wt['symbol'] == pt.C.name][0]
-        mn = wt['weight'][wt['symbol'] == pt.Mn.name][0]
-        si = wt['weight'][wt['symbol'] == pt.Si.name][0]
-        mo = wt['weight'][wt['symbol'] == pt.Mo.name][0]
-        ni = wt['weight'][wt['symbol'] == pt.Ni.name][0]
-        cr = wt['weight'][wt['symbol'] == pt.Cr.name][0]
+        c = wt['weight'][wt['symbol'] == PT.C.name][0]
+        mn = wt['weight'][wt['symbol'] == PT.Mn.name][0]
+        si = wt['weight'][wt['symbol'] == PT.Si.name][0]
+        mo = wt['weight'][wt['symbol'] == PT.Mo.name][0]
+        ni = wt['weight'][wt['symbol'] == PT.Ni.name][0]
+        cr = wt['weight'][wt['symbol'] == PT.Cr.name][0]
 
         if self.configs.method == Method.Li98:
 
@@ -948,50 +950,47 @@ class PhaseSimulation(object):
             sint_b = integral_mat[i + 1, 2]
 
             if phase == Phase.F:
-                fc = np.float32(
-                    math.exp(
+                fc = float(
+                    exp(
                         1.0 + (6.31 * c) + (1.78 * mn) + (0.31 * si) +
                         (1.12 * ni) + (2.7 * cr) + (4.06 * mo)
                     )
                 )
 
-                return np.float32(
+                return float(
                     fc / (
-                        math.pow(2, (0.41 * self.g)) *
-                        math.pow((self.ae3 - tcurr), 3) *
-                        math.exp(-27500 / (r_gas * (tcurr + 273)))
+                        pow(2, (0.41 * self.g)) * pow((self.ae3 - tcurr), 3) *
+                        exp(-27500 / (r_gas * (tcurr + 273)))
                     ) * sint_f
                 )
 
             elif phase == Phase.P:
-                pc = np.float32(
-                    math.exp(
+                pc = float(
+                    exp(
                         -4.25 + (4.12 * c) + (4.36 * mn) + (0.44 * si) +
-                        (1.71 * ni) + (3.33 * cr) + (5.19 * math.sqrt(mo))
+                        (1.71 * ni) + (3.33 * cr) + (5.19 * sqrt(mo))
                     )
                 )
 
-                return np.float32(
+                return float(
                     pc / (
-                        math.pow(2, (0.32 * self.g)) *
-                        math.pow((self.ae1 - tcurr), 3) *
-                        math.exp(-27500 / (r_gas * (tcurr + 273)))
+                        pow(2, (0.32 * self.g)) * pow((self.ae1 - tcurr), 3) *
+                        exp(-27500 / (r_gas * (tcurr + 273)))
                     ) * sint_p
                 )
 
             elif phase == Phase.B or phase == Phase.M:
-                bc = np.float32(
-                    math.exp(
+                bc = float(
+                    exp(
                         -10.23 + (10.18 * c) + (0.85 * mn) + (0.55 * ni) +
                         (0.9 * cr) + (0.36 * mo)
                     )
                 )
 
-                return np.float32(
+                return float(
                     bc / (
-                        math.pow(2, (0.29 * self.g)) *
-                        math.pow((self.bs - tcurr), 2) *
-                        math.exp(-27500 / (r_gas * (tcurr + 273)))
+                        pow(2, (0.29 * self.g)) * pow((self.bs - tcurr), 2) *
+                        exp(-27500 / (r_gas * (tcurr + 273)))
                     ) * sint_b
                 )
 
@@ -1001,27 +1000,27 @@ class PhaseSimulation(object):
             iint_b = integral_mat[i - 1, 2]
 
             if phase == Phase.F:
-                fc = np.float32(
+                fc = float(
                     ((59.6 * mn) + (1.45 * ni) + (67.7 * cr) + (244 * mo))
                 )
 
-                return np.float32(
+                return float(
                     fc / (
                         2**((self.g - 1) / 2) * ((self.ae3 - tcurr)**3) *
-                        math.exp(-23500 / (r_gas * (tcurr + 273)))
+                        exp(-23500 / (r_gas * (tcurr + 273)))
                     ) * iint_f
                 )
 
             elif phase == Phase.P:
-                pc = np.float32(1.79 + 5.42 * (cr + mo + 4 * mo * ni))
-                dinv = np.float32(
-                    (1 / math.exp(-27500 / (r_gas * (tcurr + 273)))) + (
+                pc = float(1.79 + 5.42 * (cr + mo + 4 * mo * ni))
+                dinv = float(
+                    (1 / exp(-27500 / (r_gas * (tcurr + 273)))) + (
                         (0.01 * cr + 0.52 * mo) /
-                        math.exp(-37500 / (r_gas * (tcurr + 273)))
+                        exp(-37500 / (r_gas * (tcurr + 273)))
                     )
                 )
 
-                return np.float32(
+                return float(
                     pc / (
                         (
                             2**((self.g - 1) / 2) * ((self.ae1 - tcurr)**3) *
@@ -1031,19 +1030,19 @@ class PhaseSimulation(object):
                 )
 
             elif phase == Phase.B or phase == Phase.M:
-                bc = np.float32(
+                bc = float(
                     (2.34 + (10.1 * c) + (3.8 * cr) + (19.0 * mo)) *
-                    math.pow(10, -4)
+                    pow(10, -4)
                 )
 
-                return np.float32(
+                return float(
                     bc / (
                         2**((self.g - 1) / 2) * ((self.bs - tcurr)**2) *
-                        math.exp(-27500 / (r_gas * (tcurr + 273)))
+                        exp(-27500 / (r_gas * (tcurr + 273)))
                     ) * iint_b
                 )
 
-        return np.float32(-1)
+        return -1.0
 
     def _critical_cooling_rate(
         self, ccr_mat: np.ndarray, integral2: np.ndarray
@@ -1058,13 +1057,10 @@ class PhaseSimulation(object):
 
         """
 
-        # Current temperature
-        # temp_curr = None
-
         # ========================================================= #
         # ==================== # BAINITE CCR # ==================== #
         # ========================================================= #
-        torr_b, ccr_bcs, ccr_bcf = np.float32(0), np.float32(0), np.float32(0)
+        torr_b, ccr_bcs, ccr_bcf = 0.0, 0.0, 0.0
         time_accumulate = 0
         # initialise the time interval for this loop
         time_interval = 1.0
@@ -1112,7 +1108,7 @@ class PhaseSimulation(object):
         # ========================================================== #
         # ==================== # PEARLITE CCR # ==================== #
         # ========================================================== #
-        torr_p, ccr_pcs, ccr_pcf = np.float(0.0), np.float(0.0), np.float(0.0)
+        torr_p, ccr_pcs, ccr_pcf = 0.0, 0.0, 0.0
         time_accumulate = 0
         temp_curr = self.bs
 
@@ -1150,7 +1146,7 @@ class PhaseSimulation(object):
         # ========================================================= #
         # ==================== # FERRITE CCR # ==================== #
         # ========================================================= #
-        torr_f, ccr_fcs, ccr_fcf = np.float(0.0), np.float(0.0), np.float(0.0)
+        torr_f, ccr_fcs, ccr_fcf = 0.0, 0.0, 0.0
         time_accumulate = 0
 
         # Start at Bainite temperature and work up to Bainite limit
@@ -1204,9 +1200,9 @@ class PhaseSimulation(object):
         return float(current_temp - cooling_rate * increm_time_secs)
 
     def _transform_inc(
-        self, tcurr: float, inc_time: float, phase_n_ratio: np.ndarray,
-        phase_c_ratio: np.ndarray, phase_frac: np.ndarray,
-        phase_vol: np.ndarray, cnt: int, integral_mat: np.ndarray
+        self, tcurr: float, inc_time: float, phase_n_ratio: DynamicNdarray,
+        phase_c_ratio: DynamicNdarray, phase_frac: DynamicNdarray,
+        phase_vol: DynamicNdarray, cnt: int, integral_mat: np.ndarray
     ) -> None:
 
         # Stop counters
@@ -1283,7 +1279,7 @@ class PhaseSimulation(object):
             # Introduce new progressive temperature dependent Martensite
             # transformation (June 2019) using Koistinen and Marbuger eqn.
             phase_frac[cnt, 4] = (
-                1 - math.exp(-self.ms_rate_param * (self.ms - tcurr))
+                1 - exp(-self.ms_rate_param * (self.ms - tcurr))
             ) * aust_vol_m / 100
             # Updates the fraction of remaining Austenite
             phase_frac[cnt, 0] = phase_frac[cnt, 0] - phase_frac[cnt, 4]
@@ -1348,8 +1344,8 @@ class PhaseSimulation(object):
             # =============== # LOOK FOR BAINITE (3) GROWTH # =============== #
             # Nucleation started but not yet finished
             if (
-                phase_n_ratio[cnt - 1, 3] > 1.0
-                and phase_c_ratio[cnt - 1, 3] < 1.0 and not stop_b_end
+                phase_n_ratio[cnt - 1, 3] > 1.0 > phase_c_ratio[cnt - 1, 3]
+                and not stop_b_end
             ):
                 # Time interval between initiation and completion at current
                 # temperature
@@ -1455,8 +1451,9 @@ class PhaseSimulation(object):
                 )
             # =============== # LOOK FOR PEARLITE (2) GROWTH # =============== #
             if (
-                tcurr < self.ae1 and phase_n_ratio[cnt - 1, 2] > 1.0
-                and phase_c_ratio[cnt - 1, 2] < 1.0 and not stop_p_end
+                tcurr < self.ae1
+                and phase_n_ratio[cnt - 1, 2] > 1.0 > phase_c_ratio[cnt - 1, 2]
+                and not stop_p_end
             ):
                 # If Pearlite is growing then straight Ferrite is not
                 # possible anymore
@@ -1493,7 +1490,7 @@ class PhaseSimulation(object):
                     phase_vol[cnt - 1, 2] +
                     ((inc_time / delta_t) * aust_vol_p)
                 )
-                # Update the actual vol Aust remaining after this increment
+                # Update the actual vol Austenite remaining after this increm
                 phase_vol[cnt, 0] = (
                     phase_vol[cnt, 0] - ((inc_time / delta_t) * aust_vol_p)
                 )
@@ -1556,8 +1553,9 @@ class PhaseSimulation(object):
             # =============== # LOOK FOR FERRITE (1) GROWTH # =============== #
             # Nucleation started but not yet finished
             if (
-                tcurr < self.ae3 and phase_n_ratio[cnt - 1, 1] > 1.0
-                and phase_c_ratio[cnt - 1, 1] < 1.0 and not stop_f_end
+                tcurr < self.ae3
+                and phase_n_ratio[cnt - 1, 1] > 1.0 > phase_c_ratio[cnt - 1, 1]
+                and not stop_f_end
             ):
                 torr_f = self._torr_calc2(
                     phase=Phase.F, tcurr=tcurr, integral_mat=integral_mat, i=1

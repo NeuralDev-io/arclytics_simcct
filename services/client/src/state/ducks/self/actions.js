@@ -5,6 +5,7 @@ import {
   UPDATE_EMAIL,
   CHANGE_PASSWORD,
   SAVE_SIM,
+  GET_SIM,
 } from './types'
 
 export const getUserProfile = () => (dispatch) => { // eslint-disable-line
@@ -160,6 +161,41 @@ export const saveSimulation = () => (dispatch, getState) => {
       if (res.status === 'success') {
         dispatch({
           type: SAVE_SIM,
+          payload: res.data,
+        })
+      }
+    })
+    // eslint-disable-next-line no-console
+    .catch(err => console.log(err))
+}
+
+/**
+ * API call to `users` server to retrieve the user's list of saved simulations.
+ * Returns a list of saved simulations as an `application/json` content-type
+ * with the following schema:
+ *
+ * {
+ *    "status": "success",
+ *    "data": [
+ *      {"_id": "ObjectId", "configurations": {...}, "alloy_store": {...}},
+ *      {...},
+ *      {...}
+ *    ]
+ * }
+ */
+export const getSavedSimulations = () => (dispatch) => {
+  fetch('http://localhost:8000/user/simulation', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  }).then(res => res.json())
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'success') {
+        dispatch({
+          type: GET_SIM,
           payload: res.data,
         })
       }

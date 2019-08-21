@@ -7,7 +7,7 @@ import SlashIcon from 'react-feather/dist/icons/slash'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import Table from '../../elements/table'
-import { getUserProfile } from '../../../state/ducks/self/actions'
+import { getUsers } from '../../../state/ducks/users/actions'
 
 import styles from './ManageUsers.module.scss'
 
@@ -125,7 +125,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = {
-  getUsersConnect: getUserProfile,
+  getUsersConnect: getUsers,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ManageUsers)

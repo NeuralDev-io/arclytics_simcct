@@ -144,22 +144,6 @@ class DynamicNdarray(object):
         self.obj.resize((n_rows, self.cols), refcheck=True)
         self.shape = self.obj.shape
 
-    def trim(self, shape: Union[Tuple[int, int], int]) -> None:
-        """Trim the internal `numpy.ndarray` to size.
-
-        Args:
-            shape: either a tuple to trim the array from the 0th index to the
-                   value or an int that will just trim the row.
-
-        Returns:
-            None
-        """
-        if isinstance(shape, tuple):
-            self.obj = self.obj[:shape[0], :shape[1]]
-        else:
-            self.obj = self.obj[:shape, :]
-        self.shape = self.obj.shape
-
     def __str__(self):
         return f'DynamicNdarray(\n{self.obj.__str__()}\n)'
 

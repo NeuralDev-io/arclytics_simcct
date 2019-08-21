@@ -23,12 +23,14 @@ class TextFieldEmail extends Component {
     this.state = {
       value: '',
       emails: [],
+      error: null,
     }
   }
 
   handleChange = (e) => {
       this.setState({
-        value: e.target.value
+        value: e.target.value,
+        error: null,
       })
   }
 
@@ -44,13 +46,50 @@ class TextFieldEmail extends Component {
       e.preventDefault()
       const email = this.state.value.trim()
 
-      if (email) {
+      if (email && this.isValid(email)) {
         this.setState({
           emails: [...this.state.emails, email],
           value: '',
         })
       }
     }
+  }
+
+  handleDelete = (toBeRemoved) => {
+    this.setState({
+      //delete emails equal to the toBeRemoved argument
+      emails: this.state.emails.filter(email => email !== toBeRemoved)
+    })
+  }
+
+  isValid(email){
+    let error = null
+
+    if (!this.isEmail(email)) {
+      error = '"' + email + '" is not a valid email address.'
+    }
+
+    if (this.isInList(email)) {
+      error = '"' + email + '" has already been added.'
+    }
+
+    if (error) {
+      this.setState({
+        error
+      })
+      return false
+    }
+
+    return true
+  }
+
+  //
+  isEmail(email){
+    return /[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/.test(email)
+  }
+
+  isInList(email){
+    return this.state.emails.includes(email)
   }
 
   render() {
@@ -68,6 +107,17 @@ class TextFieldEmail extends Component {
 
     return (
       <div>
+        {this.state.emails.map(email => (
+          <div className="emailItem" key={email}>
+            {email}&nbsp;
+            <button
+              type="button"
+              onClick={() => this.handleDelete(email)}
+            >
+              &times;
+            </button>
+          </div>
+        ))}
         <input
           {...other}
           type={type}
@@ -79,6 +129,7 @@ class TextFieldEmail extends Component {
           onKeyDown={e => this.handleKeyDown(e)}
           disabled={isDisabled}
         />
+        <span className="emailError">{this.state.error}</span>
       </div>
     )
   }

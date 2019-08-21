@@ -50,8 +50,9 @@ class AttachModal extends Component {
             return React.cloneElement(child, { onClick: this.handleClick })
           }
           return (
-            visible
-            && <div className={`${styles.modal} ${styles[`${position}${overlap ? 'Overlap' : ''}`]}`}>{child}</div>
+            <div className={`${styles.modal} ${visible && styles.visible} ${styles[`${position}${overlap ? 'Overlap' : ''}`]}`}>
+              {child}
+            </div>
           )
         })}
       </div>

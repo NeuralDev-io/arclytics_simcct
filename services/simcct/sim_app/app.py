@@ -61,12 +61,12 @@ def create_app(script_info=None) -> Flask:
     app.register_blueprint(sim_blueprint)
     app.register_blueprint(sim_alloys_blueprint)
 
-    # ========== # INIT FLASK EXTENSIONS # ========== #
-    extensions(app)
-
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects
     app.json_encoder = JSONEncoder
+
+    # ========== # INIT FLASK EXTENSIONS # ========== #
+    extensions(app)
 
     # Shell context for Flask CLI
     @app.shell_context_processor
@@ -88,5 +88,4 @@ def extensions(app) -> None:
     """
     api.init_app(app)
     cors.init_app(app)
-
     return None

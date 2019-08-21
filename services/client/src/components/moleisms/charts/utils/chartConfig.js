@@ -1,6 +1,6 @@
 import colours from '../../../../styles/_colors_light.scss'
 
-export const layout = (width, height) => ({
+export const layout = (height, width) => ({
   width,
   height,
   showlegend: true,

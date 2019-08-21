@@ -679,21 +679,21 @@ def change_password(user_id):
             kwargs={
                 'to': [user.email],
                 'subject_suffix':
-                    'Your Arclytics Sim password has been changed',
+                'Your Arclytics Sim password has been changed',
                 'html_template':
-                    render_template(
-                        'change_password.html',
-                        change_datetime=datetime.utcnow().isoformat(),
-                        email=user.email,
-                        user_name=f'{user.first_name} {user.last_name}'
-                    ),
+                render_template(
+                    'change_password.html',
+                    change_datetime=datetime.utcnow().isoformat(),
+                    email=user.email,
+                    user_name=f'{user.first_name} {user.last_name}'
+                ),
                 'text_template':
-                    render_template(
-                        'change_password.txt',
-                        change_datetime=datetime.utcnow().isoformat(),
-                        email=user.email,
-                        user_name=f'{user.first_name} {user.last_name}'
-                    )
+                render_template(
+                    'change_password.txt',
+                    change_datetime=datetime.utcnow().isoformat(),
+                    email=user.email,
+                    user_name=f'{user.first_name} {user.last_name}'
+                )
             }
         )
 

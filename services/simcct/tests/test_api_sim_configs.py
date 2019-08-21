@@ -322,9 +322,9 @@ class TestSimConfigurations(BaseTestCase):
             ae1 = np.float64(data['data']['ae1_temp'])
             ae3 = np.float64(data['data']['ae3_temp'])
             self.assertAlmostEqual(sess_configs['ae1_temp'], 700.90196, 4)
-            self.assertAlmostEqual(sess_configs['ae3_temp'], 845.83721, 4)
+            self.assertAlmostEqual(sess_configs['ae3_temp'], 845.83715, 4)
             self.assertAlmostEqual(ae1, 700.90196, 4)
-            self.assertAlmostEqual(ae3, 845.83721, 4)
+            self.assertAlmostEqual(ae3, 845.83715, 4)
 
     def test_configurations_no_auth_header(self):
         """Ensure it fails with no header."""

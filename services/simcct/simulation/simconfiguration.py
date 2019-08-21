@@ -52,7 +52,7 @@ class SimConfiguration(object):
 
         if debug:
             with open(_TEST_CONFIGS) as config_f:
-                sim_configs = json.load(config_f, parse_float=np.float64)
+                sim_configs = json.load(config_f, parse_float=np.float32)
             configs = sim_configs['configurations']
             compositions = sim_configs['compositions']
 
@@ -134,7 +134,7 @@ class SimConfiguration(object):
             A structured numpy.ndarray with the weights and names.
         """
         comp = np.zeros(
-            len(comp_list), dtype=[('symbol', 'U2'), ('weight', np.float64)]
+            len(comp_list), dtype=[('symbol', 'U2'), ('weight', np.float32)]
         )
 
         # 2019-08-04: Update by andrew@neuraldev.io
@@ -211,7 +211,9 @@ class SimConfiguration(object):
 
         # By default, we return Method.Li98
         # Eqn [24] in paper. Li modified from Kirkaldy.
-        return 637.0 - (58 * c) - (35 * mn) - (15 * ni) - (34 * cr) - (41 * mo)
+        return (
+            637.0 - (58 * c) - (35 * mn) - (15 * ni) - (34 * cr) - (41 * mo)
+        )
 
     @staticmethod
     def get_ms(method: Method = None, comp: np.ndarray = None) -> float:
@@ -316,7 +318,7 @@ class SimConfiguration(object):
 
         # store results of each iteration of Carbon
 
-        results_mat = np.zeros((1000, 22), dtype=np.float64)
+        results_mat = np.zeros((1000, 22), dtype=np.float32)
         # reserve the initial carbon wt% as the main routine is passing back
         # another value despite being set "ByVal"
         wt_c = wt['weight'][wt['symbol'] == PeriodicTable.C.name][0]
@@ -354,7 +356,6 @@ class SimConfiguration(object):
         table.float_format['weight'] = '.3'
         for row in comp:
             table.add_row(row)
-        # table.set_style(MSWORD_FRIENDLY)
         table.align['symbol'] = 'l'
         table.align['weight'] = 'r'
 

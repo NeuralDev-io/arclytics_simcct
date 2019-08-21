@@ -36,7 +36,7 @@ class Configurations(Resource):
     method_decorators = {'patch': [token_and_session_required]}
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, token, session_key):
+    def patch(self, _, session_key):
         """This PATCH endpoint updates the other configurations that are
         not part of the transformation temperatures.
 
@@ -91,23 +91,23 @@ class Configurations(Resource):
 
         grain_size = patch_data.get('grain_size', None)
         if grain_size:
-            sess_configs['grain_size'] = grain_size
+            sess_configs['grain_size'] = float(grain_size)
 
         nuc_start = patch_data.get('nucleation_start', None)
         if nuc_start:
-            sess_configs['nucleation_start'] = nuc_start
+            sess_configs['nucleation_start'] = float(nuc_start)
 
         nuc_finish = patch_data.get('nucleation_finish', None)
-        if nuc_start:
-            sess_configs['nucleation_finish'] = nuc_finish
+        if nuc_finish:
+            sess_configs['nucleation_finish'] = float(nuc_finish)
 
         start_temp = patch_data.get('start_temp', None)
         if start_temp:
-            sess_configs['start_temp'] = start_temp
+            sess_configs['start_temp'] = int(start_temp)
 
         cct_cool_rate = patch_data.get('cct_cooling_rate', None)
         if cct_cool_rate:
-            sess_configs['cct_cooling_rate'] = cct_cool_rate
+            sess_configs['cct_cooling_rate'] = int(cct_cool_rate)
 
         session_store['configurations'] = sess_configs
 
@@ -127,7 +127,7 @@ class ConfigsMethod(Resource):
     method_decorators = {'put': [token_and_session_required]}
 
     # noinspection PyMethodMayBeStatic
-    def put(self, token, session_key):
+    def put(self, _, session_key):
         """This PUT endpoint simply updates the `method` for CCT and TTT
         calculations in the session store
 

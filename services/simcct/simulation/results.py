@@ -30,6 +30,10 @@ import math
 import numpy as np
 from typing import Union, Tuple, Optional
 
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
+
 
 class DynamicNdarray(object):
     """
@@ -43,10 +47,11 @@ class DynamicNdarray(object):
         # This will get you [[0., 0.], [0., 0.]] `numpy.ndarray`
         mat = DynamicNdarray(rows=2)
     """
+
     def __init__(
-            self,
-            shape: Union[Tuple[int, int], int],
-            dtype: Optional[object] = np.float32
+        self,
+        shape: Union[Tuple[int, int], int],
+        dtype: Optional[object] = np.float32
     ):
         """Initialise the internal `numpy.ndarray` object with the shape passed
         in from the rows with a default of 2 columns.
@@ -63,15 +68,14 @@ class DynamicNdarray(object):
             self.rows = shape[0]
             self.cols = shape[1]
         else:
-            self.obj = np.zeros(shape=(shape,), dtype=dtype, order='C')
+            self.obj = np.zeros(shape=(shape, ), dtype=dtype, order='C')
             self.rows = 0
             self.cols = shape
         # add the new attributes to the created instance
         self.shape = self.obj.shape
 
-    def __getitem__(
-            self, index: Union[Tuple[int, int], int]
-    ) -> Union[float, np.ndarray]:
+    def __getitem__(self, index: Union[Tuple[int, int], int]
+                    ) -> Union[float, np.ndarray]:
         """Using the `[]` operators, this will get you the element stored at
         the index passed in.
 
@@ -103,10 +107,7 @@ class DynamicNdarray(object):
             None
         """
         # Key can be a tuple or an int (fill row)
-        if isinstance(key, tuple):
-            idx = key[0]
-        else:
-            idx = key
+        idx = key[0] if isinstance(key, tuple) else key
 
         # If the key passed is a tuple, meaning indexing by (rows, cols),
         # we check if the rows is more than 75% of the number of rows we
@@ -151,12 +152,9 @@ class DynamicNdarray(object):
         return self.obj.__repr__()
 
 
-def to_plot_dict(array: DynamicNdarray) -> dict:
+def to_plot_dict(array: Union[DynamicNdarray, np.ndarray]) -> dict:
     assert array.shape[1] == 2, 'Plot Dictionary Array shape must be (n, 2).'
-    return {
-        'time': array[:, 0].tolist(),
-        'temp': array[:, 1].tolist()
-    }
+    return {'time': array[:, 0].tolist(), 'temp': array[:, 1].tolist()}
 
 
 class ResultsData(object):
@@ -165,27 +163,29 @@ class ResultsData(object):
     some helper instance methods to allow plotting with Plotly or printing to
     stdout.
     """
+
     def __init__(self):
-        self.user_cooling_curve: Union[DynamicNdarray, None] = None
-        self.user_phase_fraction_data: Union[DynamicNdarray, None] = None
+        self.user_cooling_curve: Union[np.ndarray, None] = None
+        self.user_phase_fraction_data: Union[np.ndarray, None] = None
         self.slider_time_field: float = 0.0
         self.slider_temp_field: float = 0.0
+        self.slider_max: float = 0.0
 
-        self.ttt_fcs: Union[DynamicNdarray, None] = None
-        self.ttt_fcf: Union[DynamicNdarray, None] = None
-        self.ttt_pcs: Union[DynamicNdarray, None] = None
-        self.ttt_pcf: Union[DynamicNdarray, None] = None
-        self.ttt_bcs: Union[DynamicNdarray, None] = None
-        self.ttt_bcf: Union[DynamicNdarray, None] = None
-        self.ttt_msf: Union[DynamicNdarray, None] = None
+        self.ttt_fcs: Union[np.ndarray, None] = None
+        self.ttt_fcf: Union[np.ndarray, None] = None
+        self.ttt_pcs: Union[np.ndarray, None] = None
+        self.ttt_pcf: Union[np.ndarray, None] = None
+        self.ttt_bcs: Union[np.ndarray, None] = None
+        self.ttt_bcf: Union[np.ndarray, None] = None
+        self.ttt_msf: Union[np.ndarray, None] = None
 
-        self.cct_fcs: Union[DynamicNdarray, None] = None
-        self.cct_fcf: Union[DynamicNdarray, None] = None
-        self.cct_pcs: Union[DynamicNdarray, None] = None
-        self.cct_pcf: Union[DynamicNdarray, None] = None
-        self.cct_bcs: Union[DynamicNdarray, None] = None
-        self.cct_bcf: Union[DynamicNdarray, None] = None
-        self.cct_msf: Union[DynamicNdarray, None] = None
+        self.cct_fcs: Union[np.ndarray, None] = None
+        self.cct_fcf: Union[np.ndarray, None] = None
+        self.cct_pcs: Union[np.ndarray, None] = None
+        self.cct_pcf: Union[np.ndarray, None] = None
+        self.cct_bcs: Union[np.ndarray, None] = None
+        self.cct_bcf: Union[np.ndarray, None] = None
+        self.cct_msf: Union[np.ndarray, None] = None
 
     def set_cct_plot_data(
         self, ferrite_nucleation, ferrite_completion, pearlite_nucleation,
@@ -212,13 +212,14 @@ class ResultsData(object):
         self.ttt_msf = martensite
 
     def set_user_cool_plot_data(
-            self, user_cooling_curve, user_phase_fraction_data,
-            slider_time_field, slider_temp_field
+        self, user_cooling_curve, user_phase_fraction_data, slider_time_field,
+        slider_temp_field, slider_max
     ) -> None:
         self.user_cooling_curve = user_cooling_curve
         self.user_phase_fraction_data = user_phase_fraction_data
         self.slider_time_field = slider_time_field
         self.slider_temp_field = slider_temp_field
+        self.slider_max = slider_max
 
     def get_cct_plot_data(self) -> dict:
         return {
@@ -242,10 +243,18 @@ class ResultsData(object):
             'martensite': to_plot_dict(self.ttt_msf)
         }
 
-    def get_user_cool_plot_data(self) -> dict:
+    def get_user_plot_data(self) -> dict:
+        # 0=Austenite, 1=Ferrite, 2=Pearlite, 3=Bainite, 4=Martensite
         return {
             'user_cooling_curve': to_plot_dict(self.user_cooling_curve),
-            'user_phase_fraction_data': self.user_phase_fraction_data.tolist(),
-            'slider_time_field': self.slider_time_field,
-            'slider_temp_field': self.slider_temp_field,
+            'user_phase_fraction_data': {
+                'austenite': self.user_phase_fraction_data[:, 0],
+                'ferrite': self.user_phase_fraction_data[:, 1],
+                'pearlite': self.user_phase_fraction_data[:, 2],
+                'bainite': self.user_phase_fraction_data[:, 3],
+                'martensite': self.user_phase_fraction_data[:, 4],
+            },
+            'slider_time_field': float(self.slider_time_field),
+            'slider_temp_field': float(self.slider_temp_field),
+            'slider_max': self.slider_max
         }

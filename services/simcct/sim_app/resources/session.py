@@ -53,6 +53,7 @@ def session_login(token):
     user_is_admin = post_data.get('is_admin', False)
     user_configs = post_data.get('last_configurations', None)
     user_alloy_store = post_data.get('last_alloy_store', None)
+    user_results = post_data.get('last_results', None)
 
     if not ObjectId.is_valid(user_id):
         response['message'] = 'User ObjectId must be provided.'

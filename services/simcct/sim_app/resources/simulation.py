@@ -51,9 +51,6 @@ class Simulation(Resource):
         # First we need to make sure they logged in and are in a current session
         sid, session_store = SimSessionService().load_session(session_key)
 
-        logger.debug('Session Store')
-        logger.pprint(session_store['configurations'])
-
         if sid is None:
             response['errors'] = session_store
             response['message'] = 'Unable to load session from Redis.'
@@ -63,8 +60,11 @@ class Simulation(Resource):
             response['message'] = 'Unable to retrieve data from Redis.'
             return response, 500
 
+        logger.debug('Session Store')
+        logger.pprint(session_store['configurations'])
+
         session_configs = session_store.get('configurations')
-        if session_configs is None:
+        if not session_configs:
             response['message'] = 'No previous session configurations was set.'
             return response, 404
 
@@ -72,18 +72,18 @@ class Simulation(Resource):
 
         # If the configs are considered valid, then they must have run a
         # previous Simulation successfully.
-        if configs['is_valid']:
+        if configs.get('is_valid', False):
             response['status'] = 'success'
-            response['data'] = session_store['results']
+            response['data'] = session_store['simulation_results']
             return response, 200
 
         # By default, the session alloy store is single and parent but the
         # parent alloy is set to none.
         sess_alloy_store = session_store.get('alloy_store')
         if (
-                not sess_alloy_store['alloys']['parent']
-                and not sess_alloy_store['alloys']['weld']
-                and not sess_alloy_store['alloys']['mix']
+            not sess_alloy_store['alloys']['parent']
+            and not sess_alloy_store['alloys']['weld']
+            and not sess_alloy_store['alloys']['mix']
         ) or not sess_alloy_store:
             response['message'] = 'No previous session alloy was set.'
             return response, 404
@@ -151,7 +151,9 @@ class Simulation(Resource):
             # TODO(andrew@neuraldev.io): We need to store the results in the
             #  Session store at some point as well.
 
-            logger.debug(f'User Cooling Curve Simulation Time: {user_time_taken}')
+            logger.debug(
+                f'User Cooling Curve Simulation Time: {user_time_taken}'
+            )
             logger.debug(f'TTT Simulation Time: {ttt_time_taken}')
             logger.debug(f'CCT Simulation Time: {cct_time_taken}')
             logger.debug('Total Simulation Time: {}'.format(finish - start))

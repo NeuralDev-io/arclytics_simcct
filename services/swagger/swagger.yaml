@@ -144,6 +144,17 @@ paths:
                   value:
                     status: "fail"
                     message: "Not authorized."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
   /user:
     servers:
       - url: http://localhost:8000
@@ -304,6 +315,10 @@ paths:
                   value:
                     status: "fail"
                     message: "Payload does not have any valid keys."
+                'No user profile exists':
+                  value:
+                    status: "fail"
+                    message: "User profile cannot be updated as there is no existing profile."
         401:
           description: "The user is not authenticated to perform this request."
           content:
@@ -394,7 +409,7 @@ paths:
               sci_tech_exp: "J.A.R.V.I.S. Taught me AI"
               phase_transform_exp: "I make Iron Masterpieces"
       responses:
-        200:
+        201:
           description: "The User's profile has been successfully saved."
           content:
             application/json:

@@ -20,7 +20,7 @@ Just some configuration settings for the SimCCT Flask Server.
 """
 
 import os
-import redis
+from sim_app.utilities import JSONEncoder
 
 
 class BaseConfig:
@@ -28,6 +28,7 @@ class BaseConfig:
     TESTING = False
     SECRET_KEY = os.environ.get('SECRET_KEY')
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT')
+    RESTFUL_JSON = {'cls': JSONEncoder}
 
     PERMANENT_SESSION_LIFETIME = True
 

@@ -2,14 +2,17 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Plot from 'react-plotly.js'
-import withDimension from 'react-dimensions'
+import AutoSizer from 'react-virtualized-auto-sizer'
 import { layout, config } from './utils/chartConfig'
 
 import colours from '../../../styles/_colors_light.scss'
 import styles from './CCT.module.scss'
 
-const CCT = (props) => {
-  const { containerWidth, containerHeight, data } = props // eslint-disable-line
+const CCT = ({
+  data,
+  userData,
+  displayUserCurve,
+}) => {
   let chartData = []
   if (data !== undefined) {
     chartData = [
@@ -63,6 +66,20 @@ const CCT = (props) => {
         marker: { color: colours.v500 },
       },
     ]
+
+    if (displayUserCurve) {
+      chartData.push({
+        x: userData.time,
+        y: userData.temp,
+        name: 'User cooling curve',
+        mode: 'line',
+        marker: {
+          size: 10,
+          color: colours.r500,
+          line: { width: 10, color: colours.r500 },
+        },
+      })
+    }
   }
 
   if (chartData.length === 0) {
@@ -70,27 +87,57 @@ const CCT = (props) => {
   }
 
   return (
-    <Plot
-      data={chartData}
-      layout={layout(containerWidth, containerHeight)}
-      config={config}
-    />
+    <AutoSizer>
+      {({ height, width }) => (
+        <Plot
+          data={chartData}
+          layout={{
+            ...layout(height, width),
+            xaxis: {
+              type: 'log',
+              autorange: true,
+            },
+            yaxis: {
+              type: 'normal',
+              autorange: true,
+            },
+          }}
+          config={config}
+        />
+      )}
+    </AutoSizer>
   )
 }
 
+const linePropTypes = PropTypes.shape({
+  temp: PropTypes.arrayOf(PropTypes.number),
+  time: PropTypes.arrayOf(PropTypes.number),
+})
+
 CCT.propTypes = {
-  // props given by withDimension()
-  containerWidth: PropTypes.number.isRequired,
-  containerHeight: PropTypes.number.isRequired,
+  displayUserCurve: PropTypes.bool.isRequired,
   // props given by connect()
-  data: PropTypes.object.isRequired, // eslint-disable-line
-  // TODO: will add later
+  data: PropTypes.shape({
+    ferrite_nucleation: linePropTypes,
+    ferrite_completion: linePropTypes,
+    pearlite_nucleation: linePropTypes,
+    pearlite_completion: linePropTypes,
+    bainite_nucleation: linePropTypes,
+    bainite_completion: linePropTypes,
+    martensite: linePropTypes,
+  }),
+  userData: linePropTypes,
+}
+
+CCT.defaultProps = {
+  data: undefined,
+  userData: undefined,
 }
 
 const mapStateToProps = state => ({
   data: state.sim.results.CCT,
+  userData: state.sim.results.user_cooling_curve,
+  displayUserCurve: state.sim.displayUserCurve,
 })
 
-export default withDimension({
-  className: styles.wrapper,
-})(connect(mapStateToProps, {})(CCT))
+export default connect(mapStateToProps, {})(CCT)

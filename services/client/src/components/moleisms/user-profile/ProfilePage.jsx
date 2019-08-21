@@ -12,6 +12,7 @@ import {
   getUserProfile,
   createUserProfile,
   updateUserProfile,
+  updateEmail,
 } from '../../../state/ducks/users/actions'
 
 import TextField from '../../elements/textfield'
@@ -48,13 +49,42 @@ class ProfilePage extends Component {
         { label: 'Q4 Option 2', value: 'Q4 Option 2' },
       ],
       currPwd: '',
+      currPwdErr: '',
       newPwd: '',
+      newPwdErr: '',
       cnfrmPwd: '',
+      cnfrmPwdErr: '',
       pwdOrEmail: false,
       updateError: null,
       edit: false,
-      newEmail,
+      newEmail: '',
+      emailErr: '',
     }
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    const { user } = props
+    const { email, firstName, lastName, question1, question2, question3, question4 } = state
+    const initial = {}
+    if (props.user.email !== email) {
+      initial.email = props.user.email
+    }
+
+    if (user.first_name !== firstName && !firstName) {
+      initial.firstName = user.first_name
+    }
+
+    if (user.last_name !== lastName && !lastName) {
+      initial.lastName = user.last_name
+    }
+
+    if (user.profile !== null && !(question1 && question2 && question3 && question4)) {
+      initial.question1 = { label: user.profile.aim, value: user.profile.aim }
+      initial.question2 = { label: user.profile.highest_education, value: user.profile.highest_education }
+      initial.question3 = { label: user.profile.sci_tech_exp, value: user.profile.sci_tech_exp }
+      initial.question4 = { label: user.profile.phase_transform_exp, value: user.profile.phase_transform_exp }
+    }
+    return initial
   }
 
   componentDidMount = () => {
@@ -62,11 +92,7 @@ class ProfilePage extends Component {
     if (!localStorage.getItem('token')) {
       history.push('/signin') // eslint-disable-line
     } else {
-      this.setState({
-        email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-      })
+      getUserProfileConnect()
     }
   }
 
@@ -141,27 +167,61 @@ class ProfilePage extends Component {
     }
   }
 
+  handleUpdateEmail = (value) => {
+    const { updateEmailConnect, } = this.props
+    if (!value) {
+      this.setState({
+        emailErr: 'Required',
+      })
+    } else if (
+      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)
+    ) {
+      this.setState({
+        emailErr: 'Invalid email',
+      })
+    } else {
+      console.log(value)
+      updateEmailConnect({ new_email: value })
+    }
+  }
+
+  handleChangeCurrPwd = (value) => {
+    // This is definetly an anti-pattern
+    this.setState({
+      currPwd: value,
+    })
+    // if (value.length > 6){
+    //   get
+    // }
+  }
+
+
+
+  // handleBlurCurrPwd = (value) => {
+    
+  // }
+
   render() {
     const {
       email,
       firstName,
       lastName,
-      question1,
-      question1Select,
-      question2,
-      question2Select,
-      question3,
-      question3Select,
-      question4,
-      question4Select,
+      question1, question1Select,
+      question2, question2Select,
+      question3, question3Select,
+      question4, question4Select,
       updateError,
       edit,
       pwdOrEmail,
       currPwd,
+      currPwdErr,
       newPwd,
+      newPwdErr,
       cnfrmPwd,
+      cnfrmPwdErr,
       isCurrPwdCorrect,
       newEmail,
+      emailErr, 
     } = this.state
     const { user } = this.props
     return (
@@ -173,7 +233,7 @@ class ProfilePage extends Component {
               <h6 className={styles.leftCol}> Email </h6>
               <div className={styles.rightCol}>
                 <h6>
-                  {user.email}
+                  {email}
                 </h6>
               </div>
             </div>
@@ -298,7 +358,7 @@ class ProfilePage extends Component {
             {
                 pwdOrEmail ? (
                   <div>
-                    <h6> Change Password </h6>
+                    <h6> Change Password password must be 6 letters long </h6>
                     <TextField
                       type="currPwd"
                       name="currPwd"
@@ -306,6 +366,7 @@ class ProfilePage extends Component {
                       placeholder="Current Password"
                       length="stretch"
                       onChange={value => this.handleChange('currPwd', value)}
+                      err={currPwdErr}
                     />
                     <TextField
                       type="newPwd"
@@ -333,16 +394,25 @@ class ProfilePage extends Component {
                   : (
                     <div>
                       <h6>Change Email</h6>
-                      <TextField
-                        type="Change Email"
-                        name="Change Email"
-                        value={newEmail}
-                        length="stretch"
-                        onChange={value => this.handleChange('newEmail', value)}
-                      />
-                      <Button>
+                      <div className={styles.row}>
+                        <div className={styles.lCol}>
+                          Email
+                        </div>
+                        <div className={styles.rCol}>
+                          <TextField
+                            type="Change Email"
+                            name="Change Email"
+                            value={newEmail}
+                            length="stretch"
+                            onChange={value => this.handleChange('newEmail', value)}
+                          />
+                        </div>
+                      </div>
+                      <h6>{emailErr}</h6>
+                      <Button onClick={() => this.handleUpdateEmail(newEmail)}>
                         Verify new email
                       </Button>
+
                     </div>
                   )
             }
@@ -358,7 +428,7 @@ class ProfilePage extends Component {
           <div className={styles.dataAndPersonal}>
             <h4 className={styles.header}> Data and Personalisation </h4>
             <h6>
-              Your data, activities and preferences that help make Arclytics Sim service more 
+              Your data, activities and preferences that help make Arclytics Sim service more
               useful for you.
             </h6>
 
@@ -392,13 +462,13 @@ ProfilePage.propTypes = {
 
 const mapStateToProps = state => ({
   user: state.user.user,
-  first_name: state.user.first_name,
 })
 
 const mapDispatchToProps = {
   getUserProfileConnect: getUserProfile,
   updateUserProfileConnect: updateUserProfile,
   createUserProfileConnect: createUserProfile,
+  updateEmailConnect: updateEmail,
 }
 
 

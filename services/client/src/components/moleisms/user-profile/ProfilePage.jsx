@@ -14,7 +14,7 @@ import {
   updateUserProfile,
   updateEmail,
   changePassword,
-} from '../../../state/ducks/users/actions'
+} from '../../../state/ducks/self/actions'
 
 import TextField from '../../elements/textfield'
 import Select from '../../elements/select'
@@ -396,7 +396,7 @@ class ProfilePage extends Component {
                       isDisabled={!isCurrPwdCorrect}
                       onChange={value => this.handleChange('cnfrmPwd', value)}
                     />
-                    <Button onClick={() => this.submitNewPassword()}>
+                    <Button onClick={() => this.s()}>
                       Submit
                     </Button>
                   </div>

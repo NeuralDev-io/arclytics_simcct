@@ -52,9 +52,7 @@ class ProfilePage extends Component {
       currPwd: '',
       currPwdErr: '',
       newPwd: '',
-      newPwdErr: '',
       cnfrmPwd: '',
-      cnfrmPwdErr: '',
       pwdOrEmail: true,
       updateError: null,
       edit: false,
@@ -66,7 +64,15 @@ class ProfilePage extends Component {
 
   static getDerivedStateFromProps(props, state) {
     const { user } = props
-    const { email, firstName, lastName, question1, question2, question3, question4 } = state
+    const {
+      email,
+      firstName,
+      lastName,
+      question1,
+      question2,
+      question3,
+      question4,
+    } = state
     const initial = {}
     if (props.user.email !== email) {
       initial.email = props.user.email
@@ -82,15 +88,21 @@ class ProfilePage extends Component {
 
     if (user.profile !== null && !(question1 && question2 && question3 && question4)) {
       initial.question1 = { label: user.profile.aim, value: user.profile.aim }
-      initial.question2 = { label: user.profile.highest_education, value: user.profile.highest_education }
+      initial.question2 = {
+        label: user.profile.highest_education,
+        value: user.profile.highest_education,
+      }
       initial.question3 = { label: user.profile.sci_tech_exp, value: user.profile.sci_tech_exp }
-      initial.question4 = { label: user.profile.phase_transform_exp, value: user.profile.phase_transform_exp }
+      initial.question4 = {
+        label: user.profile.phase_transform_exp,
+        value: user.profile.phase_transform_exp,
+      }
     }
     return initial
   }
 
   componentDidMount = () => {
-    const { history, getUserProfileConnect, user } = this.props
+    const { history, getUserProfileConnect } = this.props
     if (!localStorage.getItem('token')) {
       history.push('/signin') // eslint-disable-line
     } else {
@@ -170,7 +182,7 @@ class ProfilePage extends Component {
   }
 
   handleUpdateEmail = (value) => {
-    const { updateEmailConnect, } = this.props
+    const { updateEmailConnect } = this.props
     if (!value) {
       this.setState({
         emailErr: 'Required',
@@ -198,7 +210,7 @@ class ProfilePage extends Component {
     }
   }
 
-  submitNewPassword = (value) => {
+  submitNewPassword = () => {
     const { currPwd, newPwd, cnfrmPwd } = this.state
     const { changePasswordConnect } = this.props
 
@@ -229,7 +241,6 @@ class ProfilePage extends Component {
       newEmail,
       emailErr,
     } = this.state
-    const { user } = this.props
     return (
       <React.Fragment>
         <div className={styles.main}>
@@ -341,7 +352,7 @@ class ProfilePage extends Component {
           </div>
           <h6 className={styles.updateError}>{updateError}</h6>
           <div className={styles.editButtons}>
-            { 
+            {
               !edit ? (
                 <>
                   {' '}
@@ -356,7 +367,6 @@ class ProfilePage extends Component {
                   </>
                 )
             }
-            
           </div>
 
           <div className={styles.security}>
@@ -371,12 +381,11 @@ class ProfilePage extends Component {
                 {pwdOrEmail ? (' Change your email') : ('Change or reset passsword')}
               </Button>
             </div>
-            
             {
                 pwdOrEmail ? (
                   <div className={styles.changePassword}>
                     <h5> Change Password </h5>
-                    <h6> Password must be 6 letters long </h6>
+                    <h6> Password must be 6 letters long.  </h6>
                     <div className={styles.row}>
                       <h6 className={styles.lCol}> Current Password </h6>
                       <div className={styles.rCol}>
@@ -429,7 +438,10 @@ class ProfilePage extends Component {
                   : (
                     <div className={styles.changeEmail}>
                       <h5>Change Email</h5>
-                      <h6>A request to change your email will be sent to the specified email address in the textfield below </h6>
+                      <h6>
+                        A request to change your email will be sent to the specified email
+                        address in the textfield below.
+                      </h6>
                       <div className={styles.row}>
                         <div className={styles.lCol}>
                           <h6>Email</h6>
@@ -445,7 +457,10 @@ class ProfilePage extends Component {
                           />
                         </div>
                       </div>
-                      <Button className={styles.submitEmail} onClick={() => this.handleUpdateEmail(newEmail)}>
+                      <Button
+                        className={styles.submitEmail}
+                        onClick={() => this.handleUpdateEmail(newEmail)}
+                      >
                         Verify new email
                       </Button>
 
@@ -460,7 +475,7 @@ class ProfilePage extends Component {
               useful for you.
             </h6>
 
-            <Button> Review </Button>
+            <Button className={styles.review}> Review </Button>
           </div>
 
         </div>

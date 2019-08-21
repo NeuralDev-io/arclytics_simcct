@@ -21,8 +21,8 @@ defined by Dr. Bendeich but re-written to conform to Object-Oriented
 programming.
 """
 
-import math
 import enum
+from math import pow, sqrt, log, exp, atan
 
 import numpy as np
 
@@ -31,6 +31,7 @@ from simulation.utilities import (
 )
 from simulation.simconfiguration import SimConfiguration
 from simulation.results import ResultsData, DynamicNdarray
+# noinspection PyPep8Naming
 from simulation.periodic import PeriodicTable as PT
 from logger.arc_logger import AppLogger
 
@@ -612,18 +613,13 @@ class PhaseSimulation(object):
 
     @staticmethod
     def _sigmoid2(x) -> float:
-        return float(
-            1 / (math.pow(x, (0.4 * (1 - x))) * math.pow((1 - x), (0.4 * x)))
-        )
+        return float(1 / (pow(x, (0.4 * (1 - x))) * pow((1 - x), (0.4 * x))))
 
     @staticmethod
     def _imoid(x) -> float:
         """Kirkaldy 1983 method I(X)."""
         return float(
-            1 / (
-                math.pow(x, (2.0 *
-                             (1 - x) / 3)) * math.pow((1 - x), (2.0 * x / 3))
-            )
+            1 / (pow(x, (2.0 * (1 - x) / 3)) * pow((1 - x), (2.0 * x / 3)))
         )
 
     def _imoid_prime2(self, x: float) -> float:
@@ -636,8 +632,8 @@ class PhaseSimulation(object):
         mn = self.comp['weight'][self.comp['symbol'] == PT.Mn.name][0]
 
         numerator = float(
-            math.exp(
-                math.pow(x, 2) * (
+            exp(
+                pow(x, 2) * (
                     (1.9 * c) + (2.5 * mn) + (0.9 * ni) + (1.7 * cr) +
                     (4.0 * mo) - 2.6
                 )
@@ -654,17 +650,14 @@ class PhaseSimulation(object):
         if b < 0:
             return float(
                 1 / (
-                    math.pow(x, (2.0 * (1 - x) / 3.0)) *
-                    math.pow((1 - x), (2.0 * x / 3.0))
+                    pow(x,
+                        (2.0 * (1 - x) / 3.0)) * pow((1 - x), (2.0 * x / 3.0))
                 )
             )
 
         return float(
-            numerator / (
-                math.pow(x,
-                         (2.0 *
-                          (1 - x) / 3.0)) * math.pow((1 - x), (2.0 * x / 3.0))
-            )
+            numerator /
+            (pow(x, (2.0 * (1 - x) / 3.0)) * pow((1 - x), (2.0 * x / 3.0)))
         )
 
     @staticmethod
@@ -678,6 +671,7 @@ class PhaseSimulation(object):
         if (x >= 0.95) and (x <= 1.0):
             return 2383.21 * x**3 - 6891.57 * x**2 + 6646 * x - 2135.57
 
+    # noinspection PyUnusedLocal,SpellCheckingInspection
     def _de_integrator(self, i, a, b, eps, err, nn, method) -> float:
         """Double Exponential Transformation.
 
@@ -699,13 +693,13 @@ class PhaseSimulation(object):
         efs = 0.1
         hoff = 8.5
         # ======================================== #
-        pi2 = 2 * math.atan(1.0)
-        epsln = 1 - math.log(efs * eps)
-        epsh = math.sqrt(efs * eps)
+        pi2 = 2 * atan(1.0)
+        epsln = 1 - log(efs * eps)
+        epsh = sqrt(efs * eps)
         h0 = hoff / epsln
-        ehp = math.exp(h0)
+        ehp = exp(h0)
         ehm = 1 / ehp
-        epst = math.exp(-ehm * epsln)
+        epst = exp(-ehm * epsln)
         ba = b - a
         ir = 0.0
         fa = 0.0
@@ -730,11 +724,11 @@ class PhaseSimulation(object):
             irback = ir
             t = h * 0.5
             while True:
-                em = math.exp(t)
+                em = exp(t)
                 ep = pi2 * em
                 em = pi2 / em
                 while True:
-                    xw = 1 / (1 + math.exp(ep - em))
+                    xw = 1 / (1 + exp(ep - em))
                     xa = ba * xw
                     wg = xa * (1 - xw)
 
@@ -957,7 +951,7 @@ class PhaseSimulation(object):
 
             if phase == Phase.F:
                 fc = float(
-                    math.exp(
+                    exp(
                         1.0 + (6.31 * c) + (1.78 * mn) + (0.31 * si) +
                         (1.12 * ni) + (2.7 * cr) + (4.06 * mo)
                     )
@@ -965,31 +959,29 @@ class PhaseSimulation(object):
 
                 return float(
                     fc / (
-                        math.pow(2, (0.41 * self.g)) *
-                        math.pow((self.ae3 - tcurr), 3) *
-                        math.exp(-27500 / (r_gas * (tcurr + 273)))
+                        pow(2, (0.41 * self.g)) * pow((self.ae3 - tcurr), 3) *
+                        exp(-27500 / (r_gas * (tcurr + 273)))
                     ) * sint_f
                 )
 
             elif phase == Phase.P:
                 pc = float(
-                    math.exp(
+                    exp(
                         -4.25 + (4.12 * c) + (4.36 * mn) + (0.44 * si) +
-                        (1.71 * ni) + (3.33 * cr) + (5.19 * math.sqrt(mo))
+                        (1.71 * ni) + (3.33 * cr) + (5.19 * sqrt(mo))
                     )
                 )
 
                 return float(
                     pc / (
-                        math.pow(2, (0.32 * self.g)) *
-                        math.pow((self.ae1 - tcurr), 3) *
-                        math.exp(-27500 / (r_gas * (tcurr + 273)))
+                        pow(2, (0.32 * self.g)) * pow((self.ae1 - tcurr), 3) *
+                        exp(-27500 / (r_gas * (tcurr + 273)))
                     ) * sint_p
                 )
 
             elif phase == Phase.B or phase == Phase.M:
                 bc = float(
-                    math.exp(
+                    exp(
                         -10.23 + (10.18 * c) + (0.85 * mn) + (0.55 * ni) +
                         (0.9 * cr) + (0.36 * mo)
                     )
@@ -997,9 +989,8 @@ class PhaseSimulation(object):
 
                 return float(
                     bc / (
-                        math.pow(2, (0.29 * self.g)) *
-                        math.pow((self.bs - tcurr), 2) *
-                        math.exp(-27500 / (r_gas * (tcurr + 273)))
+                        pow(2, (0.29 * self.g)) * pow((self.bs - tcurr), 2) *
+                        exp(-27500 / (r_gas * (tcurr + 273)))
                     ) * sint_b
                 )
 
@@ -1016,16 +1007,16 @@ class PhaseSimulation(object):
                 return float(
                     fc / (
                         2**((self.g - 1) / 2) * ((self.ae3 - tcurr)**3) *
-                        math.exp(-23500 / (r_gas * (tcurr + 273)))
+                        exp(-23500 / (r_gas * (tcurr + 273)))
                     ) * iint_f
                 )
 
             elif phase == Phase.P:
                 pc = float(1.79 + 5.42 * (cr + mo + 4 * mo * ni))
                 dinv = float(
-                    (1 / math.exp(-27500 / (r_gas * (tcurr + 273)))) + (
+                    (1 / exp(-27500 / (r_gas * (tcurr + 273)))) + (
                         (0.01 * cr + 0.52 * mo) /
-                        math.exp(-37500 / (r_gas * (tcurr + 273)))
+                        exp(-37500 / (r_gas * (tcurr + 273)))
                     )
                 )
 
@@ -1041,13 +1032,13 @@ class PhaseSimulation(object):
             elif phase == Phase.B or phase == Phase.M:
                 bc = float(
                     (2.34 + (10.1 * c) + (3.8 * cr) + (19.0 * mo)) *
-                    math.pow(10, -4)
+                    pow(10, -4)
                 )
 
                 return float(
                     bc / (
                         2**((self.g - 1) / 2) * ((self.bs - tcurr)**2) *
-                        math.exp(-27500 / (r_gas * (tcurr + 273)))
+                        exp(-27500 / (r_gas * (tcurr + 273)))
                     ) * iint_b
                 )
 
@@ -1288,7 +1279,7 @@ class PhaseSimulation(object):
             # Introduce new progressive temperature dependent Martensite
             # transformation (June 2019) using Koistinen and Marbuger eqn.
             phase_frac[cnt, 4] = (
-                1 - math.exp(-self.ms_rate_param * (self.ms - tcurr))
+                1 - exp(-self.ms_rate_param * (self.ms - tcurr))
             ) * aust_vol_m / 100
             # Updates the fraction of remaining Austenite
             phase_frac[cnt, 0] = phase_frac[cnt, 0] - phase_frac[cnt, 4]

@@ -13,7 +13,6 @@
 
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import TextField from './TextField'
 
 import styles from './TextFieldEmail.module.scss'
 
@@ -22,41 +21,35 @@ class TextFieldEmail extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      value: this.props.value,
+      value: '',
       emails: [],
     }
   }
 
   handleChange = (e) => {
-    console.log("test")
-    const { onChange } = this.props
-    onChange(e.target.value)
-    // Check if the event includes one of these keys (',', 'Tab')
-    if (['Enter', 'Tab', 'Space', ','].includes(e.key)) {
-      console.log("it worked")
-      this.handleKeyDown(e)
-    }
+      this.setState({
+        value: e.target.value
+      })
   }
 
   handleKeyDown = (e) => {
-    /**
-     * The preventDefault() method cancels the event if it is cancellable.
-     * This essentially stops the keys from doing their original function
-     * e.g. stops tab from going to next input, stops enter from submitting
-     * the form, etc.
-     **/
-    e.preventDefault()
-    console.log(this.state.emailValue)
-    const email = this.state.emailValue.trim()
+    // Check if the event includes one of these keys (',', 'Tab')
+    if (['Enter', 'Tab', 'Space', ','].includes(e.key)) {
+      /**
+       * The preventDefault() method cancels the event if it is cancellable.
+       * This essentially stops the keys from doing their original function
+       * e.g. stops tab from going to next input, stops enter from submitting
+       * the form, etc.
+       **/
+      e.preventDefault()
+      const email = this.state.value.trim()
 
-    if (email) {
-      this.setState({
-        emails: [...this.state.emails, email],
-        value: '',
-      })
-
-
-    console.log(this.state.emails)
+      if (email) {
+        this.setState({
+          emails: [...this.state.emails, email],
+          value: '',
+        })
+      }
     }
   }
 
@@ -81,7 +74,7 @@ class TextFieldEmail extends Component {
           className={classname}
           placeholder={placeholder}
           name={name}
-          value={value}
+          value={this.state.value}
           onChange={e => this.handleChange(e)}
           onKeyDown={e => this.handleKeyDown(e)}
           disabled={isDisabled}

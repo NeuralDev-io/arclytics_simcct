@@ -4,7 +4,7 @@ import {
   UPDATE_USER_PROFILE,
   UPDATE_EMAIL,
   CHANGE_PASSWORD,
-} from '../users/typess/types'
+} from './types'
 
 const initialState = {
   user: {

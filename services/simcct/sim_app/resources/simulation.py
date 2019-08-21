@@ -33,6 +33,7 @@ from simulation.phasesimulation import PhaseSimulation
 from simulation.utilities import ConfigurationError, SimulationError
 from sim_app.schemas import ConfigurationsSchema, AlloyStoreSchema
 from logger.arc_logger import AppLogger
+from simulation.timer import time_func
 
 logger = AppLogger(__name__)
 
@@ -111,6 +112,10 @@ class Simulation(Resource):
             response['errors'] = str(e)
             response['message'] = 'Configuration error.'
             return response, 400
+        except SimulationError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Simulation error.'
+            return response, 400
 
         # TODO(andrew@neuraldev.io): add a Division by Zero check here or find
         #  out what is causing it and raise a custom Exception.
@@ -128,29 +133,25 @@ class Simulation(Resource):
 
         # Now we stop the main thread to wait for them to finish.
         # user_cooling_process.join()
-        sim.user_cooling_curve()
-        user_cooling_time = time.time()
+        user_time_taken = time_func(sim.user_cooling_curve)
         # ttt_process.join()
-        sim.ttt()
-        ttt_time = time.time()
+        ttt_time_taken = time_func(sim.ttt)
         # cct_process.join()
-        sim.cct()
-        total_time = time.time()
+        cct_time_taken = time_func(sim.cct)
+        finish = time.time()
 
         # TODO(andrew@neuraldev.io): We need to store the results in the
         #  Session store at some point as well.
 
-        logger.debug(
-            f'User Cooling Curve Simulation Time: {user_cooling_time - start}'
-        )
-        logger.debug(f'TTT Simulation Time: {ttt_time - user_cooling_time}')
-        logger.debug(f'CCT Simulation Time: {total_time - ttt_time}')
-        logger.debug('Total Simulation Time: {}'.format(total_time - start))
+        logger.debug(f'User Cooling Curve Simulation Time: {user_time_taken}')
+        logger.debug(f'TTT Simulation Time: {ttt_time_taken}')
+        logger.debug(f'CCT Simulation Time: {cct_time_taken}')
+        logger.debug('Total Simulation Time: {}'.format(finish - start))
 
         data = {
             'TTT': sim.plots_data.get_ttt_plot_data(),
             'CCT': sim.plots_data.get_cct_plot_data(),
-            'user_cooling_curve': sim.plots_data.get_user_cool_plot_data()
+            'USER': sim.plots_data.get_user_cool_plot_data()
         }
 
         response['status'] = 'success'

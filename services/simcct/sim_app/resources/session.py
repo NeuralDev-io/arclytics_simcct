@@ -71,12 +71,14 @@ def session_login(token):
             response['errors'] = e.messages
             return jsonify(response), 400
     else:
+        # These are based of defaults in the front-end as agreed to by Andrew
+        # and Dalton.
         configs = {
             'is_valid': False,
             'method': 'Li98',
-            'grain_size': 0.0,
+            'grain_size': 8.0,
             'nucleation_start': 1.0,
-            'nucleation_finish': 99.90,
+            'nucleation_finish': 99.99,
             'auto_calculate_ms': True,
             'ms_temp': 0.0,
             'ms_rate_param': 0.0,
@@ -85,8 +87,8 @@ def session_login(token):
             'auto_calculate_ae': True,
             'ae1_temp': 0.0,
             'ae3_temp': 0.0,
-            'start_temp': 0,
-            'cct_cooling_rate': 0
+            'start_temp': 900,
+            'cct_cooling_rate': 10
         }
 
     if user_alloy_store:

@@ -139,7 +139,6 @@ class TextFieldEmail extends Component {
     // TODO: ADD STYLING
     return (
       <div>
-        <!--Email Chips-->
         {this.state.emails.map(email => (
           <div className="emailItem" key={email}>
             {email}&nbsp;
@@ -151,7 +150,6 @@ class TextFieldEmail extends Component {
             </button>
           </div>
         ))}
-        <!--Input Field-->
         <input
           {...other}
           type={type}
@@ -164,7 +162,6 @@ class TextFieldEmail extends Component {
           onPaste={e => this.handlePaste(e)}
           disabled={isDisabled}
         />
-        <!--Error message-->
         <span className="emailError">{this.state.error}</span>
       </div>
     )

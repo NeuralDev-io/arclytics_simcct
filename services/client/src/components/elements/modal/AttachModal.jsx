@@ -4,26 +4,19 @@ import PropTypes from 'prop-types'
 import styles from './AttachModal.module.scss'
 
 class AttachModal extends Component {
-  constructor() {
-    super()
-    this.state = {
-      visible: false,
-    }
-  }
+  // handleClick = () => {
+  //   const { visible } = this.state
+  //   if (!visible) {
+  //     // attach/remove event handler
+  //     document.addEventListener('click', this.handleOutsideClick, false)
+  //   } else {
+  //     document.removeEventListener('click', this.handleOutsideClick, false)
+  //   }
 
-  handleClick = () => {
-    const { visible } = this.state
-    if (!visible) {
-      // attach/remove event handler
-      document.addEventListener('click', this.handleOutsideClick, false)
-    } else {
-      document.removeEventListener('click', this.handleOutsideClick, false)
-    }
-
-    this.setState(prevState => ({
-      visible: !prevState.visible,
-    }))
-  }
+  //   this.setState(prevState => ({
+  //     visible: !prevState.visible,
+  //   }))
+  // }
 
   handleOutsideClick = (e) => {
     // ignore clicks on the component itself
@@ -31,7 +24,8 @@ class AttachModal extends Component {
       return
     }
 
-    this.handleClick()
+    const { handleClose } = this.props
+    handleClose()
   }
 
   render() {
@@ -40,14 +34,21 @@ class AttachModal extends Component {
       position,
       overlap,
       className,
+      visible,
+      handleShow,
+      handleClose,
     } = this.props
-    const { visible } = this.state
 
     return (
       <div className={`${styles.modalContainer} ${className}`} ref={(node) => { this.node = node }}>
         {React.Children.map(children, (child, i) => {
           if (i === 0) {
-            return React.cloneElement(child, { onClick: this.handleClick })
+            return React.cloneElement(child, {
+              onClick: () => {
+                if (visible) handleClose()
+                else handleShow()
+              },
+            })
           }
           return (
             <div className={`${styles.modal} ${visible && styles.visible} ${styles[`${position}${overlap ? 'Overlap' : ''}`]}`}>

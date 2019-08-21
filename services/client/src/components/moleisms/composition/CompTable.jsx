@@ -93,7 +93,7 @@ class CompTable extends Component {
         accessor: 'symbol',
         Cell: ({ value }) => (<span className={styles.symbol}>{value}</span>),
         width: 80,
-        Footer: tableData.length !== 0 && 'Total',
+        Footer: () => tableData.length !== 0 && 'Total',
       },
       {
         Header: 'Alloy 1',
@@ -109,7 +109,8 @@ class CompTable extends Component {
             isDisabled={value === undefined}
           />
         ),
-        Footer: tableData.length !== 0 && <span className={styles.footerText}>{parentTotal}</span>,
+        Footer: () => tableData.length !== 0
+          && <span className={styles.footerText}>{parentTotal}</span>,
       },
       {
         Header: 'Alloy 2',
@@ -125,7 +126,8 @@ class CompTable extends Component {
             isDisabled={value === undefined}
           />
         ),
-        Footer: tableData.length !== 0 && <span className={styles.footerText}>{weldTotal}</span>,
+        Footer: () => tableData.length !== 0
+          && <span className={styles.footerText}>{weldTotal}</span>,
       },
       {
         Header: 'Mix',
@@ -135,7 +137,8 @@ class CompTable extends Component {
           return <span>{value}</span>
         },
         width: 40,
-        Footer: tableData.length !== 0 && <span className={styles.footerTextMix}>{mixTotal}</span>,
+        Footer: () => tableData.length !== 0
+          && <span className={styles.footerTextMix}>{mixTotal}</span>,
       },
     ]
 
@@ -189,16 +192,13 @@ CompTable.propTypes = {
         ]),
       })),
     }),
-    mix: PropTypes.shape({
-      name: PropTypes.string,
-      compositions: PropTypes.arrayOf(PropTypes.shape({
-        symbol: PropTypes.string,
-        weight: PropTypes.oneOfType([
-          PropTypes.string,
-          PropTypes.number,
-        ]),
-      })),
-    }),
+    mix: PropTypes.arrayOf(PropTypes.shape({
+      symbol: PropTypes.string,
+      weight: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+      ]),
+    })),
     dilution: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.number,

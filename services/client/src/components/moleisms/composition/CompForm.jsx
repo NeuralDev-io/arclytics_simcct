@@ -165,16 +165,13 @@ CompForm.propTypes = {
         ]),
       })),
     }),
-    mix: PropTypes.shape({
-      name: PropTypes.string,
-      compositions: PropTypes.arrayOf(PropTypes.shape({
-        symbol: PropTypes.string,
-        weight: PropTypes.oneOfType([
-          PropTypes.string,
-          PropTypes.number,
-        ]),
-      })),
-    }),
+    mix: PropTypes.arrayOf(PropTypes.shape({
+      symbol: PropTypes.string,
+      weight: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+      ]),
+    })),
     dilution: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.number,

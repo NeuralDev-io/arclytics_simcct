@@ -51,7 +51,6 @@ UserProfileConfig.propTypes = {
   configurations: PropTypes.shape({
     start_temp: PropTypes.number.isRequired,
     cct_cooling_rate: PropTypes.number.isRequired,
-    displayUserCurve: PropTypes.bool.isRequired,
   }).isRequired,
   displayUserCurve: PropTypes.bool.isRequired,
   updateConfigConnect: PropTypes.func.isRequired,

@@ -7,9 +7,9 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = '[Andrew Che <@codeninja55>]'
-__credits__ = ['']
+__credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'TBA'
-__version__ = '0.2.0'
+__version__ = '0.5.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
@@ -74,9 +74,9 @@ class Simulation(Resource):
         # parent alloy is set to none.
         sess_alloy_store = session_store.get('alloy_store')
         if (
-            not sess_alloy_store['alloys']['parent']
-            and not sess_alloy_store['alloys']['weld']
-            and not sess_alloy_store['alloys']['mix']
+                not sess_alloy_store['alloys']['parent']
+                and not sess_alloy_store['alloys']['weld']
+                and not sess_alloy_store['alloys']['mix']
         ) or not sess_alloy_store:
             response['message'] = 'No previous session alloy was set.'
             return response, 404
@@ -103,9 +103,6 @@ class Simulation(Resource):
             configs=configs, compositions=alloy['compositions']
         )
 
-        logger.debug('Simulation Configurations')
-        logger.pprint(sim_configs.__dict__)
-
         try:
             sim = PhaseSimulation(sim_configs=sim_configs)
         except ConfigurationError as e:
@@ -117,42 +114,61 @@ class Simulation(Resource):
             response['message'] = 'Simulation error.'
             return response, 400
 
+        logger.debug('PhaseSimulation Instance Configurations')
+        logger.pprint(sim.configs.__dict__)
         # TODO(andrew@neuraldev.io): add a Division by Zero check here or find
         #  out what is causing it and raise a custom Exception.
 
-        # TIMER START
-        start = time.time()
-        # Running these in parallel with threading
-        # ttt_process = Thread(sim.ttt())
-        # cct_process = Thread(sim.cct())
-        # user_cooling_process = Thread(sim.user_cooling_curve())
-        # Starting CCT first because it takes longer.
-        # cct_process.start()
-        # ttt_process.start()
-        # user_cooling_process.start()
+        # Now we do the simulation part but catch all exceptions and return it
+        try:
+            # TIMER START
+            start = time.time()
+            # Running these in parallel with threading
+            # ttt_process = Thread(sim.ttt())
+            # cct_process = Thread(sim.cct())
+            # user_cooling_process = Thread(sim.user_cooling_curve())
+            # Starting CCT first because it takes longer.
+            # cct_process.start()
+            # ttt_process.start()
+            # user_cooling_process.start()
 
-        # Now we stop the main thread to wait for them to finish.
-        # user_cooling_process.join()
-        user_time_taken = time_func(sim.user_cooling_curve)
-        # ttt_process.join()
-        ttt_time_taken = time_func(sim.ttt)
-        # cct_process.join()
-        cct_time_taken = time_func(sim.cct)
-        finish = time.time()
+            # Now we stop the main thread to wait for them to finish.
+            # user_cooling_process.join()
+            user_time_taken = time_func(sim.user_cooling_profile)
+            # ttt_process.join()
+            ttt_time_taken = time_func(sim.ttt)
+            # cct_process.join()
+            cct_time_taken = time_func(sim.cct)
+            finish = time.time()
 
-        # TODO(andrew@neuraldev.io): We need to store the results in the
-        #  Session store at some point as well.
+            # TODO(andrew@neuraldev.io): We need to store the results in the
+            #  Session store at some point as well.
 
-        logger.debug(f'User Cooling Curve Simulation Time: {user_time_taken}')
-        logger.debug(f'TTT Simulation Time: {ttt_time_taken}')
-        logger.debug(f'CCT Simulation Time: {cct_time_taken}')
-        logger.debug('Total Simulation Time: {}'.format(finish - start))
+            logger.debug(f'User Cooling Curve Simulation Time: {user_time_taken}')
+            logger.debug(f'TTT Simulation Time: {ttt_time_taken}')
+            logger.debug(f'CCT Simulation Time: {cct_time_taken}')
+            logger.debug('Total Simulation Time: {}'.format(finish - start))
+        except ZeroDivisionError as e:
+            response['errors'] = str(e)
+            response['message'] = sim.configs.__dict__
+            return response, 500
+        except Exception as e:
+            response['errors'] = str(e)
+            response['message'] = sim.configs.__dict__
+            return response, 500
 
-        data = {
-            'TTT': sim.plots_data.get_ttt_plot_data(),
-            'CCT': sim.plots_data.get_cct_plot_data(),
-            'USER': sim.plots_data.get_user_cool_plot_data()
-        }
+        # Converting the TTT and CCT `numpy.ndarray` will raise an
+        # AssertionError if the shape of the ndarray is not correct.
+        try:
+            data = {
+                'TTT': sim.plots_data.get_ttt_plot_data(),
+                'CCT': sim.plots_data.get_cct_plot_data(),
+                'USER': sim.plots_data.get_user_plot_data()
+            }
+        except AssertionError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Assertion error building response data.'
+            return response, 500
 
         response['status'] = 'success'
         response['data'] = data

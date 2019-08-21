@@ -3,6 +3,7 @@ import {
   CREATE_USER_PROFILE,
   UPDATE_USER_PROFILE,
   UPDATE_EMAIL,
+  CHANGE_PASSWORD,
 } from './types'
 
 const initialState = {
@@ -41,6 +42,14 @@ const reducer = (state = initialState, action) => {
         },
       }
     case UPDATE_EMAIL:
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          ...action.payload,
+        },
+      }
+    case CHANGE_PASSWORD:
       return {
         ...state,
         user: {

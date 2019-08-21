@@ -4,6 +4,7 @@ import {
   UPDATE_USER_PROFILE,
   UPDATE_EMAIL,
   CHANGE_PASSWORD,
+  SAVE_SIM,
 } from './types'
 
 export const getUserProfile = () => (dispatch) => { // eslint-disable-line
@@ -116,5 +117,53 @@ export const changePassword = values => (dispatch) => {
         })
       }
     })
+    .catch(err => console.log(err))
+}
+
+/**
+ * API call to `users` server to save a new saved simulation for the user.
+ * User's are identified by the JWT token passed as an Authorization header.
+ */
+export const saveSimulation = () => (dispatch, getState) => {
+  // first, get sim alloys and configs from state
+  const { configurations, alloys } = getState().sim
+  const alloyStore = {
+    alloy_option: alloys.alloyOption,
+    alloys: {
+      parent: alloys.parent,
+      // TODO(daltonle): Change this when weld and mix are added 
+      weld: alloys.parent,
+      mix: alloys.parent,
+    },
+  }
+
+  // eslint-disable-next-line camelcase
+  const { grain_size_ASTM, grain_size_diameter, ...others } = configurations
+  const validConfigs = {
+    ...others,
+    grain_size: grain_size_ASTM,
+  }
+
+  fetch('http://localhost:8000/user/simulation', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: JSON.stringify({
+      configurations: validConfigs,
+      alloy_store: alloyStore,
+    }),
+  }).then(res => res.json())
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'success') {
+        dispatch({
+          type: SAVE_SIM,
+          payload: res.data,
+        })
+      }
+    })
+    // eslint-disable-next-line no-console
     .catch(err => console.log(err))
 }

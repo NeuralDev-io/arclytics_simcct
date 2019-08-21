@@ -4,6 +4,7 @@ import {
   UPDATE_USER_PROFILE,
   UPDATE_EMAIL,
   CHANGE_PASSWORD,
+  SAVE_SIM,
 } from './types'
 
 const initialState = {
@@ -11,6 +12,7 @@ const initialState = {
     admin: false,
     profile: null,
   },
+  savedSimulations: [],
 }
 
 const reducer = (state = initialState, action) => {
@@ -56,6 +58,14 @@ const reducer = (state = initialState, action) => {
           ...state.user,
           ...action.payload,
         },
+      }
+    case SAVE_SIM:
+      return {
+        ...state,
+        savedSimulations: [
+          ...state.savedSimulations,
+          action.payload,
+        ],
       }
     default:
       return state

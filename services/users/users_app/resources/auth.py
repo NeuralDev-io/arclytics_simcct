@@ -89,7 +89,7 @@ def confirm_email(token):
     except URLTokenExpired as e:
         response['error'] = e
         # TODO(davidmatthews1004@gmail.com) redirect to a different page.
-        return redirect(f'http://{client_host}/tokenexpired', code=302)
+        return redirect(f'http://{client_host}/confirm/resend', code=302)
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -106,6 +106,48 @@ def confirm_email(token):
     return redirect(f'http://{client_host}/signin', code=302)
 
 
+@auth_blueprint.route('/confirm/resend', methods=['GET'])
+@authenticate_flask
+def confirm_email_resend(user_id):
+
+    response = {'status': 'fail', 'message': 'Bad request'}
+
+    user = User.objects.get(id=user_id)
+    if user.verified:
+        response['message'] = 'User is already verified.'
+        return jsonify(response), 400
+
+    # generate the confirmation token for verifying email
+    confirmation_token = generate_confirmation_token(user.email)
+    confirm_url = generate_url('auth.confirm_email', confirmation_token)
+
+    from celery_runner import celery
+    celery.send_task(
+        'tasks.send_email',
+        kwargs={
+            'to': [user.email],
+            'subject_suffix':
+                'Please Confirm Your Email',
+            'html_template':
+                render_template(
+                    'activate.html',
+                    confirm_url=confirm_url,
+                    user_name=f'{user.first_name} {user.last_name}'
+                ),
+            'text_template':
+                render_template(
+                    'activate.txt',
+                    confirm_url=confirm_url,
+                    user_name=f'{user.first_name} {user.last_name}'
+                )
+        }
+    )
+
+    response['status'] = 'success'
+    response['message'] = 'Another confirmation email has  been sent.'
+    return jsonify(response), 200
+
+
 @auth_blueprint.route('/confirmadmin/<token>', methods=['GET'])
 def confirm_email_admin(token):
     response = {'status': 'fail', 'message': 'Invalid payload.'}
@@ -119,8 +161,10 @@ def confirm_email_admin(token):
         return jsonify(response), 400
     except URLTokenExpired as e:
         response['error'] = e
-        # TODO(davidmatthews1004@gmail.com) redirect to a different page.
-        return redirect(f'http://{client_host}/tokenexpired', code=302)
+        return jsonify(response), 400
+        # TODO(davidmatthews1004@gmail.com) Redirect them to a place where they
+        #  can resend this token if it has expired.
+        # return redirect(f'http://{client_host}/tokenexpired', code=302)
     except Exception as e:
         return jsonify(response), 400
 

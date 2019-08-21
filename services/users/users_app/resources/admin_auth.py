@@ -201,7 +201,10 @@ def cancel_promotion(token):
         return jsonify(response), 400
     except URLTokenExpired as e:
         response['error'] = e
-        return redirect(f'http://{client_host}/tokenexpired', code=302)
+        return jsonify(response), 400
+        # TODO(davidmatthews1004@gmail.com) Redirect them to a place where they
+        #  can resend this token if it has expired.
+        # return redirect(f'http://{client_host}/tokenexpired', code=302)
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -283,7 +286,10 @@ def verify_promotion(token):
         return jsonify(response), 400
     except URLTokenExpired as e:
         response['error'] = e
-        return redirect(f'http://{client_host}/tokenexpired', code=302)
+        return jsonify(response), 400
+        # TODO(davidmatthews1004@gmail.com) Redirect them to a place where they
+        #  can resend this token if it has expired.
+        # return redirect(f'http://{client_host}/tokenexpired', code=302)
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -446,7 +452,10 @@ def confirm_disable_account(token):
         return jsonify(response), 400
     except URLTokenExpired as e:
         response['error'] = e
-        return redirect(f'http://{client_host}/tokenexpired', code=302)
+        return jsonify(response), 400
+        # TODO(davidmatthews1004@gmail.com) Redirect them to a place where they
+        #  can resend this token if it has expired.
+        # return redirect(f'http://{client_host}/tokenexpired', code=302)
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400

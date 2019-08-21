@@ -5,3 +5,4 @@ export const UPDATE_EMAIL = 'self/UPDATE_EMAIL'
 export const CHANGE_PASSWORD = 'self/CHANGE_PASSWORD'
 
 export const SAVE_SIM = 'self/SAVE_SIM'
+export const GET_SIM = 'self/GET_SIM'

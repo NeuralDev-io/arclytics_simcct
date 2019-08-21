@@ -13,6 +13,7 @@
 
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import TextField from './TextField'
 
 import styles from './TextFieldEmail.module.scss'
 
@@ -22,60 +23,40 @@ class TextFieldEmail extends Component {
     super(props)
     this.state = {
       value: this.props.value,
-      err: '',
       emails: [],
     }
   }
 
-  validate = (value) => {
-    const { validation } = this.props
-    // console.log(validation)
-    // console.log(value)
-    const BreakException = {}
-    try {
-      validation.forEach((valObj) => {
-        // console.log('start validation')
-        if (!valObj.constraint(value)) {
-          this.setState({ err: valObj.message })
-          // console.log('validation = false')
-          throw BreakException
-        } else {
-          this.setState({ err: '' })
-          // console.log('validation = true')
-        }
-      })
-    } catch (ex) {
-      if (ex !== BreakException) throw ex
+  handleChange = (e) => {
+    console.log("test")
+    const { onChange } = this.props
+    onChange(e.target.value)
+    // Check if the event includes one of these keys (',', 'Tab')
+    if (['Enter', 'Tab', 'Space', ','].includes(e.key)) {
+      console.log("it worked")
+      this.handleKeyDown(e)
     }
   }
 
-  handleChange = (e) => {
-    const { onChange } = this.props
-    // this.validate(e.target.value)
-    onChange(e.target.value)
-  }
-
   handleKeyDown = (e) => {
-    // Check if the event includes one of these keys (',', 'Tab')
-    if (['Enter', 'Tab', 'Space', ','].includes(e.key)) {
-      /**
-       * The preventDefault() method cancels the event if it is cancellable.
-       * This essentially stops the keys from doing their original function
-       * e.g. stops tab from going to next input, stops enter from submitting
-       * the form, etc.
-       **/
-      e.preventDefault()
-      console.log(this.state.emailValue)
-      const email = this.state.emailValue.trim()
+    /**
+     * The preventDefault() method cancels the event if it is cancellable.
+     * This essentially stops the keys from doing their original function
+     * e.g. stops tab from going to next input, stops enter from submitting
+     * the form, etc.
+     **/
+    e.preventDefault()
+    console.log(this.state.emailValue)
+    const email = this.state.emailValue.trim()
 
-      if (email) {
-        this.setState({
-          emails: [...this.state.emails, email],
-          value: '',
-        })
+    if (email) {
+      this.setState({
+        emails: [...this.state.emails, email],
+        value: '',
+      })
 
-      }
-      console.log(this.state.emails)
+
+    console.log(this.state.emails)
     }
   }
 
@@ -90,8 +71,7 @@ class TextFieldEmail extends Component {
       name,
       ...other
     } = this.props
-    const { err } = this.state
-    const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${err !== '' && styles.error} ${className || ''}`
+    const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${className || ''}`
 
     return (
       <div>
@@ -103,9 +83,9 @@ class TextFieldEmail extends Component {
           name={name}
           value={value}
           onChange={e => this.handleChange(e)}
+          onKeyDown={e => this.handleKeyDown(e)}
           disabled={isDisabled}
         />
-        <span className="text--sub2">{err}</span>
       </div>
     )
   }
@@ -123,7 +103,6 @@ TextFieldEmail.propTypes = {
   placeholder: PropTypes.string,
   isDisabled: PropTypes.bool,
   className: PropTypes.string,
-  validation: PropTypes.string,
 
 }
 
@@ -134,7 +113,6 @@ TextFieldEmail.defaultProps = {
   isDisabled: false,
   className: '',
   value: '',
-  validation: '',
 }
 
 export default TextFieldEmail

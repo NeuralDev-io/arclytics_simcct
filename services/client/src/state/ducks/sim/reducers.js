@@ -136,7 +136,7 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         displayUserCurve: action.payload,
-      } 
+      }
     case RUN_SIM:
       return {
         ...state,

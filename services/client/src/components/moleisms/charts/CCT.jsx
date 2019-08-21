@@ -126,12 +126,17 @@ CCT.propTypes = {
     bainite_completion: linePropTypes,
     martensite: linePropTypes,
   }).isRequired,
-  userData: linePropTypes.isRequired,
+  userData: PropTypes.shape({
+    user_cooling_curve: linePropTypes,
+    user_phase_fraction_data: linePropTypes,
+    slider_time_field: PropTypes.number,
+    slider_temp_field: PropTypes.number,
+  }).isRequired,
 }
 
 const mapStateToProps = state => ({
   data: state.sim.results.CCT,
-  userData: state.sim.results.user_cooling_curve,
+  userData: state.sim.results.USER.user_cooling_curve,
   displayUserCurve: state.sim.displayUserCurve,
 })
 

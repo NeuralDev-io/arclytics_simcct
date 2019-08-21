@@ -55,7 +55,7 @@ class ProfilePage extends Component {
       newPwdErr: '',
       cnfrmPwd: '',
       cnfrmPwdErr: '',
-      pwdOrEmail: false,
+      pwdOrEmail: true,
       updateError: null,
       edit: false,
       newEmail: '',
@@ -188,8 +188,6 @@ class ProfilePage extends Component {
   }
 
   handleChangeCurrPwd = (value) => {
-    const { currPwd, newPwd, cnfrmPwd } = this.state
-    // This is definetly an anti-pattern
     this.setState({
       currPwd: value,
     })
@@ -364,28 +362,37 @@ class ProfilePage extends Component {
           </div>
 
           <div className={styles.security}>
-            <h4 className={styles.header}>Security</h4>
-            <Button
-              className={styles.pwdOrEmail}
-              onClick={() => this.handleChange('pwdOrEmail', !pwdOrEmail)}
-              appearance={pwdOrEmail ? ('default') : ('outline')}
-              length="large"
-            >
-              {pwdOrEmail ? (' Change your Email ?') : ('Change your passsword ?')}
-            </Button>
+            <div className={styles.header}>
+              <h4> Security </h4>
+              <Button
+                className={styles.pwdOrEmail}
+                onClick={() => this.handleChange('pwdOrEmail', !pwdOrEmail)}
+                appearance="outline"
+                length="large"
+              >
+                {pwdOrEmail ? (' Change your email') : ('Change or reset passsword')}
+              </Button>
+            </div>
+            
             {
                 pwdOrEmail ? (
                   <div className={styles.changePassword}>
-                    <h6> Change Password password must be 6 letters long </h6>
-                    <TextField
-                      type="currPwd"
-                      name="currPwd"
-                      value={currPwd}
-                      placeholder="Current Password"
-                      length="stretch"
-                      onChange={value => this.handleChangeCurrPwd(value)}
-                      err={currPwdErr}
-                    />
+                    <h5> Change Password </h5> 
+                    <h6> Password must be 6 letters long </h6>
+                    <div className={styles.row}>
+                      <h6 className={styles.lCol}> Current Password </h6>
+                      <TextField
+                        className={styles.rCol}
+                        type="currPwd"
+                        name="currPwd"
+                        value={currPwd}
+                        placeholder="Current Password"
+                        length="stretch"
+                        onChange={value => this.handleChangeCurrPwd(value)}
+                        err={currPwdErr}
+                      /> 
+                    </div>
+
                     <TextField
                       type="newPwd"
                       name="newPwd"
@@ -411,10 +418,11 @@ class ProfilePage extends Component {
                 )
                   : (
                     <div className={styles.changeEmail}>
-                      <h6>Change Email. A request to change your email will be sent to the specified email address in the textfield below </h6>
+                      <h5>Change Email</h5>
+                      <h6>A request to change your email will be sent to the specified email address in the textfield below </h6>
                       <div className={styles.row}>
                         <div className={styles.lCol}>
-                          Email
+                          <h6>Email</h6>
                         </div>
                         <div className={styles.rCol}>
                           <TextField

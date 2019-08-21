@@ -2,14 +2,13 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Plot from 'react-plotly.js'
-import withDimension from 'react-dimensions'
+import AutoSizer from 'react-virtualized-auto-sizer'
 import { layout, config } from './utils/chartConfig'
 
 import colours from '../../../styles/_colors_light.scss'
 import styles from './TTT.module.scss'
 
-const TTT = (props) => {
-  const { containerWidth, containerHeight, data } = props
+const TTT = ({ data }) => {
   let chartData = []
   if (data !== undefined) {
     chartData = [
@@ -58,7 +57,7 @@ const TTT = (props) => {
       {
         x: data.martensite.time,
         y: data.martensite.temp,
-        name: 'Martensite nucleation',
+        name: 'Martensite',
         mode: 'line',
         marker: { color: colours.v500 },
       },
@@ -70,21 +69,25 @@ const TTT = (props) => {
   }
 
   return (
-    <Plot
-      data={chartData}
-      layout={{
-        ...layout(containerWidth, containerHeight),
-        xaxis: {
-          type: 'log',
-          autorange: true,
-        },
-        yaxis: {
-          type: 'log',
-          autorange: true,
-        },
-      }}
-      config={config}
-    />
+    <AutoSizer>
+      {({ height, width }) => (
+        <Plot
+          data={chartData}
+          layout={{
+            ...layout(height, width),
+            xaxis: {
+              type: 'log',
+              autorange: true,
+            },
+            yaxis: {
+              type: 'log',
+              autorange: true,
+            },
+          }}
+          config={config}
+        />
+      )}
+    </AutoSizer>
   )
 }
 
@@ -94,25 +97,24 @@ const linePropTypes = PropTypes.shape({
 })
 
 TTT.propTypes = {
-  // props given by withDimension()
-  containerWidth: PropTypes.number.isRequired,
-  containerHeight: PropTypes.number.isRequired,
   // props given by connect()
   data: PropTypes.shape({
-    ferrite_start: linePropTypes,
-    ferrite_finish: linePropTypes,
-    pearlite_start: linePropTypes,
-    pearlite_finish: linePropTypes,
-    bainite_start: linePropTypes,
-    bainite_finish: linePropTypes,
+    ferrite_nucleation: linePropTypes,
+    ferrite_completion: linePropTypes,
+    pearlite_nucleation: linePropTypes,
+    pearlite_completion: linePropTypes,
+    bainite_nucleation: linePropTypes,
+    bainite_completion: linePropTypes,
     martensite: linePropTypes,
-  }).isRequired,
+  }),
+}
+
+TTT.defaultProps = {
+  data: undefined,
 }
 
 const mapStateToProps = state => ({
   data: state.sim.results.TTT,
 })
 
-export default withDimension({
-  className: styles.wrapper,
-})(connect(mapStateToProps, {})(TTT))
+export default connect(mapStateToProps, {})(TTT)

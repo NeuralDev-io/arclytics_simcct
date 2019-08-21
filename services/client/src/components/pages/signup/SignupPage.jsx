@@ -164,7 +164,7 @@ class SignupPage extends Component {
                   </div>
 
                   <div className={styles.signUpButton}>
-                    <Button name="SIGN UP" appearance="default" type="submit" length="small" disabled={isSubmitting}> SIGNUP </Button>
+                    <Button name="SIGN UP" appearance="default" type="submit" length="small" disabled={isSubmitting}>SIGN UP</Button>
                   </div>
                 </div>
               </form>

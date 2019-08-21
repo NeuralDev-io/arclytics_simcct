@@ -43,8 +43,8 @@
   }
 
   input[type="checkbox"]:checked ~ .checkmark {
-    background-color: $ag500;
-    border: 1px solid $ag500;
+    background-color: $arc500;
+    border: 1px solid $arc500;
 
     .icon {
       opacity: 1;
@@ -52,6 +52,6 @@
   }
 
   input[type="checkbox"]:focus ~ .checkmark {
-    box-shadow: inset 0 0 1px 1px $ag500;
+    box-shadow: inset 0 0 1px 1px $arc500;
   }
 }

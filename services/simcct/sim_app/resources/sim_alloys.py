@@ -49,7 +49,7 @@ class AlloyStore(Resource):
         in the request body to the Session storage.
 
         Args:
-            token: a valid JWT token.
+            _: a valid JWT token.
             session_key: a valid TimedJSONWebSignature session key.
 
         Returns:

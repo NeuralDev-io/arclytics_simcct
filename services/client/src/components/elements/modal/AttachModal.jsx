@@ -35,11 +35,16 @@ class AttachModal extends Component {
   }
 
   render() {
-    const { children, position, overlap } = this.props
+    const {
+      children,
+      position,
+      overlap,
+      className,
+    } = this.props
     const { visible } = this.state
-    console.log(`${position}${overlap && 'Overlap'}`)
+
     return (
-      <div className={styles.modalContainer} ref={(node) => { this.node = node }}>
+      <div className={`${styles.modalContainer} ${className}`} ref={(node) => { this.node = node }}>
         {React.Children.map(children, (child, i) => {
           if (i === 0) {
             return React.cloneElement(child, { onClick: this.handleClick })
@@ -55,16 +60,25 @@ class AttachModal extends Component {
 }
 
 AttachModal.propTypes = {
+  // AttachModal accepts 2 children, the first being the interactive element
+  // (usually a button), the second being the modal content
+  children: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.node),
+    PropTypes.node,
+  ]).isRequired,
   // prop to set the position of the modal relative to interactive element
   // topLeft || topRight || bottomLeft || bottomRight
   position: PropTypes.string,
   // prop to set if modal is going to overlap interactive element
   overlap: PropTypes.bool,
+  // className prop to override scss styles
+  className: PropTypes.string,
 }
 
 AttachModal.defaultProps = {
   position: 'bottomLeft',
   overlap: true,
+  className: '',
 }
 
 export default AttachModal

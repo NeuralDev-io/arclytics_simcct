@@ -106,7 +106,11 @@ TTT.propTypes = {
     bainite_nucleation: linePropTypes,
     bainite_completion: linePropTypes,
     martensite: linePropTypes,
-  }).isRequired,
+  }),
+}
+
+TTT.defaultProps = {
+  data: undefined,
 }
 
 const mapStateToProps = state => ({

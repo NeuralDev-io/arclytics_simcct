@@ -7,6 +7,7 @@ import Checkbox from '../../elements/checkbox'
 import {
   updateConfigMethod, updateGrainSize, updateMsBsAe, getMsBsAe, setAutoCalculate, updateConfig,
 } from '../../../state/ducks/sim/actions'
+import { roundTo } from '../../../utils/math'
 
 import styles from './ConfigForm.module.scss'
 
@@ -158,7 +159,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="ae1_temp"
                     onChange={val => this.handleUpdateAe('ae1_temp', val)}
-                    value={configurations.ae1_temp}
+                    value={roundTo(configurations.ae1_temp, 4)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae}
@@ -170,7 +171,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="ae3_temp"
                     onChange={val => this.handleUpdateAe('ae3_temp', val)}
-                    value={configurations.ae3_temp}
+                    value={roundTo(configurations.ae3_temp, 4)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae}
@@ -193,7 +194,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="ms_temp"
                     onChange={val => this.handleUpdateMs('ms_temp', val)}
-                    value={configurations.ms_temp}
+                    value={roundTo(configurations.ms_temp, 4)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ms}
@@ -205,7 +206,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="ms_rate_param"
                     onChange={val => this.handleUpdateMs('ms_rate_param', val)}
-                    value={configurations.ms_rate_param}
+                    value={roundTo(configurations.ms_rate_param, 4)}
                     length="short"
                     isDisabled={configurations.auto_calculate_ms}
                   />
@@ -227,7 +228,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="bs_temp"
                     onChange={val => this.handleUpdateBs('bs_temp', val)}
-                    value={configurations.bs_temp}
+                    value={roundTo(configurations.bs_temp, 4)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_bs}

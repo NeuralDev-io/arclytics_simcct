@@ -125,14 +125,19 @@ CCT.propTypes = {
     bainite_nucleation: linePropTypes,
     bainite_completion: linePropTypes,
     martensite: linePropTypes,
-  }).isRequired,
+  }),
   userData: PropTypes.shape({
     user_cooling_curve: linePropTypes,
     user_phase_fraction_data: PropTypes.array,
     slider_time_field: PropTypes.number,
     slider_temp_field: PropTypes.number,
     slider_max: PropTypes.number,
-  }).isRequired,
+  }),
+}
+
+CCT.defaultProps = {
+  data: undefined,
+  userData: undefined,
 }
 
 const mapStateToProps = state => ({

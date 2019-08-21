@@ -430,7 +430,7 @@ class ProfilePage extends Component {
                         />
                       </div>
                     </div>
-                    <Button className={styles.submitPwd} onClick={() => this.submitNewPassword()}>
+                    <Button className={styles.submitPwd} isDisabled={(newPwd !== cnfrmPwd) || ((newPwd === '') && (cnfrmPwd === ''))} onClick={() => this.submitNewPassword()}>
                       Change Password
                     </Button>
                   </div>

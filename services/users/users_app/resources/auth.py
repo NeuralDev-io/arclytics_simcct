@@ -89,6 +89,7 @@ def confirm_email(token):
     user = User.objects.get(email=email)
     # And do the real work confirming their status
     user.verified = True
+    user.save()
 
     response['status'] = 'success'
     response.pop('message')
@@ -701,6 +702,66 @@ def change_password(user_id):
 
     response['message'] = 'Password is not correct.'
     return jsonify(response), 401
+
+
+@auth_blueprint.route('/auth/email/change', methods=['PUT'])
+@authenticate_flask
+def change_email(user_id) -> Tuple[dict, int]:
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    request_data = request.get_json()
+    if not request_data:
+        return jsonify(response), 400
+
+    new_email = request_data.get('new_email', None)
+
+    if not new_email:
+        response['message'] = 'No new email given.'
+        return jsonify(response), 400
+
+    # Validate new email address.
+    try:
+        v = validate_email(new_email)
+        valid_new_email = v['email']
+    except EmailNotValidError as e:
+        response['error'] = str(e)
+        response['message'] = 'Invalid email.'
+        return jsonify(response), 400
+
+    user = User.objects.get(id=user_id)
+    user.email = valid_new_email
+    user.verified = False
+    user.save()
+
+    confirm_token = generate_confirmation_token(valid_new_email)
+    confirm_url = generate_url('auth.confirm_email', confirm_token)
+
+    from celery_runner import celery
+    celery.send_task(
+        'tasks.send_email',
+        kwargs={
+            'to': [valid_new_email],
+            'subject_suffix':
+            'Your have changed your email address!',
+            'html_template':
+            render_template(
+                'change_email.html',
+                user_name=f'{user.first_name} {user.last_name}',
+                confirm_url=confirm_url
+            ),
+            'text_template':
+            render_template(
+                'change_email.txt',
+                user_name=f'{user.first_name} {user.last_name}',
+                confirm_url=confirm_url
+            )
+        }
+    )
+
+    response['status'] = 'success'
+    response['message'] = 'Email changed.'
+    response['new_email'] = valid_new_email
+    return jsonify(response), 200
 
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])

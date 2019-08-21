@@ -13,6 +13,7 @@ import {
   createUserProfile,
   updateUserProfile,
   updateEmail,
+  changePassword,
 } from '../../../state/ducks/users/actions'
 
 import TextField from '../../elements/textfield'
@@ -59,6 +60,7 @@ class ProfilePage extends Component {
       edit: false,
       newEmail: '',
       emailErr: '',
+      isCurrPwdCorrect: false,
     }
   }
 
@@ -186,20 +188,28 @@ class ProfilePage extends Component {
   }
 
   handleChangeCurrPwd = (value) => {
+    const { currPwd, newPwd, cnfrmPwd } = this.state
     // This is definetly an anti-pattern
     this.setState({
       currPwd: value,
     })
-    // if (value.length > 6){
-    //   get
-    // }
+    if (value.length >= 6) {
+      this.setState({
+        isCurrPwdCorrect: true,
+      })
+    }
   }
 
+  submitNewPassword = (value) => {
+    const { currPwd, newPwd, cnfrmPwd } = this.state
+    const { changePasswordConnect } = this.props
 
-
-  // handleBlurCurrPwd = (value) => {
-    
-  // }
+    changePasswordConnect({
+      password: currPwd,
+      new_password: newPwd,
+      confirm_password: cnfrmPwd,
+    })
+  }
 
   render() {
     const {
@@ -365,7 +375,7 @@ class ProfilePage extends Component {
                       value={currPwd}
                       placeholder="Current Password"
                       length="stretch"
-                      onChange={value => this.handleChange('currPwd', value)}
+                      onChange={value => this.handleChangeCurrPwd(value)}
                       err={currPwdErr}
                     />
                     <TextField
@@ -374,7 +384,7 @@ class ProfilePage extends Component {
                       value={newPwd}
                       placeholder="New Password"
                       length="stretch"
-                      isDisabled={isCurrPwdCorrect}
+                      isDisabled={!isCurrPwdCorrect}
                       onChange={value => this.handleChange('newPwd', value)}
                     />
                     <TextField
@@ -383,10 +393,10 @@ class ProfilePage extends Component {
                       value={cnfrmPwd}
                       placeholder="Confirm Password"
                       length="stretch"
-                      isDisabled={isCurrPwdCorrect}
+                      isDisabled={!isCurrPwdCorrect}
                       onChange={value => this.handleChange('cnfrmPwd', value)}
                     />
-                    <Button>
+                    <Button onClick={() => this.submitNewPassword()}>
                       Submit
                     </Button>
                   </div>
@@ -456,6 +466,8 @@ ProfilePage.propTypes = {
   getUserProfileConnect: PropTypes.func.isRequired,
   updateUserProfileConnect: PropTypes.func.isRequired,
   createUserProfileConnect: PropTypes.func.isRequired,
+  updateEmailConnect: PropTypes.func.isRequired,
+  changePasswordConnect: PropTypes.func.isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
 }
 
@@ -469,6 +481,7 @@ const mapDispatchToProps = {
   updateUserProfileConnect: updateUserProfile,
   createUserProfileConnect: createUserProfile,
   updateEmailConnect: updateEmail,
+  changePasswordConnect: changePassword,
 }
 
 

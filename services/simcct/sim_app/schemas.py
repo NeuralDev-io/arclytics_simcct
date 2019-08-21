@@ -30,6 +30,22 @@ from simulation.utilities import MissingElementError
 Schema.TYPE_MAPPING[ObjectId] = fields.String
 
 
+class PlotData(Schema):
+    temp = fields.List(fields.Float())
+    time = fields.List(fields.Float())
+
+
+class TTTSchema(Schema):
+    ferrite_nucleation = fields.Nested(PlotData)
+    pearlite_nucleation = fields.Nested(PlotData)
+
+
+class SimulationResultsSchema(Schema):
+    TTT = fields.Dict()
+    CCT = fields.Dict()
+    USER = fields.Dict()
+
+
 class ElementSchema(Schema):
     symbol = fields.Str(required=True)
     weight = fields.Float(required=True)

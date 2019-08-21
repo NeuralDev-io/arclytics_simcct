@@ -208,13 +208,13 @@ class PhaseSimulation(object):
 
         # noinspection PyUnboundLocalVariable
         self.plots_data.set_ttt_plot_data(
-            ferrite_nucleation=fcs_mat.trim((idx_fn-1)),
-            ferrite_completion=fcf_mat.trim((idx_fn-1)),
-            pearlite_nucleation=pcs_mat.trim((idx_pn-1)),
-            pearlite_completion=pcf_mat.trim((idx_pn-1)),
-            bainite_nucleation=bcs_mat.trim((idx_bn-1)),
-            bainite_completion=bcf_mat.trim((idx_bn-1)),
-            martensite=msf_mat
+            ferrite_nucleation=fcs_mat[:(idx_fn-1), :],
+            ferrite_completion=fcf_mat[:(idx_fn-1), :],
+            pearlite_nucleation=pcs_mat[:(idx_pn-1), :],
+            pearlite_completion=pcf_mat[:(idx_pn-1), :],
+            bainite_nucleation=bcs_mat[:(idx_bn-1), :],
+            bainite_completion=bcf_mat[:(idx_bn-1), :],
+            martensite=msf_mat[:]
         )
 
     def cct(self) -> None:
@@ -493,13 +493,13 @@ class PhaseSimulation(object):
 
         # Store the data in a Results Object
         self.plots_data.set_cct_plot_data(
-            ferrite_nucleation=cct_record_f_mat.trim((idx_f-1)),
-            ferrite_completion=cct_record_f_end_mat.trim((idx_f_end-1)),
-            pearlite_nucleation=cct_record_p_mat.trim((idx_p-1)),
-            pearlite_completion=cct_record_p_end_mat.trim((idx_p_end-1)),
-            bainite_nucleation=cct_record_b_mat.trim((idx_b-1)),
-            bainite_completion=cct_record_b_end_mat.trim((idx_b_end-1)),
-            martensite=cct_record_m_mat
+            ferrite_nucleation=cct_record_f_mat[:(idx_f-1), :],
+            ferrite_completion=cct_record_f_end_mat[:(idx_f_end-1), :],
+            pearlite_nucleation=cct_record_p_mat[:(idx_p-1), :],
+            pearlite_completion=cct_record_p_end_mat[:(idx_p_end-1), :],
+            bainite_nucleation=cct_record_b_mat[:(idx_b-1), :],
+            bainite_completion=cct_record_b_end_mat[:(idx_b_end-1), :],
+            martensite=cct_record_m_mat[:]
         )
 
     def user_cooling_curve(self) -> None:
@@ -598,13 +598,14 @@ class PhaseSimulation(object):
             time = time + increm_time
 
         # Trim the user cool curve to the max count it reaches
-        user_cool_mat.trim((count-1))
+        n_max = count - 1
+        user_cool_mat = user_cool_mat[:n_max, :]
         # Store the data in a Results Object
         # phase_vol: 0=Austenite, 1=Ferrite, 2=Pearlite, 3=Bainite, 4=Martensite
         # phase_vol.shape = (n,5)
         self.plots_data.set_user_cool_plot_data(
             user_cooling_curve=user_cool_mat,
-            user_phase_fraction_data=phase_vol,
+            user_phase_fraction_data=phase_vol[:n_max, :],
             slider_time_field=user_cool_mat[-1, 0],
             slider_temp_field=user_cool_mat[-1, 1]
         )

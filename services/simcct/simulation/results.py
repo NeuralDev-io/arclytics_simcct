@@ -155,9 +155,9 @@ class DynamicNdarray(object):
             None
         """
         if isinstance(shape, tuple):
-            self.obj = self.obj[0:shape[0], 0:shape[1]]
+            self.obj = self.obj[:shape[0], :shape[1]]
         else:
-            self.obj = self.obj[0:shape, :]
+            self.obj = self.obj[:shape, :]
         self.shape = self.obj.shape
 
     def __str__(self):
@@ -170,8 +170,8 @@ class DynamicNdarray(object):
 def to_plot_dict(array: DynamicNdarray) -> dict:
     assert array.shape[1] == 2, 'Plot Dictionary Array shape must be (n, 2).'
     return {
-        'time': array[:, 0],
-        'temp': array[:, 1]
+        'time': array[:, 0].tolist(),
+        'temp': array[:, 1].tolist()
     }
 
 
@@ -238,7 +238,7 @@ class ResultsData(object):
 
     def get_cct_plot_data(self) -> dict:
         return {
-            'ferrite_nucleation': to_plot_dict(self.cct_fcs.obj),
+            'ferrite_nucleation': to_plot_dict(self.cct_fcs),
             'ferrite_completion': to_plot_dict(self.cct_fcf),
             'pearlite_nucleation': to_plot_dict(self.cct_pcs),
             'pearlite_completion': to_plot_dict(self.cct_pcf),
@@ -249,13 +249,13 @@ class ResultsData(object):
 
     def get_ttt_plot_data(self) -> dict:
         return {
-            'ferrite_nucleation': self.ttt_fcs,
-            'ferrite_completion': self.ttt_fcf,
-            'pearlite_nucleation': self.ttt_pcs,
-            'pearlite_completion': self.ttt_pcf,
-            'bainite_nucleation': self.ttt_bcs,
-            'bainite_completion': self.ttt_bcf,
-            'martensite': self.ttt_msf
+            'ferrite_nucleation': to_plot_dict(self.ttt_fcs),
+            'ferrite_completion': to_plot_dict(self.ttt_fcf),
+            'pearlite_nucleation': to_plot_dict(self.ttt_pcs),
+            'pearlite_completion': to_plot_dict(self.ttt_pcf),
+            'bainite_nucleation': to_plot_dict(self.ttt_bcs),
+            'bainite_completion': to_plot_dict(self.ttt_bcf),
+            'martensite': to_plot_dict(self.ttt_msf)
         }
 
     def get_user_cool_plot_data(self) -> dict:

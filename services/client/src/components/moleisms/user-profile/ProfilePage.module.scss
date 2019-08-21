@@ -34,12 +34,6 @@ $bg-img: url('../../../assets/background_img-min.png');
   flex-flow: column;
   justify-content: flex-start;
 
-
-  // @media screen and (max-width: 1720px) {
-  //   margin-left: calc(4rem + 430px);
-  //   width: calc(100% - calc(4rem + 430px));
-  // }
-
 }
 
 .header{
@@ -110,7 +104,38 @@ $bg-img: url('../../../assets/background_img-min.png');
     margin-bottom: 1.5rem;
   }
   .pwdOrEmail{
-    align-self: flex-end;
+    float:right;
+    width: fit-content;
+  }
+
+  .changeEmail{
+    .row{
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      width:100%;
+      margin-bottom: 1rem;
+    }
+  
+    .lCol{
+      padding-top: 0.25rem;
+      display: flex;
+      flex-direction: column;
+      flex-basis: 100%;
+      flex: 1;
+    }
+    
+    .rCol{
+      display: flex;
+      flex-direction: column;
+      flex-basis: 100%;
+      flex: 3;
+    }
+
+    submitEmail{
+      float:right
+    }
+  
   }
 }
 

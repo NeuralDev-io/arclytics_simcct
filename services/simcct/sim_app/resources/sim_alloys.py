@@ -178,21 +178,23 @@ class AlloyStore(Resource):
         session_configs = session_store['configurations']
 
         if not session_configs:
-            response['message'] = 'Cannot retrieve configurations from session.'
+            response['message'
+                     ] = 'Cannot retrieve configurations from session.'
             return response, 500
 
         try:
             valid_configs = ConfigurationsSchema().load(session_configs)
         except ValidationError as e:
             response['errors'] = e.messages
-            response['message'] = 'Validation error for session configurations.'
+            response['message'
+                     ] = 'Validation error for session configurations.'
             return response, 500
 
         # Well, if we don't need to auto calc. anything, let's get out of here
         if (
-                not valid_configs['auto_calculate_ms']
-                and not valid_configs['auto_calculate_bs']
-                and not valid_configs['auto_calculate_ae']
+            not valid_configs['auto_calculate_ms']
+            and not valid_configs['auto_calculate_bs']
+            and not valid_configs['auto_calculate_ae']
         ):
             # If we are only updating the alloy_store in the session,
             # we access Redis at this point and save it.

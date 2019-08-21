@@ -31,7 +31,7 @@ from simulation.utilities import (
     Method, sort_ccr, ConfigurationError, SimulationError
 )
 from simulation.simconfiguration import SimConfiguration
-from simulation.results import ResultsData, DynamicNdarray
+from simulation.results import ResultsContainer, DynamicNdarray
 # noinspection PyPep8Naming
 from simulation.periodic import PeriodicTable as PT
 from logger.arc_logger import AppLogger
@@ -50,7 +50,6 @@ class PhaseSimulation(object):
     """
     This class encapsulates the methods necessary to calculate CCT and TTT.
     """
-
     def __init__(self, sim_configs: SimConfiguration = None, debug=False):
         if sim_configs is not None:
             if not sim_configs.ae_check:
@@ -87,7 +86,7 @@ class PhaseSimulation(object):
             )
 
         # Use an object of Plots instance to store the plot data
-        self.plots_data = ResultsData()
+        self.plots_data = ResultsContainer()
 
         if debug:
             # Used for testing only.
@@ -205,9 +204,9 @@ class PhaseSimulation(object):
         # Uses Bainite cutoff time. So uses the Bainite phase as the argument
 
         # Much faster to just use a static array since this is so small.
-        msf_mat = np.array([
-            [0.001, self.ms], [torr, self.ms]
-        ], dtype=np.float32)
+        msf_mat = np.array(
+            [[0.001, self.ms], [torr, self.ms]], dtype=np.float32
+        )
         # These are the old positions to keep to ensure we remember them.
         # msf_mat[0, 0] = 0.001
         # msf_mat[0, 1] = self.ms
@@ -489,9 +488,10 @@ class PhaseSimulation(object):
         # ==================== # MARTENSITE # ==================== #
         # Martensite completion
         # Much faster to just make a static `ndarray`
-        cct_record_m_mat = np.array([
-            [0.001, self.ms], [cct_record_b_end_mat[0, 0], self.ms]
-        ], dtype=np.float32)
+        cct_record_m_mat = np.array(
+            [[0.001, self.ms], [cct_record_b_end_mat[0, 0], self.ms]],
+            dtype=np.float32
+        )
         # These are the old positions to keep to ensure we remember them.
         # cct_record_m_mat[0, 0] = 0.001
         # cct_record_m_mat[0, 1] = self.ms

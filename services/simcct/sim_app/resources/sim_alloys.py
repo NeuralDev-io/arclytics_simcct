@@ -24,7 +24,7 @@ from flask_restful import Resource
 from marshmallow import ValidationError
 
 from sim_app.extensions import api
-from sim_app.schemas import AlloySchema, AlloyStoreSchema
+from sim_app.schemas import AlloySchema, AlloyStoreSchema, ConfigurationsSchema
 from sim_app.middleware import token_and_session_required
 from sim_app.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
@@ -44,7 +44,7 @@ class AlloyStore(Resource):
     }
 
     # noinspection PyMethodMayBeStatic
-    def post(self, token, session_key):
+    def post(self, _, session_key):
         """This POST endpoint initiates the Alloy Store by setting the alloy
         in the request body to the Session storage.
 
@@ -175,20 +175,37 @@ class AlloyStore(Resource):
 
         session_store['alloy_store'] = valid_store
 
-        # In this situation, we always need to auto calculate and set the
-        # below configs to default
-        default_configs = {
-            'is_valid': False,
-            'method': 'Li98',
-            'grain_size': 0.0,
-            'nucleation_start': 0.0,
-            'nucleation_finish': 0.0,
-            'auto_calculate_ms': True,
-            'auto_calculate_bs': True,
-            'auto_calculate_ae': True,
-            'start_temp': 0,
-            'cct_cooling_rate': 0
-        }
+        session_configs = session_store['configurations']
+
+        if not session_configs:
+            response['message'] = 'Cannot retrieve configurations from session.'
+            return response, 500
+
+        try:
+            valid_configs = ConfigurationsSchema().load(session_configs)
+        except ValidationError as e:
+            response['errors'] = e.messages
+            response['message'] = 'Validation error for session configurations.'
+            return response, 500
+
+        # Well, if we don't need to auto calc. anything, let's get out of here
+        if (
+                not valid_configs['auto_calculate_ms']
+                and not valid_configs['auto_calculate_bs']
+                and not valid_configs['auto_calculate_ae']
+        ):
+            # If we are only updating the alloy_store in the session,
+            # we access Redis at this point and save it.
+            try:
+                SimSessionService().save_session(sid, session_store)
+            except SaveSessionError as e:
+                response['errors'] = str(e.msg)
+                response['message'] = 'Unable to save to session store.'
+                return response, 500
+
+            response['status'] = 'success'
+            response['message'] = 'Compositions updated.'
+            return response, 200
 
         # We update the transformation limits based on which option is
         # chosen
@@ -220,19 +237,28 @@ class AlloyStore(Resource):
         # package - by default we always use Li98
         method = Method.Li98
 
-        ms_temp = SimConfig.get_ms(method, comp=comp_np_arr)
-        ms_rate_param = SimConfig.get_ms_alpha(comp=comp_np_arr)
-        default_configs['ms_temp'] = ms_temp
-        default_configs['ms_rate_param'] = ms_rate_param
+        if valid_configs['auto_calculate_ms']:
+            ms_temp = SimConfig.get_ms(method, comp=comp_np_arr)
+            ms_rate_param = SimConfig.get_ms_alpha(comp=comp_np_arr)
+            valid_configs['ms_temp'] = ms_temp
+            valid_configs['ms_rate_param'] = ms_rate_param
+            response['data']['ms_temp'] = ms_temp
+            response['data']['ms_rate_param'] = ms_rate_param
 
-        bs_temp = SimConfig.get_bs(method, comp=comp_np_arr)
-        default_configs['bs_temp'] = bs_temp
+        if valid_configs['auto_calculate_bs']:
+            bs_temp = SimConfig.get_bs(method, comp=comp_np_arr)
+            valid_configs['bs_temp'] = bs_temp
+            response['data']['bs_temp'] = bs_temp
 
-        ae1, ae3 = SimConfig.calc_ae1_ae3(comp_np_arr)
-        default_configs['ae1_temp'] = ae1
-        default_configs['ae3_temp'] = ae3
+        if valid_configs['auto_calculate_ae']:
+            ae1, ae3 = SimConfig.calc_ae1_ae3(comp_np_arr)
+            valid_configs['ae1_temp'] = ae1
+            valid_configs['ae3_temp'] = ae3
+            response['data']['ae1_temp'] = ae1
+            response['data']['ae3_temp'] = ae3
 
-        session_store['configurations'] = default_configs
+        valid_configs['is_valid'] = False
+        session_store['configurations'] = valid_configs
 
         try:
             SimSessionService().save_session(sid, session_store)
@@ -241,13 +267,6 @@ class AlloyStore(Resource):
             response['message'] = 'Unable to save to session store.'
             return response, 500
 
-        response['data'] = {
-            'ms_temp': ms_temp,
-            'ms_rate_param': ms_rate_param,
-            'bs_temp': bs_temp,
-            'ae1_temp': ae1,
-            'ae3_temp': ae3
-        }
         response['status'] = 'success'
 
         headers = {
@@ -259,13 +278,13 @@ class AlloyStore(Resource):
         return response, 201, headers
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, token, session_key):
+    def patch(self, _, session_key):
         """This PATCH endpoint simply updates the `alloys` in the session
         store so that we can update all the other transformation temperature.
 
         Args:
             session_key:
-            token: a valid JWT token.
+            _: a JWT token passed in the request header but not used.
 
         Returns:
             A response object with appropriate status and message strings.
@@ -462,6 +481,7 @@ class AlloyStore(Resource):
             response['data']['ae1_temp'] = ae1
             response['data']['ae3_temp'] = ae3
 
+        sess_configs['is_valid'] = False
         session_store['configurations'] = sess_configs
 
         try:

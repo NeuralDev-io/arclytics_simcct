@@ -954,7 +954,6 @@ class PhaseSimulation(object):
         cr = wt['weight'][wt['symbol'] == PT.Cr.name][0]
 
         if self.configs.method == Method.Li98:
-
             sint_f = integral_mat[i + 1, 0]
             sint_p = integral_mat[i + 1, 1]
             sint_b = integral_mat[i + 1, 2]

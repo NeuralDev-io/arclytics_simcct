@@ -33,6 +33,8 @@ class JSONEncoder(json.JSONEncoder):
             return str(o)
         if isinstance(o, set):
             return list(o)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
         if isinstance(o, datetime):
             return str(o.isoformat())
         if isinstance(o, np.float):

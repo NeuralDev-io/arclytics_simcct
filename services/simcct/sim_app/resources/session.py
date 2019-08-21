@@ -53,6 +53,7 @@ def session_login(token):
     user_is_admin = post_data.get('is_admin', False)
     user_configs = post_data.get('last_configurations', None)
     user_alloy_store = post_data.get('last_alloy_store', None)
+    user_results = post_data.get('last_results', None)
 
     if not ObjectId.is_valid(user_id):
         response['message'] = 'User ObjectId must be provided.'
@@ -71,10 +72,12 @@ def session_login(token):
             response['errors'] = e.messages
             return jsonify(response), 400
     else:
+        # These are based of defaults in the front-end as agreed to by Andrew
+        # and Dalton.
         configs = {
             'is_valid': False,
             'method': 'Li98',
-            'grain_size': 0.0,
+            'grain_size': 8.0,
             'nucleation_start': 1.0,
             'nucleation_finish': 99.90,
             'auto_calculate_ms': True,
@@ -85,8 +88,8 @@ def session_login(token):
             'auto_calculate_ae': True,
             'ae1_temp': 0.0,
             'ae3_temp': 0.0,
-            'start_temp': 0,
-            'cct_cooling_rate': 0
+            'start_temp': 900,
+            'cct_cooling_rate': 10
         }
 
     if user_alloy_store:
@@ -117,7 +120,9 @@ def session_login(token):
         'is_admin': user_is_admin,
         'token': token,
         'configurations': configs,
-        'alloy_store': alloy_store
+        'alloy_store': alloy_store,
+        # TODO(andrew@neuraldev.io) Update this to get from last in user doc
+        'results': None
     }
     session_key = SimSessionService().new_session(token, session_data_store)
 

@@ -34,19 +34,12 @@ $bg-img: url('../../../assets/background_img-min.png');
   flex-flow: column;
   justify-content: flex-start;
 
-
-  // @media screen and (max-width: 1720px) {
-  //   margin-left: calc(4rem + 430px);
-  //   width: calc(100% - calc(4rem + 430px));
-  // }
-
 }
 
 .header{
   margin-bottom: 2rem;
-  width: 100vw;
+  width: 100%;
 }
-
 
 .generalFields{
   width: 35rem;
@@ -76,31 +69,13 @@ $bg-img: url('../../../assets/background_img-min.png');
     flex-basis: 100%;
     flex: 3;
   }
-
-
 } 
-
-.security{
-  margin-bottom: 3.5rem;
-  display: flex;
-  flex-flow: column;
-  justify-content: space-between;
-  width: 22.5vw;
-
-  h5, h6{
-    margin-bottom: 1.5rem;
-  } 
-
-  .resetPassword{
-    width: 100%;
-  }
-}
 
 .about{
   .questions {
     display: flex;
     flex-flow: column;
-    justify-content: space-betweeens;
+    justify-content: space-betweeen;
     
     .question{
       margin-bottom: 2.3rem;
@@ -113,6 +88,73 @@ $bg-img: url('../../../assets/background_img-min.png');
   }
 }
 
+.editButtons{
+  display: flex;
+  flex-flow: row;
+  justify-content: flex-end;
+  width: 35rem;
+  margin-bottom: 1rem;
+  .cancel{
+    margin-left: 0.5rem;
+  }
+}
+
+
+.security{
+  margin-top: 3.5rem;
+  margin-bottom: 3.5rem;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+  width: 35rem;
+
+  h5, h6{
+    margin-bottom: 1.5rem;
+  }
+  .header{
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .pwdOrEmail{
+    width: fit-content;
+  }
+  .row{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width:100%;
+    margin-bottom: 1rem;
+
+    .lCol{
+      padding-top: 0.25rem;
+      display: flex;
+      flex-direction: column;
+      flex-basis: 100%;
+      flex: 1;
+    }
+    
+    .rCol{
+      display: flex;
+      flex-direction: column;
+      flex-basis: 100%;
+      flex: 3;
+    }
+  }
+  .submitEmail{
+    float:right;
+    margin-top: 0.5rem;
+    width: fit-content;
+  }
+  .submitPwd{
+    float:right;
+    margin-top: 0.5rem;
+    width: fit-content;
+  }
+}
+
 .updateError{
   width:35rem;
   color: $r500;
@@ -121,13 +163,12 @@ $bg-img: url('../../../assets/background_img-min.png');
   height: 1.25rem;
 }
 
-.editButtons{
-  display: flex;
-  flex-flow: row;
-  justify-content: flex-end;
+
+
+.dataAndPersonal{
   width: 35rem;
-  margin-bottom: 1rem;
-  .cancel{
-    margin-left: 2rem;
+  .review{
+    float: right;
+    margin-top: 0.5rem;
   }
 }

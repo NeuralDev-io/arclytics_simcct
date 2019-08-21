@@ -1,8 +1,11 @@
 import {
   GET_USER_PROFILE,
   CREATE_USER_PROFILE,
-  UPDATE_USER_PROFILE, 
+  UPDATE_USER_PROFILE,
+  UPDATE_EMAIL,
+  CHANGE_PASSWORD,
 } from './types'
+
 const initialState = {
   user: {
     admin: false,
@@ -14,7 +17,6 @@ const reducer = (state = initialState, action) => {
   switch (action.type) {
     case GET_USER_PROFILE:
       return {
-        ...state,
         user: {
           ...state.user,
           ...action.payload,
@@ -32,6 +34,22 @@ const reducer = (state = initialState, action) => {
         },
       }
     case UPDATE_USER_PROFILE:
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          ...action.payload,
+        },
+      }
+    case UPDATE_EMAIL:
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          ...action.payload,
+        },
+      }
+    case CHANGE_PASSWORD:
       return {
         ...state,
         user: {

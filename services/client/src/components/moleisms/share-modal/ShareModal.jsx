@@ -135,7 +135,7 @@ class ShareModal extends PureComponent {
         onClose={onClose}
       >
         <header>
-          <h3>Share</h3>
+          <h4>Share</h4>
           <IconButton
             onClick={onClose}
             Icon={props => <XIcon {...props} />}

@@ -6,7 +6,7 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = '[Andrew Che <@codeninja55>]'
+__author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'TBA'
 __version__ = '0.5.0'
@@ -27,7 +27,7 @@ from flask_restful import Resource
 
 from sim_app.extensions import api
 from sim_app.middleware import token_and_session_required
-from sim_app.sim_session import SimSessionService
+from sim_app.sim_session import SimSessionService, SaveSessionError
 from simulation.simconfiguration import SimConfiguration
 from simulation.phasesimulation import PhaseSimulation
 from simulation.utilities import ConfigurationError, SimulationError
@@ -52,7 +52,7 @@ class Simulation(Resource):
         sid, session_store = SimSessionService().load_session(session_key)
 
         logger.debug('Session Store')
-        logger.pprint(session_store)
+        logger.pprint(session_store['configurations'])
 
         if sid is None:
             response['errors'] = session_store
@@ -69,6 +69,13 @@ class Simulation(Resource):
             return response, 404
 
         configs = ConfigurationsSchema().load(session_configs)
+
+        # If the configs are considered valid, then they must have run a
+        # previous Simulation successfully.
+        if configs['is_valid']:
+            response['status'] = 'success'
+            response['data'] = session_store['results']
+            return response, 200
 
         # By default, the session alloy store is single and parent but the
         # parent alloy is set to none.
@@ -168,6 +175,16 @@ class Simulation(Resource):
         except AssertionError as e:
             response['errors'] = str(e)
             response['message'] = 'Assertion error building response data.'
+            return response, 500
+
+        # If a valid simulation has been run, the configurations are now valid.
+        session_store['configurations']['is_valid'] = True
+        session_store['results'] = data
+        try:
+            SimSessionService().save_session(sid, session_store)
+        except SaveSessionError as e:
+            response['errors'] = str(e.msg)
+            response['message'] = 'Unable to save to session store.'
             return response, 500
 
         response['status'] = 'success'

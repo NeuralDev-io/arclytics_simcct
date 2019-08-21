@@ -109,6 +109,7 @@ class Configurations(Resource):
         if cct_cool_rate:
             sess_configs['cct_cooling_rate'] = int(cct_cool_rate)
 
+        sess_configs['is_valid'] = False
         session_store['configurations'] = sess_configs
 
         try:
@@ -133,7 +134,7 @@ class ConfigsMethod(Resource):
 
         Args:
             session_key:
-            token: a valid JWT token.
+            _: a valid JWT token.
 
         Returns:
             A response object with appropriate status and message strings.
@@ -182,6 +183,7 @@ class ConfigsMethod(Resource):
         if method == 'Kirkaldy83':
             session_configs['method'] = Method.Kirkaldy83.name
 
+        session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
         try:
@@ -203,7 +205,7 @@ class MartensiteStart(Resource):
     }
 
     # noinspection PyMethodMayBeStatic
-    def get(self, token, session_key):
+    def get(self, _, session_key):
         """This GET endpoint auto calculates the `MS` and `MS Rate Param` as the
         user has selected the auto calculate feature without the need for
         sending
@@ -211,7 +213,7 @@ class MartensiteStart(Resource):
 
         Args:
             session_key:
-            token: a valid JWT token.
+            _: a token passed in the request but not used.
 
         Returns:
             A response object with appropriate status and message strings
@@ -279,6 +281,7 @@ class MartensiteStart(Resource):
         # Save the new calculated BS and MS to the Session store
         session_configs['ms_temp'] = ms_temp
         session_configs['ms_rate_param'] = ms_rate_param
+        session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
         try:
@@ -295,13 +298,13 @@ class MartensiteStart(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def put(self, token, session_key):
+    def put(self, _, session_key):
         """If the user manually updates the MS temperatures in the client,
         we receive those and update the session cache.
 
         Args:
+            _: a token passed in the request but not used.
             session_key:
-            token: a valid JWT token.
 
         Returns:
             A response body of with the `status` and a 202 status code.
@@ -344,6 +347,7 @@ class MartensiteStart(Resource):
         session_configs['auto_calculate_ms'] = False
         session_configs['ms_temp'] = ms_temp
         session_configs['ms_rate_param'] = ms_rate_param
+        session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
         try:
@@ -434,6 +438,7 @@ class BainiteStart(Resource):
 
         # Save the new calculated BS and MS to the Session store
         session_configs['bs_temp'] = bs_temp
+        session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
         try:
@@ -492,6 +497,7 @@ class BainiteStart(Resource):
 
         session_configs['auto_calculate_bs'] = False
         session_configs['bs_temp'] = bs_temp
+        session_configs['is_valid'] = False
         session_store[f'configurations'] = session_configs
 
         try:
@@ -574,6 +580,7 @@ class Austenite(Resource):
         # Save the new calculated Ae1 and Ae3 to the Session store
         session_configs['ae1_temp'] = ae1
         session_configs['ae3_temp'] = ae3
+        session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
         try:
@@ -639,6 +646,7 @@ class Austenite(Resource):
         session_configs['auto_calculate_ae'] = False
         session_configs['ae1_temp'] = ae1_temp
         session_configs['ae3_temp'] = ae3_temp
+        session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
         try:

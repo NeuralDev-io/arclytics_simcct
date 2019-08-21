@@ -78,7 +78,7 @@ def session_login(token):
             'method': 'Li98',
             'grain_size': 8.0,
             'nucleation_start': 1.0,
-            'nucleation_finish': 99.99,
+            'nucleation_finish': 99.90,
             'auto_calculate_ms': True,
             'ms_temp': 0.0,
             'ms_rate_param': 0.0,
@@ -119,7 +119,9 @@ def session_login(token):
         'is_admin': user_is_admin,
         'token': token,
         'configurations': configs,
-        'alloy_store': alloy_store
+        'alloy_store': alloy_store,
+        # TODO(andrew@neuraldev.io) Update this to get from last in user doc
+        'results': None
     }
     session_key = SimSessionService().new_session(token, session_data_store)
 

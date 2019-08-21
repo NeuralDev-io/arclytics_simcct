@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { Route } from 'react-router-dom'
 import { connect } from 'react-redux'
 
-import { getUserProfile } from '../../../state/ducks/users/actions'
+import { getUserProfile } from '../../../state/ducks/self/actions'
 
 import AppBar from '../../moleisms/appbar'
 import UserSidebar from '../../moleisms/user-sidebar'

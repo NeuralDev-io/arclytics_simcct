@@ -155,7 +155,7 @@ class SimulationPage extends Component {
           <div className={styles.custom}>
             <div>
               <header className={styles.profile}>
-                <h4>User profile</h4>
+                <h4>User cooling profile</h4>
                 <Button
                   appearance="text"
                   onClick={() => this.setState(prevState => ({

@@ -338,13 +338,10 @@ ShareModal.propTypes = {
         weight: textFieldType,
       })),
     }),
-    mix: PropTypes.shape({
-      name: PropTypes.string,
-      compositions: PropTypes.arrayOf(PropTypes.shape({
-        symbol: PropTypes.string,
-        weight: textFieldType,
-      })),
-    }),
+    mix: PropTypes.arrayOf(PropTypes.shape({
+      symbol: PropTypes.string,
+      weight: textFieldType,
+    })),
     dilution: textFieldType,
   }).isRequired,
 }

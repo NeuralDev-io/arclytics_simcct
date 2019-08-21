@@ -125,8 +125,13 @@ CCT.propTypes = {
     bainite_nucleation: linePropTypes,
     bainite_completion: linePropTypes,
     martensite: linePropTypes,
-  }).isRequired,
-  userData: linePropTypes.isRequired,
+  }),
+  userData: linePropTypes,
+}
+
+CCT.defaultProps = {
+  data: undefined,
+  userData: undefined,
 }
 
 const mapStateToProps = state => ({

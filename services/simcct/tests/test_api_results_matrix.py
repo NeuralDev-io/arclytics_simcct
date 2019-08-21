@@ -44,7 +44,9 @@ class MyTestCase(unittest.TestCase):
         mat[1, 0] = 20.0
         mat[1, 1] = 40.0
         mat[2, 1] = 50.0
-        mat.trim(4)
+        # Trimming using traditional numpy. Remember it returns the internal
+        # ndarray as the object now.
+        mat = mat[:4, :]
         self.assertEqual(mat.shape, (4, 2))
 
     def test_override_braces_get_item(self):

@@ -224,12 +224,10 @@ class ProfilePage extends Component {
       currPwd,
       currPwdErr,
       newPwd,
-      newPwdErr,
       cnfrmPwd,
-      cnfrmPwdErr,
       isCurrPwdCorrect,
       newEmail,
-      emailErr, 
+      emailErr,
     } = this.state
     const { user } = this.props
     return (
@@ -377,42 +375,54 @@ class ProfilePage extends Component {
             {
                 pwdOrEmail ? (
                   <div className={styles.changePassword}>
-                    <h5> Change Password </h5> 
+                    <h5> Change Password </h5>
                     <h6> Password must be 6 letters long </h6>
                     <div className={styles.row}>
                       <h6 className={styles.lCol}> Current Password </h6>
-                      <TextField
-                        className={styles.rCol}
-                        type="currPwd"
-                        name="currPwd"
-                        value={currPwd}
-                        placeholder="Current Password"
-                        length="stretch"
-                        onChange={value => this.handleChangeCurrPwd(value)}
-                        err={currPwdErr}
-                      /> 
+                      <div className={styles.rCol}>
+                        <TextField
+                          type="password"
+                          name="currPwd"
+                          value={currPwd}
+                          placeholder="Current Password"
+                          length="stretch"
+                          onChange={value => this.handleChangeCurrPwd(value)}
+                          err={currPwdErr}
+                        />
+                      </div>
                     </div>
 
-                    <TextField
-                      type="newPwd"
-                      name="newPwd"
-                      value={newPwd}
-                      placeholder="New Password"
-                      length="stretch"
-                      isDisabled={!isCurrPwdCorrect}
-                      onChange={value => this.handleChange('newPwd', value)}
-                    />
-                    <TextField
-                      type="cnfrmPwd"
-                      name="cnfrmPwd"
-                      value={cnfrmPwd}
-                      placeholder="Confirm Password"
-                      length="stretch"
-                      isDisabled={!isCurrPwdCorrect}
-                      onChange={value => this.handleChange('cnfrmPwd', value)}
-                    />
-                    <Button onClick={() => this.submitNewPassword()}>
-                      Submit
+                    <div className={styles.row}>
+                      <h6 className={styles.lCol}> New Password </h6>
+                      <div className={styles.rCol}>
+                        <TextField
+                          type="password"
+                          name="newPwd"
+                          value={newPwd}
+                          placeholder="New Password"
+                          length="stretch"
+                          isDisabled={!isCurrPwdCorrect}
+                          onChange={value => this.handleChange('newPwd', value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className={styles.row}>
+                      <h6 className={styles.lCol}> Confirm Password </h6>
+                      <div className={styles.rCol}>
+                        <TextField
+                          type="password"
+                          name="cnfrmPwd"
+                          value={cnfrmPwd}
+                          placeholder="Confirm Password"
+                          length="stretch"
+                          isDisabled={!isCurrPwdCorrect}
+                          onChange={value => this.handleChange('cnfrmPwd', value)}
+                        />
+                      </div>
+                    </div>
+                    <Button className={styles.submitPwd} onClick={() => this.submitNewPassword()}>
+                      Change Password
                     </Button>
                   </div>
                 )

@@ -41,7 +41,6 @@ $bg-img: url('../../../assets/background_img-min.png');
   width: 100%;
 }
 
-
 .generalFields{
   width: 35rem;
   margin-bottom: 2.5rem;
@@ -70,10 +69,7 @@ $bg-img: url('../../../assets/background_img-min.png');
     flex-basis: 100%;
     flex: 3;
   }
-
-
 } 
-
 
 .about{
   .questions {
@@ -92,6 +88,17 @@ $bg-img: url('../../../assets/background_img-min.png');
   }
 }
 
+.editButtons{
+  display: flex;
+  flex-flow: row;
+  justify-content: flex-end;
+  width: 35rem;
+  margin-bottom: 1rem;
+  .cancel{
+    margin-left: 0.5rem;
+  }
+}
+
 
 .security{
   margin-top: 3.5rem;
@@ -102,7 +109,6 @@ $bg-img: url('../../../assets/background_img-min.png');
   width: 35rem;
 
   h5, h6{
-    float:left;
     margin-bottom: 1.5rem;
   }
   .header{
@@ -115,63 +121,38 @@ $bg-img: url('../../../assets/background_img-min.png');
   .pwdOrEmail{
     width: fit-content;
   }
+  .row{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width:100%;
+    margin-bottom: 1rem;
 
-  .changeEmail{
-    .row{
+    .lCol{
+      padding-top: 0.25rem;
       display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      width:100%;
-      margin-bottom: 1rem;
-
-      .lCol{
-        padding-top: 0.25rem;
-        display: flex;
-        flex-direction: column;
-        flex-basis: 100%;
-        flex: 1;
-      }
-      
-      .rCol{
-        display: flex;
-        flex-direction: column;
-        flex-basis: 100%;
-        flex: 3;
-      }
+      flex-direction: column;
+      flex-basis: 100%;
+      flex: 1;
     }
-    .submitEmail{
-      float:right;
-      margin-top: 0.5rem;
-      width: fit-content;
+    
+    .rCol{
+      display: flex;
+      flex-direction: column;
+      flex-basis: 100%;
+      flex: 3;
     }
   }
-  
-  .changePassword{
-    .row{
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      width:100%;
-      margin-bottom: 1rem;
-
-      .lCol{
-        padding-top: 0.25rem;
-        display: flex;
-        flex-direction: column;
-        flex-basis: 100%;
-        flex: 1;
-      }
-      
-      .rCol{
-        display: flex;
-        flex-direction: column;
-        flex-basis: 100%;
-        flex: 3;
-      }
-    }
+  .submitEmail{
+    float:right;
+    margin-top: 0.5rem;
+    width: fit-content;
   }
-  
-  
+  .submitPwd{
+    float:right;
+    margin-top: 0.5rem;
+    width: fit-content;
+  }
 }
 
 .updateError{
@@ -182,16 +163,7 @@ $bg-img: url('../../../assets/background_img-min.png');
   height: 1.25rem;
 }
 
-.editButtons{
-  display: flex;
-  flex-flow: row;
-  justify-content: flex-end;
-  width: 35rem;
-  margin-bottom: 1rem;
-  .cancel{
-    margin-left: 0.5rem;
-  }
-}
+
 
 .dataAndPersonal{
   width: 35rem;

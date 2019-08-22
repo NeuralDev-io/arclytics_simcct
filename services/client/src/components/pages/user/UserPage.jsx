@@ -21,8 +21,6 @@ class UserPage extends Component {
    */
 
   componentDidMount() {
-    const { history } = this.props
-    history.push('/user/profile')
     getUserProfile()
   }
 

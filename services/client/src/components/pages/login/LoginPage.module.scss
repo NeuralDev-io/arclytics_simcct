@@ -6,7 +6,7 @@ $bg-img: url('../../../assets/background_img-min.png');
   width:100vw;
   padding-top: 8rem;
   padding-bottom: 8rem;
-  background: $n0 $bg-img no-repeat;
+  background: var(--n0) $bg-img no-repeat;
   background-size: 150% 150%;
   background-position:  -80%;
 }
@@ -48,13 +48,13 @@ $bg-img: url('../../../assets/background_img-min.png');
 
 .help{
   float:right;
-  color:$arc500;
+  color:var(--arc500);
   margin-bottom: 3rem;
   margin-right: 0.774375rem;
 }
 
 .createAccount{
-  color:$arc500;
+  color:var(--arc500);
   text-decoration: none;
 }
 
@@ -62,5 +62,5 @@ $bg-img: url('../../../assets/background_img-min.png');
     margin-top: 5.1825rem;
 }
 .errors{
-    color: $r400;
+    color: var(--r400);
 }

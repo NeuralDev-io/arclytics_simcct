@@ -263,7 +263,7 @@
   background: rgba(0, 0, 0, 0.03);
 }
 .ReactTable.-highlight .rt-tbody .rt-tr-group:not(.-padRow):hover {
-  background: $n10;
+  background: var(--n10);
 }
 .ReactTable .-pagination {
   z-index: 1;
@@ -423,7 +423,7 @@
   background: none;
 
   .rt-thead {
-    border-bottom: 1px solid $n50;
+    border-bottom: 1px solid var(--n50);
   
     .rt-tr {
       padding: .5rem 1rem;
@@ -447,7 +447,7 @@
   .rt-tbody {
     .rt-tr-group {
       padding: 1rem;
-      border-bottom: 1px solid $n50;
+      border-bottom: 1px solid var(--n50);
   
       .rt-tr {
         display: flex;

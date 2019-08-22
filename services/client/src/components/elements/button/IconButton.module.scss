@@ -15,11 +15,11 @@
   & .icon {
     height: 1.25rem;
     width: 1.25rem;
-    stroke: $n500;
+    stroke: var(--n500);
     flex-shrink: 0;
   }
 
   &:hover {
-    background-color: $n10;
+    background-color: var(--n10);
   }
 }

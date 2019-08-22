@@ -127,19 +127,19 @@ def confirm_email_resend(user_id):
         kwargs={
             'to': [user.email],
             'subject_suffix':
-                'Please Confirm Your Email',
+            'Please Confirm Your Email',
             'html_template':
-                render_template(
-                    'activate.html',
-                    confirm_url=confirm_url,
-                    user_name=f'{user.first_name} {user.last_name}'
-                ),
+            render_template(
+                'activate.html',
+                confirm_url=confirm_url,
+                user_name=f'{user.first_name} {user.last_name}'
+            ),
             'text_template':
-                render_template(
-                    'activate.txt',
-                    confirm_url=confirm_url,
-                    user_name=f'{user.first_name} {user.last_name}'
-                )
+            render_template(
+                'activate.txt',
+                confirm_url=confirm_url,
+                user_name=f'{user.first_name} {user.last_name}'
+            )
         }
     )
 
@@ -485,6 +485,41 @@ def login() -> any:
             return jsonify(response), 200
 
     response['message'] = 'Email or password combination incorrect.'
+    return jsonify(response), 404
+
+
+@auth_blueprint.route(rule='/auth/password/check', methods=['GET'])
+@authenticate_flask
+def check_password(user_id) -> Tuple[dict, int]:
+    """
+    Route for verifying a user's password.
+    """
+
+    # Get request data
+    data = request.get_json()
+
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+    if not data:
+        return jsonify(response), 400
+
+    password = data.get('password', '')
+
+    if not password:
+        response['message'] = 'You must provide a password.'
+        return jsonify(response), 400
+
+    if len(str(password)) < 6 or len(str(password)) > 254:
+        response['message'] = 'Password incorrect.'
+        return jsonify(response), 400
+
+    user = User.objects.get(id=user_id)
+
+    if bcrypt.check_password_hash(user.password, password):
+        response['message'] = 'Password correct.'
+        response['status'] = 'success'
+        return jsonify(response), 200
+
+    response['message'] = 'Password incorrect.'
     return jsonify(response), 404
 
 

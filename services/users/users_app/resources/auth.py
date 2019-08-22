@@ -488,7 +488,7 @@ def login() -> any:
     return jsonify(response), 404
 
 
-@auth_blueprint.route(rule='/auth/password/check', methods=['GET'])
+@auth_blueprint.route(rule='/auth/password/check', methods=['POST'])
 @authenticate_flask
 def check_password(user_id) -> Tuple[dict, int]:
     """
@@ -515,7 +515,7 @@ def check_password(user_id) -> Tuple[dict, int]:
     user = User.objects.get(id=user_id)
 
     if bcrypt.check_password_hash(user.password, password):
-        response['message'] = 'Password correct.'
+        response.pop('message')
         response['status'] = 'success'
         return jsonify(response), 200
 

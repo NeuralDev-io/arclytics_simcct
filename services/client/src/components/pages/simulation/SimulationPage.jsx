@@ -15,13 +15,13 @@ import { connect } from 'react-redux'
 import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
 import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
 import Share2Icon from 'react-feather/dist/icons/share-2'
-import SaveIcon from 'react-feather/dist/icons/save'
 import UploadIcon from 'react-feather/dist/icons/upload'
 import Button from '../../elements/button'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
 import ShareModal from '../../moleisms/share-modal'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
+import { SaveSimButton } from '../../moleisms/sim-actions'
 import { TTT, CCT } from '../../moleisms/charts'
 import { postSaveSimulation } from '../../../api/sim/SessionSaveSim'
 
@@ -111,15 +111,7 @@ class SimulationPage extends Component {
               >
                 SHARE
               </Button>
-              <Button
-                appearance="outline"
-                type="button"
-                onClick={this.saveCurrentSimulation}
-                IconComponent={props => <SaveIcon {...props} />}
-                isDisabled={!isInitialised}
-              >
-                SAVE
-              </Button>
+              <SaveSimButton isSessionInitialised={isInitialised} />
               <Button
                 appearance="outline"
                 type="button"

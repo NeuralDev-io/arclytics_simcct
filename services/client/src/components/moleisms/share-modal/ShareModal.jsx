@@ -21,6 +21,7 @@ import AccordionSection from '../../elements/accordion/AccordionSection'
 import Button, { IconButton } from '../../elements/button'
 import Modal from '../../elements/modal'
 import TextField from '../../elements/textfield'
+import TextFieldEmail from '../../elements/textfieldemail'
 import TextArea from '../../elements/textarea'
 import { getShareUrlLink, sendShareEmail } from '../../../api/sim/SessionShareSim'
 
@@ -135,7 +136,7 @@ class ShareModal extends PureComponent {
         onClose={onClose}
       >
         <header>
-          <h3>Share</h3>
+          <h4>Share</h4>
           <IconButton
             onClick={onClose}
             Icon={props => <XIcon {...props} />}
@@ -183,11 +184,11 @@ class ShareModal extends PureComponent {
                   <form onSubmit={onEmailSubmit}>
                     <div>
                       <div className={styles.email}>
-                        <TextField
+                        <TextFieldEmail
                           type="email"
                           name="email"
                           onChange={e => setFieldValue('email', e)}
-                          value={values.email}
+                          value={''}
                           placeholder="Emails (separate with commas)"
                           length="stretch"
                         />

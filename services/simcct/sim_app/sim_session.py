@@ -34,6 +34,7 @@ from itsdangerous import (
     SignatureExpired
 )
 
+from sim_app.utilities import JSONEncoder
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -62,7 +63,6 @@ def utc_timestamp_by_second(utc_date_time: datetime) -> int:
 
 class SimSessionService(object):
     """The interface defines how a service for Simulation Session."""
-
     def __init__(self):
         """On initialisation, the service just stores a Redis connection."""
         # Initialise the connection to Redis so the methods can use it
@@ -89,7 +89,7 @@ class SimSessionService(object):
         """
 
         # The storage value dumped to JSON format
-        redis_value = json.dumps(dict(session_data))
+        redis_value = JSONEncoder().encode(dict(session_data))
 
         # converts global expiry time in minutes to seconds
         expiry_duration = self._get_expiry_duration()
@@ -136,8 +136,15 @@ class SimSessionService(object):
             raise SaveSessionError()
 
         # The storage value dumped to JSON format
-        redis_value = json.dumps(dict(session_data))
+        # We use our customer JSON Encoder to ensure that numpy.floats get
+        # serialized properly
+        redis_value = JSONEncoder().encode(dict(session_data))
 
+        # TODO(andrew@neuraldev.io): Doing the refresh without generating a new
+        #  Session Key that has a expiration encoded within will cause the two
+        #  timestamps to not match on an additional updates. Hacked a fix for
+        #  now in _expiry_timestamp_not_match().
+        # We refresh the TTL in Redis at every save to keep the data for longer.
         expiry_duration = self._get_expiry_duration()
         expires_in_seconds = int(expiry_duration.total_seconds())
 
@@ -152,7 +159,7 @@ class SimSessionService(object):
         )
 
     def load_session(self, session_key: str
-                     ) -> Union[Tuple[str, dict], Tuple[None, dict]]:
+                     ) -> Union[Tuple[str, dict], Tuple[None, str]]:
         """We load the User's current Session from the Redis datastore by
         taking in a session key and decoding it to generate the session ID.
 
@@ -165,19 +172,21 @@ class SimSessionService(object):
         sid, expiry_timestamp = self._decode_sid_and_expiry_from(session_key)
 
         if not expiry_timestamp:
-            return None, {}
+            return None, 'Cannot decode timestamp from Session key.'
 
         # We access the Redis Datastore and get the Session data and it's
         # Time To Live (TTL) value of the current store
         redis_value, redis_key_ttl = self._get_redis_value_and_ttl_of(sid)
         if not redis_value:
-            return None, {}
+            return None, 'Cannot retrieve data from Redis.'
 
         if self._expiry_timestamp_not_match(expiry_timestamp, redis_key_ttl):
-            return None, {}
+            return None, 'Session timestamp does not match Redis TTL.'
+
+        sess_data = json.loads(redis_value.decode())
 
         # Return the data as a dict and the sid to be used later for saving
-        return sid, json.loads(redis_value.decode())
+        return sid, sess_data
 
     def clean_redis_session(self, session_key: str) -> None:
         """Used to remove the Session from the Redis datastore.
@@ -276,6 +285,11 @@ class SimSessionService(object):
         timestamp_from_ttl = utc_timestamp_by_second(datetime_from_ttl)
 
         try:
-            return abs(int(expiry_timestamp) - timestamp_from_ttl) > 10
+            # TODO(andrew@neuraldev.io): Find a way to refresh the session key
+            #  for the client if the expiry is getting within 10 minutes.
+            #  For now, we just accept it within 2 hours.
+            # logger.debug(str(abs(int(expiry_timestamp) - timestamp_from_ttl)))
+            # This checks the time difference between the timestamps in seconds
+            return abs(int(expiry_timestamp) - timestamp_from_ttl) > 3600
         except (ValueError, TypeError):
             return True

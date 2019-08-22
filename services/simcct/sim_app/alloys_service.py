@@ -32,7 +32,6 @@ from sim_app.schemas import AlloySchema
 
 class AlloysService(object):
     """Service layer where the application logic resides."""
-
     def __init__(self, client=AlloyAbstract(adapter=MongoAlloys)):
         """Simply connects the service to the MongoAlloys through an adapter."""
         self.client = client

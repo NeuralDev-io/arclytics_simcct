@@ -21,21 +21,21 @@ login, and logout.
 """
 
 import os
-import requests
 from datetime import datetime
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
-from email_validator import validate_email, EmailNotValidError
+import requests
+from email_validator import EmailNotValidError, validate_email
+from flask import Blueprint, jsonify, redirect, render_template, request
 from flask import current_app as app
-from flask import (Blueprint, jsonify, request, render_template, redirect)
-from mongoengine.errors import ValidationError, NotUniqueError
+from mongoengine.errors import NotUniqueError, ValidationError
 
-from users_app.models import User
-from users_app.extensions import bcrypt
 from logger.arc_logger import AppLogger
-from users_app.middleware import authenticate_flask, logout_authenticate
+from users_app.extensions import bcrypt
+from users_app.middleware import (authenticate_flask, logout_authenticate)
+from users_app.models import User
 from users_app.token import (
-    generate_confirmation_token, generate_url, confirm_token, URLTokenError
+    URLTokenError, confirm_token, generate_confirmation_token, generate_url
 )
 
 logger = AppLogger(__name__)
@@ -48,7 +48,6 @@ class SessionValidationError(Exception):
     A custom exception to be raised by a threaded async call to register if
     the response is not what we are expecting.
     """
-
     def __init__(self, msg: str):
         super(SessionValidationError, self).__init__(msg)
 
@@ -58,7 +57,6 @@ class SimCCTBadServerLogout(Exception):
     A custom exception to be raised by a synchronous call to logout on the
     SimCCT server if the response is not what we are expecting.
     """
-
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
 
@@ -91,6 +89,7 @@ def confirm_email(token):
     user = User.objects.get(email=email)
     # And do the real work confirming their status
     user.verified = True
+    user.save()
 
     response['status'] = 'success'
     response.pop('message')
@@ -175,7 +174,7 @@ def register_user() -> Tuple[dict, int]:
         confirm_url = generate_url('auth.confirm_email', confirmation_token)
 
         from celery_runner import celery
-        task = celery.send_task(
+        celery.send_task(
             'tasks.send_email',
             kwargs={
                 'to': [email],
@@ -434,7 +433,15 @@ def login() -> any:
 
 
 @auth_blueprint.route('/auth/password/reset', methods=['PUT'])
-def reset_password():
+def reset_password() -> Tuple[dict, int]:
+    """The endpoint that resets the password using a password reset token rather
+    than the JWT token we usually give for a user. This is only to be used
+    for resetting the password of a user who has forgotten their password.
+
+    Returns:
+        A valid HTTP Response and a statue code as a tuple.
+    """
+    # Not using Middleware because w need to use a different token decoding
     response = {'status': 'fail', 'message': 'Provide a valid JWT auth token.'}
 
     # get the auth token
@@ -613,14 +620,154 @@ def reset_password_email() -> Tuple[dict, int]:
     return jsonify(response), 202
 
 
+@auth_blueprint.route('/auth/password/change', methods=['PUT'])
+@authenticate_flask
+def change_password(user_id):
+    """The endpoint that allows a user to change password after they have been
+    authorized by the authentication middleware.
+
+    Args:
+        user_id: the middleware will pass a user_id if successful
+
+    Returns:
+        A valid HTTP Response and a statue code as a tuple.
+    """
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    request_data = request.get_json()
+    if not request_data:
+        return jsonify(response), 400
+
+    # validate the old password first because we want to ensure we have the
+    # right user.
+    old_password = request_data.get('password', None)
+    new_password = request_data.get('new_password', None)
+    confirm_password = request_data.get('confirm_password', None)
+
+    if not old_password:
+        response['message'] = 'Must provide the current password.'
+        return jsonify(response), 401
+
+    if not new_password or not confirm_password:
+        response['message'] = 'Must provide a password and confirm password.'
+        return jsonify(response), 400
+
+    if len(str(new_password)) < 6 or len(str(new_password)) > 120:
+        response['message'] = 'The password is invalid.'
+        return jsonify(response), 400
+
+    if not new_password == confirm_password:
+        response['message'] = 'Passwords do not match.'
+        return jsonify(response), 400
+
+    # Validate the user is active
+    user = User.objects.get(id=user_id)
+
+    if not user.verified:
+        response['message'] = 'User needs to verify account.'
+        return jsonify(response), 401
+
+    if bcrypt.check_password_hash(user.password, old_password):
+        user.set_password(new_password)
+        user.save()
+
+        # The email to notify users.
+        from celery_runner import celery
+        celery.send_task(
+            'tasks.send_email',
+            kwargs={
+                'to': [user.email],
+                'subject_suffix':
+                'Your Arclytics Sim password has been changed',
+                'html_template':
+                render_template(
+                    'change_password.html',
+                    change_datetime=datetime.utcnow().isoformat(),
+                    email=user.email,
+                    user_name=f'{user.first_name} {user.last_name}'
+                ),
+                'text_template':
+                render_template(
+                    'change_password.txt',
+                    change_datetime=datetime.utcnow().isoformat(),
+                    email=user.email,
+                    user_name=f'{user.first_name} {user.last_name}'
+                )
+            }
+        )
+
+        response['status'] = 'success'
+        response['message'] = 'Successfully changed password.'
+        return jsonify(response), 200
+
+    response['message'] = 'Password is not correct.'
+    return jsonify(response), 401
+
+
+@auth_blueprint.route('/auth/email/change', methods=['PUT'])
+@authenticate_flask
+def change_email(user_id) -> Tuple[dict, int]:
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    request_data = request.get_json()
+    if not request_data:
+        return jsonify(response), 400
+
+    new_email = request_data.get('new_email', None)
+
+    if not new_email:
+        response['message'] = 'No new email given.'
+        return jsonify(response), 400
+
+    # Validate new email address.
+    try:
+        v = validate_email(new_email)
+        valid_new_email = v['email']
+    except EmailNotValidError as e:
+        response['error'] = str(e)
+        response['message'] = 'Invalid email.'
+        return jsonify(response), 400
+
+    user = User.objects.get(id=user_id)
+    user.email = valid_new_email
+    user.verified = False
+    user.save()
+
+    confirm_token = generate_confirmation_token(valid_new_email)
+    confirm_url = generate_url('auth.confirm_email', confirm_token)
+
+    from celery_runner import celery
+    celery.send_task(
+        'tasks.send_email',
+        kwargs={
+            'to': [valid_new_email],
+            'subject_suffix':
+            'Your have changed your email address!',
+            'html_template':
+            render_template(
+                'change_email.html',
+                user_name=f'{user.first_name} {user.last_name}',
+                confirm_url=confirm_url
+            ),
+            'text_template':
+            render_template(
+                'change_email.txt',
+                user_name=f'{user.first_name} {user.last_name}',
+                confirm_url=confirm_url
+            )
+        }
+    )
+
+    response['status'] = 'success'
+    response['message'] = 'Email changed.'
+    response['new_email'] = valid_new_email
+    return jsonify(response), 200
+
+
 @auth_blueprint.route('/auth/logout', methods=['GET'])
 @logout_authenticate
 def logout(user_id, token, session_key) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
-    # FIXME(andrew@neuraldev.io): There seems to be a huge issue with this
-    #  as in testing, or possibly even live, there seems to be no cross-server
-    #  session storage of the user.
-
     response = {'status': 'success', 'message': 'Successfully logged out.'}
 
     simcct_host = os.environ.get('SIMCCT_HOST', None)
@@ -633,11 +780,13 @@ def logout(user_id, token, session_key) -> Tuple[dict, int]:
         }
     )
 
-    # print(simcct_resp)
     if simcct_resp.json().get('status', 'fail') == 'fail':
-        raise SimCCTBadServerLogout(
-            f'Unable to logout the user_id: {user_id} from the SimCCT server'
-        )
+        # raise SimCCTBadServerLogout(
+        #     f'Unable to logout the user_id: {user_id} from the SimCCT server'
+        # )
+        response['message'
+                 ] = 'Unable to logout the user from the SimCCT server'
+        return jsonify(response), 500
 
     return jsonify(response), 202
 
@@ -647,5 +796,7 @@ def logout(user_id, token, session_key) -> Tuple[dict, int]:
 def get_user_status(user_id) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     user = User.objects.get(id=user_id)
-    response = {'status': 'success', 'data': user.to_dict()}
+    data = user.to_dict()
+    data['_id'] = user_id
+    response = {'status': 'success', 'data': data}
     return jsonify(response), 200

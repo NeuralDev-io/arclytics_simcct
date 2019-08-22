@@ -15,9 +15,10 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.08.11'
-"""users.py: 
+"""admin_auth.py: 
 
-TODO
+This file defines all the API resource routes and controller definitions for 
+Sharing endpoints using the Flask Resource inheritance model.
 """
 
 import os
@@ -30,7 +31,7 @@ from flask_restful import Resource
 
 from logger.arc_logger import AppLogger
 from users_app.models import (User, AdminProfile)
-from users_app.middleware import authenticate, authenticate_admin
+from users_app.middleware import authenticate_admin
 from users_app.extensions import api
 from users_app.token import (
     generate_confirmation_token, generate_url, confirm_token, URLTokenError,
@@ -47,6 +48,7 @@ class AdminCreate(Resource):
 
     method_decorators = {'post': [authenticate_admin]}
 
+    # noinspection PyMethodMayBeStatic
     def post(self, resp):
         """Make a user an administrator"""
         post_data = request.get_json()
@@ -161,7 +163,7 @@ class AdminCreate(Resource):
                     promotion_verification_url=promotion_verification_url,
                     email=user.email,
                     position=position,
-                    user_name=(f'{user.first_name} {user.last_name}')
+                    user_name=f'{user.first_name} {user.last_name}'
                 ),
                 'text_template':
                 render_template(
@@ -169,7 +171,7 @@ class AdminCreate(Resource):
                     promotion_verification_url=promotion_verification_url,
                     email=user.email,
                     position=position,
-                    user_name=(f'{user.first_name} {user.last_name}')
+                    user_name=f'{user.first_name} {user.last_name}'
                 )
             }
         )
@@ -317,15 +319,15 @@ def verify_promotion(token):
             render_template(
                 'promotion_verified.html',
                 email=promoter.email,
-                promoter_name=(f'{promoter.first_name} {promoter.last_name}'),
-                user_name=(f'{user.first_name} {user.last_name}')
+                promoter_name=f'{promoter.first_name} {promoter.last_name}',
+                user_name=f'{user.first_name} {user.last_name}'
             ),
             'text_template':
             render_template(
                 'promotion_verified.txt',
                 email=promoter.email,
-                promoter_name=(f'{promoter.first_name} {promoter.last_name}'),
-                user_name=(f'{user.first_name} {user.last_name}')
+                promoter_name=f'{promoter.first_name} {promoter.last_name}',
+                user_name=f'{user.first_name} {user.last_name}'
             )
         }
     )
@@ -348,6 +350,7 @@ class DisableAccount(Resource):
 
     method_decorators = {'put': [authenticate_admin]}
 
+    # noinspection PyMethodMayBeStatic
     def put(self, resp):
         post_data = request.get_json()
 
@@ -381,17 +384,105 @@ class DisableAccount(Resource):
             return response, 404
 
         user = User.objects.get(email=valid_email)
-        user.active = False
-        user.last_updated = datetime.utcnow()
-        user.save()
+        admin = User.objects.get(id=resp)
+
+        account_disable_token = generate_confirmation_token(user.email)
+        # Apparently url_for wants 'admin' rather than 'admin_auth'
+        account_disable_url = generate_url(
+            'admin.confirm_disable_account', account_disable_token
+        )
+
+        from celery_runner import celery
+        celery.send_task(
+            'tasks.send_email',
+            kwargs={
+                'to': [admin.email],
+                'subject_suffix':
+                f'Confirm disable account action',
+                'html_template':
+                render_template(
+                    'confirm_disable_account.html',
+                    admin_name=f'{admin.first_name} {admin.last_name}',
+                    user_name=f'{user.first_name} {user.last_name}',
+                    account_disable_url=account_disable_url
+                ),
+                'text_template':
+                render_template(
+                    'confirm_disable_account.txt',
+                    admin_name=f'{admin.first_name} {admin.last_name}',
+                    user_name=f'{user.first_name} {user.last_name}',
+                    account_disable_url=account_disable_url
+                ),
+            }
+        )
 
         response['status'] = 'success'
-        response['message'] = (
-            f'The account for User {user.email} has been '
-            f'disabled.'
-        )
+        response['message'] = 'Confirmation email sent.'
         return response, 200
 
 
+@admin_blueprint.route('/disable/user/confirm/<token>', methods=['GET'])
+def confirm_disable_account(token):
+    """
+    Allow an Admin user to confirm that they want to disable a user's account
+    via a confirmation link sent to them in an email.
+    """
+    response = {'status': 'fail', 'message': 'Invalid token.'}
+
+    # Decode the token from the email to confirm it was the right one
+    try:
+        email = confirm_token(token)
+    except URLTokenError as e:
+        response['error'] = str(e)
+        return jsonify(response), 400
+    except Exception as e:
+        response['error'] = str(e)
+        return jsonify(response), 400
+
+    # Ensure the user exists in the database
+    if not User.objects(email=email):
+        response['message'] = 'User does not exist.'
+        return jsonify(response), 400
+
+    # Get the user object
+    user = User.objects.get(email=email)
+
+    user.active = False
+    user.save()
+
+    from celery_runner import celery
+    celery.send_task(
+        'tasks.send_email',
+        kwargs={
+            'to': [user.email],
+            'subject_suffix':
+            'Your Account has been disabled.',
+            'html_template':
+            render_template(
+                'account_disabled.html',
+                user_name=f'{user.first_name} {user.last_name}'
+            ),
+            'text_template':
+            render_template(
+                'account_disabled.txt',
+                user_name=f'{user.first_name} {user.last_name}'
+            )
+        }
+    )
+
+    # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
+    client_host = os.environ.get('CLIENT_HOST')
+    # We can make our own redirect response by doing the following
+    custom_redir_response = app.response_class(
+        status=302, mimetype='application/json'
+    )
+    # TODO(davidmatthews1004@gmail.com): Correct the url below.
+    redirect_url = f'http://localhost:3000/'
+    custom_redir_response.headers['Location'] = redirect_url
+    # Additionally, if we need to, we can attach the JWT token in the header
+    # custom_redir_response.headers['Authorization'] = f'Bearer {jwt_token}'
+    return custom_redir_response
+
+
 api.add_resource(AdminCreate, '/admin/create')
-api.add_resource(DisableAccount, '/user/disable')
+api.add_resource(DisableAccount, '/disable/user')

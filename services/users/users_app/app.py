@@ -29,9 +29,8 @@ from mongoengine.connection import (
     disconnect_all, get_connection, get_db, MongoEngineConnectionError
 )
 
-from settings import DEFAULT_LOGGER
 from users_app.utilities import JSONEncoder
-from users_app.extensions import cors, bcrypt, ma, api
+from users_app.extensions import cors, bcrypt, api
 from users_app.mongodb import MongoSingleton
 from users_app.resources.users import users_blueprint
 from users_app.resources.auth import auth_blueprint
@@ -70,19 +69,13 @@ def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
     # Test to make sure the connection has been created.
     try:
         conn = get_connection('default')
-        # DEFAULT_LOGGER.debug('MongoDB Connected: {}'.format(conn))
     except MongoEngineConnectionError as e:
-        DEFAULT_LOGGER.error(
-            'MongoDB Failed to Connect.\n Error: {}'.format(e)
-        )
+        print('MongoDB Failed to Connect.\n Error: {}'.format(e))
 
     try:
         db_curr = get_db('default')
-        # DEFAULT_LOGGER.debug('MongoDB Database in use: {}'.format(db_curr))
     except MongoEngineConnectionError as e:
-        DEFAULT_LOGGER.error(
-            'MongoDB Failed to Get Database.\n Error: {}'.format(e)
-        )
+        print('MongoDB Failed to Get Database.\n Error: {}'.format(e))
 
     return MongoSingleton(mongo_client)
 
@@ -166,7 +159,6 @@ def extensions(app) -> None:
     """
     cors.init_app(app)
     bcrypt.init_app(app)
-    ma.init_app(app)
     api.init_app(app)
 
     return None

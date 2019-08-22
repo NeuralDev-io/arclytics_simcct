@@ -45,6 +45,9 @@
               {{ owner_name }} would like to share an Arclytics configuration
               with you!
           </p>
+          {% if optional_message != '' %}
+            <p>{{ optional_message }}</p>
+          {% endif %}
           <p>To view this configuration, pleas click the link below:</p>
           <br/>
           <a href="{{ reset_url }}" style="text-decoration: none; text-decoration-color: #fafafa;">
@@ -54,7 +57,7 @@
           </a>
           <br/>
           <p>
-            If you need additional assistance, or you did not make this change, please contact <a href="mailto:help@neuraldev.io">help@neuraldev.io</a>.
+            If you need additional assistance, or you did not make this change, please contact <a href="mailto:help@arclytics.io">help@arclytics.io</a>.
           </p>
           <br/>
           <br/>

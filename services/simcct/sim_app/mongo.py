@@ -29,7 +29,6 @@ class MongoAlloys(object):
     """
     This is a concrete definition of Alloys as a data access layer.
     """
-
     def __init__(self):
         mongo_client = MongoClient(
             host=os.environ.get('MONGO_HOST'),

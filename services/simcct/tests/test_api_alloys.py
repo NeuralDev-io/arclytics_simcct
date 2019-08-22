@@ -211,8 +211,8 @@ class TestAlloyService(BaseTestCase):
 
             self.assertEqual(res.status_code, 200)
             self.assertEqual(data['status'], 'success')
-            self.assertTrue(data['alloys'])
-            self.assertEqual(len(data['alloys']), alloys_num)
+            self.assertTrue(data['data'])
+            self.assertEqual(len(data['data']), alloys_num)
 
     # def test_get_alloy_list_empty(self):
     #     # Clear the database so we can count properly.

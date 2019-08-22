@@ -21,7 +21,6 @@ class SignupPage extends Component {
     if (localStorage.getItem('token')) this.props.history.push('/')
   }
 
-
   render() {
     return (
       <div className={styles.outer}>
@@ -52,8 +51,7 @@ class SignupPage extends Component {
               })
               promise.then((data) => {
                 // If response is successful
-                localStorage.setItem('token', data.token)
-                this.props.history.push('/')
+                this.props.history.push('/signin')
                 setSubmitting(false)
               })
                 .catch((err) => {
@@ -164,9 +162,9 @@ class SignupPage extends Component {
                       }
                     </h6>
                   </div>
-           
+
                   <div className={styles.signUpButton}>
-                    <Button name="SIGN UP" appearance="default" type="submit" length="small" disabled={isSubmitting}> SIGNUP </Button>
+                    <Button name="SIGN UP" appearance="default" type="submit" length="small" disabled={isSubmitting}>SIGN UP</Button>
                   </div>
                 </div>
               </form>
@@ -174,11 +172,8 @@ class SignupPage extends Component {
           </Formik>
           <div>
             <h6>
-              {' '}
-Already have an account?
+              Already have an account?
               <a href="http://localhost:3000/signin" className={styles.signIn}> Sign in </a>
-              {' '}
-
             </h6>
           </div>
         </div>

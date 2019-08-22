@@ -946,6 +946,53 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'Invalid email.')
 
+    def test_resend_confirm_email_success(self):
+        obiwan = User(
+            email='davidmatthews1004@gmail.com',
+            first_name='Obi-Wan',
+            last_name='Kenobi'
+        )
+        obiwan.set_password('helloThere')
+        obiwan.save()
+        token = log_test_user_in(self, obiwan, 'helloThere')
+
+        with self.client:
+            resp = self.client.get(
+                '/confirm/resend',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(
+                data['message'], 'Another confirmation email has been sent.'
+            )
+
+    def test_resend_confirm_email_already_verified(self):
+        obiwan = User(
+            email='obiwan@arclytics.io',
+            first_name='Obi-Wan',
+            last_name='Kenobi'
+        )
+        obiwan.set_password('helloThere')
+        obiwan.verified = True
+        obiwan.save()
+        token = log_test_user_in(self, obiwan, 'helloThere')
+
+        with self.client:
+            resp = self.client.get(
+                '/confirm/resend',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'User is already verified.')
+
 
 if __name__ == '__main__':
     unittest.main()

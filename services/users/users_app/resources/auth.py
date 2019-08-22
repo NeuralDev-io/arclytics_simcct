@@ -144,7 +144,7 @@ def confirm_email_resend(user_id):
     )
 
     response['status'] = 'success'
-    response['message'] = 'Another confirmation email has  been sent.'
+    response['message'] = 'Another confirmation email has been sent.'
     return jsonify(response), 200
 
 

@@ -30,7 +30,7 @@
   top: 50%;
   right: .75rem;
   transform: translateY(-50%);
-  color: $n600;
+  color: var(--n600);
 }
 
 .prefix {
@@ -38,5 +38,5 @@
   top: 50%;
   left: .75rem;
   transform: translateY(-50%);
-  color: $n600;
+  color: var(--n600);
 }

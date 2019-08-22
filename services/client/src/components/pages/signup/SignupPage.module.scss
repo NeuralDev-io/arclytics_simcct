@@ -10,7 +10,7 @@ $bg-img: url('../../../assets/background_img-min.png');
   height: 100vh;
   padding-top: 8rem;
   padding-bottom: 8rem;
-  background: $n0 $bg-img no-repeat;
+  background: var(--n0) $bg-img no-repeat;
   background-size: 150% 150%;
   background-position: -90%;
   
@@ -68,12 +68,12 @@ $bg-img: url('../../../assets/background_img-min.png');
 
 
 .signIn{
-  color: $arc500;
+  color: var(--arc500);
   text-decoration: none;
 }
 
 .errors{
-  color: $r400;
+  color: var(--r400);
 }
 
 @media only screen and (max-height: 830px) {

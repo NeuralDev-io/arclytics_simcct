@@ -51,13 +51,13 @@
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 6px rgba($color: $arc500, $alpha: .9);
+    box-shadow: 0 0 6px rgba(var(--arc500-rgb), .9);
   }
 }
 
 .element {
   padding: .5rem .5rem .5rem .75rem;
-  background-color: $n10;
+  background-color: var(--n10);
   border-radius: 3px;
   display: flex;
   flex-flow: column nowrap;
@@ -82,7 +82,7 @@
 
   &:hover {
     transform: scale(1.3);
-    background-color: $n0;
+    background-color: var(--n0);
     box-shadow: 0 8px 14px rgba($color: #000000, $alpha: .16);
     
     & ~ .popup {
@@ -91,10 +91,10 @@
   }
 
   &.active {
-    background-color: $arc500;
-    border-color: $arc500;
-    & > span { color: $n0; }
-    & > span.number { color: $n20; }
+    background-color: var(--arc500);
+    border-color: var(--arc500);
+    & > span { color: var(--n0); }
+    & > span.number { color: var(--n20); }
     box-shadow: 0 6px 10px rgba($color: #000000, $alpha: .16);
   }
 }
@@ -106,49 +106,49 @@ $size: 2.5px;
 }
 
 .r {
-  @include colourize($r500);
+  @include colourize(var(--r500));
 }
 
 .o {
-  @include colourize($o500);
+  @include colourize(var(--o500));
 }
 
 .l {
-  @include colourize($l500);
+  @include colourize(var(--l500));
 }
 
 .g {
-  @include colourize($g500);
+  @include colourize(var(--g500));
 }
 
 .t {
-  @include colourize($t500);
+  @include colourize(var(--t500));
 }
 
 .b {
-  @include colourize($b500);
+  @include colourize(var(--b500));
 }
 
 .i {
-  @include colourize($i500);
+  @include colourize(var(--i500));
 }
 
 .v {
-  @include colourize($v500);
+  @include colourize(var(--v500));
 }
 
 .m {
-  @include colourize($m500);
+  @include colourize(var(--m500));
 }
 
 .br {
-  @include colourize($br500);
+  @include colourize(var(--br500));
 }
 
 .popup {
   width: 20rem;
   padding: 2rem 2rem;
-  background-color: $n0;
+  background-color: var(--n0);
   border-radius: 3px;
   box-shadow: 0 8px 14px rgba($color: #000000, $alpha: .16);
   animation-name: popupFadein;
@@ -179,7 +179,7 @@ $size: 2.5px;
     }
 
     & > span.name, > span.mass {
-      color: $n500;
+      color: var(--n500);
     }
   }
 }

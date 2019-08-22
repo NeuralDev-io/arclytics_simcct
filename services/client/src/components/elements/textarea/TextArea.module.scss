@@ -6,7 +6,7 @@
   flex-flow: column nowrap;
 
   & > span {
-    color: $r500;
+    color: var(--r500);
     margin-top: .25rem;
   }
 }
@@ -30,28 +30,28 @@ textarea {
   border: 1px solid transparent;
 
   // colour
-  background-color: $n10;
-  color: $n900;
+  background-color: var(--n10);
+  color: var(--n900);
 
   &::placeholder {
-    color: $n600;
+    color: var(--n600);
     font-family: $font-primary;
   }
 
   &:hover:not([disabled]) {
-    background-color: $n20;
+    background-color: var(--n20);
   }
 
   &:focus {
-    background-color: $n0;
-    border-color: $arc500;
+    background-color: var(--n0);
+    border-color: var(--arc500);
   }
 
   &:disabled {
-    color: $n300;
+    color: var(--n300);
 
     &::placeholder {
-      color: $n300;
+      color: var(--n300);
     }
   }
 }
@@ -69,18 +69,18 @@ textarea {
 }
 
 .error {
-  background-color: rgba($color: $r500, $alpha: 0.1);
-  border: 1px solid $r500;
+  background-color: rgba(var(--r500-rgb), 0.1);
+  border: 1px solid var(--r500);
 
   &:hover {
-    background-color: rgba($color: $r500, $alpha: 0.2);
-    border-color: 1px solid $r500;
+    background-color: rgba(var(--r500-rgb), 0.2);
+    border-color: 1px solid var(--r500);
   }
   &:hover:not([disabled]) {
-    background-color: rgba($color: $r500, $alpha: 0.2);
+    background-color: rgba(var(--r500-rgb), 0.2);
   }
   &:focus {
-    background-color: $n0;
-    border-color: $r500;
+    background-color: var(--n0);
+    border-color: var(--r500);
   }
 }

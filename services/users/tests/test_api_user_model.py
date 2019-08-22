@@ -36,7 +36,6 @@ _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 
 class TestUserModel(BaseTestCase):
     """Run direct tests on the User model without an API call."""
-
     def test_user_model_schema(self):
         self.assertIsInstance(User.__base__, Document.__class__)
         self.assertIsInstance(User.email, EmailField)
@@ -188,7 +187,6 @@ class TestUserModel(BaseTestCase):
         user.set_password('IAmIronMan')
         user.save()
         user_dict = user.to_dict()
-        self.assertTrue(user_dict['_id'], user.id)
         self.assertTrue(user_dict, dict)
 
     def test_to_json(self):

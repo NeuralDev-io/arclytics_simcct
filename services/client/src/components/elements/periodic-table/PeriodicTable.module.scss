@@ -44,6 +44,15 @@
 
 .elementContainer {
   position: relative;
+
+  &:hover {
+    z-index: 1001;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 6px rgba($color: $arc500, $alpha: .9);
+  }
 }
 
 .element {
@@ -52,7 +61,7 @@
   border-radius: 3px;
   display: flex;
   flex-flow: column nowrap;
-  transition: $ease-in-quad .4s;
+  transition: .4s $ease-in-quad;
   cursor: pointer;
 
   & > span.number {
@@ -72,7 +81,6 @@
   }
 
   &:hover {
-    z-index: 500;
     transform: scale(1.3);
     background-color: $n0;
     box-shadow: 0 8px 14px rgba($color: #000000, $alpha: .16);
@@ -83,8 +91,8 @@
   }
 
   &.active {
-    background-color: $ag500;
-    border-bottom: none;
+    background-color: $arc500;
+    border-color: $arc500;
     & > span { color: $n0; }
     & > span.number { color: $n20; }
     box-shadow: 0 6px 10px rgba($color: #000000, $alpha: .16);
@@ -143,11 +151,14 @@ $size: 2.5px;
   background-color: $n0;
   border-radius: 3px;
   box-shadow: 0 8px 14px rgba($color: #000000, $alpha: .16);
-  transition: $ease-in-quad .4s;
+  animation-name: popupFadein;
+  animation-duration: .6s;
+  animation-timing-function: $ease-in-quad;
 
   position: absolute;
   z-index: 500;
   opacity: 0;
+  outline: 0;
 
   .elementDetail {
     display: flex;
@@ -195,4 +206,16 @@ $size: 2.5px;
   @extend .popup;
   bottom: -9px;
   right: calc(100% + 1.5rem);
+}
+
+@keyframes popupFadein {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }

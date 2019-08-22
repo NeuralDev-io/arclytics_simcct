@@ -1,25 +1,41 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import withDimension from 'react-dimensions'
+import { connect } from 'react-redux'
+import AutoSizer from 'react-virtualized-auto-sizer'
 import Table from '../../elements/table'
 import { SelfControlledTextField } from '../../elements/textfield'
+import { updateComp } from '../../../state/ducks/sim/actions'
 
 import styles from './CompTable.module.scss'
 
 class CompTable extends Component {
-  updateComp = (name, value) => {
+  handleChangeComp = (type, symbol, value) => {
+    const { data, updateCompConnect } = this.props
+    const alloy = { ...data[type] }
+    const idx = alloy.compositions.findIndex(elem => elem.symbol === symbol)
+    const newComp = alloy.compositions
+    if (idx !== -1) {
+      newComp[idx] = {
+        ...newComp[idx],
+        weight: value,
+      }
+    }
 
+    updateCompConnect(data.alloyOption, type, {
+      ...alloy,
+      compositions: newComp,
+    })
   }
 
   render() {
-    const { data, onChange, containerHeight } = this.props
+    const { data } = this.props
     const {
       alloyOption,
       parent,
       weld,
     } = data
 
-    let tableData = parent.compositions.map(elem => ({
+    const tableData = parent.compositions.map(elem => ({
       symbol: elem.symbol,
       parent: elem.weight,
       weld: undefined,
@@ -75,75 +91,86 @@ class CompTable extends Component {
       {
         Header: 'Elements',
         accessor: 'symbol',
-        // eslint-disable-next-line
         Cell: ({ value }) => (<span className={styles.symbol}>{value}</span>),
         width: 80,
-        Footer: 'Total',
+        Footer: () => tableData.length !== 0 && 'Total',
       },
       {
         Header: 'Alloy 1',
         accessor: 'parent',
-        // eslint-disable-next-line
         Cell: ({ row, value }) => (
           <SelfControlledTextField
             type="text"
-            name={`parent_${row.symbol}`} // eslint-disable-line
-            onBlur={e => onChange(`parent_${row.symbol}`, e.target.value)} // eslint-disable-line
+            key={row.symbol}
+            name={`parent_${row.symbol}`}
+            onBlur={e => this.handleChangeComp('parent', row.symbol, e.target.value)}
             defaultValue={value || '0.0'}
             length="stretch"
             isDisabled={value === undefined}
           />
         ),
-        Footer: <span className={styles.footerText}>{parentTotal}</span>,
+        Footer: () => tableData.length !== 0
+          && <span className={styles.footerText}>{parentTotal}</span>,
       },
       {
         Header: 'Alloy 2',
         accessor: 'weld',
-        // eslint-disable-next-line
         Cell: ({ row, value }) => (
           <SelfControlledTextField
             type="text"
-            name={`weld_${row.symbol}`} // eslint-disable-line
-            onBlur={e => onChange(`weld_${row.symbol}`, e.target.value)} // eslint-disable-line
+            key={row.symbol}
+            name={`weld_${row.symbol}`}
+            onBlur={e => this.handleChangeComp('weld', row.symbol, e.target.value)}
             defaultValue={value || '0.0'}
             length="stretch"
             isDisabled={value === undefined}
           />
         ),
-        Footer: <span className={styles.footerText}>{weldTotal}</span>,
+        Footer: () => tableData.length !== 0
+          && <span className={styles.footerText}>{weldTotal}</span>,
       },
       {
         Header: 'Mix',
         accessor: 'mix',
-        // eslint-disable-next-line
         Cell: ({ value }) => {
           if (value === undefined) return <span className="text--disabled">0.0</span>
           return <span>{value}</span>
         },
         width: 40,
-        Footer: <span className={styles.footerText}>{mixTotal}</span>,
+        Footer: () => tableData.length !== 0
+          && <span className={styles.footerTextMix}>{mixTotal}</span>,
       },
     ]
 
     return (
-      <Table
-        data={tableData}
-        columns={columns}
-        pageSize={Math.round((containerHeight - 124) / 56)}
-        showPageSizeOptions={false}
-        showPagination={tableData.length !== 0}
-        resizable={false}
-        hideDivider
-        condensed
-      />
+      <AutoSizer disableWidth>
+        {({ height }) => {
+          const pageSize = tableData.length !== 0 ? Math.floor((height - 148) / 52) : 0
+          return (
+            <Table
+              data={tableData}
+              columns={columns}
+              pageSize={pageSize}
+              // The `key` props is added here to force ReactTable to re-render
+              // every time height and pageSize is changed
+              key={pageSize}
+              showPageSizeOptions={false}
+              showPagination={tableData.length !== 0}
+              resizable={false}
+              hideDivider
+              condensed
+              loading={data.isLoading}
+            />
+          )
+        }}
+      </AutoSizer>
     )
   }
 }
 
 CompTable.propTypes = {
-  // props given by withDimension()
-  containerHeight: PropTypes.number.isRequired,
   data: PropTypes.shape({
+    isLoading: PropTypes.bool.isRequired,
     alloyOption: PropTypes.string,
     parent: PropTypes.shape({
       name: PropTypes.string,
@@ -165,24 +192,27 @@ CompTable.propTypes = {
         ]),
       })),
     }),
-    mix: PropTypes.shape({
-      name: PropTypes.string,
-      compositions: PropTypes.arrayOf(PropTypes.shape({
-        symbol: PropTypes.string,
-        weight: PropTypes.oneOfType([
-          PropTypes.string,
-          PropTypes.number,
-        ]),
-      })),
-    }),
+    mix: PropTypes.arrayOf(PropTypes.shape({
+      symbol: PropTypes.string,
+      weight: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+      ]),
+    })),
     dilution: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.number,
     ]),
   }).isRequired,
-  onChange: PropTypes.func.isRequired,
+  updateCompConnect: PropTypes.func.isRequired,
 }
 
-export default withDimension({
-  className: styles.wrapper,
-})(CompTable)
+const mapStateToProps = state => ({
+  data: state.sim.alloys,
+})
+
+const mapDispatchToProps = {
+  updateCompConnect: updateComp,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(CompTable)

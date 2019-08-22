@@ -29,7 +29,7 @@ from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
     DateTimeField, EmbeddedDocumentField, IntField, FloatField, DO_NOTHING,
     EmbeddedDocumentListField, queryset_manager, ObjectIdField, ReferenceField,
-    ValidationError, ListField
+    ValidationError, ListField, DictField
 )
 from flask import current_app, json
 
@@ -181,7 +181,29 @@ class AdminProfile(EmbeddedDocument):
 
 # TODO(andrew@neuraldev.io): Add these
 class SimulationResults(EmbeddedDocument):
-    pass
+    # Using DictField() because it requires no validation on the internal
+    # nesting but we don't really need to validate this data.
+
+    # Both of these will have the following:
+    # ferrite_nucleation: {"time": [], "temp": []}
+    # ferrite_completion: {"time": [], "temp": []}
+    # pearlite_nucleation: {"time": [], "temp": []}
+    # pearlite_completion: {"time": [], "temp": []}
+    # bainite_nucleation: {"time": [], "temp": []}
+    # bainite_completion: {"time": [], "temp": []}
+    # martensite: {"time": [], "temp": []}
+    TTT = DictField()
+    CCT = DictField()
+    # This will have the following:
+    # user_cooling_curve: {"time": [], "temp": []}
+    # user_phase_fraction_data: {
+    #   "austenite": [], "ferrite": [], "pearlite": [],
+    #   "bainite": [], "martensite": []
+    # }
+    # slider_time_field: float
+    # slider_temp_field: float
+    # slider_max: int
+    USER = DictField()
 
 
 class Configuration(EmbeddedDocument):
@@ -337,7 +359,7 @@ class AlloyType(EmbeddedDocument):
 
 class AlloyStore(EmbeddedDocument):
     alloy_option = StringField(
-        required=True, choices=('parent', 'both', 'mix')
+        required=True, choices=('single', 'both', 'mix')
     )
     alloys = EmbeddedDocumentField(document_type=AlloyType, required=True)
 
@@ -418,7 +440,6 @@ class User(Document):
             profile = self.profile.to_dict()
 
         user = {
-            '_id': str(self.id),
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
@@ -625,6 +646,6 @@ class SharedSimulation(Document):
         return {
             'owner_email': self.owner_email,
             'created_date': str(self.created_date),
-            'configuration': self.configuration.to_dict(),
+            'configurations': self.configuration.to_dict(),
             'alloy_store': self.alloy_store.to_dict()
         }

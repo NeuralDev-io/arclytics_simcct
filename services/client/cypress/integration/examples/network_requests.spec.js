@@ -1,4 +1,4 @@
-/// <reference types="Cypress" />
+// / <reference types="Cypress" />
 
 context('Network Requests', () => {
   beforeEach(() => {
@@ -59,12 +59,12 @@ context('Network Requests', () => {
 
   it('cy.request() - verify response using BDD syntax', () => {
     cy.request('https://jsonplaceholder.cypress.io/comments')
-    .then((response) => {
+      .then((response) => {
       // https://on.cypress.io/assertions
-      expect(response).property('status').to.equal(200)
-      expect(response).property('body').to.have.length(500)
-      expect(response).to.include.keys('headers', 'duration')
-    })
+        expect(response).property('status').to.equal(200)
+        expect(response).property('body').to.have.length(500)
+        expect(response).to.include.keys('headers', 'duration')
+      })
   })
 
   it('cy.request() with query parameters', () => {
@@ -77,14 +77,14 @@ context('Network Requests', () => {
         id: 3,
       },
     })
-    .its('body')
-    .should('be.an', 'array')
-    .and('have.length', 1)
-    .its('0') // yields first element of the array
-    .should('contain', {
-      postId: 1,
-      id: 3,
-    })
+      .its('body')
+      .should('be.an', 'array')
+      .and('have.length', 1)
+      .its('0') // yields first element of the array
+      .should('contain', {
+        postId: 1,
+        id: 3,
+      })
   })
 
   it('cy.request() - pass result to the second request', () => {
@@ -131,7 +131,7 @@ context('Network Requests', () => {
           title: 'Cypress Test Runner',
           body: 'Fast, easy and reliable testing for anything that runs in a browser.',
         })
-        .its('body').as('post') // save the new post from the response
+          .its('body').as('post') // save the new post from the response
       })
       .then(function () {
         // When this callback runs, both "cy.request" API commands have finished
@@ -144,7 +144,7 @@ context('Network Requests', () => {
   it('cy.route() - route responses to matching requests', () => {
     // https://on.cypress.io/route
 
-    let message = 'whoa, this comment does not exist'
+    const message = 'whoa, this comment does not exist'
 
     cy.server()
 

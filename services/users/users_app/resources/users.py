@@ -21,12 +21,11 @@ This file defines all the API resource routes and controller definitions using
 the Flask Resource inheritance model.
 """
 
-import os
 from datetime import datetime
 
 from typing import Tuple
 
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
@@ -43,6 +42,7 @@ logger = AppLogger(__name__)
 class PingTest(Resource):
     """Just a sanity check"""
 
+    # noinspection PyMethodMayBeStatic
     def get(self) -> Tuple[dict, int]:
         response = {'status': 'success', 'message': 'pong'}
         return response, 200
@@ -53,6 +53,7 @@ class UserList(Resource):
 
     method_decorators = {'get': [authenticate_admin]}
 
+    # noinspection PyMethodMayBeStatic
     def get(self, resp) -> Tuple[dict, int]:
         """Get all users only available to admins."""
         user_list = User.as_dict
@@ -65,11 +66,13 @@ class Users(Resource):
 
     method_decorators = {'get': [authenticate], 'patch': [authenticate]}
 
+    # noinspection PyMethodMayBeStatic
     def get(self, resp) -> Tuple[dict, int]:
         user = User.objects.get(id=resp)
         response = {'status': 'success', 'data': user.to_dict()}
         return response, 200
 
+    # noinspection PyMethodMayBeStatic
     def patch(self, resp) -> Tuple[dict, int]:
         # Get patch data
         data = request.get_json()
@@ -216,6 +219,63 @@ class Users(Resource):
         return response, 200
 
 
+class UserProfiles(Resource):
+    """Create/Retrieve/Update User's profile details"""
+
+    method_decorators = {'post': [authenticate]}
+
+    # noinspection PyMethodMayBeStatic
+    def post(self, resp) -> Tuple[dict, int]:
+        # Get post data
+        data = request.get_json()
+
+        # Validating empty payload
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+        if not data:
+            return response, 400
+
+        # Extract the request body data
+        aim = data.get('aim', None)
+        highest_education = data.get('highest_education', None)
+        sci_tech_exp = data.get('sci_tech_exp', None)
+        phase_transform_exp = data.get('phase_transform_exp', None)
+
+        # Get the user
+        user = User.objects.get(id=resp)
+        # Create a user profile object that can replace any existing user
+        # profile information.
+        profile = UserProfile(
+            aim=aim,
+            highest_education=highest_education,
+            sci_tech_exp=sci_tech_exp,
+            phase_transform_exp=phase_transform_exp
+        )
+        user.profile = profile
+
+        # Attempt to save the new profile object. If there are missing fields
+        # an exception will be raised, caught and sent back.
+        try:
+            user.last_updated = datetime.utcnow()
+            user.save()
+        except ValidationError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Validation error.'
+            return response, 400
+
+        # Otherwise the save was successful and a response with the updated
+        # fields can be sent.
+        response['status'] = 'success'
+        response.pop('message')
+        response['data'] = {
+            'aim': aim,
+            'highest_education': highest_education,
+            'sci_tech_exp': sci_tech_exp,
+            'phase_transform_exp': phase_transform_exp
+        }
+        return response, 201
+
+
 api.add_resource(PingTest, '/ping')
 api.add_resource(UserList, '/users')
 api.add_resource(Users, '/user')
+api.add_resource(UserProfiles, '/user/profile')

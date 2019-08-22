@@ -2,39 +2,84 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Plot from 'react-plotly.js'
-import withDimension from 'react-dimensions'
+import AutoSizer from 'react-virtualized-auto-sizer'
 import { layout, config } from './utils/chartConfig'
 
 import colours from '../../../styles/_colors_light.scss'
 import styles from './CCT.module.scss'
 
-const CCT = (props) => {
-  const { containerWidth, containerHeight, data } = props // eslint-disable-line
+const CCT = ({
+  data,
+  userData,
+  displayUserCurve,
+}) => {
   let chartData = []
   if (data !== undefined) {
     chartData = [
       {
-        x: data['Ferrite-nuc'].time,
-        y: data['Ferrite-nuc'].temp,
+        x: data.ferrite_nucleation.time,
+        y: data.ferrite_nucleation.temp,
         name: 'Ferrite nucleation',
         mode: 'line',
         marker: { color: colours.o500 },
       },
       {
-        x: data['Ferrite-comp'].time,
-        y: data['Ferrite-comp'].temp,
+        x: data.ferrite_completion.time,
+        y: data.ferrite_completion.temp,
         name: 'Ferrite completion',
         mode: 'line',
         marker: { color: colours.l500 },
       },
       {
-        x: data['Pearlite-nuc'].time,
-        y: data['Pearlite-nuc'].temp,
+        x: data.pearlite_nucleation.time,
+        y: data.pearlite_nucleation.temp,
         name: 'Pearlite nucleation',
         mode: 'line',
         marker: { color: colours.g500 },
       },
+      {
+        x: data.pearlite_completion.time,
+        y: data.pearlite_completion.temp,
+        name: 'Pearlite completion',
+        mode: 'line',
+        marker: { color: colours.t500 },
+      },
+      {
+        x: data.bainite_nucleation.time,
+        y: data.bainite_nucleation.temp,
+        name: 'Bainite nucleation',
+        mode: 'line',
+        marker: { color: colours.b500 },
+      },
+      {
+        x: data.bainite_completion.time,
+        y: data.bainite_completion.temp,
+        name: 'Bainite completion',
+        mode: 'line',
+        marker: { color: colours.i500 },
+      },
+      {
+        x: data.martensite.time,
+        y: data.martensite.temp,
+        name: 'Martensite',
+        mode: 'line',
+        marker: { color: colours.v500 },
+      },
     ]
+
+    if (displayUserCurve) {
+      chartData.push({
+        x: userData.user_cooling_curve.time,
+        y: userData.user_cooling_curve.temp,
+        name: 'User cooling curve',
+        mode: 'line',
+        marker: {
+          size: 10,
+          color: colours.r500,
+          line: { width: 10, color: colours.r500 },
+        },
+      })
+    }
   }
 
   if (chartData.length === 0) {
@@ -42,27 +87,63 @@ const CCT = (props) => {
   }
 
   return (
-    <Plot
-      data={chartData}
-      layout={layout(containerWidth, containerHeight)}
-      config={config}
-    />
+    <AutoSizer>
+      {({ height, width }) => (
+        <Plot
+          data={chartData}
+          layout={{
+            ...layout(height, width),
+            xaxis: {
+              type: 'log',
+              autorange: true,
+            },
+            yaxis: {
+              type: 'normal',
+              autorange: true,
+            },
+          }}
+          config={config}
+        />
+      )}
+    </AutoSizer>
   )
 }
 
+const linePropTypes = PropTypes.shape({
+  temp: PropTypes.arrayOf(PropTypes.number),
+  time: PropTypes.arrayOf(PropTypes.number),
+})
+
 CCT.propTypes = {
-  // props given by withDimension()
-  containerWidth: PropTypes.number.isRequired,
-  containerHeight: PropTypes.number.isRequired,
+  displayUserCurve: PropTypes.bool.isRequired,
   // props given by connect()
-  data: PropTypes.object.isRequired, // eslint-disable-line
-  // TODO: will add later
+  data: PropTypes.shape({
+    ferrite_nucleation: linePropTypes,
+    ferrite_completion: linePropTypes,
+    pearlite_nucleation: linePropTypes,
+    pearlite_completion: linePropTypes,
+    bainite_nucleation: linePropTypes,
+    bainite_completion: linePropTypes,
+    martensite: linePropTypes,
+  }),
+  userData: PropTypes.shape({
+    user_cooling_curve: linePropTypes,
+    user_phase_fraction_data: PropTypes.array,
+    slider_time_field: PropTypes.number,
+    slider_temp_field: PropTypes.number,
+    slider_max: PropTypes.number,
+  }),
+}
+
+CCT.defaultProps = {
+  data: undefined,
+  userData: undefined,
 }
 
 const mapStateToProps = state => ({
-  data: state.sim.results['CCT Data'],
+  data: state.sim.results.CCT,
+  userData: state.sim.results.USER,
+  displayUserCurve: state.sim.displayUserCurve,
 })
 
-export default withDimension({
-  className: styles.wrapper,
-})(connect(mapStateToProps, {})(CCT))
+export default connect(mapStateToProps, {})(CCT)

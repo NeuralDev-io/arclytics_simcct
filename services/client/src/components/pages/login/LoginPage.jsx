@@ -30,7 +30,7 @@ class LoginPage extends Component {
         <div className={styles.form}>
           <div className={styles.logoContainer}>
             <Logo className={styles.logo} />
-            <h3>ARCLYTICS</h3>
+            <h3> ARCLYTICS </h3>
           </div>
           <div className={styles.header}>
             <h3> Sign in to your account  </h3>

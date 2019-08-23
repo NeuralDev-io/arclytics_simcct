@@ -12,7 +12,6 @@ $bg-img: url('../../../assets/background_img-min.png');
   background: var(--n0) $bg-img no-repeat;
   background-size: 150% 150%;
   background-position: -90%;
-  
 }
 
 .form{
@@ -21,7 +20,6 @@ $bg-img: url('../../../assets/background_img-min.png');
   width: 23.75rem;
   display:flex;
   flex-flow: column;
-  justify-content: center;
 }
 
 .logoContainer{
@@ -34,7 +32,7 @@ $bg-img: url('../../../assets/background_img-min.png');
   float:left;
 }
 
-.signUp{
+.header{
   margin-bottom: 2.3125rem;
 }
 

@@ -15,16 +15,31 @@ $bg-img: url('../../../assets/background_img-min.png');
 .form{
   margin-left: 11.25rem;
   width: 23.75rem;
+  display:flex;
+  flex-flow: column;
+  aniimation-duration: 3s;
+
+  @keyframes fadeInleft{
+    from{
+      opacity: 0;
+      transform: translateX(-20px)
+    }
+    to{
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+  }
+}
+
+.logoContainer{
+  margin-bottom: 7.624375rem;
 }
 
 .logo{
   height: 3.750625rem;
   margin-right: 1.5rem;
   float:left;
-}
-
-.logoContainer{
-  margin-bottom: 7.624375rem;
 }
 
 .header{

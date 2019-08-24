@@ -590,9 +590,14 @@ paths:
                     type: string
                     format: string
               example:
-                status: ""
-                message: ""
-                token: ""
+                status: "success"
+                data:
+                  properties:
+                      configurations:
+                        $ref: '#/components/schemas/Configurations'
+                      alloy_store:
+                        $ref: '#/components/schemas/Alloy Store'
+                      created: '2019/08/05'
         '401':
           description: "The user is not authenticated to perform this request."
           content:
@@ -629,10 +634,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "User does not exist."
-
+              examples:
+                'User Does Not Exist':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+                'No Simulation':
+                  value:
+                    status: "fail"
+                    message: "No saved simulations found"
     post:
           summary: "Retrieve the list of Configurations saved in the User's document."
           tags:
@@ -703,7 +713,7 @@ paths:
                         status: "fail"
                         error: "string"
                         message: "Missing element error."
-                    'Valodation Error':
+                    'Validation Error':
                       value:
                         status: "fail"
                         error: "string"
@@ -747,6 +757,166 @@ paths:
                   example:
                     status: "fail"
                     message: "User does not exist."
+  /user/simulation/{id}:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "Retrieve the list of Configurations saved in the User's document."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Successfully logged in"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    format: bytes
+                  message:
+                    type: string
+                    format: string
+              example:
+                status: "success"
+                data:
+                  properties:
+                    user:
+                      $ref: '#/components/schemas/User'
+                    configurations:
+                      $ref: '#/components/schemas/Configurations'
+                    alloy_store:
+                      $ref: '#/components/schemas/Alloy Store'
+                    created: '2019/08/05'
+        400:
+          description: "Invalid Object Id"
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: "fail"
+                message: "Invalid Object Id."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user does not exist in the database or cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'User Does Not Exist':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+                'Simulation Does Not Exist':
+                  value:
+                    status: "fail"
+                    message: "Does not exit."
+    delete:
+      summary: "Returns the user's last Alloy and Configurations used, and CCT/TTT results (if any)"
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        202:
+          description: "Delete saved simulation"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+        400:
+          description: "Invalid Object Id"
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: "fail"
+                message: "Invalid Object Id."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user does not exist in the database or cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'User Does Not Exist':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+                'Simulation Does Not Exist':
+                  value:
+                    status: "fail"
+                    message: "Does not exit."
+
 
   /auth/register:
     servers:

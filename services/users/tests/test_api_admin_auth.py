@@ -52,7 +52,8 @@ class TestAdminCreateService(BaseTestCase):
         kylo.save()
 
         vader = User(
-            email='brickmatic479@gmail.com',
+            # email='brickmatic479@gmail.com',
+            email='darthvader@arclytics.io',
             first_name='Darth',
             last_name='Vader'
         )
@@ -212,7 +213,8 @@ class TestAdminCreateService(BaseTestCase):
         import os
         with current_app.test_client() as client:
             piett = User(
-                email='brickmatic479@gmail.com',
+                # email='brickmatic479@gmail.com',
+                email='piett@arclytics.io',
                 first_name='Admiral',
                 last_name='Piett'
             )
@@ -279,7 +281,8 @@ class TestAdminCreateService(BaseTestCase):
         quigon = User(
             first_name='Qui-Gon',
             last_name='Jinn',
-            email='davidmatthews1004@gmail.com'
+            # email='davidmatthews1004@gmail.com'
+            email='quigon@arclytics.io'
         )
         # quigon.is_admin = True
         quigon.admin_profile = AdminProfile(
@@ -294,7 +297,8 @@ class TestAdminCreateService(BaseTestCase):
         obiwan = User(
             first_name='Obi-Wan',
             last_name='Kenobi',
-            email='brickmatic479@gmail.com'
+            # email='brickmatic479@gmail.com'
+            email='obiwan@arclytics.io'
         )
         obiwan.verified = True
         obiwan.set_password('FromACertainPointOfView')
@@ -307,7 +311,8 @@ class TestAdminCreateService(BaseTestCase):
                 '/admin/create',
                 data=json.dumps(
                     {
-                        'email': 'brickmatic479@gmail.com',
+                        'email': 'obiwan@arclytics.io',
+                        # 'email': 'brickmatic479@gmail.com',
                         'position': 'Jedi Knight.'
                     }
                 ),
@@ -750,7 +755,8 @@ class TestAdminCreateService(BaseTestCase):
 
     def test_verify_promotion_success(self):
         admin = User(
-            email='davidmatthews1004@gmail.com',
+            # email='davidmatthews1004@gmail.com',
+            email='davidmatthews1004@arclytics.io',
             first_name='David',
             last_name='Matthews'
         )
@@ -764,7 +770,8 @@ class TestAdminCreateService(BaseTestCase):
         admin.save()
 
         user = User(
-            email='brickmatic479@gmail.com',
+            # email='brickmatic479@gmail.com',
+            email='davidjnr@arclytics.io',
             first_name='David',
             last_name='Jnr'
         )

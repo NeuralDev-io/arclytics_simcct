@@ -353,7 +353,8 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/email',
                 data=json.dumps(
                     {
-                        'emails': ['davidmatthews1004@gmail.com'],
+                        # 'emails': ['davidmatthews1004@gmail.com'],
+                        'emails': ['davidtest@arclytics.io'],
                         'configurations': CONFIGS,
                         'alloy_store': ALLOY_STORE
                     }
@@ -402,10 +403,12 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/email',
                 data=json.dumps(
                     {
-                        'emails': [
-                            'davidmatthews1004@gmail.com',
-                            'brickmatic479@gmail.com'
-                        ],
+                        # 'emails': [
+                        #     'davidmatthews1004@gmail.com',
+                        #     'brickmatic479@gmail.com'
+                        # ],
+                        'emails':
+                        ['davidtest@arclytics.io', 'davidtest2@arclytics.io'],
                         'configurations':
                         CONFIGS,
                         'alloy_store':

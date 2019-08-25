@@ -3371,6 +3371,35 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
+                'No Session Key':
+                  value:
+                    status: "fail"
+                    message: "No Session key in header."
+                'Unable To Load Session':
+                  value:
+                    status: "fail"
+                    errors: "String (Session_store)"
+                    message: "Unable to load session from Redis."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "Unable to retrieve data from Redis."
+                'Unable to save session':
+                  value:
+                    status: "fail"
+                    errors: "string"
+                    message: "Unable to save to session store."
+                'Conversion Error':
+                  value:
+                    status: "fail"
+                    message: "Compositions conversion error."
     put:
       summary: "We update the server session store of BS"
       tags:
@@ -3412,6 +3441,15 @@ paths:
                   value:
                     status: "fail"
                     message: "BS temperature is required."
+                'No Session Key':
+                  value:
+                    status: "fail"
+                    message: "No Session key in header."
+                'Unable To Load Session':
+                  value:
+                    status: "fail"
+                    errors: "String (Session_store)"
+                    message: "Unable to load session from Redis."
         404:
           description: "No previous session configurations was found for the user."
           content:
@@ -3421,6 +3459,22 @@ paths:
               example:
                 status: "fail"
                 message: "No previous session configurations was set."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "Unable to retrieve data from Redis."
+                'Unable to save session':
+                  value:
+                    status: "fail"
+                    errors: "string"
+                    message: "Unable to save to session store."
   /configs/ae:
     servers:
       - url: http://localhost:8001

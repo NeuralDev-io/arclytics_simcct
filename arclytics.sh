@@ -10,6 +10,7 @@ container_log=""
 build=0
 detach=0
 seed_db=0
+build_containers=""
 swagger=0
 jupyter=0
 
@@ -74,6 +75,8 @@ usage() {
    # shellcheck disable=SC1078
    echo """Usage:
 arclytics.sh [OPTIONS] COMMAND [OPTIONAL CONTAINERS]
+
+arclytics.sh build [OPTIONAL SERVICES]
 arclytics.sh [OPTIONS] up [OPTIONAL CONTAINERS]
 arclytics.sh logs [SERVICE]
 arclytics.sh test [TEST OPTIONS] [TEST TYPE]
@@ -92,6 +95,8 @@ Options:
   -c, --coverage   Run the unit tests with coverage.
 
 Commands:
+  build       Build the Docker images from docker-compose.yml only (passing services
+              to build specific ones or leave empty to build all).
   up          Run the main containers in docker-compose.yml (users, simcct,
               client redis mongodb celery-worker dask-scheduler dask-worker).
   logs        Get the logs of the container.
@@ -177,7 +182,9 @@ run_tests() {
 # shellcheck disable=SC2086
 run() {
     ## run appropriate tests
-    if [[ "${command}" == "up" ]]; then
+    if [[ "${command}" == "build" ]]; then
+        docker-compose build ${build_containers}
+    elif [[ "${command}" == "up" ]]; then
         if [[ ${swagger} == 1 ]]; then
             containers="${containers} swagger"
         fi
@@ -241,8 +248,20 @@ while [[ "$1" != "" ]] ; do
         -b | --build )
             build=1
             ;;
+        build )
+            command="build"
+            while [[ "$2" != "" ]] ; do
+                case $2 in
+                    * )
+                        build_containers="${build_containers} $2"
+                        ;;
+                esac
+                shift
+            done
+            run
+            ;;
         up )
-            echo "up"
+            command="up"
 
             while [[ "$2" != "" ]] ; do
                 case $2 in
@@ -264,8 +283,6 @@ while [[ "$1" != "" ]] ; do
                 esac
                 shift
             done
-
-            command="up"
             run
             ;;
         logs )

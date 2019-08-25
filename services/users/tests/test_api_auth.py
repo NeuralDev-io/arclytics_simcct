@@ -1052,6 +1052,51 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'User is already verified.')
 
+    def test_check_password_success(self):
+        luke = User(
+            email='luke@arclytics.io',
+            first_name='Luke',
+            last_name='Skywalker'
+        )
+        luke.set_password('IAmAJedi')
+        luke.save()
+
+        token = log_test_user_in(self, luke, 'IAmAJedi')
+
+        with self.client:
+            resp = self.client.post(
+                '/auth/password/check',
+                data=json.dumps({'password': 'IAmAJedi'}),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(resp.status_code, 200)
+
+    def test_check_password_incorrect_password(self):
+        luke = User(
+            email='lukeskywalker@arclytics.io',
+            first_name='Luke',
+            last_name='Skywalker'
+        )
+        luke.set_password('IAmAJedi')
+        luke.save()
+
+        token = log_test_user_in(self, luke, 'IAmAJedi')
+
+        with self.client:
+            resp = self.client.post(
+                '/auth/password/check',
+                data=json.dumps({'password': 'IAmNotAJedi'}),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['message'], 'Password incorrect.')
+
 
 if __name__ == '__main__':
     unittest.main()

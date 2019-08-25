@@ -307,7 +307,80 @@ P.S. If you want to learn more about Docker click [here](https://docs.docker.com
 **IMPORTANT!!!** You must start the Docker container with this command every time you run.
 
 ```bash
-$ docker-compose up -d client users simcct
+$ docker-compose -p arc up -d client users simcct
+```
+
+#### Using the Arclytics CLI script
+
+To make certain environmental variables and other commands simpler. A shell script `arclytics.sh` has been created which provides an intuitive use of different CLI commands for Docker and Docker Compose.
+
+To use it to start the server:
+
+```bash
+$ ./arclytics.sh -d up
+```
+
+To view what commands and options are available:
+
+```bash
+$ ./arclytics.sh --help
+
+Usage:
+arclytics.sh build [OPTIONAL SERVICES]
+arclytics.sh [OPTIONS] up [OPTIONAL CONTAINERS]
+arclytics.sh logs [SERVICE]
+arclytics.sh test [TEST OPTIONS] [TEST TYPE]
+arclytics.sh seed
+arclytics.sh flush
+arclytics.sh down
+arclytics.sh prune
+
+A CLI script for running docker-compose on the Arclytics Sim Docker Orchestration.
+
+Options:
+  -b, --build      Build the Docker containers before running.
+  -d, --detach     Run Docker Engine logs in a detached shell mode.
+  -s, --seed_db    Seed the MongoDB database with test data.
+  -h, --help       Get the Usage information for this script.
+
+  Test Options:
+  -b, --build      Build the Docker containers before running tests.
+  -t, --tty        Attach a pseudo-TTY to the tests.
+  -c, --coverage   Run the unit tests with coverage.
+
+Commands:
+  build       Build the Docker images from docker-compose.yml only (passing services
+              to build specific ones or leave empty to build all).
+  up          Run the main containers in docker-compose.yml (users, simcct,
+              client redis mongodb celery-worker dask-scheduler dask-worker).
+  logs        Get the logs of the container.
+  flush       Flush both Redis datastore and MongoDB database only.
+  seed        Seed the microservices with test data and flush both Redis datastore and MongoDB database.
+  test        Run unit tests on the microservices.
+  down        Stop all containers.
+  prune       Prune all stopped images, containers, and networks.
+
+Optional Containers:
+  -S, --swagger    Run the Swagger container with the cluster.
+  -J, --jupyter    Run the Jupyter container with the cluster.
+
+Service (only one for logs):
+  users
+  celery-worker
+  simcct
+  dask-scheduler
+  dask-worker
+  redis
+  mongodb
+  jupyter
+  swagger
+
+Test Services:
+  all         Run all unit tests for Arclytics Sim
+  server      Run the server-side unit tests.
+  client      Run the client-side unit tests.
+  users       Run only the users tests.
+  simcct      Run only the simcct tests.
 ```
 
 #### Additional Scripts for Flask Microservices
@@ -324,6 +397,18 @@ These commands will seed or load the development database into MongoDB (note: en
 ```bash
 $ docker-compose exec users python manage.py seed_db
 $ docker-compose exec simcct python manage.py seed_db
+```
+
+You can also use the Arclytics CLI script to help with this to flush:
+
+```bash
+$ ./arclytics.sh flush
+```
+
+To flush and seed:
+
+```bash
+$ ./arclytics.sh seed
 ```
 
 #### Advanced Use (with caution)
@@ -361,23 +446,29 @@ This will run the tests with coverage:
 > docker-compose exec simcct python manage.py test_coverage
 ```
 
-
-
-To use the shell script (you must have a UNIX shell):
+You can also use the Arclytics CLI script to do the above:
 
 ```bash
-$ ./run_tests.sh --help
+$ ./arclytics.sh 
+```
 
-Usage: run_tests.sh [OPTIONS] COMMAND
 
-A CLI script for running unit tests on the Arclytics Sim Docker Orchestration.
+
+To view the the commands for the `test` command with Arclytics CLI script.
+
+```bash
+$ ./arclytics.sh test --help
+
+Usage: arclytics.sh test [OPTIONS] [TEST TYPE]
+
+The Arclytics CLI command to run Unit Tests.
 
 Options:
   -b, --build      Build the Docker containers before running tests.
   -t, --tty        Attach a pseudo-TTY to the tests.
   -c, --coverage   Run the unit tests with coverage.
 
-Commands:
+Test Type:
   all         Run all unit tests for Arclytics Sim
   server      Run the server-side unit tests.
   client      Run the client-side unit tests.
@@ -388,7 +479,7 @@ Commands:
 For example, this will run the tests for the Flask back-ends only with coverage:
 
 ```shell
-$ ./run_tests.sh -c server
+$ ./arclytics.sh -c server
 ```
 
 

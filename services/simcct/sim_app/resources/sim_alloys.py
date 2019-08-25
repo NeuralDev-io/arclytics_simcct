@@ -24,7 +24,9 @@ from flask_restful import Resource
 from marshmallow import ValidationError
 
 from sim_app.extensions import api
-from sim_app.schemas import AlloySchema, AlloyStoreSchema, ConfigurationsSchema
+from sim_app.schemas import (
+    AlloySchema, AlloyStoreSchema, ConfigurationsSchema
+)
 from sim_app.middleware import token_and_session_required
 from sim_app.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
@@ -81,10 +83,10 @@ class AlloyStore(Resource):
         # Database based on what is available with the alloy_option and
         # alloy_type. From the client, we expect these two keys to at the
         # very least be in the request body. Otherwise we won't do anything.
-        if alloy_option not in ['single', 'both', 'mix']:
+        if alloy_option not in {'single', 'mix'}:
             response['message'] = (
                 'Alloy option not one of '
-                '["single" | "both" | "mix"].'
+                '["single" | "mix"].'
             )
             return response, 400
 
@@ -92,7 +94,7 @@ class AlloyStore(Resource):
             response['message'] = 'No alloy type was provided.'
             return response, 400
 
-        if alloy_type not in ['parent', 'weld', 'mix']:
+        if alloy_type not in {'parent', 'weld', 'mix'}:
             response['message'] = (
                 'Alloy type not one of ["parent" | "weld" | "mix"].'
             )
@@ -136,7 +138,6 @@ class AlloyStore(Resource):
         # We create a new session alloy_store for the user
         session_alloy_store = {
             'alloy_option': alloy_option,
-            'alloy_type': alloy_type,
             'alloys': {
                 'parent': None,
                 'weld': None,
@@ -152,9 +153,6 @@ class AlloyStore(Resource):
                 # Just quickly validate the alloy stored based on schema
                 valid_store = AlloyStoreSchema().load(session_alloy_store)
             elif alloy_option == 'mix':
-                # TODO(andrew@neuraldev.io): Implement this.
-                pass
-            else:
                 # TODO(andrew@neuraldev.io): Implement this.
                 pass
         except ValidationError as e:

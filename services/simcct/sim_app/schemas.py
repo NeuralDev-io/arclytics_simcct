@@ -26,6 +26,9 @@ from marshmallow import Schema, fields, validates, ValidationError
 from marshmallow.validate import OneOf
 from simulation.periodic import PeriodicTable
 from simulation.utilities import MissingElementError
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
 
 Schema.TYPE_MAPPING[ObjectId] = fields.String
 
@@ -91,7 +94,7 @@ class ElementSchema(Schema):
 class AlloySchema(Schema):
     _id = fields.Str()
     name = fields.Str()
-    compositions = fields.List(fields.Nested(ElementSchema))
+    compositions = fields.List(fields.Nested(ElementSchema), required=True)
 
     @validates('compositions')
     def validate_required_elements(self, value):
@@ -109,7 +112,11 @@ class AlloySchema(Schema):
         }
 
         for el in value:
-            if el['symbol'] in valid_elements.keys():
+            if not el.get('symbol', None):
+                msg = 'Missing data for required field ["symbol"].'
+                raise ValidationError(msg)
+
+            if el.get('symbol', None) in valid_elements.keys():
                 valid_elements[el['symbol']] = True
 
         # all() returns True if all values in the dict are True
@@ -134,7 +141,7 @@ class AlloysTypeSchema(Schema):
 class AlloyStoreRequestSchema(Schema):
     """This is the schema that defines the request body for changing alloys."""
     alloy_option = fields.Str(
-        required=True, validate=OneOf(['single', 'both', 'mix'])
+        required=True, validate=OneOf(['single', 'mix'])
     )
     alloy_type = fields.Str(
         required=True, validate=OneOf(['parent', 'weld', 'mix'])
@@ -147,7 +154,7 @@ class AlloyStoreSchema(Schema):
     and the User's Mongo Document.
     """
     alloy_option = fields.Str(
-        required=True, validate=OneOf(['single', 'both', 'mix'])
+        required=True, validate=OneOf(['single', 'mix'])
     )
     alloys = fields.Nested(AlloysTypeSchema)
 

@@ -328,13 +328,17 @@ class TestAlloyService(BaseTestCase):
 
             self.assertEqual(res.status_code, 400)
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'Invalid payload.')
+            self.assertEqual(
+                data['message'], 'Request data failed schema validation.'
+            )
             self.assertTrue(data['errors'])
             err = {
                 'compositions': {
                     '0': {
+                        'name': ['Unknown field.'],
                         'symbol': ['Missing data for required field.']
-                    }
+                    },
+                    '_schema': ['Missing data for required field ["symbol"].']
                 }
             }
             self.assertEqual(data['errors'], err)
@@ -614,7 +618,7 @@ class TestAlloyService(BaseTestCase):
             )
             data = json.loads(res.data.decode())
             self.assertEqual(
-                data['message'], 'Request data failed schema validation.'
+                data['message'], 'Missing element error in schema validation.'
             )
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(res.status_code, 400)

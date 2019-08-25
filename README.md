@@ -46,6 +46,7 @@ Arclytics Sim will use the following technologies and tools:
 * [Docker-Compose](https://docs.docker.com/compose/overview/)
 * [Docker-Machine](https://docs.docker.com/machine/overview/)
 * [Kubernetes](https://kubernetes.io/docs/home/)
+* [Dask](https://dask.org/)
 * [Flask](http://flask.pocoo.org/)
 * [NodeJS](https://nodejs.org/en/)
 * [npm](https://www.npmjs.com/)
@@ -106,6 +107,15 @@ Some handy Docker commands:
 ```
 * `-d` (optional): run the containers in detached mode without `stdout` and `stderr` to the terminal.
 * `--build` (optional): will build the images from the `Dockerfile` or rebuild from the Docker cache.
+
+**Starting some specific containers**
+
+```powershell
+> docker-compose up -d --build client users simcct
+```
+
+* `client users simcct`: will only run the containers with these service names as defined in `docker-compose.yml`. 
+* Note: Because `users` and `simcct` have a list of other services set as `depends_on` in `docker-compose.yml` you will find those additional services will also be run (i.e. the `users` service requires `mongodb` so it will also be run even without explicit commands telling it to run).
 
 **Stopping the containers**
 
@@ -228,22 +238,43 @@ Deleted: sha256:bdede403bfe892437f9612de019c52af60b552c200073e40f62ac175e242d522
 Deleted: sha256:d9346bd1a028a61ba23007ddd284b844f4f03c1495fc90415ddac212d6e1a100
 ```
 
-**Pruning Stopped Containers, Images, Networks, and Dependencies**
+**Pruning Stopped Containers, Images, System-wide, and Dependencies Respectively**
 
 ```powershell
-> docker container prune -f
+> docker container prune -f  # Stopped containers only
 
-> docker image prune -f
+> docker image prune -f  # Stopped images only
 
-> docker system prune -f 
-
-> docker system prune -af
+> docker system prune -af  # All containers, images, networks, caches
 ```
 
 **Using Docker Logs**
 
 ```powershell
 > docker logs arc-users
+
+Waiting for Mongo...
+Mongo started.
+Arclytics Sim Users Service Flask Server Information for e038fe5bd85d
+Started on 08/17/19 03:41:01 PM UTC by 
+ENVIRONMENT VARIABLES:
+FLASK_APP: Arclytics Sim Users Service
+FLASK_ENV: development
+APP_SETTINGS: configs.flask_conf.DevelopmentConfig
+Starting Flask server...
+
+ * Environment: development
+ * Debug mode: on
+ * Running on http://0.0.0.0:8000/ (Press CTRL+C to quit)
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 285-812-959
+```
+
+Alternatively, a simpler way is to use the name of the service defined in `docker-compose.yml`:
+
+```powershell
+> docker-compose logs users 
 
 Waiting for Mongo...
 Mongo started.
@@ -276,7 +307,127 @@ P.S. If you want to learn more about Docker click [here](https://docs.docker.com
 **IMPORTANT!!!** You must start the Docker container with this command every time you run.
 
 ```bash
-$ docker-compose up -d
+$ docker-compose -p arc up -d client users simcct
+```
+
+#### Using the Arclytics CLI script
+
+To make certain environmental variables and other commands simpler. A shell script `arclytics.sh` has been created which provides an intuitive use of different CLI commands for Docker and Docker Compose.
+
+To use it to start the server:
+
+```bash
+$ ./arclytics.sh -d up
+```
+
+To view what commands and options are available:
+
+```bash
+$ ./arclytics.sh --help
+
+ARCLYTICS CLI SCRIPT
+
+The Arclytics CLI script for running docker and docker-compose commands on the
+Arclytics Sim Docker orchestration.
+
+Usage:
+arclytics.sh build [SERVICE ARGS...]
+arclytics.sh up [options] [SERVICE ARGS...]
+arclytics.sh logs [SERVICE]
+arclytics.sh test [options] [TEST TYPE]
+arclytics.sh seed
+arclytics.sh flush
+arclytics.sh down
+arclytics.sh prune
+
+Options:
+  -b, --build      Build the Docker containers before running.
+  -d, --detach     Run Docker Engine logs in a detached shell mode.
+  -s, --seed_db    Seed the MongoDB database with test data.
+  -h, --help       Get the Usage information for this script.
+
+  Test Options:
+  -b, --build      Build the Docker containers before running tests.
+  -t, --tty        Attach a pseudo-TTY to the tests.
+  -c, --coverage   Run the unit tests with coverage.
+
+Commands:
+  build       Build the Docker images from docker-compose.yml only (passing services
+              to build specific ones or leave empty to build all).
+  up          Run the main containers in docker-compose.yml or provide a list of
+              arguments to run only those provided.
+  logs        Get the logs of the container.
+  flush       Flush both Redis datastore and MongoDB database only.
+  seed        Seed the microservices with test data and flush both Redis
+              datastore and MongoDB database.
+  test        Run unit tests on the microservices.
+  down        Stop all containers.
+  prune       Prune all stopped images, containers, and networks.
+
+Optional Containers:
+  -S, --swagger    Run the Swagger container with the cluster.
+  -J, --jupyter    Run the Jupyter container with the cluster.
+
+Service (only one for logs):
+  users
+  celery-worker
+  simcct
+  dask-scheduler
+  dask-worker
+  redis
+  mongodb
+  jupyter
+  swagger
+
+Test Types (one only):
+  all         Run all unit tests for Arclytics Sim
+  server      Run the server-side unit tests.
+  client      Run the client-side unit tests.
+  users       Run only the users tests.
+  simcct      Run only the simcct tests.
+
+```
+
+#### Additional Scripts for Flask Microservices
+
+These commands will flush the MongoDB and Redis databases for both `users` and `simcct` servers.
+
+```bash
+$ docker-compose exec users python manage.py flush
+$ docker-compose exec simcct python manage.py flush
+```
+
+These commands will seed or load the development database into MongoDB (note: ensure you flush if you get index constraint conflicts).
+
+```bash
+$ docker-compose exec users python manage.py seed_db
+$ docker-compose exec simcct python manage.py seed_db
+```
+
+You can also use the Arclytics CLI script to help with this to flush:
+
+```bash
+$ ./arclytics.sh flush
+```
+
+To flush and seed:
+
+```bash
+$ ./arclytics.sh seed
+```
+
+#### Advanced Use (with caution)
+
+To scale the Dask scheduling distributed containers, do the following on running the containers.
+
+```bash
+$ docker-compose up -d --scale dask-worker=2 client users simcct
+```
+
+To scale after the containers are already running:
+
+```bash
+$ docker-compose scale dask-worker=2
 ```
 
 
@@ -300,34 +451,43 @@ This will run the tests with coverage:
 > docker-compose exec simcct python manage.py test_coverage
 ```
 
-
-
-To use the shell script (you must have a UNIX shell):
+You can also use the Arclytics CLI script to do the above:
 
 ```bash
-$ ./run_tests.sh --help
+$ ./arclytics.sh 
+```
 
-Usage: run_tests.sh [OPTIONS] COMMAND
 
-A CLI script for running unit tests on the Arclytics Sim Docker Orchestration.
+
+To view the the commands for the `test` command with Arclytics CLI script.
+
+```bash
+$ ./arclytics.sh test --help
+
+ARCLYTICS CLI SCRIPT
+
+Usage: arclytics.sh test [OPTIONS] [TEST TYPE]
+
+The Arclytics CLI command to run Unit Tests.
 
 Options:
   -b, --build      Build the Docker containers before running tests.
   -t, --tty        Attach a pseudo-TTY to the tests.
   -c, --coverage   Run the unit tests with coverage.
 
-Commands:
+Test Types (one only):
   all         Run all unit tests for Arclytics Sim
   server      Run the server-side unit tests.
   client      Run the client-side unit tests.
   users       Run only the users tests.
   simcct      Run only the simcct tests.
+
 ```
 
 For example, this will run the tests for the Flask back-ends only with coverage:
 
 ```shell
-$ ./run_tests.sh -c server
+$ ./arclytics.sh -c server
 ```
 
 

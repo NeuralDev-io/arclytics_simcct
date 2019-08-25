@@ -29,7 +29,8 @@ from users_app.extensions import api
 from users_app.middleware import authenticate
 from users_app.models import Configuration, AlloyStore, User
 from users_app.utilities import (
-    ElementInvalid, ElementSymbolInvalid, MissingElementError
+    ElementInvalid, ElementSymbolInvalid, MissingElementError,
+    DuplicateElementError
 )
 
 last_simulation_blueprint = Blueprint('user_last_simulation', __name__)
@@ -100,6 +101,12 @@ class LastSimulation(Resource):
             # available as they are required downstream in the algorithm.
             response['error'] = str(e)
             response['message'] = 'Missing element error.'
+            return response, 400
+        except DuplicateElementError as e:
+            # One of the alloys contains two or more elements with the same
+            # chemical symbol.
+            response['error'] = str(e)
+            response['message'] = 'Alloy contains a duplicate element.'
             return response, 400
         except ValidationError as e:
             # All other validation errors

@@ -43,7 +43,8 @@ from users_app.token import (
     confirm_simulation_token
 )
 from users_app.utilities import (
-    ElementSymbolInvalid, ElementInvalid, MissingElementError
+    ElementSymbolInvalid, ElementInvalid, MissingElementError,
+    DuplicateElementError
 )
 
 logger = AppLogger(__name__)
@@ -103,6 +104,10 @@ class ShareSimulationLink(Resource):
         except MissingElementError as e:
             response['errors'] = str(e)
             response['message'] = 'Alloy is missing essential elements.'
+            return response, 400
+        except DuplicateElementError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Alloy contains duplicate elements.'
             return response, 400
         except ValidationError as e:
             response['errors'] = str(e)
@@ -207,10 +212,6 @@ class ShareSimulationEmail(Resource):
                 }
             )
             shared_simulation_object.save()
-        except ValidationError as e:
-            response['errors'] = str(e)
-            response['message'] = 'Validation error.'
-            return response, 400
         except ElementSymbolInvalid as e:
             response['errors'] = str(e)
             response['message'] = 'Element Symbol Invalid.'
@@ -222,6 +223,14 @@ class ShareSimulationEmail(Resource):
         except MissingElementError as e:
             response['errors'] = str(e)
             response['message'] = 'Alloy is missing essential elements.'
+            return response, 400
+        except DuplicateElementError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Alloy contains duplicate elements.'
+            return response, 400
+        except ValidationError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Validation error.'
             return response, 400
 
         # Create a token that contains the ObjectId for the shared simulation

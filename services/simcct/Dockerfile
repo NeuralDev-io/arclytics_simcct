@@ -14,7 +14,7 @@ RUN conda install --yes --freeze-installed -q \
     nomkl \
     dask==2.3.0 \
     numpy==1.16.4 \
-    conda-forge::marshmallow==3.0.0 \
+    conda-forge::marshmallow==3.0.1 \
     conda-forge::flask==1.0.2 \
     conda-forge::socat \
     && conda clean -tipsy \

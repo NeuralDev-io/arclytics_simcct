@@ -1,5 +1,7 @@
 FROM jupyter/base-notebook
 
+LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
+
 USER root
 
 RUN apt-get update \
@@ -47,9 +49,7 @@ RUN mkdir /opt/app \
 # in the `--chown` statement, so we need to hardcode these values.
 COPY --chown=1000:100 examples/ /home/$NB_USER/examples
 COPY --chown=1000:100 notebooks/ /home/$NB_USER/notebooks
-COPY prepare.sh /usr/bin/prepare.sh
 
 USER $NB_USER
 
-ENTRYPOINT ["tini", "--", "/usr/bin/prepare.sh"]
 CMD ["start.sh", "jupyter", "lab"]

@@ -55,11 +55,9 @@ echo "ENVIRONMENT VARIABLES:"
 echo "FLASK_APP: sim_app/app.py"
 echo "FLASK_ENV: $FLASK_ENV"
 echo "APP_SETTINGS: $APP_SETTINGS"
+echo ""
 echo "Starting Flask server..."
 echo ""
 
-if  [ "$WSGI" == "gunicorn" ] ; then
-    gunicorn -b $HOST:$PORT sim_app.app:app
-else
-    python manage.py run -h $HOST -p $PORT
-fi
+# Purely using the development version for this entrypoint
+python manage.py run -h $HOST -p $PORT

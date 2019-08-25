@@ -81,10 +81,10 @@ class AlloyStore(Resource):
         # Database based on what is available with the alloy_option and
         # alloy_type. From the client, we expect these two keys to at the
         # very least be in the request body. Otherwise we won't do anything.
-        if alloy_option not in ['single', 'both', 'mix']:
+        if alloy_option not in {'single', 'mix'}:
             response['message'] = (
                 'Alloy option not one of '
-                '["single" | "both" | "mix"].'
+                '["single" | "mix"].'
             )
             return response, 400
 
@@ -92,7 +92,7 @@ class AlloyStore(Resource):
             response['message'] = 'No alloy type was provided.'
             return response, 400
 
-        if alloy_type not in ['parent', 'weld', 'mix']:
+        if alloy_type not in {'parent', 'weld', 'mix'}:
             response['message'] = (
                 'Alloy type not one of ["parent" | "weld" | "mix"].'
             )

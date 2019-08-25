@@ -7,7 +7,7 @@ services:
     build:
       context: ./services/users
       dockerfile: Dockerfile
-    image: arc_sim_users_service:1.0
+    image: neuraldev/arc_sim_users_service:1.0
     container_name: arc-users
     volumes:  # used to mount the code into the container for live updates
       - ./services/users:/usr/src/app
@@ -36,7 +36,7 @@ services:
     build:
       context: ./services/celery-worker
       dockerfile: Dockerfile
-    image: arc_sim_celery_service:1.0
+    image: neuraldev/arc_sim_celery_service:1.0
     container_name: arc-celery
     volumes:
       - ./services/celery-worker:/usr/src/app
@@ -59,7 +59,7 @@ services:
     build:
       context: ./services/simcct
       dockerfile: Dockerfile
-    image: arc_simcct_service:1.0
+    image: neuraldev/arc_simcct_service:1.2
     container_name: arc-simcct
     volumes:
       - ./services/simcct:/usr/src/app
@@ -149,7 +149,7 @@ services:
     build:
       context: ./services/db
       dockerfile: Dockerfile
-    image: arc_sim_mongo:1.1
+    image: neuraldev/arc_sim_mongo:1.1
     restart: always
     container_name: arc-mongo
     ports:
@@ -166,7 +166,7 @@ services:
     build:
       context: ./services/client
       dockerfile: Dockerfile
-    image: arc_sim_client:1.1
+    image: neuraldev/arc_sim_client:1.1
     container_name: arc-client
     volumes:
       - ./services/client:/usr/src/app
@@ -190,7 +190,7 @@ services:
     build:
       context: ./services/swagger
       dockerfile: Dockerfile
-    image: arc_sim_swagger:1.0
+    image: neuraldev/arc_sim_swagger:1.0
     container_name: swagger-ui
     volumes:
       - ./services/swagger/swagger.yaml:/usr/share/nginx/html/swagger.yaml

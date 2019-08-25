@@ -21,7 +21,7 @@ import styles from './LoginPage.module.scss'
 
 class LoginPage extends Component {
   componentDidMount = () => {
-    if (localStorage.getItem('token')) this.props.profile ? history.push('/') : history.push('/profileQuestions')// eslint-disable-line
+    if (localStorage.getItem('token')) this.props.profile ? this.props.history.push('/') : this.props.history.push('/profileQuestions')// eslint-disable-line
   }
 
   render() {
@@ -112,7 +112,7 @@ class LoginPage extends Component {
                       </a>
                     </div>
                     <div className={styles.clear}>
-                      <Button className={styles.signIn} name="SIGN IN" type="button" length="long" isSubmitting={isSubmitting} onClick={handleSubmit}>
+                      <Button className={styles.signIn} name="SIGN IN" type="submit" length="long" isSubmitting={isSubmitting} onClick={handleSubmit}>
                         SIGN IN
                       </Button>
                       <h6>

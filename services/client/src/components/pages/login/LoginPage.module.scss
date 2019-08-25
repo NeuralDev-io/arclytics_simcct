@@ -6,17 +6,11 @@ $bg-img: url('../../../assets/background_img-min.png');
   width:100vw;
   padding-top: 8rem;
   padding-bottom: 8rem;
-  background: $n0 $bg-img no-repeat center center fixed;
-  background-size: 135%;
-  background-position:  43.484375rem;
+  background: $n0 $bg-img no-repeat;
+  background-size: 150% 150%;
+  background-position:  -80%;
 }
 
-@media only screen and (max-height: 830px) {
-  .outer{
-    width: 100%;
-    height: 100%;
-  }
-}
   
 
 .form{
@@ -54,13 +48,13 @@ $bg-img: url('../../../assets/background_img-min.png');
 
 .help{
   float:right;
-  color:$ag500;
+  color:$arc500;
   margin-bottom: 3rem;
   margin-right: 0.774375rem;
 }
 
 .createAccount{
-  color:$ag500;
+  color:$arc500;
   text-decoration: none;
 }
 

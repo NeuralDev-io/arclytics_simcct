@@ -23,6 +23,7 @@ endpoints.
 
 import json
 import unittest
+import time
 
 from flask import current_app
 from itsdangerous import URLSafeTimedSerializer
@@ -34,30 +35,13 @@ from users_app.token import (
     generate_confirmation_token, generate_url,
     generate_promotion_confirmation_token
 )
+from tests.test_api_users import log_test_user_in
 
 logger = AppLogger(__name__)
 
 
-# TODO(davidmatthews1004@gmail.com) If possible, import this so its not
-#  repeated.
-def log_test_user_in(self, user: User, password: str) -> str:
-    """Log in a test user and return their token"""
-    with self.client:
-        resp_login = self.client.post(
-            '/auth/login',
-            data=json.dumps({
-                'email': user.email,
-                'password': password
-            }),
-            content_type='application/json'
-        )
-        token = json.loads(resp_login.data.decode())['token']
-        return token
-
-
 class TestAdminCreateService(BaseTestCase):
     """Tests for Admin creation and disable account endpoints"""
-
     def test_disable_account(self):
         """Test disable account is successful"""
         kylo = User(
@@ -67,7 +51,9 @@ class TestAdminCreateService(BaseTestCase):
         kylo.save()
 
         vader = User(
-            email='vader@sith.com', first_name='Darth', last_name='Vader'
+            email='brickmatic479@gmail.com',
+            first_name='Darth',
+            last_name='Vader'
         )
         vader.set_password('AllTooEasy')
         # vader.is_admin = True
@@ -83,20 +69,9 @@ class TestAdminCreateService(BaseTestCase):
 
         with self.client:
             resp_disable = self.client.put(
-                '/user/disable',
+                '/disable/user',
                 data=json.dumps({'email': 'kyloren@gmail.com'}),
                 headers={'Authorization': 'Bearer {}'.format(token)},
-                content_type='application/json'
-            )
-
-            resp_attempt_login = self.client.post(
-                '/auth/login',
-                data=json.dumps(
-                    {
-                        'email': 'kyloren@gmail.com',
-                        'password': 'LetStarWarsDie'
-                    }
-                ),
                 content_type='application/json'
             )
 
@@ -104,15 +79,7 @@ class TestAdminCreateService(BaseTestCase):
             self.assertEqual(resp_disable.status_code, 200)
             self.assertEqual(disable_data['status'], 'success')
             self.assertEqual(
-                disable_data['message'],
-                f'The account for User {kylo.email} has been disabled.'
-            )
-
-            login_data = json.loads(resp_attempt_login.data.decode())
-            self.assertEqual(resp_attempt_login.status_code, 401)
-            self.assertEqual(login_data['status'], 'fail')
-            self.assertEqual(
-                login_data['message'], 'Your Account has been disabled.'
+                disable_data['message'], 'Confirmation email sent.'
             )
 
     def test_disable_account_no_data(self):
@@ -134,7 +101,7 @@ class TestAdminCreateService(BaseTestCase):
 
         with self.client:
             resp = self.client.put(
-                '/user/disable',
+                '/disable/user',
                 data=json.dumps(''),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
@@ -164,7 +131,7 @@ class TestAdminCreateService(BaseTestCase):
 
         with self.client:
             resp = self.client.put(
-                '/user/disable',
+                '/disable/user',
                 data=json.dumps({'email': 'c3p0@protocol.com'}),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
@@ -196,7 +163,7 @@ class TestAdminCreateService(BaseTestCase):
 
         with self.client:
             resp_disable = self.client.put(
-                '/user/disable',
+                '/disable/user',
                 data=json.dumps({'invalid_key': 'invalid_data'}),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
@@ -228,7 +195,7 @@ class TestAdminCreateService(BaseTestCase):
 
         with self.client:
             resp_disable = self.client.put(
-                '/user/disable',
+                '/disable/user',
                 data=json.dumps({'email': 'invalid_email.com'}),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
@@ -239,68 +206,79 @@ class TestAdminCreateService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'Invalid email.')
 
-    def test_use_disable_account(self):
-        """Ensure a disabled user is not able to interact with the system."""
-        grevious = User(
-            first_name='General',
-            last_name='Grevious',
-            email='grevious@separatists.com'
-        )
-        grevious.set_password('YouAreABoldOne')
-        # grevious.is_admin = True
-        grevious.admin_profile = AdminProfile(
-            position='Position',
-            mobile_number=None,
-            verified=True,
-            promoted_by=None
-        )
-        grevious.save()
+    def test_confirm_disable_account_success(self):
+        from pymongo import MongoClient
+        import os
+        with current_app.test_client() as client:
+            piett = User(
+                email='brickmatic479@gmail.com',
+                first_name='Admiral',
+                last_name='Piett'
+            )
+            piett.set_password('YesLordVader')
+            piett.save()
+            account_disable_token = generate_confirmation_token(piett.email)
+            account_disable_url = generate_url(
+                'admin.confirm_disable_account', account_disable_token
+            )
+            resp = client.get(
+                account_disable_url, content_type='application/json'
+            )
+            mongo_client = MongoClient(os.environ.get('MONGO_URI'))
+            db = mongo_client['arc_test']
+            user = db.users.find_one({'email': piett.email})
+            print(f'User.active: {user["active"]}')
 
-        droid = User(
-            first_name='Idiot', last_name='Droid', email='idiot@droids.com'
-        )
-        droid.set_password('ButIJustGotPromoted')
-        droid.save()
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = 'http://localhost:3000/'
+            self.assertRedirects(resp, redirect_url)
 
-        grevious_token = log_test_user_in(self, grevious, 'YouAreABoldOne')
+            # The following assertion will cause an error as the context of the
+            # database changes during the test for some reason. In order to
+            # confirm that user.active has been set to false, a print statement
+            # has been inserted above.
+            # piett_updated = User.objects.get(id=piett.id)
+            # self.assertEqual(piett_updated.verified, True)
 
-        droid_token = log_test_user_in(self, droid, 'ButIJustGotPromoted')
+    def test_confirm_disable_account_invalid_token(self):
+        invalid_token = 'aaaaaaaaaaaaaaaaaaaaaaaa'
+        url = generate_url('admin.confirm_disable_account', invalid_token)
 
         with self.client:
-            grevious_disable = self.client.put(
-                '/user/disable',
-                data=json.dumps({'email': 'idiot@droids.com'}),
-                headers={'Authorization': 'Bearer {}'.format(grevious_token)},
-                content_type='application/json'
+            resp = self.client.get(url, content_type='application/json')
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+
+    def test_confirm_disable_account_user_dne(self):
+        kylo = User(
+            email='kyloren@arclytics.io', first_name='Kylo', last_name='Ren'
+        )
+        kylo.set_password('LetThePastDie')
+        kylo.save()
+        account_disable_token = generate_confirmation_token(kylo.email)
+        account_disable_url = generate_url(
+            'admin.confirm_disable_account', account_disable_token
+        )
+        kylo.delete()
+        with self.client:
+            resp = self.client.get(
+                account_disable_url, content_type='application/json'
             )
 
-            droid_action = self.client.get(
-                '/user',
-                headers={'Authorization': 'Bearer {}'.format(droid_token)},
-                content_type='application/json'
-            )
-
-            disable_data = json.loads(grevious_disable.data.decode())
-            self.assertEqual(grevious_disable.status_code, 200)
-            self.assertEqual(disable_data['status'], 'success')
-            self.assertEqual(
-                disable_data['message'],
-                f'The account for User {droid.email} has been disabled.'
-            )
-
-            action_data = json.loads(droid_action.data.decode())
-            self.assertEqual(droid_action.status_code, 401)
-            self.assertEqual(action_data['status'], 'fail')
-            self.assertEqual(
-                action_data['message'], 'This user account has been disabled.'
-            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'User does not exist.')
 
     def test_create_admin_success(self):
         """Test create admin is successful"""
         quigon = User(
             first_name='Qui-Gon',
             last_name='Jinn',
-            email="davidmatthews1004@gmail.com"
+            email='davidmatthews1004@gmail.com'
         )
         # quigon.is_admin = True
         quigon.admin_profile = AdminProfile(

@@ -109,13 +109,13 @@ def within_percentage_bounds(val):
         raise ValidationError('Must be more than 0.0.')
 
 
-def validate_no_duplicate_elements(alloy_comp: list) -> Tuple[bool, str]:
-    used_elements = set()
-    for el in alloy_comp:
-        if el['symbol'] in used_elements:
-            return False, el['symbol']
-        else:
-            used_elements.add(el['symbol'])
+def validate_no_duplicate_elements(alloy_comp: list) -> Tuple[bool, set]:
+    elements = []
+    for e in alloy_comp:
+        elements.append(e['symbol'])
+    duplicates = set([x for x in elements if elements.count(x) > 1])
+    if len(duplicates) > 0:
+        return False, duplicates
     return True, None
 
 

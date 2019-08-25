@@ -520,7 +520,7 @@ def check_password(user_id) -> Tuple[dict, int]:
         return jsonify(response), 200
 
     response['message'] = 'Password incorrect.'
-    return jsonify(response), 404
+    return jsonify(response), 400
 
 
 @auth_blueprint.route('/auth/password/reset', methods=['PUT'])

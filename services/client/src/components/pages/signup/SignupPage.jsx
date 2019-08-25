@@ -29,10 +29,8 @@ class SignupPage extends Component {
             <Logo className={styles.logo} />
             <h3> ARCLYTICS </h3>
           </div>
-          <div className={styles.signUp}>
-            {' '}
+          <div className={styles.header}>
             <h3> Sign up </h3>
-            {' '}
           </div>
           <Formik
             initialValues={{

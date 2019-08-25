@@ -1,4 +1,4 @@
-import colours from '../../../../styles/_colors_light.scss'
+import { getColor } from '../../../../utils/theming'
 
 export const layout = (height, width) => ({
   width,
@@ -10,11 +10,11 @@ export const layout = (height, width) => ({
     orientation: 'h',
     font: {
       family: 'Open Sans',
-      color: colours.n900,
+      color: getColor('--n900'),
     },
   },
-  plot_bgcolor: colours.n0,
-  paper_bgcolor: colours.n0,
+  plot_bgcolor: getColor('--n0'),
+  paper_bgcolor: getColor('--n0'),
   margin: {
     t: 32,
     l: 36,

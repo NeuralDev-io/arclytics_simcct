@@ -34,7 +34,8 @@ from users_app.extensions import api
 from users_app.middleware import authenticate
 from users_app.models import Alloy, User
 from users_app.utilities import (
-    ElementSymbolInvalid, ElementInvalid, MissingElementError
+    ElementSymbolInvalid, ElementInvalid, MissingElementError,
+    DuplicateElementError
 )
 
 user_alloys_blueprint = Blueprint('user_alloys', __name__)
@@ -106,6 +107,12 @@ class UserAlloysList(Resource):
             # This validation is a custom one used to validate missing Elements
             response['error'] = str(e)
             response['message'] = 'Missing element error.'
+            return response, 400
+        except DuplicateElementError as e:
+            # One of the alloys contains two or more elements with the same
+            # chemical symbol.
+            response['error'] = str(e)
+            response['message'] = 'Alloy contains a duplicate element.'
             return response, 400
         except ValidationError as e:
             response['error'] = str(e.message)
@@ -256,6 +263,12 @@ class UserAlloy(Resource):
             # This validation is a custom one used to validate missing Elements
             response['error'] = str(e)
             response['message'] = 'Missing element error.'
+            return response, 400
+        except DuplicateElementError as e:
+            # One of the alloys contains two or more elements with the same
+            # chemical symbol.
+            response['error'] = str(e)
+            response['message'] = 'Alloy contains a duplicate element.'
             return response, 400
         except ValidationError as e:
             response['error'] = str(e.message)

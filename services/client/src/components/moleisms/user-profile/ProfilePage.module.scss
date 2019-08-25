@@ -1,6 +1,5 @@
 
 $bg-img: url('../../../assets/background_img-min.png');
-@import '../../../styles/colors_light';
 @import '../../../styles/_typography.scss';
 
 .Sidebar{
@@ -157,7 +156,7 @@ $bg-img: url('../../../assets/background_img-min.png');
 
 .updateError{
   width:35rem;
-  color: $r500;
+  color: var(--r500);
   text-align: right;
   margin-bottom: 1rem;
   height: 1.25rem;

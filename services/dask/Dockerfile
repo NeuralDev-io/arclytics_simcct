@@ -1,5 +1,7 @@
 FROM continuumio/miniconda3:4.6.14
 
+LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
+
 # This is the base image for both a Dask Scheduler and a Dask Worker.
 # The scheduler should only contain 1 container.
 # It is possible to replicate and scale the Dask Worker to allow better
@@ -11,8 +13,8 @@ FROM continuumio/miniconda3:4.6.14
 # https://github.com/dask/dask-docker
 # https://docs.dask.org/en/latest/setup/docker.html
 
-# note: Ensure you add all required dependencies if the processing from other
-# containers rely on packages.
+# note: Ensure you install all required dependencies if the processing from other
+# containers rely on those packages.
 RUN conda install --yes --freeze-installed -q \
     -c anaconda \
     python==3.7.3 \
@@ -32,9 +34,8 @@ RUN conda install --yes --freeze-installed -q \
     && find /opt/conda/lib/python*/site-packages/bokeh/server/static -type f,l -name '*.js' -not -name '*.min.js' -delete \
     && rm -rf /opt/conda/pkgs
 
-#COPY prepare.sh /usr/bin/prepare.sh
-
 RUN mkdir /opt/app
 
-# The prepare.sh script allows you to add additional dependencies
+# The prepare.sh script allows you to add additional dependencies.
+# If needed, also install tini==0.18.0.
 #ENTRYPOINT ["tini", "-g", "--", "/usr/bin/prepare.sh"]

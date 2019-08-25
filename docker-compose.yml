@@ -97,6 +97,7 @@ services:
     expose:
       - 8786
       - 8787
+    # Entrypoint command needs to be set here because Dockerfile shared with `dask-worker`
     command: ['dask-scheduler']
     networks:
       - host
@@ -120,13 +121,13 @@ services:
     container_name: arc-jupyter
     hostname: jupyter
     volumes:
-      - ./services/jupyter:/home/arclytics/
+      - ./services/jupyter:/home/$NB_USER/
     ports:
       - 8888:8888
     expose:
       - 8888
     environment:
-      - NB_USER=arclytics
+    #  - NB_USER=arclytics
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
     networks:
       - host

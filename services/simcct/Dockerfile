@@ -1,4 +1,9 @@
 FROM continuumio/miniconda3:4.6.14
+# note: Using the miniconda base because I want to install numpy with some
+# optimisation C-libraries such as openblas which conda does for you
+# when you install numpy.
+
+LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
 
 RUN conda install --yes --freeze-installed -q \
     -c anaconda \
@@ -38,5 +43,4 @@ COPY . /usr/src/app
 # which conda --> /opt/conda/bin/conda
 # which python --> /opt/conda/bin/python
 
-# Start the container with entrypoint or comment to use manual below
 ENTRYPOINT ["/docker-entrypoint.sh"]

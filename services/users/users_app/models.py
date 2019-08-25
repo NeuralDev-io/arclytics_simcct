@@ -110,12 +110,12 @@ def within_percentage_bounds(val):
 
 
 def validate_no_duplicate_elements(alloy_comp: list) -> Tuple[bool, str]:
-    used_elements = []
+    used_elements = set()
     for el in alloy_comp:
         if el['symbol'] in used_elements:
             return False, el['symbol']
         else:
-            used_elements.append(el['symbol'])
+            used_elements.add(el['symbol'])
     return True, None
 
 

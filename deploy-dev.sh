@@ -8,6 +8,8 @@ echo "$TITLE"
 echo "$TIME_STAMP"
 echo ""
 
+export COMPOSE_PROJECT_NAME='arc'
+
 echo "Building and deploying docker-compose.yml"
 docker-compose up -d --build
 

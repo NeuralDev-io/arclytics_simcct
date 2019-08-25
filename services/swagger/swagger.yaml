@@ -3460,8 +3460,67 @@ paths:
                   value:
                     status: "fail"
                     message: "MS and BS value cannot be less than 0.0."
+                'Configuration Errors':
+                  value:
+                    status: "fail"
+                    errors: "string"
+                    message: "Configuration error"
+                'Simulation Error':
+                  value:
+                    status: "fail"
+                    errors: "string"
+                    message: "Simulation Error"
         401:
-          description: "An invalid request header has been sent."
+          description: "Unauthorized access to the endpoint."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Token':
+                  value:
+                    status: "fail"
+                    message: "No valid Authorization in header."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid JWT token in header."
+                'No Session Key':
+                  value:
+                    status: "fail"
+                    message: "No previous session initiated."
+                'Unable To Load Session':
+                  value:
+                    value:
+                      status: "fail"
+                      errors: "String (Session_store)"
+                      message: "Unable to load session from Redis."
+        404:
+          description: "The configurations could not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No last configurations':
+                  value:
+                    status: "fail"
+                    message: "No previous session configurations was set."
+                'No last alloy':
+                  value:
+                    status: "fail"
+                    message: "No previous session alloy was set."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "Unable to retrieve data from Redis."
 
 components:
   securitySchemes:

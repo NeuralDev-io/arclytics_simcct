@@ -325,17 +325,20 @@ To view what commands and options are available:
 ```bash
 $ ./arclytics.sh --help
 
+ARCLYTICS CLI SCRIPT
+
+The Arclytics CLI script for running docker and docker-compose commands on the
+Arclytics Sim Docker orchestration.
+
 Usage:
-arclytics.sh build [OPTIONAL SERVICES]
-arclytics.sh [OPTIONS] up [OPTIONAL CONTAINERS]
+arclytics.sh build [SERVICE ARGS...]
+arclytics.sh up [options] [SERVICE ARGS...]
 arclytics.sh logs [SERVICE]
-arclytics.sh test [TEST OPTIONS] [TEST TYPE]
+arclytics.sh test [options] [TEST TYPE]
 arclytics.sh seed
 arclytics.sh flush
 arclytics.sh down
 arclytics.sh prune
-
-A CLI script for running docker-compose on the Arclytics Sim Docker Orchestration.
 
 Options:
   -b, --build      Build the Docker containers before running.
@@ -351,11 +354,12 @@ Options:
 Commands:
   build       Build the Docker images from docker-compose.yml only (passing services
               to build specific ones or leave empty to build all).
-  up          Run the main containers in docker-compose.yml (users, simcct,
-              client redis mongodb celery-worker dask-scheduler dask-worker).
+  up          Run the main containers in docker-compose.yml or provide a list of
+              arguments to run only those provided.
   logs        Get the logs of the container.
   flush       Flush both Redis datastore and MongoDB database only.
-  seed        Seed the microservices with test data and flush both Redis datastore and MongoDB database.
+  seed        Seed the microservices with test data and flush both Redis
+              datastore and MongoDB database.
   test        Run unit tests on the microservices.
   down        Stop all containers.
   prune       Prune all stopped images, containers, and networks.
@@ -375,12 +379,13 @@ Service (only one for logs):
   jupyter
   swagger
 
-Test Services:
+Test Types (one only):
   all         Run all unit tests for Arclytics Sim
   server      Run the server-side unit tests.
   client      Run the client-side unit tests.
   users       Run only the users tests.
   simcct      Run only the simcct tests.
+
 ```
 
 #### Additional Scripts for Flask Microservices
@@ -459,6 +464,8 @@ To view the the commands for the `test` command with Arclytics CLI script.
 ```bash
 $ ./arclytics.sh test --help
 
+ARCLYTICS CLI SCRIPT
+
 Usage: arclytics.sh test [OPTIONS] [TEST TYPE]
 
 The Arclytics CLI command to run Unit Tests.
@@ -468,12 +475,13 @@ Options:
   -t, --tty        Attach a pseudo-TTY to the tests.
   -c, --coverage   Run the unit tests with coverage.
 
-Test Type:
+Test Types (one only):
   all         Run all unit tests for Arclytics Sim
   server      Run the server-side unit tests.
   client      Run the client-side unit tests.
   users       Run only the users tests.
   simcct      Run only the simcct tests.
+
 ```
 
 For example, this will run the tests for the Flask back-ends only with coverage:

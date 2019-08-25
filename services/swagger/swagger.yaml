@@ -2997,6 +2997,15 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
+                'No Session Key':
+                  value:
+                    status: "fail"
+                    message: "No Session key in header."
+                'Unable To Load Session':
+                  value:
+                    status: "fail"
+                    errors: "String (Session_store)"
+                    message: "Unable to load session from Redis."
         404:
           description: "Cannot find a current Session store for the user."
           content:
@@ -3006,6 +3015,23 @@ paths:
               example:
                 status: "fail"
                 message: "No previous configurations was set."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "Unable to retrieve data from Redis."
+                'Unable to save session':
+                  value:
+                    status: "fail"
+                    errors: "string"
+                    message: "Unable to save to session store."
+
   /configs/update:
     servers:
       - url: http://localhost:8001
@@ -3074,6 +3100,15 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
+                'No Session Key':
+                  value:
+                    status: "fail"
+                    message: "No Session key in header."
+                'Unable To Load Session':
+                  value:
+                    status: "fail"
+                    errors: "String (Session_store)"
+                    message: "Unable to load session from Redis."
         404:
           description: "No content can be found to update."
           content:
@@ -3083,6 +3118,22 @@ paths:
               example:
                 status: "fail"
                 message: "No previous session configurations was set."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "Unable to retrieve data from Redis."
+                'Unable to save session':
+                  value:
+                    status: "fail"
+                    errors: "string"
+                    message: "Unable to save to session store."
   /configs/ms:
     servers:
       - url: http://localhost:8001
@@ -3491,10 +3542,9 @@ paths:
                     message: "No previous session initiated."
                 'Unable To Load Session':
                   value:
-                    value:
-                      status: "fail"
-                      errors: "String (Session_store)"
-                      message: "Unable to load session from Redis."
+                    status: "fail"
+                    errors: "String (Session_store)"
+                    message: "Unable to load session from Redis."
         404:
           description: "The configurations could not found"
           content:

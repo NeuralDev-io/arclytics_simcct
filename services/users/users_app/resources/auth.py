@@ -97,6 +97,7 @@ def confirm_email(token):
     user = User.objects.get(email=email)
     # And do the real work confirming their status
     user.verified = True
+    user.save()
 
     response['status'] = 'success'
     response.pop('message')

@@ -231,8 +231,8 @@ class TestAuthEndpoints(BaseTestCase):
         mandolorian.save()
 
         confirm_token = (
-            "InRoZW1hbmRvbG9yaWFuQGFyY2x5dGljcy5pbyI.XWIuAQ.fTJHBkmUa8rMqUbLm-J"
-            "MjNIcQi0"
+            'InRoZW1hbmRvbG9yaWFuQGFyY2x5dGljcy5pbyI.XWIuAQ.fTJHBkmUa8rMqUbLm-J'
+            'MjNIcQi0'
         )
         confirm_url = generate_url('auth.confirm_email', confirm_token)
 

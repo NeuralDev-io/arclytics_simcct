@@ -271,6 +271,29 @@ Starting Flask server...
  * Debugger PIN: 285-812-959
 ```
 
+Alternatively, a simpler way is to use the name of the service defined in `docker-compose.yml`:
+
+```powershell
+> docker-compose logs users 
+
+Waiting for Mongo...
+Mongo started.
+Arclytics Sim Users Service Flask Server Information for e038fe5bd85d
+Started on 08/17/19 03:41:01 PM UTC by 
+ENVIRONMENT VARIABLES:
+FLASK_APP: Arclytics Sim Users Service
+FLASK_ENV: development
+APP_SETTINGS: configs.flask_conf.DevelopmentConfig
+Starting Flask server...
+
+ * Environment: development
+ * Debug mode: on
+ * Running on http://0.0.0.0:8000/ (Press CTRL+C to quit)
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 285-812-959
+```
+
 
 
 *NOTE:* You cannot have two containers of the same name so if you are updating a container, you will need to delete it first before you can create a new one.

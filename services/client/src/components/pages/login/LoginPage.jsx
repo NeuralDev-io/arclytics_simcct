@@ -24,6 +24,7 @@ class LoginPage extends Component {
     super(props)
     this.state = {
       hasForgotPwd: false,
+      forgotEmail: '',
     }
   }
 
@@ -31,8 +32,14 @@ class LoginPage extends Component {
     if (localStorage.getItem('token')) this.props.profile ? this.props.history.push('/') : this.props.history.push('/profileQuestions')// eslint-disable-line
   }
 
+  onTextChange = ( name, value) => {
+    this.setState({
+      [name]: value,
+    })
+  }
+
   render() {
-    const {hasForgotPwd, } = this.state
+    const {hasForgotPwd, forgotEmail } = this.state
 
     return (
       <div className={styles.outer}>
@@ -40,7 +47,7 @@ class LoginPage extends Component {
           <Logo className={styles.logo} />
           <h3> ARCLYTICS </h3>
         </div>
-        <div className={`${styles.loginForm} ${hasForgotPwd ? styles.fadeLeftOut : ''}`}>
+        <div className={`${styles.loginForm} ${hasForgotPwd ? styles.fadeLeftOut : styles.fadeRightIn}`}>
           <div className={styles.header}>
             <h3> Sign in to your account  </h3>
           </div>
@@ -140,8 +147,23 @@ class LoginPage extends Component {
             )}
           </Formik>
         </div>
-        <div className={`${styles.forgotPwdForm} ${hasForgotPwd ? styles.fadeLeftIn: ''}`}>
-          Forgot password
+        <div className={`${styles.forgotPwdForm} ${hasForgotPwd ? styles.fadeLeftIn: styles.fadeRightOut}`}>
+          {/*TODO: change the messsage when the button is pressed */}
+          Enter your email to send a password reset email.
+          <TextField
+            name="forgotEmail"
+            type="email"
+            placeholder="Enter your email"
+            value={forgotEmail}
+            onChange={value => this.onTextChange('forgotEmail', value)}
+            placeholder="Email"
+            length="stretch"
+          />
+          <Button > Send Email </Button>
+          <h6
+            className={styles.help}
+            onClick={ ()=> this.setState({ hasForgotPwd: false})
+            }>Go back</h6>
         </div>
 
 

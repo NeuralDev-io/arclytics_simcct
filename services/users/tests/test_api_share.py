@@ -243,6 +243,51 @@ class TestShareService(BaseTestCase):
                 data['message'], 'Alloy is missing essential elements.'
             )
 
+    def test_share_configuration_link_duplicate_element(self):
+        """
+        Ensure a share request that contains an alloy with a duplicate element
+        fails.
+        """
+
+        luke = User(
+            email='luke@skywalker.io',
+            first_name='Luke',
+            last_name='Skywalker'
+        )
+        luke.set_password('NeverJoinYou')
+        luke.verified = True
+        luke.save()
+
+        token = log_test_user_in(self, luke, 'NeverJoinYou')
+
+        alloy_store = deepcopy(ALLOY_STORE)
+        alloy_store['alloys']['parent']['compositions'].append(
+            {
+                'symbol': 'C',
+                'weight': 12.02
+            }
+        )
+
+        with self.client:
+            resp = self.client.post(
+                '/user/share/simulation/link',
+                data=json.dumps(
+                    {
+                        'configurations': CONFIGS,
+                        'alloy_store': alloy_store
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(
+                data['message'], 'Alloy contains duplicate elements.'
+            )
+
     def test_share_configuration_link_validation_error(self):
         """
         Ensure a share via link request with invalid simulation information
@@ -307,7 +352,8 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/email',
                 data=json.dumps(
                     {
-                        'emails': ['davidmatthews1004@gmail.com'],
+                        # 'emails': ['davidmatthews1004@gmail.com'],
+                        'emails': ['davidtest@arclytics.io'],
                         'configurations': CONFIGS,
                         'alloy_store': ALLOY_STORE
                     }
@@ -356,10 +402,12 @@ class TestShareService(BaseTestCase):
                 '/user/share/simulation/email',
                 data=json.dumps(
                     {
-                        'emails': [
-                            'davidmatthews1004@gmail.com',
-                            'brickmatic479@gmail.com'
-                        ],
+                        # 'emails': [
+                        #     'davidmatthews1004@gmail.com',
+                        #     'brickmatic479@gmail.com'
+                        # ],
+                        'emails':
+                        ['davidtest@arclytics.io', 'davidtest2@arclytics.io'],
                         'configurations':
                         CONFIGS,
                         'alloy_store':

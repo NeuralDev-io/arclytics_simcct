@@ -52,6 +52,24 @@ class PasswordValidationError(Exception):
               self).__init__('A password must be set before saving.')
 
 
+class URLTokenError(Exception):
+    """
+    A custom exception to be raised from any itsdangerous package exceptions.
+    """
+
+    def __init__(self, msg: str = None):
+        super(URLTokenError, self).__init__(msg)
+
+
+class URLTokenExpired(Exception):
+    """
+    Custom exception to be raised from any itsdangerous package exceptions.
+    """
+
+    def __init__(self, msg: str = None):
+        super(URLTokenExpired, self).__init__(msg)
+
+
 class ElementSymbolInvalid(Exception):
     """Raises an Exception if the Element does not conform to a valid symbol
     as used in the Periodic Table of Elements.
@@ -76,6 +94,21 @@ class ElementInvalid(Exception):
 class MissingElementError(Exception):
     def __init__(self, message=''):
         super(MissingElementError, self).__init__(message)
+
+
+class DuplicateElementError(Exception):
+    """
+    Raises an Exception if there is a duplicate element in an alloy, i.e. there
+    are two or more elements in an alloy with the same symbol.
+    """
+
+    default_err = (
+        'ValidationError (Alloy) (Alloy cannot have multiple elements with the'
+        'chemical symbol)'
+    )
+
+    def __init(self, message=default_err):
+        super(DuplicateElementError, self).__init__(message)
 
 
 class SimpleUTC(tzinfo):

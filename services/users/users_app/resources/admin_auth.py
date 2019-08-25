@@ -205,7 +205,6 @@ def cancel_promotion(token):
         response['error'] = str(e)
         return jsonify(response), 400
     except URLTokenExpired as e:
-        response['error'] = e
         # This redirect might need to be changed as it is very close to
         # /admin/create/cancel/<token>
         return redirect(
@@ -291,7 +290,6 @@ def verify_promotion(token):
         response['error'] = str(e)
         return jsonify(response), 400
     except URLTokenExpired as e:
-        response['error'] = e
         return redirect(
             f'http://{client_host}/admin/create/verify/tokenexpired', code=302
         )
@@ -459,7 +457,6 @@ def confirm_disable_account(token):
         response['error'] = str(e)
         return jsonify(response), 400
     except URLTokenExpired as e:
-        response['error'] = e
         return redirect(
             f'http://{client_host}/disable/user/confirm/tokenexpired',
             code=302

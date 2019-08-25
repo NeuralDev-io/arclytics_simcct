@@ -53,10 +53,10 @@ def confirm_token(token: bytes, expiration: int = 3600) -> Union[bool, str]:
             salt=app.config['SECURITY_PASSWORD_SALT'],
             max_age=expiration
         )
-    except BadSignature as e:
-        raise URLTokenError('Bad signature.')
     except SignatureExpired as e:
         raise URLTokenExpired('Signature expired.')
+    except BadSignature as e:
+        raise URLTokenError('Bad signature.')
     except Exception as e:
         raise URLTokenError('Token error.')
     return email

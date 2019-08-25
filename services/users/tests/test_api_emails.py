@@ -22,7 +22,8 @@ import unittest
 
 from tests.test_api_base import BaseTestCase
 from users_app.token import (
-    confirm_token, generate_confirmation_token, generate_url, URLTokenError
+    confirm_token, generate_confirmation_token, generate_url, URLTokenError,
+    URLTokenExpired
 )
 
 
@@ -44,7 +45,7 @@ class TestTokenURL(BaseTestCase):
         """Ensure that if the token is expired it fails."""
         token = generate_confirmation_token('dummy@email.com')
         time.sleep(1)
-        with self.assertRaises(URLTokenError):
+        with self.assertRaises(URLTokenExpired):
             email = confirm_token(token, 0)
             self.assertEqual(email, False)
 

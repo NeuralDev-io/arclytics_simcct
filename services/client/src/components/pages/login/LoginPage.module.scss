@@ -63,6 +63,12 @@ $bg-img: url('../../../assets/background_img-min.png');
   animation-fill-mode: forwards;
 }
 
+.fadeRightIn{
+  pointer-events: auto;
+  animation: fadeRightIn 1s;
+  animation-fill-mode: forwards
+}
+
 .forgotPwdForm{
   margin-left: 11.25rem;
   width: 23.75rem;
@@ -77,6 +83,12 @@ $bg-img: url('../../../assets/background_img-min.png');
   animation: fadeLeftIn 1s;
   animation-fill-mode: forwards;
 }
+.fadeRightOut{
+  pointer-events: none;
+  animation: fadeRightOut 1s;
+  animation-fill-mode: forwards;
+}
+
 
 @keyframes fadeLeftOut {
   from {
@@ -85,14 +97,14 @@ $bg-img: url('../../../assets/background_img-min.png');
   }
   to {
     opacity: 0;
-    transform: translateX(-100%);
+    transform: translateX(-120%);
   }
 }
 
 @keyframes fadeLeftIn{
   from{
     opacity: 0;
-    transform: translateX(100%);
+    transform: translateX(120%);
   }
   to {
     opacity: 1;
@@ -100,6 +112,27 @@ $bg-img: url('../../../assets/background_img-min.png');
   }
 }
 
+@keyframes fadeRightOut{
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+}
+
+@keyframes fadeRightIn{
+  from {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 
 .header{
   margin-bottom: 4.375rem;

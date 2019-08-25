@@ -16,15 +16,18 @@ __date__ = '2019.07.05'
 {Description}
 """
 
+import os
 import json
 import unittest
 
+from pymongo import MongoClient
 from flask import current_app
 
 from tests.test_api_base import BaseTestCase
 from users_app.models import User
 from users_app.resources.auth import SimCCTBadServerLogout
 from users_app.resources.auth import register_session
+from users_app.token import generate_confirmation_token, generate_url
 from tests.test_api_users import log_test_user_in
 
 
@@ -190,6 +193,58 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(response.status_code, 400)
             self.assertIn('The password is invalid.', data['message'])
             self.assertIn('fail', data['status'])
+
+    def test_user_confirm_email_successful_redirect(self):
+        mandolorian = User(
+            email='themandolorian@arclytics.io',
+            first_name='The',
+            last_name='Mandolorian'
+        )
+        mandolorian.set_password('BountyHuntingIsComplicated')
+        mandolorian.save()
+
+        confirm_token = generate_confirmation_token(mandolorian.email)
+        confirm_url = generate_url('auth.confirm_email', confirm_token)
+
+        with self.client:
+            resp = self.client.get(
+                confirm_url, content_type='application/json'
+            )
+            mongo_client = MongoClient(os.environ.get('MONGO_URI'))
+            db = mongo_client['arc_test']
+            user = db.users.find_one({'email': mandolorian.email})
+            print(f'User.verified: {user["verified"]}')
+
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = f'http://{client_host}/signin'
+            self.assertRedirects(resp, redirect_url)
+
+    def test_user_confirm_email_token_expired(self):
+        mandolorian = User(
+            email='mandolorian@arclytics.io',
+            first_name='The',
+            last_name='Mandolorian'
+        )
+        mandolorian.set_password('BountyHuntingIsComplicated')
+        mandolorian.save()
+
+        confirm_token = (
+            "InRoZW1hbmRvbG9yaWFuQGFyY2x5dGljcy5pbyI.XWIuAQ.fTJHBkmUa8rMqUbLm-J"
+            "MjNIcQi0"
+        )
+        confirm_url = generate_url('auth.confirm_email', confirm_token)
+
+        with self.client:
+            resp = self.client.get(
+                confirm_url, content_type='application/json'
+            )
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = f'http://{client_host}/confirm/tokenexpired'
+            self.assertRedirects(resp, redirect_url)
 
     def test_registered_user_login(self):
         """Ensure we can login as users after they have registered."""

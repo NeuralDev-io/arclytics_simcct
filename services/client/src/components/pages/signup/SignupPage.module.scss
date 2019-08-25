@@ -23,14 +23,19 @@ $bg-img: url('../../../assets/background_img-min.png');
 }
 
 .logoContainer{
-  margin-bottom: 7.624375rem; 
+  margin-bottom: 7.624375rem;
+  height: 3.750625rem;
+  .logo{
+    height: 3.750625rem;
+    margin-right: 1.5rem;
+    float:left;
+  }
+  h3{
+    margin-top: 0.4rem;
+  }
 }
 
-.logo{
-  height: 3.750625rem;
-  margin-right: 1.5rem;
-  float:left;
-}
+
 
 .header{
   margin-bottom: 2.3125rem;

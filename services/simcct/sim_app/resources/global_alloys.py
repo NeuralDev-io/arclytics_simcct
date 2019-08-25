@@ -28,6 +28,7 @@ from sim_app.extensions import api
 from sim_app.schemas import AlloySchema
 from sim_app.alloys_service import AlloysService
 from sim_app.middleware import admin_session_and_token_required
+from simulation.utilities import MissingElementError
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -75,8 +76,13 @@ class AlloysList(Resource):
         # conversions below with the compositions
         try:
             valid_data = AlloySchema().load(post_data)
+        except MissingElementError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Missing element error in schema validation.'
+            return response, 400
         except ValidationError as e:
             response['errors'] = e.messages
+            response['message'] = 'Request data failed schema validation.'
             return response, 400
 
         id_or_error = AlloysService().create_alloy(valid_data)
@@ -191,9 +197,13 @@ class Alloys(Resource):
         # will also validate the Elements symbol
         try:
             new_alloy = AlloySchema().load(put_data)
+        except MissingElementError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Missing element error in schema validation.'
+            return response, 400
         except ValidationError as e:
-            response['message'] = 'Request data failed schema validation.'
             response['errors'] = e.messages
+            response['message'] = 'Request data failed schema validation.'
             return response, 400
 
         good = AlloysService().update_alloy(ObjectId(alloy_id), new_alloy)
@@ -319,6 +329,8 @@ class Alloys(Resource):
         alloy in the database.
 
         Args:
+            token:
+            session_key:
             alloy_id: A valid ObjectId string that will be checked.
 
         Returns:

@@ -163,7 +163,9 @@ class AdminCreate(Resource):
                     promotion_verification_url=promotion_verification_url,
                     email=user.email,
                     position=position,
-                    user_name=(f'{user.first_name} {user.last_name}')
+                    user_name=f'{user.first_name} {user.last_name}',
+                    admin_email=admin.email,
+                    admin_name=f'{admin.first_name} {admin.last_name}'
                 ),
                 'text_template':
                 render_template(
@@ -171,7 +173,9 @@ class AdminCreate(Resource):
                     promotion_verification_url=promotion_verification_url,
                     email=user.email,
                     position=position,
-                    user_name=(f'{user.first_name} {user.last_name}')
+                    user_name=f'{user.first_name} {user.last_name}',
+                    admin_email=admin.email,
+                    admin_name=f'{admin.first_name} {admin.last_name}'
                 )
             }
         )
@@ -195,16 +199,18 @@ def cancel_promotion(token):
     try:
         # The token was encoded with the admin and user email as a list so
         # we want a list back of emails.
-        email_list = confirm_token(token)
+        # Change expiration parameter to 30 days instead of 1 hour.
+        email_list = confirm_token(token, 2592000)
     except URLTokenError as e:
         response['error'] = str(e)
         return jsonify(response), 400
     except URLTokenExpired as e:
         response['error'] = e
-        return jsonify(response), 400
-        # TODO(davidmatthews1004@gmail.com) Redirect them to a place where they
-        #  can resend this token if it has expired.
-        # return redirect(f'http://{client_host}/tokenexpired', code=302)
+        # This redirect might need to be changed as it is very close to
+        # /admin/create/cancel/<token>
+        return redirect(
+            f'http://{client_host}/admin/create/cancel/tokenexpired', code=302
+        )
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -286,10 +292,9 @@ def verify_promotion(token):
         return jsonify(response), 400
     except URLTokenExpired as e:
         response['error'] = e
-        return jsonify(response), 400
-        # TODO(davidmatthews1004@gmail.com) Redirect them to a place where they
-        #  can resend this token if it has expired.
-        # return redirect(f'http://{client_host}/tokenexpired', code=302)
+        return redirect(
+            f'http://{client_host}/admin/create/verify/tokenexpired', code=302
+        )
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -307,6 +312,9 @@ def verify_promotion(token):
     if not user.verified:
         response['message'] = 'User is not verified.'
         return jsonify(response), 400
+    # The user's admin profile is created in the admin create endpoint. The
+    # database clean method for user will set user.is_admin to true after the
+    # admin profile is created.
     if not user.is_admin:
         response['message'] = 'User is not an Admin.'
         return jsonify(response), 400
@@ -334,15 +342,15 @@ def verify_promotion(token):
             render_template(
                 'promotion_verified.html',
                 email=promoter.email,
-                promoter_name=(f'{promoter.first_name} {promoter.last_name}'),
-                user_name=(f'{user.first_name} {user.last_name}')
+                promoter_name=f'{promoter.first_name} {promoter.last_name}',
+                user_name=f'{user.first_name} {user.last_name}'
             ),
             'text_template':
             render_template(
                 'promotion_verified.txt',
                 email=promoter.email,
-                promoter_name=(f'{promoter.first_name} {promoter.last_name}'),
-                user_name=(f'{user.first_name} {user.last_name}')
+                promoter_name=f'{promoter.first_name} {promoter.last_name}',
+                user_name=f'{user.first_name} {user.last_name}'
             )
         }
     )
@@ -452,10 +460,10 @@ def confirm_disable_account(token):
         return jsonify(response), 400
     except URLTokenExpired as e:
         response['error'] = e
-        return jsonify(response), 400
-        # TODO(davidmatthews1004@gmail.com) Redirect them to a place where they
-        #  can resend this token if it has expired.
-        # return redirect(f'http://{client_host}/tokenexpired', code=302)
+        return redirect(
+            f'http://{client_host}/disable/user/confirm/tokenexpired',
+            code=302
+        )
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400

@@ -88,8 +88,7 @@ def confirm_email(token):
         return jsonify(response), 400
     except URLTokenExpired as e:
         response['error'] = e
-        # TODO(davidmatthews1004@gmail.com) redirect to a different page.
-        return redirect(f'http://{client_host}/confirm/resend', code=302)
+        return redirect(f'http://{client_host}/confirm/tokenexpired', code=302)
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400

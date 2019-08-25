@@ -2746,7 +2746,7 @@ paths:
                       - symbol: "P"
                         weight: 0.007
       responses:
-        200:
+        201:
           description: "The alloy and its compositions was successfully updated and stored
             in the Session for the user. An initial Configurations with default values were
             set."
@@ -2777,17 +2777,13 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid payload."
-                'No Alloy Compositions':
-                  value:
-                    status: "fail"
-                    message: "No alloy was provided."
                 'Invalid Alloy':
                   value:
                     status: "fail"
                     message: "Alloy failed schema validation."
                     errors:
                       compositions:
-                        - "Not a valid list."
+                      - "Not a valid list."
                 'Invalid Alloy Option':
                   value:
                     status: "fail"
@@ -2796,6 +2792,31 @@ paths:
                   value:
                     status: "fail"
                     message: "Alloy type one of of ['parent' | 'weld' | 'mix' ]"
+                'No valid key':
+                  value:
+                    status: "fail"
+                    message: "No valid keys was provided for alloy (i.e. must be 'name' or 'compositions')'"
+                'No Alloy Option':
+                  value:
+                    status: "fail"
+                    message: "No alloy option was provided."
+                'No Alloy':
+                  value:
+                    status: "fail"
+                    message: "No alloy was provided."
+                'No Alloy Compisition Provided':
+                  value:
+                    status: "fail"
+                    message: "You must provide an alloy composition."
+                'No Alloy Name Provided':
+                  value:
+                    status: "fail"
+                    message: "You must provide an alloy name."
+                'Failed Schema':
+                  value:
+                    status: "fail"
+                    errors: "string"
+                    message: "Alloy failed schema validation."
         401:
           description: "Unauthorized access to the endpoint."
           content:
@@ -2811,6 +2832,31 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
+                'Unable To Load Session':
+                  value:
+                    status: "fail"
+                    errors: "String (Session_store)"
+                    message: "Unable to load session from Redis."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "Unable to retrieve data from Redis."
+                'Conversion Error':
+                  value:
+                    status: "fail"
+                    message: "Compositions conversion error."
+                'Unable to save session':
+                  value:
+                    status: "fail"
+                    errors: "string"
+                    message: "Unable to save to session store."
     patch:
       summary: "Update the Alloy compositions in Session store for the user."
       security:
@@ -2898,6 +2944,14 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid payload."
+                'No Alloy Option':
+                  value:
+                    status: "fail"
+                    message: "No alloy option was provided."
+                'No Alloy':
+                  value:
+                    status: "fail"
+                    message: "No alloy was provided."
                 'Invalid Alloy':
                   value:
                     status: "fail"
@@ -2913,6 +2967,18 @@ paths:
                   value:
                     status: "fail"
                     message: "Alloy type one of of ['parent' | 'weld' | 'mix' ]"
+                'No Valid Key':
+                  value:
+                    status: "fail"
+                    message: "No valid key in the alloy was provided."
+                'Invalid Composition':
+                  value:
+                    status: "fail"
+                    message: "Valid compositions must be provided as a list."
+                'No Alloy Store':
+                  value:
+                    status: "fail"
+                    message: "No previous session initiated."
         401:
           description: "Unauthorized access to the endpoint."
           content:
@@ -2928,6 +2994,31 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
+                'Unable To Load Session':
+                  value:
+                    status: "fail"
+                    errors: "String (Session_store)"
+                    message: "Unable to load session from Redis."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "Unable to retrieve data from Redis."
+                'Unable to save session':
+                  value:
+                    status: "fail"
+                    errors: "string"
+                    message: "Unable to save to session store."
+                'Conversion Error':
+                  value:
+                    status: "fail"
+                    message: "Compositions conversion error."
   /configs/method/update:
     servers:
       - url: http://localhost:8001

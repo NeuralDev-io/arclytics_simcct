@@ -860,7 +860,8 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client:
             resp = self.client.put(
                 '/auth/email/change',
-                data=json.dumps({'new_email': 'brickmatic479@gmail.com'}),
+                # data=json.dumps({'new_email': 'brickmatic479@gmail.com'}),
+                data=json.dumps({'new_email': 'obiwan@arclytics.io'}),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -869,10 +870,12 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
             self.assertEqual(data['message'], 'Email changed.')
-            self.assertEqual(data['new_email'], 'brickmatic479@gmail.com')
+            self.assertEqual(data['new_email'], 'obiwan@arclytics.io')
+            # self.assertEqual(data['new_email'], 'brickmatic479@gmail.com')
 
             obi_updated = User.objects.get(id=obiwan.id)
-            self.assertEqual(obi_updated.email, 'brickmatic479@gmail.com')
+            self.assertEqual(obi_updated.email, 'obiwan@arclytics.io')
+            # self.assertEqual(obi_updated.email, 'brickmatic479@gmail.com')
 
     def test_change_email_empty_payload(self):
         obiwan = User(
@@ -948,7 +951,8 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_resend_confirm_email_success(self):
         obiwan = User(
-            email='davidmatthews1004@gmail.com',
+            # email='davidmatthews1004@gmail.com',
+            email='benkenobi@arclytics.io',
             first_name='Obi-Wan',
             last_name='Kenobi'
         )
@@ -972,7 +976,7 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_resend_confirm_email_already_verified(self):
         obiwan = User(
-            email='obiwan@arclytics.io',
+            email='oldmanben@arclytics.io',
             first_name='Obi-Wan',
             last_name='Kenobi'
         )

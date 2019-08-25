@@ -1,1 +1,9 @@
+export const UPDATE_CONFIG_METHOD = 'sim/UPDATE_CONFIG_METHOD'
+export const UPDATE_CONFIG = 'sim/UPDATE_CONFIG'
+export const UPDATE_DISPLAY_USER_CURVE = 'sim/UPDATE_DISPLAY_USER_CURVE'
+
+export const INIT_SESSION = 'sim/INIT_SESSION'
+export const UPDATE_ALLOY_OPTION = 'sim/UPDATE_ALLOY_OPTION'
+export const UPDATE_COMP = 'sim/UPDATE_COMP'
+export const UPDATE_DILUTION = 'sim/UPDATE_DILUTION'
 export const RUN_SIM = 'sim/RUN_SIM'

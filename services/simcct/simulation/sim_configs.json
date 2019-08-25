@@ -1,6 +1,6 @@
 {
 	"configurations": {
-		"is_valid": true,
+		"is_valid": false,
 		"method": "Li98",
 		"grain_size": 8.0,
 		"nucleation_start": 1.0,

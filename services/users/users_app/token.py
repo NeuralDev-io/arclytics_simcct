@@ -33,7 +33,6 @@ class URLTokenError(Exception):
     """
     A custom exception to be raised from any itsdangerous package exceptions.
     """
-
     def __init__(self, msg: str = None):
         super(URLTokenError, self).__init__(msg)
 

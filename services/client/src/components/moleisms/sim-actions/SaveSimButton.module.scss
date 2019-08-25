@@ -1,0 +1,30 @@
+@import '../../../styles/colors_light';
+
+.optionList {
+  padding: .5rem 0;
+
+  & > h4 {
+    margin: 1rem 0 1.5rem 2rem;
+  }
+}
+
+.option {
+  width: 18rem;
+  padding: 1.25rem 2rem;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $n10;
+    color: $arc500;
+  }
+
+  .icon {
+    height: 1.25rem;
+    width: 1.25rem;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+}

@@ -63,7 +63,6 @@ def utc_timestamp_by_second(utc_date_time: datetime) -> int:
 
 class SimSessionService(object):
     """The interface defines how a service for Simulation Session."""
-
     def __init__(self):
         """On initialisation, the service just stores a Redis connection."""
         # Initialise the connection to Redis so the methods can use it
@@ -90,7 +89,7 @@ class SimSessionService(object):
         """
 
         # The storage value dumped to JSON format
-        redis_value = json.dumps(dict(session_data))
+        redis_value = JSONEncoder().encode(dict(session_data))
 
         # converts global expiry time in minutes to seconds
         expiry_duration = self._get_expiry_duration()
@@ -184,8 +183,10 @@ class SimSessionService(object):
         if self._expiry_timestamp_not_match(expiry_timestamp, redis_key_ttl):
             return None, 'Session timestamp does not match Redis TTL.'
 
+        sess_data = json.loads(redis_value.decode())
+
         # Return the data as a dict and the sid to be used later for saving
-        return sid, json.loads(redis_value.decode())
+        return sid, sess_data
 
     def clean_redis_session(self, session_key: str) -> None:
         """Used to remove the Session from the Redis datastore.

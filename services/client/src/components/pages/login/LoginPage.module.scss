@@ -26,9 +26,55 @@ $bg-img: url('../../../assets/background_img-min.png');
 }
 
 .loginForm{
+  position: fixed;
+  z-index: 1;
   margin-left: 11.25rem;
   width: 23.75rem;
+  .help{
+    float:right;
+    cursor:pointer;
+    color:var(--arc500);
+    margin-bottom: 3rem;
+    margin-right: 0.774375rem;
+  }
+  .createAccount{
+    color:var(--arc500);
+    text-decoration: none;
+  }
+  .email{
+    margin-bottom: 3.84375rem;
+    height:2.25rem;
+  }
+  .password{
+    margin-bottom: 1.625rem;
+    height:2.25rem;
+  }
+  .signIn{
+    margin-bottom: 1rem;
+  }
+  .clear{
+    margin-top: 5.1825rem;
+  }
+}
+
+.fadeLeftOut{
+  pointer-events: none;
   animation: fadeLeftOut 1s;
+  animation-fill-mode: forwards;
+}
+
+.forgotPwdForm{
+  margin-left: 11.25rem;
+  width: 23.75rem;
+  pointer-events: none;
+  opacity: 0;
+  position:fixed;
+  z-index: 2;
+}
+
+.fadeLeftIn{
+  pointer-events: auto;
+  animation: fadeLeftIn 1s;
   animation-fill-mode: forwards;
 }
 
@@ -39,54 +85,26 @@ $bg-img: url('../../../assets/background_img-min.png');
   }
   to {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateX(-100%);
   }
 }
 
-@keyframes fadeIn{
-  from{opacity: 0;}
-  to {opacity: 1;}
+@keyframes fadeLeftIn{
+  from{
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-.logo{
-  height: 3.750625rem;
-  margin-right: 1.5rem;
-  float:left;
-}
 
 .header{
   margin-bottom: 4.375rem;
 }
 
-.email{
-  margin-bottom: 3.84375rem;
-  height:2.25rem;
-}
-
-.password{
-  margin-bottom: 1.625rem;
-  height:2.25rem;
-}
-
-.signIn{
-  margin-bottom: 1rem;
-}
-
-.help{
-  float:right;
-  color:var(--arc500);
-  margin-bottom: 3rem;
-  margin-right: 0.774375rem;
-}
-
-.createAccount{
-  color:var(--arc500);
-  text-decoration: none;
-}
-
-.clear{
-    margin-top: 5.1825rem;
-}
 
 .errors{
     color: var(--r400);

@@ -21,9 +21,9 @@ This script will run all tests on the Admin create and account disable
 endpoints.
 """
 
+import os
 import json
 import unittest
-import time
 
 from flask import current_app
 from itsdangerous import URLSafeTimedSerializer
@@ -51,7 +51,8 @@ class TestAdminCreateService(BaseTestCase):
         kylo.save()
 
         vader = User(
-            email='brickmatic479@gmail.com',
+            # email='brickmatic479@gmail.com',
+            email='darthvader@arclytics.io',
             first_name='Darth',
             last_name='Vader'
         )
@@ -211,7 +212,8 @@ class TestAdminCreateService(BaseTestCase):
         import os
         with current_app.test_client() as client:
             piett = User(
-                email='brickmatic479@gmail.com',
+                # email='brickmatic479@gmail.com',
+                email='piett@arclytics.io',
                 first_name='Admiral',
                 last_name='Piett'
             )
@@ -240,6 +242,33 @@ class TestAdminCreateService(BaseTestCase):
             # has been inserted above.
             # piett_updated = User.objects.get(id=piett.id)
             # self.assertEqual(piett_updated.verified, True)
+
+    def test_confirm_disable_account_token_expired(self):
+        with current_app.test_client() as client:
+            piett = User(
+                # email='brickmatic479@gmail.com',
+                email='piett@arclytics.io',
+                first_name='Admiral',
+                last_name='Piett'
+            )
+            piett.set_password('YesLordVader')
+            piett.save()
+            account_disable_token = (
+                'InBpZXR0QGFyY2x5dGljcy5pbyI.XWIu_Q.934dTWGdz793EjFVH_fWa2I - K'
+                'UA'
+            )
+            account_disable_url = generate_url(
+                'admin.confirm_disable_account', account_disable_token
+            )
+            resp = client.get(
+                account_disable_url, content_type='application/json'
+            )
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = \
+                f'http://{client_host}/disable/user/confirm/tokenexpired'
+            self.assertRedirects(resp, redirect_url)
 
     def test_confirm_disable_account_invalid_token(self):
         invalid_token = 'aaaaaaaaaaaaaaaaaaaaaaaa'
@@ -278,7 +307,8 @@ class TestAdminCreateService(BaseTestCase):
         quigon = User(
             first_name='Qui-Gon',
             last_name='Jinn',
-            email='davidmatthews1004@gmail.com'
+            # email='davidmatthews1004@gmail.com'
+            email='quigon@arclytics.io'
         )
         # quigon.is_admin = True
         quigon.admin_profile = AdminProfile(
@@ -293,7 +323,8 @@ class TestAdminCreateService(BaseTestCase):
         obiwan = User(
             first_name='Obi-Wan',
             last_name='Kenobi',
-            email='brickmatic479@gmail.com'
+            # email='brickmatic479@gmail.com'
+            email='obiwan@arclytics.io'
         )
         obiwan.verified = True
         obiwan.set_password('FromACertainPointOfView')
@@ -306,7 +337,8 @@ class TestAdminCreateService(BaseTestCase):
                 '/admin/create',
                 data=json.dumps(
                     {
-                        'email': 'brickmatic479@gmail.com',
+                        'email': 'obiwan@arclytics.io',
+                        # 'email': 'brickmatic479@gmail.com',
                         'position': 'Jedi Knight.'
                     }
                 ),
@@ -747,9 +779,51 @@ class TestAdminCreateService(BaseTestCase):
             self.assertEquals(resp.status_code, 400)
             self.assertEqual(data['message'], 'Target User does not exist.')
 
+    # This test should work 30 days after the 25th of August 2019 as it uses a
+    # token generated on that day.
+    # def test_cancel_promotion_token_expired(self):
+    #     admin = User(
+    #         email='davidmatthews1004@gmail.com',
+    #         first_name='David',
+    #         last_name='Matthews'
+    #     )
+    #     admin.set_password('testing123')
+    #     admin.verified = True
+    #     admin.is_admin = True
+    #     admin_profile = AdminProfile(
+    #         position='Jedi Master', mobile_number=None, verified=True
+    #     )
+    #     admin.admin_profile = admin_profile
+    #     admin.save()
+    #
+    #     user = User(
+    #         email='brickmatic479@gmail.com',
+    #         first_name='David',
+    #         last_name='Jnr'
+    #     )
+    #     user.set_password('testing123')
+    #     user.verified = True
+    #     user.save()
+    #
+    #     token = (
+    #         '.eJyLVkpJLMtMyU0sKclILS82NDAwcUjPTczM0UvOz1XSUUoqykzOBspmJpuYW'
+    #         'yLJxAIARp0T0g.XWIw8A.x83TZm2iCNMPSpisMgEbMRfI-yM'
+    #     )
+    #     url = generate_url('admin.cancel_promotion', token)
+    #     with current_app.test_client() as client:
+    #         resp = client.get(url, content_type='application/json')
+    #
+    #         client_host = os.environ.get('CLIENT_HOST')
+    #         self.assertEquals(resp.status_code, 302)
+    #         self.assertTrue(resp.headers['Location'])
+    #         redirect_url = \
+    #             f'http://{client_host}/admin/create/cancel/tokenexpired'
+    #         self.assertRedirects(resp, redirect_url)
+
     def test_verify_promotion_success(self):
         admin = User(
-            email='davidmatthews1004@gmail.com',
+            # email='davidmatthews1004@gmail.com',
+            email='davidmatthews1004@arclytics.io',
             first_name='David',
             last_name='Matthews'
         )
@@ -763,7 +837,8 @@ class TestAdminCreateService(BaseTestCase):
         admin.save()
 
         user = User(
-            email='brickmatic479@gmail.com',
+            # email='brickmatic479@gmail.com',
+            email='davidjnr@arclytics.io',
             first_name='David',
             last_name='Jnr'
         )
@@ -845,6 +920,53 @@ class TestAdminCreateService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEquals(resp.status_code, 400)
             self.assertEqual(data['message'], 'User is not an Admin.')
+
+    def test_verify_promotion_token_expired(self):
+        admin = User(
+            # email='davidmatthews1004@gmail.com',
+            email='davidmatthews1004@arclytics.io',
+            first_name='David',
+            last_name='Matthews'
+        )
+        admin.set_password('testing123')
+        admin.verified = True
+        # admin.is_admin = True
+        admin_profile = AdminProfile(
+            position='Jedi Master', mobile_number=None, verified=True
+        )
+        admin.admin_profile = admin_profile
+        admin.save()
+
+        user = User(
+            # email='brickmatic479@gmail.com',
+            email='davidjnr@arclytics.io',
+            first_name='David',
+            last_name='Jnr'
+        )
+        user.set_password('testing123')
+        user.verified = True
+        # user.is_admin=True
+        user_admin_profile = AdminProfile(
+            position='Jedi Knight.', mobile_number=None, verified=False
+        )
+        user.admin_profile = user_admin_profile
+        user.admin_profile.promoted_by = admin.id
+        user.save()
+
+        token = (
+            'ImRhdmlkam5yQGFyY2x5dGljcy5pbyI.XWIx9A.LHcr6fRYpQbB9hKMMoXMn01alcg'
+        )
+        url = generate_url('admin.verify_promotion', token)
+
+        with current_app.test_client() as client:
+            resp = client.get(url, content_type='application/json')
+
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = \
+                f'http://{client_host}/admin/create/verify/tokenexpired'
+            self.assertRedirects(resp, redirect_url)
 
 
 if __name__ == '__main__':

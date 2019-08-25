@@ -35,8 +35,9 @@ from users_app.extensions import bcrypt
 from users_app.middleware import (authenticate_flask, logout_authenticate)
 from users_app.models import User
 from users_app.token import (
-    URLTokenError, confirm_token, generate_confirmation_token, generate_url
+    confirm_token, generate_confirmation_token, generate_url
 )
+from users_app.utilities import URLTokenError, URLTokenExpired
 
 logger = AppLogger(__name__)
 
@@ -75,12 +76,16 @@ def confirm_email(token):
     """
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+    client_host = os.environ.get('CLIENT_HOST')
+
     # We must confirm the token by decoding it
     try:
         email = confirm_token(token)
     except URLTokenError as e:
         response['error'] = e
         return jsonify(response), 400
+    except URLTokenExpired as e:
+        return redirect(f'http://{client_host}/confirm/tokenexpired', code=302)
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -95,19 +100,68 @@ def confirm_email(token):
     response.pop('message')
     # TODO(andrew@neuraldev.io): Need to check how to change this during
     #  during production and using Ingress/Load balancing for Kubernetes
-    client_host = os.environ.get('CLIENT_HOST')
-    return redirect('http://localhost:3000/signin', code=302)
+    return redirect(f'http://{client_host}/signin', code=302)
+
+
+@auth_blueprint.route('/confirm/resend', methods=['GET'])
+@authenticate_flask
+def confirm_email_resend(user_id):
+
+    response = {'status': 'fail', 'message': 'Bad request'}
+
+    user = User.objects.get(id=user_id)
+    if user.verified:
+        response['message'] = 'User is already verified.'
+        return jsonify(response), 400
+
+    # generate the confirmation token for verifying email
+    confirmation_token = generate_confirmation_token(user.email)
+    confirm_url = generate_url('auth.confirm_email', confirmation_token)
+
+    from celery_runner import celery
+    celery.send_task(
+        'tasks.send_email',
+        kwargs={
+            'to': [user.email],
+            'subject_suffix':
+            'Please Confirm Your Email',
+            'html_template':
+            render_template(
+                'activate.html',
+                confirm_url=confirm_url,
+                user_name=f'{user.first_name} {user.last_name}'
+            ),
+            'text_template':
+            render_template(
+                'activate.txt',
+                confirm_url=confirm_url,
+                user_name=f'{user.first_name} {user.last_name}'
+            )
+        }
+    )
+
+    response['status'] = 'success'
+    response['message'] = 'Another confirmation email has been sent.'
+    return jsonify(response), 200
 
 
 @auth_blueprint.route('/confirmadmin/<token>', methods=['GET'])
 def confirm_email_admin(token):
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+    client_host = os.environ.get('CLIENT_HOST')
+
     try:
         email = confirm_token(token)
     except URLTokenError as e:
         response['error'] = e
         return jsonify(response), 400
+    except URLTokenExpired as e:
+        response['error'] = e
+        return jsonify(response), 400
+        # TODO(davidmatthews1004@gmail.com) Redirect them to a place where they
+        #  can resend this token if it has expired.
+        # return redirect(f'http://{client_host}/tokenexpired', code=302)
     except Exception as e:
         return jsonify(response), 400
 
@@ -119,7 +173,6 @@ def confirm_email_admin(token):
     response.pop('message')
     # TODO(davidmatthews1004@gmail.com): Need to check how to change this during
     #  during production and using Ingress/Load balancing for Kubernetes
-    client_host = os.environ.get('CLIENT_HOST')
     return redirect(f'http://{client_host}:3000/signin', code=302)
 
 
@@ -430,6 +483,41 @@ def login() -> any:
 
     response['message'] = 'Email or password combination incorrect.'
     return jsonify(response), 404
+
+
+@auth_blueprint.route(rule='/auth/password/check', methods=['POST'])
+@authenticate_flask
+def check_password(user_id) -> Tuple[dict, int]:
+    """
+    Route for verifying a user's password.
+    """
+
+    # Get request data
+    data = request.get_json()
+
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+    if not data:
+        return jsonify(response), 400
+
+    password = data.get('password', '')
+
+    if not password:
+        response['message'] = 'You must provide a password.'
+        return jsonify(response), 400
+
+    if len(str(password)) < 6 or len(str(password)) > 254:
+        response['message'] = 'Password incorrect.'
+        return jsonify(response), 400
+
+    user = User.objects.get(id=user_id)
+
+    if bcrypt.check_password_hash(user.password, password):
+        response.pop('message')
+        response['status'] = 'success'
+        return jsonify(response), 200
+
+    response['message'] = 'Password incorrect.'
+    return jsonify(response), 400
 
 
 @auth_blueprint.route('/auth/password/reset', methods=['PUT'])

@@ -33,117 +33,116 @@ class LoginPage extends Component {
 
   render() {
     const {hasForgotPwd, } = this.state
+
     return (
       <div className={styles.outer}>
         <div className={styles.logoContainer}>
           <Logo className={styles.logo} />
           <h3> ARCLYTICS </h3>
         </div>
-        {
-          hasForgotPwd ? (
-          <div className={styles.forgotPwdForm}>
-            <span> Forgot email </span>
+        <div className={`${styles.loginForm} ${hasForgotPwd ? styles.fadeLeftOut : ''}`}>
+          <div className={styles.header}>
+            <h3> Sign in to your account  </h3>
           </div>
-          ) : (
-              <div className={styles.loginForm}>
-                <div className={styles.header}>
-                  <h3> Sign in to your account  </h3>
-                </div>
-                <Formik
-                  initialValues={{ email: '', password: '' }}
-                  validate={loginValidation}
-                  onSubmit={(values, { setSubmitting, setErrors }) => {
-                    setSubmitting(true)
-                    const promise = new Promise((resolve, reject) => {
-                      login(values, resolve, reject)
-                    })
-                    promise.then((data) => {
-                      // If response is successful
-                      localStorage.setItem('token', data.token)
-                      localStorage.setItem('session', data.session)
-                      const { getUserProfileConnect, history } = this.props
-                      getUserProfileConnect()
+          <Formik
+            initialValues={{ email: '', password: '' }}
+            validate={loginValidation}
+            onSubmit={(values, { setSubmitting, setErrors }) => {
+              setSubmitting(true)
+              const promise = new Promise((resolve, reject) => {
+                login(values, resolve, reject)
+              })
+              promise.then((data) => {
+                // If response is successful
+                localStorage.setItem('token', data.token)
+                localStorage.setItem('session', data.session)
+                const { getUserProfileConnect, history } = this.props
+                getUserProfileConnect()
 
-                      // If the user has a profile
-                      this.props.profile ? history.push('/') : history.push('/profileQuestions')
+                // If the user has a profile
+                this.props.profile ? history.push('/') : history.push('/profileQuestions')
 
-                      setSubmitting(false)
-                    })
-                      .catch(() => {
-                        // If response is unsuccessful
-                        setErrors({
-                          email: 'Invalid email',
-                          password: 'Password is invalid',
-                        })
-                        setSubmitting(false)
-                      })
-                  }}
-                >
-                  {({
-                      values,
-                      errors,
-                      touched,
-                      handleSubmit,
-                      setFieldValue,
-                      isSubmitting,
-                    }) => (
-                    <div className={styles.formContainer}>
-                      <form onSubmit={handleSubmit}>
-                        <div>
-                          <div className={styles.email}>
-                            <TextField
-                              type="email"
-                              name="email"
-                              onChange={e => setFieldValue('email', e)}
-                              value={values.email}
-                              placeholder="Email"
-                              length="stretch"
-                            />
-                            <h6 className={styles.errors}>
-                              {errors.email && touched.email && errors.email}
-                            </h6>
-                          </div>
-
-                          <div className={styles.password}>
-                            <TextField
-                              type="password"
-                              name="password"
-                              onChange={e => setFieldValue('password', e)}
-                              value={values.password}
-                              placeholder="Password"
-                              length="stretch"
-                            />
-                            <h6 className={styles.errors}>
-                              {errors.password && touched.password && errors.password}
-                            </h6>
-                          </div>
-                          <h6 className={styles.help}>Trouble signing in?</h6>
-                          <div className={styles.clear}>
-                            <Button
-                              className={styles.signIn}
-                              name="SIGN IN" type="submit"
-                              length="long"
-                              isSubmitting={isSubmitting}
-                              onClick={handleSubmit}>
-                              SIGN IN
-                            </Button>
-                            <h6>
-                              {' '}
-                              Don&apos;t have an account?&nbsp;
-                              <a className={styles.createAccount} href="http://localhost:3000/signup">
-                                Sign up
-                              </a>
-                              {' '}
-                            </h6>
-                          </div>
-                        </div>
-                      </form>
+                setSubmitting(false)
+              })
+                .catch(() => {
+                  // If response is unsuccessful
+                  setErrors({
+                    email: 'Invalid email',
+                    password: 'Password is invalid',
+                  })
+                  setSubmitting(false)
+                })
+            }}
+          >
+            {({
+                values,
+                errors,
+                touched,
+                handleSubmit,
+                setFieldValue,
+                isSubmitting,
+              }) => (
+              <div className={styles.formContainer}>
+                <form onSubmit={handleSubmit}>
+                  <div>
+                    <div className={styles.email}>
+                      <TextField
+                        type="email"
+                        name="email"
+                        onChange={e => setFieldValue('email', e)}
+                        value={values.email}
+                        placeholder="Email"
+                        length="stretch"
+                      />
+                      <h6 className={styles.errors}>
+                        {errors.email && touched.email && errors.email}
+                      </h6>
                     </div>
-                  )}
-                </Formik>
+
+                    <div className={styles.password}>
+                      <TextField
+                        type="password"
+                        name="password"
+                        onChange={e => setFieldValue('password', e)}
+                        value={values.password}
+                        placeholder="Password"
+                        length="stretch"
+                      />
+                      <h6 className={styles.errors}>
+                        {errors.password && touched.password && errors.password}
+                      </h6>
+                    </div>
+                    <h6
+                      className={styles.help}
+                      onClick={ ()=> this.setState({ hasForgotPwd: true})
+                      }>Trouble signing in?</h6>
+                    <div className={styles.clear}>
+                      <Button
+                        className={styles.signIn}
+                        name="SIGN IN" type="submit"
+                        length="long"
+                        isSubmitting={isSubmitting}
+                        onClick={handleSubmit}>
+                        SIGN IN
+                      </Button>
+                      <h6>
+                        {' '}
+                        Don&apos;t have an account?&nbsp;
+                        <a className={styles.createAccount} href="http://localhost:3000/signup">
+                          Sign up
+                        </a>
+                        {' '}
+                      </h6>
+                    </div>
+                  </div>
+                </form>
               </div>
-          )
-        }
+            )}
+          </Formik>
+        </div>
+        <div className={`${styles.forgotPwdForm} ${hasForgotPwd ? styles.fadeLeftIn: ''}`}>
+          Forgot password
+        </div>
 
 
       </div>

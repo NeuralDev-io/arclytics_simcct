@@ -1546,14 +1546,6 @@ paths:
                   type: string
                   format: email
       responses:
-        202:
-          description: "The user has been successfully disabled."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "success"
         400:
           description: "An invalid payload has been sent with the request."
           content:

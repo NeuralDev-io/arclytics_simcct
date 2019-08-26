@@ -16,15 +16,19 @@ __date__ = '2019.07.05'
 {Description}
 """
 
+import os
 import json
 import unittest
 
+from pymongo import MongoClient
 from flask import current_app
 
 from tests.test_api_base import BaseTestCase
 from users_app.models import User
 from users_app.resources.auth import SimCCTBadServerLogout
 from users_app.resources.auth import register_session
+from users_app.token import generate_confirmation_token, generate_url
+from tests.test_api_users import log_test_user_in
 
 
 class TestAuthEndpoints(BaseTestCase):
@@ -189,6 +193,58 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(response.status_code, 400)
             self.assertIn('The password is invalid.', data['message'])
             self.assertIn('fail', data['status'])
+
+    def test_user_confirm_email_successful_redirect(self):
+        mandolorian = User(
+            email='themandolorian@arclytics.io',
+            first_name='The',
+            last_name='Mandolorian'
+        )
+        mandolorian.set_password('BountyHuntingIsComplicated')
+        mandolorian.save()
+
+        confirm_token = generate_confirmation_token(mandolorian.email)
+        confirm_url = generate_url('auth.confirm_email', confirm_token)
+
+        with self.client:
+            resp = self.client.get(
+                confirm_url, content_type='application/json'
+            )
+            mongo_client = MongoClient(os.environ.get('MONGO_URI'))
+            db = mongo_client['arc_test']
+            user = db.users.find_one({'email': mandolorian.email})
+            print(f'User.verified: {user["verified"]}')
+
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = f'http://{client_host}/signin'
+            self.assertRedirects(resp, redirect_url)
+
+    def test_user_confirm_email_token_expired(self):
+        mandolorian = User(
+            email='mandolorian@arclytics.io',
+            first_name='The',
+            last_name='Mandolorian'
+        )
+        mandolorian.set_password('BountyHuntingIsComplicated')
+        mandolorian.save()
+
+        confirm_token = (
+            'InRoZW1hbmRvbG9yaWFuQGFyY2x5dGljcy5pbyI.XWIuAQ.fTJHBkmUa8rMqUbLm-J'
+            'MjNIcQi0'
+        )
+        confirm_url = generate_url('auth.confirm_email', confirm_token)
+
+        with self.client:
+            resp = self.client.get(
+                confirm_url, content_type='application/json'
+            )
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = f'http://{client_host}/confirm/tokenexpired'
+            self.assertRedirects(resp, redirect_url)
 
     def test_registered_user_login(self):
         """Ensure we can login as users after they have registered."""
@@ -844,6 +900,202 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(data['message'], 'Successfully changed password.')
             self.assertEqual(data['status'], 'success')
             self.assert200(res)
+
+    def test_change_email_success(self):
+        obiwan = User(
+            email='obiwankenobi@arclytics.com',
+            first_name='Obi-Wan',
+            last_name='Kenobi'
+        )
+        obiwan.set_password('TVShowPlease')
+        obiwan.save()
+
+        token = log_test_user_in(self, obiwan, 'TVShowPlease')
+
+        with self.client:
+            resp = self.client.put(
+                '/auth/email/change',
+                # data=json.dumps({'new_email': 'brickmatic479@gmail.com'}),
+                data=json.dumps({'new_email': 'obiwan@arclytics.io'}),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(data['message'], 'Email changed.')
+            self.assertEqual(data['new_email'], 'obiwan@arclytics.io')
+            # self.assertEqual(data['new_email'], 'brickmatic479@gmail.com')
+
+            obi_updated = User.objects.get(id=obiwan.id)
+            self.assertEqual(obi_updated.email, 'obiwan@arclytics.io')
+            # self.assertEqual(obi_updated.email, 'brickmatic479@gmail.com')
+
+    def test_change_email_empty_payload(self):
+        obiwan = User(
+            email='obiwankenobi@arclytics.io',
+            first_name='Obi-Wan',
+            last_name='Kenobi'
+        )
+        obiwan.set_password('TVShowPlease')
+        obiwan.save()
+
+        token = log_test_user_in(self, obiwan, 'TVShowPlease')
+
+        with self.client:
+            resp = self.client.put(
+                '/auth/email/change',
+                data=json.dumps(''),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'Invalid payload.')
+
+    def test_change_email_no_email(self):
+        vader = User(
+            email='darthvader@arclytics.io',
+            first_name='Darth',
+            last_name='Vader'
+        )
+        vader.set_password('AllTooEasy')
+        vader.save()
+
+        token = log_test_user_in(self, vader, 'AllTooEasy')
+
+        with self.client:
+            resp = self.client.put(
+                '/auth/email/change',
+                data=json.dumps({'some_invalid_key': 'some_value'}),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'No new email given.')
+
+    def test_change_email_invalid_email(self):
+        jabba = User(
+            email='jabba@arclytics.io',
+            first_name='Jabba',
+            last_name='The Hutt'
+        )
+        jabba.set_password('AllTooEasy')
+        jabba.save()
+
+        token = log_test_user_in(self, jabba, 'AllTooEasy')
+
+        with self.client:
+            resp = self.client.put(
+                '/auth/email/change',
+                data=json.dumps({'new_email': 'invalid_hutt.com'}),
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'Invalid email.')
+
+    def test_resend_confirm_email_success(self):
+        obiwan = User(
+            # email='davidmatthews1004@gmail.com',
+            email='benkenobi@arclytics.io',
+            first_name='Obi-Wan',
+            last_name='Kenobi'
+        )
+        obiwan.set_password('helloThere')
+        obiwan.save()
+        token = log_test_user_in(self, obiwan, 'helloThere')
+
+        with self.client:
+            resp = self.client.get(
+                '/confirm/resend',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(
+                data['message'], 'Another confirmation email has been sent.'
+            )
+
+    def test_resend_confirm_email_already_verified(self):
+        obiwan = User(
+            email='oldmanben@arclytics.io',
+            first_name='Obi-Wan',
+            last_name='Kenobi'
+        )
+        obiwan.set_password('helloThere')
+        obiwan.verified = True
+        obiwan.save()
+        token = log_test_user_in(self, obiwan, 'helloThere')
+
+        with self.client:
+            resp = self.client.get(
+                '/confirm/resend',
+                headers={'Authorization': f'Bearer {token}'},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'User is already verified.')
+
+    def test_check_password_success(self):
+        luke = User(
+            email='luke@arclytics.io',
+            first_name='Luke',
+            last_name='Skywalker'
+        )
+        luke.set_password('IAmAJedi')
+        luke.save()
+
+        token = log_test_user_in(self, luke, 'IAmAJedi')
+
+        with self.client:
+            resp = self.client.post(
+                '/auth/password/check',
+                data=json.dumps({'password': 'IAmAJedi'}),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(resp.status_code, 200)
+
+    def test_check_password_incorrect_password(self):
+        luke = User(
+            email='lukeskywalker@arclytics.io',
+            first_name='Luke',
+            last_name='Skywalker'
+        )
+        luke.set_password('IAmAJedi')
+        luke.save()
+
+        token = log_test_user_in(self, luke, 'IAmAJedi')
+
+        with self.client:
+            resp = self.client.post(
+                '/auth/password/check',
+                data=json.dumps({'password': 'IAmNotAJedi'}),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['message'], 'Password incorrect.')
 
 
 if __name__ == '__main__':

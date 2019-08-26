@@ -18,7 +18,7 @@ pipelines:
             - apk add --quiet py3-pip bash python3 python3-dev
             - apk add --quiet build-base libffi-dev openssl-dev libgcc
             - pip3 install --quiet --cache-dir ~/.pip3/cache --upgrade pip
-            - pip3 install --quiet --cache-dir ~/.pip3/cache docker-compose==1.24.0
+            - pip3 install --quiet --cache-dir ~/.pip3/cache docker-compose==1.24.1
             - docker-compose -v
             - docker-compose up -d --build simcct users redis mongodb client
             # This should start the test runner for the API server

@@ -21,6 +21,7 @@ import AccordionSection from '../../elements/accordion/AccordionSection'
 import Button, { IconButton } from '../../elements/button'
 import Modal from '../../elements/modal'
 import TextField from '../../elements/textfield'
+import TextFieldEmail from '../../elements/textfieldemail'
 import TextArea from '../../elements/textarea'
 import { getShareUrlLink, sendShareEmail } from '../../../api/sim/SessionShareSim'
 
@@ -135,7 +136,7 @@ class ShareModal extends PureComponent {
         onClose={onClose}
       >
         <header>
-          <h3>Share</h3>
+          <h4>Share</h4>
           <IconButton
             onClick={onClose}
             Icon={props => <XIcon {...props} />}
@@ -183,11 +184,11 @@ class ShareModal extends PureComponent {
                   <form onSubmit={onEmailSubmit}>
                     <div>
                       <div className={styles.email}>
-                        <TextField
+                        <TextFieldEmail
                           type="email"
                           name="email"
                           onChange={e => setFieldValue('email', e)}
-                          value={values.email}
+                          value={''}
                           placeholder="Emails (separate with commas)"
                           length="stretch"
                         />
@@ -297,31 +298,52 @@ class ShareModal extends PureComponent {
   }
 }
 
+const textFieldType = PropTypes.oneOfType([
+  PropTypes.string,
+  PropTypes.number,
+])
+
 ShareModal.propTypes = {
   show: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   configurations: PropTypes.shape({
     method: PropTypes.string,
-    grain_size_ASTM: PropTypes.number,
-    grain_size_diameter: PropTypes.number,
-    nucleation_start: PropTypes.number,
-    nucleation_finish: PropTypes.number,
+    grain_size_ASTM: textFieldType,
+    grain_size_diameter: textFieldType,
+    nucleation_start: textFieldType,
+    nucleation_finish: textFieldType,
     auto_calculate_bs: PropTypes.bool,
     auto_calculate_ms: PropTypes.bool,
-    ms_rate_param: PropTypes.number,
-    ms_temp: PropTypes.number,
-    bs_temp: PropTypes.number,
+    ms_temp: textFieldType,
+    ms_rate_param: textFieldType,
+    bs_temp: textFieldType,
     auto_calculate_ae: PropTypes.bool,
-    ae1_temp: PropTypes.number,
-    ae3_temp: PropTypes.number,
-    start_temp: PropTypes.number,
-    cct_cooling_rate: PropTypes.number,
+    ae1_temp: textFieldType,
+    ae3_temp: textFieldType,
+    start_temp: textFieldType,
+    cct_cooling_rate: textFieldType,
   }).isRequired,
   alloys: PropTypes.shape({
     alloyOption: PropTypes.string,
-    parent: PropTypes.shape,
-    weld: PropTypes.shape,
-    mix: PropTypes.shape,
+    parent: PropTypes.shape({
+      name: PropTypes.string,
+      compositions: PropTypes.arrayOf(PropTypes.shape({
+        symbol: PropTypes.string,
+        weight: textFieldType,
+      })),
+    }),
+    weld: PropTypes.shape({
+      name: PropTypes.string,
+      compositions: PropTypes.arrayOf(PropTypes.shape({
+        symbol: PropTypes.string,
+        weight: textFieldType,
+      })),
+    }),
+    mix: PropTypes.arrayOf(PropTypes.shape({
+      symbol: PropTypes.string,
+      weight: textFieldType,
+    })),
+    dilution: textFieldType,
   }).isRequired,
 }
 

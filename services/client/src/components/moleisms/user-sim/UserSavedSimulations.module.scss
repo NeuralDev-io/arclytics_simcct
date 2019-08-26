@@ -14,3 +14,9 @@
     margin-bottom: 1.5rem;
   }
 }
+
+.actions {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+}

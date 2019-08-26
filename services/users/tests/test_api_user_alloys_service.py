@@ -61,9 +61,6 @@ alloy_data = {
             "symbol": "Co",
             "weight": 0.26
         }, {
-            "symbol": "Mo",
-            "weight": 0.26
-        }, {
             "symbol": "Fe",
             "weight": 0.0
         }
@@ -306,9 +303,6 @@ class TestUserAlloyService(BaseTestCase):
                         "symbol": "Co",
                         "weight": 0.26
                     }, {
-                        "symbol": "Mo",
-                        "weight": 0.26
-                    }, {
                         "symbol": "Fe",
                         "weight": 0.0
                     }
@@ -378,9 +372,6 @@ class TestUserAlloyService(BaseTestCase):
                         "weight": 0.0
                     }, {
                         "symbol": "Co",
-                        "weight": 0.26
-                    }, {
-                        "symbol": "Mo",
                         "weight": 0.26
                     }, {
                         "symbol": "Fe",
@@ -497,9 +488,6 @@ class TestUserAlloyService(BaseTestCase):
                         "weight": 0.0
                     }, {
                         "symbol": "Co",
-                        "weight": 0.26
-                    }, {
-                        "symbol": "Mo",
                         "weight": 0.26
                     }, {
                         "symbol": "Fe",
@@ -825,9 +813,6 @@ class TestUserAlloyService(BaseTestCase):
                         "weight": 0.0
                     }, {
                         "symbol": "Co",
-                        "weight": 0.26
-                    }, {
-                        "symbol": "Mo",
                         "weight": 0.26
                     }, {
                         "symbol": "Fe",

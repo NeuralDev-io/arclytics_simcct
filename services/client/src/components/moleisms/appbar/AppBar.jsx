@@ -68,7 +68,7 @@ AppBar.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  user: state.persist.user,
+  user: state.persist.userStatus,
 })
 
 export default connect(mapStateToProps, {})(AppBar)

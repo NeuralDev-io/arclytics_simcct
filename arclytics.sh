@@ -388,8 +388,8 @@ run() {
         fi
     elif [[ "${command}" == "ps" ]]; then
         headerMessage "ARCLYTICS SIM RUNNING CONTAINERS"
-        generalMessage "docker ps ${args}"
-        docker ps ${args}
+        generalMessage "docker ps --size ${args}"
+        docker ps --size ${args}
     elif [[ "${command}" == "logs" ]]; then
         headerMessage "ARCLYTICS SIM CONTAINER LOGS"
         generalMessage "docker-compose logs ${container_log}"

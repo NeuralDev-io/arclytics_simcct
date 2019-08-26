@@ -29,7 +29,7 @@ WORKDIR /usr/src/app
 # add and install requirements
 COPY ./requirements.txt /usr/src/app/requirements.txt
 RUN pip install --quiet --upgrade pip
-RUN pip install --quiet -r requirements.txt
+RUN pip install --quiet --no-cache-dir -r requirements.txt
 
 # add docker-entrypoint.sh
 COPY ./docker-entrypoint.sh /usr/src/app/docker-entrypoint.sh

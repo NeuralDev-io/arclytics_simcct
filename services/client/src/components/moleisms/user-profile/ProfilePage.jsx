@@ -21,6 +21,7 @@ import Select from '../../elements/select'
 import Button from '../../elements/button'
 
 import styles from './ProfilePage.module.scss'
+import AppBar from '../appbar/AppBar'
 
 class ProfilePage extends Component {
   constructor(props) {
@@ -114,22 +115,22 @@ class ProfilePage extends Component {
     const { user } = this.props
     const { edit } = this.state
     console.log(user)
-    if (edit) { 
-      this.setState({ 
+    if (edit) {
+      this.setState({
         firstName: user.firstName,
         lastName: user.last_name,
         question1: user.profile
           ? { label: user.profile.aim, value: user.profile.aim }
           : null,
-        question2: user.profile ? 
-          { label: user.profile.highest_education, value: user.profile.highest_education }: 
-          null,
+        question2: user.profile
+          ? { label: user.profile.highest_education, value: user.profile.highest_education }
+          : null,
         question3: user.profile
           ? { label: user.profile.sci_tech_exp, value: user.profile.sci_tech_exp }
           : null,
-        question4: user.profile ? 
-          { label: user.profile.phase_transform_exp, value: user.profile.phase_transform_exp }: 
-          null,
+        question4: user.profile
+          ? { label: user.profile.phase_transform_exp, value: user.profile.phase_transform_exp }
+          : null,
         edit: false,
         updateError: null,
       })
@@ -222,6 +223,7 @@ class ProfilePage extends Component {
   }
 
   render() {
+    const { history } = this.props
     const {
       email,
       firstName,
@@ -243,6 +245,8 @@ class ProfilePage extends Component {
     } = this.state
     return (
       <React.Fragment>
+        <AppBar active="user" redirect={history.push} />
+
         <div className={styles.main}>
           <h4 className={styles.header}>General</h4>
           <div className={styles.generalFields}>
@@ -335,7 +339,7 @@ class ProfilePage extends Component {
 
               <div className={styles.question}>
                 <h6 className={styles.questionText}>
-                  What is your experiece with scientific software?
+                  What is your experience with scientific software?
                 </h6>
                 <Select
                   type="question3"
@@ -372,16 +376,29 @@ class ProfilePage extends Component {
           <div className={styles.security}>
             <div className={styles.header}>
               <h4> Security </h4>
-              <Button
+
+              <div>
+                <h6>Email</h6>
+                <Button onClick={() => console.log('Change email')} >Change email</Button>
+              </div>
+
+              <div>
+                <h6>Password</h6>
+                <Button onClick={() => console.log('Change email')}>
+                  Change password
+                </Button>
+              </div>
+              {/* <Button
                 className={styles.pwdOrEmail}
                 onClick={() => this.handleChange('pwdOrEmail', !pwdOrEmail)}
                 appearance="outline"
                 length="large"
               >
                 {pwdOrEmail ? (' Change your email') : ('Change or reset passsword')}
-              </Button>
+              </Button> */}
             </div>
             {
+              /*
                 pwdOrEmail ? (
                   <div className={styles.changePassword}>
                     <h5> Change Password </h5>
@@ -466,14 +483,15 @@ class ProfilePage extends Component {
 
                     </div>
                   )
+              */
             }
           </div>
           <div className={styles.dataAndPersonal}>
             <h4 className={styles.header}> Data and Personalisation </h4>
-            <h6>
+            <p>
               Your data, activities and preferences that help make Arclytics Sim service more
               useful for you.
-            </h6>
+            </p>
 
             <Button className={styles.review}> Review </Button>
           </div>

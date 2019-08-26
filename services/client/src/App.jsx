@@ -7,7 +7,6 @@ import SignupPage from './components/pages/signup/SignupPage'
 import SimulationPage from './components/pages/simulation'
 import AdminPage from './components/pages/admin'
 import ProfileQuestionsPage from './components/pages/profile-questions'
-import UserPage from './components/pages/user'
 import ProfilePage from './components/moleisms/user-profile'
 
 import './App.scss'
@@ -32,7 +31,7 @@ function App() {
           />
           <Route
             path="/profileQuestions"
-            render={props => <ProfileQuestionsPage {...props}/>}
+            render={props => <ProfileQuestionsPage {...props} />}
           />
           <Route
             path="/admin"

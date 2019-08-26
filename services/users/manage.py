@@ -131,6 +131,7 @@ def seed_user_db():
             new_user.disable_admin = not u.get('is_admin', False)
             new_user.admin_profile = profile
 
+        new_user.verified = True
         new_user.save()
         tbl.add_row(
             (

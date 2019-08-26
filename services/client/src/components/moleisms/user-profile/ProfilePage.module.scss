@@ -38,6 +38,8 @@ $bg-img: url('../../../assets/background_img-min.png');
 .header{
   margin-bottom: 2rem;
   width: 100%;
+  display: flex;
+  flex-flow: row;
 }
 
 .generalFields{
@@ -74,7 +76,7 @@ $bg-img: url('../../../assets/background_img-min.png');
   .questions {
     display: flex;
     flex-flow: column;
-    justify-content: space-betweeen;
+    justify-content: space-between;
     
     .question{
       margin-bottom: 2.3rem;

@@ -7,7 +7,9 @@ export COMPOSE_PROJECT_NAME='arc'
 # ======================================================= #
 # ==================== # Variables # ==================== #
 # ======================================================= #
+VERSION=1.0.0
 command=""
+args=""
 containers="users simcct client redis mongodb dask-scheduler dask-worker celery-worker"
 container_log=""
 build=0
@@ -115,7 +117,7 @@ all() {
     # e2e
 }
 
-flush_db() {
+flushDb() {
     headerMessage "FLUSH BACK-END MICROSERVICES"
     generalMessage "Flushing users microservice database (MongoDB)"
     generalMessage "docker-compose exec users python manage.py flush"
@@ -126,7 +128,7 @@ flush_db() {
 }
 
 # Flush and seed database
-flush_and_seed_db() {
+flushAndSeedDb() {
     headerMessage "SEED AND FLUSH BACK-END MICROSERVICES"
     generalMessage "Flushing users microservice database (MongoDB)"
     generalMessage "docker-compose exec users python manage.py flush"
@@ -184,10 +186,7 @@ arclytics.sh build [SERVICE ARGS...]
 arclytics.sh up [options] [SERVICE ARGS...]
 arclytics.sh logs [SERVICE]
 arclytics.sh test [options] [TEST TYPE]
-arclytics.sh seed
-arclytics.sh flush
-arclytics.sh down
-arclytics.sh prune
+arclytics.sh [COMMAND]
 
 Options:
   -b, --build      Build the Docker containers before running.
@@ -206,6 +205,8 @@ Commands:
   up          Run the main containers in docker-compose.yml or provide a list of
               arguments to run only those provided.
   logs        Get the logs of the container.
+  ps          List the running containers
+  stats       Display a live stream of container(s) resource usage statistics
   flush       Flush both Redis datastore and MongoDB database only.
   seed        Seed the microservices with test data and flush both Redis
               datastore and MongoDB database.
@@ -340,8 +341,12 @@ run() {
 
         if [[ ${seed_db} == 1 ]]; then
             echoSpace
-            flush_and_seed_db
+            flushAndSeedDb
         fi
+    elif [[ "${command}" == "ps" ]]; then
+        headerMessage "ARCLYTICS SIM RUNNING CONTAINERS"
+        generalMessage "docker ps ${args}"
+        docker ps ${args}
     elif [[ "${command}" == "logs" ]]; then
         headerMessage "ARCLYTICS SIM CONTAINER LOGS"
         generalMessage "docker-compose logs ${container_log}"
@@ -350,10 +355,15 @@ run() {
         headerMessage "STOP ARCLYTICS SIM CONTAINER"
         generalMessage "docker-compose down"
         docker-compose down
+    elif [[ "${command}" == "stats" ]]; then
+        headerMessage "ARCLYTICS SIM CONTAINER STATS"
+        generalMessage "docker stats ${args}"
+        docker stats ${args}
     elif [[ "${command}" == "prune" ]]; then
         headerMessage "PRUNE ARCLYTICS SIM DOCKER ORCHESTRATION"
-        generalMessage "docker-compose down"
-        docker-compose down
+        generalMessage "docker stop $(docker ps -aq)"
+        # shellcheck disable=SC2046
+        docker stop $(docker ps -aq)
         generalMessage "docker system prune -af"
         docker system prune -af
     else
@@ -373,6 +383,24 @@ fi
 
 while [[ "$1" != "" ]] ; do
     case $1 in
+        ps )
+            command="ps"
+            args=$2
+            while [[ "$3" != "" ]] ; do
+                args="${args} $3"
+                shift
+            done
+            run
+            ;;
+        stats )
+            command="stats"
+            args=$2
+            while [[ "$3" != "" ]] ; do
+                args="${args} $3"
+                shift
+            done
+            run
+            ;;
         down )
             command="down"
             run
@@ -464,11 +492,11 @@ while [[ "$1" != "" ]] ; do
             exit 0
             ;;
         flush )
-            flush_db
+            flushDb
             exit 0
             ;;
         seed )
-            flush_and_seed_db
+            flushAndSeedDb
             exit 0
             ;;
         -h | --help )

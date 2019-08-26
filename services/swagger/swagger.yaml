@@ -1747,6 +1747,51 @@ paths:
                   value:
                     status: "fail"
                     message: "User does not exist."
+
+  /disable/user/confirm/<token>:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "Send confirmation to disable user account if an Admin has requested."
+      security:
+        - bearerAuth: []
+      tags:
+        - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        302:
+          description: "Link sent successfully."
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'URL Token Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid token."
+                'Exception':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid token."
+                'User Does Not Exist':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+
   /users/ping:
     servers:
       - url: http://localhost:8001

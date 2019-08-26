@@ -386,6 +386,14 @@ class AlloyStore(EmbeddedDocument):
         }
 
 
+class Rating(EmbeddedDocument):
+    rating = IntField(min_value=1, max_value=5, required=True)
+    created_date = DateTimeField(default=datetime.utcnow(), required=True)
+
+    def to_dict(self):
+        return {'rating': self.rating, 'created_date': str(self.created_date)}
+
+
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
 class User(Document):
     # The following fields describe the attributes of a user
@@ -423,6 +431,8 @@ class User(Document):
     created = DateTimeField(default=datetime.utcnow(), null=False)
     last_updated = DateTimeField(default=None, null=False)
     last_login = DateTimeField()
+
+    ratings = EmbeddedDocumentListField(document_type=Rating, default=None)
 
     # Define the collection and indexing for this document
     meta = {
@@ -664,4 +674,23 @@ class SharedSimulation(Document):
             'created_date': str(self.created_date),
             'configurations': self.configuration.to_dict(),
             'alloy_store': self.alloy_store.to_dict()
+        }
+
+
+class Feedback(Document):
+    user = ReferenceField(User, reverse_delete_rule=DO_NOTHING)
+    category = StringField()
+    rating = IntField(min_value=1, max_value=5)
+    comments = StringField()
+    created_date = DateTimeField(default=datetime.utcnow())
+
+    meta = {'collection': 'feedback'}
+
+    def to_dict(self):
+        return {
+            'user_email': self.user.email,
+            'category': self.category,
+            'rating': self.rating,
+            'comments': self.comments,
+            'created_date': self.created_date
         }

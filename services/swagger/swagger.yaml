@@ -1418,7 +1418,6 @@ paths:
                   value:
                     status: "fail"
                     message: "User does not exist."
-
   /auth/password/check:
     servers:
       - url: http://localhost:8000
@@ -1456,6 +1455,67 @@ paths:
                   value:
                     status: "fail"
                     message: "Password incorrect."
+  /auth/password/change:
+    servers:
+      - url: http://localhost:8000
+    put:
+      summary: "An endpoint for changing password."
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Correct password."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                message: "Successfully changed password."
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Request':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Need Both Passowrd And Confirm Password':
+                  value:
+                    status: "fail"
+                    message: "Must provide a password and confirm password."
+                'Unmatched Passwords':
+                  value:
+                    status: "fail"
+                    message: "Passwords do not match."
+                'Invalid Password':
+                  value:
+                    status: "fail"
+                    message: "The password is invalid."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Old Password':
+                  value:
+                    staus: "fail"
+                    message: "Must provide the current password."
+                'User Needs To Verify':
+                  value:
+                    staus: "fail"
+                    message: "User needs to verify account."
+                'Incorrect Password':
+                  value:
+                    status: "fail"
+                    message: "Password is not correct."
   /confirm/resend:
     servers:
       - url: http://localhost:8000
@@ -1484,6 +1544,7 @@ paths:
                   value:
                     status: "fail"
                     message: "User is already verified."
+
 
   /admin/create:
     servers:

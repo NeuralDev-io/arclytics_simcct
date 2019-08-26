@@ -1525,7 +1525,6 @@ paths:
                   value:
                     status: "fail"
                     message: "User does not exist."
-
   /admin/create/cancel/<token>:
     servers:
       - url: http://localhost:8000
@@ -1546,6 +1545,8 @@ paths:
                   type: string
                   format: email
       responses:
+        302:
+          description: "Successfully create Admin."
         400:
           description: "An invalid payload has been sent with the request."
           content:
@@ -1599,6 +1600,58 @@ paths:
                   value:
                     status: "fail"
                     message: "User is not authorised to promote other user."
+
+  /admin/create/verify/<token>:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "Allow a user to acknowledge their promotion and in doing so verify their status as an admin"
+      security:
+        - bearerAuth: []
+      tags:
+        - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        302:
+          description: "Successfully sent link to verify their status as admin"
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'URL Token Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid token."
+                'Exception':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid token."
+                'User Does Not Exist':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+                'User Is Not Verified':
+                  value:
+                    status: "fail"
+                    message: "User is not verified."
+                'User Is Not An Admin':
+                  value:
+                    status: "fail"
+                    message: "User is not an Admin."
 
   /user/disable:
     servers:

@@ -149,9 +149,11 @@ class LoginPage extends Component {
         </div>
         <div className={`${styles.forgotPwdForm} ${!(hasForgotPwd === null) ? (hasForgotPwd ? styles.fadeLeftIn: styles.fadeRightOut):('')}`}>
           {/*TODO: change the messsage when the button is pressed */}
-          Enter your email to send a password reset email.
+          <h3 className={styles.header}> Password Reset </h3>
+          <span> Enter your email to send a password reset email.</span>
           <TextField
             name="forgotEmail"
+            className={styles.forgotEmail}
             type="email"
             placeholder="Enter your email"
             value={forgotEmail}
@@ -159,11 +161,11 @@ class LoginPage extends Component {
             placeholder="Email"
             length="stretch"
           />
-          <Button > Send Email </Button>
+          <Button className={styles.forgotSubmit}> Send Email </Button>
           <h6
             className={styles.help}
             onClick={ ()=> this.setState({ hasForgotPwd: false})
-            }>Go back</h6>
+            }>Go back to login</h6>
         </div>
 
 

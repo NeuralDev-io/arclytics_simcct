@@ -25,18 +25,19 @@ $bg-img: url('../../../assets/background_img-min.png');
   }
 }
 
+.help{
+  float:right;
+  cursor:pointer;
+  color:var(--arc500);
+  margin-bottom: 3rem;
+  margin-right: 0.774375rem;
+}
+
 .loginForm{
   position: fixed;
   z-index: 1;
   margin-left: 11.25rem;
   width: 23.75rem;
-  .help{
-    float:right;
-    cursor:pointer;
-    color:var(--arc500);
-    margin-bottom: 3rem;
-    margin-right: 0.774375rem;
-  }
   .createAccount{
     color:var(--arc500);
     text-decoration: none;
@@ -72,10 +73,21 @@ $bg-img: url('../../../assets/background_img-min.png');
 .forgotPwdForm{
   margin-left: 11.25rem;
   width: 23.75rem;
+  height: 35vh;
   pointer-events: none;
   opacity: 0;
   position:fixed;
   z-index: 2;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-evenly;
+  .forgotEmail{
+    margin-bottom: 4rem;
+  }
+
+  .forgotSubmit{
+    margin-bottom: 1rem;
+  }
 }
 
 .fadeLeftIn{

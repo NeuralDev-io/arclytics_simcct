@@ -29,7 +29,7 @@ from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
     DateTimeField, EmbeddedDocumentField, IntField, FloatField, DO_NOTHING,
     EmbeddedDocumentListField, queryset_manager, ObjectIdField, ReferenceField,
-    ValidationError, ListField
+    ValidationError, ListField, DictField
 )
 from flask import current_app, json
 
@@ -37,7 +37,7 @@ from logger.arc_logger import AppLogger
 from users_app.extensions import bcrypt
 from users_app.utilities import (
     JSONEncoder, PeriodicTable, PasswordValidationError, ElementSymbolInvalid,
-    ElementInvalid, MissingElementError
+    ElementInvalid, MissingElementError, DuplicateElementError
 )
 
 logger = AppLogger(__name__)
@@ -107,6 +107,16 @@ def within_percentage_bounds(val):
         raise ValidationError('Must be less than 100.0.')
     if val < 0.0:
         raise ValidationError('Must be more than 0.0.')
+
+
+def validate_no_duplicate_elements(alloy_comp: list) -> Tuple[bool, set]:
+    elements = []
+    for e in alloy_comp:
+        elements.append(e['symbol'])
+    duplicates = set([x for x in elements if elements.count(x) > 1])
+    if len(duplicates) > 0:
+        return False, duplicates
+    return True, None
 
 
 # ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
@@ -181,7 +191,29 @@ class AdminProfile(EmbeddedDocument):
 
 # TODO(andrew@neuraldev.io): Add these
 class SimulationResults(EmbeddedDocument):
-    pass
+    # Using DictField() because it requires no validation on the internal
+    # nesting but we don't really need to validate this data.
+
+    # Both of these will have the following:
+    # ferrite_nucleation: {"time": [], "temp": []}
+    # ferrite_completion: {"time": [], "temp": []}
+    # pearlite_nucleation: {"time": [], "temp": []}
+    # pearlite_completion: {"time": [], "temp": []}
+    # bainite_nucleation: {"time": [], "temp": []}
+    # bainite_completion: {"time": [], "temp": []}
+    # martensite: {"time": [], "temp": []}
+    TTT = DictField()
+    CCT = DictField()
+    # This will have the following:
+    # user_cooling_curve: {"time": [], "temp": []}
+    # user_phase_fraction_data: {
+    #   "austenite": [], "ferrite": [], "pearlite": [],
+    #   "bainite": [], "martensite": []
+    # }
+    # slider_time_field: float
+    # slider_temp_field: float
+    # slider_max: int
+    USER = DictField()
 
 
 class Configuration(EmbeddedDocument):
@@ -310,6 +342,12 @@ class Alloy(EmbeddedDocument):
         valid, missing = validate_comp_elements(self.compositions)
         if not valid:
             raise MissingElementError(f'Missing elements {missing}')
+
+        no_duplicates, duplicate = validate_no_duplicate_elements(
+            self.compositions
+        )
+        if not no_duplicates:
+            raise DuplicateElementError(f'Duplicate element {duplicate}')
 
     def __str__(self):
         return self.to_json()

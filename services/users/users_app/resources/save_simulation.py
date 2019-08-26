@@ -30,7 +30,8 @@ from mongoengine import ValidationError, FieldDoesNotExist, DoesNotExist
 from users_app.extensions import api
 from users_app.middleware import authenticate
 from users_app.utilities import (
-    ElementInvalid, ElementSymbolInvalid, MissingElementError
+    ElementInvalid, ElementSymbolInvalid, MissingElementError,
+    DuplicateElementError
 )
 from users_app.models import User, Configuration, AlloyStore, SavedSimulation
 
@@ -65,7 +66,7 @@ class SaveSimulationList(Resource):
 
         post_configs = post_data.get('configurations')
         post_alloy_store = post_data.get('alloy_store')
-        # post_results = post_data.get('results')
+        # post_results = post_data.get('simulation_results')
 
         # Valid the request body
         if not post_configs:
@@ -110,6 +111,12 @@ class SaveSimulationList(Resource):
             # available as they are required downstream in the algorithm.
             response['error'] = str(e)
             response['message'] = 'Missing element error.'
+            return response, 400
+        except DuplicateElementError as e:
+            # One of the alloys contains two or more elements with the same
+            # chemical symbol.
+            response['error'] = str(e)
+            response['message'] = 'Alloy contains a duplicate element.'
             return response, 400
         except ValidationError as e:
             # All other validation errors
@@ -158,12 +165,12 @@ class SaveSimulationDetail(Resource):
     method_decorators = {'get': [authenticate], 'delete': [authenticate]}
 
     # noinspection PyMethodMayBeStatic
-    def get(self, user_id, sim_id):
+    def get(self, _, sim_id):
         """The endpoint that exposes a GET HTTP method to retrieve a saved
         simulation detail from the saved_simulation collection.
 
         Args:
-            user_id: a valid user ObjectId passed from the middleware.
+            _: a user ObjectId passed from the middleware not used.
             sim_id: a valid SavedSimulation ObjectId of the document.
 
         Returns:
@@ -180,12 +187,12 @@ class SaveSimulationDetail(Resource):
         return {'status': 'success', 'data': qs.to_dict()}, 200
 
     # noinspection PyMethodMayBeStatic
-    def delete(self, user_id, sim_id):
+    def delete(self, _, sim_id):
         """The endpoint that exposes a DELETE HTTP method to delete a saved
         simulation from the saved_simulation collection.
 
         Args:
-            user_id: a valid user ObjectId passed from the middleware.
+            _: a user ObjectId passed from the middleware not used.
             sim_id: a valid SavedSimulation ObjectId of the document.
 
         Returns:

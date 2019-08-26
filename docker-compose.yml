@@ -7,8 +7,7 @@ services:
     build:
       context: ./services/users
       dockerfile: Dockerfile
-    image: arc_sim_users_service:1.0
-    container_name: arc-users
+    image: neuraldev/arc_sim_users_service:1.0
     volumes:  # used to mount the code into the container for live updates
       - ./services/users:/usr/src/app
     ports:
@@ -36,8 +35,7 @@ services:
     build:
       context: ./services/celery-worker
       dockerfile: Dockerfile
-    image: arc_sim_celery_service:1.0
-    container_name: arc-celery
+    image: neuraldev/arc_sim_celery_service:1.0
     volumes:
       - ./services/celery-worker:/usr/src/app
     ports:
@@ -59,8 +57,7 @@ services:
     build:
       context: ./services/simcct
       dockerfile: Dockerfile
-    image: arc_simcct_service:1.0
-    container_name: arc-simcct
+    image: neuraldev/arc_simcct_service:1.2
     volumes:
       - ./services/simcct:/usr/src/app
     ports:
@@ -77,8 +74,56 @@ services:
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - MONGO_URI=mongodb://mongodb:27017
+      - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
     depends_on:
       - redis
+      - dask-scheduler
+    networks:
+      - host
+
+  dask-scheduler:
+    build:
+      context: ./services/dask
+      dockerfile: Dockerfile
+    image: neuraldev/arc_dask_scheduler:1.0
+    hostname: dask-scheduler
+    ports:
+      - 8786:8786
+      - 8787:8787
+    expose:
+      - 8786
+      - 8787
+    # Entrypoint command needs to be set here because Dockerfile shared with `dask-worker`
+    command: ['dask-scheduler']
+    networks:
+      - host
+
+  dask-worker:
+    build:
+      context: ./services/dask
+      dockerfile: Dockerfile
+    image: neuraldev/arc_dask_worker:1.0
+    # container_name: arc-dask-worker  # Cannot use for scaling
+    hostname: dask-worker
+    command: ['dask-worker', 'tcp://dask-scheduler:8786']
+    networks:
+      - host
+
+  jupyter:
+    build:
+      context: ./services/jupyter
+      dockerfile: Dockerfile
+    image: neuraldev/arc_dask_notebook:1.0
+    hostname: jupyter
+    volumes:
+      - ./services/jupyter:/home/arclytics/
+    ports:
+      - 8888:8888
+    expose:
+      - 8888
+    environment:
+      - NB_USER=arclytics
+      - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
     networks:
       - host
 
@@ -86,9 +131,8 @@ services:
     build:
       context: ./services/redis
       dockerfile: Dockerfile
-    image: arc_sim_redis:1.0
+    image: neuraldev/arc_sim_redis:1.0
     restart: always
-    container_name: arc-redis
     ports:
       - 6379:6379
     expose:
@@ -100,9 +144,8 @@ services:
     build:
       context: ./services/db
       dockerfile: Dockerfile
-    image: arc_sim_mongo:1.1
+    image: neuraldev/arc_sim_mongo:1.1
     restart: always
-    container_name: arc-mongo
     ports:
       - 27017:27017
     expose:
@@ -117,8 +160,7 @@ services:
     build:
       context: ./services/client
       dockerfile: Dockerfile
-    image: arc_sim_client:1.1
-    container_name: arc-client
+    image: neuraldev/arc_sim_client:1.1
     volumes:
       - ./services/client:/usr/src/app
       - /usr/src/app/node_modules
@@ -141,8 +183,7 @@ services:
     build:
       context: ./services/swagger
       dockerfile: Dockerfile
-    image: arc_sim_swagger:1.0
-    container_name: swagger-ui
+    image: neuraldev/arc_sim_swagger:1.0
     volumes:
       - ./services/swagger/swagger.yaml:/usr/share/nginx/html/swagger.yaml
     ports:

@@ -1,9 +1,8 @@
 import {
   GET_USER_PROFILE,
   CREATE_USER_PROFILE,
-  UPDATE_USER_PROFILE,
+  UPDATE_USER_PROFILE, 
 } from './types'
-
 const initialState = {
   user: {
     admin: false,

@@ -1,0 +1,106 @@
+.container {
+  display: flex;
+  flex-flow: column nowrap;
+  //height: 60px;
+
+  & > span {
+    color: var(--r500);
+    margin-top: .25rem;
+  }
+}
+
+.input {
+  // remove default styles
+  border: none;
+  outline: none;
+
+  // layout
+  width: 7.5rem;
+  height: 2.25rem;
+  padding: .5rem .75rem;
+
+  // border
+  border-radius: 6px;
+  border: 1px solid transparent;
+
+  // colour
+  background-color: var(--n10);
+  color: var(--n900);
+
+  &::placeholder {
+    color: var(--n600);
+  }
+
+  &:hover:not([disabled]) {
+    background-color: var(--n20);
+  }
+
+  &:focus {
+    background-color: var(--n0);
+    border-color: var(--arc500);
+  }
+
+  &:disabled {
+    color: var(--n300);
+
+    &::placeholder {
+      color: var(--n300);
+    }
+  }
+}
+
+.short {
+  width: 7rem;
+}
+
+.long {
+  width: 10rem;
+}
+
+.stretch {
+  width: 100%
+}
+
+.error {
+  background-color: rgba(var(--r500-rgb), 0.1);
+  border: 1px solid var(--r500);
+
+  &:hover {
+    background-color: rgba(var(--r500-rgb), 0.2);
+    border-color: 1px solid var(--r500);
+  }
+  &:hover:not([disabled]) {
+    background-color: rgba(var(--r500-rgb), 0.2);
+  }
+  &:focus {
+    background-color: var(--n0);
+    border-color: var(--r500);
+  }
+}
+
+.emailItem {
+  background-color: var(--n10);
+  border-radius: 2rem;
+  padding: .25rem 1rem;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  margin-right: .5rem;
+  cursor: pointer;
+
+  & > span {
+    margin-right: .75rem;
+  }
+
+  .icon {
+    height: 1rem;
+    width: 1rem;
+  }
+}
+
+.emails {
+  display: flex;
+  flex-flow: row wrap;
+  max-height: 5.5rem;
+  overflow-y: auto;
+}

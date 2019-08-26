@@ -177,11 +177,11 @@ class TestSimConfigurations(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            trans_temps = data['data']
             self.assertEqual(
                 data['message'],
                 'Compositions and Configurations in Session initiated.'
             )
+            trans_temps = data['data']
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 201)
             self.assertAlmostEqual(trans_temps['ms_temp'], 520.388, 3)

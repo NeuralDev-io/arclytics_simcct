@@ -18,6 +18,7 @@ seed_db=0
 build_containers=""
 scale=0
 scale_num=2
+docker_down=0
 swagger=0
 jupyter=0
 
@@ -224,6 +225,7 @@ arclytics.sh build [SERVICE ARGS...]
 arclytics.sh up [options] [SERVICE ARGS...]
 arclytics.sh logs [SERVICE]
 arclytics.sh test [options] [TEST TYPE]
+arclytics.sh down [options]
 arclytics.sh [COMMAND]
 
 Options:
@@ -236,6 +238,9 @@ Options:
   -b, --build      Build the Docker containers before running tests.
   -t, --tty        Attach a pseudo-TTY to the tests.
   -c, --coverage   Run the unit tests with coverage.
+
+  Down Options:
+  -D, --docker     Stop the containers using the Docker PS stat.
 
 Commands:
   build       Build the Docker images from docker-compose.yml only (passing services
@@ -395,9 +400,21 @@ run() {
         generalMessage "docker-compose logs ${container_log}"
         docker-compose logs ${container_log}
     elif [[ "${command}" == "down" ]]; then
-        headerMessage "STOP ARCLYTICS SIM CONTAINER"
-        generalMessage "docker-compose down"
-        docker-compose down
+        headerMessage "STOPPING ARCLYTICS SIM CONTAINERS"
+        if [[ "${docker_down}" == 1 ]]; then
+            running=$(docker ps -aq)
+            if [[ ${running} == "" ]]; then
+                generalMessage "No containers running"
+                docker ps
+            else
+                generalMessage "docker stop \$(docker ps -aq)"
+                # shellcheck disable=SC2046
+                docker stop ${running}
+            fi
+        else
+            generalMessage "docker-compose down ${args}"
+            docker-compose down ${args}
+        fi
     elif [[ "${command}" == "stats" ]]; then
         headerMessage "ARCLYTICS SIM CONTAINER STATS"
         generalMessage "docker stats ${args}"
@@ -446,6 +463,20 @@ while [[ "$1" != "" ]] ; do
             ;;
         down )
             command="down"
+            while [[ "$2" != "" ]] ; do
+                case $2 in
+                    -D | --docker )
+                        docker_down=1
+                        ;;
+                    * )
+                        args=$2
+                        while [[ "$3" != "" ]] ; do
+                            args="${args} $3"
+                            shift
+                        done
+                esac
+                shift
+            done
             run
             ;;
         prune )

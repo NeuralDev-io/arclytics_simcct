@@ -1653,7 +1653,7 @@ paths:
                     status: "fail"
                     message: "User is not an Admin."
 
-  /user/disable:
+  /disable/user:
     servers:
       - url: http://localhost:8000
     put:
@@ -1681,7 +1681,7 @@ paths:
                 $ref: '#/components/schemas/Response'
               example:
                 status: "success"
-                message: "The account for User loki@asgard.space has been disabled."
+                message: "Confirmation email sent."
         400:
           description: "An invalid payload has been sent with the request."
           content:

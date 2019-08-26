@@ -23,7 +23,7 @@ class LoginPage extends Component {
   constructor(props){
     super(props)
     this.state = {
-      hasForgotPwd: false,
+      hasForgotPwd: null,
       forgotEmail: '',
     }
   }
@@ -47,7 +47,7 @@ class LoginPage extends Component {
           <Logo className={styles.logo} />
           <h3> ARCLYTICS </h3>
         </div>
-        <div className={`${styles.loginForm} ${hasForgotPwd ? styles.fadeLeftOut : styles.fadeRightIn}`}>
+        <div className={`${styles.loginForm} ${!(hasForgotPwd === null)? (hasForgotPwd ? styles.fadeLeftOut : styles.fadeRightIn) : ('')}`}>
           <div className={styles.header}>
             <h3> Sign in to your account  </h3>
           </div>
@@ -147,7 +147,7 @@ class LoginPage extends Component {
             )}
           </Formik>
         </div>
-        <div className={`${styles.forgotPwdForm} ${hasForgotPwd ? styles.fadeLeftIn: styles.fadeRightOut}`}>
+        <div className={`${styles.forgotPwdForm} ${!(hasForgotPwd === null) ? (hasForgotPwd ? styles.fadeLeftIn: styles.fadeRightOut):('')}`}>
           {/*TODO: change the messsage when the button is pressed */}
           Enter your email to send a password reset email.
           <TextField

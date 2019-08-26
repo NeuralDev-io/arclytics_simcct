@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2086
 
 # Set the Project Name for docker-compose  note: cannot be done any other way
 # other than setting it as part of the docker-compose command -p flag.
@@ -7,7 +8,9 @@ export COMPOSE_PROJECT_NAME='arc'
 # ======================================================= #
 # ==================== # Variables # ==================== #
 # ======================================================= #
-VERSION=1.0.0
+VERSION=1.1.0
+WORKDIR="$(dirname "$(readlink -f "$0")")"
+DOCKER_COMPOSE_PATH="${WORKDIR}/docker-compose.yml"
 command=""
 args=""
 containers="users simcct client redis mongodb dask-scheduler dask-worker celery-worker"
@@ -78,10 +81,10 @@ users() {
     echoSpace
     if [[ ${tty} == 1 ]]; then
         generalMessage "docker-compose exec -T users python manage.py ${test_type}"
-        docker-compose exec -T users python manage.py "${test_type}"
+        docker-compose -f ${DOCKER_COMPOSE_PATH} exec -T users python manage.py "${test_type}"
     else
         generalMessage "docker-compose exec users python manage.py ${test_type}"
-        docker-compose exec users python manage.py "${test_type}"
+        docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py "${test_type}"
     fi
     generalMessage "Finishing ${test_type_title} for Users Server"
 }
@@ -94,10 +97,10 @@ simcct() {
     docker-compose exec users python manage.py flush
     if [[ ${tty} == 1 ]]; then
         generalMessage "docker-compose exec -T simcct python manage.py ${test_type}"
-        docker-compose exec -T simcct python manage.py "${test_type}"
+        docker-compose -f ${DOCKER_COMPOSE_PATH} exec -T simcct python manage.py "${test_type}"
     else
         generalMessage "docker-compose exec simcct python manage.py ${test_type}"
-        docker-compose exec simcct python manage.py "${test_type}"
+        docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py "${test_type}"
     fi
     generalMessage "Finishing ${test_type_title} for SimCCT Server"
 }
@@ -124,10 +127,10 @@ flushDb() {
     headerMessage "FLUSH BACK-END MICROSERVICES"
     generalMessage "Flushing users microservice database (MongoDB)"
     generalMessage "docker-compose exec users python manage.py flush"
-    docker-compose exec users python manage.py flush
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py flush
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
     generalMessage "docker-compose exec simcct python manage.py flush"
-    docker-compose exec simcct python manage.py flush
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py flush
 }
 
 # Flush and seed database
@@ -135,18 +138,18 @@ flushAndSeedDb() {
     headerMessage "SEED AND FLUSH BACK-END MICROSERVICES"
     generalMessage "Flushing users microservice database (MongoDB)"
     generalMessage "docker-compose exec users python manage.py flush"
-    docker-compose exec users python manage.py flush
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py flush
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
     generalMessage "docker-compose exec simcct python manage.py flush"
-    docker-compose exec simcct python manage.py flush
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py flush
     echoSpace
     generalMessage "Seeding users microservice database with users"
     generalMessage "docker-compose exec users python manage.py seed_db"
-    docker-compose exec users python manage.py seed_db
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py seed_db
     echoSpace
     generalMessage "Seeding simcct microservice database with global alloys"
     generalMessage "docker-compose exec simcct python manage.py seed_db"
-    docker-compose exec simcct python manage.py seed_db
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py seed_db
     echoSpace
 }
 
@@ -256,6 +259,7 @@ Commands:
   test        Run unit tests on the microservices.
   down        Stop all containers.
   prune       Prune all stopped images, containers, and networks.
+  pwd         Get the full path directory of the Arclytics CLI script.
 
 Optional Containers:
   -S, --swagger    Run the Swagger container with the cluster.
@@ -285,58 +289,59 @@ ${reset}
 # ==================================================================== #
 # ==================== # Main Command Functions # ==================== #
 # ==================================================================== #
+# shellcheck disable=SC2086
 run_tests() {
     ## run appropriate tests
     if [[ "${test_server}" == "server" ]]; then
         if [[ ${build} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${containers}"
-            docker-compose up -d --build "${containers}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${containers}"
             server
             generalMessage "docker-compose down"
-            docker-compose down
+            docker-compose -f ${DOCKER_COMPOSE_PATH} down
         else
             server
         fi
     elif [[ "${test_server}" == "users" ]]; then
         if [[ ${build} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${containers}"
-            docker-compose up -d --build "${containers}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${containers}"
             users
             generalMessage "docker-compose down"
-            docker-compose down
+            docker-compose -f ${DOCKER_COMPOSE_PATH} down
         else
             users
         fi
     elif [[ "${test_server}" == "simcct" ]]; then
         if [[ ${build} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${containers}"
-            docker-compose up -d --build "${containers}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${containers}"
             simcct
             generalMessage "docker-compose down"
-            docker-compose down
+            docker-compose -f ${DOCKER_COMPOSE_PATH} down
         else
             simcct
         fi
     elif [[ "${test_server}" == "client" ]]; then
         if [[ ${build} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${containers}"
-            docker-compose up -d --build "${containers}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${containers}"
             client
             generalMessage "docker-compose down"
-            docker-compose down
+            docker-compose -f ${DOCKER_COMPOSE_PATH} down
         fi
     elif [[ "${test_server}" == "e2e" ]]; then
         if [[ ${build} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${containers}"
-            docker-compose up -d --build "${containers}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${containers}"
         fi
     elif [[ "${test_server}" == "all" ]]; then
         if [[ ${build} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${containers}"
-            docker-compose up -d --build "${containers}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${containers}"
             all
             generalMessage "docker-compose down"
-            docker-compose down
+            docker-compose -f ${DOCKER_COMPOSE_PATH} down
         else
             all
         fi
@@ -347,13 +352,12 @@ run_tests() {
     completeMessage
 }
 
-# shellcheck disable=SC2086
 run() {
     ## run appropriate tests
     if [[ "${command}" == "build" ]]; then
         headerMessage "BUILDING ARCLYTICS SIM CONTAINERS ONLY"
         generalMessage "docker-compose build ${build_containers}"
-        docker-compose build ${build_containers}
+        docker-compose -f ${DOCKER_COMPOSE_PATH} build ${build_containers}
     elif [[ "${command}" == "up" ]]; then
         headerMessage "RUN ARCLYTICS SIM CONTAINERS"
 
@@ -372,18 +376,18 @@ run() {
         if [[ ${build} == 1 ]]; then
             if [[ ${detach} == 1 ]]; then
                 generalMessage "docker-compose up -d --build ${containers}"
-                docker-compose up -d --build ${containers}
+                docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build ${containers}
             else
                 generalMessage "docker-compose up --build ${containers}"
-                docker-compose up --build ${containers}
+                docker-compose -f ${DOCKER_COMPOSE_PATH} up --build ${containers}
             fi
         else
             if [[ ${detach} == 1 ]]; then
                 generalMessage "docker-compose up -d ${containers}"
-                docker-compose up -d ${containers}
+                docker-compose -f ${DOCKER_COMPOSE_PATH} up -d ${containers}
             else
                 generalMessage "docker-compose up ${containers}"
-                docker-compose up ${containers}
+                docker-compose -f ${DOCKER_COMPOSE_PATH} up ${containers}
             fi
         fi
 
@@ -398,7 +402,7 @@ run() {
     elif [[ "${command}" == "logs" ]]; then
         headerMessage "ARCLYTICS SIM CONTAINER LOGS"
         generalMessage "docker-compose logs ${container_log}"
-        docker-compose logs ${container_log}
+        docker-compose -f ${DOCKER_COMPOSE_PATH} logs ${container_log}
     elif [[ "${command}" == "down" ]]; then
         headerMessage "STOPPING ARCLYTICS SIM CONTAINERS"
         if [[ "${docker_down}" == 1 ]]; then
@@ -413,7 +417,7 @@ run() {
             fi
         else
             generalMessage "docker-compose down ${args}"
-            docker-compose down ${args}
+            docker-compose -f ${DOCKER_COMPOSE_PATH} down ${args}
         fi
     elif [[ "${command}" == "stats" ]]; then
         headerMessage "ARCLYTICS SIM CONTAINER STATS"
@@ -497,7 +501,6 @@ while [[ "$1" != "" ]] ; do
                 shift
             done
             run
-            exit 0
             ;;
         up )
             command="up"
@@ -531,7 +534,6 @@ while [[ "$1" != "" ]] ; do
                         ;;
                     -h | --help )
                         upUsage
-                        exit 0
                         ;;
                     * )
                         containers=$2
@@ -544,13 +546,11 @@ while [[ "$1" != "" ]] ; do
                 shift
             done
             run
-            exit 0
             ;;
         logs )
             command="logs"
             container_log=$2
             run
-            exit 0
             ;;
         test )
             while [[ "$2" != "" ]] ; do
@@ -567,25 +567,31 @@ while [[ "$1" != "" ]] ; do
                         ;;
                     -h | --help )
                         testUsage
-                        exit 0
                         ;;
                     * )
                         test_server=$2
                         run_tests
-                        exit 0
                 esac
                 shift
             done
             run_tests
-            exit 0
             ;;
         flush )
             flushDb
-            exit 0
             ;;
         seed )
             flushAndSeedDb
-            exit 0
+            ;;
+        dir )
+            echo ${WORKDIR}
+            ;;
+        pwd )
+            generalMessage "Arclytics Sim Project Root Directory"
+            echo "${WORKDIR}"
+            ;;
+        -V | --version )
+            generalMessage "Arclytis CLI"
+            echo v${VERSION}
             ;;
         -h | --help )
             usage

@@ -16,6 +16,8 @@ build=0
 detach=0
 seed_db=0
 build_containers=""
+scale=0
+scale_num=2
 swagger=0
 jupyter=0
 
@@ -147,13 +149,48 @@ flushAndSeedDb() {
     echoSpace
 }
 
+# shellcheck disable=SC1079,SC1078,SC2006
+upUsage() {
+    echo -e """
+${greenf}ARCLYTICS CLI SCRIPT
+
+Usage: arclytics.sh up [options] [SERVICE ARGS...]
+
+The Arclytics CLI command to run the containers.
+
+Options:
+  -b, --build           Build the Docker containers before running.
+  -d, --detach          Run Docker Engine logs in a detached shell mode.
+  -s, --seed_db         Seed the MongoDB database with test data.
+  --scale SERVICE=NUM   Scale SERVICE to NUM instances. Overrides the
+                        'scale' setting in the Compose file if present
+  -h, --help            Get the Usage information for this command.
+
+Optional Containers:
+  -S, --swagger    Run the Swagger container with the cluster.
+  -J, --jupyter    Run the Jupyter container with the cluster.
+
+Service (only one for logs):
+  users
+  celery-worker
+  simcct
+  dask-scheduler
+  dask-worker
+  redis
+  mongodb
+  jupyter
+  swagger
+${reset}
+"""
+}
+
 # shellcheck disable=SC1079
-test_usage() {
+testUsage() {
     # shellcheck disable=SC1078
     echo -e """
 ${greenf}ARCLYTICS CLI SCRIPT
 
-Usage: arclytics.sh test [OPTIONS] [TEST TYPE]
+Usage: arclytics.sh up [OPTIONS] [TEST TYPE]
 
 The Arclytics CLI command to run Unit Tests.
 
@@ -161,6 +198,7 @@ Options:
   -b, --build      Build the Docker containers before running tests.
   -t, --tty        Attach a pseudo-TTY to the tests.
   -c, --coverage   Run the unit tests with coverage.
+  -h, --help       Get the Usage information for this command.
 
 Test Types (one only):
   all         Run all unit tests for Arclytics Sim
@@ -298,7 +336,7 @@ run_tests() {
             all
         fi
     else
-        test_usage
+        testUsage
         exit 1
     fi
     completeMessage
@@ -313,6 +351,11 @@ run() {
         docker-compose build ${build_containers}
     elif [[ "${command}" == "up" ]]; then
         headerMessage "RUN ARCLYTICS SIM CONTAINERS"
+
+        if [[ ${scale} == 1 ]]; then
+            containers="--scale ${scale_service} ${containers}"
+        fi
+
         if [[ ${swagger} == 1 ]]; then
             containers="${containers} swagger"
         fi
@@ -445,6 +488,20 @@ while [[ "$1" != "" ]] ; do
                     -J | --jupyter )
                         jupyter=1
                         ;;
+                    --scale )
+                        scale=1
+                        # Shift to the arg after --scale
+                        shift
+                        # Get the first argument after --scale flag
+                        # TODO(andrew@neuraldev.io): Currently only taking one
+                        scale_service=$2
+                        # scale_num="$(cut -d'=' -f2 <<< "${scale_service}" )"
+                        shift
+                        ;;
+                    -h | --help )
+                        upUsage
+                        exit 0
+                        ;;
                     * )
                         containers=$2
                         while [[ "$3" != "" ]] ; do
@@ -478,7 +535,7 @@ while [[ "$1" != "" ]] ; do
                         test_type_title="Flask-Testing Unittests with Coverage"
                         ;;
                     -h | --help )
-                        test_usage
+                        testUsage
                         exit 0
                         ;;
                     * )

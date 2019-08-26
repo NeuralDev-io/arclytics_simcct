@@ -1420,6 +1420,112 @@ paths:
                     status: "fail"
                     message: "User does not exist."
 
+  /admin/create:
+    servers:
+      - url: http://localhost:8000
+    put:
+      summary: "Disable a User's account if an Admin has requested."
+      security:
+        - bearerAuth: []
+      tags:
+        - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        202:
+          description: "The user has been successfully disabled."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Bad Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Email':
+                  value:
+                    status: "fail"
+                    message: "No email provided."
+                'No Position Provided':
+                  value:
+                    status: "fail"
+                    message: "No position provided"
+                'Invalid Email':
+                  value:
+                    status: "fail"
+                    message: "Invalid email."
+                    error: "The email address is not valid. It must have exactly one @-sign."
+                'Already an administrator':
+                  value:
+                    status: "fail"
+                    message: "User is already an Administrator"
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Verify Email':
+                  value:
+                    status: "fail"
+                    message: "The user must verify their email"
+        403:
+          description: "The user is not authorised to perform this request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Authorisation':
+                  value:
+                    status: "fail"
+                    message: "Not authorized"
+        404:
+          description: "We cannot find a valid user."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+
   /user/disable:
     servers:
       - url: http://localhost:8000
@@ -4482,5 +4588,3 @@ tags:
     description: "Endpoints that update the Session store of the user's configurations."
   - name: Simulation
     description: Endpoints that manage simulation activities.
-  - name: Saved Simulation
-    description: "Endpoints for users to save a Simulation with Configurations, Alloy Store, and Results."

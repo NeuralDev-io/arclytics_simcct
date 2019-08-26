@@ -1424,7 +1424,7 @@ paths:
     servers:
       - url: http://localhost:8000
     put:
-      summary: "Disable a User's account if an Admin has requested."
+      summary: "Create an admin account."
       security:
         - bearerAuth: []
       tags:
@@ -1441,7 +1441,7 @@ paths:
                   format: email
       responses:
         202:
-          description: "The user has been successfully disabled."
+          description: "Admin successfully created"
           content:
             application/json:
               schema:
@@ -1525,6 +1525,88 @@ paths:
                   value:
                     status: "fail"
                     message: "User does not exist."
+
+  /admin/create/cancel/<token>:
+    servers:
+      - url: http://localhost:8000
+    put:
+      summary: "Allow an admin to cancel their promotion of another user"
+      security:
+        - bearerAuth: []
+      tags:
+        - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        202:
+          description: "The user has been successfully disabled."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'URL Token Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid token."
+                'Exception':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid token."
+                'Not In List':
+                  value:
+                    status: "fail"
+                    message: "Invalid token."
+                'Admin Or User Not In List':
+                  value:
+                    status: "fail"
+                    message: "Invalid data in Token."
+                'Invalid List':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid list from token."
+                'Missing Information':
+                  value:
+                    status: "fail"
+                    message: "Missing information in Token."
+                'Administrator does not exist':
+                  value:
+                    status: "fail"
+                    message: "Administrator does not exist."
+                'User does not exist':
+                  value:
+                    status: "fail"
+                    message: "Targert User does not exist."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Not Authorised':
+                  value:
+                    status: "fail"
+                    message: "User is not authorised to promote other user."
 
   /user/disable:
     servers:

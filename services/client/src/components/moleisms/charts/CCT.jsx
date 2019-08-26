@@ -5,7 +5,7 @@ import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { layout, config } from './utils/chartConfig'
 
-import colours from '../../../styles/_colors_light.scss'
+import { getColor } from '../../../utils/theming'
 import styles from './CCT.module.scss'
 
 const CCT = ({
@@ -21,49 +21,49 @@ const CCT = ({
         y: data.ferrite_nucleation.temp,
         name: 'Ferrite nucleation',
         mode: 'line',
-        marker: { color: colours.o500 },
+        marker: { color: getColor('--o500') },
       },
       {
         x: data.ferrite_completion.time,
         y: data.ferrite_completion.temp,
         name: 'Ferrite completion',
         mode: 'line',
-        marker: { color: colours.l500 },
+        marker: { color: getColor('--l500') },
       },
       {
         x: data.pearlite_nucleation.time,
         y: data.pearlite_nucleation.temp,
         name: 'Pearlite nucleation',
         mode: 'line',
-        marker: { color: colours.g500 },
+        marker: { color: getColor('--g500') },
       },
       {
         x: data.pearlite_completion.time,
         y: data.pearlite_completion.temp,
         name: 'Pearlite completion',
         mode: 'line',
-        marker: { color: colours.t500 },
+        marker: { color: getColor('--t500') },
       },
       {
         x: data.bainite_nucleation.time,
         y: data.bainite_nucleation.temp,
         name: 'Bainite nucleation',
         mode: 'line',
-        marker: { color: colours.b500 },
+        marker: { color: getColor('--b500') },
       },
       {
         x: data.bainite_completion.time,
         y: data.bainite_completion.temp,
         name: 'Bainite completion',
         mode: 'line',
-        marker: { color: colours.i500 },
+        marker: { color: getColor('--i500') },
       },
       {
         x: data.martensite.time,
         y: data.martensite.temp,
         name: 'Martensite',
         mode: 'line',
-        marker: { color: colours.v500 },
+        marker: { color: getColor('--v500') },
       },
     ]
 
@@ -75,8 +75,8 @@ const CCT = ({
         mode: 'line',
         marker: {
           size: 10,
-          color: colours.r500,
-          line: { width: 10, color: colours.r500 },
+          color: getColor('--r500'),
+          line: { width: 10, color: getColor('--r500') },
         },
       })
     }

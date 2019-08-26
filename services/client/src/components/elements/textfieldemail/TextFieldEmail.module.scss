@@ -1,12 +1,10 @@
-@import '../../../styles/colors_light';
-
 .container {
   display: flex;
   flex-flow: column nowrap;
   //height: 60px;
 
   & > span {
-    color: $r500;
+    color: var(--r500);
     margin-top: .25rem;
   }
 }
@@ -26,27 +24,27 @@
   border: 1px solid transparent;
 
   // colour
-  background-color: $n10;
-  color: $n900;
+  background-color: var(--n10);
+  color: var(--n900);
 
   &::placeholder {
-    color: $n600;
+    color: var(--n600);
   }
 
   &:hover:not([disabled]) {
-    background-color: $n20;
+    background-color: var(--n20);
   }
 
   &:focus {
-    background-color: $n0;
-    border-color: $arc500;
+    background-color: var(--n0);
+    border-color: var(--arc500);
   }
 
   &:disabled {
-    color: $n300;
+    color: var(--n300);
 
     &::placeholder {
-      color: $n300;
+      color: var(--n300);
     }
   }
 }
@@ -64,24 +62,24 @@
 }
 
 .error {
-  background-color: rgba($color: $r500, $alpha: 0.1);
-  border: 1px solid $r500;
+  background-color: rgba(var(--r500-rgb), 0.1);
+  border: 1px solid var(--r500);
 
   &:hover {
-    background-color: rgba($color: $r500, $alpha: 0.2);
-    border-color: 1px solid $r500;
+    background-color: rgba(var(--r500-rgb), 0.2);
+    border-color: 1px solid var(--r500);
   }
   &:hover:not([disabled]) {
-    background-color: rgba($color: $r500, $alpha: 0.2);
+    background-color: rgba(var(--r500-rgb), 0.2);
   }
   &:focus {
-    background-color: $n0;
-    border-color: $r500;
+    background-color: var(--n0);
+    border-color: var(--r500);
   }
 }
 
 .emailItem {
-  background-color: $n10;
+  background-color: var(--n10);
   border-radius: 2rem;
   padding: .25rem 1rem;
   display: flex;

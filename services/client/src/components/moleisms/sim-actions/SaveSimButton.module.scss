@@ -1,5 +1,3 @@
-@import '../../../styles/colors_light';
-
 .optionList {
   padding: .5rem 0;
 
@@ -17,8 +15,8 @@
   cursor: pointer;
 
   &:hover {
-    background-color: $n10;
-    color: $arc500;
+    background-color: var(--n10);
+    color: var(--arc500);
   }
 
   .icon {

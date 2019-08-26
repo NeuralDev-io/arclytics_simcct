@@ -17,7 +17,7 @@ import PropTypes from 'prop-types'
 import ReactSelect from 'react-select'
 
 import styles from './Select.module.scss'
-import colours from '../../../styles/_colors_light.scss'
+import { getColor } from '../../../utils/theming'
 
 // TODO: include validation
 const Select = (props) => {
@@ -47,9 +47,9 @@ const Select = (props) => {
     }),
     control: (provided, state) => ({
       ...provided,
-      backgroundColor: colours.n10,
+      backgroundColor: getColor('--n10'),
       borderRadius: 6,
-      borderColor: colours.n10,
+      borderColor: getColor('--n10'),
       borderWidth: 1,
       padding: '0 .25rem 0 .55rem',
       height: '2.25rem',
@@ -57,8 +57,8 @@ const Select = (props) => {
       cursor: state.isDisabled ? 'not-allowed' : 'pointer',
 
       '&:hover': {
-        backgroundColor: colours.n20,
-        borderColor: colours.n20,
+        backgroundColor: getColor('--n20'),
+        borderColor: getColor('--n20'),
       },
     }),
     valueContainer: () => ({
@@ -77,9 +77,9 @@ const Select = (props) => {
     singleValue: (provided, state) => ({
       ...provided,
       color: (() => {
-        if (state.isDisabled) return colours.n300
-        if (state.hasValue) return colours.n900
-        return colours.n600
+        if (state.isDisabled) return getColor('--n300')
+        if (state.hasValue) return getColor('--n900')
+        return getColor('--n600')
       })(),
     }),
     option: provided => ({
@@ -88,7 +88,7 @@ const Select = (props) => {
     }),
     placeholder: (provided, state) => ({
       ...provided,
-      color: state.isDisabled ? colours.n300 : colours.n600,
+      color: state.isDisabled ? getColor('--n300') : getColor('--n600'),
     }),
   }
 
@@ -108,8 +108,8 @@ const Select = (props) => {
         ...theme,
         colors: {
           ...theme.colors,
-          primary: colours.arc500,
-          primary25: colours.arc50,
+          primary: getColor('--arc500'),
+          primary25: getColor('--arc50'),
         },
       })}
       {...other}

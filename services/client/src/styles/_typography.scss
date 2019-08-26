@@ -54,7 +54,7 @@ body {
   font-size: $base-text-size;
   font-family: $font-primary;
   font-weight: 400;
-  color: $n900;
+  color: var(--n900);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -123,7 +123,7 @@ p {
 .text--sub1 {
   font-size: $text-sub1;
   line-height: $line-height-sub1;
-  color: $n500;
+  color: var(--n500);
   font-family: $font-primary;
   letter-spacing: $letter-spacing-sub1;
 }
@@ -132,11 +132,11 @@ p {
   font-size: $text-sub2;
   line-height: $line-height-sub2;
   font-weight: 600;
-  color: $n500;
+  color: var(--n500);
   font-family: $font-primary;
   letter-spacing: $letter-spacing-sub2;
 }
 
 .text--disabled {
-  color: $n300;
+  color: var(--n300);
 }

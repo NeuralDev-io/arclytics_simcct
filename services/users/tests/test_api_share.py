@@ -45,6 +45,7 @@ ALLOY_STORE = _TEST_JSON['alloy_store']
 
 class TestShareService(BaseTestCase):
     """Test for sharing simulations via link and email"""
+
     def test_share_configuration_link_success(self):
         """
         Ensure a user is able to obtain a shareable link for valid simulation

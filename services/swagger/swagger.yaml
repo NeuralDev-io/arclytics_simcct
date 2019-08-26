@@ -917,7 +917,6 @@ paths:
                     status: "fail"
                     message: "Does not exit."
 
-
   /auth/register:
     servers:
       - url: http://localhost:8000
@@ -1420,6 +1419,72 @@ paths:
                     status: "fail"
                     message: "User does not exist."
 
+  /auth/password/check:
+    servers:
+      - url: http://localhost:8000
+    post:
+      summary: "An endpoint for password check."
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Correct password."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'User Already Verified':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Password Provided':
+                  value:
+                    status: "fail"
+                    message: "You must provide a password."
+                'Incorrect Password':
+                  value:
+                    status: "fail"
+                    message: "Password incorrect."
+  /confirm/resend:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "An endpoint for sending another confirmation email."
+      tags:
+        - Auth
+      responses:
+        202:
+          description: "Confirmation email sent."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                message: "Another confirmation email has been sent."
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'User Already Verified':
+                  value:
+                    status: "fail"
+                    message: "User is already verified."
+
   /admin/create:
     servers:
       - url: http://localhost:8000
@@ -1600,7 +1665,6 @@ paths:
                   value:
                     status: "fail"
                     message: "User is not authorised to promote other user."
-
   /admin/create/verify/<token>:
     servers:
       - url: http://localhost:8000
@@ -1652,7 +1716,6 @@ paths:
                   value:
                     status: "fail"
                     message: "User is not an Admin."
-
   /disable/user:
     servers:
       - url: http://localhost:8000
@@ -1747,7 +1810,6 @@ paths:
                   value:
                     status: "fail"
                     message: "User does not exist."
-
   /disable/user/confirm/<token>:
     servers:
       - url: http://localhost:8000

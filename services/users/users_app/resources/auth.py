@@ -506,7 +506,7 @@ def check_password(user_id) -> Tuple[dict, int]:
         return jsonify(response), 400
 
     if len(str(password)) < 6 or len(str(password)) > 254:
-        response['message'] = 'Password incorrect.'
+        response['message'] = 'Password  incorrect.'
         return jsonify(response), 400
 
     user = User.objects.get(id=user_id)

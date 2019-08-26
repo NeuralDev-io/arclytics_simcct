@@ -885,6 +885,5 @@ def get_user_status(user_id) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     user = User.objects.get(id=user_id)
     data = user.to_dict()
-    data['_id'] = user_id
     response = {'status': 'success', 'data': data}
     return jsonify(response), 200

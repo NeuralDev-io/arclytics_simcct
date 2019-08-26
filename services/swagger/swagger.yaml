@@ -1485,7 +1485,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid payload."
-                'Need Both Passowrd And Confirm Password':
+                'Need Both Password And Confirm Password':
                   value:
                     status: "fail"
                     message: "Must provide a password and confirm password."
@@ -1516,6 +1516,46 @@ paths:
                   value:
                     status: "fail"
                     message: "Password is not correct."
+  /auth/email/change:
+    servers:
+      - url: http://localhost:8000
+    put:
+      summary: "An endpoint for changing email."
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Correct password."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                message: "Email changed."
+                new_email: (new_email)
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Request':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No New Email':
+                  value:
+                    status: "fail"
+                    message: "No new email given."
+                'Invalid Email':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid email."
   /confirm/resend:
     servers:
       - url: http://localhost:8000

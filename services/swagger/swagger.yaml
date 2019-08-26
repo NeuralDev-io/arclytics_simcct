@@ -1529,7 +1529,7 @@ paths:
   /admin/create/cancel/<token>:
     servers:
       - url: http://localhost:8000
-    put:
+    get:
       summary: "Allow an admin to cancel their promotion of another user"
       security:
         - bearerAuth: []

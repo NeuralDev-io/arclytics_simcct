@@ -103,13 +103,14 @@ $bg-img: url('../../../assets/background_img-min.png');
   margin-top: 3.5rem;
   margin-bottom: 3.5rem;
   display: flex;
-  flex-flow: column;
+  flex-flow: row;
   justify-content: space-between;
   width: 35rem;
 
   h5, h6{
     margin-bottom: 1.5rem;
   }
+
   .header{
     margin-bottom: 1.5rem;
     display: flex;
@@ -117,9 +118,11 @@ $bg-img: url('../../../assets/background_img-min.png');
     flex-wrap: wrap;
     justify-content: space-between;
   }
+
   .pwdOrEmail{
     width: fit-content;
   }
+
   .row{
     display: flex;
     flex-direction: row;
@@ -142,11 +145,13 @@ $bg-img: url('../../../assets/background_img-min.png');
       flex: 3;
     }
   }
+
   .submitEmail{
     float:right;
     margin-top: 0.5rem;
     width: fit-content;
   }
+
   .submitPwd{
     float:right;
     margin-top: 0.5rem;
@@ -161,8 +166,6 @@ $bg-img: url('../../../assets/background_img-min.png');
   margin-bottom: 1rem;
   height: 1.25rem;
 }
-
-
 
 .dataAndPersonal{
   width: 35rem;

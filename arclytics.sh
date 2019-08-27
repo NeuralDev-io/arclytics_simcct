@@ -2,26 +2,26 @@
 # shellcheck disable=SC2086
 
 # Set the Project Name for docker-compose  note: cannot be done any other way
-# other than setting it as part of the docker-compose command -p flag.
+# other than setting it as part of the docker-compose COMMAND -p flag.
 export COMPOSE_PROJECT_NAME='arc'
 
 # ======================================================= #
 # ==================== # Variables # ==================== #
 # ======================================================= #
-VERSION=1.1.0
+VERSION=1.1.1
 WORKDIR="$(dirname "$(readlink -f "$0")")"
 DOCKER_COMPOSE_PATH="${WORKDIR}/docker-compose.yml"
-command=""
-args=""
-containers="users simcct client redis mongodb dask-scheduler dask-worker celery-worker"
-container_log=""
-build=0
-detach=0
-seed_db=0
-build_containers=""
-scale=0
-scale_num=2
-docker_down=0
+COMMAND=""
+ARGS=""
+CONTAINER_ARGS="users simcct client redis mongodb dask-scheduler dask-worker celery-worker"
+CONTAINER_LOG=""
+BUILD_CONTAINER_ARGS=""
+BUILD_FLAG=0
+DETACH_FLAG=0
+SEED_DB_FLAG=0
+SCALE_FLAG=0
+SCALE_CONTAINERS_ARGS=""
+DOCKER_DOWN_FLAG=0
 swagger=0
 jupyter=0
 
@@ -144,12 +144,12 @@ flushAndSeedDb() {
     docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py flush
     echoSpace
     generalMessage "Seeding users microservice database with users"
-    generalMessage "docker-compose exec users python manage.py seed_db"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py seed_db
+    generalMessage "docker-compose exec users python manage.py SEED_DB_FLAG"
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py SEED_DB_FLAG
     echoSpace
     generalMessage "Seeding simcct microservice database with global alloys"
-    generalMessage "docker-compose exec simcct python manage.py seed_db"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py seed_db
+    generalMessage "docker-compose exec simcct python manage.py SEED_DB_FLAG"
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py SEED_DB_FLAG
     echoSpace
 }
 
@@ -160,28 +160,28 @@ ${greenf}ARCLYTICS CLI SCRIPT
 
 Usage: arclytics.sh up [options] [SERVICE ARGS...]
 
-The Arclytics CLI command to run the containers.
+The Arclytics CLI COMMAND to run the containers.
 
 Options:
-  -b, --build           Build the Docker containers before running.
+  -b, --build           Build the Docker CONTAINER_ARGS before running.
   -d, --detach          Run Docker Engine logs in a detached shell mode.
   -s, --seed_db         Seed the MongoDB database with test data.
   --scale SERVICE=NUM   Scale SERVICE to NUM instances. Overrides the
-                        'scale' setting in the Compose file if present
-  -h, --help            Get the Usage information for this command.
+                        \`--scale\` setting in the Compose file if present
+  -h, --help            Get the Usage information for this COMMAND.
 
 Optional Containers:
-  -S, --swagger    Run the Swagger container with the cluster.
-  -J, --jupyter    Run the Jupyter container with the cluster.
+  -S, --swagger         Run the Swagger container with the cluster.
+  -J, --jupyter         Run the Jupyter container with the cluster.
 
-Service (only one for logs):
-  users
-  celery-worker
-  simcct
-  dask-scheduler
-  dask-worker
-  redis
-  mongodb
+Service (only one for \`logs\`; * default for \`up\`):
+  users *
+  celery-worker *
+  simcct *
+  dask-scheduler *
+  dask-worker *
+  redis *
+  mongodb *
   jupyter
   swagger
 ${reset}
@@ -196,13 +196,13 @@ ${greenf}ARCLYTICS CLI SCRIPT
 
 Usage: arclytics.sh up [OPTIONS] [TEST TYPE]
 
-The Arclytics CLI command to run Unit Tests.
+The Arclytics CLI COMMAND to run Unit Tests.
 
 Options:
-  -b, --build      Build the Docker containers before running tests.
+  -b, --build      Build the Docker CONTAINER_ARGS before running tests.
   -t, --tty        Attach a pseudo-TTY to the tests.
   -c, --coverage   Run the unit tests with coverage.
-  -h, --help       Get the Usage information for this command.
+  -h, --help       Get the Usage information for this COMMAND.
 
 Test Types (one only):
   all         Run all unit tests for Arclytics Sim
@@ -226,53 +226,58 @@ Arclytics Sim Docker orchestration.
 Usage:
 arclytics.sh build [SERVICE ARGS...]
 arclytics.sh up [options] [SERVICE ARGS...]
+arclytics.sh up --scale [SERVICE=NUM]
 arclytics.sh logs [SERVICE]
 arclytics.sh test [options] [TEST TYPE]
 arclytics.sh down [options]
+arclytics.sh scale [SERVICE=NUM...]
 arclytics.sh [COMMAND]
 
 Options:
-  -b, --build      Build the Docker containers before running.
-  -d, --detach     Run Docker Engine logs in a detached shell mode.
-  -s, --seed_db    Seed the MongoDB database with test data.
-  -h, --help       Get the Usage information for this script.
+  -b, --build           Build the Docker CONTAINER_ARGS before running.
+  -d, --detach          Run Docker Engine logs in a detached shell mode.
+  -s, --seed_db         Seed the MongoDB database with test data.
+  -h, --help            Get the Usage information for this script.
+
+  Up Options:
+  --scale SERVICE=NUM   Scale the a single container when running the cluster.
+  -S, --swagger         Run the Swagger container with the cluster.
+  -J, --jupyter         Run the Jupyter container with the cluster.
 
   Test Options:
-  -b, --build      Build the Docker containers before running tests.
-  -t, --tty        Attach a pseudo-TTY to the tests.
-  -c, --coverage   Run the unit tests with coverage.
+  -b, --build           Build the Docker CONTAINER_ARGS before running tests.
+  -t, --tty             Attach a pseudo-TTY to the tests.
+  -c, --coverage        Run the unit tests with coverage.
 
   Down Options:
-  -D, --docker     Stop the containers using the Docker PS stat.
+  -D, --docker          Stop the CONTAINER_ARGS using the Docker PS stat.
 
 Commands:
   build       Build the Docker images from docker-compose.yml only (passing services
               to build specific ones or leave empty to build all).
-  up          Run the main containers in docker-compose.yml or provide a list of
+  up          Run the main CONTAINER_ARGS in docker-compose.yml or provide a list of
               arguments to run only those provided.
   logs        Get the logs of the container.
-  ps          List the running containers
-  stats       Display a live stream of container(s) resource usage statistics
+  ps          List the running containers.
+  stats       Display a live stream of container(s) resource usage statistics.
   flush       Flush both Redis datastore and MongoDB database only.
   seed        Seed the microservices with test data and flush both Redis
               datastore and MongoDB database.
   test        Run unit tests on the microservices.
   down        Stop all containers.
-  prune       Prune all stopped images, containers, and networks.
+  prune       Prune all stopped images, CONTAINER_ARGS, and networks.
   pwd         Get the full path directory of the Arclytics CLI script.
+  scale       Set number of CONTAINER_ARGS to run for a service. Numbers are specified
+              in the form \`service=num\` as arguments.
 
-Optional Containers:
-  -S, --swagger    Run the Swagger container with the cluster.
-  -J, --jupyter    Run the Jupyter container with the cluster.
-
-Service (only one for logs):
-  users
-  celery-worker
-  simcct
-  dask-scheduler
-  dask-worker
-  redis
-  mongodb
+Service (only one for \`logs\`; * default for \`up\`):
+  users *
+  celery-worker *
+  simcct *
+  dask-scheduler *
+  dask-worker *
+  redis *
+  mongodb *
   jupyter
   swagger
 
@@ -289,13 +294,68 @@ ${reset}
 # ==================================================================== #
 # ==================== # Main Command Functions # ==================== #
 # ==================================================================== #
+dockerPs() {
+    headerMessage "ARCLYTICS SIM RUNNING CONTAINER_ARGS"
+    generalMessage "docker ps --size ${ARGS}"
+    docker ps --size ${ARGS}
+    completeMessage
+}
+
+dockerLogs() {
+    headerMessage "ARCLYTICS SIM CONTAINER LOGS"
+    generalMessage "docker-compose logs ${CONTAINER_LOG}"
+    docker-compose -f ${DOCKER_COMPOSE_PATH} logs ${CONTAINER_LOG}
+    completeMessage
+}
+
+dockerStats() {
+    headerMessage "ARCLYTICS SIM CONTAINER STATS"
+    generalMessage "docker stats ${ARGS}"
+    docker stats ${ARGS}
+}
+
+dockerSystemPrune() {
+    headerMessage "PRUNE ARCLYTICS SIM DOCKER ORCHESTRATION"
+    running_container_ids=$(docker ps -aq)
+    generalMessage "docker stop ${running_container_ids}"
+    docker stop ${running_container_ids}
+    generalMessage "docker system prune -af"
+    docker system prune -af
+    completeMessage
+}
+
+containerDown() {
+    headerMessage "STOPPING ARCLYTICS SIM CONTAINER_ARGS"
+    if [[ "${DOCKER_DOWN_FLAG}" == 1 ]]; then
+        running=$(docker ps -aq)
+        if [[ ${running} == "" ]]; then
+            generalMessage "No CONTAINER_ARGS running"
+            docker ps
+        else
+            generalMessage "docker stop \$(docker ps -aq)"
+            # shellcheck disable=SC2046
+            docker stop ${running}
+        fi
+    else
+        generalMessage "docker-compose down ${ARGS}"
+        docker-compose -f ${DOCKER_COMPOSE_PATH} down ${ARGS}
+    fi
+    completeMessage
+}
+
+scaleContainers() {
+  headerMessage "SCALING ARCLYTICS SIM CONTAINER_ARGS"
+  docker-compose -f ${DOCKER_COMPOSE_PATH} SCALE_FLAG ${SCALE_CONTAINERS_ARGS}
+  completeMessage
+}
+
 # shellcheck disable=SC2086
 run_tests() {
     ## run appropriate tests
     if [[ "${test_server}" == "server" ]]; then
-        if [[ ${build} == 1 ]]; then
-            generalMessage "docker-compose up -d --build ${containers}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${containers}"
+        if [[ ${BUILD_FLAG} == 1 ]]; then
+            generalMessage "docker-compose up -d --BUILD_FLAG ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --BUILD_FLAG "${CONTAINER_ARGS}"
             server
             generalMessage "docker-compose down"
             docker-compose -f ${DOCKER_COMPOSE_PATH} down
@@ -303,9 +363,9 @@ run_tests() {
             server
         fi
     elif [[ "${test_server}" == "users" ]]; then
-        if [[ ${build} == 1 ]]; then
-            generalMessage "docker-compose up -d --build ${containers}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${containers}"
+        if [[ ${BUILD_FLAG} == 1 ]]; then
+            generalMessage "docker-compose up -d --BUILD_FLAG ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --BUILD_FLAG "${CONTAINER_ARGS}"
             users
             generalMessage "docker-compose down"
             docker-compose -f ${DOCKER_COMPOSE_PATH} down
@@ -313,9 +373,9 @@ run_tests() {
             users
         fi
     elif [[ "${test_server}" == "simcct" ]]; then
-        if [[ ${build} == 1 ]]; then
-            generalMessage "docker-compose up -d --build ${containers}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${containers}"
+        if [[ ${BUILD_FLAG} == 1 ]]; then
+            generalMessage "docker-compose up -d --BUILD_FLAG ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --BUILD_FLAG "${CONTAINER_ARGS}"
             simcct
             generalMessage "docker-compose down"
             docker-compose -f ${DOCKER_COMPOSE_PATH} down
@@ -323,22 +383,22 @@ run_tests() {
             simcct
         fi
     elif [[ "${test_server}" == "client" ]]; then
-        if [[ ${build} == 1 ]]; then
-            generalMessage "docker-compose up -d --build ${containers}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${containers}"
+        if [[ ${BUILD_FLAG} == 1 ]]; then
+            generalMessage "docker-compose up -d --BUILD_FLAG ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --BUILD_FLAG "${CONTAINER_ARGS}"
             client
             generalMessage "docker-compose down"
             docker-compose -f ${DOCKER_COMPOSE_PATH} down
         fi
     elif [[ "${test_server}" == "e2e" ]]; then
-        if [[ ${build} == 1 ]]; then
-            generalMessage "docker-compose up -d --build ${containers}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${containers}"
+        if [[ ${BUILD_FLAG} == 1 ]]; then
+            generalMessage "docker-compose up -d --BUILD_FLAG ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --BUILD_FLAG "${CONTAINER_ARGS}"
         fi
     elif [[ "${test_server}" == "all" ]]; then
-        if [[ ${build} == 1 ]]; then
-            generalMessage "docker-compose up -d --build ${containers}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${containers}"
+        if [[ ${BUILD_FLAG} == 1 ]]; then
+            generalMessage "docker-compose up -d --BUILD_FLAG ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --BUILD_FLAG "${CONTAINER_ARGS}"
             all
             generalMessage "docker-compose down"
             docker-compose -f ${DOCKER_COMPOSE_PATH} down
@@ -354,82 +414,47 @@ run_tests() {
 
 run() {
     ## run appropriate tests
-    if [[ "${command}" == "build" ]]; then
+    if [[ "${COMMAND}" == "build" ]]; then
         headerMessage "BUILDING ARCLYTICS SIM CONTAINERS ONLY"
-        generalMessage "docker-compose build ${build_containers}"
-        docker-compose -f ${DOCKER_COMPOSE_PATH} build ${build_containers}
-    elif [[ "${command}" == "up" ]]; then
-        headerMessage "RUN ARCLYTICS SIM CONTAINERS"
+        generalMessage "docker-compose build ${BUILD_CONTAINER_ARGS}"
+        docker-compose -f ${DOCKER_COMPOSE_PATH} build ${BUILD_CONTAINER_ARGS}
+    elif [[ "${COMMAND}" == "up" ]]; then
+        headerMessage "RUN ARCLYTICS SIM CONTAINER_ARGS"
 
-        if [[ ${scale} == 1 ]]; then
-            containers="--scale ${scale_service} ${containers}"
+        if [[ ${SCALE_FLAG} == 1 ]]; then
+            CONTAINER_ARGS="--scale ${scale_service} ${CONTAINER_ARGS}"
         fi
 
         if [[ ${swagger} == 1 ]]; then
-            containers="${containers} swagger"
+            CONTAINER_ARGS="${CONTAINER_ARGS} swagger"
         fi
 
         if [[ ${jupyter} == 1 ]]; then
-            containers="${containers} jupyter"
+            CONTAINER_ARGS="${CONTAINER_ARGS} jupyter"
         fi
 
-        if [[ ${build} == 1 ]]; then
-            if [[ ${detach} == 1 ]]; then
-                generalMessage "docker-compose up -d --build ${containers}"
-                docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build ${containers}
+        if [[ ${BUILD_FLAG} == 1 ]]; then
+            if [[ ${DETACH_FLAG} == 1 ]]; then
+                generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
+                docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build ${CONTAINER_ARGS}
             else
-                generalMessage "docker-compose up --build ${containers}"
-                docker-compose -f ${DOCKER_COMPOSE_PATH} up --build ${containers}
+                generalMessage "docker-compose up --build ${CONTAINER_ARGS}"
+                docker-compose -f ${DOCKER_COMPOSE_PATH} up --build ${CONTAINER_ARGS}
             fi
         else
-            if [[ ${detach} == 1 ]]; then
-                generalMessage "docker-compose up -d ${containers}"
-                docker-compose -f ${DOCKER_COMPOSE_PATH} up -d ${containers}
+            if [[ ${DETACH_FLAG} == 1 ]]; then
+                generalMessage "docker-compose up -d ${CONTAINER_ARGS}"
+                docker-compose -f ${DOCKER_COMPOSE_PATH} up -d ${CONTAINER_ARGS}
             else
-                generalMessage "docker-compose up ${containers}"
-                docker-compose -f ${DOCKER_COMPOSE_PATH} up ${containers}
+                generalMessage "docker-compose up ${CONTAINER_ARGS}"
+                docker-compose -f ${DOCKER_COMPOSE_PATH} up ${CONTAINER_ARGS}
             fi
         fi
 
-        if [[ ${seed_db} == 1 ]]; then
+        if [[ ${SEED_DB_FLAG} == 1 ]]; then
             echoSpace
             flushAndSeedDb
         fi
-    elif [[ "${command}" == "ps" ]]; then
-        headerMessage "ARCLYTICS SIM RUNNING CONTAINERS"
-        generalMessage "docker ps --size ${args}"
-        docker ps --size ${args}
-    elif [[ "${command}" == "logs" ]]; then
-        headerMessage "ARCLYTICS SIM CONTAINER LOGS"
-        generalMessage "docker-compose logs ${container_log}"
-        docker-compose -f ${DOCKER_COMPOSE_PATH} logs ${container_log}
-    elif [[ "${command}" == "down" ]]; then
-        headerMessage "STOPPING ARCLYTICS SIM CONTAINERS"
-        if [[ "${docker_down}" == 1 ]]; then
-            running=$(docker ps -aq)
-            if [[ ${running} == "" ]]; then
-                generalMessage "No containers running"
-                docker ps
-            else
-                generalMessage "docker stop \$(docker ps -aq)"
-                # shellcheck disable=SC2046
-                docker stop ${running}
-            fi
-        else
-            generalMessage "docker-compose down ${args}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} down ${args}
-        fi
-    elif [[ "${command}" == "stats" ]]; then
-        headerMessage "ARCLYTICS SIM CONTAINER STATS"
-        generalMessage "docker stats ${args}"
-        docker stats ${args}
-    elif [[ "${command}" == "prune" ]]; then
-        headerMessage "PRUNE ARCLYTICS SIM DOCKER ORCHESTRATION"
-        generalMessage "docker stop $(docker ps -aq)"
-        # shellcheck disable=SC2046
-        docker stop $(docker ps -aq)
-        generalMessage "docker system prune -af"
-        docker system prune -af
     else
         usage
         exit 1
@@ -447,74 +472,98 @@ fi
 
 while [[ "$1" != "" ]] ; do
     case $1 in
+        -V | --version )
+            generalMessage "Arclytis CLI"
+            echo v${VERSION}
+            ;;
+        -h | --help )
+            usage
+            exit 0
+            ;;
+        -d | --detach )
+            DETACH_FLAG=1
+            ;;
+        -b | --build )
+            BUILD_FLAG=1
+            ;;
+        -s | --seed_db )
+            SEED_DB_FLAG=1
+            ;;
+        -S | --swagger )
+            swagger=1
+            ;;
+        -J | --jupyter )
+            jupyter=1
+            ;;
+        --group )
+            # TODO(andrew@neuraldev.io): Add grouping for container services.
+            ;;
         ps )
-            command="ps"
-            args=$2
+            ARGS=$2
             while [[ "$3" != "" ]] ; do
-                args="${args} $3"
+                ARGS="${ARGS} $3"
                 shift
             done
-            run
+            dockerPs
             ;;
         stats )
-            command="stats"
-            args=$2
+            ARGS=$2
             while [[ "$3" != "" ]] ; do
-                args="${args} $3"
+                ARGS="${ARGS} $3"
                 shift
             done
-            run
+            dockerStats
+            ;;
+        prune )
+            dockerSystemPrune
             ;;
         down )
-            command="down"
             while [[ "$2" != "" ]] ; do
                 case $2 in
                     -D | --docker )
-                        docker_down=1
+                        DOCKER_DOWN_FLAG=1
                         ;;
                     * )
-                        args=$2
+                        ARGS=$2
                         while [[ "$3" != "" ]] ; do
-                            args="${args} $3"
+                            ARGS="${ARGS} $3"
                             shift
                         done
                 esac
                 shift
             done
-            run
+            containerDown
             ;;
-        prune )
-            command="prune"
-            run
-            ;;
-        -d | --detach )
-            detach=1
-            ;;
-        -b | --build )
-            build=1
+        scale )
+            SCALE_CONTAINERS_ARGS=$2
+            while [[ $3 != "" ]] ; do
+                SCALE_CONTAINERS_ARGS="${SCALE_CONTAINERS_ARGS} $3"
+                shift
+            done
+            scaleContainers
             ;;
         build )
-            command="build"
-            build_containers=$2
+            COMMAND="build"
+            BUILD_CONTAINER_ARGS=$2
             while [[ "$3" != "" ]] ; do
-                build_containers="${build_containers} $3"
+                BUILD_CONTAINER_ARGS="${BUILD_CONTAINER_ARGS} $3"
                 shift
             done
             run
             ;;
         up )
-            command="up"
+            COMMAND="up"
 
             while [[ "$2" != "" ]] ; do
                 case $2 in
                     -b | --build )
-                        build=1
+                        BUILD_FLAG=1
                         ;;
                     -d | --detach )
-                        detach=1
+                        DETACH_FLAG=1
                         ;;
                     -s | --seed_db )
-                        seed_db=1
+                        SEED_DB_FLAG=1
                         ;;
                     -S | --swagger )
                         swagger=1
@@ -523,10 +572,10 @@ while [[ "$1" != "" ]] ; do
                         jupyter=1
                         ;;
                     --scale )
-                        scale=1
-                        # Shift to the arg after --scale
+                        SCALE_FLAG=1
+                        # Shift to the arg after --SCALE_FLAG
                         shift
-                        # Get the first argument after --scale flag
+                        # Get the first argument after --SCALE_FLAG flag
                         # TODO(andrew@neuraldev.io): Currently only taking one
                         scale_service=$2
                         # scale_num="$(cut -d'=' -f2 <<< "${scale_service}" )"
@@ -534,11 +583,12 @@ while [[ "$1" != "" ]] ; do
                         ;;
                     -h | --help )
                         upUsage
+                        exit 0
                         ;;
                     * )
-                        containers=$2
+                        CONTAINER_ARGS=$2
                         while [[ "$3" != "" ]] ; do
-                            containers="${containers} $3"
+                            CONTAINER_ARGS="${CONTAINER_ARGS} $3"
                             shift
                         done
                         ;;
@@ -548,15 +598,14 @@ while [[ "$1" != "" ]] ; do
             run
             ;;
         logs )
-            command="logs"
-            container_log=$2
-            run
+            CONTAINER_LOG=$2
+            dockerLogs
             ;;
         test )
             while [[ "$2" != "" ]] ; do
                 case $2 in
                     -b | --build )
-                        build=1
+                        BUILD_FLAG=1
                         ;;
                     -t | --tty )
                         tty=1
@@ -567,6 +616,7 @@ while [[ "$1" != "" ]] ; do
                         ;;
                     -h | --help )
                         testUsage
+                        exit 0
                         ;;
                     * )
                         test_server=$2
@@ -588,14 +638,6 @@ while [[ "$1" != "" ]] ; do
         pwd )
             generalMessage "Arclytics Sim Project Root Directory"
             echo "${WORKDIR}"
-            ;;
-        -V | --version )
-            generalMessage "Arclytis CLI"
-            echo v${VERSION}
-            ;;
-        -h | --help )
-            usage
-            exit 0
             ;;
     esac
     shift

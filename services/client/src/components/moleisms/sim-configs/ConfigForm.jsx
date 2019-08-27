@@ -261,10 +261,10 @@ class ConfigForm extends Component {
           </div>
         </div>
         <div className={styles.third}>
-          <h5>Set up</h5>
+          <h5>Nucleation parameters</h5>
           <div className={styles.configGroup}>
             <div className="input-row">
-              <span>Nucleation start</span>
+              <span>Start</span>
               <TextFieldExtra
                 type="text"
                 name="nucleation_start"
@@ -275,7 +275,7 @@ class ConfigForm extends Component {
               />
             </div>
             <div className="input-row">
-              <span>Nucleation finish</span>
+              <span>Finish</span>
               <TextFieldExtra
                 type="text"
                 name="nucleation_finish"

@@ -22,12 +22,12 @@ SEED_DB_FLAG=0
 SCALE_FLAG=0
 SCALE_CONTAINERS_ARGS=""
 DOCKER_DOWN_FLAG=0
-swagger=0
-jupyter=0
+SWAGGER_FLAG=0
+JUPYTER_FLAG=0
 
-test_server=""
-test_type="test"
-test_type_title="Flask-Testing Unittests (without coverage)"
+TEST_SERVER_ARGS=""
+TEST_TYPE="test"
+TEST_TITLE="Flask-Testing Unittests (without coverage)"
 tty=0
 
 printWidth=0
@@ -77,32 +77,32 @@ function echoLine() {
 # Run only the users tests
 users() {
     headerMessage "RUNNING USERS SERVER TESTS"
-    generalMessage "Beginning ${test_type_title} for Users Server"
+    generalMessage "Beginning ${TEST_TITLE} for Users Server"
     echoSpace
     if [[ ${tty} == 1 ]]; then
-        generalMessage "docker-compose exec -T users python manage.py ${test_type}"
-        docker-compose -f ${DOCKER_COMPOSE_PATH} exec -T users python manage.py "${test_type}"
+        generalMessage "docker-compose exec -T users python manage.py ${TEST_TYPE}"
+        docker-compose -f ${DOCKER_COMPOSE_PATH} exec -T users python manage.py "${TEST_TYPE}"
     else
-        generalMessage "docker-compose exec users python manage.py ${test_type}"
-        docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py "${test_type}"
+        generalMessage "docker-compose exec users python manage.py ${TEST_TYPE}"
+        docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py "${TEST_TYPE}"
     fi
-    generalMessage "Finishing ${test_type_title} for Users Server"
+    generalMessage "Finishing ${TEST_TITLE} for Users Server"
 }
 
 # Run only the simcct server tests
 simcct() {
     headerMessage "RUNNING SIMCCT SERVER TESTS"
-    generalMessage "Beginning ${test_type_title} for SimCCT Server"
+    generalMessage "Beginning ${TEST_TITLE} for SimCCT Server"
     echoSpace
     docker-compose exec users python manage.py flush
     if [[ ${tty} == 1 ]]; then
-        generalMessage "docker-compose exec -T simcct python manage.py ${test_type}"
-        docker-compose -f ${DOCKER_COMPOSE_PATH} exec -T simcct python manage.py "${test_type}"
+        generalMessage "docker-compose exec -T simcct python manage.py ${TEST_TYPE}"
+        docker-compose -f ${DOCKER_COMPOSE_PATH} exec -T simcct python manage.py "${TEST_TYPE}"
     else
-        generalMessage "docker-compose exec simcct python manage.py ${test_type}"
-        docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py "${test_type}"
+        generalMessage "docker-compose exec simcct python manage.py ${TEST_TYPE}"
+        docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py "${TEST_TYPE}"
     fi
-    generalMessage "Finishing ${test_type_title} for SimCCT Server"
+    generalMessage "Finishing ${TEST_TITLE} for SimCCT Server"
 }
 
 # Run server-side tests
@@ -352,7 +352,7 @@ flushAndSeedDb() {
 # shellcheck disable=SC2086
 run_tests() {
     ## run appropriate tests
-    if [[ "${test_server}" == "server" ]]; then
+    if [[ "${TEST_SERVER_ARGS}" == "server" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
             docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
@@ -362,7 +362,7 @@ run_tests() {
         else
             server
         fi
-    elif [[ "${test_server}" == "users" ]]; then
+    elif [[ "${TEST_SERVER_ARGS}" == "users" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
             docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
@@ -372,7 +372,7 @@ run_tests() {
         else
             users
         fi
-    elif [[ "${test_server}" == "simcct" ]]; then
+    elif [[ "${TEST_SERVER_ARGS}" == "simcct" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
             docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
@@ -382,7 +382,7 @@ run_tests() {
         else
             simcct
         fi
-    elif [[ "${test_server}" == "client" ]]; then
+    elif [[ "${TEST_SERVER_ARGS}" == "client" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
             docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
@@ -390,12 +390,12 @@ run_tests() {
             generalMessage "docker-compose down"
             docker-compose -f ${DOCKER_COMPOSE_PATH} down
         fi
-    elif [[ "${test_server}" == "e2e" ]]; then
+    elif [[ "${TEST_SERVER_ARGS}" == "e2e" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
             docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
         fi
-    elif [[ "${test_server}" == "all" ]]; then
+    elif [[ "${TEST_SERVER_ARGS}" == "all" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
             docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
@@ -425,11 +425,11 @@ run() {
             CONTAINER_ARGS="--scale ${scale_service} ${CONTAINER_ARGS}"
         fi
 
-        if [[ ${swagger} == 1 ]]; then
+        if [[ ${SWAGGER_FLAG} == 1 ]]; then
             CONTAINER_ARGS="${CONTAINER_ARGS} swagger"
         fi
 
-        if [[ ${jupyter} == 1 ]]; then
+        if [[ ${JUPYTER_FLAG} == 1 ]]; then
             CONTAINER_ARGS="${CONTAINER_ARGS} jupyter"
         fi
 
@@ -490,10 +490,10 @@ while [[ "$1" != "" ]] ; do
             SEED_DB_FLAG=1
             ;;
         -S | --swagger )
-            swagger=1
+            SWAGGER_FLAG=1
             ;;
         -J | --jupyter )
-            jupyter=1
+            JUPYTER_FLAG=1
             ;;
         --group )
             # TODO(andrew@neuraldev.io): Add grouping for container services.
@@ -566,10 +566,10 @@ while [[ "$1" != "" ]] ; do
                         SEED_DB_FLAG=1
                         ;;
                     -S | --swagger )
-                        swagger=1
+                        SWAGGER_FLAG=1
                         ;;
                     -J | --jupyter )
-                        jupyter=1
+                        JUPYTER_FLAG=1
                         ;;
                     --scale )
                         SCALE_FLAG=1
@@ -611,15 +611,15 @@ while [[ "$1" != "" ]] ; do
                         tty=1
                         ;;
                     -c | --coverage )
-                        test_type="test_coverage"
-                        test_type_title="Flask-Testing Unittests with Coverage"
+                        TEST_TYPE="test_coverage"
+                        TEST_TITLE="Flask-Testing Unittests with Coverage"
                         ;;
                     -h | --help )
                         testUsage
                         exit 0
                         ;;
                     * )
-                        test_server=$2
+                        TEST_SERVER_ARGS=$2
                         run_tests
                 esac
                 shift

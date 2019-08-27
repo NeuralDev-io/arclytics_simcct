@@ -159,7 +159,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="ae1_temp"
                     onChange={val => this.handleUpdateAe('ae1_temp', val)}
-                    value={roundTo(configurations.ae1_temp, 4)}
+                    value={roundTo(configurations.ae1_temp, 1)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae}
@@ -171,7 +171,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="ae3_temp"
                     onChange={val => this.handleUpdateAe('ae3_temp', val)}
-                    value={roundTo(configurations.ae3_temp, 4)}
+                    value={roundTo(configurations.ae3_temp, 1)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae}
@@ -194,7 +194,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="ms_temp"
                     onChange={val => this.handleUpdateMs('ms_temp', val)}
-                    value={roundTo(configurations.ms_temp, 4)}
+                    value={roundTo(configurations.ms_temp, 1)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ms}
@@ -206,7 +206,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="ms_rate_param"
                     onChange={val => this.handleUpdateMs('ms_rate_param', val)}
-                    value={roundTo(configurations.ms_rate_param, 4)}
+                    value={roundTo(configurations.ms_rate_param, 1)}
                     length="short"
                     isDisabled={configurations.auto_calculate_ms}
                   />
@@ -228,7 +228,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="bs_temp"
                     onChange={val => this.handleUpdateBs('bs_temp', val)}
-                    value={roundTo(configurations.bs_temp, 4)}
+                    value={roundTo(configurations.bs_temp, 1)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_bs}

@@ -154,7 +154,10 @@ class ConfigForm extends Component {
               <h6>Austenite start/stop</h6>
               <div className={styles.configGroup}>
                 <div className="input-row">
-                  <span>Ae1</span>
+                  <span>
+                    A
+                    <sub>e1</sub>
+                  </span>
                   <TextFieldExtra
                     type="text"
                     name="ae1_temp"
@@ -166,7 +169,10 @@ class ConfigForm extends Component {
                   />
                 </div>
                 <div className="input-row">
-                  <span>Ae3</span>
+                  <span>
+                    A
+                    <sub>e3</sub>
+                  </span>
                   <TextFieldExtra
                     type="text"
                     name="ae3_temp"
@@ -189,7 +195,10 @@ class ConfigForm extends Component {
               <h6>Martensite start/stop</h6>
               <div className={styles.configGroup}>
                 <div className="input-row">
-                  <span>MS</span>
+                  <span>
+                    M
+                    <sub>s</sub>
+                  </span>
                   <TextFieldExtra
                     type="text"
                     name="ms_temp"
@@ -201,7 +210,11 @@ class ConfigForm extends Component {
                   />
                 </div>
                 <div className="input-row">
-                  <span>MS rate parameter</span>
+                  <span>
+                    M
+                    <sub>s</sub>
+                    &nbsp;rate parameter
+                  </span>
                   <TextField
                     type="text"
                     name="ms_rate_param"
@@ -223,7 +236,10 @@ class ConfigForm extends Component {
               <h6>Bainite start/stop</h6>
               <div className={styles.configGroup}>
                 <div className="input-row">
-                  <span>BS</span>
+                  <span>
+                    B
+                    <sub>s</sub>
+                  </span>
                   <TextFieldExtra
                     type="text"
                     name="bs_temp"

@@ -70,23 +70,29 @@ const TTT = ({ data }) => {
 
   return (
     <AutoSizer>
-      {({ height, width }) => (
-        <Plot
-          data={chartData}
-          layout={{
-            ...layout(height, width),
-            xaxis: {
-              type: 'log',
-              autorange: true,
-            },
-            yaxis: {
-              type: 'log',
-              autorange: true,
-            },
-          }}
-          config={config}
-        />
-      )}
+      {({ height, width }) => {
+        const defaultLayout = { ...layout(height, width) }
+        return (
+          <Plot
+            data={chartData}
+            layout={{
+              ...defaultLayout,
+              xaxis: {
+                ...defaultLayout.xaxis,
+                title: 'Time (s)',
+                type: 'log',
+                autorange: true,
+              },
+              yaxis: {
+                ...defaultLayout.yaxis,
+                title: 'Temperature (°C)',
+                autorange: true,
+              },
+            }}
+            config={config}
+          />
+        )
+      }}
     </AutoSizer>
   )
 }

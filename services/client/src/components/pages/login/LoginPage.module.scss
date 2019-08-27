@@ -82,7 +82,13 @@ $bg-img: url('../../../assets/background_img-min.png');
   flex-flow: column;
   justify-content: space-evenly;
   .forgotEmail{
+    margin-top: 1rem;
     margin-bottom: 4rem;
+  }
+
+  .confirmation{
+    height: 1.209375rem;
+    margin-bottom: 1rem;
   }
 
   .forgotSubmit{

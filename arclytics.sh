@@ -160,10 +160,10 @@ ${greenf}ARCLYTICS CLI SCRIPT
 
 Usage: arclytics.sh up [options] [SERVICE ARGS...]
 
-The Arclytics CLI COMMAND to run the containers.
+The Arclytics CLI command to run the containers.
 
 Options:
-  -b, --build           Build the Docker CONTAINER_ARGS before running.
+  -b, --build           Build the Docker containers before running.
   -d, --detach          Run Docker Engine logs in a detached shell mode.
   -s, --seed_db         Seed the MongoDB database with test data.
   --scale SERVICE=NUM   Scale SERVICE to NUM instances. Overrides the
@@ -196,13 +196,13 @@ ${greenf}ARCLYTICS CLI SCRIPT
 
 Usage: arclytics.sh up [OPTIONS] [TEST TYPE]
 
-The Arclytics CLI COMMAND to run Unit Tests.
+The Arclytics CLI command to run Unit Tests.
 
 Options:
-  -b, --build      Build the Docker CONTAINER_ARGS before running tests.
+  -b, --build      Build the Docker containers before running tests.
   -t, --tty        Attach a pseudo-TTY to the tests.
   -c, --coverage   Run the unit tests with coverage.
-  -h, --help       Get the Usage information for this COMMAND.
+  -h, --help       Get the Usage information for this command.
 
 Test Types (one only):
   all         Run all unit tests for Arclytics Sim
@@ -220,7 +220,7 @@ usage() {
    echo -e """
 ${greenf}ARCLYTICS CLI SCRIPT
 
-The Arclytics CLI script for running docker and docker-compose commands on the
+The Arclytics CLI script for running \`docker\` and \`docker-compose\` commands on the
 Arclytics Sim Docker orchestration.
 
 Usage:
@@ -234,7 +234,7 @@ arclytics.sh scale [SERVICE=NUM...]
 arclytics.sh [COMMAND]
 
 Options:
-  -b, --build           Build the Docker CONTAINER_ARGS before running.
+  -b, --build           Build the Docker containers before running.
   -d, --detach          Run Docker Engine logs in a detached shell mode.
   -s, --seed_db         Seed the MongoDB database with test data.
   -h, --help            Get the Usage information for this script.
@@ -245,17 +245,17 @@ Options:
   -J, --jupyter         Run the Jupyter container with the cluster.
 
   Test Options:
-  -b, --build           Build the Docker CONTAINER_ARGS before running tests.
+  -b, --build           Build the Docker containers before running tests.
   -t, --tty             Attach a pseudo-TTY to the tests.
   -c, --coverage        Run the unit tests with coverage.
 
   Down Options:
-  -D, --docker          Stop the CONTAINER_ARGS using the Docker PS stat.
+  -D, --docker          Stop the containers using the Docker PS stat.
 
 Commands:
   build       Build the Docker images from docker-compose.yml only (passing services
               to build specific ones or leave empty to build all).
-  up          Run the main CONTAINER_ARGS in docker-compose.yml or provide a list of
+  up          Run the main containers in docker-compose.yml or provide a list of
               arguments to run only those provided.
   logs        Get the logs of the container.
   ps          List the running containers.
@@ -265,9 +265,9 @@ Commands:
               datastore and MongoDB database.
   test        Run unit tests on the microservices.
   down        Stop all containers.
-  prune       Prune all stopped images, CONTAINER_ARGS, and networks.
+  prune       Prune all stopped images, containers, and networks.
   pwd         Get the full path directory of the Arclytics CLI script.
-  scale       Set number of CONTAINER_ARGS to run for a service. Numbers are specified
+  scale       Set number of containers to run for a service. Numbers are specified
               in the form \`service=num\` as arguments.
 
 Service (only one for \`logs\`; * default for \`up\`):
@@ -295,7 +295,7 @@ ${reset}
 # ==================== # Main Command Functions # ==================== #
 # ==================================================================== #
 dockerPs() {
-    headerMessage "ARCLYTICS SIM RUNNING CONTAINER_ARGS"
+    headerMessage "ARCLYTICS SIM RUNNING CONTAINERS"
     generalMessage "docker ps --size ${ARGS}"
     docker ps --size ${ARGS}
     completeMessage
@@ -325,11 +325,11 @@ dockerSystemPrune() {
 }
 
 containerDown() {
-    headerMessage "STOPPING ARCLYTICS SIM CONTAINER_ARGS"
+    headerMessage "STOPPING ARCLYTICS SIM CONTAINERS"
     if [[ "${DOCKER_DOWN_FLAG}" == 1 ]]; then
         running=$(docker ps -aq)
         if [[ ${running} == "" ]]; then
-            generalMessage "No CONTAINER_ARGS running"
+            generalMessage "No containers running"
             docker ps
         else
             generalMessage "docker stop \$(docker ps -aq)"
@@ -344,7 +344,7 @@ containerDown() {
 }
 
 scaleContainers() {
-  headerMessage "SCALING ARCLYTICS SIM CONTAINER_ARGS"
+  headerMessage "SCALING ARCLYTICS SIM CONTAINERS"
   docker-compose -f ${DOCKER_COMPOSE_PATH} SCALE_FLAG ${SCALE_CONTAINERS_ARGS}
   completeMessage
 }
@@ -354,8 +354,8 @@ run_tests() {
     ## run appropriate tests
     if [[ "${test_server}" == "server" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
-            generalMessage "docker-compose up -d --BUILD_FLAG ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --BUILD_FLAG "${CONTAINER_ARGS}"
+            generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
             server
             generalMessage "docker-compose down"
             docker-compose -f ${DOCKER_COMPOSE_PATH} down
@@ -364,8 +364,8 @@ run_tests() {
         fi
     elif [[ "${test_server}" == "users" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
-            generalMessage "docker-compose up -d --BUILD_FLAG ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --BUILD_FLAG "${CONTAINER_ARGS}"
+            generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
             users
             generalMessage "docker-compose down"
             docker-compose -f ${DOCKER_COMPOSE_PATH} down
@@ -374,8 +374,8 @@ run_tests() {
         fi
     elif [[ "${test_server}" == "simcct" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
-            generalMessage "docker-compose up -d --BUILD_FLAG ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --BUILD_FLAG "${CONTAINER_ARGS}"
+            generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
             simcct
             generalMessage "docker-compose down"
             docker-compose -f ${DOCKER_COMPOSE_PATH} down
@@ -384,21 +384,21 @@ run_tests() {
         fi
     elif [[ "${test_server}" == "client" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
-            generalMessage "docker-compose up -d --BUILD_FLAG ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --BUILD_FLAG "${CONTAINER_ARGS}"
+            generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
             client
             generalMessage "docker-compose down"
             docker-compose -f ${DOCKER_COMPOSE_PATH} down
         fi
     elif [[ "${test_server}" == "e2e" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
-            generalMessage "docker-compose up -d --BUILD_FLAG ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --BUILD_FLAG "${CONTAINER_ARGS}"
+            generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
         fi
     elif [[ "${test_server}" == "all" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
-            generalMessage "docker-compose up -d --BUILD_FLAG ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --BUILD_FLAG "${CONTAINER_ARGS}"
+            generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
             all
             generalMessage "docker-compose down"
             docker-compose -f ${DOCKER_COMPOSE_PATH} down
@@ -419,7 +419,7 @@ run() {
         generalMessage "docker-compose build ${BUILD_CONTAINER_ARGS}"
         docker-compose -f ${DOCKER_COMPOSE_PATH} build ${BUILD_CONTAINER_ARGS}
     elif [[ "${COMMAND}" == "up" ]]; then
-        headerMessage "RUN ARCLYTICS SIM CONTAINER_ARGS"
+        headerMessage "RUN ARCLYTICS SIM CONTAINERS"
 
         if [[ ${SCALE_FLAG} == 1 ]]; then
             CONTAINER_ARGS="--scale ${scale_service} ${CONTAINER_ARGS}"

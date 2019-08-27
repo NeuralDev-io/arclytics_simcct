@@ -15,6 +15,7 @@ import {
   updateGlobalAlloys,
   deleteGlobalAlloys,
 } from '../../../state/ducks/alloys/actions'
+import { DEFAULT_ELEMENTS } from '../../../utils/alloys'
 
 import styles from './AdminAlloys.module.scss'
 
@@ -45,8 +46,7 @@ class AdminAlloys extends Component {
   handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
 
   showAddAlloy = () => {
-    const defaultElements = ['C', 'Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', 'W', 'As', 'Fe']
-    const compositions = defaultElements.map(sym => ({ symbol: sym, weight: 0 }))
+    const compositions = DEFAULT_ELEMENTS.map(sym => ({ symbol: sym, weight: 0 }))
     this.setState({
       currentAlloy: {
         _id: '',
@@ -91,6 +91,22 @@ class AdminAlloys extends Component {
 
   handleAlloyChange = alloy => this.setState({ currentAlloy: alloy })
 
+  generateColumns = () => DEFAULT_ELEMENTS.map(element => ({
+    Header: element,
+    id: element,
+    accessor: 'compositions',
+    Cell: ({ value }) => {
+      const idx = value.findIndex(elem => elem.symbol === element)
+      return value[idx].weight
+    },
+    width: 65,
+    sortMethod: (a, b) => {
+      const idxA = a.findIndex(elem => elem.symbol === element)
+      const idxB = b.findIndex(elem => elem.symbol === element)
+      return a[idxA].weight > b[idxB].weight ? 1 : -1
+    },
+  }))
+
   render() {
     const { globalAlloys } = this.props
     const {
@@ -109,6 +125,7 @@ class AdminAlloys extends Component {
         Header: 'Alloy name',
         accessor: 'name',
       },
+      ...this.generateColumns(),
       {
         Header: '',
         Cell: ({ original }) => (

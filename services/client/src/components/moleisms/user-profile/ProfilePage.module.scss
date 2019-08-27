@@ -27,12 +27,10 @@ $bg-img: url('../../../assets/background_img-min.png');
 .main {
   margin-left: calc(4rem);
   width: calc(100% - calc(4rem + 27vw));
-  padding: 2.5rem 0rem 2.5rem 2.5rem;
-
+  padding: 2.5rem 0 2.5rem 2.5rem;
   display: flex;
   flex-flow: column;
   justify-content: flex-start;
-
 }
 
 .header{
@@ -48,6 +46,7 @@ $bg-img: url('../../../assets/background_img-min.png');
   display: flex;
   flex-flow: column;
   justify-content: space-between;
+
   .row{
     display: flex;
     flex-direction: row;
@@ -79,7 +78,7 @@ $bg-img: url('../../../assets/background_img-min.png');
     justify-content: space-between;
     
     .question{
-      margin-bottom: 2.3rem;
+      margin-bottom: 1.5rem;
       width: 35rem;
   
       .questionText{
@@ -105,30 +104,19 @@ $bg-img: url('../../../assets/background_img-min.png');
   margin-top: 3.5rem;
   margin-bottom: 3.5rem;
   display: flex;
-  flex-flow: row;
-  justify-content: space-between;
+  flex-flow: column;
   width: 35rem;
 
   h5, h6{
-    margin-bottom: 1.5rem;
-  }
-
-  .header{
-    margin-bottom: 1.5rem;
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-
-  .pwdOrEmail{
-    width: fit-content;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .row{
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
+    justify-content: space-between;
     width:100%;
     margin-bottom: 1rem;
 
@@ -149,7 +137,7 @@ $bg-img: url('../../../assets/background_img-min.png');
   }
 
   .submitEmail{
-    float:right;
+    float: right;
     margin-top: 0.5rem;
     width: fit-content;
   }
@@ -165,7 +153,6 @@ $bg-img: url('../../../assets/background_img-min.png');
   width:35rem;
   color: var(--r500);
   text-align: right;
-  margin-bottom: 1rem;
   height: 1.25rem;
 }
 

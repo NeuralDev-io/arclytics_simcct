@@ -27,23 +27,27 @@ class ProfilePage extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      aim: '',
       aimOptions: [
         { label: 'Education', value: 'Education' },
         { label: 'Research', value: 'Research' },
         { label: 'Engineering Work', value: 'Engineering Work' },
         { label: 'Experimentation', value: 'Experimentation' },
       ],
+      highestEducation: '',
       highestEducationOptions: [
         { label: 'High School', value: 'High School' },
         { label: 'Bachelors Degree', value: 'Bachelors Degree' },
         { label: 'Masters Degree', value: 'Masters Degree' },
         { label: 'PhD', value: 'PhD' },
       ],
+      sciTechExp: '',
       sciTechOptions: [
         { label: 'Beginner', value: 'Beginner' },
         { label: 'Intermediate', value: 'Intermediate' },
         { label: 'Advanced', value: 'Advanced' },
       ],
+      phaseTransformExp: '',
       phaseTransformOptions: [
         { label: 'Beginner', value: 'Beginner' },
         { label: 'Intermediate', value: 'Intermediate' },
@@ -66,7 +70,29 @@ class ProfilePage extends Component {
   componentDidMount = () => {
     const { history, getUserProfileConnect } = this.props
     if (!localStorage.getItem('token')) history.push('/signin')
-    getUserProfileConnect()
+    getUserProfileConnect().then(() => {
+      const { user } = this.props
+      if (user.profile !== undefined) {
+        this.setState({
+          aim: {
+            label: user.profile.aim,
+            value: user.profile.aim,
+          },
+          highestEducation: {
+            label: user.profile.highest_education,
+            value: user.profile.highest_education,
+          },
+          sciTechExp: {
+            label: user.profile.sci_tech_exp,
+            value: user.profile.sci_tech_exp,
+          },
+          phaseTransformExp: {
+            label: user.profile.phase_transform_exp,
+            value: user.profile.phase_transform_exp,
+          },
+        })
+      }
+    })
   }
 
   handleEdit = () => {
@@ -77,16 +103,16 @@ class ProfilePage extends Component {
       this.setState({
         firstName: user.first_name,
         lastName: user.last_name,
-        question1: user.profile
+        aim: user.profile
           ? { label: user.profile.aim, value: user.profile.aim }
           : null,
-        question2: user.profile
+        highestEducation: user.profile
           ? { label: user.profile.highest_education, value: user.profile.highest_education }
           : null,
-        question3: user.profile
+        sciTechExp: user.profile
           ? { label: user.profile.sci_tech_exp, value: user.profile.sci_tech_exp }
           : null,
-        question4: user.profile
+        phaseTransformExp: user.profile
           ? { label: user.profile.phase_transform_exp, value: user.profile.phase_transform_exp }
           : null,
         edit: false,
@@ -182,9 +208,13 @@ class ProfilePage extends Component {
 
   render() {
     const {
+      aim,
       aimOptions,
+      highestEducation,
       highestEducationOptions,
+      sciTechExp,
       sciTechOptions,
+      phaseTransformExp,
       phaseTransformOptions,
       updateError,
       edit,
@@ -200,7 +230,28 @@ class ProfilePage extends Component {
     } = this.state
 
     const { history, user } = this.props
-    console.log('User: ', user)
+
+    /* const { user } = this.props
+    if (user.profile !== undefined) {
+      this.setState({
+        aim: {
+          label: user.profile.aim,
+          value: user.profile.aim,
+        },
+        highestEducation: {
+          label: user.profile.highest_education,
+          value: user.profile.highest_education,
+        },
+        sciTechExp: {
+          label: user.profile.sci_tech_exp,
+          value: user.profile.sci_tech_exp,
+        },
+        phaseTransformExp: {
+          label: user.profile.phase_transform_exp,
+          value: user.profile.phase_transform_exp,
+        },
+      })
+    } */
 
     return (
       <React.Fragment>
@@ -256,7 +307,7 @@ class ProfilePage extends Component {
                   type="aim"
                   name="aim"
                   placeholder="---"
-                  value={user.profile.aim}
+                  value={aim}
                   options={aimOptions}
                   length="stretch"
                   isDisabled={!edit}
@@ -272,7 +323,7 @@ class ProfilePage extends Component {
                   type="highestEducation"
                   name="highestEducation"
                   placeholder="---"
-                  value={user.profile.highest_education}
+                  value={highestEducation}
                   options={highestEducationOptions}
                   length="stretch"
                   isDisabled={!edit}
@@ -288,7 +339,7 @@ class ProfilePage extends Component {
                   type="sciTechExp"
                   name="sciTechExp"
                   placeholder="---"
-                  value={user.profile.sci_tech_exp}
+                  value={sciTechExp}
                   options={sciTechOptions}
                   length="stretch"
                   isDisabled={!edit}
@@ -304,7 +355,7 @@ class ProfilePage extends Component {
                   type="phaseTransformExp"
                   name="phaseTransformExp"
                   placeholder="---"
-                  value={user.profile.phase_transform_exp}
+                  value={phaseTransformExp}
                   options={phaseTransformOptions}
                   length="stretch"
                   isDisabled={!edit}

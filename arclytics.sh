@@ -123,36 +123,6 @@ all() {
     # e2e
 }
 
-flushDb() {
-    headerMessage "FLUSH BACK-END MICROSERVICES"
-    generalMessage "Flushing users microservice database (MongoDB)"
-    generalMessage "docker-compose exec users python manage.py flush"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py flush
-    generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
-    generalMessage "docker-compose exec simcct python manage.py flush"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py flush
-}
-
-# Flush and seed database
-flushAndSeedDb() {
-    headerMessage "SEED AND FLUSH BACK-END MICROSERVICES"
-    generalMessage "Flushing users microservice database (MongoDB)"
-    generalMessage "docker-compose exec users python manage.py flush"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py flush
-    generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
-    generalMessage "docker-compose exec simcct python manage.py flush"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py flush
-    echoSpace
-    generalMessage "Seeding users microservice database with users"
-    generalMessage "docker-compose exec users python manage.py SEED_DB_FLAG"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py SEED_DB_FLAG
-    echoSpace
-    generalMessage "Seeding simcct microservice database with global alloys"
-    generalMessage "docker-compose exec simcct python manage.py SEED_DB_FLAG"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py SEED_DB_FLAG
-    echoSpace
-}
-
 # shellcheck disable=SC1079,SC1078,SC2006
 upUsage() {
     echo -e """
@@ -347,6 +317,36 @@ scaleContainers() {
   headerMessage "SCALING ARCLYTICS SIM CONTAINERS"
   docker-compose -f ${DOCKER_COMPOSE_PATH} SCALE_FLAG ${SCALE_CONTAINERS_ARGS}
   completeMessage
+}
+
+flushDb() {
+    headerMessage "FLUSH BACK-END MICROSERVICES"
+    generalMessage "Flushing users microservice database (MongoDB)"
+    generalMessage "docker-compose exec users python manage.py flush"
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py flush
+    generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
+    generalMessage "docker-compose exec simcct python manage.py flush"
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py flush
+}
+
+# Flush and seed database
+flushAndSeedDb() {
+    headerMessage "SEED AND FLUSH BACK-END MICROSERVICES"
+    generalMessage "Flushing users microservice database (MongoDB)"
+    generalMessage "docker-compose exec users python manage.py flush"
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py flush
+    generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
+    generalMessage "docker-compose exec simcct python manage.py flush"
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py flush
+    echoSpace
+    generalMessage "Seeding users microservice database with users"
+    generalMessage "docker-compose exec users python manage.py seed_db"
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py seed_db
+    echoSpace
+    generalMessage "Seeding simcct microservice database with global alloys"
+    generalMessage "docker-compose exec simcct python manage.py seed_db"
+    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py seed_db
+    echoSpace
 }
 
 # shellcheck disable=SC2086

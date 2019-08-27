@@ -82,3 +82,28 @@ export const logout = (callback) => {
     })
     .catch(err => console.log(err))
 }
+
+export const forgotPassword = (resolve, reject, email) => {
+  console.log('forgotPassword test')
+  fetch('http://localhost:8000/reset/password', {
+    method: 'POST',
+    headers:{
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+    }),
+  })
+  .then(res => res.json())
+  .then(res => {
+    console.log(res)
+    if (res.status === "success") {
+      console.log("happens")
+      resolve(res.message)
+    } else{
+      // return an error message as string
+      reject(res.message)
+    }
+  })
+  .catch(err => console.log(err))
+}

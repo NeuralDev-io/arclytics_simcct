@@ -10,7 +10,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
-import { login } from '../../../utils/AuthenticationHelper'
+import { login, forgotPassword } from '../../../utils/AuthenticationHelper'
 import { loginValidation } from '../../../utils/ValidationHelper'
 import { getUserProfile } from '../../../state/ducks/persist/actions'
 
@@ -25,11 +25,18 @@ class LoginPage extends Component {
     this.state = {
       hasForgotPwd: null,
       forgotEmail: '',
+      forgotPwdErr: '',
+      emailSent: false,
     }
   }
 
   componentDidMount = () => {
-    if (localStorage.getItem('token')) this.props.profile ? this.props.history.push('/') : this.props.history.push('/profileQuestions')// eslint-disable-line
+    const {profile, history} = this.props
+    if (localStorage.getItem('token')) {
+      profile ?
+      history.push('/') :
+      history.push('/profileQuestions')
+    }
   }
 
   onTextChange = ( name, value) => {
@@ -39,7 +46,7 @@ class LoginPage extends Component {
   }
 
   render() {
-    const {hasForgotPwd, forgotEmail } = this.state
+    const {hasForgotPwd, forgotEmail, forgotPwdErr, emailSent } = this.state
 
     return (
       <div className={styles.outer}>
@@ -126,7 +133,8 @@ class LoginPage extends Component {
                     <div className={styles.clear}>
                       <Button
                         className={styles.signIn}
-                        name="SIGN IN" type="submit"
+                        name="SIGN IN"
+                        type="submit"
                         length="long"
                         isSubmitting={isSubmitting}
                         onClick={handleSubmit}>
@@ -147,8 +155,13 @@ class LoginPage extends Component {
             )}
           </Formik>
         </div>
-        <div className={`${styles.forgotPwdForm} ${!(hasForgotPwd === null) ? (hasForgotPwd ? styles.fadeLeftIn: styles.fadeRightOut):('')}`}>
-          {/*TODO: change the messsage when the button is pressed */}
+        <div 
+        className={
+          `${
+            styles.forgotPwdForm} ${!(hasForgotPwd === null) ?
+            (hasForgotPwd ? styles.fadeLeftIn: styles.fadeRightOut):
+            ('')
+          }`}>
           <h3 className={styles.header}> Password Reset </h3>
           <span> Enter your email to send a password reset email.</span>
           <TextField
@@ -159,13 +172,44 @@ class LoginPage extends Component {
             value={forgotEmail}
             onChange={value => this.onTextChange('forgotEmail', value)}
             placeholder="Email"
+            // err={forgotPwdErr}
             length="stretch"
-          />
-          <Button className={styles.forgotSubmit}> Send Email </Button>
-          <h6
-            className={styles.help}
-            onClick={ ()=> this.setState({ hasForgotPwd: false})
-            }>Go back to login</h6>
+          /> 
+         
+          <span className={styles.confirmation}>{ emailSent ? ('Email has been sent.'): ('')}</span> 
+        
+         <div>
+            <Button
+              className={styles.forgotSubmit}
+              type="submit"
+              length="long"
+              isDisabled={emailSent}
+              onClick={()=> {
+                const promise = new Promise((resolve, reject) => {
+                  forgotPassword(resolve, reject, forgotEmail)
+                })
+                promise.then((data) => {
+                  // If response is successful
+                  console.log("this happens")
+                  this.setState({
+                    forgotPwdErr: '',
+                    emailSent: true,
+                  })
+                })
+                  .catch((err) => {
+                    // If response is unsuccessful
+                    this.setState({
+                      forgotPwdErr: err,
+                    })
+                  })
+              }}> Send Email </Button>
+            <h6
+              className={styles.help}
+              onClick={()=> this.setState({ hasForgotPwd: false})}
+            >
+              Go back to login
+            </h6>
+          </div>
         </div>
 
 

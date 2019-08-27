@@ -8,6 +8,7 @@ import Table from '../../elements/table'
 import { getSavedSimulations } from '../../../state/ducks/self/actions'
 
 import styles from './UserSavedSimulations.module.scss'
+import AppBar from "../appbar/AppBar";
 
 class UserSavedSimulations extends Component {
   componentDidMount = () => {
@@ -16,7 +17,7 @@ class UserSavedSimulations extends Component {
   }
 
   render() {
-    const { data } = this.props
+    const { data, history } = this.props
     const columns = [
       {
         Header: 'ID',
@@ -50,6 +51,8 @@ class UserSavedSimulations extends Component {
 
     return (
       <div className={styles.container}>
+        <AppBar active="savedSimulations" redirect={history.push} />
+
         <h3>Saved simulations</h3>
         <Table
           className="-highlight"

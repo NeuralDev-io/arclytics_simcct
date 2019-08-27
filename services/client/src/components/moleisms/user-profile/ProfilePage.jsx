@@ -27,27 +27,30 @@ class ProfilePage extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      aim: '',
+      email: '',
+      firstName: '',
+      lastName: '',
+      aimValue: null,
       aimOptions: [
         { label: 'Education', value: 'Education' },
         { label: 'Research', value: 'Research' },
         { label: 'Engineering Work', value: 'Engineering Work' },
         { label: 'Experimentation', value: 'Experimentation' },
       ],
-      highestEducation: '',
+      highestEducationValue: null,
       highestEducationOptions: [
         { label: 'High School', value: 'High School' },
         { label: 'Bachelors Degree', value: 'Bachelors Degree' },
         { label: 'Masters Degree', value: 'Masters Degree' },
         { label: 'PhD', value: 'PhD' },
       ],
-      sciTechExp: '',
+      sciTechExpValue: null,
       sciTechOptions: [
         { label: 'Beginner', value: 'Beginner' },
         { label: 'Intermediate', value: 'Intermediate' },
         { label: 'Advanced', value: 'Advanced' },
       ],
-      phaseTransformExp: '',
+      phaseTransformExpValue: null,
       phaseTransformOptions: [
         { label: 'Beginner', value: 'Beginner' },
         { label: 'Intermediate', value: 'Intermediate' },
@@ -59,8 +62,10 @@ class ProfilePage extends Component {
       confirmPassword: '',
       isChangeEmail: false,
       isChangePassword: false,
+      editPassword: false,
       updateError: null,
       edit: false,
+      editEmail: false,
       newEmail: '',
       emailErr: '',
       isCurrPwdCorrect: false,
@@ -70,49 +75,51 @@ class ProfilePage extends Component {
   componentDidMount = () => {
     const { history, getUserProfileConnect } = this.props
     if (!localStorage.getItem('token')) history.push('/signin')
+    // TODO(arvy@neuraldev.io): This pattern is not ideal either as it turns
+    //  an async call to one that is blocking and updates based on returned promise.
     getUserProfileConnect().then(() => {
       const { user } = this.props
-      if (user.profile !== undefined) {
-        this.setState({
-          aim: {
-            label: user.profile.aim,
-            value: user.profile.aim,
-          },
-          highestEducation: {
-            label: user.profile.highest_education,
-            value: user.profile.highest_education,
-          },
-          sciTechExp: {
-            label: user.profile.sci_tech_exp,
-            value: user.profile.sci_tech_exp,
-          },
-          phaseTransformExp: {
-            label: user.profile.phase_transform_exp,
-            value: user.profile.phase_transform_exp,
-          },
-        })
-      }
+      this.setState({
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        aimValue: {
+          value: user.profile.aim,
+          label: user.profile.aim,
+        },
+        highestEducationValue: {
+          value: user.profile.highest_education,
+          label: user.profile.highest_education,
+        },
+        sciTechExpValue: {
+          value: user.profile.sci_tech_exp,
+          label: user.profile.sci_tech_exp,
+        },
+        phaseTransformExpValue: {
+          value: user.profile.phase_transform_exp,
+          label: user.profile.phase_transform_exp,
+        },
+      })
     })
   }
 
   handleEdit = () => {
     const { user } = this.props
     const { edit } = this.state
-    console.log(user)
     if (edit) {
       this.setState({
         firstName: user.first_name,
         lastName: user.last_name,
-        aim: user.profile
+        aimValue: user.profile
           ? { label: user.profile.aim, value: user.profile.aim }
           : null,
-        highestEducation: user.profile
+        highestEducationValue: user.profile
           ? { label: user.profile.highest_education, value: user.profile.highest_education }
           : null,
-        sciTechExp: user.profile
+        sciTechExpValue: user.profile
           ? { label: user.profile.sci_tech_exp, value: user.profile.sci_tech_exp }
           : null,
-        phaseTransformExp: user.profile
+        phaseTransformExpValue: user.profile
           ? { label: user.profile.phase_transform_exp, value: user.profile.phase_transform_exp }
           : null,
         edit: false,
@@ -121,6 +128,12 @@ class ProfilePage extends Component {
     } else {
       this.setState({ edit: true })
     }
+  }
+
+  toggleEditButtons = (type) => {
+    const { editEmail, editPassword } = this.state
+    if (type === 'email') this.setState({ editEmail: !editEmail })
+    else if (type === 'password') this.setState({ editPassword: !editPassword })
   }
 
   handleChange = (name, value) => {
@@ -208,13 +221,16 @@ class ProfilePage extends Component {
 
   render() {
     const {
-      aim,
+      email,
+      firstName,
+      lastName,
+      aimValue,
       aimOptions,
-      highestEducation,
+      highestEducationValue,
       highestEducationOptions,
-      sciTechExp,
+      sciTechExpValue,
       sciTechOptions,
-      phaseTransformExp,
+      phaseTransformExpValue,
       phaseTransformOptions,
       updateError,
       edit,
@@ -227,35 +243,15 @@ class ProfilePage extends Component {
       isCurrPwdCorrect,
       newEmail,
       emailErr,
+      editPassword,
+      editEmail,
     } = this.state
 
-    const { history, user } = this.props
-
-    /* const { user } = this.props
-    if (user.profile !== undefined) {
-      this.setState({
-        aim: {
-          label: user.profile.aim,
-          value: user.profile.aim,
-        },
-        highestEducation: {
-          label: user.profile.highest_education,
-          value: user.profile.highest_education,
-        },
-        sciTechExp: {
-          label: user.profile.sci_tech_exp,
-          value: user.profile.sci_tech_exp,
-        },
-        phaseTransformExp: {
-          label: user.profile.phase_transform_exp,
-          value: user.profile.phase_transform_exp,
-        },
-      })
-    } */
+    const { history } = this.props
 
     return (
       <React.Fragment>
-        <AppBar active="admin" redirect={history.push} />
+        <AppBar active="profile" redirect={history.push} />
 
         <div className={styles.main}>
           <h4 className={styles.header}>General</h4>
@@ -264,7 +260,7 @@ class ProfilePage extends Component {
               <h6 className={styles.leftCol}> Email </h6>
               <div className={styles.rightCol}>
                 <h6>
-                  {user.email}
+                  {email}
                 </h6>
               </div>
             </div>
@@ -274,7 +270,7 @@ class ProfilePage extends Component {
                 <TextField
                   type="firstName"
                   name="firstName"
-                  value={user.first_name}
+                  value={firstName}
                   placeholder="First Name"
                   length="stretch"
                   isDisabled={!edit}
@@ -288,7 +284,7 @@ class ProfilePage extends Component {
                 <TextField
                   type="lastName"
                   name="lastName"
-                  value={user.last_name}
+                  value={lastName}
                   placeholder="Last Name"
                   length="stretch"
                   isDisabled={!edit}
@@ -302,16 +298,16 @@ class ProfilePage extends Component {
             <h4 className={styles.header}> About yourself </h4>
             <div className={styles.questions}>
               <div className={styles.question}>
-                <h6 className={styles.questionText}> What sentence best describes you? </h6>
+                <h6 className={styles.questionText}>What sentence best describes you?</h6>
                 <Select
                   type="aim"
                   name="aim"
                   placeholder="---"
-                  value={aim}
+                  value={aimValue}
                   options={aimOptions}
                   length="stretch"
                   isDisabled={!edit}
-                  onChange={value => this.handleChange('question1', value)}
+                  onChange={value => this.handleChange('aimValue', value)}
                 />
               </div>
 
@@ -323,11 +319,11 @@ class ProfilePage extends Component {
                   type="highestEducation"
                   name="highestEducation"
                   placeholder="---"
-                  value={highestEducation}
+                  value={highestEducationValue}
                   options={highestEducationOptions}
                   length="stretch"
                   isDisabled={!edit}
-                  onChange={value => this.handleChange('question2', value)}
+                  onChange={value => this.handleChange('highestEducationValue', value)}
                 />
               </div>
 
@@ -339,11 +335,11 @@ class ProfilePage extends Component {
                   type="sciTechExp"
                   name="sciTechExp"
                   placeholder="---"
-                  value={sciTechExp}
+                  value={sciTechExpValue}
                   options={sciTechOptions}
                   length="stretch"
                   isDisabled={!edit}
-                  onChange={value => this.handleChange('question3', value)}
+                  onChange={value => this.handleChange('sciTechExpValue', value)}
                 />
               </div>
 
@@ -355,11 +351,11 @@ class ProfilePage extends Component {
                   type="phaseTransformExp"
                   name="phaseTransformExp"
                   placeholder="---"
-                  value={phaseTransformExp}
+                  value={phaseTransformExpValue}
                   options={phaseTransformOptions}
                   length="stretch"
                   isDisabled={!edit}
-                  onChange={value => this.handleChange('question4', value)}
+                  onChange={value => this.handleChange('phaseTransformExpValue', value)}
                 />
               </div>
             </div>
@@ -370,32 +366,69 @@ class ProfilePage extends Component {
               !edit ? (
                 <>
                   {' '}
-                  <Button onClick={this.handleEdit}> Edit </Button>
+                  <Button onClick={this.handleEdit} appearance="text">Edit</Button>
                   {' '}
                 </>
               )
                 : (
                   <>
-                    <Button onClick={this.updateUser}> Save </Button>
-                    <Button className={styles.cancel} appearance="outline" onClick={this.handleEdit}> Cancel </Button>
+                    <Button onClick={this.updateUser}>Save</Button>
+                    <Button
+                      className={styles.cancel}
+                      appearance="outline"
+                      onClick={this.handleEdit}
+                    >
+                      Cancel
+                    </Button>
                   </>
                 )
             }
           </div>
 
           <div className={styles.security}>
-            <div className={styles.header}>
-              <h4> Security </h4>
+            <h4 className={styles.header}>Security</h4>
+            <div className={styles.row}>
+              <h5>Change your email</h5>
               <div>
-                <h6>Email</h6>
+                {
+                  !editEmail ? (
+                    <>
+                      {' '}
+                      <Button
+                        appearance="text"
+                        onClick={() => this.toggleEditButtons('email')}
+                      >
+                        Change
+                      </Button>
+                      {' '}
+                    </>
+                  ) : (
+                    <>
+                      <Button onClick={() => console.log('Save New Email')}>Save</Button>
+                      <Button
+                        appearance="outline"
+                        onClick={() => this.toggleEditButtons('email')}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  )
+                }
+              </div>
+            </div>
+            <div className={styles.row}>
+              <h5>Change your password</h5>
+              <div>
                 <Button
-                  onClick={() => console.log('Change Email')}
+                  appearance="text"
+                  onClick={() => this.toggleEditButtons('password')}
                 >
-                  Change email
+                  Update
                 </Button>
               </div>
             </div>
           </div>
+
           <div className={styles.dataAndPersonal}>
             <h4 className={styles.header}> Data and Personalisation </h4>
             <h6>
@@ -403,6 +436,7 @@ class ProfilePage extends Component {
               useful for you.
             </h6>
             <Button
+              appearance="outline"
               onClick={() => console.log('Review Data Personalisation')}
               className={styles.review}
             >

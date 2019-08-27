@@ -148,10 +148,10 @@ class ConfigForm extends Component {
           </div>
         </div>
         <div className={styles.second}>
-          <h5>Transformation temperature</h5>
+          <h5>Transformation limits</h5>
           <div className={styles.configRow}>
             <div>
-              <h6>Austenite start/stop</h6>
+              <h6>Austenite</h6>
               <div className={styles.configGroup}>
                 <div className="input-row">
                   <span>
@@ -188,11 +188,37 @@ class ConfigForm extends Component {
                 name="auto_calculate_ae"
                 onChange={val => this.toggleAeAutoCalc(val)}
                 isChecked={configurations.auto_calculate_ae}
-                label="Auto-calculate Austenite"
+                label="Auto-calculate Ae"
               />
             </div>
             <div>
-              <h6>Martensite start/stop</h6>
+              <h6>Bainite</h6>
+              <div className={`${styles.configGroup} ${styles.bainite}`}>
+                <div className="input-row">
+                  <span>
+                    B
+                    <sub>s</sub>
+                  </span>
+                  <TextFieldExtra
+                    type="text"
+                    name="bs_temp"
+                    onChange={val => this.handleUpdateBs('bs_temp', val)}
+                    value={roundTo(configurations.bs_temp, 1)}
+                    length="short"
+                    suffix="°C"
+                    isDisabled={configurations.auto_calculate_bs}
+                  />
+                </div>
+              </div>
+              <Checkbox
+                name="auto_calculate_bs"
+                onChange={val => this.toggleBsAutoCalc(val)}
+                isChecked={configurations.auto_calculate_bs}
+                label="Auto-calculate BS"
+              />
+            </div>
+            <div>
+              <h6>Martensite</h6>
               <div className={styles.configGroup}>
                 <div className="input-row">
                   <span>
@@ -230,32 +256,6 @@ class ConfigForm extends Component {
                 onChange={val => this.toggleMsAutoCalc(val)}
                 isChecked={configurations.auto_calculate_ms}
                 label="Auto-calculate MS"
-              />
-            </div>
-            <div>
-              <h6>Bainite start/stop</h6>
-              <div className={styles.configGroup}>
-                <div className="input-row">
-                  <span>
-                    B
-                    <sub>s</sub>
-                  </span>
-                  <TextFieldExtra
-                    type="text"
-                    name="bs_temp"
-                    onChange={val => this.handleUpdateBs('bs_temp', val)}
-                    value={roundTo(configurations.bs_temp, 1)}
-                    length="short"
-                    suffix="°C"
-                    isDisabled={configurations.auto_calculate_bs}
-                  />
-                </div>
-              </div>
-              <Checkbox
-                name="auto_calculate_bs"
-                onChange={val => this.toggleBsAutoCalc(val)}
-                isChecked={configurations.auto_calculate_bs}
-                label="Auto-calculate BS"
               />
             </div>
           </div>

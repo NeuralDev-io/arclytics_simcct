@@ -41,7 +41,8 @@ COV = coverage.coverage(
         'users_app/models.py', 'users_app/resources/users.py',
         'users_app/resources/auth.py', 'users_app/middleware.py',
         'users_app/mongodb.py', 'users_app/token.py',
-        'users_app/resources/share.py', 'users_app/resources/admin_auth.py'
+        'users_app/resources/share.py', 'users_app/resources/admin_auth.py',
+        'users_app/resources/ratings.py'
     ],
     omit=[
         'users_app/app.py'

@@ -385,6 +385,9 @@ class AlloyStore(EmbeddedDocument):
             'alloys': self.alloys.to_dict()
         }
 
+    def __str__(self):
+        return self.to_json()
+
 
 class Rating(EmbeddedDocument):
     rating = IntField(min_value=1, max_value=5, required=True)
@@ -432,7 +435,7 @@ class User(Document):
     last_updated = DateTimeField(default=None, null=False)
     last_login = DateTimeField()
 
-    ratings = EmbeddedDocumentListField(document_type=Rating, default=None)
+    ratings = EmbeddedDocumentListField(document_type=Rating)
 
     # Define the collection and indexing for this document
     meta = {
@@ -679,10 +682,10 @@ class SharedSimulation(Document):
 
 class Feedback(Document):
     user = ReferenceField(User, reverse_delete_rule=DO_NOTHING)
-    category = StringField()
-    rating = IntField(min_value=1, max_value=5)
-    comments = StringField()
-    created_date = DateTimeField(default=datetime.utcnow())
+    category = StringField(required=True)
+    rating = IntField(min_value=1, max_value=5, required=True)
+    comments = StringField(required=True)
+    created_date = DateTimeField(default=datetime.utcnow(), required=True)
 
     meta = {'collection': 'feedback'}
 

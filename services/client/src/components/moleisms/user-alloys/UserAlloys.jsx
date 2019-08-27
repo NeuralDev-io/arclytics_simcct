@@ -28,6 +28,7 @@ import {
 } from '../../../state/ducks/alloys/actions'
 
 import styles from './UserAlloys.module.scss'
+import AppBar from "../appbar/AppBar";
 
 class UserAlloys extends Component {
   constructor(props) {
@@ -74,7 +75,7 @@ class UserAlloys extends Component {
   }
 
   render() {
-    const { alloyList } = this.props
+    const { alloyList, history } = this.props
     const { name, deleteModal } = this.state
 
     // Prepare the data for the Table component
@@ -119,6 +120,8 @@ class UserAlloys extends Component {
 
     return (
       <div className={styles.container}>
+        <AppBar active="alloys" redirect={history.push} />
+
         <h3>Personal alloy database</h3>
         <div className={styles.tools}>
           <div className="input-row">

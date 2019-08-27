@@ -19,51 +19,51 @@ const CCT = ({
       {
         x: data.ferrite_nucleation.time,
         y: data.ferrite_nucleation.temp,
-        name: 'Ferrite nucleation',
+        name: 'Ferrite start',
         mode: 'line',
-        marker: { color: getColor('--o500') },
+        line: { color: getColor('--o500') },
       },
       {
         x: data.ferrite_completion.time,
         y: data.ferrite_completion.temp,
-        name: 'Ferrite completion',
+        name: 'Ferrite finish',
         mode: 'line',
-        marker: { color: getColor('--l500') },
+        line: { color: getColor('--r500') },
       },
       {
         x: data.pearlite_nucleation.time,
         y: data.pearlite_nucleation.temp,
-        name: 'Pearlite nucleation',
+        name: 'Pearlite start',
         mode: 'line',
-        marker: { color: getColor('--g500') },
+        line: { color: getColor('--l500') },
       },
       {
         x: data.pearlite_completion.time,
         y: data.pearlite_completion.temp,
-        name: 'Pearlite completion',
+        name: 'Pearlite finish',
         mode: 'line',
-        marker: { color: getColor('--t500') },
+        line: { color: getColor('--g500') },
       },
       {
         x: data.bainite_nucleation.time,
         y: data.bainite_nucleation.temp,
-        name: 'Bainite nucleation',
+        name: 'Bainite start',
         mode: 'line',
-        marker: { color: getColor('--b500') },
+        line: { color: getColor('--m500') },
       },
       {
         x: data.bainite_completion.time,
         y: data.bainite_completion.temp,
-        name: 'Bainite completion',
+        name: 'Bainite finish',
         mode: 'line',
-        marker: { color: getColor('--i500') },
+        line: { color: getColor('--v500') },
       },
       {
         x: data.martensite.time,
         y: data.martensite.temp,
         name: 'Martensite',
         mode: 'line',
-        marker: { color: getColor('--v500') },
+        line: { color: getColor('--br500') },
       },
     ]
 
@@ -73,10 +73,9 @@ const CCT = ({
         y: userData.user_cooling_curve.temp,
         name: 'User cooling curve',
         mode: 'line',
-        marker: {
-          size: 10,
-          color: getColor('--r500'),
-          line: { width: 10, color: getColor('--r500') },
+        line: {
+          color: getColor('--t500'),
+          width: 3,
         },
       })
     }

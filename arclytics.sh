@@ -155,11 +155,15 @@ Service Group:
                     \`dask\` containers. This includes: users, simcct,
                     celery-worker, mongodb, redis, dask-scheduler, dask-worker.
   client            Run only the client microservice.
-  dask              Run the only the services to test the \`dask\` containers
-                    which includes: dask-scheduler, dask-worker, jupyter.
+  dask              Run only the services to test the \`dask\` containers which
+                    includes: dask-scheduler, dask-worker, jupyter.
   fluentd           Run only the microservices with the \`fluentd\` logging
                     container and associated containers for storage. This
                     includes: fluentd, elasticsearch, kibana.
+  fluentd-test      Run only the microservices for \`fluentd\` testing with a
+                    basic Flask API server and a production build React app.
+                    This includes: fluent-python, fluent-react, fluentd, kibana,
+                    elasticsearch.
   swagger-test      Run the microservices to test the back-end API from swagger.
                     This includes: swagger, users, simcct, celery-worker, redis,
                     mongodb.
@@ -492,6 +496,8 @@ changeContainerGroup() {
         CONTAINER_ARGS="client"
     elif [[ "${CONTAINER_GROUP}" == "fluentd" ]]; then
         CONTAINER_ARGS="fluentd elasticsearch kibana"
+    elif [[ "${CONTAINER_GROUP}" == "fluentd-test" ]]; then
+        CONTAINER_ARGS="fluentd fluent-python fluent-react elasticsearch kibana"
     elif [[ "${CONTAINER_GROUP}" == "swagger-test" ]]; then
         CONTAINER_ARGS="users simcct celery-worker redis mongodb swagger"
     elif [[ "${CONTAINER_GROUP}" == "dask" ]]; then

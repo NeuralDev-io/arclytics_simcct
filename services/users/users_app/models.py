@@ -695,5 +695,5 @@ class Feedback(Document):
             'category': self.category,
             'rating': self.rating,
             'comments': self.comments,
-            'created_date': self.created_date
+            'created_date': str(self.created_date)
         }

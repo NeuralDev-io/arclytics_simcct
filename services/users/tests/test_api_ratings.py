@@ -26,7 +26,7 @@ import unittest
 
 from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
-from users_app.models import User, Feedback
+from users_app.models import User, Feedback, AdminProfile
 from tests.test_api_users import log_test_user_in
 
 logger = AppLogger(__name__)
@@ -248,6 +248,100 @@ class TestRatingsService(BaseTestCase):
             )
 
             self.assertTrue(Feedback.objects(user=hevy.id))
+
+    def test_ratings_list(self):
+        """NOT A REAL UNIT TEST, this is to help me develop the list endpoint"""
+        vader = User(
+            email='darthvader@arclytics.io',
+            first_name='Darth',
+            last_name='Vader'
+        )
+        vader.set_password('AllTooEasy')
+        vader.admin_profile = AdminProfile(
+            position='Position',
+            mobile_number=None,
+            verified=True,
+            promoted_by=None
+        )
+        vader.save()
+
+        token = log_test_user_in(self, vader, 'AllTooEasy')
+
+        with self.client:
+            resp_1 = self.client.post(
+                '/user/feedback',
+                data=json.dumps(
+                    {
+                        'category': 'Category value',
+                        'rating': 5,
+                        'comments': 'Comments value'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            resp_1_1 = self.client.post(
+                '/user/feedback',
+                data=json.dumps(
+                    {
+                        'category': 'Category value 2',
+                        'rating': 4,
+                        'comments': 'Comments value 2'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            resp_1_2 = self.client.post(
+                '/user/feedback',
+                data=json.dumps(
+                    {
+                        'category': 'Category value 3',
+                        'rating': 3,
+                        'comments': 'Comments value 3'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            resp_1_3 = self.client.post(
+                '/user/feedback',
+                data=json.dumps(
+                    {
+                        'category': 'Category value 4',
+                        'rating': 2,
+                        'comments': 'Comments value 4'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            resp_1_4 = self.client.post(
+                '/user/feedback',
+                data=json.dumps(
+                    {
+                        'category': 'Category value 5',
+                        'rating': 1,
+                        'comments': 'Comments value 5'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            resp_2 = self.client.get(
+                '/admin/feedback/list',
+                data=json.dumps({'key': 'value'}),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            data = json.loads(resp_2.data.decode())
+            print(data)
 
 
 if __name__ == '__main__':

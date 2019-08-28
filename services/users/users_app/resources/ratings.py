@@ -30,7 +30,7 @@ from flask import current_app as app
 from flask_restful import Resource
 from mongoengine import ValidationError
 
-from users_app.middleware import authenticate
+from users_app.middleware import authenticate, authenticate_admin
 from users_app.extensions import api
 from users_app.models import Rating, Feedback, User
 
@@ -39,9 +39,9 @@ logger = AppLogger(__name__)
 ratings_blueprint = Blueprint('ratings', __name__)
 
 
-class RatingsEndpoints(Resource):
+class UserRating(Resource):
     """
-
+    Route for Users to submit ratings.
     """
 
     method_decorators = {'post': [authenticate]}
@@ -80,9 +80,9 @@ class RatingsEndpoints(Resource):
         return response, 200
 
 
-class FeedbackEndpoints(Resource):
+class UserFeedback(Resource):
     """
-
+    Route for user to submit feedback.
     """
 
     method_decorators = {'post': [authenticate]}
@@ -130,5 +130,73 @@ class FeedbackEndpoints(Resource):
         return response, 200
 
 
-api.add_resource(RatingsEndpoints, '/user/rating')
-api.add_resource(FeedbackEndpoints, '/user/feedback')
+class FeedbackList(Resource):
+    """
+    Route for admins to view a list of feedback submissions.
+    """
+
+    method_decorators = {'get': [authenticate_admin]}
+
+    def get(self, resp):
+        """Return a list of feedback based of get request from Admin"""
+
+        data = request.get_json()
+
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+        # Get request data
+        sort_on = data.get('sort_on', None)
+        offset = data.get('offset', None)
+        limit = data.get('limit', None)
+
+        # Validate sort parameters
+        if sort_on:
+            valid_sort_keys = [
+                'category', '-category', 'rating', '-rating', 'created_date',
+                '-category_date'
+            ]
+            sort_valid = False
+            for k in valid_sort_keys:
+                if k == sort_on:
+                    sort_valid = True
+                    break
+
+            if not sort_valid:
+                response['message'] = 'Sort value is invalid.'
+                return response, 400
+
+        # Validate limit
+        if limit:
+            if not isinstance(limit, int):
+                response['message'] = 'Limit value is invalid.'
+                return response, 400
+        else:
+            limit = 10
+
+        # Validate offset
+        feedback_size = Feedback.objects.count()
+        if offset:
+            if not isinstance(offset, int):
+                response['message'] = 'Offset value is invalid.'
+                return response, 400
+            if offset > feedback_size + 1:
+                response['message'] = 'Offset value exceeds number of records.'
+                return response, 400
+        else:
+            offset = 1
+
+        # Start query
+        if sort_on:
+            query_set = Feedback.objects[offset:offset +
+                                         limit].order_by(sort_on)
+        else:
+            query_set = Feedback.objects[offset - 1:offset + limit - 1]
+        response.pop('message')
+        response['status'] = 'success'
+        response['data'] = [obj.to_dict() for obj in query_set]
+        return response, 200
+
+
+api.add_resource(UserRating, '/user/rating')
+api.add_resource(UserFeedback, '/user/feedback')
+api.add_resource(FeedbackList, '/admin/feedback/list')

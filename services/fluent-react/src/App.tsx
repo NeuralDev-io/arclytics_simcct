@@ -86,7 +86,7 @@ const App = withStyles(styles)(
         const {message} = this.state
         console.log('message: ', message)
         // send an event record with 'tag.label'
-        logger.emit('debug', {message: message, sender: 'fluent-react-typescript'});
+        // logger.emit('debug', {message: message});
 
         fetch('http://localhost:5005/log', {
           method: 'POST',

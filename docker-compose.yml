@@ -223,9 +223,9 @@ services:
       dockerfile: Dockerfile
     image: neuraldev/arc_fluent_python:1.0
     ports:
-      - 24225:5000
+      - 5005:5000
     expose:
-      - 24225
+      - 5005
     logging:
       driver: fluentd
       options:
@@ -243,11 +243,15 @@ services:
       context: ./services/fluent-react
       dockerfile: Dockerfile
     image: neuraldev/arc_fluent_react:1.0
+    ports:
+      - 80:80
+    expose:
+      - 80
     logging:
       driver: fluentd
       options:
         fluentd-address: localhost:24224
-        tag: fluent-python.access
+        tag: fluent-react.access
     depends_on:
       - fluentd
     networks:

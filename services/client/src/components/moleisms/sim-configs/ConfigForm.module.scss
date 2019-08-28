@@ -5,7 +5,26 @@
   margin-bottom: 2rem;
 
   &>div:first-of-type {
-    margin-right: 3rem;
+    margin-right: 8rem;
+  }
+
+  .grainSize {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+
+    & > div:first-of-type {
+      margin-right: 1.5rem;
+    }
+
+    & > div:last-of-type {
+      margin-left: 1.5rem;
+    }
+
+    & > span {
+      font-size: 1.5rem;
+      color: var(--n500);
+    }
   }
 }
 

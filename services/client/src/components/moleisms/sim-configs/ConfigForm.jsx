@@ -106,7 +106,7 @@ class ConfigForm extends Component {
     return (
       <React.Fragment>
         <div className={styles.first}>
-          <div className="input-row">
+          <div className="input-col">
             <h6>CCT/TTT method</h6>
             <Select
               name="method"
@@ -120,9 +120,9 @@ class ConfigForm extends Component {
               onChange={option => updateConfigMethodConnect(option.value)}
             />
           </div>
-          <div className="input-row">
+          <div className="input-col">
             <h6>Grain size</h6>
-            <div className="input-row">
+            <div className={styles.grainSize}>
               <div className="input-row">
                 <span>ASTM</span>
                 <TextField
@@ -133,6 +133,7 @@ class ConfigForm extends Component {
                   length="short"
                 />
               </div>
+              <span> = </span>
               <div className="input-row">
                 <span>Diameter</span>
                 <TextFieldExtra
@@ -141,7 +142,7 @@ class ConfigForm extends Component {
                   onChange={val => updateGrainSizeConnect('dia', val)}
                   value={configurations.grain_size_diameter}
                   length="short"
-                  suffix="μ"
+                  suffix="μm"
                 />
               </div>
             </div>

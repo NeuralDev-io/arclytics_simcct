@@ -268,7 +268,7 @@ class TestRatingsService(BaseTestCase):
         token = log_test_user_in(self, vader, 'AllTooEasy')
 
         with self.client:
-            resp_1 = self.client.post(
+            self.client.post(
                 '/user/feedback',
                 data=json.dumps(
                     {
@@ -281,7 +281,7 @@ class TestRatingsService(BaseTestCase):
                 content_type='application/json'
             )
 
-            resp_1_1 = self.client.post(
+            self.client.post(
                 '/user/feedback',
                 data=json.dumps(
                     {
@@ -294,7 +294,7 @@ class TestRatingsService(BaseTestCase):
                 content_type='application/json'
             )
 
-            resp_1_2 = self.client.post(
+            self.client.post(
                 '/user/feedback',
                 data=json.dumps(
                     {
@@ -307,7 +307,7 @@ class TestRatingsService(BaseTestCase):
                 content_type='application/json'
             )
 
-            resp_1_3 = self.client.post(
+            self.client.post(
                 '/user/feedback',
                 data=json.dumps(
                     {
@@ -320,7 +320,7 @@ class TestRatingsService(BaseTestCase):
                 content_type='application/json'
             )
 
-            resp_1_4 = self.client.post(
+            self.client.post(
                 '/user/feedback',
                 data=json.dumps(
                     {
@@ -333,15 +333,50 @@ class TestRatingsService(BaseTestCase):
                 content_type='application/json'
             )
 
-            resp_2 = self.client.get(
+            resp_1 = self.client.get(
                 '/admin/feedback/list',
-                data=json.dumps({'key': 'value'}),
+                data=json.dumps({
+                    'limit': 2,
+                    'sort_on': '-rating'
+                }),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
 
-            data = json.loads(resp_2.data.decode())
-            print(data)
+            data_1 = json.loads(resp_1.data.decode())
+            print(data_1)
+
+            resp_2 = self.client.get(
+                '/admin/feedback/list',
+                data=json.dumps(
+                    {
+                        'limit': data_1['limit'],
+                        'sort_on': data_1['sort_on'],
+                        'offset': data_1['next_offset']
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            data_2 = json.loads(resp_2.data.decode())
+            print(data_2)
+
+            resp_3 = self.client.get(
+                '/admin/feedback/list',
+                data=json.dumps(
+                    {
+                        'limit': data_2['limit'],
+                        'sort_on': data_2['sort_on'],
+                        'offset': data_2['next_offset']
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            data_3 = json.loads(resp_3.data.decode())
+            print(data_3)
 
 
 if __name__ == '__main__':

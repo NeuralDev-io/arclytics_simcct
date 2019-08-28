@@ -11,9 +11,9 @@ export COMPOSE_PROJECT_NAME='arc'
 VERSION=1.1.1
 WORKDIR="$(dirname "$(readlink -f "$0")")"
 DOCKER_COMPOSE_PATH="${WORKDIR}/docker-compose.yml"
-COMMAND=""
 ARGS=""
-CONTAINER_ARGS="users simcct client redis mongodb dask-scheduler dask-worker celery-worker"
+CONTAINER_GROUP=""
+CONTAINER_ARGS="users simcct client redis mongodb celery-worker"
 CONTAINER_LOG=""
 BUILD_CONTAINER_ARGS=""
 BUILD_FLAG=0
@@ -123,6 +123,50 @@ all() {
     # e2e
 }
 
+groupUsage() {
+    echo -e """
+${greenf}ARCLYTICS CLI SCRIPT
+
+Usage:
+arclytics.sh [options...] up --group [SERVICE GROUP]
+arclytics.sh --group [SERVICE GROUP] up [options...]
+
+The Arclytics CLI group flag command to run a group of docker-compose services
+based on the available service groups.
+
+Options:
+  -b, --build           Build the Docker containers before running.
+  -d, --detach          Run Docker Engine logs in a detached shell mode.
+  -s, --seed_db         Seed the MongoDB database with test data.
+
+Service Group:
+  all               Run all available services which includes the following:
+                    users, simcct, celery-worker, redis, mongodb, dask-scheduler,
+                    dask-worker, jupyter, swagger, fluentd, elasticsearch,
+                    kibana, client.
+  e2e               Run the services to with the front-end client and back-end
+                    microservices to test an end-to-end example of any feature.
+                    This includes: client, users, simcct, celery-worker, mongodb,
+                    redis.
+  server            Run all services related to the back-end microservices and
+                    database which includes the following: users, simcct,
+                    celery-worker, mongodb, redis.
+  server-dask       Run all services related to the back-end and include the
+                    \`dask\` containers. This includes: users, simcct,
+                    celery-worker, mongodb, redis, dask-scheduler, dask-worker.
+  client            Run only the client microservice.
+  dask              Run the only the services to test the \`dask\` containers
+                    which includes: dask-scheduler, dask-worker, jupyter.
+  fluentd           Run only the microservices with the \`fluentd\` logging
+                    container and associated containers for storage. This
+                    includes: fluentd, elasticsearch, kibana.
+  swagger-test      Run the microservices to test the back-end API from swagger.
+                    This includes: swagger, users, simcct, celery-worker, redis,
+                    mongodb.
+${reset}
+"""
+}
+
 # shellcheck disable=SC1079,SC1078,SC2006
 upUsage() {
     echo -e """
@@ -138,6 +182,8 @@ Options:
   -s, --seed_db         Seed the MongoDB database with test data.
   --scale SERVICE=NUM   Scale SERVICE to NUM instances. Overrides the
                         \`--scale\` setting in the Compose file if present
+  -G, --group GROUP     Specify a GROUP of services to use to run. You can use
+                        \`help\` to get more information about groups available.
   -h, --help            Get the Usage information for this COMMAND.
 
 Optional Containers:
@@ -313,6 +359,12 @@ containerDown() {
     completeMessage
 }
 
+buildContainers() {
+    headerMessage "BUILDING ARCLYTICS SIM CONTAINERS ONLY"
+    generalMessage "docker-compose build ${BUILD_CONTAINER_ARGS}"
+    docker-compose -f ${DOCKER_COMPOSE_PATH} build ${BUILD_CONTAINER_ARGS}
+}
+
 scaleContainers() {
   headerMessage "SCALING ARCLYTICS SIM CONTAINERS"
   docker-compose -f ${DOCKER_COMPOSE_PATH} SCALE_FLAG ${SCALE_CONTAINERS_ARGS}
@@ -350,7 +402,12 @@ flushAndSeedDb() {
 }
 
 # shellcheck disable=SC2086
-run_tests() {
+runTests() {
+    # Make sure the correct container groups are run for each test.
+    # By default, we ensure the server back-end ones are running
+    CONTAINER_GROUP="server"
+    changeContainerGroup
+
     ## run appropriate tests
     if [[ "${TEST_SERVER_ARGS}" == "server" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
@@ -384,6 +441,9 @@ run_tests() {
         fi
     elif [[ "${TEST_SERVER_ARGS}" == "client" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
+            CONTAINER_GROUP="client"
+            changeContainerGroup
+
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
             docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
             client
@@ -392,11 +452,16 @@ run_tests() {
         fi
     elif [[ "${TEST_SERVER_ARGS}" == "e2e" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
+            CONTAINER_GROUP="e2e"
+            changeContainerGroup
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
             docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
         fi
     elif [[ "${TEST_SERVER_ARGS}" == "all" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
+            CONTAINER_GROUP="e2e"
+            changeContainerGroup
+
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
             docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
             all
@@ -412,52 +477,71 @@ run_tests() {
     completeMessage
 }
 
+changeContainerGroup() {
+    if [[ "${CONTAINER_GROUP}" == "all" ]]; then
+        # Leaving this empty will build everything in the docker-compose.yml
+        CONTAINER_ARGS=""
+        # Make sure these are not added to the CONTAINERS_ARGS
+        SWAGGER_FLAG=0
+        JUPYTER_FLAG=0
+    elif [[ "${CONTAINER_GROUP}" == "server" ]]; then
+        CONTAINER_ARGS="users simcct celery-worker redis mongodb"
+    elif [[ "${CONTAINER_GROUP}" == "server-dask" ]]; then
+        CONTAINER_ARGS="users simcct celery-worker redis mongodb dask-scheduler dask-worker"
+    elif [[ "${CONTAINER_GROUP}" == "client" ]]; then
+        CONTAINER_ARGS="client"
+    elif [[ "${CONTAINER_GROUP}" == "fluentd" ]]; then
+        CONTAINER_ARGS="fluentd elasticsearch kibana"
+    elif [[ "${CONTAINER_GROUP}" == "swagger-test" ]]; then
+        CONTAINER_ARGS="users simcct celery-worker redis mongodb swagger"
+    elif [[ "${CONTAINER_GROUP}" == "dask" ]]; then
+        CONTAINER_ARGS="dask-scheduler dask-worker jupyter"
+    elif [[ "${CONTAINER_GROUP}" == "e2e" ]]; then
+            CONTAINER_ARGS="client users simcct celery-worker redis mongodb"
+    fi
+}
+
 run() {
-    ## run appropriate tests
-    if [[ "${COMMAND}" == "build" ]]; then
-        headerMessage "BUILDING ARCLYTICS SIM CONTAINERS ONLY"
-        generalMessage "docker-compose build ${BUILD_CONTAINER_ARGS}"
-        docker-compose -f ${DOCKER_COMPOSE_PATH} build ${BUILD_CONTAINER_ARGS}
-    elif [[ "${COMMAND}" == "up" ]]; then
-        headerMessage "RUN ARCLYTICS SIM CONTAINERS"
+    headerMessage "RUN ARCLYTICS SIM CONTAINERS"
 
-        if [[ ${SCALE_FLAG} == 1 ]]; then
-            CONTAINER_ARGS="--scale ${scale_service} ${CONTAINER_ARGS}"
-        fi
+    if [[ ${SCALE_FLAG} == 1 ]]; then
+        CONTAINER_ARGS="--scale ${scale_service} ${CONTAINER_ARGS}"
+    fi
 
-        if [[ ${SWAGGER_FLAG} == 1 ]]; then
+    if [[ ${SWAGGER_FLAG} == 1 ]]; then
+        # Check if we haven't been told to build all
+        if [[ "${CONTAINER_GROUP}" != "all" ]]; then
             CONTAINER_ARGS="${CONTAINER_ARGS} swagger"
         fi
+    fi
 
-        if [[ ${JUPYTER_FLAG} == 1 ]]; then
+    if [[ ${JUPYTER_FLAG} == 1 ]]; then
+        if [[ "${CONTAINER_GROUP}" != "all" ]]; then
             CONTAINER_ARGS="${CONTAINER_ARGS} jupyter"
         fi
+    fi
 
-        if [[ ${BUILD_FLAG} == 1 ]]; then
-            if [[ ${DETACH_FLAG} == 1 ]]; then
-                generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
-                docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build ${CONTAINER_ARGS}
-            else
-                generalMessage "docker-compose up --build ${CONTAINER_ARGS}"
-                docker-compose -f ${DOCKER_COMPOSE_PATH} up --build ${CONTAINER_ARGS}
-            fi
+    if [[ ${BUILD_FLAG} == 1 ]]; then
+        if [[ ${DETACH_FLAG} == 1 ]]; then
+            generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build ${CONTAINER_ARGS}
         else
-            if [[ ${DETACH_FLAG} == 1 ]]; then
-                generalMessage "docker-compose up -d ${CONTAINER_ARGS}"
-                docker-compose -f ${DOCKER_COMPOSE_PATH} up -d ${CONTAINER_ARGS}
-            else
-                generalMessage "docker-compose up ${CONTAINER_ARGS}"
-                docker-compose -f ${DOCKER_COMPOSE_PATH} up ${CONTAINER_ARGS}
-            fi
-        fi
-
-        if [[ ${SEED_DB_FLAG} == 1 ]]; then
-            echoSpace
-            flushAndSeedDb
+            generalMessage "docker-compose up --build ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up --build ${CONTAINER_ARGS}
         fi
     else
-        usage
-        exit 1
+        if [[ ${DETACH_FLAG} == 1 ]]; then
+            generalMessage "docker-compose up -d ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d ${CONTAINER_ARGS}
+        else
+            generalMessage "docker-compose up ${CONTAINER_ARGS}"
+            docker-compose -f ${DOCKER_COMPOSE_PATH} up ${CONTAINER_ARGS}
+        fi
+    fi
+
+    if [[ ${SEED_DB_FLAG} == 1 ]]; then
+        echoSpace
+        flushAndSeedDb
     fi
     completeMessage
 }
@@ -495,8 +579,17 @@ while [[ "$1" != "" ]] ; do
         -J | --jupyter )
             JUPYTER_FLAG=1
             ;;
-        --group )
-            # TODO(andrew@neuraldev.io): Add grouping for container services.
+        -G | --group )
+            # Simply change the CONTAINER_ARGS based on the CONTAINER_GROUP
+            CONTAINER_GROUP=$2
+
+            if [[ "${CONTAINER_GROUP}" == 'help' ]]; then
+                groupUsage
+                exit 0
+            fi
+
+            changeContainerGroup
+            # Let the while condition continue and shift $3 --> $2 below
             ;;
         ps )
             ARGS=$2
@@ -543,17 +636,14 @@ while [[ "$1" != "" ]] ; do
             scaleContainers
             ;;
         build )
-            COMMAND="build"
             BUILD_CONTAINER_ARGS=$2
             while [[ "$3" != "" ]] ; do
                 BUILD_CONTAINER_ARGS="${BUILD_CONTAINER_ARGS} $3"
                 shift
             done
-            run
+            buildContainers
             ;;
         up )
-            COMMAND="up"
-
             while [[ "$2" != "" ]] ; do
                 case $2 in
                     -b | --build )
@@ -580,6 +670,34 @@ while [[ "$1" != "" ]] ; do
                         scale_service=$2
                         # scale_num="$(cut -d'=' -f2 <<< "${scale_service}" )"
                         shift
+                        ;;
+                    -G | --group )
+                        # TODO(andrew@neuraldev.io): Add grouping for container services.
+                        shift
+                        CONTAINER_GROUP=$2
+                        changeContainerGroup
+
+                        while [[ "$3" != "" ]]; do
+                            case $3 in
+                                -b | --build )
+                                    BUILD_FLAG=1
+                                    ;;
+                                -d | --detach )
+                                    DETACH_FLAG=1
+                                    ;;
+                                -s | --seed_db )
+                                    SEED_DB_FLAG=1
+                                    ;;
+                                help )
+                                    groupUsage
+                                    exit 0
+                                    ;;
+                                esac
+                                shift
+                            done
+                        # We run from here and as will only accept the flags above
+                        run
+                        exit 0
                         ;;
                     -h | --help )
                         upUsage
@@ -620,11 +738,11 @@ while [[ "$1" != "" ]] ; do
                         ;;
                     * )
                         TEST_SERVER_ARGS=$2
-                        run_tests
+                        runTests
                 esac
                 shift
             done
-            run_tests
+            runTests
             ;;
         flush )
             flushDb

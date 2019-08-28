@@ -20,6 +20,8 @@ __date__ = '2019.08.28'
 """
 
 import os
+import sys
+
 from fluent import sender, event
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -30,24 +32,27 @@ app = Flask(__name__)
 CORS(app)
 
 fluent_host = os.environ.get('FLUENT_HOST')
-sender.setup('fluent-python.test', host=fluent_host, port=24224)
+sender.setup('fluent-python', host=fluent_host, port=24224)
 
 
 @app.route('/log', methods=['POST'])
 def log():
-    response = {'status': 'fail', 'log': ''}
+    response = {'status': 'fail'}
 
     data = request.get_json()
 
     if not data:
         return jsonify(response), 400
 
-    fluent_resp = event.Event('follow', {
-        'sender': data.get('sender'),
-        'message': data.get('message'),
+    print(data, file=sys.stderr)
+
+    event.Event('debug', {
+        'message': data['message'],
+        'sender': 'fluent-python-flask'
     })
 
-    response['log'] = fluent_resp
+    response['log'] = data['message']
+    response['status'] = 'success'
     return jsonify(response), 200
 
 

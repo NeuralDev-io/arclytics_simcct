@@ -140,11 +140,19 @@ class FeedbackList(Resource):
     def get(self, resp):
         """Return a list of feedback based of get request from Admin"""
 
-        data = request.get_json()
-
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+        data = request.get_json()
+
         # Get request data
+        # if not data:
+        #     if request.args['offset']:
+        #         offset = request.args['offset']
+        #     if request.args['limit']:
+        #         limit = request.args['limit']
+        #     if request.args['sort_on']:
+        #         sort_on = request.args['sort_on']
+        # else:
         sort_on = data.get('sort_on', None)
         offset = data.get('offset', None)
         limit = data.get('limit', None)
@@ -187,13 +195,31 @@ class FeedbackList(Resource):
 
         # Start query
         if sort_on:
-            query_set = Feedback.objects[offset:offset +
-                                         limit].order_by(sort_on)
+            query_set = Feedback.objects[offset - 1:offset + limit -
+                                         1].order_by(sort_on)
         else:
             query_set = Feedback.objects[offset - 1:offset + limit - 1]
+
+        response['limit'] = limit
+        response['sort_on'] = sort_on
+        # next_url = None
+        response['next_offset'] = None
+        if offset + limit - 1 < feedback_size:
+            # next_url = '/admin/feedback/list?limit=' + str(limit) + '&offset=' \
+            #            + str(offset+limit) + '&sort_on=' + str(sort_on)
+            response['next_offset'] = offset + limit
+        response['prev_offset'] = None
+        # prev_url = None
+        if offset - limit >= 1:
+            # prev_url = '/admin/feedback/list?limit=' + str(limit) + '&offset=' \
+            #            + str(offset-limit) + '&sort_on=' + str(sort_on)
+            response['prev_offset'] = offset - limit
+
         response.pop('message')
         response['status'] = 'success'
         response['data'] = [obj.to_dict() for obj in query_set]
+        # response['next_url'] = next_url
+        # response['prev_url'] = prev_url
         return response, 200
 
 

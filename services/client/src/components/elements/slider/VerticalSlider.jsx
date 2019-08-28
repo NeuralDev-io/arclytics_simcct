@@ -1,0 +1,90 @@
+import React from 'react'
+import PropTypes from 'prop-types'
+import Slider, {
+  Rail, Handles, Tracks, Ticks,
+} from 'react-compound-slider'
+import {
+  SliderRail, Handle, Track, Tick,
+} from './Components'
+
+const sliderStyle = {
+  position: 'relative',
+  height: '400px',
+  marginLeft: '45%',
+  touchAction: 'none',
+}
+
+const VerticalSlider = ({
+  domain,
+  step,
+  values,
+  tickCount,
+  ...others
+}) => (
+  <div style={{ height: 520, width: '100%' }}>
+    <Slider
+      reversed
+      vertical
+      mode={2}
+      rootStyle={sliderStyle}
+      domain={domain}
+      step={step}
+      values={values}
+      {...others}
+    >
+      <Rail>
+        {({ getRailProps }) => <SliderRail getRailProps={getRailProps} />}
+      </Rail>
+      <Handles>
+        {({ handles, getHandleProps }) => (
+          <div className="slider-handles">
+            {handles.map(handle => (
+              <Handle
+                key={handle.id}
+                handle={handle}
+                domain={domain}
+                getHandleProps={getHandleProps}
+              />
+            ))}
+          </div>
+        )}
+      </Handles>
+      <Tracks left={false}>
+        {({ tracks, getTrackProps }) => (
+          <div className="slider-tracks">
+            {tracks.map(({ id, source, target }) => (
+              <Track
+                key={id}
+                source={source}
+                target={target}
+                getTrackProps={getTrackProps}
+              />
+            ))}
+          </div>
+        )}
+      </Tracks>
+      <Ticks count={tickCount}>
+        {({ ticks }) => (
+          <div className="slider-ticks">
+            {ticks.map(tick => (
+              <Tick key={tick.id} tick={tick} />
+            ))}
+          </div>
+        )}
+      </Ticks>
+    </Slider>
+  </div>
+)
+
+VerticalSlider.propTypes = {
+  domain: PropTypes.arrayOf(PropTypes.number).isRequired,
+  step: PropTypes.number.isRequired,
+  values: PropTypes.arrayOf(PropTypes.number).isRequired,
+  tickCount: PropTypes.number,
+}
+
+VerticalSlider.defaultProps = {
+  tickCount: -1,
+}
+
+export default VerticalSlider

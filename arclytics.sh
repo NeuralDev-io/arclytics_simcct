@@ -570,6 +570,9 @@ while [[ "$1" != "" ]] ; do
             usage
             exit 0
             ;;
+        -f | --file )
+            DOCKER_COMPOSE_PATH=$2
+            ;;
         -d | --detach )
             DETACH_FLAG=1
             ;;

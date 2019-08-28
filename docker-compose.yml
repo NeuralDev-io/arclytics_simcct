@@ -238,20 +238,20 @@ services:
     networks:
       - host
 
-    fluent-react:
-      build:
-        context: ./services/fluent-react
-        dockerfile: Dockerfile
-      image: neuraldev/arc_fluent_react:1.0
-      logging:
-        driver: fluentd
-        options:
-          fluentd-address: localhost:24224
-          tag: fluent-python.access
-      depends_on:
-        - fluentd
-      networks:
-        - host
+  fluent-react:
+    build:
+      context: ./services/fluent-react
+      dockerfile: Dockerfile
+    image: neuraldev/arc_fluent_react:1.0
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: fluent-python.access
+    depends_on:
+      - fluentd
+    networks:
+      - host
 
   swagger:
     build:

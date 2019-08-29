@@ -70,8 +70,6 @@ class UserRating(Resource):
             return response, 400
 
         user = User.objects.get(id=resp)
-        if not user.ratings:
-            user.ratings = []
         user.ratings.append(Rating(rating=rating))
         user.save()
 
@@ -144,15 +142,6 @@ class FeedbackList(Resource):
 
         data = request.get_json()
 
-        # Get request data
-        # if not data:
-        #     if request.args['offset']:
-        #         offset = request.args['offset']
-        #     if request.args['limit']:
-        #         limit = request.args['limit']
-        #     if request.args['sort_on']:
-        #         sort_on = request.args['sort_on']
-        # else:
         sort_on = data.get('sort_on', None)
         offset = data.get('offset', None)
         limit = data.get('limit', None)
@@ -202,24 +191,21 @@ class FeedbackList(Resource):
 
         response['limit'] = limit
         response['sort_on'] = sort_on
-        # next_url = None
         response['next_offset'] = None
         if offset + limit - 1 < feedback_size:
-            # next_url = '/admin/feedback/list?limit=' + str(limit) + '&offset=' \
-            #            + str(offset+limit) + '&sort_on=' + str(sort_on)
             response['next_offset'] = offset + limit
         response['prev_offset'] = None
-        # prev_url = None
         if offset - limit >= 1:
-            # prev_url = '/admin/feedback/list?limit=' + str(limit) + '&offset=' \
-            #            + str(offset-limit) + '&sort_on=' + str(sort_on)
             response['prev_offset'] = offset - limit
+
+        total_pages = int(feedback_size/limit) + 1
+        current_page = int(offset/limit) + 1
 
         response.pop('message')
         response['status'] = 'success'
+        response['total_pages'] = total_pages
+        response['current_page'] = current_page
         response['data'] = [obj.to_dict() for obj in query_set]
-        # response['next_url'] = next_url
-        # response['prev_url'] = prev_url
         return response, 200
 
 

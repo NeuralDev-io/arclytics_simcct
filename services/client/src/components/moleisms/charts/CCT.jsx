@@ -12,6 +12,7 @@ const CCT = ({
   data,
   userData,
   displayUserCurve,
+  cctIndex,
 }) => {
   let chartData = []
   if (data !== undefined) {
@@ -65,10 +66,7 @@ const CCT = ({
         mode: 'line',
         line: { color: getColor('--br500') },
       },
-    ]
-
-    if (displayUserCurve) {
-      chartData.push({
+      displayUserCurve && {
         x: userData.user_cooling_curve.time,
         y: userData.user_cooling_curve.temp,
         name: 'User cooling curve',
@@ -77,8 +75,23 @@ const CCT = ({
           color: getColor('--t500'),
           width: 3,
         },
-      })
-    }
+      },
+      displayUserCurve && {
+        x: cctIndex !== -1
+          ? [userData.user_cooling_curve.time[cctIndex]]
+          : [userData.user_cooling_curve.time[userData.slider_max]],
+        y: cctIndex !== -1
+          ? [userData.user_cooling_curve.temp[cctIndex]]
+          : [userData.user_cooling_curve.temp[userData.slider_max]],
+        name: 'CCT',
+        mode: 'markers',
+        type: 'scatter',
+        marker: {
+          color: getColor('--g500'),
+          width: 50,
+        },
+      },
+    ]
   }
 
   if (chartData.length === 0) {
@@ -138,6 +151,7 @@ CCT.propTypes = {
     slider_temp_field: PropTypes.number,
     slider_max: PropTypes.number,
   }),
+  cctIndex: PropTypes.number.isRequired,
 }
 
 CCT.defaultProps = {
@@ -148,6 +162,7 @@ CCT.defaultProps = {
 const mapStateToProps = state => ({
   data: state.sim.results.CCT,
   userData: state.sim.results.USER,
+  cctIndex: state.sim.results.cctIndex,
   displayUserCurve: state.sim.displayUserCurve,
 })
 

@@ -7,6 +7,7 @@ import {
   UPDATE_CONFIG_METHOD,
   UPDATE_CONFIG,
   UPDATE_DISPLAY_USER_CURVE,
+  UPDATE_CCT_INDEX,
 } from './types'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 
@@ -334,4 +335,11 @@ export const runSim = () => (dispatch, getState) => {
       }
     })
     .catch(err => console.log(err))
+}
+
+export const updateCCTIndex = idx => (dispatch) => {
+  dispatch({
+    type: UPDATE_CCT_INDEX,
+    payload: idx,
+  })
 }

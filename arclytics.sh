@@ -222,6 +222,7 @@ Options:
   -b, --build      Build the Docker containers before running tests.
   -t, --tty        Attach a pseudo-TTY to the tests.
   -c, --coverage   Run the unit tests with coverage.
+  -f, --file       Set the path of the docker-compose YAML file to use.
   -h, --help       Get the Usage information for this command.
 
 Test Types (one only):
@@ -257,6 +258,7 @@ Options:
   -b, --build           Build the Docker containers before running.
   -d, --detach          Run Docker Engine logs in a detached shell mode.
   -s, --seed_db         Seed the MongoDB database with test data.
+  -f, --file            Set the path of the docker-compose YAML file to use.
   -h, --help            Get the Usage information for this script.
 
   Up Options:
@@ -289,6 +291,7 @@ Commands:
   pwd         Get the full path directory of the Arclytics CLI script.
   scale       Set number of containers to run for a service. Numbers are specified
               in the form \`service=num\` as arguments.
+  minikube    Use as a wrapper for the minikube service.
 
 Service (only one for \`logs\`; * default for \`up\`):
   users *
@@ -747,7 +750,6 @@ while [[ "$1" != "" ]] ; do
                         ;;
                     * )
                         TEST_SERVER_ARGS=$2
-                        runTests
                 esac
                 shift
             done
@@ -765,6 +767,48 @@ while [[ "$1" != "" ]] ; do
         pwd )
             generalMessage "Arclytics Sim Project Root Directory"
             echo "${WORKDIR}"
+            ;;
+        minikube | mk )
+            headerMessage "MINIKUBE CLI"
+            while [[ "$2" != "" ]] ; do
+                case $2 in
+                    -h | --help )
+                        minikube --help
+                        exit 0
+                        ;;
+                    * )
+                        ARGS=$2
+                        while [[ "$3" != "" ]] ; do
+                            ARGS="${ARGS} $3"
+                            shift
+                        done
+                esac
+                shift
+            done
+            minikube ${ARGS}
+            completeMessage
+            exit 0
+            ;;
+        kubectl | kc )
+            headerMessage "KUBECTL CLI"
+            while [[ "$2" != "" ]] ; do
+                case $2 in
+                    help | -h | --help )
+                        kubectl help
+                        exit 0
+                        ;;
+                    * )
+                        ARGS=$2
+                        while [[ "$3" != "" ]] ; do
+                            ARGS="${ARGS} $3"
+                            shift
+                        done
+                esac
+                shift
+            done
+            kubectl ${ARGS}
+            completeMessage
+            exit 0
             ;;
     esac
     shift

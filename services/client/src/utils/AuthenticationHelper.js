@@ -98,7 +98,6 @@ export const forgotPassword = (resolve, reject, email) => {
   .then(res => {
     console.log(res)
     if (res.status === "success") {
-      console.log("happens")
       resolve(res.message)
     } else{
       // return an error message as string

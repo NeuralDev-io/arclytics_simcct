@@ -397,6 +397,13 @@ class Rating(EmbeddedDocument):
         return {'rating': self.rating, 'created_date': str(self.created_date)}
 
 
+class LoginData(EmbeddedDocument):
+    time = DateTimeField(default=datetime.utcnow(), required=True)
+    country = StringField()
+    iso_code = StringField()
+    ip_address = StringField()
+
+
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
 class User(Document):
     # The following fields describe the attributes of a user
@@ -436,6 +443,7 @@ class User(Document):
     last_login = DateTimeField()
 
     ratings = EmbeddedDocumentListField(document_type=Rating)
+    login_data = EmbeddedDocumentListField(document_type=LoginData)
 
     # Define the collection and indexing for this document
     meta = {
@@ -609,6 +617,9 @@ class User(Document):
         self.is_admin = (
             not self.disable_admin and self.admin_profile is not None
         )
+
+        if not self.ratings:
+            self.ratings = []
 
     @queryset_manager
     def as_dict(cls, queryset) -> list:

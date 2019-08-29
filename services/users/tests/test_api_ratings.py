@@ -88,7 +88,7 @@ class TestRatingsService(BaseTestCase):
         with self.client:
             resp = self.client.post(
                 '/user/rating',
-                data=json.dumps({'rating': '10'}),
+                data=json.dumps({'rating': '3.5'}),
                 headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
@@ -377,6 +377,48 @@ class TestRatingsService(BaseTestCase):
 
             data_3 = json.loads(resp_3.data.decode())
             print(data_3)
+
+            self.client.post(
+                '/user/feedback',
+                data=json.dumps(
+                    {
+                        'category': 'Category value 6',
+                        'rating': 5,
+                        'comments': 'Comments value 6'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            self.client.post(
+                '/user/feedback',
+                data=json.dumps(
+                    {
+                        'category': 'Category value 7',
+                        'rating': 5,
+                        'comments': 'Comments value 7'
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            resp_4 = self.client.get(
+                '/admin/feedback/list',
+                data=json.dumps(
+                    {
+                        'limit': data_2['limit'],
+                        'sort_on': data_2['sort_on'],
+                        'offset': data_2['next_offset']
+                    }
+                ),
+                headers={'Authorization': 'Bearer {}'.format(token)},
+                content_type='application/json'
+            )
+
+            data_4 = json.loads(resp_4.data.decode())
+            print(data_4)
 
 
 if __name__ == '__main__':

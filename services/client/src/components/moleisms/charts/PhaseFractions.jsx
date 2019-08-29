@@ -18,7 +18,6 @@ class PhaseFractions extends Component {
   }
 
   handleUpdateIndex = (values) => {
-    console.log(values)
     const { updateCCTIndexConnect } = this.props
     updateCCTIndexConnect(values[0])
   }

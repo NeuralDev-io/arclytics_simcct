@@ -1,0 +1,89 @@
+@import '../../../styles/animation';
+
+.railOuterStyle {
+  position: absolute;
+  height: 100%;
+  width: 1.5rem;
+  transform: translate(-50%, 0%);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.railInnerStyle {
+  position: absolute;
+  height: 100%;
+  width: .25rem;
+  transform: translate(-50%, 0%);
+  border-radius: 3px;
+  pointer-events: none;
+  background-color: var(--n100);
+}
+
+.handle {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  z-index: 5;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+  background-color: none;
+
+  &:hover ~ .handleAria:before {
+    opacity: 1;
+  }
+
+  &:active ~ .handleAria:before {
+    opacity: 1;
+  }
+}
+
+.handleAria {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+  background-color: var(--arc500);
+  cursor: pointer;
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: -.5rem;
+    left: -.5rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background-color: transparent;
+    border: 1px solid var(--arc500);
+    opacity: 0;
+    transition: $ease-in-cubic all .3s;
+  }
+}
+
+.keyboardHandle {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+  background-color: var(--arc500);
+  cursor: pointer;
+  border: 0;
+}
+
+.track {
+  position: absolute;
+  z-index: 1;
+  background-color: var(--arc500);
+  background: linear-gradient(0deg, var(--i500), var(--arc500));
+  border-radius: 3px;
+  cursor: pointer;
+  width: .25rem;
+  transform: translate(-50%, 0);
+}

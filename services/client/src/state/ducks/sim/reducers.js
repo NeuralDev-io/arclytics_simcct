@@ -7,12 +7,28 @@ import {
   UPDATE_CONFIG_METHOD,
   UPDATE_CONFIG,
   UPDATE_DISPLAY_USER_CURVE,
+  UPDATE_CCT_INDEX,
 } from './types'
 
 const initialState = {
   isInitialised: false,
   displayUserCurve: true,
-  results: {},
+  results: {
+    USER: {
+      user_cooling_curve: {
+        time: [],
+        temp: [],
+      },
+      user_phase_fraction_data: {
+        austenite: [],
+        ferrite: [],
+        pearlite: [],
+        bainite: [],
+        martensite: [],
+      },
+    },
+    cctIndex: -1,
+  },
   configurations: {
     method: 'Li98',
     grain_size_ASTM: 8.0,
@@ -140,7 +156,18 @@ const reducer = (state = initialState, action) => {
     case RUN_SIM:
       return {
         ...state,
-        results: action.payload,
+        results: {
+          ...state.results,
+          ...action.payload,
+        },
+      }
+    case UPDATE_CCT_INDEX:
+      return {
+        ...state,
+        results: {
+          ...state.results,
+          cctIndex: action.payload,
+        },
       }
     default:
       return state

@@ -152,7 +152,7 @@ class ConfigForm extends Component {
           <h5>Transformation limits</h5>
           <div className={styles.configRow}>
             <div>
-              <h6>Austenite</h6>
+              <h6>Ferrite/Pearlite</h6>
               <div className={styles.configGroup}>
                 <div className="input-row">
                   <span>

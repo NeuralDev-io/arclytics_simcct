@@ -20,6 +20,7 @@ import Button from '../../elements/button'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
 import ShareModal from '../../moleisms/share-modal'
+import PhaseFractions from '../../moleisms/charts/PhaseFractions'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { SaveSimButton } from '../../moleisms/sim-actions'
 import { TTT, CCT } from '../../moleisms/charts'
@@ -145,26 +146,27 @@ class SimulationPage extends Component {
             </div>
           </div>
           <div className={styles.custom}>
-            <div>
-              <header className={styles.profile}>
-                <h4>User cooling profile</h4>
-                <Button
-                  appearance="text"
-                  onClick={() => this.setState(prevState => ({
-                    displayProfile: !prevState.displayProfile,
-                  }))}
-                  IconComponent={props => (
-                    displayProfile
-                      ? <ChevronUpIcon {...props} />
-                      : <ChevronDownIcon {...props} />
-                  )}
-                >
-                  {displayProfile ? 'Collapse' : 'Expand'}
-                </Button>
-              </header>
-              <div style={{ display: displayProfile ? 'block' : 'none' }}>
+            <header>
+              <h4>User cooling profile</h4>
+              <Button
+                appearance="text"
+                onClick={() => this.setState(prevState => ({
+                  displayProfile: !prevState.displayProfile,
+                }))}
+                IconComponent={props => (
+                  displayProfile
+                    ? <ChevronUpIcon {...props} />
+                    : <ChevronDownIcon {...props} />
+                )}
+              >
+                {displayProfile ? 'Collapse' : 'Expand'}
+              </Button>
+            </header>
+            <div style={{ display: displayProfile ? 'flex' : 'none' }}>
+              <div className={styles.userConfig}>
                 <UserProfileConfig />
               </div>
+              <PhaseFractions />
             </div>
           </div>
         </div>

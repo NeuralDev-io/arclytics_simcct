@@ -15,13 +15,14 @@ const sliderStyle = {
 }
 
 const VerticalSlider = ({
+  isDisabled,
   domain,
   step,
   values,
   tickCount,
   ...others
 }) => (
-  <div style={{ height: 520, width: '100%' }}>
+  <div style={{ height: '100%', width: '100%' }}>
     <Slider
       reversed
       vertical
@@ -33,7 +34,7 @@ const VerticalSlider = ({
       {...others}
     >
       <Rail>
-        {({ getRailProps }) => <SliderRail getRailProps={getRailProps} />}
+        {({ getRailProps }) => <SliderRail getRailProps={isDisabled ? () => {} : getRailProps} />}
       </Rail>
       <Handles>
         {({ handles, getHandleProps }) => (
@@ -43,7 +44,7 @@ const VerticalSlider = ({
                 key={handle.id}
                 handle={handle}
                 domain={domain}
-                getHandleProps={getHandleProps}
+                getHandleProps={isDisabled ? () => {} : getHandleProps}
               />
             ))}
           </div>
@@ -57,7 +58,7 @@ const VerticalSlider = ({
                 key={id}
                 source={source}
                 target={target}
-                getTrackProps={getTrackProps}
+                getTrackProps={isDisabled ? () => {} : getTrackProps}
               />
             ))}
           </div>
@@ -77,6 +78,7 @@ const VerticalSlider = ({
 )
 
 VerticalSlider.propTypes = {
+  isDisabled: PropTypes.bool,
   domain: PropTypes.arrayOf(PropTypes.number).isRequired,
   step: PropTypes.number.isRequired,
   values: PropTypes.arrayOf(PropTypes.number).isRequired,
@@ -85,6 +87,7 @@ VerticalSlider.propTypes = {
 
 VerticalSlider.defaultProps = {
   tickCount: -1,
+  isDisabled: false,
 }
 
 export default VerticalSlider

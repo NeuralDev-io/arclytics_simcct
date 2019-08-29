@@ -12,7 +12,21 @@ import {
 const initialState = {
   isInitialised: false,
   displayUserCurve: true,
-  results: {},
+  results: {
+    USER: {
+      user_cooling_curve: {
+        time: [],
+        temp: [],
+      },
+      user_phase_fraction_data: {
+        austenite: [],
+        ferrite: [],
+        pearlite: [],
+        bainite: [],
+        martensite: [],
+      },
+    },
+  },
   configurations: {
     method: 'Li98',
     grain_size_ASTM: 8.0,

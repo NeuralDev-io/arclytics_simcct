@@ -4,19 +4,19 @@ import PropTypes from 'prop-types'
 import styles from './AttachModal.module.scss'
 
 class AttachModal extends Component {
-  // handleClick = () => {
-  //   const { visible } = this.state
-  //   if (!visible) {
-  //     // attach/remove event handler
-  //     document.addEventListener('click', this.handleOutsideClick, false)
-  //   } else {
-  //     document.removeEventListener('click', this.handleOutsideClick, false)
-  //   }
-
-  //   this.setState(prevState => ({
-  //     visible: !prevState.visible,
-  //   }))
-  // }
+  handleClick = () => {
+    const { visible, handleShow, handleClose } = this.props
+    if (!visible) {
+      // show modal
+      handleShow()
+      // attach event handler
+      document.addEventListener('click', this.handleOutsideClick, false)
+    } else {
+      handleClose()
+      // remove event handler
+      document.removeEventListener('click', this.handleOutsideClick, false)
+    }
+  }
 
   handleOutsideClick = (e) => {
     // ignore clicks on the component itself
@@ -35,8 +35,6 @@ class AttachModal extends Component {
       overlap,
       className,
       visible,
-      handleShow,
-      handleClose,
     } = this.props
 
     return (
@@ -44,10 +42,7 @@ class AttachModal extends Component {
         {React.Children.map(children, (child, i) => {
           if (i === 0) {
             return React.cloneElement(child, {
-              onClick: () => {
-                if (visible) handleClose()
-                else handleShow()
-              },
+              onClick: this.handleClick,
             })
           }
           return (
@@ -75,6 +70,10 @@ AttachModal.propTypes = {
   overlap: PropTypes.bool,
   // className prop to override scss styles
   className: PropTypes.string,
+  // props to control visibility, visible will be defined in state of parent component
+  visible: PropTypes.bool.isRequired,
+  handleShow: PropTypes.func.isRequired,
+  handleClose: PropTypes.func.isRequired,
 }
 
 AttachModal.defaultProps = {

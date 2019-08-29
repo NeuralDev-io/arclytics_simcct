@@ -22,7 +22,8 @@
         "react"
     ],
     "rules": {
-        "semi": ["error", "never"]
+        "semi": ["error", "never"],
+        "camelcase": "off"
     },
     "parser": "babel-eslint"
 }

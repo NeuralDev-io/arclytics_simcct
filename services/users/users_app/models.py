@@ -400,7 +400,7 @@ class Rating(EmbeddedDocument):
 class LoginData(EmbeddedDocument):
     time = DateTimeField(default=datetime.utcnow(), required=True)
     country = StringField()
-    iso_code = StringField()
+    state = StringField()
     ip_address = StringField()
 
 
@@ -625,6 +625,9 @@ class User(Document):
 
         if not self.ratings:
             self.ratings = []
+
+        if not self.login_data:
+            self.login_data = []
 
     @queryset_manager
     def as_dict(cls, queryset) -> list:

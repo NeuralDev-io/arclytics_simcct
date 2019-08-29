@@ -12,7 +12,7 @@ import { Formik } from 'formik'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { login } from '../../../utils/AuthenticationHelper'
 import { loginValidation } from '../../../utils/ValidationHelper'
-import { getUserProfile } from '../../../state/ducks/persist/actions'
+import { getPersistUserStatus } from '../../../state/ducks/persist/actions'
 
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
@@ -21,7 +21,18 @@ import styles from './LoginPage.module.scss'
 
 class LoginPage extends Component {
   componentDidMount = () => {
-    if (localStorage.getItem('token')) this.props.profile ? this.props.history.push('/') : this.props.history.push('/profileQuestions')// eslint-disable-line
+    if (localStorage.getItem('token')) {
+      const {
+        history,
+        getUserStatusConnect,
+      } = this.props
+
+      // Check the profile if the user has a token and direct them to write page
+      getUserStatusConnect().then(() => {
+        const { userStatus } = this.props
+        history.push(userStatus.isProfile ? '/' : '/profileQuestions')
+      })
+    }
   }
 
   render() {
@@ -47,13 +58,13 @@ class LoginPage extends Component {
                 // If response is successful
                 localStorage.setItem('token', data.token)
                 localStorage.setItem('session', data.session)
-                const { getUserProfileConnect, history } = this.props
-                getUserProfileConnect()
-
-                // If the user has a profile
-                this.props.profile ? history.push('/') : history.push('/profileQuestions')
-
-                setSubmitting(false)
+                const { history, getUserStatusConnect } = this.props
+                // Wait for promise from fetch if the user has a profile
+                getUserStatusConnect().then(() => {
+                  const { userStatus } = this.props
+                  history.push(userStatus.isProfile ? '/' : '/profileQuestions')
+                  setSubmitting(true)
+                })
               })
                 .catch(() => {
                   // If response is unsuccessful
@@ -136,24 +147,21 @@ class LoginPage extends Component {
 }
 
 LoginPage.propTypes = {
-  getUserProfileConnect: PropTypes.func.isRequired,
+  getUserStatusConnect: PropTypes.func.isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
-  profile: PropTypes.shape({
-    aim: PropTypes.string,
-    highest_education: PropTypes.string,
-    sci_tech_exp: PropTypes.string,
-    phase_transform_exp: PropTypes.string,
-  }),
+  userStatus: PropTypes.shape({
+    isProfile: PropTypes.object,
+    verified: PropTypes.bool,
+    admin: PropTypes.bool,
+  }).isRequired,
 }
 
 const mapDispatchToProps = {
-  getUserProfileConnect: getUserProfile,
+  getUserStatusConnect: getPersistUserStatus,
 }
 
 const mapStateToProps = state => ({
-  profile: state.persist.user.profile,
-
+  userStatus: state.persist.userStatus,
 })
-
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoginPage)

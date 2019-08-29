@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mongodb
+  labels:
+    name: database
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: neuraldev/arc_sim_mongo:1.1
+        env:
+          - name: MONGO_USER
+            valueFrom:
+              secretKeyRef:
+                name: mongo-credentials
+                key: user
+          - name: MONGO_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mongo-credentials
+                key: password
+        volumeMounts:
+          - name: mongo-volume-mount
+            mountPath: /var/lib/mongo/data
+      volumes:
+      - name: mongo-volume-mount
+        persistentVolumeClaim:
+          claimName: mongo-pvc
+      restartPolicy: Always

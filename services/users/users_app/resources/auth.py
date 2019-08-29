@@ -29,6 +29,8 @@ from email_validator import EmailNotValidError, validate_email
 from flask import Blueprint, jsonify, redirect, render_template, request
 from flask import current_app as app
 from mongoengine.errors import NotUniqueError, ValidationError
+from geoip2.errors import AddressNotFoundError
+import geoip2.database
 
 from logger.arc_logger import AppLogger
 from users_app.extensions import bcrypt
@@ -476,6 +478,28 @@ def login() -> any:
                 response['message'] = 'Session validation error.'
                 response['error'] = str(e)
                 return jsonify(response), 400
+
+            # Get location data
+            reader = geoip2.database.Reader(
+                '/usr/src/app/users_app/resources/GeoLite2-City/'
+                'GeoLite2-City.mmdb'
+            )
+            try:
+                # location_data = reader.city(str(request.remote_addr))
+                location_data = reader.city('203.10.91.88')
+                country = location_data.country.names['en']
+                state = location_data.subdivisions[0].names['en']
+                ip_address = location_data.traits.ip_address
+
+                # TODO(davidmatthews1004@gmail.com) add this data to the user
+                #  document
+                response['country'] = country
+                response['state'] = state
+                response['ip_address'] = ip_address
+            except AddressNotFoundError:
+                response['location_data'] = None
+
+            reader.close()
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'

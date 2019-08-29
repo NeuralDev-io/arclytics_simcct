@@ -747,7 +747,6 @@ while [[ "$1" != "" ]] ; do
                         ;;
                     * )
                         TEST_SERVER_ARGS=$2
-                        runTests
                 esac
                 shift
             done

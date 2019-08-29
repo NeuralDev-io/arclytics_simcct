@@ -8,6 +8,7 @@ import SimulationPage from './components/pages/simulation'
 import AdminPage from './components/pages/admin'
 import ProfileQuestionsPage from './components/pages/profile-questions'
 import UserPage from './components/pages/user'
+import PasswordResetPage from './components/pages/password-reset'
 
 import './App.scss'
 
@@ -40,6 +41,10 @@ function App() {
           <Route
             path="/user"
             render={props => <UserPage {...props} />}
+          />
+          <Route
+            path="/password/reset=:token"
+            render={props => <PasswordResetPage {...props} />}
           />
         </Switch>
       </div>

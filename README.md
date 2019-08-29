@@ -494,7 +494,53 @@ $ ./arclytics.sh -c server
 
 ## Deployment
 
-* TBC
+### Prerequisites
+
+#### Install `minikube` and `kubectl` tools
+
+[minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) is a tool which allows developers to use and run a Kubernetes cluster locally. Installing minikube will also install:
+
+* A [HyperVisor](https://kubernetes.io/docs/tasks/tools/install-minikube/#install-a-hypervisor).
+* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+
+To install Minikube manually on Windows using [Windows Installer](https://docs.microsoft.com/en-us/windows/desktop/msi/windows-installer-portal), download [`minikube-installer.exe`](https://github.com/kubernetes/minikube/releases/latest/download/minikube-installer.exe) and execute the installer. To install Minikube manually on Windows, download [`minikube-windows-amd64`](https://github.com/kubernetes/minikube/releases/latest), rename it to `minikube.exe`, and add it to your path.
+
+On Linux, you can install via direct download:
+
+```bash
+$ curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube
+$ sudo install minikube /usr/local/bin
+```
+
+To run, do the following:
+
+```bash
+$ minikube start
+```
+
+If asked, you will also need to install `kubectl` in your `PATH` by doing the following:
+
+```bash
+$ curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+$ chmod +x ./kubectl
+$ sudo mv ./kubectl /usr/local/bin/kubectl
+$ kubectl version
+
+Client Version: version.Info{Major:"1", Minor:"15", GitVersion:"v1.15.3", GitCommit:"2d3c76f9091b6bec110a5e63777c332469e0cba2", GitTreeState:"clean", BuildDate:"2019-08-19T11:13:54Z", GoVersion:"go1.12.9", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"15", GitVersion:"v1.15.2", GitCommit:"f6278300bebbb750328ac16ee6dd3aa7d3549568", GitTreeState:"clean", BuildDate:"2019-08-05T09:15:22Z", GoVersion:"go1.12.5", Compiler:"gc", Platform:"linux/amd64"}
+```
+
+You can now start using `minikube` tool via your browser with the dashboard.
+
+```bash
+$ minikube dashboard
+```
+
+Your should see this:
+
+![minikube dashboard](./docs/assets/minikube_dashboard.png)
+
+
 
 
 

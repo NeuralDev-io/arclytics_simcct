@@ -2,25 +2,26 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Plot from 'react-plotly.js'
-import PlayIcon from 'react-feather/dist/icons/play'
 import AutoSizer from 'react-virtualized-auto-sizer'
-import Button from '../../elements/button'
 import VerticalSlider from '../../elements/slider'
 import { config } from './utils/chartConfig'
 import { roundTo } from '../../../utils/math'
 import { getColor } from '../../../utils/theming'
+import { updateCCTIndex } from '../../../state/ducks/sim/actions'
 
 import styles from './PhaseFractions.module.scss'
 
 class PhaseFractions extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      current: -1,
-    }
+  componentWillUnmount = () => {
+    const { updateCCTIndexConnect } = this.props
+    updateCCTIndexConnect(-1)
   }
 
-  handleUpdateIndex = values => this.setState({ current: values[0] })
+  handleUpdateIndex = (values) => {
+    console.log(values)
+    const { updateCCTIndexConnect } = this.props
+    updateCCTIndexConnect(values[0])
+  }
 
   renderCurrentPercent = (data) => {
     const { labels, values } = data
@@ -49,7 +50,6 @@ class PhaseFractions extends Component {
   }
 
   render() {
-    const { current } = this.state
     const {
       data: {
         user_cooling_curve,
@@ -58,12 +58,13 @@ class PhaseFractions extends Component {
         },
         slider_max = -1,
       },
+      cctIndex,
     } = this.props
 
     const hasData = slider_max !== -1
-    // if state.current has not been updated, current index is set to
+    // if cctIndex has not been updated, current index is set to
     // last index of data array
-    const currentIdx = current === -1 ? slider_max : current
+    const currentIdx = cctIndex === -1 ? slider_max : cctIndex
 
     const chartData = [{
       labels: ['Austenite', 'Ferrite', 'Pearlite', 'Bainite', 'Martensite'],
@@ -179,6 +180,8 @@ PhaseFractions.propTypes = {
     slider_temp_field: PropTypes.number,
     slider_max: PropTypes.number,
   }),
+  cctIndex: PropTypes.number.isRequired,
+  updateCCTIndexConnect: PropTypes.func.isRequired,
 }
 
 PhaseFractions.defaultProps = {
@@ -187,6 +190,11 @@ PhaseFractions.defaultProps = {
 
 const mapStateToProps = state => ({
   data: state.sim.results.USER,
+  cctIndex: state.sim.results.cctIndex,
 })
 
-export default connect(mapStateToProps, {})(PhaseFractions)
+const mapDispatchToProps = {
+  updateCCTIndexConnect: updateCCTIndex,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(PhaseFractions)

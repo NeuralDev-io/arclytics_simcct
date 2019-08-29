@@ -7,6 +7,7 @@ import {
   UPDATE_CONFIG_METHOD,
   UPDATE_CONFIG,
   UPDATE_DISPLAY_USER_CURVE,
+  UPDATE_CCT_INDEX,
 } from './types'
 
 const initialState = {
@@ -26,6 +27,7 @@ const initialState = {
         martensite: [],
       },
     },
+    cctIndex: -1,
   },
   configurations: {
     method: 'Li98',
@@ -154,7 +156,18 @@ const reducer = (state = initialState, action) => {
     case RUN_SIM:
       return {
         ...state,
-        results: action.payload,
+        results: {
+          ...state.results,
+          ...action.payload,
+        },
+      }
+    case UPDATE_CCT_INDEX:
+      return {
+        ...state,
+        results: {
+          ...state.results,
+          cctIndex: action.payload,
+        },
       }
     default:
       return state

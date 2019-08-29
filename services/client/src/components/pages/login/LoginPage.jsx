@@ -18,6 +18,11 @@ import Button from '../../elements/button'
 
 import styles from './LoginPage.module.scss'
 
+/*
+  TODO: once the textfield err prop is fixed uncomment err and need just test edge cases and for Formik move it to the 
+  err prop
+*/
+
 class LoginPage extends Component {
   constructor(props){
     super(props)
@@ -37,15 +42,15 @@ class LoginPage extends Component {
       history.push('/profileQuestions')
     }
   }
-  // TODO: rename this to handle
-  onTextChange = (name, value) => {
+
+  handleChange = (name, value) => {
     this.setState({
       [name]: value,
     })
   }
 
   render() {
-    const {hasForgotPwd, forgotEmail, forgotPwdErr, emailSent } = this.state
+    const {hasForgotPwd, forgotEmail, emailSent } = this.state
 
     return (
       <div className={styles.outer}>
@@ -169,7 +174,7 @@ class LoginPage extends Component {
             type="email"
             placeholder="Enter your email"
             value={forgotEmail}
-            onChange={value => this.onTextChange('forgotEmail', value)}
+            onChange={value => this.handleChange('forgotEmail', value)}
             placeholder="Email"
             // err={forgotPwdErr}
             length="stretch"
@@ -178,6 +183,8 @@ class LoginPage extends Component {
           <span className={styles.confirmation}>{ emailSent ? ('Email has been sent.'): ('')}</span> 
         
          <div>
+           {/* // TODO: loading takes time make sure button is disabled during loading  */}
+           {/* TODO: give space for the span height  */}
             <Button
               className={styles.forgotSubmit}
               type="submit"
@@ -210,8 +217,6 @@ class LoginPage extends Component {
             </h6>
           </div>
         </div>
-
-
       </div>
     )
   }

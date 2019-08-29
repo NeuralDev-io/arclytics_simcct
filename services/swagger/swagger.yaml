@@ -753,14 +753,14 @@ paths:
                     status: "fail"
                     message: "No saved simulations found"
     post:
-          summary: "Retrieve the list of Configurations saved in the User's document."
+          summary: "Save the list of Configuration."
           tags:
             - Users
           security:
             - bearerAuth: []
           responses:
-            200:
-              description: "Successfully logged in"
+            201:
+              description: "Successfully saved."
               content:
                 application/json:
                   schema:
@@ -797,11 +797,11 @@ paths:
                     'Missing Configurations':
                       value:
                         status: "fail"
-                        message: "Invalid payload."
+                        message: "Missing Configurations in payload."
                     'Missing Alloy':
                       value:
                         status: "fail"
-                        message: "Invalid payload."
+                        message: "Missing Alloy Store in payload."
                     'Field Does Not Exist':
                       value:
                         status: "fail"
@@ -827,6 +827,11 @@ paths:
                         status: "fail"
                         error: "string"
                         message: "Model schema validation error."
+                    'Duplicate Element':
+                      value:
+                        status: "fail"
+                        error: "string"
+                        message: "Alloy contains a duplicate element."
             '401':
               description: "The user is not authenticated to perform this request."
               content:
@@ -877,7 +882,7 @@ paths:
         - bearerAuth: []
       responses:
         200:
-          description: "Successfully logged in"
+          description: "Successfully retrieved simulation."
           content:
             application/json:
               schema:
@@ -955,7 +960,7 @@ paths:
                     status: "fail"
                     message: "Does not exit."
     delete:
-      summary: "Returns the user's last Alloy and Configurations used, and CCT/TTT results (if any)"
+      summary: "Delete a saved simulation from saved_simulation."
       tags:
         - Users
       security:

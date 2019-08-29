@@ -120,7 +120,13 @@ class UserAlloysList(Resource):
             return response, 400
 
         user = User.objects.get(id=user_id)
-        alloy = user.saved_alloys.create(**post_data)
+
+        valid_data = {
+            'name': post_data.pop('name'),
+            'compositions': post_data.pop('compositions')
+        }
+
+        alloy = user.saved_alloys.create(**valid_data)
         user.save()
 
         response['status'] = 'success'

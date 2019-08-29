@@ -1,8 +1,4 @@
-// @import "../../../styles/_colors-light.scss";
-// @import "../../../styles/_typography.scss";
-// @import "src/assets/background.png";
- 
-$bg-img: url('../../../assets/background_img-min.png');
+ $bg-img: url('../../../assets/login_register_bg.png');
 
 .outer{
   width: 100vw;
@@ -10,8 +6,8 @@ $bg-img: url('../../../assets/background_img-min.png');
   padding-top: 8rem;
   padding-bottom: 8rem;
   background: var(--n0) $bg-img no-repeat;
-  background-size: 150% 150%;
-  background-position: -90%;
+  background-size: 100% 150%;
+  background-position: 40vw;
 }
 
 .form{

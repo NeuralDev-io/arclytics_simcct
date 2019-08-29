@@ -1,0 +1,192 @@
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
+import Plot from 'react-plotly.js'
+import PlayIcon from 'react-feather/dist/icons/play'
+import AutoSizer from 'react-virtualized-auto-sizer'
+import Button from '../../elements/button'
+import VerticalSlider from '../../elements/slider'
+import { config } from './utils/chartConfig'
+import { roundTo } from '../../../utils/math'
+import { getColor } from '../../../utils/theming'
+
+import styles from './PhaseFractions.module.scss'
+
+class PhaseFractions extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      current: -1,
+    }
+  }
+
+  handleUpdateIndex = values => this.setState({ current: values[0] })
+
+  renderCurrentPercent = (data) => {
+    const { labels, values } = data
+    const chartColors = [
+      getColor('--o500'),
+      getColor('--g500'),
+      getColor('--t500'),
+      getColor('--i500'),
+      getColor('--m500'),
+    ]
+    return labels.map((label, index) => {
+      const isDisabled = values[index] === 0
+      return (
+        <div key={label} className={isDisabled && styles.disabled}>
+          <div className={styles.label}>
+            <div style={{ backgroundColor: isDisabled ? getColor('--n300') : chartColors[index] }} />
+            <span>{label}</span>
+          </div>
+          <span>
+            {values[index]}
+            &nbsp;%
+          </span>
+        </div>
+      )
+    })
+  }
+
+  render() {
+    const { current } = this.state
+    const {
+      data: {
+        user_cooling_curve,
+        user_phase_fraction_data: {
+          austenite, ferrite, pearlite, bainite, martensite,
+        },
+        slider_max = -1,
+      },
+    } = this.props
+
+    const hasData = slider_max !== -1
+    // if state.current has not been updated, current index is set to
+    // last index of data array
+    const currentIdx = current === -1 ? slider_max : current
+
+    const chartData = [{
+      labels: ['Austenite', 'Ferrite', 'Pearlite', 'Bainite', 'Martensite'],
+      values: (() => {
+        // if there is no data return a dummy array
+        if (!hasData) return [0, 0, 0, 0, 0]
+        // if there is data return values at current index
+        return [
+          roundTo(austenite[currentIdx], 1),
+          roundTo(ferrite[currentIdx], 1),
+          roundTo(pearlite[currentIdx], 1),
+          roundTo(bainite[currentIdx], 1),
+          roundTo(martensite[currentIdx], 1),
+        ]
+      })(),
+      marker: {
+        colors: [
+          getColor('--o500'),
+          getColor('--g500'),
+          getColor('--t500'),
+          getColor('--i500'),
+          getColor('--m500'),
+        ],
+      },
+      type: 'pie',
+      hoverinfo: 'label+percent',
+      textinfo: 'none',
+      sort: false,
+      hole: 0.55,
+    }]
+
+    return (
+      <div className={styles.chart}>
+        <div className={styles.controls}>
+          <div className={styles.data}>
+            <div className={styles.currentPercent}>
+              {this.renderCurrentPercent(chartData[0])}
+            </div>
+            <div className={styles.timeTemp}>
+              <div className={!hasData && styles.disabled}>
+                <span>{!hasData ? 0 : Math.round(user_cooling_curve.time[currentIdx])}</span>
+                <span>s</span>
+              </div>
+              <div className={!hasData && styles.disabled}>
+                <span>{!hasData ? 0 : Math.round(user_cooling_curve.temp[currentIdx])}</span>
+                <span>°C</span>
+              </div>
+            </div>
+          </div>
+          <VerticalSlider
+            domain={[0, slider_max]}
+            values={[currentIdx]}
+            step={1}
+            isDisabled={!hasData}
+            onUpdate={this.handleUpdateIndex}
+          />
+        </div>
+        <div className={styles.pie}>
+          {
+            !hasData ? <div className={styles.noData}>No data.</div>
+              : (
+                <AutoSizer>
+                  {({ height, width }) => (
+                    <Plot
+                      data={chartData}
+                      layout={{
+                        width,
+                        height,
+                        margin: {
+                          t: 0,
+                          r: 0,
+                          b: 0,
+                          l: 0,
+                          pad: 0,
+                        },
+                        pad: 12,
+                        plot_bgcolor: getColor('--n0'),
+                        paper_bgcolor: 'transparent',
+                        showlegend: false,
+                      }}
+                      config={{
+                        ...config,
+                        displayModeBar: false,
+                      }}
+                    />
+                  )}
+                </AutoSizer>
+              )
+          }
+        </div>
+      </div>
+    )
+  }
+}
+
+const linePropTypes = PropTypes.shape({
+  temp: PropTypes.arrayOf(PropTypes.number),
+  time: PropTypes.arrayOf(PropTypes.number),
+})
+
+PhaseFractions.propTypes = {
+  // props given by connect()
+  data: PropTypes.shape({
+    user_cooling_curve: linePropTypes,
+    user_phase_fraction_data: PropTypes.shape({
+      austenite: PropTypes.arrayOf(PropTypes.number),
+      ferrite: PropTypes.arrayOf(PropTypes.number),
+      pearlite: PropTypes.arrayOf(PropTypes.number),
+      bainite: PropTypes.arrayOf(PropTypes.number),
+      martensite: PropTypes.arrayOf(PropTypes.number),
+    }),
+    slider_time_field: PropTypes.number,
+    slider_temp_field: PropTypes.number,
+    slider_max: PropTypes.number,
+  }),
+}
+
+PhaseFractions.defaultProps = {
+  data: undefined,
+}
+
+const mapStateToProps = state => ({
+  data: state.sim.results.USER,
+})
+
+export default connect(mapStateToProps, {})(PhaseFractions)

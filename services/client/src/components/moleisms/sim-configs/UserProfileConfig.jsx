@@ -33,7 +33,7 @@ const UserProfileConfig = ({
       />
     </div>
     <div className={`input-row ${styles.config}`}>
-      <span>Cooling rate (CCT Simulation)</span>
+      <span>CCT cooling rate</span>
       <TextFieldExtra
         type="text"
         name="cct_cooling_rate"

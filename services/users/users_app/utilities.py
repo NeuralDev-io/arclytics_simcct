@@ -19,7 +19,6 @@ __date__ = '2019.07.25'
 {Description}
 """
 
-import datetime
 import decimal
 import enum
 import json
@@ -35,7 +34,7 @@ class JSONEncoder(json.JSONEncoder):
             return str(o)
         if isinstance(o, set):
             return list(o)
-        if isinstance(o, datetime.datetime):
+        if isinstance(o, datetime):
             return str(o.isoformat())
         if isinstance(o, decimal.Decimal):
             return str(o)

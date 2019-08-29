@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: users
+  labels:
+    name: users
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: users
+    spec:
+      containers:
+      - name: users
+        image: arclytics/arc_sim_users_service:1.0
+        imagePullPolicy: Never
+        env:
+        - name: FLASK_ENV
+          value: "production"
+        - name: APP_SETTINGS
+          value: "configs.flask_conf.ProductionConfig"
+        - name: MONGO_URI
+          value: "mongodb://mongodb:27017"
+        - name: MONGO_HOST
+          value: "mongodb"
+        - name: MONGO_PORT
+          value: "27017"
+        - name: REDIS_HOST
+          value: "redis"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: SIMCCT_HOST
+          value: "simcct:8001"
+        - name: CLIENT_HOST
+          value: "client:3000"
+        - name: MONGO_USER
+          valueFrom:
+            secretKeyRef:
+              name: mongo-credentials
+              key: app_user
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-credentials
+              key: app_user_password
+      restartPolicy: Always

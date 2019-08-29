@@ -120,6 +120,7 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     app.config['MONGO_HOST'] = os.environ.get('MONGO_HOST', '')
     app.config['MONGO_PORT'] = os.environ.get('MONGO_PORT', 27017)
     if os.environ.get('FLASK_ENV') == 'production':
+        print(os.environ.__dict__)
         app.config['MONGO_USER'] = os.environ.get('MONGO_USER', '')
         app.config['MONGO_PASSWORD'] = os.environ.get('MONGO_PASSWORD', '')
 

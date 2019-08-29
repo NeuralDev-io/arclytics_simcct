@@ -32,13 +32,15 @@ class MongoAlloys(object):
     def __init__(self):
         mongo_client = MongoClient(
             host=os.environ.get('MONGO_HOST'),
-            port=int(os.environ.get('MONGO_PORT'))
+            port=int(os.environ.get('MONGO_PORT')),
+            user=os.environ.get('MONGO_APP_USER', ''),
+            password=os.environ.get('MONGO_USER_PASSWORD', '')
         )
         # TODO(andrew@neuraldev.io): Try to fix this to dynamically change under
         #  testing conditions rather than setting the database permanently.
-        db_name = os.environ.get('MONGO_DBNAME', 'arc_dev')
+        db_name = os.environ.get('MONGO_APP_DB', 'arc_dev')
         # self.db = mongo_client[db_name]  # mongo_client.arc_test.alloys
-        self.db = mongo_client['arc_dev']
+        self.db = mongo_client[db_name]
         # We create an index to avoid duplicates
         self.db.alloys.create_index([('name', ASCENDING)], unique=True)
 

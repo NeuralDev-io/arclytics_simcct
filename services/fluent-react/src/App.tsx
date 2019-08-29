@@ -12,18 +12,8 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import Grid from "@material-ui/core/Grid";
 import lightBlue from "@material-ui/core/colors/lightBlue";
-// import blue from "@material-ui/core/colors/blue";
 
 import './App.css';
-
-const logger = require('fluent-logger')
-
-logger.configure('fluent-react', {
-  host: 'localhost',
-  port: 24224,
-  timeout: 3.0,
-  reconnectInterval: 6000 // 1 minute
-})
 
 const appTheme = createMuiTheme({
   palette: {
@@ -59,9 +49,8 @@ const styles = (theme: Theme) => createStyles({
   },
 });
 
-interface Props extends WithStyles<typeof styles> {
-  // style props passed from WithStyles<typeof styles> interface
-}
+// style props passed from WithStyles<typeof styles> interface
+interface Props extends WithStyles<typeof styles> {}
 
 interface IState {
   message?: string | any,
@@ -82,12 +71,40 @@ const App = withStyles(styles)(
 
       onChange = (e: React.ChangeEvent<any>) => this.setState({message: e.target.value})
 
+      /*
+      * This method uses the fluent package plugin called in_http which exposes
+      * an endpoint that will accept a log from the http source such as this
+      * fetch request.
+      *
+      * Usage: URL --> http://host:port/tag.label
+      * Body: {"container_name": string, "log": string, "source": string}
+      * */
+      httpLog(message: string, tag: string, label: string) {
+        fetch(`http://localhost:9880/${tag}.${label}`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            container_name: '/arc_react_1',
+            log: message,
+            source: 'http'
+          })
+        })
+            .then(response => console.log('Fluent http response: ', response))
+            .catch(err => console.log(err));
+      }
+
       handleSubmit = () => {
         const {message} = this.state
         console.log('message: ', message)
-        // send an event record with 'tag.label'
-        // logger.emit('debug', {message: message});
 
+        // send an event record with using the in_http plugin from fluentd
+        this.httpLog(message, 'fluent-react', 'debug')
+
+        /*
+        * This fetch call goes to the fluent-python container that contains an
+        * endpoint which uses the Python fluent-logger to create en Event
+        * that is emitted as a log to our fluent container.
+        * */
         fetch('http://localhost:5005/log', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -95,7 +112,7 @@ const App = withStyles(styles)(
         })
             .then(response => response.json())
             .then(response => {
-              console.log(response)
+              console.log('Flask response: ', response)
               this.setState({response: response.status})
             })
             .catch(err => console.log(err))

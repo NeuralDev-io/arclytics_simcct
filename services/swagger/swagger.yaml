@@ -56,6 +56,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/User Profile'
                 example:
+                  status: "success"
+                  data:
                   - _id: "5d2339db2d789ae1a9f15a9e"
                     email: "iron_man@avengers.io"
                     first_name: "Tony"
@@ -87,21 +89,6 @@ paths:
                     last_updated: '2019-07-08T12:40:55.948000+00:00'
                     last_login: None
                     profile: None
-        400:
-          description: "The request parameters are bad."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    format: string
-                    example: "fail"
-                  message:
-                    type: string
-                    format: string
-                    example: "Provide a valid JWT auth token."
         '401':
           description: "The user is not authenticated to perform this request."
           content:
@@ -116,10 +103,10 @@ paths:
                     type: string
                     format: string
               examples:
-                'Not Logged In':
+                'No token provided':
                   value:
                     status: "fail"
-                    message: "Admin must sign in again."
+                    message: "Provide a valid JWT auth token."
                 'Expired Token':
                   value:
                     status: "fail"
@@ -198,10 +185,6 @@ paths:
                   value:
                     status: "fail"
                     message: "Provide a valid JWT auth token."
-                'Not Logged In':
-                  value:
-                    status: "fail"
-                    message: "User must sign in again."
                 'Expired Token':
                   value:
                     status: "fail"
@@ -311,6 +294,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
+                'Invalid Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid Payload."
                 'Invalid keys':
                   value:
                     status: "fail"
@@ -337,10 +324,6 @@ paths:
                   value:
                     status: "fail"
                     message: "Provide a valid JWT auth token."
-                'Not Logged In':
-                  value:
-                    status: "fail"
-                    message: "User must sign in again."
                 'Expired Token':
                   value:
                     status: "fail"
@@ -353,6 +336,10 @@ paths:
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
+                'Not Admin':
+                  value:
+                    status: "fail"
+                    message: "User is not verified as an admin."
         404:
           description: "The user cannot be found."
           content:
@@ -448,10 +435,6 @@ paths:
                   value:
                     status: "fail"
                     message: "Provide a valid JWT auth token."
-                'Not Logged In':
-                  value:
-                    status: "fail"
-                    message: "User must sign in again."
                 'Expired Token':
                   value:
                     status: "fail"
@@ -1713,6 +1696,12 @@ paths:
       responses:
         302:
           description: "Successfully create Admin."
+          headers:
+            Location:
+              schema:
+                type: string
+                example: 'http://localhost:3000/signin'
+              description: "The URI location of the redirect"
         400:
           description: "An invalid payload has been sent with the request."
           content:
@@ -2515,10 +2504,6 @@ paths:
                   value:
                     status: "fail"
                     message: "Provide a valid JWT auth token."
-                'Not Logged In':
-                  value:
-                    status: "fail"
-                    message: "User must sign in again."
                 'Expired Token':
                   value:
                     status: "fail"
@@ -2604,10 +2589,6 @@ paths:
                   value:
                     status: "fail"
                     message: "Provide a valid JWT auth token."
-                'Not Logged In':
-                  value:
-                    status: "fail"
-                    message: "User must sign in again."
                 'Expired Token':
                   value:
                     status: "fail"
@@ -2710,10 +2691,6 @@ paths:
                   value:
                     status: "fail"
                     message: "Provide a valid JWT auth token."
-                'Not Logged In':
-                  value:
-                    status: "fail"
-                    message: "User must sign in again."
                 'Expired Token':
                   value:
                     status: "fail"
@@ -2973,10 +2950,6 @@ paths:
                   value:
                     status: "fail"
                     message: "Provide a valid JWT auth token."
-                'Not Logged In':
-                  value:
-                    status: "fail"
-                    message: "User must sign in again."
                 'Expired Token':
                   value:
                     status: "fail"
@@ -3056,10 +3029,6 @@ paths:
                   value:
                     status: "fail"
                     message: "Provide a valid JWT auth token."
-                'Not Logged In':
-                  value:
-                    status: "fail"
-                    message: "User must sign in again."
                 'Expired Token':
                   value:
                     status: "fail"

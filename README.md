@@ -80,7 +80,7 @@ Once installed, if you are using Linux/macOS, open the terminal to create a virt
 
 To get the containers running, install Docker from [here](https://www.docker.com/get-started). From here, select **Download for Windows** or **Download for Mac**. It will ask you to login or create an account before you can download. Once you have create an account, please select **Get Docker Desktop for Windows (stable)**. During installation, **DO NOT** select the option for Windows containers.
 
-If you're using **Linux** (Ubuntu/Cent OS), you can also follow [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04) to install Docker from the terminal.
+If you're using **Linux** (Ubuntu/Cent OS), you can also follow [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04) for Ubuntu 18.04 and this [one](https://medium.com/@Grigorkh/how-to-install-docker-on-ubuntu-19-04-7ccfeda5935) for 19.04 to install Docker from the terminal. To find out which version you are on, use `lsb_release -rs` if you are using Ubuntu. 
 
 Optionally, you can download and use the Docker GUI by downloading Kitematic from [here](https://docs.docker.com/toolbox/toolbox_install_windows/) for Windows.
 
@@ -327,29 +327,38 @@ $ ./arclytics.sh --help
 
 ARCLYTICS CLI SCRIPT
 
-The Arclytics CLI script for running docker and docker-compose commands on the
+The Arclytics CLI script for running `docker` and `docker-compose` commands on the
 Arclytics Sim Docker orchestration.
 
 Usage:
 arclytics.sh build [SERVICE ARGS...]
 arclytics.sh up [options] [SERVICE ARGS...]
+arclytics.sh up --scale [SERVICE=NUM]
 arclytics.sh logs [SERVICE]
 arclytics.sh test [options] [TEST TYPE]
-arclytics.sh seed
-arclytics.sh flush
-arclytics.sh down
-arclytics.sh prune
+arclytics.sh down [options]
+arclytics.sh scale [SERVICE=NUM...]
+arclytics.sh [COMMAND]
 
 Options:
-  -b, --build      Build the Docker containers before running.
-  -d, --detach     Run Docker Engine logs in a detached shell mode.
-  -s, --seed_db    Seed the MongoDB database with test data.
-  -h, --help       Get the Usage information for this script.
+  -b, --build           Build the Docker containers before running.
+  -d, --detach          Run Docker Engine logs in a detached shell mode.
+  -s, --seed_db         Seed the MongoDB database with test data.
+  -f, --file            Set the path of the docker-compose YAML file to use.
+  -h, --help            Get the Usage information for this script.
+
+  Up Options:
+  --scale SERVICE=NUM   Scale the a single container when running the cluster.
+  -S, --swagger         Run the Swagger container with the cluster.
+  -J, --jupyter         Run the Jupyter container with the cluster.
 
   Test Options:
-  -b, --build      Build the Docker containers before running tests.
-  -t, --tty        Attach a pseudo-TTY to the tests.
-  -c, --coverage   Run the unit tests with coverage.
+  -b, --build           Build the Docker containers before running tests.
+  -t, --tty             Attach a pseudo-TTY to the tests.
+  -c, --coverage        Run the unit tests with coverage.
+
+  Down Options:
+  -D, --docker          Stop the containers using the Docker PS stat.
 
 Commands:
   build       Build the Docker images from docker-compose.yml only (passing services
@@ -357,25 +366,26 @@ Commands:
   up          Run the main containers in docker-compose.yml or provide a list of
               arguments to run only those provided.
   logs        Get the logs of the container.
+  ps          List the running containers.
+  stats       Display a live stream of container(s) resource usage statistics.
   flush       Flush both Redis datastore and MongoDB database only.
   seed        Seed the microservices with test data and flush both Redis
               datastore and MongoDB database.
   test        Run unit tests on the microservices.
   down        Stop all containers.
   prune       Prune all stopped images, containers, and networks.
+  pwd         Get the full path directory of the Arclytics CLI script.
+  scale       Set number of containers to run for a service. Numbers are specified
+              in the form `service=num` as arguments.
 
-Optional Containers:
-  -S, --swagger    Run the Swagger container with the cluster.
-  -J, --jupyter    Run the Jupyter container with the cluster.
-
-Service (only one for logs):
-  users
-  celery-worker
-  simcct
-  dask-scheduler
-  dask-worker
-  redis
-  mongodb
+Service (only one for `logs`; * default for `up`):
+  users *
+  celery-worker *
+  simcct *
+  dask-scheduler *
+  dask-worker *
+  redis *
+  mongodb *
   jupyter
   swagger
 
@@ -454,12 +464,10 @@ This will run the tests with coverage:
 You can also use the Arclytics CLI script to do the above:
 
 ```bash
-$ ./arclytics.sh 
+$ ./arclytics.sh test all
 ```
 
-
-
-To view the the commands for the `test` command with Arclytics CLI script.
+To view the the options for the `test` command with Arclytics CLI script.
 
 ```bash
 $ ./arclytics.sh test --help
@@ -496,6 +504,16 @@ $ ./arclytics.sh -c server
 
 ### Prerequisites
 
+#### Install VirtualBox
+
+You must ensure you have `VirtualBox` installed with at least version `> 6.0.0`. You can download the link from [here](https://www.virtualbox.org/wiki/Downloads) or alternatively use the Ubuntu package manager.
+
+```bash
+$ sudo apt update && sudo apt install virtualbox virtualbox-ext-pack virtualbox-guest-additions-iso
+```
+
+If you have an issue with installing and starting `minikube`, you may want to consider removing `VirtualBox` and reinstalling. You may need to then add your user to the `vboxusers` group to ensure proper permissions by doing: `sudo usermod -aG vboxusers $USER`.
+
 #### Install `minikube` and `kubectl` tools
 
 [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) is a tool which allows developers to use and run a Kubernetes cluster locally. Installing minikube will also install:
@@ -515,8 +533,10 @@ $ sudo install minikube /usr/local/bin
 To run, do the following:
 
 ```bash
-$ minikube start
+$ minikube start --vm-driver=virtualbox
 ```
+
+Note: If you are using Windows, you must use the `minikube start --vm-driver=hyperkit`.
 
 If asked, you will also need to install `kubectl` in your `PATH` by doing the following:
 
@@ -539,6 +559,20 @@ $ minikube dashboard
 Your should see this:
 
 ![minikube dashboard](./docs/assets/minikube_dashboard.png)
+
+##### Advanced Configurations for `minikube` (use with caution!)
+
+By default, `minikube` allocates only 2GB of RAM for every node. You can increase it with the following:
+
+```bash
+$ minikube config set memory 4096
+```
+
+Ditto with CPUs for the virtual machine which you can set with:
+
+```bash
+$ minikube config set cpus 4
+```
 
 
 
@@ -586,7 +620,6 @@ We thank the following organisations, departments, and individuals for their kin
 * Australian Nuclear Science and Technology Organisation (ANSTO)
     * Dr. Ondrej Muransky <omz@ansto.gov.au\>
     * Dr. Philip Bendeich <pbx@ansto.gov.au\>
-    * Dr. Luiz Bortolan <luizb@ansto.gov.au\>
 * University of Wollongong, Faculty of Engineering and Information Sciences, School of Computing and Information Technology
     * Dr. Lei Ye <lei@uow.edu.au\> 
     * Dr. Fenghui Ren <fren@uow.edu.au\>

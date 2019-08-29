@@ -16,7 +16,8 @@ __status__ = 'development'
 __date__ = '2019.08.28'
 """app.py: 
 
-{Description}
+This module is a very basic Flask application with a single endpoint to send 
+an Event emitted log to the fluentd microservice.
 """
 
 import os
@@ -44,14 +45,20 @@ def log():
     if not data:
         return jsonify(response), 400
 
-    print(data, file=sys.stderr)
+    # Hostname of the running container is the Docker ID (short)
+    container_id = os.environ.get('HOSTNAME')
 
+    # Emit the event to the fluentd microservice
     event.Event('debug', {
-        'message': data['message'],
-        'sender': 'fluent-python-flask'
+        'log': data['message'],
+        'container_name': '/arc_fluent_python_1',
+        'container_id': container_id,
+        'source': 'python'
     })
 
+    # Also sending the response back to check that it worked properly.
     response['log'] = data['message']
+    response['container_id'] = container_id
     response['status'] = 'success'
     return jsonify(response), 200
 

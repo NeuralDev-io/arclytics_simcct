@@ -190,8 +190,10 @@ services:
     ports:
       - 24224:24224
       - 24224:24224/udp
+      - 9880:9880
     expose:
       - 24224
+      - 9880
     volumes:
       - ./services/fluentd/logs:/fluentd/log
     networks:

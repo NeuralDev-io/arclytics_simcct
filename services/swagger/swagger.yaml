@@ -492,14 +492,6 @@ paths:
                         nullable: true
                         anyOf:
                           - $ref: '#/components/schemas/Graphs'
-              examples:
-                'Valid':
-                  value:
-                    status: success
-                    data:
-                      last_alloy: '#/components/examples/alloyExample'
-                      last_configurations: '#/components/examples/configurationsExample'
-                      last_results: null
         '401':
           description: "The user is not authenticated to perform this request."
           content:
@@ -549,6 +541,140 @@ paths:
                   value:
                     status: "fail"
                     message: "User does not have a last alloy stored."
+    post:
+      summary: "Save user's last Alloy and Configurations used, and CCT/TTT results"
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "Save user's last Alloy and Configuration."
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                last_configurations:
+                  $ref: '#/components/schemas/Configurations'
+                last_alloy_store:
+                  $ref: '#/components/schemas/Alloy'
+      responses:
+        201:
+          description: "Successfully saved the configurations."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  data:
+                    type: object
+                    properties:
+                      last_configurations:
+                        $ref: '#/components/schemas/Configurations'
+                      last_alloy_store:
+                        $ref: '#/components/schemas/Alloy'
+              examples:
+                'Valid':
+                  value:
+                    status: success
+                    data:
+                      last_alloy: '#/components/examples/alloyExample'
+                      last_configurations: '#/components/examples/configurationsExample'
+                      last_results: null
+        400:
+          description: "An invalid payload has been sent in the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Missing Configurations':
+                  value:
+                    status: "fail"
+                    message: "Missing Configurations in payload."
+                'Missing Alloy':
+                  value:
+                    status: "fail"
+                    message: "Missing Alloy Store in payload."
+                'Field Does Not Exist':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Field does not exist error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Model schema validation error."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'No Auth Header':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
   /user/simulation:
     servers:
       - url: http://localhost:8000

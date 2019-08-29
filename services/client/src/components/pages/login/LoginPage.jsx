@@ -13,7 +13,6 @@ import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { login, forgotPassword } from '../../../utils/AuthenticationHelper'
 import { loginValidation } from '../../../utils/ValidationHelper'
 import { getUserProfile } from '../../../state/ducks/persist/actions'
-
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 
@@ -38,8 +37,8 @@ class LoginPage extends Component {
       history.push('/profileQuestions')
     }
   }
-
-  onTextChange = ( name, value) => {
+  // TODO: rename this to handle
+  onTextChange = (name, value) => {
     this.setState({
       [name]: value,
     })

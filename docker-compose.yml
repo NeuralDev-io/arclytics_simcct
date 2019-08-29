@@ -73,6 +73,9 @@ services:
       - USERS_HOST=users:8000
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
+      - MONGO_APP_DB=arc_dev
+      - MONGO_APP_USER=${MONGO_APP_USER}
+      - MONGO_USER_PASSWORD=${MONGO_USER_PASSWORD}
       - MONGO_URI=mongodb://mongodb:27017
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
     depends_on:

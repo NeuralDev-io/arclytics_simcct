@@ -64,3 +64,23 @@ export const signupValidation = (values) => {
 
   return errors
 }
+
+
+export const passwordResetValidation = (values) => {
+  const { newPwd, cnfrmPwd   } = values
+  const errors = {}
+
+  if (!newPwd) {
+    errors.newPwd = 'Required'
+  } else if (newPwd.length < 6 || newPwd.length > 20) {
+    errors.password = 'Password is invalid'
+  }
+
+  if (!cnfrmPwd) {
+    errors.cnfrmPwd = 'Required'
+  } else if (newPwd !== cnfrmPwd) {
+    errors.cnfrmPwd = 'Password does not match'
+  }
+  
+  return errors
+}

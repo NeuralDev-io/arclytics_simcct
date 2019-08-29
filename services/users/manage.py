@@ -33,7 +33,7 @@ import coverage
 
 import settings
 from users_app.app import create_app, get_flask_mongo
-from users_app.models import User, AdminProfile, Alloy
+from users_app.models import User, AdminProfile, Alloy, UserProfile
 
 COV = coverage.coverage(
     branch=True,
@@ -113,6 +113,15 @@ def seed_user_db():
             for alloy in alloy_data['alloys']:
                 new_user.saved_alloys.create(**alloy)
 
+        if u.get("profile", None):
+            profile = UserProfile(**{
+                'aim': u['profile']['aim'],
+                'highest_education': u['profile']['highest_education'],
+                'sci_tech_exp': u['profile']['sci_tech_exp'],
+                'phase_transform_exp': u['profile']['phase_transform_exp'],
+            })
+            new_user.profile = profile
+
         if u.get('is_admin', False):
             profile = AdminProfile(
                 position=u['admin_profile']['position'],
@@ -122,6 +131,7 @@ def seed_user_db():
             new_user.disable_admin = not u.get('is_admin', False)
             new_user.admin_profile = profile
 
+        new_user.verified = True
         new_user.save()
         tbl.add_row(
             (

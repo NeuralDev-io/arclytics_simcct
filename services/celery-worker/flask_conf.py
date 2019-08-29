@@ -58,3 +58,8 @@ class TestingConfig(BaseConfig):
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/14'
     CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/13'
+
+
+class ProductionConfig(BaseConfig):
+    """Production configuration"""
+    SESSION_PERMANENT = True

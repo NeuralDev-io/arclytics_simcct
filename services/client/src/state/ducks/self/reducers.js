@@ -11,7 +11,12 @@ import {
 const initialState = {
   user: {
     admin: false,
-    profile: null,
+    profile: {
+      aim: '',
+      highest_education: '',
+      sci_tech_exp: '',
+      phase_transform_exp: '',
+    },
   },
   savedSimulations: [],
 }

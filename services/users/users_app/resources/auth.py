@@ -886,7 +886,13 @@ def logout(user_id, token, session_key) -> Tuple[dict, int]:
 def get_user_status(user_id) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     user = User.objects.get(id=user_id)
-    data = user.to_dict()
-    data['_id'] = user_id
+    is_profile = True
+    if not user.profile:
+        is_profile = False
+    data = {
+        'isProfile': is_profile,
+        'admin': user.is_admin,
+        'verified': user.verified,
+    }
     response = {'status': 'success', 'data': data}
     return jsonify(response), 200

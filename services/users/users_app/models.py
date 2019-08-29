@@ -462,8 +462,6 @@ class User(Document):
             rounds=current_app.config.get('BCRYPT_LOG_ROUNDS')
         ).decode()
 
-    # TODO(andrew@neuraldev.io): Implement one of these just for the Profile
-    #  and another one for all user details.
     def to_dict(self) -> dict:
         """Simple Document.User helper method to get a Python dict back."""
         last_login = None
@@ -472,7 +470,14 @@ class User(Document):
             last_login = self.last_login.isoformat()
         if self.last_updated is not None:
             last_updated = self.last_updated.isoformat()
-        profile = None
+
+        # We set a default profile that we always send to the client
+        profile = {
+            'aim': None,
+            'highest_education': None,
+            'sci_tech_exp': None,
+            'phase_transform_exp': None
+        }
         if self.profile is not None:
             profile = self.profile.to_dict()
 

@@ -41,9 +41,3 @@ COPY . /usr/src/app
 
 # Start the container with entrypoint or comment to use manual below
 ENTRYPOINT ["/docker-entrypoint.sh"]
-# Comment above and uncomment below to run gunicorn server
-#ENTRYPOINT ["/docker-entrypoint.sh", "-S", "gunicorn"]
-
-# uncomment to run server manually
-#CMD ["gunicorn", "-b", "0.0.0.0:8000", "users_app.app:app"]
-#CMD ["python", "manage.py", "run", "-h", "0.0.0.0", "-p", "8000"]

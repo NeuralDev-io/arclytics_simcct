@@ -9,7 +9,7 @@ import {
 } from './types'
 
 export const getUserProfile = () => (dispatch) => { // eslint-disable-line
-  fetch('http://localhost:8000/user', {
+  return fetch('http://localhost:8000/user', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

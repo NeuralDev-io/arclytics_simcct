@@ -1742,7 +1742,6 @@ paths:
                     status: "fail"
                     message: "User is already verified."
 
-
   /admin/create:
     servers:
       - url: http://localhost:8000
@@ -1762,9 +1761,13 @@ paths:
                 email:
                   type: string
                   format: email
+                  example: "ironman@neuraldev.com.au"
+                position:
+                  type: string
+                  example: "AVENGER"
       responses:
         202:
-          description: "Admin successfully created"
+          description: "Admin successfully created."
           content:
             application/json:
               schema:
@@ -1853,20 +1856,8 @@ paths:
       - url: http://localhost:8000
     get:
       summary: "Allow an admin to cancel their promotion of another user"
-      security:
-        - bearerAuth: []
       tags:
         - Admin
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                  format: email
       responses:
         302:
           description: "Successfully create Admin."
@@ -1917,7 +1908,7 @@ paths:
                 'User does not exist':
                   value:
                     status: "fail"
-                    message: "Targert User does not exist."
+                    message: "Target User does not exist."
         '401':
           description: "The user is not authenticated to perform this request."
           content:
@@ -1934,20 +1925,8 @@ paths:
       - url: http://localhost:8000
     get:
       summary: "Allow a user to acknowledge their promotion and in doing so verify their status as an admin"
-      security:
-        - bearerAuth: []
       tags:
         - Admin
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                  format: email
       responses:
         302:
           description: "Successfully sent link to verify their status as admin"

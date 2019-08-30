@@ -1929,7 +1929,13 @@ paths:
         - Admin
       responses:
         302:
-          description: "Successfully sent link to verify their status as admin"
+          description: "Successfully sent link to verify the status of user as admin"
+          headers:
+            Location:
+              schema:
+                type: string
+                example: 'TODO David'
+                description: "Redirect"
         400:
           description: "An invalid payload has been sent with the request."
           content:

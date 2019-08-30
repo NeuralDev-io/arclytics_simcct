@@ -12,7 +12,7 @@ import { Formik } from 'formik'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { login, forgotPassword } from '../../../utils/AuthenticationHelper'
 import { loginValidation, forgotPasswordEmail } from '../../../utils/ValidationHelper'
-import { getUserProfile } from '../../../state/ducks/persist/actions'
+import { getPersistUserStatus } from '../../../state/ducks/persist/actions'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 
@@ -190,19 +190,20 @@ class LoginPage extends Component {
             placeholder="Email"
             error={forgotPwdErr}
             length="stretch"
-          /> 
-         
-          <span className={styles.confirmation}>{ emailSent ? ('Email has been sent.'): ('')}</span>        
-         <div>
+          />    
+          <div>
            {/* // TODO: loading takes time make sure button is disabled during loading  */}
            {/* TODO: give space for the span height  */}
+           <h6 className={ emailSent ? styles.confirmation : styles.errors}>
+            { emailSent ? ('Email has been sent.'): (' ')}
+           </h6>     
             <Button
               className={styles.forgotSubmit}
               type="submit"
               length="long"
               isDisabled={emailSent}
               onClick={()=> {
-                forgotPwdErr = this.forgotPasswordEmail(forgotPwdEmail)
+                const forgotPwdErr = forgotPasswordEmail(forgotEmail)
                 if (forgotPwdErr === ''){
                   const promise = new Promise((resolve, reject) => {
                     forgotPassword(resolve, reject, forgotEmail)
@@ -216,6 +217,7 @@ class LoginPage extends Component {
                   })
                     .catch((err) => {
                       // If response is unsuccessful
+                      console.log(err)
                       this.setState({
                         forgotPwdErr: err,
                       })

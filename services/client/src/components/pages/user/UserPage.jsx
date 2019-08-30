@@ -37,8 +37,6 @@ class UserPage extends Component {
         <div className={styles.main}>
           {/* Define the routes for the right panel. */}
           <Route path="/user/profile" render={props => <ProfilePage {...props} userProf={user}/>} />
-          <Route path="/user/alloys" render={props => <UserAlloys {...props} />} />
-          <Route path="/user/simulations" render={props => <UserSavedSimulations {...props} />} />
         </div>
       </React.Fragment>
     )

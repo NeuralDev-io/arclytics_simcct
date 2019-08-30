@@ -74,7 +74,7 @@ class UserAlloys extends Component {
   }
 
   render() {
-    const { alloyList } = this.props
+    const { alloyList, history } = this.props
     const { name, deleteModal } = this.state
 
     // Prepare the data for the Table component
@@ -118,7 +118,7 @@ class UserAlloys extends Component {
     ]
 
     return (
-      <div className={styles.container}>
+      <React.Fragment>
         <h3>Personal alloy database</h3>
         <div className={styles.tools}>
           <div className="input-row">
@@ -157,7 +157,7 @@ class UserAlloys extends Component {
           onConfirm={() => this.handleAlloyOperation('delete')}
           onClose={() => this.handleCloseModal('delete')}
         />
-      </div>
+      </React.Fragment>
     )
   }
 }

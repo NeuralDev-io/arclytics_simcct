@@ -38,7 +38,7 @@ AdminPage.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  isAdmin: state.persist.user.admin,
+  isAdmin: state.persist.userStatus.admin,
 })
 
 const mapDispatchToProps = {}

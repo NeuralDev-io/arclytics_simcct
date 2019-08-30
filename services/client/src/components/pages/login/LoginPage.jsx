@@ -111,6 +111,7 @@ class LoginPage extends Component {
                         value={values.email}
                         placeholder="Email"
                         length="stretch"
+                        error=  {errors.email && touched.email && errors.email}
                       />
                       <h6 className={styles.errors}>
                         {errors.email && touched.email && errors.email}

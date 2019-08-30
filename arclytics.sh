@@ -8,8 +8,8 @@ export COMPOSE_PROJECT_NAME='arc'
 # ======================================================= #
 # ==================== # Variables # ==================== #
 # ======================================================= #
-VERSION=1.1.1
-WORKDIR="$(dirname "$(readlink -f "$0")")"
+VERSION=1.1.2
+WORKDIR=$(dirname "$(readlink -f "$0")")
 DOCKER_COMPOSE_PATH="${WORKDIR}/docker-compose.yml"
 ARGS=""
 CONTAINER_GROUP=""
@@ -81,10 +81,10 @@ users() {
     echoSpace
     if [[ ${tty} == 1 ]]; then
         generalMessage "docker-compose exec -T users python manage.py ${TEST_TYPE}"
-        docker-compose -f ${DOCKER_COMPOSE_PATH} exec -T users python manage.py "${TEST_TYPE}"
+        docker-compose -f "${DOCKER_COMPOSE_PATH}" exec -T users python manage.py "${TEST_TYPE}"
     else
         generalMessage "docker-compose exec users python manage.py ${TEST_TYPE}"
-        docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py "${TEST_TYPE}"
+        docker-compose -f "${DOCKER_COMPOSE_PATH}" exec users python manage.py "${TEST_TYPE}"
     fi
     generalMessage "Finishing ${TEST_TITLE} for Users Server"
 }
@@ -97,10 +97,10 @@ simcct() {
     docker-compose exec users python manage.py flush
     if [[ ${tty} == 1 ]]; then
         generalMessage "docker-compose exec -T simcct python manage.py ${TEST_TYPE}"
-        docker-compose -f ${DOCKER_COMPOSE_PATH} exec -T simcct python manage.py "${TEST_TYPE}"
+        docker-compose -f "${DOCKER_COMPOSE_PATH}" exec -T simcct python manage.py "${TEST_TYPE}"
     else
         generalMessage "docker-compose exec simcct python manage.py ${TEST_TYPE}"
-        docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py "${TEST_TYPE}"
+        docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py "${TEST_TYPE}"
     fi
     generalMessage "Finishing ${TEST_TITLE} for SimCCT Server"
 }
@@ -327,7 +327,7 @@ dockerPs() {
 dockerLogs() {
     headerMessage "ARCLYTICS SIM CONTAINER LOGS"
     generalMessage "docker-compose logs ${CONTAINER_LOG}"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} logs ${CONTAINER_LOG}
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" logs ${CONTAINER_LOG}
     completeMessage
 }
 
@@ -361,7 +361,7 @@ containerDown() {
         fi
     else
         generalMessage "docker-compose down ${ARGS}"
-        docker-compose -f ${DOCKER_COMPOSE_PATH} down ${ARGS}
+        docker-compose -f "${DOCKER_COMPOSE_PATH}" down ${ARGS}
     fi
     completeMessage
 }
@@ -369,12 +369,12 @@ containerDown() {
 buildContainers() {
     headerMessage "BUILDING ARCLYTICS SIM CONTAINERS ONLY"
     generalMessage "docker-compose build ${BUILD_CONTAINER_ARGS}"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} build ${BUILD_CONTAINER_ARGS}
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" build ${BUILD_CONTAINER_ARGS}
 }
 
 scaleContainers() {
   headerMessage "SCALING ARCLYTICS SIM CONTAINERS"
-  docker-compose -f ${DOCKER_COMPOSE_PATH} SCALE_FLAG ${SCALE_CONTAINERS_ARGS}
+  docker-compose -f "${DOCKER_COMPOSE_PATH}" SCALE_FLAG ${SCALE_CONTAINERS_ARGS}
   completeMessage
 }
 
@@ -382,10 +382,10 @@ flushDb() {
     headerMessage "FLUSH BACK-END MICROSERVICES"
     generalMessage "Flushing users microservice database (MongoDB)"
     generalMessage "docker-compose exec users python manage.py flush"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py flush
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec users python manage.py flush
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
     generalMessage "docker-compose exec simcct python manage.py flush"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py flush
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
 }
 
 # Flush and seed database
@@ -393,18 +393,18 @@ flushAndSeedDb() {
     headerMessage "SEED AND FLUSH BACK-END MICROSERVICES"
     generalMessage "Flushing users microservice database (MongoDB)"
     generalMessage "docker-compose exec users python manage.py flush"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py flush
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec users python manage.py flush
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
     generalMessage "docker-compose exec simcct python manage.py flush"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py flush
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
     echoSpace
     generalMessage "Seeding users microservice database with users"
     generalMessage "docker-compose exec users python manage.py seed_db"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec users python manage.py seed_db
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec users python manage.py seed_db
     echoSpace
     generalMessage "Seeding simcct microservice database with global alloys"
     generalMessage "docker-compose exec simcct python manage.py seed_db"
-    docker-compose -f ${DOCKER_COMPOSE_PATH} exec simcct python manage.py seed_db
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py seed_db
     echoSpace
 }
 
@@ -419,30 +419,30 @@ runTests() {
     if [[ "${TEST_SERVER_ARGS}" == "server" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" up -d --build "${CONTAINER_ARGS}"
             server
             generalMessage "docker-compose down"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} down
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" down
         else
             server
         fi
     elif [[ "${TEST_SERVER_ARGS}" == "users" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" up -d --build "${CONTAINER_ARGS}"
             users
             generalMessage "docker-compose down"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} down
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" down
         else
             users
         fi
     elif [[ "${TEST_SERVER_ARGS}" == "simcct" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" up -d --build "${CONTAINER_ARGS}"
             simcct
             generalMessage "docker-compose down"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} down
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" down
         else
             simcct
         fi
@@ -452,17 +452,17 @@ runTests() {
             changeContainerGroup
 
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" up -d --build "${CONTAINER_ARGS}"
             client
             generalMessage "docker-compose down"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} down
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" down
         fi
     elif [[ "${TEST_SERVER_ARGS}" == "e2e" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
             CONTAINER_GROUP="e2e"
             changeContainerGroup
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" up -d --build "${CONTAINER_ARGS}"
         fi
     elif [[ "${TEST_SERVER_ARGS}" == "all" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
@@ -470,10 +470,10 @@ runTests() {
             changeContainerGroup
 
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build "${CONTAINER_ARGS}"
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" up -d --build "${CONTAINER_ARGS}"
             all
             generalMessage "docker-compose down"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} down
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" down
         else
             all
         fi
@@ -533,18 +533,18 @@ run() {
     if [[ ${BUILD_FLAG} == 1 ]]; then
         if [[ ${DETACH_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d --build ${CONTAINER_ARGS}
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" up -d --build ${CONTAINER_ARGS}
         else
             generalMessage "docker-compose up --build ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up --build ${CONTAINER_ARGS}
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" up --build ${CONTAINER_ARGS}
         fi
     else
         if [[ ${DETACH_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up -d ${CONTAINER_ARGS}
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" up -d ${CONTAINER_ARGS}
         else
             generalMessage "docker-compose up ${CONTAINER_ARGS}"
-            docker-compose -f ${DOCKER_COMPOSE_PATH} up ${CONTAINER_ARGS}
+            docker-compose -f "${DOCKER_COMPOSE_PATH}" up ${CONTAINER_ARGS}
         fi
     fi
 

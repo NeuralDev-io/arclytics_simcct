@@ -8,8 +8,8 @@ import SimulationPage from './components/pages/simulation'
 import AdminPage from './components/pages/admin'
 import ProfileQuestionsPage from './components/pages/profile-questions'
 import ProfilePage from './components/moleisms/user-profile'
-import UserSavedSimulations from './components/moleisms/user-sim'
-import UserAlloys from './components/moleisms/user-alloys'
+import UserSimulationPage from './components/pages/user-sim'
+import UserAlloyPage from './components/pages/user-alloys'
 
 import './App.scss'
 
@@ -34,12 +34,12 @@ function App() {
           <Route
             exact
             path="/user/simulations"
-            render={props => <UserSavedSimulations {...props} />}
+            render={props => <UserSimulationPage {...props} />}
           />
           <Route
             exact
             path="/user/alloys"
-            render={props => <UserAlloys {...props} />}
+            render={props => <UserAlloyPage {...props} />}
           />
           <Route
             path="/profileQuestions"

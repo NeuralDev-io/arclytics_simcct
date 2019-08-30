@@ -41,7 +41,7 @@ class CompTable extends Component {
       weld: undefined,
       mix: undefined,
     }))
-    if (alloyOption === 'both' || alloyOption === 'mix') {
+    if (alloyOption === 'mix') {
       weld.compositions.forEach((elem) => {
         const idx = tableData.findIndex(x => x.symbol === elem.symbol)
         if (idx === -1) {

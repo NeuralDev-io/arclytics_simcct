@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import Modal from '../../elements/modal'
 import TextField from '../../elements/textfield'
-import PeriodicTable, { PeriodicTableData } from '../../elements/periodic-table'
+import PeriodicTable from '../../elements/periodic-table'
+import { PERIODIC_TABLE_DATA } from '../../../utils/alloys'
 import Button from '../../elements/button'
 
 import styles from './AlloyModal.module.scss'
@@ -10,7 +11,7 @@ import styles from './AlloyModal.module.scss'
 class AlloyModal extends Component {
   handleToggleElement = (number, newElements) => {
     // find data of this element
-    const element = PeriodicTableData.find(elem => elem.number === number)
+    const element = PERIODIC_TABLE_DATA.find(elem => elem.number === number)
 
     const { alloy, onChange } = this.props
     // if this element is one of the current elements
@@ -78,7 +79,7 @@ class AlloyModal extends Component {
       return <span className={styles.info}>Choose an element to start</span>
     }
     return alloy.compositions.map(({ symbol, weight }) => {
-      const element = PeriodicTableData.find(e => e.symbol === symbol)
+      const element = PERIODIC_TABLE_DATA.find(e => e.symbol === symbol)
       return (
         <div key={symbol} className={`input-row ${styles.element}`}>
           <span>{element.name}</span>
@@ -101,7 +102,7 @@ class AlloyModal extends Component {
 
     // generate an elements array for PeriodicTable
     const elements = compositions.map((elem) => {
-      const element = PeriodicTableData.find(e => e.symbol === elem.symbol)
+      const element = PERIODIC_TABLE_DATA.find(e => e.symbol === elem.symbol)
       return element.number
     })
 

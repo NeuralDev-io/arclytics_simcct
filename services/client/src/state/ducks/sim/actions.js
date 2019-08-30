@@ -7,6 +7,7 @@ import {
   UPDATE_CONFIG_METHOD,
   UPDATE_CONFIG,
   UPDATE_DISPLAY_USER_CURVE,
+  UPDATE_CCT_INDEX,
 } from './types'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 
@@ -17,7 +18,7 @@ import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
  * Call this function to update state when alloy1 or alloy2 is changed.
  * At the moment, only pass in 'single' for option and 'parent' for type.
  *
- * @param {string} option 'single' | 'both' | 'mix'
+ * @param {string} option 'single' | 'mix'
  * @param {string} type 'parent' | 'weld'
  * @param {object} alloy alloy to be used
  */
@@ -71,7 +72,7 @@ export const initSession = (option, type, alloy) => (dispatch) => {
 /**
  * Update alloy option in state.
  *
- * @param {string} option 'single' | 'both' | 'mix'
+ * @param {string} option 'single' | 'mix'
  */
 export const updateAlloyOption = option => (dispatch) => {
   dispatch({
@@ -84,7 +85,7 @@ export const updateAlloyOption = option => (dispatch) => {
  * Update alloy in session state. Call this function when alloy
  * composition is changed.
  *
- * @param {string} option 'single' | 'both' | 'mix'
+ * @param {string} option 'single' | 'mix'
  * @param {string} type 'parent' | 'weld'
  * @param {object} alloy alloy to be updated
  */
@@ -334,4 +335,11 @@ export const runSim = () => (dispatch, getState) => {
       }
     })
     .catch(err => console.log(err))
+}
+
+export const updateCCTIndex = idx => (dispatch) => {
+  dispatch({
+    type: UPDATE_CCT_INDEX,
+    payload: idx,
+  })
 }

@@ -65,6 +65,18 @@ export const signupValidation = (values) => {
   return errors
 }
 
+export const forgotPasswordEmail = (email) => {
+  if (!email) {
+    return 'Required'
+  } else if (
+    !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
+  ) {
+    return 'Invalid email'
+  } else {
+    return ''
+  }
+
+}
 
 export const passwordResetValidation = (values) => {
   const { newPwd, cnfrmPwd   } = values

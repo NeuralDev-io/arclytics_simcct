@@ -21,21 +21,21 @@ import styles from './PasswordResetPage.module.scss'
 
 class PasswordResetPage extends Component {
   constructor(props){
-      super(props)
-      this.state = {
-          newPwd: '',
-          newPwdErr: '',
-          cnfrmPwd: '',
-          cnfrmPwdErr:'',
-      }
+    super(props)
+    this.state = {
+        newPwd: '',
+        newPwdErr: '',
+        cnfrmPwd: '',
+        cnfrmPwdErr:'',
+    }
   }
 
   componentDidMount = () => {
-      const { match, history } = this.props
-      console.log(match.params.token)
-      if(!match.params.token) {
-          history.push('/signin') //TODO: not working
-      }
+    const { match, history } = this.props
+    console.log(match.params.token)
+    if(!match.params.token) {
+        history.push('/signin') //TODO: not working
+    }
   }
 
   handleSubmit = () => {
@@ -69,7 +69,7 @@ class PasswordResetPage extends Component {
           <Logo className={styles.logo} />
           <h3> ARCLYTICS </h3>
         </div>
-        <div className={styles.form}>
+        <form className={styles.form}>
           <h3 className={styles.header}> Change Password </h3> 
           <TextField 
             type="password"
@@ -90,7 +90,7 @@ class PasswordResetPage extends Component {
             onChange={value => this.handleChange('cnfrmPwd', value)}
           />
           <Button length="long" onClick={this.handleSubmit}> Reset Password </Button>
-        </div>
+        </form>
       </div>
     )
   }

@@ -49,7 +49,7 @@ class UserSavedSimulations extends Component {
     ]
 
     return (
-      <div className={styles.container}>
+      <React.Fragment>
         <h3>Saved simulations</h3>
         <Table
           className="-highlight"
@@ -61,7 +61,7 @@ class UserSavedSimulations extends Component {
           resizable={false}
           condensed
         />
-      </div>
+      </React.Fragment>
     )
   }
 }

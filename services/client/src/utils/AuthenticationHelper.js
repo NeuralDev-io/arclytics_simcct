@@ -71,14 +71,18 @@ export const logout = (callback) => {
     },
   })
     .then(res => res.json())
-    .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
-      if (data.status === 'success') {
-        localStorage.removeItem('token')
-        localStorage.removeItem('session')
-        localStorage.removeItem('persist:userPersist')
-        callback('/signin')
-      }
+    .then(() => {
+      /*
+      * TODO(andrew@neuraldev.io): Until you fix the backend logout if there is
+      *  no persistent storage across Redis sessions, just let this one through.
+      * */
+      // if (data.status === 'fail') throw new Error(data.message)
+      // if (data.status === 'success') {
+      localStorage.removeItem('token')
+      localStorage.removeItem('session')
+      localStorage.removeItem('persist:userStatus')
+      callback('/signin')
+      // }
     })
     .catch(err => console.log(err))
 }

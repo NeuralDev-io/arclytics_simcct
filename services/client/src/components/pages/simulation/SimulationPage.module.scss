@@ -83,13 +83,24 @@
   }
 
   .custom {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
-    align-items: flex-start;
+    & > header {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: center;
+      justify-content: flex-start;
+
+      & > h4 { margin-right: 1rem; }
+    }
 
     & > div {
-      flex-basis: 45%;
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      .userConfig {
+        flex-basis: 30%;
+      }
     }
   }
 }

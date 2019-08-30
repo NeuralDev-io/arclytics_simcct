@@ -1541,6 +1541,21 @@ paths:
         - Auth
       security:
         - bearerAuth: []
+      requestBody:
+        description: "The password entered by user."
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  format: password
+                  example: "IAmIronMan!"
+                confirm_password:
+                  type: string
+                  format: password
+                  example: "IAmIronMan!"
       responses:
         200:
           description: "Correct password."

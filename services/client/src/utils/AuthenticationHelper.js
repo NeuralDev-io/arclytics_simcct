@@ -109,7 +109,7 @@ export const forgotPassword = (resolve, reject, email) => {
   .catch(err => console.log(err))
 }
 
-export const resetPassword = (values, token) => {
+export const resetPassword = (resolve, reject, values, token) => {
   fetch('http://localhost:8000/auth/password/reset', {
     method: 'PUT',
     headers: {
@@ -122,10 +122,10 @@ export const resetPassword = (values, token) => {
   .then(res => {
     if(res.status === "success"){
       console.log(res.status, res.message)
-      return res
+      resolve(res)
     } else {
       console.log(res.status, res.message)
-      return res.message
+      reject(res.message)
     }
   })
   .catch(err => console.log(err))

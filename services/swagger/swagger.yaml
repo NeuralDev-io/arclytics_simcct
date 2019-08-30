@@ -3315,6 +3315,18 @@ paths:
                       - symbol: "P"
                         weight: 0.007
       responses:
+        200:
+          description: "Update composition."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+              example:
+                status: "success"
+                message: "Compositions updated."
         201:
           description: "The alloy and its compositions was successfully updated and stored
             in the Session for the user. An initial Configurations with default values were
@@ -3361,6 +3373,10 @@ paths:
                   value:
                     status: "fail"
                     message: "Alloy type one of of ['parent' | 'weld' | 'mix' ]"
+                'Invalid Alloy Options':
+                  value:
+                    status: "fail"
+                    message: "Alloy option not one of ['single' | 'mix']."
                 'No valid key':
                   value:
                     status: "fail"
@@ -3373,6 +3389,10 @@ paths:
                   value:
                     status: "fail"
                     message: "No alloy was provided."
+                'No Alloy Type':
+                  value:
+                    status: "fail"
+                    message: "No alloy type was provided."
                 'No Alloy Compisition Provided':
                   value:
                     status: "fail"
@@ -3386,6 +3406,10 @@ paths:
                     status: "fail"
                     errors: "string"
                     message: "Alloy failed schema validation."
+                'Missing Element':
+                  value:
+                    status: "fail"
+                    message: "Missing element error."
         401:
           description: "Unauthorized access to the endpoint."
           content:
@@ -3421,6 +3445,15 @@ paths:
                   value:
                     status: "fail"
                     message: "Compositions conversion error."
+                'Cannot Retrieve Configurations':
+                  value:
+                    status: "fail"
+                    message: "Cannot retrieve configurations from session."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    errors: "string"
+                    message: "Validation error for session configurations."
                 'Unable to save session':
                   value:
                     status: "fail"

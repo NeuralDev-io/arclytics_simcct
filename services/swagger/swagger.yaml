@@ -1669,9 +1669,20 @@ paths:
         - Auth
       security:
         - bearerAuth: []
+      requestBody:
+        description: "Request to change email."
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: string
+                  example: "ironman@neuraldev.io!"
       responses:
         200:
-          description: "Correct password."
+          description: "Email changed successfully."
           content:
             application/json:
               schema:
@@ -1679,7 +1690,7 @@ paths:
               example:
                 status: "success"
                 message: "Email changed."
-                new_email: (new_email)
+                new_email: "ironman@neuraldev.io"
         400:
           description: "An invalid payload has been sent with the request."
           content:

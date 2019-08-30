@@ -83,15 +83,15 @@ export const passwordResetValidation = (values) => {
   const errors = {}
 
   if (!newPwd) {
-    errors.newPwd = 'Required'
-  } else if (newPwd.length < 6 || newPwd.length > 20) {
-    errors.password = 'Password is invalid'
+    errors.newPwdErr = 'Required'
+  } else if (newPwd.length < 6 || newPwd.length > 254) {
+    errors.newPwdErr = 'Password is invalid'
   }
 
   if (!cnfrmPwd) {
-    errors.cnfrmPwd = 'Required'
+    errors.cnfrmPwdErr = 'Required'
   } else if (newPwd !== cnfrmPwd) {
-    errors.cnfrmPwd = 'Password does not match'
+    errors.cnfrmPwdErr = 'Password does not match'
   }
   
   return errors

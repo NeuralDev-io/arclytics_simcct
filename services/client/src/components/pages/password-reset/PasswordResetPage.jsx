@@ -13,11 +13,13 @@ import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import PropTypes from 'prop-types'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
+import Modal from '../../elements/modal/Modal'
 import { passwordResetValidation } from '../../../utils/ValidationHelper'
 
 import styles from './PasswordResetPage.module.scss'
 
 //TODO: once the textfield err prop is fixed uncomment err and need just test edge cases 
+//TOOD: propTypes
 
 class PasswordResetPage extends Component {
   constructor(props){
@@ -27,14 +29,28 @@ class PasswordResetPage extends Component {
         newPwdErr: '',
         cnfrmPwd: '',
         cnfrmPwdErr:'',
+        showCnfrmModal: true,
+        status: '',
     }
+    this.handleStatus = this.handleStatus.bind(this)
   }
 
-  componentDidMount = () => {
-    const { match, history } = this.props
-    console.log(match.params.token)
-    if(!match.params.token) {
-        history.push('/signin') //TODO: not working
+  handleStatus = () => {
+    const { status, showCnfrmModal } = this.state
+    console.log("[handleStatus]: ", status, (status === 'success'))
+    if (status === ''){
+      return ('')
+    }
+    if (status === 'success'){
+      return( 
+      <Modal className={styles.cnfrmModal} show={showCnfrmModal} > 
+        <span>
+          Your account password has been successfully changed. 
+        </span>
+        <Button length="long"onClick={() => {this.props.history.push('/signin')}}> Go to sign in </Button>
+      </Modal>)
+    } else {
+      return (<span className={styles.error}>{status}</span>)
     }
   }
 
@@ -42,17 +58,39 @@ class PasswordResetPage extends Component {
     console.log("handlesSubmit")
     const { match } = this.props
     const { newPwd, cnfrmPwd } = this.state
-    //TODO: do validation here
     const err = passwordResetValidation({newPwd, cnfrmPwd})
-   
-    //TODO: create a promise here to make sure and handle errors correctly 
-      resetPassword(
-        { 
-        password: newPwd, 
-        confirm_password: cnfrmPwd, 
-        }, 
-        match.params.token,)
-      //TODO: redirect to sign in 
+    if (!(
+      Object.prototype.hasOwnProperty.call(err, 'newPwdErr') || 
+      Object.prototype.hasOwnProperty.call(err, 'cnfrmPwdErr'))){
+        const promise = new Promise((resolve, reject) => {
+          resetPassword( 
+            resolve,
+            reject,
+            { 
+              password: newPwd, 
+              confirm_password: cnfrmPwd, 
+            }, 
+            match.params.token,)
+        })
+        promise.then((data) => {
+          //success
+          this.setState({
+            status: 'success'
+          })
+          // history.push('/signin') //TODO: uncomment when done  
+        })
+        .catch((err) => {
+          console.log(err)
+          this.setState({
+            status: err,
+          })
+        })
+    } else {
+      this.setState({
+        newPwdErr: Object.prototype.hasOwnProperty.call(err, 'newPwdErr') ? err.newPwdErr: (''),
+        cnfrmPwdErr:Object.prototype.hasOwnProperty.call(err, 'cnfrmPwdErr') ? err.cnfrmPwdErr :('')
+      })
+    }
   }
 
   handleChange = (name, value) => {
@@ -62,7 +100,13 @@ class PasswordResetPage extends Component {
   }
 
   render(){
-    const { newPwd, cnfrmPwd } = this.state
+    const { 
+      newPwd,
+      newPwdErr,
+      cnfrmPwd,
+      cnfrmPwdErr,
+      status
+    } = this.state
     return (
       <div className={styles.outer}>
         <div className={styles.logoContainer}>
@@ -77,7 +121,8 @@ class PasswordResetPage extends Component {
             value={newPwd}
             placeholder="New Password"
             length="stretch"
-            //err={newPwdErr}
+            error = "test"
+            error={newPwdErr}
             onChange={value => this.handleChange('newPwd', value)}
           />
           <TextField
@@ -86,9 +131,10 @@ class PasswordResetPage extends Component {
             value={cnfrmPwd}
             placeholder="Confirm Password"
             length="stretch"
-            //err={cnfrmPwd}
+            error = {cnfrmPwdErr}
             onChange={value => this.handleChange('cnfrmPwd', value)}
           />
+          {this.handleStatus()}
           <Button length="long" onClick={this.handleSubmit}> Reset Password </Button>
         </form>
       </div>

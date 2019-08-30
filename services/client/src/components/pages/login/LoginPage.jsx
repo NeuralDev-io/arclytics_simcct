@@ -11,8 +11,8 @@ import { connect } from 'react-redux'
 import { Formik } from 'formik'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { login, forgotPassword } from '../../../utils/AuthenticationHelper'
-import { loginValidation } from '../../../utils/ValidationHelper'
-import { getPersistUserStatus } from '../../../state/ducks/persist/actions'
+import { loginValidation, forgotPasswordEmail } from '../../../utils/ValidationHelper'
+import { getUserProfile } from '../../../state/ducks/persist/actions'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 
@@ -56,7 +56,12 @@ class LoginPage extends Component {
   }
 
   render() {
-    const {hasForgotPwd, forgotEmail, emailSent } = this.state
+    const {
+      hasForgotPwd,
+      forgotEmail,
+      emailSent,
+      forgotPwdErr,
+    } = this.state
 
     return (
       <div className={styles.outer}>
@@ -117,7 +122,7 @@ class LoginPage extends Component {
                         value={values.email}
                         placeholder="Email"
                         length="stretch"
-                        error=  {errors.email && touched.email && errors.email}
+                        error= {errors.email && touched.email && errors.email}
                       />
                       <h6 className={styles.errors}>
                         {errors.email && touched.email && errors.email}
@@ -183,12 +188,11 @@ class LoginPage extends Component {
             value={forgotEmail}
             onChange={value => this.handleChange('forgotEmail', value)}
             placeholder="Email"
-            // err={forgotPwdErr}
+            error={forgotPwdErr}
             length="stretch"
           /> 
          
-          <span className={styles.confirmation}>{ emailSent ? ('Email has been sent.'): ('')}</span> 
-        
+          <span className={styles.confirmation}>{ emailSent ? ('Email has been sent.'): ('')}</span>        
          <div>
            {/* // TODO: loading takes time make sure button is disabled during loading  */}
            {/* TODO: give space for the span height  */}
@@ -198,23 +202,25 @@ class LoginPage extends Component {
               length="long"
               isDisabled={emailSent}
               onClick={()=> {
-                const promise = new Promise((resolve, reject) => {
-                  forgotPassword(resolve, reject, forgotEmail)
-                })
-                promise.then((data) => {
-                  // If response is successful
-                  console.log("this happens")
-                  this.setState({
-                    forgotPwdErr: '',
-                    emailSent: true,
+                forgotPwdErr = this.forgotPasswordEmail(forgotPwdEmail)
+                if (forgotPwdErr === ''){
+                  const promise = new Promise((resolve, reject) => {
+                    forgotPassword(resolve, reject, forgotEmail)
                   })
-                })
-                  .catch((err) => {
-                    // If response is unsuccessful
+                  promise.then((data) => {
+                    // If response is successful
                     this.setState({
-                      forgotPwdErr: err,
+                      forgotPwdErr: '',
+                      emailSent: true,
                     })
                   })
+                    .catch((err) => {
+                      // If response is unsuccessful
+                      this.setState({
+                        forgotPwdErr: err,
+                      })
+                    })
+                } 
               }}> Send Email </Button>
             <h6
               className={styles.help}

@@ -10,6 +10,7 @@ import ProfileQuestionsPage from './components/pages/profile-questions'
 import ProfilePage from './components/moleisms/user-profile'
 import UserSimulationPage from './components/pages/user-sim'
 import UserAlloyPage from './components/pages/user-alloys'
+import PasswordResetPage from './components/pages/password-reset'
 
 import './App.scss'
 

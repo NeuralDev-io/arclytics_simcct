@@ -286,6 +286,11 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertTrue(response_peter.content_type == 'application/json')
             self.assertEqual(response_peter.status_code, 200)
 
+            peter_obj = User.objects.get(email='spiderman@newavenger.io')
+            self.assertEqual(
+                peter_obj['login_data'][0]['country'], 'Australia'
+            )
+
             response_tony = self.client.post(
                 '/auth/login',
                 data=json.dumps(

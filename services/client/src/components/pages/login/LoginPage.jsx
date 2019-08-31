@@ -19,8 +19,11 @@ import Button from '../../elements/button'
 import styles from './LoginPage.module.scss'
 
 /*
-  TODO: once the textfield err prop is fixed uncomment err and need just test edge cases and for Formik move it to the 
+  TODO: 
+  - once the textfield err prop is fixed uncomment err and need just test edge cases and for Formik move it to the 
   err prop
+
+  - change all the logos too ansto logos
 */
 
 class LoginPage extends Component {
@@ -124,9 +127,6 @@ class LoginPage extends Component {
                         length="stretch"
                         error= {errors.email && touched.email && errors.email}
                       />
-                      <h6 className={styles.errors}>
-                        {errors.email && touched.email && errors.email}
-                      </h6>
                     </div>
 
                     <div className={styles.password}>
@@ -137,10 +137,8 @@ class LoginPage extends Component {
                         value={values.password}
                         placeholder="Password"
                         length="stretch"
+                        error={errors.password && touched.password && errors.password}
                       />
-                      <h6 className={styles.errors}>
-                        {errors.password && touched.password && errors.password}
-                      </h6>
                     </div>
                     <h6
                       className={styles.help}
@@ -195,7 +193,7 @@ class LoginPage extends Component {
            {/* // TODO: loading takes time make sure button is disabled during loading  */}
            {/* TODO: give space for the span height  */}
            <h6 className={ emailSent ? styles.confirmation : styles.errors}>
-            { emailSent ? ('Email has been sent.'): (' ')}
+            { emailSent ? ('Email has been sent.'): forgotPwdErr}
            </h6>     
             <Button
               className={styles.forgotSubmit}
@@ -203,8 +201,8 @@ class LoginPage extends Component {
               length="long"
               isDisabled={emailSent}
               onClick={()=> {
-                const forgotPwdErr = forgotPasswordEmail(forgotEmail)
-                if (forgotPwdErr === ''){
+                const validError = forgotPasswordEmail(forgotEmail)
+                if ( validError === ''){
                   const promise = new Promise((resolve, reject) => {
                     forgotPassword(resolve, reject, forgotEmail)
                   })
@@ -222,7 +220,11 @@ class LoginPage extends Component {
                         forgotPwdErr: err,
                       })
                     })
-                } 
+                } else {
+                  this.setState({
+                    forgotPwd: validError
+                  })
+                }
               }}> Send Email </Button>
             <h6
               className={styles.help}

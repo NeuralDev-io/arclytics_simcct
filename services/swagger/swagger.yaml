@@ -1756,7 +1756,7 @@ paths:
     servers:
       - url: http://localhost:8000
     get:
-      summary: "Confirmation for URL link tokens sent for user registration verification."
+      summary: "Confirmation for URL link tokens sent for admin registration verification."
       tags:
         - Auth
       responses:
@@ -1783,6 +1783,46 @@ paths:
                 'Invalid Payload':
                   value:
                     status: "fail"
+                    message: "Invalid payload."
+  /confirmadmin/<token>:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "Confirmation for URL link tokens sent for user registration verification."
+      tags:
+        - Auth
+      responses:
+        302:
+          description: "Redirect."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Successfull Redirect':
+                  value:
+                    status: "success"
+                    redirect: 'http://{client_host}:3000/signin'
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'URL Token Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid payload."
+                'URL Token Expired':
+                  value:
+                    status: "fail"
+                    error: "string"
                     message: "Invalid payload."
   /reset/password/confirm/<token>:
     servers:

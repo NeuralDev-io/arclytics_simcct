@@ -35,7 +35,7 @@ import geoip2.database
 from logger.arc_logger import AppLogger
 from users_app.extensions import bcrypt
 from users_app.middleware import (authenticate_flask, logout_authenticate)
-from users_app.models import User
+from users_app.models import User, LoginData
 from users_app.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
@@ -482,26 +482,31 @@ def login() -> any:
                 return jsonify(response), 400
 
             # Get location data
-            # reader = geoip2.database.Reader(
-            #     '/usr/src/app/users_app/resources/GeoLite2-City/'
-            #     'GeoLite2-City.mmdb'
-            # )
-            # try:
-            #     # location_data = reader.city(str(request.remote_addr))
-            #     location_data = reader.city('203.10.91.88')
-            #     country = location_data.country.names['en']
-            #     state = location_data.subdivisions[0].names['en']
-            #     ip_address = location_data.traits.ip_address
-            #
-            #     # TODO(davidmatthews1004@gmail.com) add this data to the user
-            #     #  document
-            #     response['country'] = country
-            #     response['state'] = state
-            #     response['ip_address'] = ip_address
-            # except AddressNotFoundError:
-            #     response['location_data'] = None
-            #
-            # reader.close()
+            reader = geoip2.database.Reader(
+                '/usr/src/app/users_app/resources/GeoLite2-City/'
+                'GeoLite2-City.mmdb'
+            )
+            try:
+                # location_data = reader.city(str(request.remote_addr))
+                location_data = reader.city('203.10.91.88')
+                country = location_data.country.names['en']
+                state = location_data.subdivisions[0].names['en']
+                ip_address = location_data.traits.ip_address
+
+                # TODO(davidmatthews1004@gmail.com) add this data to the user
+                #  document
+                response['country'] = country
+                response['state'] = state
+                response['ip_address'] = ip_address
+                user.login_data.append(
+                    LoginData(country=country, state=state, ip_address=ip_address)
+                )
+                user.save()
+            except AddressNotFoundError:
+                # TODO(davidmatthews1004@gmail.com) handle exception
+                pass
+
+            reader.close()
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'

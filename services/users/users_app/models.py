@@ -403,6 +403,14 @@ class LoginData(EmbeddedDocument):
     state = StringField()
     ip_address = StringField()
 
+    def to_dict(self):
+        return {
+            'time': str(self.time),
+            'country': self.country,
+            'state': self.state,
+            'ip_address': self.ip_address
+        }
+
 
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
 class User(Document):

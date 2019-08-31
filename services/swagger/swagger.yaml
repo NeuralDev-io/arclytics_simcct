@@ -758,6 +758,17 @@ paths:
             - Users
           security:
             - bearerAuth: []
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    alloy_configurations:
+                      $ref: '#/components/schemas/Configurations'
+                    alloy_store:
+                      $ref: '#/components/schemas/Alloy'
           responses:
             201:
               description: "Successfully saved."
@@ -1444,7 +1455,7 @@ paths:
               example:
                 status: "fail"
                 message: "User does not exist."
-  /auth/reset/password:
+  /auth/password/reset:
     servers:
       - url: http://localhost:8000
     put:

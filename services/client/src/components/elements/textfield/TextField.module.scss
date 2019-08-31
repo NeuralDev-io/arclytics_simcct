@@ -62,9 +62,11 @@
 }
 
 .errorIcon{
-  color:red;
+  color:var(--r400);
   position:fixed;
-  margin: 0.35rem 0 0 0.35rem;
+  margin: 0.65rem 0 0 -1.4rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 .error {

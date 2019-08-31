@@ -1586,8 +1586,15 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '204':
+        '202':
           description: "Successfully logged out"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                message: "Successfully logged out."
         400:
           description: "Bad request body provided with no JSON Web Token."
           content:
@@ -1625,6 +1632,17 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "Unable to logout the user from the SimCCT server"
   /reset/password:
     servers:
       - url: http://localhost:8000

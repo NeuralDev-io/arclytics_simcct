@@ -4475,6 +4475,41 @@ paths:
                   value:
                     status: "fail"
                     message: "Unable to retrieve data from Redis."
+                'Zero Division Error':
+                  value:
+                    status: "fail"
+                    errors: "Division by zero."
+                    message: "Division by Zero."
+                'Assertion Error':
+                  value:
+                    status: "fail"
+                    errors: "Error."
+                    message: "Assertion error building response data."
+                'Configuration Error':
+                  value:
+                    status: "fail"
+                    errors: "Error."
+                    message: "No Ae1 and Ae3 value has been provided."
+                'Configuration Error2':
+                  value:
+                    status: "fail"
+                    errors: "Error."
+                    message: "Start or Finish percent must be a fraction."
+                'Configuration Error3':
+                  value:
+                    status: "fail"
+                    errors: "Error."
+                    message: "XFE has to be below 1.0"
+                'Simulation Error':
+                  value:
+                    status: "fail"
+                    errors: "Error."
+                    message: "Need a configurations instance to run simulation."
+                'Simulation Error2':
+                  value:
+                    status: "fail"
+                    errors: "Error."
+                    message: "Don't be silly with negative Cooling Rate."
 
 components:
   securitySchemes:

@@ -703,7 +703,7 @@ class Feedback(Document):
     user = ReferenceField(User, reverse_delete_rule=DO_NOTHING)
     category = StringField(required=True)
     rating = IntField(min_value=1, max_value=5, required=True)
-    comments = StringField(required=True)
+    comment = StringField(required=True)
     created_date = DateTimeField(default=datetime.utcnow(), required=True)
 
     meta = {'collection': 'feedback'}
@@ -713,6 +713,6 @@ class Feedback(Document):
             'user_email': self.user.email,
             'category': self.category,
             'rating': self.rating,
-            'comments': self.comments,
+            'comment': self.comment,
             'created_date': str(self.created_date)
         }

@@ -89,7 +89,9 @@ def confirm_email(token):
         response['error'] = e
         return jsonify(response), 400
     except URLTokenExpired as e:
-        return redirect(f'http://{client_host}/confirm/tokenexpired', code=302)
+        return redirect(
+            f'http://{client_host}/signin/tokenexpired?=true', code=302
+        )
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -480,26 +482,26 @@ def login() -> any:
                 return jsonify(response), 400
 
             # Get location data
-            reader = geoip2.database.Reader(
-                '/usr/src/app/users_app/resources/GeoLite2-City/'
-                'GeoLite2-City.mmdb'
-            )
-            try:
-                # location_data = reader.city(str(request.remote_addr))
-                location_data = reader.city('203.10.91.88')
-                country = location_data.country.names['en']
-                state = location_data.subdivisions[0].names['en']
-                ip_address = location_data.traits.ip_address
-
-                # TODO(davidmatthews1004@gmail.com) add this data to the user
-                #  document
-                response['country'] = country
-                response['state'] = state
-                response['ip_address'] = ip_address
-            except AddressNotFoundError:
-                response['location_data'] = None
-
-            reader.close()
+            # reader = geoip2.database.Reader(
+            #     '/usr/src/app/users_app/resources/GeoLite2-City/'
+            #     'GeoLite2-City.mmdb'
+            # )
+            # try:
+            #     # location_data = reader.city(str(request.remote_addr))
+            #     location_data = reader.city('203.10.91.88')
+            #     country = location_data.country.names['en']
+            #     state = location_data.subdivisions[0].names['en']
+            #     ip_address = location_data.traits.ip_address
+            #
+            #     # TODO(davidmatthews1004@gmail.com) add this data to the user
+            #     #  document
+            #     response['country'] = country
+            #     response['state'] = state
+            #     response['ip_address'] = ip_address
+            # except AddressNotFoundError:
+            #     response['location_data'] = None
+            #
+            # reader.close()
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
@@ -917,6 +919,8 @@ def get_user_status(user_id) -> Tuple[dict, int]:
         'isProfile': is_profile,
         'admin': user.is_admin,
         'verified': user.verified,
+        'email': user.email,
+        'active': user.active
     }
     response = {'status': 'success', 'data': data}
     return jsonify(response), 200

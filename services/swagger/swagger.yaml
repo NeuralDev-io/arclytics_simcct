@@ -759,6 +759,7 @@ paths:
           security:
             - bearerAuth: []
           requestBody:
+            description: "List of configuration and alloy"
             required: true
             content:
               application/json:
@@ -1051,6 +1052,7 @@ paths:
       security:
         - bearerAuth: []
       requestBody:
+        description: "Link to be generated to share configurations."
         required: true
         content:
           application/json:
@@ -1162,6 +1164,7 @@ paths:
       security:
         - bearerAuth: []
       requestBody:
+        description: "Email link to be generated to share configurations."
         required: true
         content:
           application/json:
@@ -2098,13 +2101,14 @@ paths:
   /admin/create:
     servers:
       - url: http://localhost:8000
-    put:
+    post:
       summary: "Create an admin account."
       security:
         - bearerAuth: []
       tags:
         - Admin
       requestBody:
+        description: "Admin account to be created."
         required: true
         content:
           application/json:
@@ -2328,6 +2332,7 @@ paths:
       tags:
         - Admin
       requestBody:
+        description: "User account to be disabled"
         required: true
         content:
           application/json:
@@ -3607,6 +3612,7 @@ paths:
       tags:
         - Configurations
       requestBody:
+        description: "Initiate an Alloy and Configuration Session store."
         required: true
         content:
           application/json:
@@ -3821,6 +3827,7 @@ paths:
       security:
         - bearerAuth: []
       requestBody:
+        description: "Update the Alloy compositions in Session store for the user."
         required: true
         content:
           application/json:
@@ -3989,7 +3996,7 @@ paths:
       summary: "Update the method used in the Session store of the current user."
       security:
         - bearerAuth: []
-      requestBody:
+      requestBody: "Update the method used in the Session store of the current user."
         required: true
         content:
           application/json:

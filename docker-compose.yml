@@ -311,7 +311,7 @@ networks:
 
 # https://docs.docker.com/compose/compose-file/#volume-configuration-reference
 #
-volumes:
+#volumes:
   # TODO(andrew@neuraldev.io):
   #  This is not working as a dir needs to be created
   #  since Docker creates a Volume in /var/lib/docker/volumes/vol_name/_data

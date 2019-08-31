@@ -214,7 +214,7 @@ testUsage() {
     echo -e """
 ${greenf}ARCLYTICS CLI SCRIPT
 
-Usage: arclytics.sh up [OPTIONS] [TEST TYPE]
+Usage: arclytics.sh test [OPTIONS] [TEST TYPE]
 
 The Arclytics CLI command to run Unit Tests.
 
@@ -251,13 +251,13 @@ arclytics.sh logs [SERVICE]
 arclytics.sh test [options] [TEST TYPE]
 arclytics.sh down [options]
 arclytics.sh scale [SERVICE=NUM...]
-arclytics.sh [COMMAND]
+arclytics.sh [COMMAND] [ARGS...]
 
 Options:
   -b, --build           Build the Docker containers before running.
   -d, --detach          Run Docker Engine logs in a detached shell mode.
   -s, --seed_db         Seed the MongoDB database with test data.
-  -h, --help            Get the Usage information for this script.
+  -h, --help            Get the Usage information for this script and exit.
 
   Up Options:
   --scale SERVICE=NUM   Scale the a single container when running the cluster.
@@ -272,23 +272,40 @@ Options:
   Down Options:
   -D, --docker          Stop the containers using the Docker PS stat.
 
+  System Options:
+  usage, df             Show docker disk usage.
+  events                Get real time events from the server.
+  info                  Display the system-wide information.
+
+
+Management Commands:
+  container   Manage containers. Run \`help | --help\` to get usage options.
+  image       Manage image. Run \`help | --help\` to get usage options.
+  system      Manage Docker system. Additional options available.
+
 Commands:
   build       Build the Docker images from docker-compose.yml only (passing services
               to build specific ones or leave empty to build all).
-  up          Run the main containers in docker-compose.yml or provide a list of
-              arguments to run only those provided.
-  logs        Get the logs of the container.
-  ps          List the running containers.
-  stats       Display a live stream of container(s) resource usage statistics.
+  down        Stop all containers.
   flush       Flush both Redis datastore and MongoDB database only.
+  images      List images build.
+  logs        Get the logs of the container.
+  ls          List all containers, volumes, and images with formatting.
+  ps          List the running containers.
+  pull        Pull an image or a repository from a registry
+  push        Push an image or a repository to a registry
+  prune       Prune all stopped images, containers, networks, and volumes based
+              on the \`labels\` used for this project.
+  pwd         Get the full path directory of the Arclytics CLI script.
   seed        Seed the microservices with test data and flush both Redis
               datastore and MongoDB database.
-  test        Run unit tests on the microservices.
-  down        Stop all containers.
-  prune       Prune all stopped images, containers, and networks.
-  pwd         Get the full path directory of the Arclytics CLI script.
   scale       Set number of containers to run for a service. Numbers are specified
               in the form \`service=num\` as arguments.
+  stats       Display a live stream of container(s) resource usage statistics.
+  test        Run unit tests on the microservices.
+  up          Run the main containers in docker-compose.yml or provide a list of
+              arguments to run only those provided.
+  help        Get the Usage information for this script and exit.
 
 Service (only one for \`logs\`; * default for \`up\`):
   users *
@@ -314,6 +331,31 @@ ${reset}
 # ==================================================================== #
 # ==================== # Main Command Functions # ==================== #
 # ==================================================================== #
+
+dockerLsFormatted() {
+  headerMessage "ARCLYTICS SIM LS CONTAINERS, VOLUMES, AND IMAGES"
+  echoLine
+  generalMessage "Containers"
+  echoLine
+  docker container ls -a --format \
+      "table {{.ID}}\t{{.Image}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}" \
+      --filter "label=arclytics.io"
+  echoLine
+  generalMessage "Volumes"
+  echoLine
+  docker volume ls --format \
+      "table {{.Name}}\t{{.Labels}}\t{{.Driver}}\t{{.Mountpoint}}" \
+#      --filter "label=arclytics.io"
+  echoLine
+  generalMessage "Images"
+  echoLine
+  docker image ls --format \
+      "table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}" \
+      --filter "label=arclytics.io"
+  echoLine
+  completeMessage
+}
+
 dockerPs() {
     headerMessage "ARCLYTICS SIM RUNNING CONTAINERS"
     generalMessage "docker ps --size ${ARGS}"
@@ -339,8 +381,8 @@ dockerSystemPrune() {
     running_container_ids=$(docker ps -aq)
     generalMessage "docker stop ${running_container_ids}"
     docker stop ${running_container_ids}
-    generalMessage "docker system prune -af"
-    docker system prune -af
+    generalMessage "docker system prune -af --volumes --filter 'label=arclytics.io'"
+    docker system prune -af --volumes --filter 'label=arclytics.io'
     completeMessage
 }
 
@@ -608,6 +650,10 @@ while [[ "$1" != "" ]] ; do
             done
             dockerPs
             ;;
+        ls | list )
+            dockerLsFormatted
+            exit 0
+            ;;
         stats )
             ARGS=$2
             while [[ "$3" != "" ]] ; do
@@ -752,6 +798,57 @@ while [[ "$1" != "" ]] ; do
                 shift
             done
             runTests
+            ;;
+        images )
+            docker images --format \
+                "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.Size}}"
+            ;;
+        image )
+            ARGS=$2
+            while [[ "$3" != "" ]] ; do
+                ARGS="${ARGS} $3"
+                shift
+            done
+            docker image "${ARGS}"
+            ;;
+        pull )
+            ARGS=$2
+            while [[ "$3" != "" ]] ; do
+                ARGS="${ARGS} $3"
+                shift
+            done
+            docker pull "${ARGS}"
+            ;;
+        push )
+            ARGS=$2
+            while [[ "$3" != "" ]] ; do
+                ARGS="${ARGS} $3"
+                shift
+            done
+            docker push "${ARGS}"
+            ;;
+        container )
+            ARGS=$2
+            while [[ "$3" != "" ]] ; do
+                ARGS="${ARGS} $3"
+                shift
+            done
+            docker container "${ARGS}"
+            ;;
+        system )
+            while [[ "$2" != "" ]] ; do
+                case $2 in
+                    usage | df )
+                      docker system df
+                      exit 0
+                      ;;
+                    * )
+                      ARGS="${ARGS} $2"
+                      ;;
+                esac
+                shift
+            done
+            docker system "${ARGS}"
             ;;
         flush )
             flushDb

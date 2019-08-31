@@ -1752,6 +1752,73 @@ paths:
                   value:
                     status: "fail"
                     message: "User is already verified."
+  /confirm/<token>:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "Confirmation for URL link tokens sent for user registration verification."
+      tags:
+        - Auth
+      responses:
+        302:
+          description: "Redirect."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Successfull Redirect':
+                  value:
+                    redirect: 'http://{client_host}/signin'
+                'Token Expired':
+                  value:
+                    redirect: 'http://{client_host}/confirm/tokenexpired'
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+  /reset/password/confirm/<token>:
+    servers:
+      - url: http://localhost:8000
+    get:
+      summary: "Decode the token from the email to the confirm right person."
+      tags:
+        - Auth
+      responses:
+        302:
+          description: "Redirect."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Successfull Redirect':
+                  value:
+                    redirect: 'http://localhost:3000/password/reset={jwt_token}'
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'URL Token Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid token."
+                'Exception':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid token."
 
   /admin/create:
     servers:

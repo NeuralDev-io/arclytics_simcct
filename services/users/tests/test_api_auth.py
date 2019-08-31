@@ -243,7 +243,8 @@ class TestAuthEndpoints(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            redirect_url = f'http://{client_host}/confirm/tokenexpired'
+            redirect_url = \
+                f'http://{client_host}/signin/tokenexpired?=true'
             self.assertRedirects(resp, redirect_url)
 
     def test_registered_user_login(self):

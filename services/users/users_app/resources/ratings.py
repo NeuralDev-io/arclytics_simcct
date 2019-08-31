@@ -97,7 +97,7 @@ class UserFeedback(Resource):
         # Extract the request body data
         category = data.get('category', None)
         rating = data.get('rating', None)
-        comments = data.get('comments', None)
+        comment = data.get('comment', None)
 
         if not category:
             response['message'] = 'No category provided.'
@@ -105,21 +105,21 @@ class UserFeedback(Resource):
         if not rating:
             response['message'] = 'No rating provided.'
             return response, 400
-        if not comments:
-            response['message'] = 'No comments provided.'
+        if not comment:
+            response['message'] = 'No comment provided.'
             return response, 400
 
         try:
             Feedback(category=category, rating=rating,
-                     comments=comments).validate()
+                     comment=comment).validate()
         except ValidationError as e:
             response['error'] = str(e.message)
-            response['message'] = 'Rating validation error.'
+            response['message'] = 'Feedback validation error.'
             return response, 400
 
         user = User.objects.get(id=resp)
         feedback = Feedback(
-            user=user.id, category=category, rating=rating, comments=comments
+            user=user.id, category=category, rating=rating, comment=comment
         )
         feedback.save()
 
@@ -167,11 +167,15 @@ class FeedbackList(Resource):
             if not isinstance(limit, int):
                 response['message'] = 'Limit value is invalid.'
                 return response, 400
+            if not limit >= 1:
+                response['message'] = 'Limit must be > 1.'
+                return response, 400
         else:
             limit = 10
 
         # Validate offset
         feedback_size = Feedback.objects.count()
+
         if offset:
             if not isinstance(offset, int):
                 response['message'] = 'Offset value is invalid.'
@@ -179,32 +183,45 @@ class FeedbackList(Resource):
             if offset > feedback_size + 1:
                 response['message'] = 'Offset value exceeds number of records.'
                 return response, 400
+            if offset < 1:
+                response['message'] = 'Offset must be > 1.'
+                return response, 400
         else:
             offset = 1
 
-        # Start query
+        # Query
         if sort_on:
+            # Get the objects starting at the offset, limit the number of
+            # results and sort on the sort_on value.
             query_set = Feedback.objects[offset - 1:offset + limit -
                                          1].order_by(sort_on)
         else:
+            # Get the objects starting at the offset and limit the number of
+            # results.
             query_set = Feedback.objects[offset - 1:offset + limit - 1]
 
-        response['limit'] = limit
         response['sort_on'] = sort_on
+        # Next offset is the offset for the next page of results. Prev is for
+        # the previous.
         response['next_offset'] = None
+        response['prev_offset'] = None
+        response['limit'] = limit
+
         if offset + limit - 1 < feedback_size:
             response['next_offset'] = offset + limit
-        response['prev_offset'] = None
         if offset - limit >= 1:
             response['prev_offset'] = offset - limit
 
-        total_pages = int(feedback_size/limit) + 1
-        current_page = int(offset/limit) + 1
+        if feedback_size % limit == 0:
+            total_pages = int(feedback_size / limit)
+        else:
+            total_pages = int(feedback_size / limit) + 1
+        current_page = int(offset / limit) + 1
 
         response.pop('message')
         response['status'] = 'success'
-        response['total_pages'] = total_pages
         response['current_page'] = current_page
+        response['total_pages'] = total_pages
         response['data'] = [obj.to_dict() for obj in query_set]
         return response, 200
 

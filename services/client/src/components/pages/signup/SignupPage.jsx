@@ -12,16 +12,28 @@ import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { signup } from '../../../utils/AuthenticationHelper'
 import { signupValidation } from '../../../utils/ValidationHelper'
 
+import AlertCircleIcon from 'react-feather/dist/icons/alert-circle'
 import Button from '../../elements/button'
 import TextField from '../../elements/textfield'
+import Modal from '../../elements/modal'
+
 import styles from './SignupPage.module.scss'
 
 class SignupPage extends Component {
+  constructor(props){
+    super(props)
+    this.state = {
+      showCnfrmModal: false,
+    }
+  }
+
   componentDidMount = () => {
     if (localStorage.getItem('token')) this.props.history.push('/')
   }
 
   render() {
+    const { showCnfrmModal } = this.state
+    const { history } = this.props
     return (
       <div className={styles.outer}>
         <div className={styles.form}>
@@ -49,7 +61,9 @@ class SignupPage extends Component {
               })
               promise.then((data) => {
                 // If response is successful
-                this.props.history.push('/signin')
+                this.setState({
+                  showCnfrmModal: true,
+                })
                 setSubmitting(false)
               })
                 .catch((err) => {
@@ -92,11 +106,8 @@ class SignupPage extends Component {
                         value={values.firstName}
                         placeholder="First Name"
                         length="long"
+                        error={errors.firstName && touched.firstName && errors.firstName}
                       />
-                      <h6 className={styles.errors}>
-                        {errors.firstName && touched.firstName && errors.firstName}
-                      </h6>
-
                     </div>
                     <div className={styles.lastName}>
                       <TextField
@@ -107,10 +118,8 @@ class SignupPage extends Component {
                         value={values.lastName}
                         placeholder="Last Name"
                         length="long"
+                        error={errors.lastName && touched.lastName && errors.lastName}
                       />
-                      <h6 className={styles.errors}>
-                        {errors.lastName && touched.lastName && errors.lastName}
-                      </h6>
                     </div>
                   </div>
                   <div className={styles.emailPassword}>
@@ -122,10 +131,8 @@ class SignupPage extends Component {
                       value={values.email}
                       placeholder="Email"
                       length="stretch"
+                      error={errors.email && touched.email && errors.email}
                     />
-                    <h6 className={styles.errors}>
-                      {errors.email && touched.email && errors.email}
-                    </h6>
                   </div>
                   <div className={styles.emailPassword}>
                     <TextField
@@ -135,10 +142,8 @@ class SignupPage extends Component {
                       value={values.password}
                       placeholder="Password"
                       length="stretch"
+                      error={errors.password && touched.password && errors.password}
                     />
-                    <h6 className={styles.errors}>
-                      {errors.password && touched.password && errors.password}
-                    </h6>
                   </div>
 
                   <div className={styles.passwordConfirmed}>
@@ -149,14 +154,8 @@ class SignupPage extends Component {
                       value={values.passwordConfirmed}
                       onChange={e => setFieldValue('passwordConfirmed', e)}
                       placeholder="Confirm password"
+                      error={errors.passwordConfirmed && touched.passwordConfirmed && errors.passwordConfirmed}
                     />
-                    <h6 className={styles.errors}>
-                      {
-                        errors.passwordConfirmed
-                        && touched.passwordConfirmed
-                        && errors.passwordConfirmed
-                      }
-                    </h6>
                   </div>
 
                   <div className={styles.signUpButton}>
@@ -166,6 +165,31 @@ class SignupPage extends Component {
               </form>
             )}
           </Formik>
+          <Modal 
+            className={styles.cnfrmModal}
+            show={showCnfrmModal}>
+            <AlertCircleIcon className={styles.alertCircleIcon}/>
+            <h5> Your account has been successfully registered. Verify your account. </h5>
+            <span>  
+              So that you are able to use the full services of the Arclytics Sim application 
+              and to be able to personalise your account.
+            </span>
+            <span>
+              Please verify your account.
+            </span>
+            <div className={styles.buttons}>
+              <Button className={styles.resendEmail}>
+                I did not receive an email. Resend.
+              </Button>
+              <Button 
+              appearance="outline"
+              className={styles.goToSignIn}
+              onClick={() => history.push('/signin')}>
+                I have verified. Go to login  
+              </Button>
+            </div>
+           
+          </Modal>
           <div>
             <h6>
               Already have an account?

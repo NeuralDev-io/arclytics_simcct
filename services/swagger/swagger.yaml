@@ -3425,6 +3425,10 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
+                'No Session Key':
+                  value:
+                    status: "fail"
+                    message: "No Session key in header."
                 'Unable To Load Session':
                   value:
                     status: "fail"
@@ -3596,6 +3600,10 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid JWT token in header."
+                'No Session Key':
+                  value:
+                    status: "fail"
+                    message: "No Session key in header."
                 'Unable To Load Session':
                   value:
                     status: "fail"

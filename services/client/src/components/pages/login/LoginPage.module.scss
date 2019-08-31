@@ -25,6 +25,12 @@ $bg-img: url('../../../assets/login_register_bg.png');
   }
 }
 
+@media only screen and (max-height: 830px) {
+  .logoContainer{
+    margin-bottom: 2.8125rem
+  }
+}
+
 .help{
   float:right;
   cursor:pointer;
@@ -35,7 +41,6 @@ $bg-img: url('../../../assets/login_register_bg.png');
 
 .loginForm{
   position: fixed;
-  z-index: 1;
   margin-left: 11.25rem;
   width: 23.75rem;
   .createAccount{
@@ -76,11 +81,9 @@ $bg-img: url('../../../assets/login_register_bg.png');
   height: 35vh;
   pointer-events: none;
   opacity: 0;
-  position:fixed;
-  z-index: 2;
   display: flex;
   flex-flow: column;
-  justify-content: space-evenly;
+  justify-content: space-between;
   .forgotEmail{
     margin-top: 1rem;
     margin-bottom: 4rem;

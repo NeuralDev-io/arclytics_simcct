@@ -4014,7 +4014,7 @@ paths:
       summary: "Update the method used in the Session store of the current user."
       security:
         - bearerAuth: []
-      requestBody: "Update the method used in the Session store of the current user."
+      requestBody:
         required: true
         content:
           application/json:

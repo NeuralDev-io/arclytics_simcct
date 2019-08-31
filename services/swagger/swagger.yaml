@@ -1041,6 +1041,117 @@ paths:
                   value:
                     status: "fail"
                     message: "Does not exit."
+  /user/share/simulation/link:
+    servers:
+      - url: http://localhost:8000
+    post:
+      summary: "Generate link that can be used to share configurations."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                configuration:
+                  $ref: '#/components/schemas/Configurations'
+                alloy:
+                  $ref: '#/components/schemas/Alloy'
+      responses:
+        201:
+          description: "Link successfully generated."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                link: "https://sharelink.com"
+        400:
+          description: "Invalid payload in request body."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Bad Request Body':
+                  value:
+                    status: "fail"
+                    message: "Configurations or Alloy Store not sent."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Element Symbol Invalid."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Element Invalid."
+                'Missing Elements':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy is missing essential elements."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Validation error."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'No token provided':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Bad Request Body':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
 
   /auth/register:
     servers:

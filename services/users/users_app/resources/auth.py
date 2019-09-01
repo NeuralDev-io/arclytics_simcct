@@ -487,25 +487,26 @@ def login() -> any:
                 'GeoLite2-City.mmdb'
             )
             try:
-                # location_data = reader.city(str(request.remote_addr))
-                location_data = reader.city('203.10.91.88')
+                location_data = reader.city(str(request.remote_addr))
+                # location_data = reader.city('203.10.91.88')
                 country = location_data.country.names['en']
                 state = location_data.subdivisions[0].names['en']
                 ip_address = location_data.traits.ip_address
 
-                # TODO(davidmatthews1004@gmail.com) add this data to the user
-                #  document
                 response['country'] = country
                 response['state'] = state
-                response['ip_address'] = ip_address
                 user.login_data.append(
-                    LoginData(country=country, state=state, ip_address=ip_address)
+                    LoginData(
+                        country=country, state=state, ip_address=ip_address
+                    )
                 )
                 user.save()
             except AddressNotFoundError:
-                # TODO(davidmatthews1004@gmail.com) handle exception
-                pass
+                ip_address = request.remote_addr
+                user.login_data.append(LoginData(ip_address=ip_address))
+                user.save()
 
+            response['ip_address'] = ip_address
             reader.close()
 
             response['status'] = 'success'

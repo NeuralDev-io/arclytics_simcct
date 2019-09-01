@@ -286,11 +286,6 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertTrue(response_peter.content_type == 'application/json')
             self.assertEqual(response_peter.status_code, 200)
 
-            peter_obj = User.objects.get(email='spiderman@newavenger.io')
-            self.assertEqual(
-                peter_obj['login_data'][0]['country'], 'Australia'
-            )
-
             response_tony = self.client.post(
                 '/auth/login',
                 data=json.dumps(
@@ -1102,6 +1097,52 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(data['message'], 'Password incorrect.')
+
+    def test_geolocation_data_on_login(self):
+        jyn = User(
+            first_name='Jyn', last_name='Erso', email='jynerso@arclytics.io'
+        )
+        jyn.set_password('stardust')
+        jyn.save()
+
+        token = log_test_user_in(self, jyn, 'stardust')
+        with self.client:
+            session_key = register_session(jyn, str(token))
+
+            self.client.get(
+                '/auth/logout',
+                headers={
+                    'Authorization': 'Bearer {token}'.format(token=token),
+                    'Session': session_key
+                }
+            )
+
+        token_2 = log_test_user_in(self, jyn, 'stardust')
+        with self.client:
+            session_key_2 = register_session(jyn, str(token_2))
+
+            self.client.get(
+                '/auth/logout',
+                headers={
+                    'Authorization': 'Bearer {token}'.format(token=token_2),
+                    'Session': session_key_2
+                }
+            )
+
+        token_3 = log_test_user_in(self, jyn, 'stardust')
+        with self.client:
+            session_key_3 = register_session(jyn, str(token_3))
+
+            self.client.get(
+                '/auth/logout',
+                headers={
+                    'Authorization': 'Bearer {token}'.format(token=token_3),
+                    'Session': session_key_3
+                }
+            )
+
+            jyn_updated = User.objects.get(email=jyn.email)
+            self.assertEqual(jyn_updated.login_data.count(), 3)
 
 
 if __name__ == '__main__':

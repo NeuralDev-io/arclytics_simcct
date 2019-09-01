@@ -24,10 +24,10 @@ from pymongo import MongoClient
 from flask import current_app
 
 from tests.test_api_base import BaseTestCase
-from users_app.models import User
-from users_app.resources.auth import SimCCTBadServerLogout
-from users_app.resources.auth import register_session
-from users_app.token import generate_confirmation_token, generate_url
+from arc_app.models import User
+from arc_app.resources.auth import SimCCTBadServerLogout
+from arc_app.resources.auth import register_session
+from arc_app.token import generate_confirmation_token, generate_url
 from tests.test_api_users import log_test_user_in
 
 

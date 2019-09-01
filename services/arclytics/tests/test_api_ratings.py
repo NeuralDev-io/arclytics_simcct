@@ -28,7 +28,7 @@ import settings
 
 from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
-from users_app.models import User, Feedback, AdminProfile
+from arc_app.models import User, Feedback, AdminProfile
 from tests.test_api_users import log_test_user_in
 
 logger = AppLogger(__name__)

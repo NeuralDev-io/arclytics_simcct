@@ -26,8 +26,8 @@ import pymongo
 from mongoengine.connection import get_db, get_connection
 
 from tests.test_api_base import BaseTestCase, app
-from users_app.mongodb import MongoSingleton
-from users_app.app import get_flask_mongo, set_flask_mongo, init_db
+from arc_app.mongodb import MongoSingleton
+from arc_app.app import get_flask_mongo, set_flask_mongo, init_db
 
 
 class TestMongoSingleton(BaseTestCase):

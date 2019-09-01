@@ -30,8 +30,8 @@ from itsdangerous import URLSafeTimedSerializer
 
 from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
-from users_app.models import (User, AdminProfile)
-from users_app.token import (
+from arc_app.models import (User, AdminProfile)
+from arc_app.token import (
     generate_confirmation_token, generate_url,
     generate_promotion_confirmation_token
 )

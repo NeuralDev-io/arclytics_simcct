@@ -33,13 +33,13 @@ from geoip2.errors import AddressNotFoundError
 import geoip2.database
 
 from logger.arc_logger import AppLogger
-from users_app.extensions import bcrypt
-from users_app.middleware import (authenticate_flask, logout_authenticate)
-from users_app.models import User, LoginData
-from users_app.token import (
+from arc_app.extensions import bcrypt
+from arc_app.middleware import (authenticate_flask, logout_authenticate)
+from arc_app.models import User, LoginData
+from arc_app.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
-from users_app.utilities import URLTokenError, URLTokenExpired
+from arc_app.utilities import URLTokenError, URLTokenExpired
 
 logger = AppLogger(__name__)
 
@@ -302,7 +302,7 @@ def async_register_session(user: User = None,
     down. Although you may need to be careful about tracking down bugs.
 
     Args:
-        user: the `users_app.models.User` to create a session for.
+        user: the `arc_app.models.User` to create a session for.
         auth_token: a stringified type of the User's JWT token.
 
     Returns:
@@ -362,7 +362,7 @@ def register_session(user: User = None, auth_token: str = None):
     key from the `/session/login` endpoint on the `simcct` server.
 
     Args:
-        user: the `users_app.models.User` to create a session for.
+        user: the `arc_app.models.User` to create a session for.
         auth_token: a stringified type of the User's JWT token.
 
     Returns:
@@ -460,8 +460,6 @@ def login() -> any:
             # Let's save some stats for later
             user.last_login = datetime.utcnow()
 
-            # TODO(andrew@neuraldev.io): Save the users' login location
-
             user.save()
 
             # We will register the session for the user to the simcct server
@@ -483,7 +481,7 @@ def login() -> any:
 
             # Get location data
             reader = geoip2.database.Reader(
-                '/usr/src/app/users_app/resources/GeoLite2-City/'
+                '/usr/src/app/arc_app/resources/GeoLite2-City/'
                 'GeoLite2-City.mmdb'
             )
             try:

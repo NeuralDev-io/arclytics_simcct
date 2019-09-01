@@ -24,10 +24,10 @@ import unittest
 from flask import current_app as app
 from flask import json
 
-from users_app.extensions import bcrypt
-from users_app.models import User
+from arc_app.extensions import bcrypt
+from arc_app.models import User
 from tests.test_api_base import BaseTestCase
-from users_app.token import generate_url, generate_confirmation_token
+from arc_app.token import generate_url, generate_confirmation_token
 
 
 class TestForgotPassword(BaseTestCase):

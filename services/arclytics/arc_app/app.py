@@ -18,7 +18,7 @@ __status__ = 'development'
 __date__ = '2019.06.04'
 """app.py:
 
-This is the entrypoint to our Users Flask API server.
+This is the entrypoint to our Arclytics Flask API server.
 """
 
 import os
@@ -29,17 +29,17 @@ from mongoengine.connection import (
     disconnect_all, get_connection, get_db, MongoEngineConnectionError
 )
 
-from users_app.utilities import JSONEncoder
-from users_app.extensions import cors, bcrypt, api
-from users_app.mongodb import MongoSingleton
-from users_app.resources.users import users_blueprint
-from users_app.resources.auth import auth_blueprint
-from users_app.resources.admin_auth import admin_blueprint
-from users_app.resources.share import share_blueprint
-from users_app.resources.user_alloys import user_alloys_blueprint
-from users_app.resources.last_simulation import last_simulation_blueprint
-from users_app.resources.save_simulation import save_simulation_blueprint
-from users_app.resources.ratings import ratings_blueprint
+from arc_app.utilities import JSONEncoder
+from arc_app.extensions import cors, bcrypt, api
+from arc_app.mongodb import MongoSingleton
+from arc_app.resources.users import users_blueprint
+from arc_app.resources.auth import auth_blueprint
+from arc_app.resources.admin_auth import admin_blueprint
+from arc_app.resources.share import share_blueprint
+from arc_app.resources.user_alloys import user_alloys_blueprint
+from arc_app.resources.last_simulation import last_simulation_blueprint
+from arc_app.resources.save_simulation import save_simulation_blueprint
+from arc_app.resources.ratings import ratings_blueprint
 
 # Instantiate the Mongo object to store a connection
 app_settings = os.getenv('APP_SETTINGS')

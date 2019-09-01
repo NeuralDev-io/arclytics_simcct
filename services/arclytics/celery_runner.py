@@ -21,13 +21,13 @@ __date__ = '2019.07.25'
 
 This module defines a factory pattern of creating a Celery instance which
 can be used to make a worker by running 
-`docker-compose exec -T users celery worker -l info -A celery_runner` 
+`docker-compose exec -T arclytics celery worker -l info -A celery_runner` 
 """
 
 from celery import Celery
 from flask import Flask
 
-from users_app.app import create_app
+from arc_app.app import create_app
 
 
 def make_celery(app: Flask = None) -> Celery:

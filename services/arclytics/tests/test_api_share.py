@@ -29,8 +29,8 @@ from copy import deepcopy
 
 from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
-from users_app.models import User, SharedSimulation
-from users_app.token import (generate_shared_simulation_token, generate_url)
+from arc_app.models import User, SharedSimulation
+from arc_app.token import (generate_shared_simulation_token, generate_url)
 from tests.test_api_users import log_test_user_in
 
 logger = AppLogger(__name__)

@@ -27,9 +27,9 @@ from mongoengine import Document, EmailField, BooleanField
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from tests.test_api_base import BaseTestCase
-from users_app.models import (User, Configuration, Element, Alloy)
-from users_app.utilities import PeriodicTable as pT
-from users_app.utilities import PasswordValidationError
+from arc_app.models import (User, Configuration, Element, Alloy)
+from arc_app.utilities import PeriodicTable as pT
+from arc_app.utilities import PasswordValidationError
 
 _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 

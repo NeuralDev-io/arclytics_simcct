@@ -30,10 +30,10 @@ from mongoengine.errors import (
     FieldDoesNotExist, DoesNotExist, MultipleObjectsReturned
 )
 
-from users_app.extensions import api
-from users_app.middleware import authenticate
-from users_app.models import Alloy, User
-from users_app.utilities import (
+from arc_app.extensions import api
+from arc_app.middleware import authenticate
+from arc_app.models import Alloy, User
+from arc_app.utilities import (
     ElementSymbolInvalid, ElementInvalid, MissingElementError,
     DuplicateElementError
 )

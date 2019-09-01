@@ -26,8 +26,8 @@ from flask import url_for
 from flask import current_app as app
 from itsdangerous import URLSafeTimedSerializer, JSONWebSignatureSerializer
 from itsdangerous.exc import BadSignature, SignatureExpired
-from users_app.models import SharedSimulation
-from users_app.utilities import URLTokenError, URLTokenExpired
+from arc_app.models import SharedSimulation
+from arc_app.utilities import URLTokenError, URLTokenExpired
 
 
 def generate_confirmation_token(email: str):

@@ -21,7 +21,7 @@ import time
 import unittest
 
 from tests.test_api_base import BaseTestCase
-from users_app.token import (
+from arc_app.token import (
     confirm_token, generate_confirmation_token, generate_url, URLTokenError,
     URLTokenExpired
 )

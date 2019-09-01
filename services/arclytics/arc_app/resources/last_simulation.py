@@ -25,10 +25,10 @@ from flask import request, Blueprint, json
 from flask_restful import Resource
 from mongoengine import ValidationError, FieldDoesNotExist
 
-from users_app.extensions import api
-from users_app.middleware import authenticate
-from users_app.models import Configuration, AlloyStore, User
-from users_app.utilities import (
+from arc_app.extensions import api
+from arc_app.middleware import authenticate
+from arc_app.models import Configuration, AlloyStore, User
+from arc_app.utilities import (
     ElementInvalid, ElementSymbolInvalid, MissingElementError,
     DuplicateElementError
 )
@@ -43,12 +43,12 @@ class LastSimulation(Resource):
     # noinspection PyMethodMayBeStatic
     def post(self, user_id):
         """Exposes the POST method to save the last configurations and alloy
-        storage to the `users_app.models.User` document in the fields
+        storage to the `arc_app.models.User` document in the fields
         `last_configurations` and `last_alloy_store`.
 
         Args:
             user_id: a valid user_id verified and passed by the
-                     `users_app.middleware.authenticate` method.
+                     `arc_app.middleware.authenticate` method.
 
         Returns:
             A HTTP Flask Restful Response.
@@ -132,11 +132,11 @@ class LastSimulation(Resource):
     # noinspection PyMethodMayBeStatic
     def get(self, user_id):
         """Exposes the GET method to get the last configurations and alloy
-        storage from the `users_app.models.User` document.
+        storage from the `arc_app.models.User` document.
 
         Args:
             user_id: a valid user_id verified and passed by the
-                     `users_app.middleware.authenticate` method.
+                     `arc_app.middleware.authenticate` method.
 
         Returns:
             A HTTP Flask Restful Response.

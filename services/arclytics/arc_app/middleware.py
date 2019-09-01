@@ -20,12 +20,20 @@ __date__ = '2019.07.06'
 """
 
 from functools import wraps
-
+from threading import Thread
 from bson import ObjectId
 from flask import request, jsonify
 from mongoengine import DoesNotExist
 
 from arc_app.models import User
+
+
+def async_func(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        thr = Thread(target=f, args=args, kwargs=kwargs)
+        thr.start()
+    return wrapper
 
 
 def authenticate(f):

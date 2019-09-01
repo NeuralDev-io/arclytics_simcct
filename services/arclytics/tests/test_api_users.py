@@ -62,9 +62,11 @@ class TestUserService(BaseTestCase):
     def test_single_user(self):
         """Ensure we can get a single user works as expected."""
         tony = User(
-            email='tony@starkindustries.com',
-            first_name='Tony',
-            last_name='Stark'
+            **{
+                'email': 'tony@starkindustries.com',
+                'first_name': 'Tony',
+                'last_name': 'Stark'
+            }
         )
         tony.set_password('IAmTheRealIronMan')
         tony.save()
@@ -87,9 +89,11 @@ class TestUserService(BaseTestCase):
         like get: /users/<id>
         """
         tony = User(
-            email='tony@starkindustries.com',
-            first_name='Tony',
-            last_name='Stark'
+            **{
+                'email': 'tony@starkindustries.com',
+                'first_name': 'Tony',
+                'last_name': 'Stark'
+            }
         )
         tony.set_password('IAmTheRealIronMan')
         tony.save()
@@ -136,9 +140,11 @@ class TestUserService(BaseTestCase):
 
     def test_single_user_expired_token(self):
         tony = User(
-            email='tony@starkindustries.com',
-            first_name='Tony',
-            last_name='Stark'
+            **{
+                'email': 'tony@starkindustries.com',
+                'first_name': 'Tony',
+                'last_name': 'Stark'
+            }
         )
         tony.set_password('IAmTheRealIronMan')
         tony.save()
@@ -183,9 +189,11 @@ class TestUserService(BaseTestCase):
     def test_unauthorized_get_all_users(self):
         """Ensure we can't get all users because we are not authorized."""
         tony = User(
-            email='tony@starkindustries.com',
-            first_name='Tony',
-            last_name='Stark'
+            **{
+                'email': 'tony@starkindustries.com',
+                'first_name': 'Tony',
+                'last_name': 'Stark'
+            }
         )
         tony.set_password('IAmTheRealIronMan')
         tony.save()
@@ -254,9 +262,11 @@ class TestUserService(BaseTestCase):
     def test_get_all_users(self):
         """Ensure we can get all users if logged in and authorized."""
         tony = User(
-            email='tony@starkindustries.com',
-            first_name='Tony',
-            last_name='Stark'
+            **{
+                'email': 'tony@starkindustries.com',
+                'first_name': 'Tony',
+                'last_name': 'Stark'
+            }
         )
         tony.set_password('IAmTheRealIronMan')
         # tony.is_admin = True

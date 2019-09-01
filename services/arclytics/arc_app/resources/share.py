@@ -46,7 +46,6 @@ from arc_app.utilities import (
     ElementSymbolInvalid, ElementInvalid, MissingElementError,
     DuplicateElementError
 )
-from arc_app.email import send_email
 
 logger = AppLogger(__name__)
 
@@ -245,28 +244,31 @@ class ShareSimulationEmail(Resource):
             'share.request_shared_simulation', simulation_token
         )
 
+        html_template = render_template(
+            'share_configuration.html',
+            email=valid_email_list,
+            owner_name=f'{owner.first_name} {owner.last_name}',
+            optional_message=optional_msg,
+            config_url=simulation_url
+        ),
+        text_template = render_template(
+            'share_configuration.txt',
+            email=valid_email_list,
+            owner_name=f'{owner.first_name} {owner.last_name}',
+            optional_message=optional_msg,
+            config_url=simulation_url
+        ),
+
         # Send email/emails to the email address/addresses provided in the
         # request with the link to the shared simulation.
-
+        from tasks import send_email
         send_email(
             to=valid_email_list,
             subject_suffix=(
                 f'{owner.first_name} {owner.last_name} has shared a '
                 f'configuration with you!'),
-            html_template=render_template(
-                'share_configuration.html',
-                email=valid_email_list,
-                owner_name=f'{owner.first_name} {owner.last_name}',
-                optional_message=optional_msg,
-                config_url=simulation_url
-            ),
-            text_template=render_template(
-                'share_configuration.txt',
-                email=valid_email_list,
-                owner_name=f'{owner.first_name} {owner.last_name}',
-                optional_message=optional_msg,
-                config_url=simulation_url
-            ),
+            html_template=html_template,
+            text_template=text_template
         )
 
         response['status'] = 'success'

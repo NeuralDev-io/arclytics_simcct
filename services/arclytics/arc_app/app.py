@@ -29,8 +29,8 @@ from mongoengine.connection import (
     disconnect_all, get_connection, get_db, MongoEngineConnectionError
 )
 
-from arc_app.utilities import JSONEncoder
 from arc_app.extensions import cors, bcrypt, api, mail
+from arc_app.utilities import JSONEncoder
 from arc_app.mongodb import MongoSingleton
 from arc_app.resources.users import users_blueprint
 from arc_app.resources.auth import auth_blueprint

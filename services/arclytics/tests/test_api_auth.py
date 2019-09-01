@@ -70,7 +70,7 @@ class TestAuthEndpoints(BaseTestCase):
             '/auth/register',
             data=json.dumps(
                 {
-                    'email': 'dummy@arclytics.neuraldev.io',
+                    'email': 'andrew@neuraldev.io',
                     'first_name': 'Natasha',
                     'last_name': 'Romanoff',
                     'password': 'RedInMyLedger'

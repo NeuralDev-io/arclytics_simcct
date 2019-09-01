@@ -56,15 +56,13 @@ class TestSimulationService(BaseTestCase):
         data = resp.json()
         cls.token = data.get('token')
 
-        user_resp = requests.get(
-            f'{cls.base_url}/auth/status',
-            headers={
-                'Content-type': 'application/json',
-                'Authorization': f'Bearer {cls.token}'
-            }
+        mongo = MongoClient(
+            host=os.environ.get('MONGO_HOST'),
+            port=int(os.environ.get('MONGO_PORT'))
         )
-        data = user_resp.json()
-        cls._id = data.get('data')['_id']
+        user = mongo.arc_dev.users.find_one({'email': 'jane@culver.edu.us'})
+
+        cls._id = str(user['_id'])
 
     @classmethod
     def tearDownClass(cls) -> None:

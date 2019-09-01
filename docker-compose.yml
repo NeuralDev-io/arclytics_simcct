@@ -11,14 +11,12 @@ services:
         arclytics.io: "development"
     image: neuraldev/arc_sim_flask_service:1.0
     volumes:  # used to mount the code into the container for live updates
-#      - arclytics_dir:/usr/src/app
-      - ./services/arclytics:/usr/src/app
+#      - arclytics_dir:/usr/src/app  # This would be using a bind named volume mount
+      - ./services/arclytics:/usr/src/app  # This is a bind mount
     ports:
       - 8000:8000
     expose:
       - 8000
-    env_file:
-      - ./.env
     environment:
       - FLASK_APP=arc_app/app.py
       - FLASK_ENV=development
@@ -28,13 +26,18 @@ services:
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - MONGO_URI=mongodb://mongodb:27017
-      - MONGO_APP_DB=${MONGO_APP_DB}
+      - MONGO_APP_DB=arc_dev
       - MONGO_APP_USER=${MONGO_APP_USER}
       - MONGO_USER_PASSWORD=${MONGO_USER_PASSWORD}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_USER=${REDIS_USER}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MAIL_SERVER=${MAIL_SERVER}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USE_TLS=${MAIL_USE_TLS}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
       - SIMCCT_HOST=simcct:8001
       - CLIENT_HOST=client:3000
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
@@ -57,8 +60,6 @@ services:
       - 8001:8001
     expose:
       - 8001
-    env_file:
-      - ./.env
     environment:
       - FLASK_APP=sim_app/app.py
       - FLASK_ENV=development

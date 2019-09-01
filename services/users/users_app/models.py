@@ -385,6 +385,32 @@ class AlloyStore(EmbeddedDocument):
             'alloys': self.alloys.to_dict()
         }
 
+    def __str__(self):
+        return self.to_json()
+
+
+class Rating(EmbeddedDocument):
+    rating = IntField(min_value=1, max_value=5, required=True)
+    created_date = DateTimeField(default=datetime.utcnow(), required=True)
+
+    def to_dict(self):
+        return {'rating': self.rating, 'created_date': str(self.created_date)}
+
+
+class LoginData(EmbeddedDocument):
+    time = DateTimeField(default=datetime.utcnow(), required=True)
+    country = StringField()
+    state = StringField()
+    ip_address = StringField()
+
+    def to_dict(self):
+        return {
+            'time': str(self.time),
+            'country': self.country,
+            'state': self.state,
+            'ip_address': self.ip_address
+        }
+
 
 # ========== # DOCUMENTS MODELS SCHEMA # ========== #
 class User(Document):
@@ -423,6 +449,9 @@ class User(Document):
     created = DateTimeField(default=datetime.utcnow(), null=False)
     last_updated = DateTimeField(default=None, null=False)
     last_login = DateTimeField()
+
+    ratings = EmbeddedDocumentListField(document_type=Rating)
+    login_data = EmbeddedDocumentListField(document_type=LoginData)
 
     # Define the collection and indexing for this document
     meta = {
@@ -602,6 +631,12 @@ class User(Document):
             not self.disable_admin and self.admin_profile is not None
         )
 
+        if not self.ratings:
+            self.ratings = []
+
+        if not self.login_data:
+            self.login_data = []
+
     @queryset_manager
     def as_dict(cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
@@ -669,4 +704,23 @@ class SharedSimulation(Document):
             'created_date': str(self.created_date),
             'configurations': self.configuration.to_dict(),
             'alloy_store': self.alloy_store.to_dict()
+        }
+
+
+class Feedback(Document):
+    user = ReferenceField(User, reverse_delete_rule=DO_NOTHING)
+    category = StringField(required=True)
+    rating = IntField(min_value=1, max_value=5, required=True)
+    comment = StringField(required=True)
+    created_date = DateTimeField(default=datetime.utcnow(), required=True)
+
+    meta = {'collection': 'feedback'}
+
+    def to_dict(self):
+        return {
+            'user_email': self.user.email,
+            'category': self.category,
+            'rating': self.rating,
+            'comment': self.comment,
+            'created_date': str(self.created_date)
         }

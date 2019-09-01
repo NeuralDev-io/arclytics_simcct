@@ -370,7 +370,6 @@ Optional Containers:
 
 Service (only one for logs):
   users
-  celery-worker
   simcct
   dask-scheduler
   dask-worker

@@ -60,12 +60,6 @@ app = create_app()
 cli = FlaskGroup(create_app=create_app)
 
 
-# TODO(andrew@neuraldev.io -- Sprint 6): Command to recreate database
-@cli.command('recreate_db')
-def recreate_db():
-    pass
-
-
 @cli.command()
 def test():
     """Runs the tests without code coverage."""

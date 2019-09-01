@@ -86,7 +86,7 @@ def confirm_email(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        response['error'] = e
+        response['error'] = str(e)
         return jsonify(response), 400
     except URLTokenExpired as e:
         return redirect(
@@ -265,23 +265,6 @@ def register_user() -> Tuple[dict, int]:
         # Generic response regardless of email task working
         response['status'] = 'success'
         response['token'] = auth_token.decode()
-
-        # if isinstance(res.result, gaierror):
-        #     response['error'] = 'Socket error.'
-        #     response['message'] = (
-        #         'User registered but registration '
-        #         'email failed.'
-        #     )
-        #     return jsonify(response), 201
-        #
-        # if not res.result[0]:
-        #     response['error'] = res.result[1]
-        #     response['message'] = (
-        #         'User registered but registration '
-        #         'email failed.'
-        #     )
-        #     return jsonify(response), 201
-
         response['message'] = 'User has been registered.'
         return jsonify(response), 201
 
@@ -293,67 +276,6 @@ def register_user() -> Tuple[dict, int]:
         # logger.error('Not Unique Error: {}'.format(e))
         response['message'] = 'The users details already exists.'
         return jsonify(response), 400
-
-
-def async_register_session(user: User = None,
-                           auth_token: str = None) -> Optional[dict]:
-    """We make an async method to allow registering the user to a session
-    during login. Doing this in a separate thread doesn't slow the process
-    down. Although you may need to be careful about tracking down bugs.
-
-    Args:
-        user: the `arc_app.models.User` to create a session for.
-        auth_token: a stringified type of the User's JWT token.
-
-    Returns:
-        The response from the simcct server.
-    """
-
-    # We now need to send a request to the simcct server to initiate
-    # a session as a server-side store to save the last compositions/configs
-    simcct_host = os.environ.get('SIMCCT_HOST', None)
-    # Using the `json` param tells requests to serialize the dict to
-    # JSON and write the correct MIME type ('application/json') in
-    # header.
-
-    last_configs = None
-    last_alloy = None
-    user_id = ''  # Just for printing SessionValidationError
-
-    if isinstance(user, User):
-        user_id = user.id
-
-        # We get the configurations if None, otherwise simcct server is
-        # expecting an empty dict.
-
-        if user.last_configuration is not None:
-            last_configs = user.last_configuration.to_dict()
-
-        if user.last_alloy_store is not None:
-            last_alloy = user.last_alloy_store.to_dict()
-
-        resp = requests.post(
-            url=f'http://{simcct_host}/session/login',
-            json={
-                '_id': str(user_id),
-                'is_admin': user.is_admin,
-                'last_configurations': last_configs,
-                'last_alloy_store': last_alloy
-            },
-            headers={
-                'Authorization': f'Bearer {auth_token}',
-                'Content-type': 'application/json'
-            }
-        )
-        # Because this method is in an async state, we want to know if our
-        # request to the other side has failed by raising an exception.
-        if resp.json().get('status') == 'fail':
-            _id = None if user_id == '' else user.id
-            raise SessionValidationError(
-                f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
-            )
-        # q.put(resp)
-        return resp.json()
 
 
 def register_session(user: User = None, auth_token: str = None):
@@ -462,16 +384,6 @@ def login() -> any:
 
             user.save()
 
-            # We will register the session for the user to the simcct server
-            # in the background so as not to slow the login process down.
-            # thr = Thread(
-            #     target=async_register_session,
-            #     args=[user, str(auth_token.decode())]
-            # )
-            # thr.start()
-            # Leave this here -- create a queue for responses
-            # thr.join()
-            # print(q.get().json())
             try:
                 session_key = register_session(user, auth_token.decode())
             except SessionValidationError as e:
@@ -500,6 +412,7 @@ def login() -> any:
                 )
                 user.save()
             except AddressNotFoundError:
+                user.reload()
                 ip_address = request.remote_addr
                 user.login_data.append(LoginData(ip_address=ip_address))
                 user.save()

@@ -58,7 +58,7 @@ def confirm_token(token: bytes, expiration: int = 3600) -> Union[bool, str]:
     except BadSignature as e:
         raise URLTokenError('Bad signature.')
     except Exception as e:
-        raise URLTokenError('Token error.')
+        raise URLTokenError(str(e))
     return email
 
 

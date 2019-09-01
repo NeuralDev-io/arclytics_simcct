@@ -11,7 +11,7 @@ RUN conda install --yes --freeze-installed -q \
     python==3.7.3 \
     python-blosc \
     cytoolz \
-    pip \
+    conda-forge::pip \
     nomkl \
     dask==2.3.0 \
     numpy==1.16.4 \
@@ -48,7 +48,7 @@ RUN pip install --quiet --no-cache-dir -r requirements.txt
 
 # add docker-entrypoint.sh
 COPY ./entrypoint.sh /usr/src/app/entrypoint.sh
-RUN chmod +x /usr/src/app/docker-entrypoint.sh
+RUN chmod +x /usr/src/app/entrypoint.sh
 RUN ln -s /usr/src/app/entrypoint.sh /entrypoint.sh
 
 # add app

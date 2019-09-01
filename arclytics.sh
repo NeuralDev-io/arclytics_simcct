@@ -13,7 +13,7 @@ WORKDIR=$(dirname "$(readlink -f "$0")")
 DOCKER_COMPOSE_PATH="${WORKDIR}/docker-compose.yml"
 ARGS=""
 CONTAINER_GROUP=""
-CONTAINER_ARGS="users simcct client redis mongodb celery-worker"
+CONTAINER_ARGS="arclytics simcct client redis mongodb"
 CONTAINER_LOG=""
 BUILD_CONTAINER_ARGS=""
 BUILD_FLAG=0
@@ -74,17 +74,17 @@ function echoLine() {
 # =============================================================== #
 # ==================== # Utility Functions # ==================== #
 # =============================================================== #
-# Run only the users tests
-users() {
+# Run only the arclytics tests
+arcTest() {
     headerMessage "RUNNING USERS SERVER TESTS"
     generalMessage "Beginning ${TEST_TITLE} for Users Server"
     echoSpace
     if [[ ${tty} == 1 ]]; then
-        generalMessage "docker-compose exec -T users python manage.py ${TEST_TYPE}"
-        docker-compose -f "${DOCKER_COMPOSE_PATH}" exec -T users python manage.py "${TEST_TYPE}"
+        generalMessage "docker-compose exec -T arclytics python manage.py ${TEST_TYPE}"
+        docker-compose -f "${DOCKER_COMPOSE_PATH}" exec -T arclytics python manage.py "${TEST_TYPE}"
     else
-        generalMessage "docker-compose exec users python manage.py ${TEST_TYPE}"
-        docker-compose -f "${DOCKER_COMPOSE_PATH}" exec users python manage.py "${TEST_TYPE}"
+        generalMessage "docker-compose exec arclytics python manage.py ${TEST_TYPE}"
+        docker-compose -f "${DOCKER_COMPOSE_PATH}" exec arclytics python manage.py "${TEST_TYPE}"
     fi
     generalMessage "Finishing ${TEST_TITLE} for Users Server"
 }
@@ -94,7 +94,7 @@ simcct() {
     headerMessage "RUNNING SIMCCT SERVER TESTS"
     generalMessage "Beginning ${TEST_TITLE} for SimCCT Server"
     echoSpace
-    docker-compose exec users python manage.py flush
+    docker-compose exec arclytics python manage.py flush
     if [[ ${tty} == 1 ]]; then
         generalMessage "docker-compose exec -T simcct python manage.py ${TEST_TYPE}"
         docker-compose -f "${DOCKER_COMPOSE_PATH}" exec -T simcct python manage.py "${TEST_TYPE}"
@@ -107,7 +107,7 @@ simcct() {
 
 # Run server-side tests
 server() {
-    users
+    arcTest
     simcct
 }
 
@@ -117,7 +117,7 @@ client() {
 
 # run all tests
 all() {
-    users
+    arcTest
     simcct
     # client
     # e2e
@@ -141,19 +141,18 @@ Options:
 
 Service Group:
   all               Run all available services which includes the following:
-                    users, simcct, celery-worker, redis, mongodb, dask-scheduler,
+                    arclytics, simcct, redis, mongodb, dask-scheduler,
                     dask-worker, jupyter, swagger, fluentd, elasticsearch,
                     kibana, client.
   e2e               Run the services to with the front-end client and back-end
                     microservices to test an end-to-end example of any feature.
-                    This includes: client, users, simcct, celery-worker, mongodb,
-                    redis.
+                    This includes: client, arclytics, simcct, mongodb, redis.
   server            Run all services related to the back-end microservices and
-                    database which includes the following: users, simcct,
-                    celery-worker, mongodb, redis.
+                    database which includes the following: arclytics, simcct,
+                    mongodb, redis.
   server-dask       Run all services related to the back-end and include the
-                    \`dask\` containers. This includes: users, simcct,
-                    celery-worker, mongodb, redis, dask-scheduler, dask-worker.
+                    \`dask\` containers. This includes: arclytics, simcct,
+                    mongodb, redis, dask-scheduler, dask-worker.
   client            Run only the client microservice.
   dask              Run only the services to test the \`dask\` containers which
                     includes: dask-scheduler, dask-worker, jupyter.
@@ -165,7 +164,7 @@ Service Group:
                     This includes: fluent-python, fluent-react, fluentd, kibana,
                     elasticsearch.
   swagger-test      Run the microservices to test the back-end API from swagger.
-                    This includes: swagger, users, simcct, celery-worker, redis,
+                    This includes: swagger, arclytics, simcct, redis,
                     mongodb.
 ${reset}
 """
@@ -195,8 +194,7 @@ Optional Containers:
   -J, --jupyter         Run the Jupyter container with the cluster.
 
 Service (only one for \`logs\`; * default for \`up\`):
-  users *
-  celery-worker *
+  arclytics *
   simcct *
   dask-scheduler *
   dask-worker *
@@ -228,7 +226,7 @@ Test Types (one only):
   all         Run all unit tests for Arclytics Sim
   server      Run the server-side unit tests.
   client      Run the client-side unit tests.
-  users       Run only the users tests.
+  arclytics   Run only the arclytics tests.
   simcct      Run only the simcct tests.
 ${reset}
 """
@@ -308,8 +306,7 @@ Commands:
   help        Get the Usage information for this script and exit.
 
 Service (only one for \`logs\`; * default for \`up\`):
-  users *
-  celery-worker *
+  arclytics *
   simcct *
   dask-scheduler *
   dask-worker *
@@ -322,7 +319,7 @@ Test Types (one only):
   all         Run all unit tests for Arclytics Sim
   server      Run the server-side unit tests.
   client      Run the client-side unit tests.
-  users       Run only the users tests.
+  arclytics   Run only the arclytics tests.
   simcct      Run only the simcct tests.
 ${reset}
 """
@@ -419,9 +416,9 @@ scaleContainers() {
 
 flushDb() {
     headerMessage "FLUSH BACK-END MICROSERVICES"
-    generalMessage "Flushing users microservice database (MongoDB)"
-    generalMessage "docker-compose exec users python manage.py flush"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec users python manage.py flush
+    generalMessage "Flushing arclytics microservice database (MongoDB)"
+    generalMessage "docker-compose exec arclytics python manage.py flush"
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec arclytics python manage.py flush
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
     generalMessage "docker-compose exec simcct python manage.py flush"
     docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
@@ -430,16 +427,16 @@ flushDb() {
 # Flush and seed database
 flushAndSeedDb() {
     headerMessage "SEED AND FLUSH BACK-END MICROSERVICES"
-    generalMessage "Flushing users microservice database (MongoDB)"
-    generalMessage "docker-compose exec users python manage.py flush"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec users python manage.py flush
+    generalMessage "Flushing arclytics microservice database (MongoDB)"
+    generalMessage "docker-compose exec arclytics python manage.py flush"
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec arclytics python manage.py flush
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
     generalMessage "docker-compose exec simcct python manage.py flush"
     docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
     echoSpace
-    generalMessage "Seeding users microservice database with users"
-    generalMessage "docker-compose exec users python manage.py seed_db"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec users python manage.py seed_db
+    generalMessage "Seeding arclytics microservice database with arclytics"
+    generalMessage "docker-compose exec arclytics python manage.py seed_db"
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec arclytics python manage.py seed_db
     echoSpace
     generalMessage "Seeding simcct microservice database with global alloys"
     generalMessage "docker-compose exec simcct python manage.py seed_db"
@@ -465,15 +462,15 @@ runTests() {
         else
             server
         fi
-    elif [[ "${TEST_SERVER_ARGS}" == "users" ]]; then
+    elif [[ "${TEST_SERVER_ARGS}" == "arclytics" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
             docker-compose -f "${DOCKER_COMPOSE_PATH}" up -d --build "${CONTAINER_ARGS}"
-            users
+            arcTest
             generalMessage "docker-compose down"
             docker-compose -f "${DOCKER_COMPOSE_PATH}" down
         else
-            users
+            arcTest
         fi
     elif [[ "${TEST_SERVER_ARGS}" == "simcct" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
@@ -531,9 +528,9 @@ changeContainerGroup() {
         SWAGGER_FLAG=0
         JUPYTER_FLAG=0
     elif [[ "${CONTAINER_GROUP}" == "server" ]]; then
-        CONTAINER_ARGS="users simcct celery-worker redis mongodb"
+        CONTAINER_ARGS="arclytics simcct redis mongodb"
     elif [[ "${CONTAINER_GROUP}" == "server-dask" ]]; then
-        CONTAINER_ARGS="users simcct celery-worker redis mongodb dask-scheduler dask-worker"
+        CONTAINER_ARGS="arclytics simcct redis mongodb dask-scheduler dask-worker"
     elif [[ "${CONTAINER_GROUP}" == "client" ]]; then
         CONTAINER_ARGS="client"
     elif [[ "${CONTAINER_GROUP}" == "fluentd" ]]; then
@@ -541,11 +538,11 @@ changeContainerGroup() {
     elif [[ "${CONTAINER_GROUP}" == "fluentd-test" ]]; then
         CONTAINER_ARGS="fluentd fluent-python fluent-react elasticsearch kibana"
     elif [[ "${CONTAINER_GROUP}" == "swagger-test" ]]; then
-        CONTAINER_ARGS="users simcct celery-worker redis mongodb swagger"
+        CONTAINER_ARGS="arclytics simcct redis mongodb swagger"
     elif [[ "${CONTAINER_GROUP}" == "dask" ]]; then
         CONTAINER_ARGS="dask-scheduler dask-worker jupyter"
     elif [[ "${CONTAINER_GROUP}" == "e2e" ]]; then
-            CONTAINER_ARGS="client users simcct celery-worker redis mongodb"
+            CONTAINER_ARGS="client arclytics simcct redis mongodb"
     fi
 }
 

@@ -20,7 +20,7 @@ pipelines:
             - pip3 install --quiet --cache-dir ~/.pip3/cache --upgrade pip
             - pip3 install --quiet --cache-dir ~/.pip3/cache docker-compose==1.24.1
             - docker-compose -v
-            - docker-compose up -d --build arclytics redis mongodb client
+            - docker-compose -p arc up -d --build arclytics redis mongodb client
             # This should start the test runner for the API server
 #            - ./run_tests.sh -c -t server
 #            - docker-compose exec -T arclytics python manage.py test

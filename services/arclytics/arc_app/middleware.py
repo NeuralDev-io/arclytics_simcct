@@ -25,7 +25,7 @@ from bson import ObjectId
 from flask import request, jsonify
 from mongoengine import DoesNotExist
 
-from users_app.models import User
+from arc_app.models import User
 
 
 def authenticate(f):

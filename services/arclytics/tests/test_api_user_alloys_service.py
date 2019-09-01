@@ -25,7 +25,7 @@ from flask import json
 
 from tests.test_api_base import BaseTestCase
 from settings import BASE_DIR
-from users_app.models import User
+from arc_app.models import User
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'seed_alloy_data.json'
 

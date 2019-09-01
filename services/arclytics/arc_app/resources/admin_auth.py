@@ -30,14 +30,14 @@ from flask import current_app as app
 from flask_restful import Resource
 
 from logger.arc_logger import AppLogger
-from users_app.models import (User, AdminProfile)
-from users_app.middleware import authenticate_admin
-from users_app.extensions import api
-from users_app.token import (
+from arc_app.models import (User, AdminProfile)
+from arc_app.middleware import authenticate_admin
+from arc_app.extensions import api
+from arc_app.token import (
     generate_confirmation_token, generate_url, confirm_token, URLTokenError,
     generate_promotion_confirmation_token
 )
-from users_app.utilities import URLTokenExpired
+from arc_app.utilities import URLTokenExpired
 
 logger = AppLogger(__name__)
 

@@ -30,9 +30,9 @@ from flask import current_app as app
 from flask_restful import Resource
 from mongoengine import ValidationError
 
-from users_app.middleware import authenticate, authenticate_admin
-from users_app.extensions import api
-from users_app.models import Rating, Feedback, User
+from arc_app.middleware import authenticate, authenticate_admin
+from arc_app.extensions import api
+from arc_app.models import Rating, Feedback, User
 
 logger = AppLogger(__name__)
 

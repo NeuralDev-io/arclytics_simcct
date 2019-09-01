@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# users.py
+# share.py
 #
 # Attributions:
 # [1]
@@ -33,16 +33,16 @@ from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
 from logger.arc_logger import AppLogger
-from users_app.models import (
+from arc_app.models import (
     User, Configuration, SharedSimulation, AlloyStore
 )
-from users_app.middleware import authenticate
-from users_app.extensions import api
-from users_app.token import (
+from arc_app.middleware import authenticate
+from arc_app.extensions import api
+from arc_app.token import (
     URLTokenError, generate_shared_simulation_token, generate_url,
     confirm_simulation_token
 )
-from users_app.utilities import (
+from arc_app.utilities import (
     ElementSymbolInvalid, ElementInvalid, MissingElementError,
     DuplicateElementError
 )
@@ -80,7 +80,7 @@ class ShareSimulationLink(Resource):
             return response, 400
 
         # Validate the request simulation data. Validation is done by the
-        # clean() methods for each object/document in users_app/models.py.
+        # clean() methods for each object/document in arc_app/models.py.
         try:
             config_object = Configuration(**configuration)
             config_object.validate(clean=True)
@@ -197,7 +197,7 @@ class ShareSimulationEmail(Resource):
             optional_msg = ''
 
         # Validate the request simulation data. Validation is done by the
-        # clean() methods for each object/document in users_app/models.py.
+        # clean() methods for each object/document in arc_app/models.py.
         try:
             config_object = Configuration(**configuration)
             config_object.validate(clean=True)
@@ -339,7 +339,7 @@ def view_shared_simulation(token):
         return jsonify(response), 404
 
     # Using the do_dict() method for the SharedSimulation document in
-    # users_app/models.py to put the sim data into the response body.
+    # arc_app/models.py to put the sim data into the response body.
     shared_simulation = SharedSimulation.objects.get(id=sim_id)
     data = shared_simulation.to_dict()
 

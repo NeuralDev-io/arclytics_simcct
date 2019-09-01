@@ -1,7 +1,5 @@
 FROM continuumio/miniconda3:4.6.14
-# note: Using the miniconda base because I want to install numpy with some
-# optimisation C-libraries such as openblas which conda does for you
-# when you install numpy.
+
 
 LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
 

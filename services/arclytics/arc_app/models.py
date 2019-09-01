@@ -34,8 +34,8 @@ from mongoengine import (
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
-from users_app.extensions import bcrypt
-from users_app.utilities import (
+from arc_app.extensions import bcrypt
+from arc_app.utilities import (
     JSONEncoder, PeriodicTable, PasswordValidationError, ElementSymbolInvalid,
     ElementInvalid, MissingElementError, DuplicateElementError
 )
@@ -278,7 +278,7 @@ class Configuration(EmbeddedDocument):
     @queryset_manager
     def as_dict(cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
-        `users_app.models.Configuration` Documents instead of a QuerySet.
+        `arc_app.models.Configuration` Documents instead of a QuerySet.
 
         Usage:
             config_list = Configuration.as_dict()
@@ -640,7 +640,7 @@ class User(Document):
     @queryset_manager
     def as_dict(cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
-        `users_app.models.Users` Documents instead of a QuerySet.
+        `arc_app.models.Users` Documents instead of a QuerySet.
 
         Usage:
             users_list = User.as_dict()

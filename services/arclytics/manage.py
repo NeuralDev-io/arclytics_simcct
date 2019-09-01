@@ -32,20 +32,20 @@ from prettytable import PrettyTable
 import coverage
 
 import settings
-from users_app.app import create_app, get_flask_mongo
-from users_app.models import User, AdminProfile, Alloy, UserProfile
+from arc_app.app import create_app, get_flask_mongo
+from arc_app.models import User, AdminProfile, Alloy, UserProfile
 
 COV = coverage.coverage(
     branch=True,
     include=[
-        'users_app/models.py', 'users_app/resources/users.py',
-        'users_app/resources/auth.py', 'users_app/middleware.py',
-        'users_app/mongodb.py', 'users_app/token.py',
-        'users_app/resources/share.py', 'users_app/resources/admin_auth.py',
-        'users_app/resources/ratings.py'
+        'arc_app/models.py', 'arc_app/resources/users.py',
+        'arc_app/resources/auth.py', 'arc_app/middleware.py',
+        'arc_app/mongodb.py', 'arc_app/token.py',
+        'arc_app/resources/share.py', 'arc_app/resources/admin_auth.py',
+        'arc_app/resources/ratings.py'
     ],
     omit=[
-        'users_app/app.py'
+        'arc_app/app.py'
         'configs/flask_conf.py',
         'tests/*',
         'configs/*',

@@ -23,7 +23,7 @@ from mongoengine import DoesNotExist
 
 import settings
 from tests.test_api_base import BaseTestCase
-from users_app.models import User, Configuration, AlloyStore, SavedSimulation
+from arc_app.models import User, Configuration, AlloyStore, SavedSimulation
 
 _TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'tests' / 'sim_configs.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:

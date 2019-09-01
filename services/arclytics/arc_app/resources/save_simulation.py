@@ -27,13 +27,13 @@ from flask import request, Blueprint, json
 from flask_restful import Resource
 from mongoengine import ValidationError, FieldDoesNotExist, DoesNotExist
 
-from users_app.extensions import api
-from users_app.middleware import authenticate
-from users_app.utilities import (
+from arc_app.extensions import api
+from arc_app.middleware import authenticate
+from arc_app.utilities import (
     ElementInvalid, ElementSymbolInvalid, MissingElementError,
     DuplicateElementError
 )
-from users_app.models import User, Configuration, AlloyStore, SavedSimulation
+from arc_app.models import User, Configuration, AlloyStore, SavedSimulation
 
 save_simulation_blueprint = Blueprint('user_save_simulation', __name__)
 

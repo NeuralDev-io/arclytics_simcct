@@ -1,19 +1,19 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: users
+  name: arclytics
   labels:
-    name: users
+    name: arclytics
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: users
+        app: arclytics
     spec:
       containers:
       - name: users
-        image: arclytics/arc_sim_users_service:1.0
+        image: arclytics/arc_sim_flask_service:1.0
         imagePullPolicy: Never
         env:
         - name: FLASK_ENV
@@ -34,14 +34,14 @@ spec:
           value: "simcct:8001"
         - name: CLIENT_HOST
           value: "client:3000"
-        - name: MONGO_USER
+        - name: MONGO_APP_USER
           valueFrom:
             secretKeyRef:
-              name: mongo-credentials
+              name: credentials
               key: app_user
-        - name: MONGO_PASSWORD
+        - name: MONGO_APP_USER_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mongo-credentials
+              name: credentials
               key: app_user_password
       restartPolicy: Always

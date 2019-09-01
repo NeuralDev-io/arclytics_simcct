@@ -25,6 +25,10 @@ DOCKER_DOWN_FLAG=0
 SWAGGER_FLAG=0
 JUPYTER_FLAG=0
 
+MONGO_USERNAME=""
+MONGO_PASSWORD=""
+MONGO_APP_DB=""
+
 TEST_SERVER_ARGS=""
 TEST_TYPE="test"
 TEST_TITLE="Flask-Testing Unittests (without coverage)"
@@ -74,6 +78,41 @@ function echoLine() {
 # =============================================================== #
 # ==================== # Utility Functions # ==================== #
 # =============================================================== #
+
+# Read the .env file and get the password
+getMongoUserAndPassword() {
+    input="${WORKDIR}/.env"
+    user_key=""
+    pass_key=""
+
+    if [[ $1 == 'root' ]]; then
+        user_key='MONGO_ROOT_USER'
+        pass_key='MONGO_ROOT_PASSWORD'
+    elif [[ $1 == 'user' ]]; then
+        user_key="MONGO_APP_USER"
+        pass_key="MONGO_APP_USER_PASSWORD"
+    fi
+
+    if [[ ${user_key} != "" ]]; then
+        while IFS= read -r line
+        do
+            KEY="$(cut -d'=' -f1 <<< "${line}" )"
+
+            if [[ ${KEY} == "${user_key}" ]]; then
+                MONGO_USERNAME="$(cut -d'=' -f2 <<< "${line}" )"
+            fi
+
+            if [[ ${KEY} == "${pass_key}" ]]; then
+                MONGO_PASSWORD="$(cut -d'=' -f2 <<< "${line}" )"
+            fi
+
+            if [[ ${KEY} == "MONGO_APP_DB" ]]; then
+                MONGO_APP_DB="$(cut -d'=' -f2 <<< "${line}" )"
+            fi
+        done < "$input"
+    fi
+}
+
 # Run only the arclytics tests
 arcTest() {
     headerMessage "RUNNING USERS SERVER TESTS"
@@ -291,6 +330,7 @@ Commands:
   images      List images build.
   logs        Get the logs of the container.
   ls          List all containers, volumes, and images with formatting.
+  mongo       Connect to the \`mongo\` CLI running in the container.
   ps          List the running containers.
   pull        Pull an image or a repository from a registry
   push        Push an image or a repository to a registry
@@ -904,6 +944,27 @@ while [[ "$1" != "" ]] ; do
             kubectl ${ARGS}
             completeMessage
             exit 0
+            ;;
+        mongo )
+            while [[ "$2" != "" ]] ; do
+                case $2 in
+                    user )
+                        getMongoUserAndPassword "user"
+                        docker exec -it arc_mongodb_1 mongo \
+                            "-u \"${MONGO_USERNAME}\" -p \"${MONGO_PASSWORD}\" ${MONGO_APP_DB}"
+                        ;;
+                    root )
+                        getMongoUserAndPassword "root"
+                        echo "-u ${MONGO_USERNAME} -p ${MONGO_PASSWORD} admin"
+                        docker exec -it arc_mongodb_1 mongo \
+                            "-u \"${MONGO_USERNAME}\" -p \"${MONGO_PASSWORD}\" admin"
+                        ;;
+                    * )
+                        exit 0
+                        ;;
+                esac
+                shift
+            done
             ;;
     esac
     shift

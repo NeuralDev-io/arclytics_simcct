@@ -7,3 +7,5 @@ export const UPDATE_ALLOY_OPTION = 'sim/UPDATE_ALLOY_OPTION'
 export const UPDATE_COMP = 'sim/UPDATE_COMP'
 export const UPDATE_DILUTION = 'sim/UPDATE_DILUTION'
 export const RUN_SIM = 'sim/RUN_SIM'
+
+export const UPDATE_CCT_INDEX = 'sim/UPDATE_CCT_INDEX'

@@ -623,7 +623,7 @@ class PhaseSimulation(object):
             user_phase_fraction_data=phase_vol[:n_max, :],
             slider_time_field=user_cool_mat[-1, 0],
             slider_temp_field=user_cool_mat[-1, 1],
-            slider_max=n_max,
+            slider_max=n_max - 1,
         )
 
     @staticmethod

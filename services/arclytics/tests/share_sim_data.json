@@ -1,0 +1,152 @@
+{
+    "configurations": {
+        "method": "Li98",
+        "grain_size": 0.1,
+        "nucleation_start": 1.1,
+        "nucleation_finish": 99.8,
+        "auto_calculate_ms": "False",
+        "ms_temp": 0.2,
+        "ms_rate_param": 0.3,
+        "auto_calculate_bs": "False",
+        "bs_temp": 0.4,
+        "auto_calculate_ae": "False",
+        "ae1_temp": 0.5,
+        "ae3_temp": 0.6,
+        "start_temp": 7,
+        "cct_cooling_rate": 1
+    },
+    "alloy_store": {
+        "alloy_option": "single",
+        "alloys": {
+            "parent": {
+                "name":
+                "Parent Name",
+                "compositions": [
+                    {
+                        "symbol": "C",
+                        "weight": 12.01
+                    }, {
+                        "symbol": "Mn",
+                        "weight": 54.94
+                    }, {
+                        "symbol": "Ni",
+                        "weight": 58.69
+                    }, {
+                        "symbol": "Cr",
+                        "weight": 52.00
+                    }, {
+                        "symbol": "Mo",
+                        "weight": 95.94
+                    }, {
+                        "symbol": "Si",
+                        "weight": 28.09
+                    }, {
+                        "symbol": "Co",
+                        "weight": 58.93
+                    }, {
+                        "symbol": "W",
+                        "weight": 183.84
+                    }, {
+                        "symbol": "As",
+                        "weight": 74.92
+                    }, {
+                        "symbol": "Fe",
+                        "weight": 55.84
+                    }, {
+                        "symbol": "H",
+                        "weight": 1.008
+                    }, {
+                        "symbol": "He",
+                        "weight": 4.003
+                    }
+                ]
+            },
+            "weld": {
+                "name":
+                "Weld Name",
+                "compositions": [
+                    {
+                        "symbol": "C",
+                        "weight": 12.01
+                    }, {
+                        "symbol": "Mn",
+                        "weight": 54.94
+                    }, {
+                        "symbol": "Ni",
+                        "weight": 58.69
+                    }, {
+                        "symbol": "Cr",
+                        "weight": 52.00
+                    }, {
+                        "symbol": "Mo",
+                        "weight": 95.94
+                    }, {
+                        "symbol": "Si",
+                        "weight": 28.09
+                    }, {
+                        "symbol": "Co",
+                        "weight": 58.93
+                    }, {
+                        "symbol": "W",
+                        "weight": 183.84
+                    }, {
+                        "symbol": "As",
+                        "weight": 74.92
+                    }, {
+                        "symbol": "Fe",
+                        "weight": 55.84
+                    }, {
+                        "symbol": "Li",
+                        "weight": 6.941
+                    }, {
+                        "symbol": "Be",
+                        "weight": 9.012
+                    }
+                ]
+            },
+            "mix": {
+                "name":
+                "Mix Name",
+                "compositions": [
+                    {
+                        "symbol": "C",
+                        "weight": 12.01
+                    }, {
+                        "symbol": "Mn",
+                        "weight": 54.94
+                    }, {
+                        "symbol": "Ni",
+                        "weight": 58.69
+                    }, {
+                        "symbol": "Cr",
+                        "weight": 52.00
+                    }, {
+                        "symbol": "Mo",
+                        "weight": 95.94
+                    }, {
+                        "symbol": "Si",
+                        "weight": 28.09
+                    }, {
+                        "symbol": "Co",
+                        "weight": 58.93
+                    }, {
+                        "symbol": "W",
+                        "weight": 183.84
+                    }, {
+                        "symbol": "As",
+                        "weight": 74.92
+                    }, {
+                        "symbol": "Fe",
+                        "weight": 55.84
+                    }, {
+                        "symbol": "B",
+                        "weight": 10.811
+                    }, {
+                        "symbol": "N",
+                        "weight": 14.01
+                    }
+                ]
+            }
+        }
+    }
+}

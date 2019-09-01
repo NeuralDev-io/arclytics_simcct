@@ -109,6 +109,7 @@ class TestAlloyService(BaseTestCase):
 
     users_host = os.environ.get('USERS_HOST')
     base_url = f'http://{users_host}'
+    _email = None
     _id = None
     mongo = None
 
@@ -131,21 +132,20 @@ class TestAlloyService(BaseTestCase):
         data = resp.json()
         cls.token = data.get('token')
 
-        user_resp = requests.get(
-            f'{cls.base_url}/auth/status',
-            headers={
-                'Content-type': 'application/json',
-                'Authorization': f'Bearer {cls.token}'
-            }
+        mongo = MongoClient(
+            host=os.environ.get('MONGO_HOST'),
+            port=int(os.environ.get('MONGO_PORT'))
         )
-        data = user_resp.json()
-        cls._id = data.get('data')['_id']
+        user = mongo.arc_dev.users.find_one({'email': 'shuri@wakanda.com'})
+
+        cls._id = str(user['_id'])
+        cls._email = user['email']
 
     @classmethod
     def tearDownClass(cls) -> None:
         """On finishing, we should delete Jane so she's not registered again."""
         # We just delete Shuri from the db
-        cls.mongo.arc_dev.users.delete_one({'_id': ObjectId(cls._id)})
+        cls.mongo.arc_dev.users.delete_one({'email': cls._email})
 
     def login_client(self, client):
         with open(_TEST_CONFIGS_PATH, 'r') as f:

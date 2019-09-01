@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import PlusIcon from 'react-feather/dist/icons/plus'
+import LoadIcon from 'react-feather/dist/icons/upload'
 import EditIcon from 'react-feather/dist/icons/edit-3'
 import TrashIcon from 'react-feather/dist/icons/trash-2'
 import Table from '../../elements/table'
@@ -15,6 +16,11 @@ import {
   updateGlobalAlloys,
   deleteGlobalAlloys,
 } from '../../../state/ducks/alloys/actions'
+import {
+  updateAlloyOption,
+  updateComp,
+} from '../../../state/ducks/sim/actions'
+import { DEFAULT_ELEMENTS } from '../../../utils/alloys'
 
 import styles from './AdminAlloys.module.scss'
 
@@ -45,8 +51,7 @@ class AdminAlloys extends Component {
   handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
 
   showAddAlloy = () => {
-    const defaultElements = ['C', 'Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', 'W', 'As', 'Fe']
-    const compositions = defaultElements.map(sym => ({ symbol: sym, weight: 0 }))
+    const compositions = DEFAULT_ELEMENTS.map(sym => ({ symbol: sym, weight: 0 }))
     this.setState({
       currentAlloy: {
         _id: '',
@@ -91,6 +96,34 @@ class AdminAlloys extends Component {
 
   handleAlloyChange = alloy => this.setState({ currentAlloy: alloy })
 
+  handleLoadAlloy = alloy => {
+    const {
+      updateAlloyOptionConnect,
+      updateCompConnect,
+      history,
+    } = this.props
+
+    updateAlloyOptionConnect('single')
+    updateCompConnect('single', 'parent', alloy)
+    history.push('/')
+  }
+
+  generateColumns = () => DEFAULT_ELEMENTS.map(element => ({
+    Header: element,
+    id: element,
+    accessor: 'compositions',
+    Cell: ({ value }) => {
+      const idx = value.findIndex(elem => elem.symbol === element)
+      return value[idx].weight
+    },
+    width: 65,
+    sortMethod: (a, b) => {
+      const idxA = a.findIndex(elem => elem.symbol === element)
+      const idxB = b.findIndex(elem => elem.symbol === element)
+      return a[idxA].weight > b[idxB].weight ? 1 : -1
+    },
+  }))
+
   render() {
     const { globalAlloys } = this.props
     const {
@@ -109,10 +142,19 @@ class AdminAlloys extends Component {
         Header: 'Alloy name',
         accessor: 'name',
       },
+      ...this.generateColumns(),
       {
         Header: '',
         Cell: ({ original }) => (
           <div className={styles.actions}>
+            <Button
+              onClick={() => this.handleLoadAlloy(original)}
+              appearance="text"
+              length="short"
+              IconComponent={props => <LoadIcon {...props} />}
+            >
+              Load
+            </Button>
             <Button
               onClick={() => this.showEditAlloy(original)}
               appearance="text"
@@ -125,13 +167,14 @@ class AdminAlloys extends Component {
               onClick={() => this.showDeleteAlloy(original)}
               appearance="text"
               color="dangerous"
+              length="short"
               IconComponent={props => <TrashIcon {...props} />}
             >
               Delete
             </Button>
           </div>
         ),
-        width: 210,
+        width: 260,
       },
     ]
 
@@ -195,6 +238,9 @@ class AdminAlloys extends Component {
 }
 
 AdminAlloys.propTypes = {
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
   globalAlloys: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string,
     compositions: PropTypes.arrayOf(PropTypes.shape({
@@ -207,6 +253,8 @@ AdminAlloys.propTypes = {
   createGlobalAlloysConnect: PropTypes.func.isRequired,
   updateGlobalAlloysConnect: PropTypes.func.isRequired,
   deleteGlobalAlloysConnect: PropTypes.func.isRequired,
+  updateAlloyOptionConnect: PropTypes.func.isRequired,
+  updateCompConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -218,6 +266,8 @@ const mapDispatchToProps = {
   createGlobalAlloysConnect: createGlobalAlloys,
   updateGlobalAlloysConnect: updateGlobalAlloys,
   deleteGlobalAlloysConnect: deleteGlobalAlloys,
+  updateAlloyOptionConnect: updateAlloyOption,
+  updateCompConnect: updateComp,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdminAlloys)

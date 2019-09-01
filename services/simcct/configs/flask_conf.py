@@ -33,12 +33,6 @@ class BaseConfig:
     PERMANENT_SESSION_LIFETIME = True
 
     os.environ['MONGO_APP_DB'] = 'arc_dev'
-
-    MONGO_HOST = os.environ.get('MONGO_HOST')
-    MONGO_PORT = os.environ.get('MONGO_PORT')
-    MONGO_APP_USER = os.environ.get('MONGO_APP_USER')
-    MONGO_USER_PASSWORD = os.environ.get('MONGO_USER_PASSWORD')
-
     REDIS_HOST = os.environ.get('REDIS_HOST', None)
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     REDIS_DB = 0
@@ -62,8 +56,6 @@ class TestingConfig(BaseConfig):
 
 class ProductionConfig(BaseConfig):
     """Production configuration"""
-    MONGO_DBNAME = 'arclytics'
-    os.environ['MONGO_APP_DB'] = MONGO_DBNAME
     # TODO(andrew@neuraldev.io): Ensure the database changes over during
     #  production mode and that there are passwords set on Mongo and Redis.
     REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)

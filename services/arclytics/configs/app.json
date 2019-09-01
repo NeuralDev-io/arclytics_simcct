@@ -1,0 +1,10 @@
+{
+    "general": {
+        "debug": true
+    },
+    "logging": {
+        "debug": true,
+        "stdout": true,
+        "profiler": false
+    }
+}

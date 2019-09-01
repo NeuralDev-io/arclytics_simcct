@@ -1,11 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import ActivityIcon from 'react-feather/dist/icons/activity'
+import HardDriveIcon from 'react-feather/dist/icons/hard-drive'
 import HelpIcon from 'react-feather/dist/icons/help-circle'
 import MonitorIcon from 'react-feather/dist/icons/monitor'
 import UserIcon from 'react-feather/dist/icons/user'
 import LogOutIcon from 'react-feather/dist/icons/log-out'
+import DatabaseIcon from 'react-feather/dist/icons/database'
+import SlidersIcon from 'react-feather/dist/icons/sliders'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { logout } from '../../../utils/AuthenticationHelper'
 import { buttonize } from '../../../utils/accessibility'
@@ -23,7 +25,21 @@ const AppBar = (props) => {
           className={`${styles.navIcon} ${active === 'sim' && styles.active}`}
           href="/"
         >
-          <ActivityIcon className={styles.icon} />
+          <SlidersIcon className={styles.icon} />
+        </a>
+        <a
+          id="savedSimulations"
+          className={`${styles.navIcon} ${active === 'savedSimulations' && styles.active}`}
+          href="/user/simulations"
+        >
+          <HardDriveIcon className={styles.icon} />
+        </a>
+        <a
+          id="alloys"
+          className={`${styles.navIcon} ${active === 'userAlloys' && styles.active}`}
+          href="/user/alloys"
+        >
+          <DatabaseIcon className={styles.icon} />
         </a>
         <a
           id="help"
@@ -43,8 +59,8 @@ const AppBar = (props) => {
       </div>
       <div>
         <a
-          id="user"
-          className={`${styles.navIcon} ${active === 'user' && styles.active}`}
+          id="profile"
+          className={`${styles.navIcon} ${active === 'profile' && styles.active}`}
           href="/user/profile"
         >
           <UserIcon className={styles.icon} />
@@ -68,7 +84,7 @@ AppBar.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  user: state.persist.user,
+  user: state.persist.userStatus,
 })
 
 export default connect(mapStateToProps, {})(AppBar)

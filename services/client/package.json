@@ -8,6 +8,7 @@
     "plotly.js": "^1.49.1",
     "prop-types": "^15.7.2",
     "react": "^16.8.6",
+    "react-compound-slider": "^2.2.0",
     "react-dom": "^16.8.6",
     "react-feather": "^2.0.2",
     "react-plotly.js": "^2.3.0",

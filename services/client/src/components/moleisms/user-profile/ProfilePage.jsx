@@ -16,10 +16,11 @@ import {
   changePassword,
 } from '../../../state/ducks/self/actions'
 
+import AppBar from '../appbar/AppBar'
 import TextField from '../../elements/textfield'
 import Select from '../../elements/select'
-import Button from '../../elements/button'
 
+import Button from '../../elements/button'
 import styles from './ProfilePage.module.scss'
 
 class ProfilePage extends Component {
@@ -29,113 +30,110 @@ class ProfilePage extends Component {
       email: '',
       firstName: '',
       lastName: '',
-      question1: '',
-      question1Select: [
-        { label: 'Q1 Option 1', value: 'Q1 Option 1' },
-        { label: 'Q1 Option 2', value: 'Q1 Option 2' },
+      aimValue: null,
+      aimOptions: [
+        { label: 'Education', value: 'Education' },
+        { label: 'Research', value: 'Research' },
+        { label: 'Engineering Work', value: 'Engineering Work' },
+        { label: 'Experimentation', value: 'Experimentation' },
       ],
-      question2: '',
-      question2Select: [
-        { label: 'Q2 Option 1', value: 'Q2 Option 1' },
-        { label: 'Q2 Option 2', value: 'Q2 Option 2' },
+      highestEducationValue: null,
+      highestEducationOptions: [
+        { label: 'High School', value: 'High School' },
+        { label: 'Bachelors Degree', value: 'Bachelors Degree' },
+        { label: 'Masters Degree', value: 'Masters Degree' },
+        { label: 'PhD', value: 'PhD' },
       ],
-      question3: '',
-      question3Select: [
-        { label: 'Q3 Option 1', value: 'Q3 Option 1' },
-        { label: 'Q3 Option 2', value: 'Q3 Option 2' },
+      sciTechExpValue: null,
+      sciTechOptions: [
+        { label: 'Beginner', value: 'Beginner' },
+        { label: 'Intermediate', value: 'Intermediate' },
+        { label: 'Advanced', value: 'Advanced' },
       ],
-      question4: '',
-      question4Select: [
-        { label: 'Q4 Option 1', value: 'Q4 Option 1' },
-        { label: 'Q4 Option 2', value: 'Q4 Option 2' },
+      phaseTransformExpValue: null,
+      phaseTransformOptions: [
+        { label: 'Beginner', value: 'Beginner' },
+        { label: 'Intermediate', value: 'Intermediate' },
+        { label: 'Advanced', value: 'Advanced' },
       ],
-      currPwd: '',
+      currentPassword: '',
       currPwdErr: '',
-      newPwd: '',
-      cnfrmPwd: '',
-      pwdOrEmail: true,
+      newPassword: '',
+      confirmPassword: '',
+      isChangeEmail: false,
+      isChangePassword: false,
+      editPassword: false,
       updateError: null,
       edit: false,
+      editEmail: false,
       newEmail: '',
       emailErr: '',
       isCurrPwdCorrect: false,
     }
   }
 
-  static getDerivedStateFromProps(props, state) {
-    const { user } = props
-    const {
-      email,
-      firstName,
-      lastName,
-      question1,
-      question2,
-      question3,
-      question4,
-    } = state
-    const initial = {}
-    if (props.user.email !== email) {
-      initial.email = props.user.email
-    }
-
-    if (user.first_name !== firstName && !firstName) {
-      initial.firstName = user.first_name
-    }
-
-    if (user.last_name !== lastName && !lastName) {
-      initial.lastName = user.last_name
-    }
-
-    if (user.profile !== null && !(question1 && question2 && question3 && question4)) {
-      initial.question1 = { label: user.profile.aim, value: user.profile.aim }
-      initial.question2 = {
-        label: user.profile.highest_education,
-        value: user.profile.highest_education,
-      }
-      initial.question3 = { label: user.profile.sci_tech_exp, value: user.profile.sci_tech_exp }
-      initial.question4 = {
-        label: user.profile.phase_transform_exp,
-        value: user.profile.phase_transform_exp,
-      }
-    }
-    return initial
-  }
-
   componentDidMount = () => {
     const { history, getUserProfileConnect } = this.props
-    if (!localStorage.getItem('token')) {
-      history.push('/signin') // eslint-disable-line
-    } else {
-      getUserProfileConnect()
-    }
+    if (!localStorage.getItem('token')) history.push('/signin')
+    // TODO(arvy@neuraldev.io): This pattern is not ideal either as it turns
+    //  an async call to one that is blocking and updates based on returned promise.
+    getUserProfileConnect().then(() => {
+      const { user } = this.props
+      this.setState({
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        aimValue: {
+          value: user.profile.aim,
+          label: user.profile.aim,
+        },
+        highestEducationValue: {
+          value: user.profile.highest_education,
+          label: user.profile.highest_education,
+        },
+        sciTechExpValue: {
+          value: user.profile.sci_tech_exp,
+          label: user.profile.sci_tech_exp,
+        },
+        phaseTransformExpValue: {
+          value: user.profile.phase_transform_exp,
+          label: user.profile.phase_transform_exp,
+        },
+      })
+    })
   }
 
   handleEdit = () => {
     const { user } = this.props
     const { edit } = this.state
-    console.log(user)
-    if (edit) { 
-      this.setState({ 
-        firstName: user.firstName,
+    if (edit) {
+      this.setState({
+        firstName: user.first_name,
         lastName: user.last_name,
-        question1: user.profile
+        aimValue: user.profile
           ? { label: user.profile.aim, value: user.profile.aim }
           : null,
-        question2: user.profile ? 
-          { label: user.profile.highest_education, value: user.profile.highest_education }: 
-          null,
-        question3: user.profile
+        highestEducationValue: user.profile
+          ? { label: user.profile.highest_education, value: user.profile.highest_education }
+          : null,
+        sciTechExpValue: user.profile
           ? { label: user.profile.sci_tech_exp, value: user.profile.sci_tech_exp }
           : null,
-        question4: user.profile ? 
-          { label: user.profile.phase_transform_exp, value: user.profile.phase_transform_exp }: 
-          null,
+        phaseTransformExpValue: user.profile
+          ? { label: user.profile.phase_transform_exp, value: user.profile.phase_transform_exp }
+          : null,
         edit: false,
         updateError: null,
       })
     } else {
       this.setState({ edit: true })
     }
+  }
+
+  toggleEditButtons = (type) => {
+    const { editEmail, editPassword } = this.state
+    if (type === 'email') this.setState({ editEmail: !editEmail })
+    else if (type === 'password') this.setState({ editPassword: !editPassword })
   }
 
   handleChange = (name, value) => {
@@ -201,7 +199,7 @@ class ProfilePage extends Component {
 
   handleChangeCurrPwd = (value) => {
     this.setState({
-      currPwd: value,
+      currentPassword: value,
     })
     if (value.length >= 6) {
       this.setState({
@@ -211,13 +209,13 @@ class ProfilePage extends Component {
   }
 
   submitNewPassword = () => {
-    const { currPwd, newPwd, cnfrmPwd } = this.state
+    const { currentPassword, newPassword, confirmPassword } = this.state
     const { changePasswordConnect } = this.props
 
     changePasswordConnect({
-      password: currPwd,
-      new_password: newPwd,
-      confirm_password: cnfrmPwd,
+      password: currentPassword,
+      new_password: newPassword,
+      confirm_password: confirmPassword,
     })
   }
 
@@ -226,23 +224,35 @@ class ProfilePage extends Component {
       email,
       firstName,
       lastName,
-      question1, question1Select,
-      question2, question2Select,
-      question3, question3Select,
-      question4, question4Select,
+      aimValue,
+      aimOptions,
+      highestEducationValue,
+      highestEducationOptions,
+      sciTechExpValue,
+      sciTechOptions,
+      phaseTransformExpValue,
+      phaseTransformOptions,
       updateError,
       edit,
-      pwdOrEmail,
-      currPwd,
+      currentPassword,
       currPwdErr,
-      newPwd,
-      cnfrmPwd,
+      newPassword,
+      confirmPassword,
+      isChangeEmail,
+      isChangePassword,
       isCurrPwdCorrect,
       newEmail,
       emailErr,
+      editPassword,
+      editEmail,
     } = this.state
+
+    const { history } = this.props
+
     return (
       <React.Fragment>
+        <AppBar active="profile" redirect={history.push} />
+
         <div className={styles.main}>
           <h4 className={styles.header}>General</h4>
           <div className={styles.generalFields}>
@@ -288,16 +298,16 @@ class ProfilePage extends Component {
             <h4 className={styles.header}> About yourself </h4>
             <div className={styles.questions}>
               <div className={styles.question}>
-                <h6 className={styles.questionText}> What sentence best describes you? </h6>
+                <h6 className={styles.questionText}>What sentence best describes you?</h6>
                 <Select
-                  type="question1"
-                  name="question1"
+                  type="aim"
+                  name="aim"
                   placeholder="---"
-                  value={question1}
-                  options={question1Select}
+                  value={aimValue}
+                  options={aimOptions}
                   length="stretch"
                   isDisabled={!edit}
-                  onChange={value => this.handleChange('question1', value)}
+                  onChange={value => this.handleChange('aimValue', value)}
                 />
               </div>
 
@@ -306,14 +316,14 @@ class ProfilePage extends Component {
                   What is the highest level of education have you studied?
                 </h6>
                 <Select
-                  type="question2"
-                  name="question2"
+                  type="highestEducation"
+                  name="highestEducation"
                   placeholder="---"
-                  value={question2}
-                  options={question2Select}
+                  value={highestEducationValue}
+                  options={highestEducationOptions}
                   length="stretch"
                   isDisabled={!edit}
-                  onChange={value => this.handleChange('question2', value)}
+                  onChange={value => this.handleChange('highestEducationValue', value)}
                 />
               </div>
 
@@ -322,30 +332,30 @@ class ProfilePage extends Component {
                   What is your experience with solid-state phase transformation?
                 </h6>
                 <Select
-                  type="question2"
-                  name="question2"
+                  type="sciTechExp"
+                  name="sciTechExp"
                   placeholder="---"
-                  value={question3}
-                  options={question3Select}
+                  value={sciTechExpValue}
+                  options={sciTechOptions}
                   length="stretch"
                   isDisabled={!edit}
-                  onChange={value => this.handleChange('question3', value)}
+                  onChange={value => this.handleChange('sciTechExpValue', value)}
                 />
               </div>
 
               <div className={styles.question}>
                 <h6 className={styles.questionText}>
-                  What is your experiece with scientific software?
+                  What is your experience with scientific software?
                 </h6>
                 <Select
-                  type="question3"
-                  name="question3"
+                  type="phaseTransformExp"
+                  name="phaseTransformExp"
                   placeholder="---"
-                  value={question4}
-                  options={question4Select}
+                  value={phaseTransformExpValue}
+                  options={phaseTransformOptions}
                   length="stretch"
                   isDisabled={!edit}
-                  onChange={value => this.handleChange('question4', value)}
+                  onChange={value => this.handleChange('phaseTransformExpValue', value)}
                 />
               </div>
             </div>
@@ -356,126 +366,82 @@ class ProfilePage extends Component {
               !edit ? (
                 <>
                   {' '}
-                  <Button onClick={this.handleEdit}> Edit </Button>
+                  <Button onClick={this.handleEdit} appearance="text">Edit</Button>
                   {' '}
                 </>
               )
                 : (
                   <>
-                    <Button onClick={this.updateUser}> Save </Button>
-                    <Button className={styles.cancel} appearance="outline" onClick={this.handleEdit}> Cancel </Button>
+                    <Button onClick={this.updateUser}>Save</Button>
+                    <Button
+                      className={styles.cancel}
+                      appearance="outline"
+                      onClick={this.handleEdit}
+                    >
+                      Cancel
+                    </Button>
                   </>
                 )
             }
           </div>
 
           <div className={styles.security}>
-            <div className={styles.header}>
-              <h4> Security </h4>
-              <Button
-                className={styles.pwdOrEmail}
-                onClick={() => this.handleChange('pwdOrEmail', !pwdOrEmail)}
-                appearance="outline"
-                length="large"
-              >
-                {pwdOrEmail ? (' Change your email') : ('Change or reset passsword')}
-              </Button>
-            </div>
-            {
-                pwdOrEmail ? (
-                  <div className={styles.changePassword}>
-                    <h5> Change Password </h5>
-                    <h6> Password must be 6 letters long.  </h6>
-                    <div className={styles.row}>
-                      <h6 className={styles.lCol}> Current Password </h6>
-                      <div className={styles.rCol}>
-                        <TextField
-                          type="password"
-                          name="currPwd"
-                          value={currPwd}
-                          placeholder="Current Password"
-                          length="stretch"
-                          onChange={value => this.handleChangeCurrPwd(value)}
-                          err={currPwdErr}
-                        />
-                      </div>
-                    </div>
-
-                    <div className={styles.row}>
-                      <h6 className={styles.lCol}> New Password </h6>
-                      <div className={styles.rCol}>
-                        <TextField
-                          type="password"
-                          name="newPwd"
-                          value={newPwd}
-                          placeholder="New Password"
-                          length="stretch"
-                          isDisabled={!isCurrPwdCorrect}
-                          onChange={value => this.handleChange('newPwd', value)}
-                        />
-                      </div>
-                    </div>
-
-                    <div className={styles.row}>
-                      <h6 className={styles.lCol}> Confirm Password </h6>
-                      <div className={styles.rCol}>
-                        <TextField
-                          type="password"
-                          name="cnfrmPwd"
-                          value={cnfrmPwd}
-                          placeholder="Confirm Password"
-                          length="stretch"
-                          isDisabled={!isCurrPwdCorrect}
-                          onChange={value => this.handleChange('cnfrmPwd', value)}
-                        />
-                      </div>
-                    </div>
-                    <Button className={styles.submitPwd} isDisabled={(newPwd !== cnfrmPwd) || ((newPwd === '') && (cnfrmPwd === ''))} onClick={() => this.submitNewPassword()}>
-                      Change Password
-                    </Button>
-                  </div>
-                )
-                  : (
-                    <div className={styles.changeEmail}>
-                      <h5>Change Email</h5>
-                      <h6>
-                        A request to change your email will be sent to the specified email
-                        address in the textfield below.
-                      </h6>
-                      <div className={styles.row}>
-                        <div className={styles.lCol}>
-                          <h6>Email</h6>
-                        </div>
-                        <div className={styles.rCol}>
-                          <TextField
-                            type="Change Email"
-                            name="Change Email"
-                            value={newEmail}
-                            length="stretch"
-                            onChange={value => this.handleChange('newEmail', value)}
-                            err={emailErr}
-                          />
-                        </div>
-                      </div>
+            <h4 className={styles.header}>Security</h4>
+            <div className={styles.row}>
+              <h5>Change your email</h5>
+              <div>
+                {
+                  !editEmail ? (
+                    <>
+                      {' '}
                       <Button
-                        className={styles.submitEmail}
-                        onClick={() => this.handleUpdateEmail(newEmail)}
+                        appearance="text"
+                        onClick={() => this.toggleEditButtons('email')}
                       >
-                        Verify new email
+                        Change
                       </Button>
-
-                    </div>
+                      {' '}
+                    </>
+                  ) : (
+                    <>
+                      <Button onClick={() => console.log('Save New Email')}>Save</Button>
+                      <Button
+                        appearance="outline"
+                        onClick={() => this.toggleEditButtons('email')}
+                      >
+                        Cancel
+                      </Button>
+                    </>
                   )
-            }
+                }
+              </div>
+            </div>
+            <div className={styles.row}>
+              <h5>Change your password</h5>
+              <div>
+                <Button
+                  appearance="text"
+                  onClick={() => this.toggleEditButtons('password')}
+                >
+                  Update
+                </Button>
+              </div>
+            </div>
           </div>
+
           <div className={styles.dataAndPersonal}>
             <h4 className={styles.header}> Data and Personalisation </h4>
             <h6>
               Your data, activities and preferences that help make Arclytics Sim service more
               useful for you.
             </h6>
-
-            <Button className={styles.review}> Review </Button>
+            <Button
+              appearance="outline"
+              onClick={() => console.log('Review Data Personalisation')}
+              className={styles.review}
+            >
+              Review
+            </Button>
           </div>
 
         </div>
@@ -485,7 +451,7 @@ class ProfilePage extends Component {
 }
 
 ProfilePage.propTypes = {
-  user: PropTypes.arrayOf(PropTypes.shape({
+  user: PropTypes.shape({
     first_name: PropTypes.string,
     last_name: PropTypes.string,
     email: PropTypes.string,
@@ -495,7 +461,12 @@ ProfilePage.propTypes = {
       sci_tech_exp: PropTypes.string,
       phase_transform_exp: PropTypes.string,
     }),
-  })).isRequired,
+    admin_profile: PropTypes.shape({
+      position: PropTypes.string,
+      mobile_number: PropTypes.string,
+      verified: PropTypes.bool,
+    }),
+  }).isRequired,
   getUserProfileConnect: PropTypes.func.isRequired,
   updateUserProfileConnect: PropTypes.func.isRequired,
   createUserProfileConnect: PropTypes.func.isRequired,

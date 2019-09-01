@@ -35,6 +35,7 @@ _TEST_CONFIGS_PATH = Path(
 class TestSessionService(BaseTestCase):
     users_host = os.environ.get('USERS_HOST')
     base_url = f'http://{users_host}'
+    _email = None
     _id = None
 
     @classmethod
@@ -54,16 +55,15 @@ class TestSessionService(BaseTestCase):
         data = resp.json()
         cls.token = data.get('token')
 
-        user_resp = requests.get(
-            f'{cls.base_url}/auth/status',
-            headers={
-                'Content-type': 'application/json',
-                'Authorization': f'Bearer {cls.token}'
-            }
+        mongo = MongoClient(
+            host=os.environ.get('MONGO_HOST'),
+            port=int(os.environ.get('MONGO_PORT'))
         )
-        data = user_resp.json()
-        cls.user_id = data.get('data')['_id']
+        user = mongo.arc_dev.users.find_one({'email': 'jane@culver.edu.us'})
+
+        cls.user_id = str(user['_id'])
         cls._id = cls.user_id
+        cls._email = 'jane@culver.edu.us'
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -75,7 +75,7 @@ class TestSessionService(BaseTestCase):
         )
         # user = mongo['arc_dev'].users.find_one({'_id': ObjectId(cls._id)})
         # And just delete Jane from the db
-        mongo.arc_dev.users.delete_one({'_id': ObjectId(cls._id)})
+        mongo.arc_dev.users.delete_one({'email': cls._email})
 
     def login_jane(self, client):
         with open(_TEST_CONFIGS_PATH, 'r') as f:
@@ -118,15 +118,6 @@ class TestSessionService(BaseTestCase):
         self.assertTrue(session_store.get('configurations'))
         self.assertFalse(session_store.get('is_admin'))
         self.assertTrue(session_store.get('alloy_store'))
-
-    def test_session_user_ping(self):
-        """Just a sanity check test that there is connection to users."""
-        with current_app.test_client() as client:
-            res = client.get('/users/ping', content_type='application/json')
-            data = json.loads(res.data.decode())
-            self.assertEqual(res.status_code, 200)
-            self.assertEqual(data['message'], 'pong')
-            self.assertEqual(data['status'], 'success')
 
     def test_session_post(self):
         """Ensure we can use the requests library to make registration/login

@@ -106,7 +106,7 @@ class ConfigForm extends Component {
     return (
       <React.Fragment>
         <div className={styles.first}>
-          <div className="input-row">
+          <div className="input-col">
             <h6>CCT/TTT method</h6>
             <Select
               name="method"
@@ -120,9 +120,9 @@ class ConfigForm extends Component {
               onChange={option => updateConfigMethodConnect(option.value)}
             />
           </div>
-          <div className="input-row">
+          <div className="input-col">
             <h6>Grain size</h6>
-            <div className="input-row">
+            <div className={styles.grainSize}>
               <div className="input-row">
                 <span>ASTM</span>
                 <TextField
@@ -133,6 +133,7 @@ class ConfigForm extends Component {
                   length="short"
                 />
               </div>
+              <span> = </span>
               <div className="input-row">
                 <span>Diameter</span>
                 <TextFieldExtra
@@ -141,37 +142,43 @@ class ConfigForm extends Component {
                   onChange={val => updateGrainSizeConnect('dia', val)}
                   value={configurations.grain_size_diameter}
                   length="short"
-                  suffix="μ"
+                  suffix="μm"
                 />
               </div>
             </div>
           </div>
         </div>
         <div className={styles.second}>
-          <h5>Transformation temperature</h5>
+          <h5>Transformation limits</h5>
           <div className={styles.configRow}>
             <div>
-              <h6>Austenite start/stop</h6>
+              <h6>Ferrite/Pearlite</h6>
               <div className={styles.configGroup}>
                 <div className="input-row">
-                  <span>Ae1</span>
+                  <span>
+                    A
+                    <sub>e1</sub>
+                  </span>
                   <TextFieldExtra
                     type="text"
                     name="ae1_temp"
                     onChange={val => this.handleUpdateAe('ae1_temp', val)}
-                    value={roundTo(configurations.ae1_temp, 4)}
+                    value={roundTo(configurations.ae1_temp, 1)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae}
                   />
                 </div>
                 <div className="input-row">
-                  <span>Ae3</span>
+                  <span>
+                    A
+                    <sub>e3</sub>
+                  </span>
                   <TextFieldExtra
                     type="text"
                     name="ae3_temp"
                     onChange={val => this.handleUpdateAe('ae3_temp', val)}
-                    value={roundTo(configurations.ae3_temp, 4)}
+                    value={roundTo(configurations.ae3_temp, 1)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae}
@@ -182,53 +189,22 @@ class ConfigForm extends Component {
                 name="auto_calculate_ae"
                 onChange={val => this.toggleAeAutoCalc(val)}
                 isChecked={configurations.auto_calculate_ae}
-                label="Auto-calculate Austenite"
+                label="Auto-calculate Ae"
               />
             </div>
             <div>
-              <h6>Martensite start/stop</h6>
-              <div className={styles.configGroup}>
+              <h6>Bainite</h6>
+              <div className={`${styles.configGroup} ${styles.bainite}`}>
                 <div className="input-row">
-                  <span>MS</span>
-                  <TextFieldExtra
-                    type="text"
-                    name="ms_temp"
-                    onChange={val => this.handleUpdateMs('ms_temp', val)}
-                    value={roundTo(configurations.ms_temp, 4)}
-                    length="short"
-                    suffix="°C"
-                    isDisabled={configurations.auto_calculate_ms}
-                  />
-                </div>
-                <div className="input-row">
-                  <span>MS rate parameter</span>
-                  <TextField
-                    type="text"
-                    name="ms_rate_param"
-                    onChange={val => this.handleUpdateMs('ms_rate_param', val)}
-                    value={roundTo(configurations.ms_rate_param, 4)}
-                    length="short"
-                    isDisabled={configurations.auto_calculate_ms}
-                  />
-                </div>
-              </div>
-              <Checkbox
-                name="auto_calculate_ms"
-                onChange={val => this.toggleMsAutoCalc(val)}
-                isChecked={configurations.auto_calculate_ms}
-                label="Auto-calculate MS"
-              />
-            </div>
-            <div>
-              <h6>Bainite start/stop</h6>
-              <div className={styles.configGroup}>
-                <div className="input-row">
-                  <span>BS</span>
+                  <span>
+                    B
+                    <sub>s</sub>
+                  </span>
                   <TextFieldExtra
                     type="text"
                     name="bs_temp"
                     onChange={val => this.handleUpdateBs('bs_temp', val)}
-                    value={roundTo(configurations.bs_temp, 4)}
+                    value={roundTo(configurations.bs_temp, 1)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_bs}
@@ -242,13 +218,54 @@ class ConfigForm extends Component {
                 label="Auto-calculate BS"
               />
             </div>
+            <div>
+              <h6>Martensite</h6>
+              <div className={styles.configGroup}>
+                <div className="input-row">
+                  <span>
+                    M
+                    <sub>s</sub>
+                  </span>
+                  <TextFieldExtra
+                    type="text"
+                    name="ms_temp"
+                    onChange={val => this.handleUpdateMs('ms_temp', val)}
+                    value={roundTo(configurations.ms_temp, 1)}
+                    length="short"
+                    suffix="°C"
+                    isDisabled={configurations.auto_calculate_ms}
+                  />
+                </div>
+                <div className="input-row">
+                  <span>
+                    M
+                    <sub>s</sub>
+                    &nbsp;rate parameter
+                  </span>
+                  <TextField
+                    type="text"
+                    name="ms_rate_param"
+                    onChange={val => this.handleUpdateMs('ms_rate_param', val)}
+                    value={roundTo(configurations.ms_rate_param, 1)}
+                    length="short"
+                    isDisabled={configurations.auto_calculate_ms}
+                  />
+                </div>
+              </div>
+              <Checkbox
+                name="auto_calculate_ms"
+                onChange={val => this.toggleMsAutoCalc(val)}
+                isChecked={configurations.auto_calculate_ms}
+                label="Auto-calculate MS"
+              />
+            </div>
           </div>
         </div>
         <div className={styles.third}>
-          <h5>Set up</h5>
+          <h5>Nucleation parameters</h5>
           <div className={styles.configGroup}>
             <div className="input-row">
-              <span>Nucleation start</span>
+              <span>Start</span>
               <TextFieldExtra
                 type="text"
                 name="nucleation_start"
@@ -259,7 +276,7 @@ class ConfigForm extends Component {
               />
             </div>
             <div className="input-row">
-              <span>Nucleation finish</span>
+              <span>Finish</span>
               <TextFieldExtra
                 type="text"
                 name="nucleation_finish"

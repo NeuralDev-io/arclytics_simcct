@@ -1,0 +1,15 @@
+Please verify your new email!
+
+Hi {{ user_name }},
+
+To reactivate your Arclytics Sim account please verify the new email address by clicking the link below or by entering
+the URL in your browser.
+
+{{ confirm_url }}
+
+If you are having trouble with this process, please contact our team at help@arclytics.io.
+We're here to help.
+
+
+Cheers,
+The Arclytics Team

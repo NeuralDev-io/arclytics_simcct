@@ -131,21 +131,21 @@ class Simulation(Resource):
             # TIMER START
             start = time.time()
             # Running these in parallel with threading
-            # ttt_process = Thread(sim.ttt())
-            # cct_process = Thread(sim.cct())
-            # user_cooling_process = Thread(sim.user_cooling_curve())
+            ttt_process = Thread(target=sim.ttt)
+            cct_process = Thread(target=sim.cct)
+            user_cooling_process = Thread(target=sim.user_cooling_profile)
             # Starting CCT first because it takes longer.
-            # cct_process.start()
-            # ttt_process.start()
-            # user_cooling_process.start()
+            cct_process.start()
+            user_cooling_process.start()
+            ttt_process.start()
 
             # Now we stop the main thread to wait for them to finish.
-            # user_cooling_process.join()
-            user_time_taken = time_func(sim.user_cooling_profile)
-            # ttt_process.join()
-            ttt_time_taken = time_func(sim.ttt)
-            # cct_process.join()
-            cct_time_taken = time_func(sim.cct)
+            # user_time_taken = time_func(sim.user_cooling_profile)
+            user_time_taken = time_func(user_cooling_process.join())
+            # ttt_time_taken = time_func(sim.ttt)
+            ttt_time_taken = time_func(ttt_process.join())
+            # cct_time_taken = time_func(sim.cct)
+            cct_time_taken = time_func(cct_process.join())
             finish = time.time()
 
             # TODO(andrew@neuraldev.io): We need to store the results in the

@@ -133,7 +133,6 @@ deba49685ca4        arc_sim_client:1.0           "docker-entrypoint.s…"   Abou
 30d29a1eeee9        arc_sim_users_service:1.0    "/docker-entrypoint.…"   About a minute ago   Up About a minute   0.0.0.0:8000->8000/tcp                     arc-users
 c34f86790ad8        arc_simcct_service:1.0       "/docker-entrypoint.…"   About an hour ago    Up About an hour    0.0.0.0:8001->8001/tcp                     arc-simcct
 b9e0c572a505        arc_sim_swagger:1.0          "sh /usr/share/nginx…"   3 days ago           Up 8 hours          80/tcp, 3001/tcp, 0.0.0.0:3001->8080/tcp   swagger-ui
-2f2edc1b1ef7        arc_sim_celery_service:1.0   "/bin/sh -c 'celery …"   4 days ago           Up 8 hours          0.0.0.0:5555->5555/tcp                     arc-celery
 ae1cc5ab4e68        arc_sim_mongo:1.0            "docker-entrypoint.s…"   5 days ago           Up 11 hours         0.0.0.0:27017->27017/tcp                   arc-mongo
 dab8694ce845        arc_sim_redis:1.0            "docker-entrypoint.s…"   5 days ago           Up 11 hours         0.0.0.0:6379->6379/tcp                     arc-redis
 ```
@@ -148,7 +147,6 @@ deba49685ca4        arc_sim_client:1.0           "docker-entrypoint.s…"   Abou
 30d29a1eeee9        arc_sim_users_service:1.0    "/docker-entrypoint.…"   About a minute ago   Up About a minute   0.0.0.0:8000->8000/tcp                     arc-users
 c34f86790ad8        arc_simcct_service:1.0       "/docker-entrypoint.…"   About an hour ago    Up About an hour    0.0.0.0:8001->8001/tcp                     arc-simcct
 b9e0c572a505        arc_sim_swagger:1.0          "sh /usr/share/nginx…"   3 days ago           Up 8 hours          80/tcp, 3001/tcp, 0.0.0.0:3001->8080/tcp   swagger-ui
-2f2edc1b1ef7        arc_sim_celery_service:1.0   "/bin/sh -c 'celery …"   4 days ago           Up 8 hours          0.0.0.0:5555->5555/tcp                     arc-celery
 ae1cc5ab4e68        arc_sim_mongo:1.0            "docker-entrypoint.s…"   5 days ago           Up 11 hours         0.0.0.0:27017->27017/tcp                   arc-mongo
 dab8694ce845        arc_sim_redis:1.0            "docker-entrypoint.s…"   5 days ago           Up 11 hours         0.0.0.0:6379->6379/tcp                     arc-redis
 ```
@@ -167,7 +165,6 @@ deba49685ca4        arc_sim_client:1.0           "docker-entrypoint.s…"   2 mi
 30d29a1eeee9        arc_sim_users_service:1.0    "/docker-entrypoint.…"   2 minutes ago       Exited (137) 20 seconds ago                                              arc-users
 c34f86790ad8        arc_simcct_service:1.0       "/docker-entrypoint.…"   About an hour ago   Up About an hour              0.0.0.0:8001->8001/tcp                     arc-simcct
 b9e0c572a505        arc_sim_swagger:1.0          "sh /usr/share/nginx…"   3 days ago          Up 8 hours                    80/tcp, 3001/tcp, 0.0.0.0:3001->8080/tcp   swagger-ui
-2f2edc1b1ef7        arc_sim_celery_service:1.0   "/bin/sh -c 'celery …"   4 days ago          Up 8 hours                    0.0.0.0:5555->5555/tcp                     arc-celery
 ae1cc5ab4e68        arc_sim_mongo:1.0            "docker-entrypoint.s…"   5 days ago          Up 11 hours                   0.0.0.0:27017->27017/tcp                   arc-mongo
 dab8694ce845        arc_sim_redis:1.0            "docker-entrypoint.s…"   5 days ago          Up 11 hours                   0.0.0.0:6379->6379/tcp                     arc-redis
 
@@ -185,7 +182,6 @@ arc_sim_swagger          1.0                 a947b052fd96        2 minutes ago  
 arc_sim_client           1.0                 9d7dc017c538        2 minutes ago       895MB
 arc_sim_users_service    1.0                 379664ae171b        3 minutes ago       437MB
 arc_sim_mongo            1.0                 bba28f4d4781        4 minutes ago       413MB
-arc_sim_celery_service   1.0                 bd19e8562da4        4 minutes ago       113MB
 arc_simcct_service       1.0                 fb648c779cd3        5 minutes ago       618MB
 arc_sim_redis            1.0                 e2e646c03358        7 minutes ago       98.2MB
 redis                    5.0.5               f7302e4ab3a8        3 days ago          98.2MB
@@ -209,7 +205,6 @@ redis                    5.0.5               f7302e4ab3a8        3 days ago     
 arc_sim_swagger          1.0                 aa9244f9f297        4 days ago           51.9MB
 arc_sim_client           1.0                 c6d1f45bc149        4 days ago           895MB
 arc_sim_mongo            1.0                 d24defd62cde        5 days ago           413MB
-arc_sim_celery_service   1.0                 4e73c62a6fef        5 days ago           114MB
 <none>                   <none>              c13142733b7c        5 days ago           98.2MB
 node                     10.16.2-alpine      4f877c96a193        8 days ago           76.4MB
 mongo                    4.0.11              f7adfc4dbcf5        2 weeks ago          413MB
@@ -378,14 +373,17 @@ Commands:
   scale       Set number of containers to run for a service. Numbers are specified
               in the form `service=num` as arguments.
 
-Service (only one for `logs`; * default for `up`):
-  users *
-  celery-worker *
-  simcct *
-  dask-scheduler *
-  dask-worker *
-  redis *
-  mongodb *
+Optional Containers:
+  -S, --swagger    Run the Swagger container with the cluster.
+  -J, --jupyter    Run the Jupyter container with the cluster.
+
+Service (only one for logs):
+  users
+  simcct
+  dask-scheduler
+  dask-worker
+  redis
+  mongodb
   jupyter
   swagger
 

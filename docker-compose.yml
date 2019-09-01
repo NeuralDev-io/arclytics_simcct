@@ -3,52 +3,46 @@ version: '3.7'
 
 services:
 
-  users:
+  arclytics:
     build:
-      context: ./services/users
+      context: ./services/arclytics
       dockerfile: Dockerfile
-    image: neuraldev/arc_sim_users_service:1.0
+      labels:
+        arclytics.io: "development"
+    image: neuraldev/arc_sim_flask_service:1.0
     volumes:  # used to mount the code into the container for live updates
-      - ./services/users:/usr/src/app
+#      - arclytics_dir:/usr/src/app  # This would be using a bind named volume mount
+      - ./services/arclytics:/usr/src/app  # This is a bind mount
     ports:
       - 8000:8000
     expose:
       - 8000
     environment:
+      - FLASK_APP=arc_app/app.py
       - FLASK_ENV=development
       - APP_SETTINGS=configs.flask_conf.DevelopmentConfig
+      - SECRET_KEY=${SECRET_KEY}
+      - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - MONGO_URI=mongodb://mongodb:27017
+      - MONGO_APP_DB=arc_dev
+      - MONGO_APP_USER=${MONGO_APP_USER}
+      - MONGO_USER_PASSWORD=${MONGO_USER_PASSWORD}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - REDIS_USER=${REDIS_USER}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MAIL_SERVER=${MAIL_SERVER}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USE_TLS=${MAIL_USE_TLS}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
       - SIMCCT_HOST=simcct:8001
       - CLIENT_HOST=client:3000
+      - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
     depends_on:
       - mongodb
-      - redis
-      - celery-worker
-    networks:
-      - host
-
-  celery-worker:
-    build:
-      context: ./services/celery-worker
-      dockerfile: Dockerfile
-    image: neuraldev/arc_sim_celery_service:1.0
-    volumes:
-      - ./services/celery-worker:/usr/src/app
-    ports:
-      - 5555:5555  # Flower Web GUI management of Celery
-    expose:
-      - 5555
-    environment:
-      - C_FORCE_ROOT=true
-      - FLASK_ENV=development
-      - APP_SETTINGS=flask_conf.DevelopmentConfig
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    depends_on:
       - redis
     networks:
       - host
@@ -57,6 +51,8 @@ services:
     build:
       context: ./services/simcct
       dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
     image: neuraldev/arc_simcct_service:1.3
     volumes:
       - ./services/simcct:/usr/src/app
@@ -68,9 +64,11 @@ services:
       - FLASK_APP=sim_app/app.py
       - FLASK_ENV=development
       - APP_SETTINGS=configs.flask_conf.DevelopmentConfig
+      - SECRET_KEY=${SECRET_KEY}
+      - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - USERS_HOST=users:8000
+      - USERS_HOST=arclytics:8000
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - MONGO_APP_DB=arc_dev
@@ -78,6 +76,8 @@ services:
       - MONGO_USER_PASSWORD=${MONGO_USER_PASSWORD}
       - MONGO_URI=mongodb://mongodb:27017
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
+      - REDIS_USER=${REDIS_USER}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     depends_on:
       - redis
     networks:
@@ -87,6 +87,8 @@ services:
     build:
       context: ./services/dask
       dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
     image: neuraldev/arc_dask_scheduler:1.0
     hostname: dask-scheduler
     ports:
@@ -104,6 +106,8 @@ services:
     build:
       context: ./services/dask
       dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
     image: neuraldev/arc_dask_worker:1.0
     # container_name: arc-dask-worker  # Cannot use for scaling
     hostname: dask-worker
@@ -115,10 +119,17 @@ services:
     build:
       context: ./services/jupyter
       dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
     image: neuraldev/arc_dask_notebook:1.0
+    domainname: io.arclytics.app
     hostname: jupyter
     volumes:
-      - ./services/jupyter:/home/arclytics/
+#      - ./services/jupyter:/home/arclytics/
+#      - jupyter_notebooks_dir:/home/arclytics/
+      - type: bind
+        source: ./services/jupyter
+        target: /home/arclytics/
     ports:
       - 8888:8888
     expose:
@@ -136,6 +147,8 @@ services:
     build:
       context: ./services/redis
       dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
     image: neuraldev/arc_sim_redis:1.1
     restart: always
     ports:
@@ -149,6 +162,8 @@ services:
     build:
       context: ./services/db
       dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
     image: neuraldev/arc_sim_mongo:1.1
     restart: always
     ports:
@@ -165,6 +180,8 @@ services:
     build:
       context: ./services/client
       dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
     image: neuraldev/arc_sim_client:1.1
     volumes:
       - ./services/client:/usr/src/app
@@ -176,11 +193,7 @@ services:
     environment:
       - NODE_ENV=development
     depends_on:
-      - users
       - mongodb
-    links:
-      - users
-      - simcct
     networks:
       - host
 
@@ -188,6 +201,8 @@ services:
     build:
       context: ./services/fluentd
       dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
     image: neuraldev/arc_fluentd:0.9
     restart: always
     ports:
@@ -226,6 +241,8 @@ services:
     build:
       context: ./services/fluent-python
       dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
     image: neuraldev/arc_fluent_python:1.0
     ports:
       - 5005:5000
@@ -247,6 +264,8 @@ services:
     build:
       context: ./services/fluent-react
       dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
     image: neuraldev/arc_fluent_react:1.0
     ports:
       - 80:80
@@ -266,9 +285,9 @@ services:
     build:
       context: ./services/swagger
       dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
     image: neuraldev/arc_sim_swagger:1.0
-    volumes:
-      - ./services/swagger/swagger.yaml:/usr/share/nginx/html/swagger.yaml
     ports:
       - 3001:8080  # expose ports - HOST:CONTAINER
     expose:
@@ -280,3 +299,30 @@ services:
 
 networks:
   host:
+    driver: bridge
+    labels:
+      arclytics.io: "development"
+
+# https://docs.docker.com/compose/compose-file/#volume-configuration-reference
+#
+#volumes:
+  # TODO(andrew@neuraldev.io):
+  #  This is not working as a dir needs to be created
+  #  since Docker creates a Volume in /var/lib/docker/volumes/vol_name/_data
+  #  which is an abstraction layer that gets bound to the Docker container.
+#  arclytics_dir:
+#    labels:
+#      arclytics.io: "development"
+#    driver: local
+#    driver_opts:
+#      device: "./services/users"
+#      type: none
+#      o: bind
+#  jupyter_notebooks_dir:
+#    labels:
+#      arclytics.io: "development"
+#    driver: local
+#    driver_opts:
+#      device: "./services/jupyter"
+#      type: none
+#      o: bind

@@ -39,6 +39,7 @@ from users_app.resources.share import share_blueprint
 from users_app.resources.user_alloys import user_alloys_blueprint
 from users_app.resources.last_simulation import last_simulation_blueprint
 from users_app.resources.save_simulation import save_simulation_blueprint
+from users_app.resources.ratings import ratings_blueprint
 
 # Instantiate the Mongo object to store a connection
 app_settings = os.getenv('APP_SETTINGS')
@@ -126,6 +127,7 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     app.register_blueprint(share_blueprint)
     app.register_blueprint(last_simulation_blueprint)
     app.register_blueprint(save_simulation_blueprint)
+    app.register_blueprint(ratings_blueprint)
 
     # Connect to the Mongo Client
     db = init_db(app)

@@ -29,11 +29,13 @@ from email_validator import EmailNotValidError, validate_email
 from flask import Blueprint, jsonify, redirect, render_template, request
 from flask import current_app as app
 from mongoengine.errors import NotUniqueError, ValidationError
+from geoip2.errors import AddressNotFoundError
+import geoip2.database
 
 from logger.arc_logger import AppLogger
 from users_app.extensions import bcrypt
 from users_app.middleware import (authenticate_flask, logout_authenticate)
-from users_app.models import User
+from users_app.models import User, LoginData
 from users_app.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
@@ -49,6 +51,7 @@ class SessionValidationError(Exception):
     A custom exception to be raised by a threaded async call to register if
     the response is not what we are expecting.
     """
+
     def __init__(self, msg: str):
         super(SessionValidationError, self).__init__(msg)
 
@@ -58,6 +61,7 @@ class SimCCTBadServerLogout(Exception):
     A custom exception to be raised by a synchronous call to logout on the
     SimCCT server if the response is not what we are expecting.
     """
+
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
 
@@ -85,7 +89,9 @@ def confirm_email(token):
         response['error'] = e
         return jsonify(response), 400
     except URLTokenExpired as e:
-        return redirect(f'http://{client_host}/confirm/tokenexpired', code=302)
+        return redirect(
+            f'http://{client_host}/signin/tokenexpired?=true', code=302
+        )
     except Exception as e:
         response['error'] = str(e)
         return jsonify(response), 400
@@ -474,6 +480,34 @@ def login() -> any:
                 response['message'] = 'Session validation error.'
                 response['error'] = str(e)
                 return jsonify(response), 400
+
+            # Get location data
+            reader = geoip2.database.Reader(
+                '/usr/src/app/users_app/resources/GeoLite2-City/'
+                'GeoLite2-City.mmdb'
+            )
+            try:
+                location_data = reader.city(str(request.remote_addr))
+                # location_data = reader.city('203.10.91.88')
+                country = location_data.country.names['en']
+                state = location_data.subdivisions[0].names['en']
+                ip_address = location_data.traits.ip_address
+
+                response['country'] = country
+                response['state'] = state
+                user.login_data.append(
+                    LoginData(
+                        country=country, state=state, ip_address=ip_address
+                    )
+                )
+                user.save()
+            except AddressNotFoundError:
+                ip_address = request.remote_addr
+                user.login_data.append(LoginData(ip_address=ip_address))
+                user.save()
+
+            response['ip_address'] = ip_address
+            reader.close()
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
@@ -891,6 +925,8 @@ def get_user_status(user_id) -> Tuple[dict, int]:
         'isProfile': is_profile,
         'admin': user.is_admin,
         'verified': user.verified,
+        'email': user.email,
+        'active': user.active
     }
     response = {'status': 'success', 'data': data}
     return jsonify(response), 200

@@ -50,6 +50,7 @@ def log_test_user_in(self, user: User, password: str) -> str:
 
 class TestUserService(BaseTestCase):
     """Tests for the User API service."""
+
     def test_ping(self):
         """Ensure the /ping route behaves correctly."""
         res = self.client.get('/ping')

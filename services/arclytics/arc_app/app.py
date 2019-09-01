@@ -62,8 +62,8 @@ def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
             host=host,
             port=int(port),
             alias='default',
-            username=app.config['MONGO_USER'],
-            password=app.config['MONGO_PASSWORD'],
+            username=os.environ.get('MONGO_APP_USER', None),
+            password=os.environ.get('MONGO_APP_USER_PASSWORD', None),
         )
     else:
         mongo_client = connect(
@@ -117,13 +117,11 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
 
     # ========== # CONNECT TO DATABASE # ========== #
     # Mongo Client interface with MongoEngine as Object Document Mapper (ODM)
-    app.config['MONGO_URI'] = os.environ.get('MONGO_URI', '')
-    app.config['MONGO_HOST'] = os.environ.get('MONGO_HOST', '')
-    app.config['MONGO_PORT'] = os.environ.get('MONGO_PORT', 27017)
-    if os.environ.get('FLASK_ENV') == 'production':
-        print(os.environ.__dict__)
-        app.config['MONGO_USER'] = os.environ.get('MONGO_USER', '')
-        app.config['MONGO_PASSWORD'] = os.environ.get('MONGO_PASSWORD', '')
+    app.config.update(dict(
+        MONGO_URI=os.environ.get('MONGO_URI', ''),
+        MONGO_HOST=os.environ.get('MONGO_HOST', ''),
+        MONGO_PORT=os.environ.get('MONGO_PORT', 27017)
+    ))
 
     # ========== # FLASK BLUEPRINTS # ========== #
     app.register_blueprint(users_blueprint)

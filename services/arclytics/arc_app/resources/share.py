@@ -46,6 +46,7 @@ from arc_app.utilities import (
     ElementSymbolInvalid, ElementInvalid, MissingElementError,
     DuplicateElementError
 )
+from arc_app.email import send_email
 
 logger = AppLogger(__name__)
 
@@ -87,10 +88,12 @@ class ShareSimulationLink(Resource):
             alloy_store_object = AlloyStore(**alloy_store)
             alloy_store_object.validate(clean=True)
             shared_simulation_object = SharedSimulation(
-                owner_email=owner.email,
-                created_date=shared_date,
-                configuration=config_object,
-                alloy_store=alloy_store_object
+                **{
+                    'owner_email': owner.email,
+                    'created_date': shared_date,
+                    'configuration': config_object,
+                    'alloy_store': alloy_store_object
+                }
             )
             shared_simulation_object.save()
         except ElementSymbolInvalid as e:
@@ -244,33 +247,26 @@ class ShareSimulationEmail(Resource):
 
         # Send email/emails to the email address/addresses provided in the
         # request with the link to the shared simulation.
-        from celery_runner import celery
-        # if isinstance(valid_email_list, str):
-        celery.send_task(
-            'tasks.send_email',
-            kwargs={
-                'to':
-                valid_email_list,
-                'subject_suffix':
-                f'{owner.first_name} {owner.last_name} '
-                'has shared a configuration with you!',
-                'html_template':
-                render_template(
-                    'share_configuration.html',
-                    email=valid_email_list,
-                    owner_name=f'{owner.first_name} {owner.last_name}',
-                    optional_message=optional_msg,
-                    config_url=simulation_url
-                ),
-                'text_template':
-                render_template(
-                    'share_configuration.txt',
-                    email=valid_email_list,
-                    owner_name=f'{owner.first_name} {owner.last_name}',
-                    optional_message=optional_msg,
-                    config_url=simulation_url
-                ),
-            }
+
+        send_email(
+            to=valid_email_list,
+            subject_suffix=(
+                f'{owner.first_name} {owner.last_name} has shared a '
+                f'configuration with you!'),
+            html_template=render_template(
+                'share_configuration.html',
+                email=valid_email_list,
+                owner_name=f'{owner.first_name} {owner.last_name}',
+                optional_message=optional_msg,
+                config_url=simulation_url
+            ),
+            text_template=render_template(
+                'share_configuration.txt',
+                email=valid_email_list,
+                owner_name=f'{owner.first_name} {owner.last_name}',
+                optional_message=optional_msg,
+                config_url=simulation_url
+            ),
         )
 
         response['status'] = 'success'

@@ -37,6 +37,7 @@ from arc_app.token import (
     generate_confirmation_token, generate_url, confirm_token, URLTokenError,
     generate_promotion_confirmation_token
 )
+from arc_app.email import send_email
 from arc_app.utilities import URLTokenExpired
 
 logger = AppLogger(__name__)
@@ -118,32 +119,25 @@ class AdminCreate(Resource):
             'admin.cancel_promotion', promotion_cancellation_token
         )
 
-        from celery_runner import celery
-        celery.send_task(
-            'tasks.send_email',
-            kwargs={
-                'to': [admin.email],
-                'subject_suffix':
-                'You Promoted a User!',
-                'html_template':
-                render_template(
-                    'cancel_promotion.html',
-                    promotion_cancellation_url=promotion_cancellation_url,
-                    email=admin.email,
-                    position=position,
-                    admin_name=f'{admin.first_name} {admin.last_name}',
-                    user_name=f'{user.first_name} {user.last_name}'
-                ),
-                'text_template':
-                render_template(
-                    'cancel_promotion.txt',
-                    promotion_cancellation_url=promotion_cancellation_url,
-                    email=admin.email,
-                    position=position,
-                    admin_name=f'{admin.first_name} {admin.last_name}',
-                    user_name=f'{user.first_name} {user.last_name}'
-                )
-            }
+        send_email(
+            to=[admin.email],
+            subject_suffix='You Promoted a User!',
+            html_template=render_template(
+                'cancel_promotion.html',
+                promotion_cancellation_url=promotion_cancellation_url,
+                email=admin.email,
+                position=position,
+                admin_name=f'{admin.first_name} {admin.last_name}',
+                user_name=f'{user.first_name} {user.last_name}'
+            ),
+            text_template=render_template(
+                'cancel_promotion.txt',
+                promotion_cancellation_url=promotion_cancellation_url,
+                email=admin.email,
+                position=position,
+                admin_name=f'{admin.first_name} {admin.last_name}',
+                user_name=f'{user.first_name} {user.last_name}'
+            )
         )
 
         # Create a verification link for the user being promoted
@@ -152,33 +146,27 @@ class AdminCreate(Resource):
             'admin.verify_promotion', promotion_verification_token
         )
 
-        celery.send_task(
-            'tasks.send_email',
-            kwargs={
-                'to': [user.email],
-                'subject_suffix':
-                'Acknowledge Promotion',
-                'html_template':
-                render_template(
-                    'acknowledge_promotion.html',
-                    promotion_verification_url=promotion_verification_url,
-                    email=user.email,
-                    position=position,
-                    user_name=f'{user.first_name} {user.last_name}',
-                    admin_email=admin.email,
-                    admin_name=f'{admin.first_name} {admin.last_name}'
-                ),
-                'text_template':
-                render_template(
-                    'acknowledge_promotion.html',
-                    promotion_verification_url=promotion_verification_url,
-                    email=user.email,
-                    position=position,
-                    user_name=f'{user.first_name} {user.last_name}',
-                    admin_email=admin.email,
-                    admin_name=f'{admin.first_name} {admin.last_name}'
-                )
-            }
+        send_email(
+            to=[user.email],
+            subject_suffix='Acknowledge Promotion',
+            html_template=render_template(
+                'acknowledge_promotion.html',
+                promotion_verification_url=promotion_verification_url,
+                email=user.email,
+                position=position,
+                user_name=f'{user.first_name} {user.last_name}',
+                admin_email=admin.email,
+                admin_name=f'{admin.first_name} {admin.last_name}'
+            ),
+            text_template=render_template(
+                'acknowledge_promotion.html',
+                promotion_verification_url=promotion_verification_url,
+                email=user.email,
+                position=position,
+                user_name=f'{user.first_name} {user.last_name}',
+                admin_email=admin.email,
+                admin_name=f'{admin.first_name} {admin.last_name}'
+            )
         )
 
         response['status'] = 'success'
@@ -330,28 +318,21 @@ def verify_promotion(token):
     promoter_id = user.admin_profile.promoted_by
     promoter = User.objects.get(id=promoter_id)
 
-    from celery_runner import celery
-    celery.send_task(
-        'tasks.send_email',
-        kwargs={
-            'to': [promoter.email],
-            'subject_suffix':
-            'Promotion Verified',
-            'html_template':
-            render_template(
-                'promotion_verified.html',
-                email=promoter.email,
-                promoter_name=f'{promoter.first_name} {promoter.last_name}',
-                user_name=f'{user.first_name} {user.last_name}'
-            ),
-            'text_template':
-            render_template(
-                'promotion_verified.txt',
-                email=promoter.email,
-                promoter_name=f'{promoter.first_name} {promoter.last_name}',
-                user_name=f'{user.first_name} {user.last_name}'
-            )
-        }
+    send_email(
+        to=[promoter.email],
+        subject_suffix='Promotion Verified',
+        html_template=render_template(
+            'promotion_verified.html',
+            email=promoter.email,
+            promoter_name=f'{promoter.first_name} {promoter.last_name}',
+            user_name=f'{user.first_name} {user.last_name}'
+        ),
+        text_template=render_template(
+            'promotion_verified.txt',
+            email=promoter.email,
+            promoter_name=f'{promoter.first_name} {promoter.last_name}',
+            user_name=f'{user.first_name} {user.last_name}'
+        )
     )
 
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
@@ -413,28 +394,21 @@ class DisableAccount(Resource):
             'admin.confirm_disable_account', account_disable_token
         )
 
-        from celery_runner import celery
-        celery.send_task(
-            'tasks.send_email',
-            kwargs={
-                'to': [admin.email],
-                'subject_suffix':
-                f'Confirm disable account action',
-                'html_template':
-                render_template(
-                    'confirm_disable_account.html',
-                    admin_name=f'{admin.first_name} {admin.last_name}',
-                    user_name=f'{user.first_name} {user.last_name}',
-                    account_disable_url=account_disable_url
-                ),
-                'text_template':
-                render_template(
-                    'confirm_disable_account.txt',
-                    admin_name=f'{admin.first_name} {admin.last_name}',
-                    user_name=f'{user.first_name} {user.last_name}',
-                    account_disable_url=account_disable_url
-                ),
-            }
+        send_email(
+            to=[admin.email],
+            subject_suffix='Confirm disable account action',
+            html_template=render_template(
+                'confirm_disable_account.html',
+                admin_name=f'{admin.first_name} {admin.last_name}',
+                user_name=f'{user.first_name} {user.last_name}',
+                account_disable_url=account_disable_url
+            ),
+            text_template=render_template(
+                'confirm_disable_account.txt',
+                admin_name=f'{admin.first_name} {admin.last_name}',
+                user_name=f'{user.first_name} {user.last_name}',
+                account_disable_url=account_disable_url
+            ),
         )
 
         response['status'] = 'success'
@@ -478,24 +452,17 @@ def confirm_disable_account(token):
     user.active = False
     user.save()
 
-    from celery_runner import celery
-    celery.send_task(
-        'tasks.send_email',
-        kwargs={
-            'to': [user.email],
-            'subject_suffix':
-            'Your Account has been disabled.',
-            'html_template':
-            render_template(
-                'account_disabled.html',
-                user_name=f'{user.first_name} {user.last_name}'
-            ),
-            'text_template':
-            render_template(
-                'account_disabled.txt',
-                user_name=f'{user.first_name} {user.last_name}'
-            )
-        }
+    send_email(
+        to=[user.email],
+        subject_suffix='Your Account has been disabled.',
+        html_template=render_template(
+            'account_disabled.html',
+            user_name=f'{user.first_name} {user.last_name}'
+        ),
+        text_template=render_template(
+            'account_disabled.txt',
+            user_name=f'{user.first_name} {user.last_name}'
+        )
     )
 
     # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
@@ -503,7 +470,6 @@ def confirm_disable_account(token):
     custom_redir_response = app.response_class(
         status=302, mimetype='application/json'
     )
-    # TODO(davidmatthews1004@gmail.com): Correct the url below.
     redirect_url = f'http://localhost:3000/'
     custom_redir_response.headers['Location'] = redirect_url
     # Additionally, if we need to, we can attach the JWT token in the header

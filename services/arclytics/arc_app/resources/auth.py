@@ -22,7 +22,7 @@ login, and logout.
 
 import os
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import Tuple
 
 import requests
 from email_validator import EmailNotValidError, validate_email
@@ -39,6 +39,7 @@ from arc_app.models import User, LoginData
 from arc_app.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
+from arc_app.email import send_email
 from arc_app.utilities import URLTokenError, URLTokenExpired
 
 logger = AppLogger(__name__)
@@ -124,26 +125,19 @@ def confirm_email_resend(user_id):
     confirmation_token = generate_confirmation_token(user.email)
     confirm_url = generate_url('auth.confirm_email', confirmation_token)
 
-    from celery_runner import celery
-    celery.send_task(
-        'tasks.send_email',
-        kwargs={
-            'to': [user.email],
-            'subject_suffix':
-            'Please Confirm Your Email',
-            'html_template':
-            render_template(
-                'activate.html',
-                confirm_url=confirm_url,
-                user_name=f'{user.first_name} {user.last_name}'
-            ),
-            'text_template':
-            render_template(
-                'activate.txt',
-                confirm_url=confirm_url,
-                user_name=f'{user.first_name} {user.last_name}'
-            )
-        }
+    send_email(
+        to=[user.email],
+        subject_suffix='Please Confirm Your Email',
+        html_template=render_template(
+            'activate.html',
+            confirm_url=confirm_url,
+            user_name=f'{user.first_name} {user.last_name}'
+        ),
+        text_template=render_template(
+            'activate.txt',
+            confirm_url=confirm_url,
+            user_name=f'{user.first_name} {user.last_name}'
+        )
     )
 
     response['status'] = 'success'
@@ -232,35 +226,20 @@ def register_user() -> Tuple[dict, int]:
         confirmation_token = generate_confirmation_token(email)
         confirm_url = generate_url('auth.confirm_email', confirmation_token)
 
-        from celery_runner import celery
-        celery.send_task(
-            'tasks.send_email',
-            kwargs={
-                'to': [email],
-                'subject_suffix':
-                'Please Confirm Your Email',
-                'html_template':
-                render_template(
-                    'activate.html',
-                    confirm_url=confirm_url,
-                    user_name=f'{new_user.first_name} {new_user.last_name}'
-                ),
-                'text_template':
-                render_template(
-                    'activate.txt',
-                    confirm_url=confirm_url,
-                    user_name=f'{new_user.first_name} {new_user.last_name}'
-                )
-            }
+        send_email(
+            to=[email],
+            subject_suffix='Please Confirm Your Email',
+            html_template=render_template(
+                'activate.html',
+                confirm_url=confirm_url,
+                user_name=f'{new_user.first_name} {new_user.last_name}'
+            ),
+            text_template=render_template(
+                'activate.txt',
+                confirm_url=confirm_url,
+                user_name=f'{new_user.first_name} {new_user.last_name}'
+            )
         )
-        # FIXME(andrew@neuraldev.io): Need to find a way to validate that it has
-        #  sent without waiting for the result.
-        # task_status = celery.AsyncResult(task.id).state
-
-        # while task_status == PENDING:
-        #     task_status = celery.AsyncResult(task.id).state
-        # The email tasks responds with a Tuple[bool, str]
-        # res = celery.AsyncResult(task.id)
 
         # Generic response regardless of email task working
         response['status'] = 'success'
@@ -624,28 +603,21 @@ def reset_password_email() -> Tuple[dict, int]:
     reset_url = generate_url('auth.confirm_reset_password', reset_token)
 
     # Send with the url to an email stored in the document of that user
-    from celery_runner import celery
-    celery.send_task(
-        'tasks.send_email',
-        kwargs={
-            'to': [user.email],
-            'subject_suffix':
-            'Reset your Arclytics Sim password',
-            'html_template':
-            render_template(
-                'reset_password.html',
-                reset_url=reset_url,
-                email=valid_email,
-                user_name=f'{user.first_name} {user.last_name}'
-            ),
-            'text_template':
-            render_template(
-                'reset_password.txt',
-                reset_url=reset_url,
-                email=valid_email,
-                user_name=f'{user.first_name} {user.last_name}'
-            )
-        }
+    send_email(
+        to=[user.email],
+        subject_suffix='Reset your Arclytics Sim password',
+        html_template=render_template(
+            'reset_password.html',
+            reset_url=reset_url,
+            email=valid_email,
+            user_name=f'{user.first_name} {user.last_name}'
+        ),
+        text_template=render_template(
+            'reset_password.txt',
+            reset_url=reset_url,
+            email=valid_email,
+            user_name=f'{user.first_name} {user.last_name}'
+        )
     )
 
     response['status'] = 'success'
@@ -705,28 +677,21 @@ def change_password(user_id):
         user.save()
 
         # The email to notify users.
-        from celery_runner import celery
-        celery.send_task(
-            'tasks.send_email',
-            kwargs={
-                'to': [user.email],
-                'subject_suffix':
-                'Your Arclytics Sim password has been changed',
-                'html_template':
-                render_template(
-                    'change_password.html',
-                    change_datetime=datetime.utcnow().isoformat(),
-                    email=user.email,
-                    user_name=f'{user.first_name} {user.last_name}'
-                ),
-                'text_template':
-                render_template(
-                    'change_password.txt',
-                    change_datetime=datetime.utcnow().isoformat(),
-                    email=user.email,
-                    user_name=f'{user.first_name} {user.last_name}'
-                )
-            }
+        send_email(
+            to=[user.email],
+            subject_suffix='Your Arclytics Sim password has been changed',
+            html_template=render_template(
+                'change_password.html',
+                change_datetime=datetime.utcnow().isoformat(),
+                email=user.email,
+                user_name=f'{user.first_name} {user.last_name}'
+            ),
+            text_template=render_template(
+                'change_password.txt',
+                change_datetime=datetime.utcnow().isoformat(),
+                email=user.email,
+                user_name=f'{user.first_name} {user.last_name}'
+            )
         )
 
         response['status'] = 'success'
@@ -769,26 +734,19 @@ def change_email(user_id) -> Tuple[dict, int]:
     confirm_token = generate_confirmation_token(valid_new_email)
     confirm_url = generate_url('auth.confirm_email', confirm_token)
 
-    from celery_runner import celery
-    celery.send_task(
-        'tasks.send_email',
-        kwargs={
-            'to': [valid_new_email],
-            'subject_suffix':
-            'Your have changed your email address!',
-            'html_template':
-            render_template(
-                'change_email.html',
-                user_name=f'{user.first_name} {user.last_name}',
-                confirm_url=confirm_url
-            ),
-            'text_template':
-            render_template(
-                'change_email.txt',
-                user_name=f'{user.first_name} {user.last_name}',
-                confirm_url=confirm_url
-            )
-        }
+    send_email(
+        to=[valid_new_email],
+        subject_suffix='Your have changed your Arclytics Sim account email.',
+        html_template= render_template(
+            'change_email.html',
+            user_name=f'{user.first_name} {user.last_name}',
+            confirm_url=confirm_url
+        ),
+        text_template=render_template(
+            'change_email.txt',
+            user_name=f'{user.first_name} {user.last_name}',
+            confirm_url=confirm_url
+        )
     )
 
     response['status'] = 'success'

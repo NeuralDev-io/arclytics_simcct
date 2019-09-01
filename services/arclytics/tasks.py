@@ -3,8 +3,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # email.py
-# 
-# Attributions: 
+#
+# Attributions:
 # [1]
 # https://medium.com/@taylorhughes/
 # three-quick-tips-from-two-years-with-celery-c05ff9d7f9eb
@@ -18,7 +18,6 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.09.01'
-
 """email.py: 
 
 This module defines the Email task.
@@ -36,22 +35,23 @@ from arc_app.middleware import async_func
 from arc_app.app import create_app
 # from arc_app.extensions import mail
 
-
 mail = Mail()
 
 app_settings = os.environ.get('APP_SETTINGS')
 
 app = create_app(configs_path=app_settings)
 
-app.config.update(dict(
-    MAIL_SUBJECT_PREFIX='[Arclytics]',
-    MAIL_DEFAULT_SENDER='Arclytics Team <admin@arclytics.io>',
-    MAIL_SERVER=os.environ.get('MAIL_SERVER', None),
-    MAIL_PORT=os.environ.get('MAIL_PORT', None),
-    MAIL_USE_TLS=True,
-    MAIL_USERNAME=os.environ.get('MAIL_USERNAME', ''),
-    MAIL_PASSWORD=os.environ.get('MAIL_PASSWORD', '')
-))
+app.config.update(
+    dict(
+        MAIL_SUBJECT_PREFIX='[Arclytics]',
+        MAIL_DEFAULT_SENDER='Arclytics Team <admin@arclytics.io>',
+        MAIL_SERVER=os.environ.get('MAIL_SERVER', None),
+        MAIL_PORT=os.environ.get('MAIL_PORT', None),
+        MAIL_USE_TLS=True,
+        MAIL_USERNAME=os.environ.get('MAIL_USERNAME', ''),
+        MAIL_PASSWORD=os.environ.get('MAIL_PASSWORD', '')
+    )
+)
 
 mail.init_app(app)
 
@@ -69,7 +69,7 @@ def _send_async_email(msg) -> None:
 
 
 def send_email(
-        to: list, subject_suffix: str, html_template, text_template, **kwargs
+    to: list, subject_suffix: str, html_template, text_template, **kwargs
 ) -> None:
     """A task to send an email.
 
@@ -83,9 +83,7 @@ def send_email(
     Returns:
         A Python Threading Thread so we can collect it for return messages.
     """
-    subject = '{} {}'.format(
-        app.config['MAIL_SUBJECT_PREFIX'], subject_suffix
-    )
+    subject = '{} {}'.format(app.config['MAIL_SUBJECT_PREFIX'], subject_suffix)
 
     msg = Message(
         subject=subject, recipients=to, html=html_template, body=text_template

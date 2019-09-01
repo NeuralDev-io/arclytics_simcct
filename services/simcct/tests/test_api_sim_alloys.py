@@ -32,7 +32,7 @@ _TEST_CONFIGS_PATH = Path(
 ) / 'simulation' / 'sim_configs.json'
 
 
-class TestSimConfigurations(BaseTestCase):
+class TestSimAlloys(BaseTestCase):
     def login_client(self, client):
         with open(_TEST_CONFIGS_PATH, 'r') as f:
             test_json = json.load(f)

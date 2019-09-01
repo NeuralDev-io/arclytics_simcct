@@ -42,9 +42,8 @@ class MongoAlloys(object):
             username = str(os.environ.get('MONGO_APP_USER'))
             password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
             db = str(os.environ.get('MONGO_APP_DB'))
-            uri = (f'mongodb://{username}:{password}@{host}:{port}'
-                   f'/{db}')
-            mongo_client = MongoClient(uri)
+            uri = f'{username}:{password}@{host}:{port}/{db}'
+            mongo_client = MongoClient(f'mongodb://{uri}')
         db_name = os.environ.get('MONGO_APP_DB', 'arc_dev')
         self.db = mongo_client[db_name]
         # We create an index to avoid duplicates

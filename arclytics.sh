@@ -379,6 +379,7 @@ dockerSystemPrune() {
     generalMessage "docker stop ${running_container_ids}"
     docker stop ${running_container_ids}
     generalMessage "docker system prune -af --volumes --filter 'label=arclytics.io'"
+    docker volume prune -f
     docker system prune -af --volumes --filter 'label=arclytics.io'
     completeMessage
 }

@@ -25,9 +25,7 @@ import unittest
 from pathlib import Path
 
 from arc_app.models import User, Configuration
-from arc_app.resources.auth import (
-    async_register_session, SessionValidationError, register_session
-)
+from arc_app.resources.auth import SessionValidationError, register_session
 from tests.test_api_base import BaseTestCase
 
 _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'

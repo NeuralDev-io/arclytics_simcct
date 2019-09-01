@@ -30,7 +30,7 @@ from mongoengine.connection import (
 )
 
 from arc_app.utilities import JSONEncoder
-from arc_app.extensions import cors, bcrypt, api
+from arc_app.extensions import cors, bcrypt, api, mail
 from arc_app.mongodb import MongoSingleton
 from arc_app.resources.users import users_blueprint
 from arc_app.resources.auth import auth_blueprint
@@ -42,7 +42,7 @@ from arc_app.resources.save_simulation import save_simulation_blueprint
 from arc_app.resources.ratings import ratings_blueprint
 
 # Instantiate the Mongo object to store a connection
-app_settings = os.getenv('APP_SETTINGS')
+app_settings = os.getenv('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')
 _mongo_client = None
 
 
@@ -162,5 +162,6 @@ def extensions(app) -> None:
     cors.init_app(app)
     bcrypt.init_app(app)
     api.init_app(app)
+    mail.init_app(app)
 
     return None

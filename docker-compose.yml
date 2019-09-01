@@ -28,7 +28,7 @@ services:
       - MONGO_URI=mongodb://mongodb:27017
       - MONGO_APP_DB=arc_dev
       - MONGO_APP_USER=${MONGO_APP_USER}
-      - MONGO_USER_PASSWORD=${MONGO_USER_PASSWORD}
+      - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_USER=${REDIS_USER}
@@ -73,7 +73,7 @@ services:
       - MONGO_PORT=27017
       - MONGO_APP_DB=arc_dev
       - MONGO_APP_USER=${MONGO_APP_USER}
-      - MONGO_USER_PASSWORD=${MONGO_USER_PASSWORD}
+      - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
       - MONGO_URI=mongodb://mongodb:27017
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
       - REDIS_USER=${REDIS_USER}

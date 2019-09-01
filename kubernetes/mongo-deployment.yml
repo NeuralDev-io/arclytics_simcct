@@ -19,35 +19,25 @@ spec:
           - name: MONGO_INITDB_ROOT_USERNAME
             valueFrom:
               secretKeyRef:
-                name: mongo-credentials
-                key: user
+                name: credentials
+                key: mongo_root_user
           - name: MONGO_INITDB_ROOT_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: mongo-credentials
-                key: password
-          - name: MONGO_USER
-            valueFrom:
-              secretKeyRef:
-                name: mongo-credentials
-                key: user
-          - name: MONGO_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: mongo-credentials
-                key: password
+                name: credentials
+                key: mongo_root_password
           - name: MONGO_APP_DB
             value: "arclytics"
           - name: MONGO_APP_USER
             valueFrom:
               secretKeyRef:
                 name: mongo-credentials
-                key: app_user
-          - name: MONGO_USER_PASSWORD
+                key: mongo_app_user
+          - name: MONGO_APP_USER_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: mongo-credentials
-                key: app_user_password
+                key: mongo_app_user_password
         volumeMounts:
           - name: mongo-volume-mount
             mountPath: /var/lib/mongo/data

@@ -27,14 +27,14 @@ class BaseConfig:
     """Base configuration"""
     TESTING = False
     BCRYPT_LOG_ROUNDS = 13
-    SECRET_KEY = os.environ.get('SECRET_KEY')
-    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT')
+    SECRET_KEY = os.environ.get('SECRET_KEY', None)
+    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', None)
     TOKEN_EXPIRATION_DAYS = 30
     TOKEN_EXPIRATION_SECONDS = 0
 
     # Flask Email
     MAIL_SUBJECT_PREFIX = '[Arclytics]'
-    MAIL_DEFAULT_SENDER = 'Arclytics Team <admin@neuraldev.io>'
+    MAIL_DEFAULT_SENDER = 'Arclytics Team <admin@arclytics.io>'
     MAIL_SERVER = os.environ.get('MAIL_SERVER', None)
     MAIL_PORT = os.environ.get('MAIL_PORT', None)
     MAIL_USE_TLS = True
@@ -47,12 +47,6 @@ class DevelopmentConfig(BaseConfig):
     MONGO_DBNAME = 'arc_dev'
     BCRYPT_LOG_ROUNDS = 4
 
-    # CELERY REDIS
-    REDIS_HOST = os.environ.get('REDIS_HOST', None)
-    REDIS_PORT = os.environ.get('REDIS_PORT', None)
-    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/14'
-    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/13'
-
 
 class TestingConfig(BaseConfig):
     """Testing configuration"""
@@ -63,12 +57,6 @@ class TestingConfig(BaseConfig):
     TOKEN_EXPIRATION_SECONDS = 5
 
     SESSION_PERMANENT = False
-
-    # CELERY REDIS
-    REDIS_HOST = os.environ.get('REDIS_HOST', None)
-    REDIS_PORT = os.environ.get('REDIS_PORT', None)
-    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/14'
-    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/13'
 
 
 class ProductionConfig(BaseConfig):

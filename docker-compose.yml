@@ -17,43 +17,29 @@ services:
       - 8000:8000
     expose:
       - 8000
+    env_file:
+      - ./.env
     environment:
+      - FLASK_APP=arc_app/app.py
       - FLASK_ENV=development
       - APP_SETTINGS=configs.flask_conf.DevelopmentConfig
+      - SECRET_KEY=${SECRET_KEY}
+      - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - MONGO_URI=mongodb://mongodb:27017
+      - MONGO_APP_DB=${MONGO_APP_DB}
+      - MONGO_APP_USER=${MONGO_APP_USER}
+      - MONGO_USER_PASSWORD=${MONGO_USER_PASSWORD}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - REDIS_USER=${REDIS_USER}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
       - SIMCCT_HOST=simcct:8001
       - CLIENT_HOST=client:3000
+      - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
     depends_on:
       - mongodb
-      - redis
-      - celery-worker
-    networks:
-      - host
-
-  celery-worker:
-    build:
-      context: ./services/celery-worker
-      dockerfile: Dockerfile
-      labels:
-        arclytics.io: "development"
-    image: neuraldev/arc_sim_celery_service:1.0
-    volumes:
-      - ./services/celery-worker:/usr/src/app
-    ports:
-      - 5555:5555  # Flower Web GUI management of Celery
-    expose:
-      - 5555
-    environment:
-      - C_FORCE_ROOT=true
-      - FLASK_ENV=development
-      - APP_SETTINGS=flask_conf.DevelopmentConfig
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    depends_on:
       - redis
     networks:
       - host
@@ -71,10 +57,14 @@ services:
       - 8001:8001
     expose:
       - 8001
+    env_file:
+      - ./.env
     environment:
       - FLASK_APP=sim_app/app.py
       - FLASK_ENV=development
       - APP_SETTINGS=configs.flask_conf.DevelopmentConfig
+      - SECRET_KEY=${SECRET_KEY}
+      - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - USERS_HOST=arclytics:8000
@@ -82,6 +72,8 @@ services:
       - MONGO_PORT=27017
       - MONGO_URI=mongodb://mongodb:27017
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
+      - REDIS_USER=${REDIS_USER}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     depends_on:
       - redis
     networks:

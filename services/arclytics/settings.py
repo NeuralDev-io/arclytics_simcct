@@ -25,15 +25,8 @@ import sys
 import json
 from pathlib import Path
 
-from dotenv import load_dotenv
-
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
-
-# Load environment variables
-env_path = os.path.join(BASE_DIR, '.env')
-if os.path.isfile(env_path):
-    load_dotenv(env_path)
 
 APP_CONFIGS = None
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'

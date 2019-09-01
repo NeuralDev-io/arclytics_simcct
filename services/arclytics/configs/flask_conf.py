@@ -40,6 +40,14 @@ class BaseConfig:
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
+    # Unset this to see the debug messages to logs
+    MAIL_DEBUG = False
+
+    # Redis Queue
+    redis_host = os.environ.get('REDIS_HOST', '')
+    redis_port = os.environ.get('REDIS_PORT', '')
+    REDIS_URL = f'redis://{redis_host}:{redis_port}/14'
+    QUEUES = ['default', 'low']
 
 
 class DevelopmentConfig(BaseConfig):
@@ -55,6 +63,7 @@ class TestingConfig(BaseConfig):
     BCRYPT_LOG_ROUNDS = 4
     TOKEN_EXPIRATION_DAYS = 0
     TOKEN_EXPIRATION_SECONDS = 5
+    PRESERVE_CONTEXT_ON_EXCEPTION = False
 
     SESSION_PERMANENT = False
 

@@ -37,7 +37,6 @@ from arc_app.token import (
     generate_confirmation_token, generate_url, confirm_token, URLTokenError,
     generate_promotion_confirmation_token
 )
-from arc_app.email import send_email
 from arc_app.utilities import URLTokenExpired
 
 logger = AppLogger(__name__)
@@ -119,6 +118,7 @@ class AdminCreate(Resource):
             'admin.cancel_promotion', promotion_cancellation_token
         )
 
+        from tasks import send_email
         send_email(
             to=[admin.email],
             subject_suffix='You Promoted a User!',
@@ -318,6 +318,7 @@ def verify_promotion(token):
     promoter_id = user.admin_profile.promoted_by
     promoter = User.objects.get(id=promoter_id)
 
+    from tasks import send_email
     send_email(
         to=[promoter.email],
         subject_suffix='Promotion Verified',
@@ -394,6 +395,7 @@ class DisableAccount(Resource):
             'admin.confirm_disable_account', account_disable_token
         )
 
+        from tasks import send_email
         send_email(
             to=[admin.email],
             subject_suffix='Confirm disable account action',
@@ -452,6 +454,7 @@ def confirm_disable_account(token):
     user.active = False
     user.save()
 
+    from tasks import send_email
     send_email(
         to=[user.email],
         subject_suffix='Your Account has been disabled.',

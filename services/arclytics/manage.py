@@ -27,13 +27,15 @@ import sys
 import unittest
 from pathlib import Path
 
+import coverage
+import redis
 from flask.cli import FlaskGroup
 from prettytable import PrettyTable
-import coverage
+from rq import Connection, Worker
 
 import settings
 from arc_app.app import create_app, get_flask_mongo
-from arc_app.models import User, AdminProfile, Alloy, UserProfile
+from arc_app.models import User, AdminProfile, UserProfile
 
 COV = coverage.coverage(
     branch=True,
@@ -58,6 +60,14 @@ COV.start()
 
 app = create_app()
 cli = FlaskGroup(create_app=create_app)
+
+
+@cli.command('run_worker')
+def run_worker():
+    redis_url = app.config['REDIS_URL']
+    with Connection(redis.from_url(redis_url)):
+        worker = Worker(app.config['QUEUES'])
+        worker.work()
 
 
 @cli.command()

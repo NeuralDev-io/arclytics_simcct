@@ -62,7 +62,8 @@ class TestMongoSingleton(BaseTestCase):
             port=app.config['MONGO_PORT']
         )
         self.assertIsInstance(self.mongo_client, MongoSingleton)
-        # Make sure the Singleton objects are not the same as they are not meant to be
+        # Make sure the Singleton objects are not the same as they are not
+        # meant to be
         self.assertNotEqual(current_client, self.mongo_client)
 
         db = get_db('default')

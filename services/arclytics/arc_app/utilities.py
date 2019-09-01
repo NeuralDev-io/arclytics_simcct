@@ -29,7 +29,6 @@ from typing import Optional
 
 class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""
-
     def default(self, o):
         if isinstance(o, ObjectId):
             return str(o)
@@ -47,7 +46,6 @@ class PasswordValidationError(Exception):
     Raises an Exception if now password was set before trying to save
     the User model.
     """
-
     def __init__(self):
         super(PasswordValidationError,
               self).__init__('A password must be set before saving.')
@@ -57,7 +55,6 @@ class URLTokenError(Exception):
     """
     A custom exception to be raised from any itsdangerous package exceptions.
     """
-
     def __init__(self, msg: str = None):
         super(URLTokenError, self).__init__(msg)
 
@@ -66,7 +63,6 @@ class URLTokenExpired(Exception):
     """
     Custom exception to be raised from any itsdangerous package exceptions.
     """
-
     def __init__(self, msg: str = None):
         super(URLTokenExpired, self).__init__(msg)
 

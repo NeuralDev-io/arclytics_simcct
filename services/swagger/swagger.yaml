@@ -6,16 +6,12 @@ info:
 
 
 servers:
-  - description: "Users Service Flask Server"
+  - description: "Arclytics Flask Server"
     url: 'http://localhost:8000'
-  - description: "SimCCT Service Flask Server"
-    url: 'http://localhost:8001'
 
 
 paths:
   /ping:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Just a sanity check"
       tags:
@@ -38,8 +34,6 @@ paths:
                 status: "success"
                 message: "pong!"
   /users:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Returns all users"
       tags:
@@ -143,8 +137,6 @@ paths:
                     status: "fail"
                     message: "User does not exist."
   /user:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Returns a user based on a single user ID"
       tags:
@@ -362,8 +354,6 @@ paths:
                 message: "Validation error."
                 error: "ValidationError: ..."
   /user/profile:
-    servers:
-      - url: http://localhost:8000
     post:
       summary: "Create the User's profile details the first time they complete it."
       tags:
@@ -459,8 +449,6 @@ paths:
                     status: "fail"
                     message: "User does not exist."
   /user/last/simulation:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Returns the user's last Alloy and Configurations used, and CCT/TTT results (if any)"
       tags:
@@ -676,8 +664,6 @@ paths:
                     status: "fail"
                     message: "User does not exist."
   /user/simulation:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Retrieve the list of Configurations saved in the User's document."
       tags:
@@ -884,8 +870,6 @@ paths:
                     status: "fail"
                     message: "User does not exist."
   /user/simulation/{id}:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Retrieve the list of Configurations saved in the User's document."
       tags:
@@ -1043,8 +1027,6 @@ paths:
                     status: "fail"
                     message: "Does not exit."
   /user/share/simulation/link:
-    servers:
-      - url: http://localhost:8000
     post:
       summary: "Generate link that can be used to share configurations."
       tags:
@@ -1155,8 +1137,6 @@ paths:
                     status: "fail"
                     message: "User does not exist."
   /user/share/simulation/email:
-    servers:
-      - url: http://localhost:8000
     post:
       summary: "Generate email that can be used to share configurations."
       tags:
@@ -1281,8 +1261,6 @@ paths:
                     message: "User does not exist."
 
   /auth/register:
-    servers:
-      - url: http://localhost:8000
     post:
       summary: "Register and create a new user"
       tags:
@@ -1399,8 +1377,6 @@ paths:
                     status: "fail"
                     message: "The user details already exists."
   /auth/login:
-    servers:
-      - url: http://localhost:8000
     post:
       summary: "Logs a user in"
       tags:
@@ -1517,8 +1493,6 @@ paths:
                     status: "fail"
                     message: "Email or password combination incorrect."
   /auth/status:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Returns the logged in user's status"
       tags:
@@ -1577,8 +1551,6 @@ paths:
                     status: "fail"
                     message: "Invalid token. Please log in again."
   /auth/logout:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Logs a user out"
       tags:
@@ -1644,8 +1616,6 @@ paths:
                     status: "fail"
                     message: "Unable to logout the user from the SimCCT server"
   /reset/password:
-    servers:
-      - url: http://localhost:8000
     post:
       summary: "Request an email for a reset of the user's password with their confirmed email."
       tags:
@@ -1712,8 +1682,6 @@ paths:
                 status: "fail"
                 message: "User does not exist."
   /auth/password/reset:
-    servers:
-      - url: http://localhost:8000
     put:
       summary: "An endpoint for the client to send the new passwords to reset a user's account password."
       tags:
@@ -1800,8 +1768,6 @@ paths:
                     status: "fail"
                     message: "User does not exist."
   /auth/password/check:
-    servers:
-      - url: http://localhost:8000
     post:
       summary: "An endpoint for password check."
       tags:
@@ -1852,8 +1818,6 @@ paths:
                     status: "fail"
                     message: "Password incorrect."
   /auth/password/change:
-    servers:
-      - url: http://localhost:8000
     put:
       summary: "An endpoint for changing password."
       tags:
@@ -1928,8 +1892,6 @@ paths:
                     status: "fail"
                     message: "Password is not correct."
   /auth/email/change:
-    servers:
-      - url: http://localhost:8000
     put:
       summary: "An endpoint for changing email."
       tags:
@@ -1979,8 +1941,6 @@ paths:
                     error: "string"
                     message: "Invalid email."
   /confirm/resend:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "An endpoint for sending confirmation email."
       tags:
@@ -2009,8 +1969,6 @@ paths:
                     status: "fail"
                     message: "User is already verified."
   /confirm/<token>:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Confirmation for URL link tokens sent for admin registration verification."
       tags:
@@ -2041,8 +1999,6 @@ paths:
                     status: "fail"
                     message: "Invalid payload."
   /confirmadmin/<token>:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Confirmation for URL link tokens sent for user registration verification."
       tags:
@@ -2081,8 +2037,6 @@ paths:
                     error: "string"
                     message: "Invalid payload."
   /reset/password/confirm/<token>:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Decode the token from the email to the confirm right person."
       tags:
@@ -2117,8 +2071,6 @@ paths:
                     message: "Invalid token."
 
   /admin/create:
-    servers:
-      - url: http://localhost:8000
     post:
       summary: "Create an admin account."
       security:
@@ -2227,8 +2179,6 @@ paths:
                     status: "fail"
                     message: "User does not exist."
   /admin/create/cancel/<token>:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Allow an admin to cancel their promotion of another user"
       tags:
@@ -2296,8 +2246,6 @@ paths:
                     status: "fail"
                     message: "User is not authorised to promote other user."
   /admin/create/verify/<token>:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Allow a user to acknowledge their promotion and in doing so verify their status as an admin"
       tags:
@@ -2341,8 +2289,6 @@ paths:
                     status: "fail"
                     message: "User is not an Admin."
   /disable/user:
-    servers:
-      - url: http://localhost:8000
     put:
       summary: "Disable a User's account if an Admin has requested."
       security:
@@ -2436,8 +2382,6 @@ paths:
                     status: "fail"
                     message: "User does not exist."
   /disable/user/confirm/<token>:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "Send confirmation to disable user account if an Admin has requested."
       security:
@@ -2480,8 +2424,6 @@ paths:
                     message: "User does not exist."
 
   /users/ping:
-    servers:
-      - url: http://localhost:8001
     get:
       summary: "Just a sanity check that simcct server can sanely connect to users."
       tags:
@@ -2505,8 +2447,6 @@ paths:
                 message: "pong!"
 
   /global/alloys:
-    servers:
-      - url: http://localhost:8001
     post:
       summary: "Create a new alloy and store it in the Alloys database."
       tags:
@@ -2729,8 +2669,6 @@ paths:
                 status: "fail"
                 message: "Empty."
   /global/alloys/{id}:
-    servers:
-      - url: http://localhost:8001
     get:
       summary: "Get a single alloy from the Alloys database."
       tags:
@@ -2964,8 +2902,6 @@ paths:
                 status: "fail"
                 message: "Alloy not found."
   /user/alloys:
-    servers:
-      - url: http://localhost:8000
     post:
       summary: "Save an alloy to the User's database."
       tags:
@@ -3152,8 +3088,6 @@ paths:
                     status: "fail"
                     message: "No alloys found."
   /user/alloys/{id}:
-    servers:
-      - url: http://localhost:8000
     get:
       summary: "We get the requested alloy from the parameter's ObjectId."
       tags:
@@ -3621,8 +3555,6 @@ paths:
                 message: "Multiple objects returned."
 
   /alloys/update:
-    servers:
-      - url: http://localhost:8001
     post:
       summary: "Initiate an Alloy and Configuration Session store."
       security:
@@ -4008,8 +3940,6 @@ paths:
                     status: "fail"
                     message: "Compositions conversion error."
   /configs/method/update:
-    servers:
-      - url: http://localhost:8001
     put:
       summary: "Update the method used in the Session store of the current user."
       security:
@@ -4111,8 +4041,6 @@ paths:
                     errors: "string"
                     message: "Unable to save to session store."
   /configs/update:
-    servers:
-      - url: http://localhost:8001
     patch:
       description: "These configurations are those not including the transformation temperatures
       that we consider part of the setup. It includes grain size, nucleation start, nucleation
@@ -4213,8 +4141,6 @@ paths:
                     errors: "string"
                     message: "Unable to save to session store."
   /configs/ms:
-    servers:
-      - url: http://localhost:8001
     get:
       summary: "Update the auto calculate for MS and MS Rate Parameter and return the new values."
       tags:
@@ -4395,8 +4321,6 @@ paths:
                     errors: "string"
                     message: "Unable to save to session store."
   /configs/bs:
-    servers:
-      - url: http://localhost:8001
     get:
       summary: "Update the auto calculate for BS and return the new values."
       tags:
@@ -4568,8 +4492,6 @@ paths:
                     errors: "string"
                     message: "Unable to save to session store."
   /configs/ae:
-    servers:
-      - url: http://localhost:8001
     get:
       summary: "Update the auto calculate for Ae1 and Ae3 and return the new values."
       tags:
@@ -4763,8 +4685,6 @@ paths:
                     message: "Unable to save to session store."
 
   /simulate:
-    servers:
-      - url: http://localhost:8001
     get:
       summary: "Run the simulation and get the results back."
       security:

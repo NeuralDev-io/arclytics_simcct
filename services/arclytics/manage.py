@@ -42,9 +42,8 @@ COV = coverage.coverage(
     include=[
         'arc_app/models.py', 'arc_app/resources/users.py',
         'arc_app/resources/auth.py', 'arc_app/middleware.py',
-        'arc_app/mongodb.py', 'arc_app/token.py',
-        'arc_app/resources/share.py', 'arc_app/resources/admin_auth.py',
-        'arc_app/resources/ratings.py'
+        'arc_app/mongodb.py', 'arc_app/token.py', 'arc_app/resources/share.py',
+        'arc_app/resources/admin_auth.py', 'arc_app/resources/ratings.py'
     ],
     omit=[
         'arc_app/app.py'
@@ -119,12 +118,14 @@ def seed_user_db():
                 new_user.saved_alloys.create(**alloy)
 
         if u.get("profile", None):
-            profile = UserProfile(**{
-                'aim': u['profile']['aim'],
-                'highest_education': u['profile']['highest_education'],
-                'sci_tech_exp': u['profile']['sci_tech_exp'],
-                'phase_transform_exp': u['profile']['phase_transform_exp'],
-            })
+            profile = UserProfile(
+                **{
+                    'aim': u['profile']['aim'],
+                    'highest_education': u['profile']['highest_education'],
+                    'sci_tech_exp': u['profile']['sci_tech_exp'],
+                    'phase_transform_exp': u['profile']['phase_transform_exp'],
+                }
+            )
             new_user.profile = profile
 
         if u.get('is_admin', False):

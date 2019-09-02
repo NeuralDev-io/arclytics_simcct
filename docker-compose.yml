@@ -31,7 +31,6 @@ services:
       - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - REDIS_USER=${REDIS_USER}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - MAIL_SERVER=${MAIL_SERVER}
       - MAIL_PORT=${MAIL_PORT}
@@ -66,8 +65,6 @@ services:
       - APP_SETTINGS=configs.flask_conf.DevelopmentConfig
       - SECRET_KEY=${SECRET_KEY}
       - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
       - USERS_HOST=arclytics:8000
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
@@ -76,7 +73,8 @@ services:
       - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
       - MONGO_URI=mongodb://mongodb:27017
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
-      - REDIS_USER=${REDIS_USER}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     depends_on:
       - redis

@@ -254,7 +254,8 @@ class ShareSimulationEmail(Resource):
             to=valid_email_list,
             subject_suffix=(
                 f'{owner.first_name} {owner.last_name} has shared a '
-                f'configuration with you!'),
+                f'configuration with you!'
+            ),
             html_template=render_template(
                 'share_configuration.html',
                 email=valid_email_list,

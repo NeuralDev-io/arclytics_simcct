@@ -46,6 +46,7 @@ SIMULATION_RESULTS = _TEST_JSON['simulation_results']
 
 class TestShareService(BaseTestCase):
     """Test for sharing simulations via link and email"""
+
     def test_share_configuration_link_success(self):
         """
         Ensure a user is able to obtain a shareable link for valid simulation
@@ -420,7 +421,8 @@ class TestShareService(BaseTestCase):
                         CONFIGS,
                         'alloy_store':
                         ALLOY_STORE,
-                        'simulation_results': SIMULATION_RESULTS
+                        'simulation_results':
+                        SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},

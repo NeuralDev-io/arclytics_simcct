@@ -48,6 +48,7 @@ def load_test_feedback(self, user: User):
 
 class TestRatingsService(BaseTestCase):
     """Tests for Ratings and feedback endpoints"""
+
     def test_post_rating_no_data(self):
         mace = User(
             email='mace@arclytics.io', first_name='Mace', last_name='Windu'

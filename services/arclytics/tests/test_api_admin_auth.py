@@ -42,6 +42,7 @@ logger = AppLogger(__name__)
 
 class TestAdminCreateService(BaseTestCase):
     """Tests for Admin creation and disable account endpoints"""
+
     def test_disable_account(self):
         """Test disable account is successful"""
         kylo = User(

@@ -99,6 +99,8 @@ services:
         arclytics.io: "production"
     image: arclytics/arc_sim_mongo:1.1
     restart: always
+    volumes:
+      - mongo-volume-mount:/data/db
     ports:
       - 27017:27017
     expose:
@@ -136,5 +138,11 @@ services:
 networks:
   host:
     driver: bridge
+    labels:
+      arclytics.io: "production"
+
+# https://docs.docker.com/compose/compose-file/#volume-configuration-reference
+volumes:
+  mongo-volume-mount:
     labels:
       arclytics.io: "production"

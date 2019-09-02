@@ -67,10 +67,7 @@ def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
         )
     else:
         mongo_client = connect(
-            db_name,
-            host=host,
-            port=int(port),
-            alias='default'
+            db_name, host=host, port=int(port), alias='default'
         )
 
     # Test to make sure the connection has been created.
@@ -117,11 +114,13 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
 
     # ========== # CONNECT TO DATABASE # ========== #
     # Mongo Client interface with MongoEngine as Object Document Mapper (ODM)
-    app.config.update(dict(
-        MONGO_URI=os.environ.get('MONGO_URI', ''),
-        MONGO_HOST=os.environ.get('MONGO_HOST', ''),
-        MONGO_PORT=os.environ.get('MONGO_PORT', 27017)
-    ))
+    app.config.update(
+        dict(
+            MONGO_URI=os.environ.get('MONGO_URI', ''),
+            MONGO_HOST=os.environ.get('MONGO_HOST', ''),
+            MONGO_PORT=os.environ.get('MONGO_PORT', 27017)
+        )
+    )
 
     # ========== # FLASK BLUEPRINTS # ========== #
     app.register_blueprint(users_blueprint)

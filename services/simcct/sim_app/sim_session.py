@@ -21,6 +21,7 @@ This module defines the class to create a RedisSession instance and the
 interface to validate and operate on the Redis store of this session. 
 """
 
+import os
 import json
 import time
 from datetime import timedelta, datetime, timezone
@@ -66,11 +67,20 @@ class SimSessionService(object):
     def __init__(self):
         """On initialisation, the service just stores a Redis connection."""
         # Initialise the connection to Redis so the methods can use it
-        self.redis = Redis(
-            host=app.config['REDIS_HOST'],
-            port=int(app.config['REDIS_PORT']),
-            db=int(app.config['REDIS_DB']),
-        )
+
+        if os.environ.get('FLASK_ENV', 'development') == 'production':
+            self.redis = Redis(
+                host=app.config['REDIS_HOST'],
+                port=int(app.config['REDIS_PORT']),
+                password=app.config['REDIS_PASSWORD'],
+                db=int(app.config['REDIS_DB']),
+            )
+        else:
+            self.redis = Redis(
+                host=app.config['REDIS_HOST'],
+                port=int(app.config['REDIS_PORT']),
+                db=int(app.config['REDIS_DB']),
+            )
         # Store some secret Hydra stuff
         self.secret_key = app.config.get('SECRET_KEY', None)
         self.salt = app.config.get('SECURITY_PASSWORD_SALT', None)

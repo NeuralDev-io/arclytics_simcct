@@ -33,9 +33,7 @@ from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
 from logger.arc_logger import AppLogger
-from arc_app.models import (
-    User, Configuration, SharedSimulation, AlloyStore
-)
+from arc_app.models import (User, Configuration, SharedSimulation, AlloyStore)
 from arc_app.middleware import authenticate
 from arc_app.extensions import api
 from arc_app.token import (
@@ -251,7 +249,8 @@ class ShareSimulationEmail(Resource):
             to=valid_email_list,
             subject_suffix=(
                 f'{owner.first_name} {owner.last_name} has shared a '
-                f'configuration with you!'),
+                f'configuration with you!'
+            ),
             html_template=render_template(
                 'share_configuration.html',
                 email=valid_email_list,

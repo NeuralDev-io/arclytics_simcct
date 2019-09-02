@@ -296,7 +296,6 @@ class Configuration(EmbeddedDocument):
         return self.to_json()
 
 
-# TODO(davidgmatthews@gmail.com): Validate if there are duplicate elements sent.
 class Element(EmbeddedDocument):
     symbol = StringField(max_length=2, required=True)
     weight = FloatField(required=True, validation=not_negative)

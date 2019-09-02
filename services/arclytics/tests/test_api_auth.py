@@ -29,6 +29,7 @@ from arc_app.resources.auth import SimCCTBadServerLogout
 from arc_app.resources.auth import register_session
 from arc_app.token import generate_confirmation_token, generate_url
 from tests.test_api_users import log_test_user_in
+from arc_app.utilities import get_mongo_uri
 
 
 class TestAuthEndpoints(BaseTestCase):
@@ -210,7 +211,7 @@ class TestAuthEndpoints(BaseTestCase):
             resp = self.client.get(
                 confirm_url, content_type='application/json'
             )
-            mongo_client = MongoClient(os.environ.get('MONGO_URI'))
+            mongo_client = MongoClient(get_mongo_uri())
             db = mongo_client['arc_test']
             user = db.users.find_one({'email': mandolorian.email})
             print(f'User.verified: {user["verified"]}')

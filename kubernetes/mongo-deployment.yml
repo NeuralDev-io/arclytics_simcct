@@ -31,12 +31,12 @@ spec:
           - name: MONGO_APP_USER
             valueFrom:
               secretKeyRef:
-                name: mongo-credentials
+                name: credentials
                 key: mongo_app_user
           - name: MONGO_APP_USER_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: mongo-credentials
+                name: credentials
                 key: mongo_app_user_password
         volumeMounts:
           - name: mongo-volume-mount

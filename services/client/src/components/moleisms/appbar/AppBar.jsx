@@ -36,7 +36,7 @@ const AppBar = (props) => {
         </a>
         <a
           id="alloys"
-          className={`${styles.navIcon} ${active === 'alloys' && styles.active}`}
+          className={`${styles.navIcon} ${active === 'userAlloys' && styles.active}`}
           href="/user/alloys"
         >
           <DatabaseIcon className={styles.icon} />

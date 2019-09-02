@@ -85,6 +85,7 @@ def flush():
     from mongoengine.connection import get_db
     conn = get_flask_mongo()
     db = get_db('default')
+    print('Dropping <{}> database:'.format(db.name), file=sys.stderr)
     conn.instance.client.drop_database(db.name)
 
 
@@ -104,7 +105,7 @@ def seed_user_db():
             alloy_data = json.load(f)
 
     tbl = PrettyTable(['No.', 'Email', 'Name', 'Admin', 'Alloys'])
-    print('Seeding users to <{}> database:'.format(db.name))
+    print('Seeding users to <{}> database:'.format(db.name), file=sys.stderr)
     for i, u in enumerate(user_data):
         new_user = User(
             email=u['email'],

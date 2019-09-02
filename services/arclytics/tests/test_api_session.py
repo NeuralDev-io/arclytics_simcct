@@ -33,7 +33,6 @@ _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 
 class TestSimCCTSession(BaseTestCase):
     """Test suite to test creating a session when logging in."""
-
     def test_register_session_with_login(self):
         """
         Ensure we are properly registered with simcct server using the async

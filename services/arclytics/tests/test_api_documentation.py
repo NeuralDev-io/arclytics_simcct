@@ -17,9 +17,7 @@ class TestScriptDocumentation(unittest.TestCase):
         self.assertEqual('2019.07.03', arc_app.models.__date__)
 
     def test_mongodb_script(self):
-        self.assertIn(
-            'Andrew Che <@codeninja55>', arc_app.mongodb.__author__
-        )
+        self.assertIn('Andrew Che <@codeninja55>', arc_app.mongodb.__author__)
         self.assertIn('TBA', arc_app.mongodb.__license__)
         self.assertIn('1.0.0', arc_app.mongodb.__version__)
         self.assertIn('2019.07.04', arc_app.mongodb.__date__)

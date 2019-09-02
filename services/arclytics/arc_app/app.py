@@ -56,16 +56,22 @@ def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
         host = app.config['MONGO_HOST']
         port = int(app.config['MONGO_PORT'])
 
-    mongo_client = connect(
-        db_name,
-        host=host,
-        port=int(port),
-        alias='default'
-        # FIXME(andrew@neuraldev.io): Do not leave this commented for
-        #  Production Environment
-        # username=app.config['MONGO_USER'],
-        # password=app.config['MONGO_PASSWORD'],
-    )
+    if os.environ.get('FLASK_ENV') == 'production':
+        mongo_client = connect(
+            db_name,
+            host=host,
+            port=int(port),
+            alias='default',
+            username=os.environ.get('MONGO_APP_USER', None),
+            password=os.environ.get('MONGO_APP_USER_PASSWORD', None),
+        )
+    else:
+        mongo_client = connect(
+            db_name,
+            host=host,
+            port=int(port),
+            alias='default'
+        )
 
     # Test to make sure the connection has been created.
     try:
@@ -111,13 +117,11 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
 
     # ========== # CONNECT TO DATABASE # ========== #
     # Mongo Client interface with MongoEngine as Object Document Mapper (ODM)
-    app.config['MONGO_URI'] = os.environ.get('MONGO_URI', '')
-    app.config['MONGO_HOST'] = os.environ.get('MONGO_HOST', '')
-    app.config['MONGO_PORT'] = os.environ.get('MONGO_PORT', 27017)
-    # app.config['MONGO_USER'] = os.environ.get('MONGODB_USER', '')
-    # stored in .env
-    # app.config['MONGO_PASSWORD'] = os.environ.get('MONGODB_PASSWORD', None)
-    # stored in .env
+    app.config.update(dict(
+        MONGO_URI=os.environ.get('MONGO_URI', ''),
+        MONGO_HOST=os.environ.get('MONGO_HOST', ''),
+        MONGO_PORT=os.environ.get('MONGO_PORT', 27017)
+    ))
 
     # ========== # FLASK BLUEPRINTS # ========== #
     app.register_blueprint(users_blueprint)

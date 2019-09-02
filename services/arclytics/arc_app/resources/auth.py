@@ -51,7 +51,6 @@ class SessionValidationError(Exception):
     A custom exception to be raised by a threaded async call to register if
     the response is not what we are expecting.
     """
-
     def __init__(self, msg: str):
         super(SessionValidationError, self).__init__(msg)
 
@@ -61,7 +60,6 @@ class SimCCTBadServerLogout(Exception):
     A custom exception to be raised by a synchronous call to logout on the
     SimCCT server if the response is not what we are expecting.
     """
-
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
 
@@ -741,7 +739,7 @@ def change_email(user_id) -> Tuple[dict, int]:
     send_email(
         to=[valid_new_email],
         subject_suffix='Your have changed your Arclytics Sim account email.',
-        html_template= render_template(
+        html_template=render_template(
             'change_email.html',
             user_name=f'{user.first_name} {user.last_name}',
             confirm_url=confirm_url

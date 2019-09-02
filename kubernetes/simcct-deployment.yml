@@ -36,14 +36,9 @@ spec:
           value: "client:3000"
         - name: DASK_SCHEDULER_ADDRESS
           value: "tcp://dask-scheduler:8786"
-        - name: REDIS_USER
-          valueFrom:
-            secretKeyRef:
-              name: redis-credentials
-              key: user
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: redis-credentials
+              name: credentials
               key: password
       restartPolicy: Always

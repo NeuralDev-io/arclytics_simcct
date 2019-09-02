@@ -51,6 +51,7 @@ class SessionValidationError(Exception):
     A custom exception to be raised by a threaded async call to register if
     the response is not what we are expecting.
     """
+
     def __init__(self, msg: str):
         super(SessionValidationError, self).__init__(msg)
 
@@ -60,6 +61,7 @@ class SimCCTBadServerLogout(Exception):
     A custom exception to be raised by a synchronous call to logout on the
     SimCCT server if the response is not what we are expecting.
     """
+
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
 

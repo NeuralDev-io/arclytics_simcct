@@ -215,12 +215,8 @@ class SimulationResults(EmbeddedDocument):
     # slider_max: int
     USER = DictField()
 
-    # def to_dict(self):
-    #     return {
-    #         'TTT': self.TTT.to_dict(),
-    #         'CCT': self.CCT.to_dict(),
-    #         'USER': self.USER.to_dict()
-    #     }
+    def to_dict(self):
+        return {'TTT': self.TTT, 'CCT': self.CCT, 'USER': self.USER}
 
 
 class Configuration(EmbeddedDocument):
@@ -672,9 +668,9 @@ class SavedSimulation(Document):
     alloy_store = EmbeddedDocumentField(
         document_type=AlloyStore, required=True, null=False
     )
-    # results = EmbeddedDocumentField(
-    #     document_type=SimulationResults, required=True, null=False
-    # )
+    simulation_results = EmbeddedDocumentField(
+        document_type=SimulationResults, required=True, null=False
+    )
     created = DateTimeField(default=datetime.utcnow(), null=False)
 
     meta = {'collection': 'saved_simulations'}
@@ -684,7 +680,8 @@ class SavedSimulation(Document):
             '_id': str(self.id),
             'configurations': self.configurations.to_dict(),
             'alloy_store': self.alloy_store.to_dict(),
-            'created': str(self.created.isoformat())
+            'created': str(self.created.isoformat()),
+            'simulation_results': self.simulation_results.to_dict()
         }
 
     def __str__(self):
@@ -712,7 +709,7 @@ class SharedSimulation(Document):
             'created_date': str(self.created_date),
             'configurations': self.configuration.to_dict(),
             'alloy_store': self.alloy_store.to_dict(),
-            # 'simulation_results': self.simulation_results.to_dict()
+            'simulation_results': self.simulation_results.to_dict()
         }
 
 

@@ -32,7 +32,6 @@ class BaseConfig:
 
     PERMANENT_SESSION_LIFETIME = True
 
-    os.environ['MONGO_APP_DB'] = 'arc_dev'
     REDIS_HOST = os.environ.get('REDIS_HOST', None)
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     REDIS_DB = 0
@@ -40,17 +39,12 @@ class BaseConfig:
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
-    MONGO_DBNAME = 'arc_dev'
-    os.environ['MONGO_APP_DB'] = MONGO_DBNAME
     REDIS_DB = 1
 
 
 class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
-    MONGO_DBNAME = 'arc_test'
-    os.environ['MONGO_APP_DB'] = MONGO_DBNAME
-
     REDIS_DB = 2
 
 

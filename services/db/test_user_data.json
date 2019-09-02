@@ -1,0 +1,79 @@
+[
+    {
+        "email": "ironman@avengers.io",
+        "password": "iamironman",
+        "first_name": "Tony",
+        "last_name": "Stark",
+        "profile": {
+            "aim": "Experimentation",
+            "highest_education": "Masters Degree",
+            "sci_tech_exp": "Advanced",
+            "phase_transform_exp": "Advanced"
+
+        },
+        "is_admin": true,
+        "admin_profile": {
+            "position": "Genius Playboy Billionaire Philanthropist",
+            "mobile_number": "+614567890",
+            "verified": true
+        }
+    },
+    {
+        "email": "black_widow@marvel.io",
+        "password": "RedInMyLedger",
+        "first_name": "Natasha",
+        "last_name": "Romanoff",
+        "profile": {},
+        "is_admin": false,
+        "admin_profile": null
+    },
+    {
+        "email": "captain_america@avengers.io",
+        "password": "ICanDoThisAllDay",
+        "first_name": "Steve",
+        "last_name": "Rogers",
+        "profile": {},
+        "is_admin": true,
+        "admin_profile": {
+            "position": "Captain",
+            "mobile_number": "+614567890",
+            "verified": true
+        }
+    },
+    {
+        "email": "hulk@avengers.io",
+        "password": "HulkSmash",
+        "first_name": "Bruce",
+        "last_name": "Banner",
+        "profile": {},
+        "is_admin": false,
+        "admin_profile": null
+    },
+    {
+        "email": "thor@avengers.io",
+        "password": "StrongestAvenger",
+        "first_name": "Thor",
+        "last_name": "Odinson",
+        "profile": {},
+        "is_admin": false,
+        "admin_profile": null
+    },
+    {
+        "email": "hawkeye@avengers.io",
+        "password": "BowAndArrows",
+        "first_name": "Clint",
+        "last_name": "Barton",
+        "profile": {},
+        "is_admin": false,
+        "admin_profile": null
+    },
+    {
+        "email": "spidey@avengers.io",
+        "password": "PeterTingle!",
+        "first_name": "Peter",
+        "last_name": "Parker",
+        "profile": {},
+        "is_admin": false,
+        "admin_profile": null
+    }
+]

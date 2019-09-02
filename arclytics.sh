@@ -966,6 +966,30 @@ while [[ "$1" != "" ]] ; do
                 shift
             done
             ;;
+        deploy )
+            while [[ "$2" != "" ]] ; do
+                case $2 in
+                    pv )
+                        kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-mongo.yml"
+                        kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-claim-mongo.yml"
+                        kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-redis.yml"
+                        kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-claim-redis.yml"
+                        if [[ $3 == "-v" || $3 = "--verbose" ]]; then
+                          kubectl get pv
+                          kubectl get pvc
+                        fi
+                        ;;
+                    secrets )
+                        kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml"
+                        ;;
+                    * )
+                        exit 0
+                        ;;
+                esac
+                shift
+            done
+
+            ;;
     esac
     shift
 done

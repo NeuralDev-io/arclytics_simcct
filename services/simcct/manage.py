@@ -61,7 +61,7 @@ def seed_alloy_db():
         host=os.environ.get('MONGO_HOST'),
         port=int(os.environ.get('MONGO_PORT'))
     )
-    db = client['arc_dev']
+    db = client[os.environ.get('MONGO_APP_DB', 'arc_dev')]
     path = Path(settings.BASE_DIR) / 'seed_alloy_data.json'
     if os.path.isfile(path):
         with open(path) as f:

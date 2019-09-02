@@ -19,11 +19,21 @@ __date__ = '2019.08.07'
 Just some helper functions for the Flask app.
 """
 
+import os
 import json
 import numpy as np
 from datetime import datetime
 
 from bson import ObjectId
+
+
+def get_mongo_uri():
+    host = os.environ.get('MONGO_HOST')
+    port = int(os.environ.get('MONGO_PORT'))
+    username = str(os.environ.get('MONGO_APP_USER'))
+    password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+    db = str(os.environ.get('MONGO_APP_DB'))
+    return f'mongodb://{username}:{password}@{host}:{port}/{db}'
 
 
 class JSONEncoder(json.JSONEncoder):

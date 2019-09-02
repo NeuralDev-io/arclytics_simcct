@@ -969,22 +969,111 @@ while [[ "$1" != "" ]] ; do
         deploy )
             while [[ "$2" != "" ]] ; do
                 case $2 in
-                    pv )
-                        kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-mongo.yml"
-                        kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-claim-mongo.yml"
-                        kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-redis.yml"
-                        kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-claim-redis.yml"
-                        if [[ $3 == "-v" || $3 = "--verbose" ]]; then
-                          kubectl get pv
-                          kubectl get pvc
-                        fi
-                        ;;
+                    volumes )
+                      while [[ "$3" != "" ]]; do
+                        case $3 in
+                          create )
+                            # kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-mongo.yml"
+                            # kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-claim-mongo.yml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/googlecloud_ssd.yml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-redis.yml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-claim-redis.yml"
+                            if [[ $3 == "-v" || $3 = "--verbose" ]]; then
+                              generalMessage "Persistent Volumes"
+                              kubectl get pv
+                              generalMessage "Persistent Volume Claims"
+                              kubectl get pvc
+                            fi
+                            ;;
+                          delete )
+                            # kubectl delete -f "${WORKDIR}/kubernetes/persistent-volume-claim-mongo.yml"
+                            # kubectl delete -f "${WORKDIR}/kubernetes/persistent-volume-mongo.yml"
+                            kubectl delete pvc mongo-persistent-storage-mongo-0
+                            kubectl delete -f "${WORKDIR}/kubernetes/persistent-volume-claim-redis.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/persistent-volume-redis.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              generalMessage "Persistent Volumes"
+                              kubectl get pv
+                              generalMessage "Persistent Volume Claims"
+                              kubectl get pvc
+                            fi
+                            ;;
+                          * )
+                            exit 0
+                            ;;
+                        esac
+                        shift
+                      done
+                      ;;
                     secrets )
-                        kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml"
-                        ;;
+                      kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml"
+                      ;;
+                    database )
+                      while [[ "$3" != "" ]]; do
+                        case $3 in
+                          create )
+                            # kubectl create -f "${WORKDIR}/kubernetes/mongo-service.yml"
+                            # kubectl create -f "${WORKDIR}/kubernetes/mongo-deployment.yml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-statefulset.yml"
+                            kubectl create -f "${WORKDIR}/kubernetes/redis-deployment.yml"
+                            kubectl create -f "${WORKDIR}/kubernetes/redis-service.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              kubectl get deployments
+                              kubectl get pods
+                            fi
+                            ;;
+                          delete )
+                            # kubectl delete -f "${WORKDIR}/kubernetes/mongo-service.yml"
+                            # kubectl delete -f "${WORKDIR}/kubernetes/mongo-deployment.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/mongo-statefulset.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/redis-service.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/redis-deployment.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              generalMessage "Deployments"
+                              kubectl get deployments
+                              generalMessage "Pods"
+                              kubectl get pods
+                            fi
+                            ;;
+                          * )
+                            exit 0
+                            ;;
+                        esac
+                        shift
+                      done
+                      ;;
+                    ls )
+                      echoSpace
+                      headerMessage "KUBERNETES ORECHESTRATION"
+                      echoLine
+                      generalMessage "Persistent Volumes"
+                      echoLine
+                      kubectl get pv -o wide
+                      echoLine
+                      generalMessage "Persistent Volume Claims"
+                      echoLine
+                      kubectl get pvc -o wide
+                      echoLine
+                      generalMessage "StatefuleSets"
+                      echoLine
+                      kubectl get statefulset -o wide
+                      echoLine
+                      generalMessage "Deployments"
+                      echoLine
+                      kubectl get deployments -o wide
+                      echoLine
+                      generalMessage "Pods"
+                      echoLine
+                      kubectl get pods -o wide
+                      echoLine
+                      completeMessage
+                      ;;
                     * )
-                        exit 0
-                        ;;
+                      exit 0
+                      ;;
                 esac
                 shift
             done

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: simcct
+  labels:
+    service: simcct
+spec:
+  selector:
+    app: simcct
+  ports:
+  - port: 8001
+    targetPort: 8001

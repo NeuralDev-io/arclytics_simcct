@@ -8,8 +8,8 @@
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
+__license__ = 'TBA'
+__version__ = '0.1.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
@@ -26,7 +26,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
 # Load environment variables

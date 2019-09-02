@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import data from './data'
+import { PERIODIC_TABLE_DATA } from '../../../utils/alloys'
 import { buttonize } from '../../../utils/accessibility'
 
 import styles from './PeriodicTable.module.scss'
@@ -29,7 +29,7 @@ class UncontrolledPeriodicTable extends Component {
 
   handleMouseLeave = () => this.setState({ hovering: 0 })
 
-  renderElements = () => data.map((elem) => {
+  renderElements = () => PERIODIC_TABLE_DATA.map((elem) => {
     const {
       number,
       xpos,

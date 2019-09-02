@@ -153,21 +153,3 @@ def session_logout(session_key):
     response['status'] = 'success'
     response.pop('message')
     return jsonify(response), 200
-
-
-@session_blueprint.route('/users/ping', methods=['GET'])
-def ping_users_server():
-    """
-    This is just a sanity check to ensure we can connect from this server to
-    the users through Docker just fine.
-    """
-    users_server = os.environ.get('USERS_HOST', None)
-    # We use the built-in DNS server of Docker to resolve the correct
-    # IP address of the other container [1].
-    url = f'http://{users_server}/ping'
-    res = requests.get(url)
-    return (
-        jsonify(res.json()), res.status_code, {
-            'Content-type': 'application/json'
-        }
-    )

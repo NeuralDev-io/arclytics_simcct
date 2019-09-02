@@ -74,10 +74,12 @@ class ShareSimulationLink(Resource):
         shared_date = datetime.utcnow()
         configuration = data.get('configurations', None)
         alloy_store = data.get('alloy_store', None)
-        # results = data.get('results', None)
+        simulation_results = data.get('simulation_results', None)
 
-        if not configuration or not alloy_store:
-            response['message'] = 'Configurations or Alloy Store not sent.'
+        if not configuration or not alloy_store or not simulation_results:
+            response['message'] = (
+                'Configurations, Alloy Store  or Simulation Results not sent.'
+            )
             return response, 400
 
         # Validate the request simulation data. Validation is done by the
@@ -87,14 +89,14 @@ class ShareSimulationLink(Resource):
             config_object.validate(clean=True)
             alloy_store_object = AlloyStore(**alloy_store)
             alloy_store_object.validate(clean=True)
-            # results_object = SimulationResults(**results)
+            results_object = SimulationResults(**simulation_results)
             shared_simulation_object = SharedSimulation(
                 **{
                     'owner_email': owner.email,
                     'created_date': shared_date,
                     'configuration': config_object,
                     'alloy_store': alloy_store_object,
-                    # 'results': results_object
+                    'simulation_results': results_object
                 }
             )
             shared_simulation_object.save()
@@ -191,9 +193,12 @@ class ShareSimulationEmail(Resource):
         # we can attempt to make a SharedSimulation object out of it.
         configuration = data.get('configurations', None)
         alloy_store = data.get('alloy_store', None)
+        simulation_results = data.get('simulation_results', None)
 
-        if not configuration or not alloy_store:
-            response['message'] = 'Configurations or Alloy Store not sent.'
+        if not configuration or not alloy_store or not simulation_results:
+            response['message'] = (
+                'Configurations, Alloy Store or Simulation Results not sent.'
+            )
             return response, 400
 
         # We also provide the user an opportunity to send an optional message
@@ -208,12 +213,14 @@ class ShareSimulationEmail(Resource):
             config_object.validate(clean=True)
             alloy_store_object = AlloyStore(**alloy_store)
             alloy_store_object.validate(clean=True)
+            results_object = SimulationResults(**simulation_results)
             shared_simulation_object = SharedSimulation(
                 **{
                     'owner_email': owner.email,
                     'created_date': shared_date,
                     'configuration': config_object,
-                    'alloy_store': alloy_store_object
+                    'alloy_store': alloy_store_object,
+                    'simulation_results': results_object
                 }
             )
             shared_simulation_object.save()

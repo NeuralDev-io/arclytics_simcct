@@ -81,6 +81,11 @@ def seed_alloy_db():
 
     from sim_app.schemas import AlloySchema
     data = AlloySchema(many=True).load(json_data['alloys'])
+
+    print(
+        'Seeding global alloys to <{}> database:'.format(db.name),
+        file=sys.stderr
+    )
     # Check the correct database -- arc_dev
     db.alloys.insert_many(data)
 
@@ -103,7 +108,9 @@ def flush():
             port=os.environ.get('REDIS_PORT'),
             password=os.environ.get('REDIS_PASSWORD')
         )
-        client.drop_database(os.environ.get('MONGO_APP_DB'))
+        db = os.environ.get('MONGO_APP_DB')
+        print('Dropping <{}> database:'.format(db), file=sys.stderr)
+        client.drop_database(db)
     else:
         client = MongoClient(
             host=os.environ.get('MONGO_HOST'),
@@ -112,9 +119,13 @@ def flush():
         redis_client = redis.Redis(
             host=os.environ.get('REDIS_HOST'), port=os.environ.get('REDIS_PORT')
         )
+        print('Dropping <{}> database:'.format('arc_dev'), file=sys.stderr)
         client.drop_database('arc_dev')
+        print('Dropping <{}> database:'.format('arc_test'), file=sys.stderr)
         client.drop_database('arc_test')
 
+    dbs_created = redis_client.config_get('databases')
+    print('Flushing Redis: {}'.format(dbs_created), file=sys.stderr)
     redis_client.flushall()
 
 

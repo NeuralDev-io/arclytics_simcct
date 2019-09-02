@@ -694,8 +694,10 @@ class SharedSimulation(Document):
     alloy_store = EmbeddedDocumentField(
         document_type=AlloyStore, required=True
     )
+    # results = EmbeddedDocumentField(
+    #     document_type=SimulationResults, required=True, null=False
+    # )
 
-    # add results
     # add views but dont send in dict
 
     def to_dict(self):
@@ -710,7 +712,7 @@ class SharedSimulation(Document):
 class Feedback(Document):
     user = ReferenceField(User, reverse_delete_rule=DO_NOTHING)
     category = StringField(required=True)
-    rating = IntField(min_value=1, max_value=5, required=True)
+    rating = IntField(min_value=1, max_value=5, default=None)
     comment = StringField(required=True)
     created_date = DateTimeField(default=datetime.utcnow(), required=True)
 

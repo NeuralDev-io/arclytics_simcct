@@ -228,7 +228,7 @@ class TestRatingsService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'No rating provided.')
+            self.assertEqual(data['message'], 'No comment provided.')
 
     def test_post_feedback_validation_error(self):
         hevy = User(

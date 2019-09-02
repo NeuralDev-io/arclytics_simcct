@@ -34,7 +34,7 @@ from mongoengine.errors import ValidationError
 
 from logger.arc_logger import AppLogger
 from arc_app.models import (
-    User, Configuration, SharedSimulation, AlloyStore
+    User, Configuration, SharedSimulation, AlloyStore, SimulationResults
 )
 from arc_app.middleware import authenticate
 from arc_app.extensions import api
@@ -74,6 +74,7 @@ class ShareSimulationLink(Resource):
         shared_date = datetime.utcnow()
         configuration = data.get('configurations', None)
         alloy_store = data.get('alloy_store', None)
+        # results = data.get('results', None)
 
         if not configuration or not alloy_store:
             response['message'] = 'Configurations or Alloy Store not sent.'
@@ -86,12 +87,14 @@ class ShareSimulationLink(Resource):
             config_object.validate(clean=True)
             alloy_store_object = AlloyStore(**alloy_store)
             alloy_store_object.validate(clean=True)
+            # results_object = SimulationResults(**results)
             shared_simulation_object = SharedSimulation(
                 **{
                     'owner_email': owner.email,
                     'created_date': shared_date,
                     'configuration': config_object,
-                    'alloy_store': alloy_store_object
+                    'alloy_store': alloy_store_object,
+                    # 'results': results_object
                 }
             )
             shared_simulation_object.save()

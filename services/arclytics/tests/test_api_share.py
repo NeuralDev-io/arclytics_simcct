@@ -41,6 +41,7 @@ with open(_TEST_CONFIGS_PATH, 'r') as f:
 
 CONFIGS = _TEST_JSON['configurations']
 ALLOY_STORE = _TEST_JSON['alloy_store']
+SIMULATION_RESULTS = _TEST_JSON['simulation_results']
 
 
 class TestShareService(BaseTestCase):
@@ -68,7 +69,8 @@ class TestShareService(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -149,7 +151,8 @@ class TestShareService(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -189,7 +192,8 @@ class TestShareService(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -229,7 +233,8 @@ class TestShareService(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -274,7 +279,8 @@ class TestShareService(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -313,7 +319,8 @@ class TestShareService(BaseTestCase):
                         'configurations': CONFIGS,
                         'alloy_store': {
                             'alloy_option': 'single'
-                        }
+                        },
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -355,7 +362,8 @@ class TestShareService(BaseTestCase):
                         # 'emails': ['davidmatthews1004@gmail.com'],
                         'emails': ['davidtest@arclytics.io'],
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -411,7 +419,8 @@ class TestShareService(BaseTestCase):
                         'configurations':
                         CONFIGS,
                         'alloy_store':
-                        ALLOY_STORE
+                        ALLOY_STORE,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -455,7 +464,8 @@ class TestShareService(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -491,7 +501,8 @@ class TestShareService(BaseTestCase):
                     {
                         'emails': [1234],
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -529,7 +540,8 @@ class TestShareService(BaseTestCase):
                     {
                         'emails': ['invalidemail@com'],
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -568,7 +580,8 @@ class TestShareService(BaseTestCase):
                         'emails':
                         ['invalidemail@com', 'brickmatic479@gmail.com'],
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -603,7 +616,8 @@ class TestShareService(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -649,7 +663,8 @@ class TestShareService(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},
@@ -747,7 +762,8 @@ class TestShareService(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': SIMULATION_RESULTS
                     }
                 ),
                 headers={'Authorization': 'Bearer {}'.format(token)},

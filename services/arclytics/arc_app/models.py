@@ -215,6 +215,13 @@ class SimulationResults(EmbeddedDocument):
     # slider_max: int
     USER = DictField()
 
+    # def to_dict(self):
+    #     return {
+    #         'TTT': self.TTT.to_dict(),
+    #         'CCT': self.CCT.to_dict(),
+    #         'USER': self.USER.to_dict()
+    #     }
+
 
 class Configuration(EmbeddedDocument):
     is_valid = BooleanField(default=False, required=True, null=False)
@@ -296,7 +303,6 @@ class Configuration(EmbeddedDocument):
         return self.to_json()
 
 
-# TODO(davidgmatthews@gmail.com): Validate if there are duplicate elements sent.
 class Element(EmbeddedDocument):
     symbol = StringField(max_length=2, required=True)
     weight = FloatField(required=True, validation=not_negative)
@@ -694,9 +700,9 @@ class SharedSimulation(Document):
     alloy_store = EmbeddedDocumentField(
         document_type=AlloyStore, required=True
     )
-    # results = EmbeddedDocumentField(
-    #     document_type=SimulationResults, required=True, null=False
-    # )
+    simulation_results = EmbeddedDocumentField(
+        document_type=SimulationResults, required=True, null=False
+    )
 
     # add views but dont send in dict
 
@@ -705,7 +711,8 @@ class SharedSimulation(Document):
             'owner_email': self.owner_email,
             'created_date': str(self.created_date),
             'configurations': self.configuration.to_dict(),
-            'alloy_store': self.alloy_store.to_dict()
+            'alloy_store': self.alloy_store.to_dict(),
+            # 'simulation_results': self.simulation_results.to_dict()
         }
 
 

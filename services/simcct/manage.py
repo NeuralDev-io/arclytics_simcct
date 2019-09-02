@@ -55,12 +55,24 @@ app = create_app()
 cli = FlaskGroup(create_app=create_app)
 
 
+def get_admin_mongo_uri():
+    host = os.environ.get('MONGO_HOST')
+    port = int(os.environ.get('MONGO_PORT'))
+    username = str(os.environ.get('MONGO_APP_USER'))
+    password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+    db = str(os.environ.get('MONGO_APP_DB'))
+    return f'mongodb://{username}:{password}@{host}:{port}/{db}'
+
+
 @cli.command('seed_db')
 def seed_alloy_db():
-    client = MongoClient(
-        host=os.environ.get('MONGO_HOST'),
-        port=int(os.environ.get('MONGO_PORT'))
-    )
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        client = MongoClient(get_admin_mongo_uri())
+    else:
+        client = MongoClient(
+            host=os.environ.get('MONGO_HOST'),
+            port=int(os.environ.get('MONGO_PORT'))
+        )
     db = client[os.environ.get('MONGO_APP_DB', 'arc_dev')]
     path = Path(settings.BASE_DIR) / 'seed_alloy_data.json'
     if os.path.isfile(path):
@@ -70,7 +82,6 @@ def seed_alloy_db():
     from sim_app.schemas import AlloySchema
     data = AlloySchema(many=True).load(json_data['alloys'])
     # Check the correct database -- arc_dev
-    print('Seeding alloys to <{}> database:'.format(db.name))
     db.alloys.insert_many(data)
 
     tbl = PrettyTable(['Symbol', 'Weight'])
@@ -85,16 +96,25 @@ def seed_alloy_db():
 
 @cli.command('flush')
 def flush():
-    client = MongoClient(
-        host=os.environ.get('MONGO_HOST'),
-        port=int(os.environ.get('MONGO_PORT'))
-    )
-    client.drop_database('arc')
-    client.drop_database('arc_dev')
-    client.drop_database('arc_test')
-    redis_client = redis.Redis(
-        host=os.environ.get('REDIS_HOST'), port=os.environ.get('REDIS_PORT')
-    )
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        client = MongoClient(get_admin_mongo_uri())
+        redis_client = redis.Redis(
+            host=os.environ.get('REDIS_HOST'),
+            port=os.environ.get('REDIS_PORT'),
+            password=os.environ.get('REDIS_PASSWORD')
+        )
+        client.drop_database(os.environ.get('MONGO_APP_DB'))
+    else:
+        client = MongoClient(
+            host=os.environ.get('MONGO_HOST'),
+            port=int(os.environ.get('MONGO_PORT'))
+        )
+        redis_client = redis.Redis(
+            host=os.environ.get('REDIS_HOST'), port=os.environ.get('REDIS_PORT')
+        )
+        client.drop_database('arc_dev')
+        client.drop_database('arc_test')
+
     redis_client.flushall()
 
 

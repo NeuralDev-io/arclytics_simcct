@@ -21,6 +21,7 @@ This module contains the MongoDB mapper for the Alloy schema and document.
 
 import os
 from pymongo import ASCENDING, MongoClient
+from sim_app.utilities import get_mongo_uri
 
 COLLECTION_NAME = 'alloys'
 
@@ -37,13 +38,7 @@ class MongoAlloys(object):
                 port=int(os.environ.get('MONGO_PORT')),
             )
         else:
-            host = os.environ.get('MONGO_HOST')
-            port = int(os.environ.get('MONGO_PORT'))
-            username = str(os.environ.get('MONGO_APP_USER'))
-            password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
-            db = str(os.environ.get('MONGO_APP_DB'))
-            uri = f'{username}:{password}@{host}:{port}/{db}'
-            mongo_client = MongoClient(f'mongodb://{uri}')
+            mongo_client = MongoClient(get_mongo_uri())
         db_name = os.environ.get('MONGO_APP_DB', 'arc_dev')
         self.db = mongo_client[db_name]
         # We create an index to avoid duplicates

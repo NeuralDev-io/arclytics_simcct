@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: simcct
   labels:
-    name: simcct
+    name: api_server
 spec:
   replicas: 1
   template:

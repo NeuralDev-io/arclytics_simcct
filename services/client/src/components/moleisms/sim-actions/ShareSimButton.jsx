@@ -1,19 +1,13 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { withSnackbar } from 'notistack'
 import Share2Icon from 'react-feather/dist/icons/share-2'
 import Button from '../../elements/button'
 import { AttachModal } from '../../elements/modal'
-import { buttonize } from '../../../utils/accessibility'
-import { saveSimulation } from '../../../state/ducks/self/actions'
-import { Formik } from 'formik'
-import XIcon from 'react-feather/dist/icons/x'
 import Accordion from '../../elements/accordion'
 import AccordionSection from '../../elements/accordion/AccordionSection'
-// import Button, { IconButton } from '../../elements/button'
-import Modal from '../../elements/modal'
-import TextField from '../../elements/textfield'
-import TextFieldEmail from '../../elements/textfieldemail'
+import TextField, { TextFieldEmail } from '../../elements/textfield'
 import TextArea from '../../elements/textarea'
 import { getShareUrlLink, sendShareEmail } from '../../../api/sim/SessionShareSim'
 
@@ -27,8 +21,33 @@ class ShareSimButton extends Component {
       shareUrlLink: '',
       copyLinkSuccess: '',
       emails: [],
+      currentEmail: '',
+      emailError: '',
+      message: '',
       visible: false,
     }
+  }
+
+  handleEmailChanged = (email, error) => {
+    if (error !== undefined) {
+      this.setState({ emailError: error })
+      return
+    }
+    this.setState({ currentEmail: email })
+  }
+
+  handleEmailAdded = (emails) => {
+    this.setState((state) => {
+      const newEmails = [...state.emails]
+      emails.forEach(email => newEmails.push(email))
+      return { emails: newEmails, currentEmail: '' }
+    })
+  }
+
+  handleEmailRemoved = (email) => {
+    this.setState(state => ({
+      emails: state.emails.filter(em => em !== email),
+    }))
   }
 
   cleanConfigurations = (configurations) => {
@@ -76,6 +95,51 @@ class ShareSimButton extends Component {
       .catch(err => console.log(err))
   }
 
+  onEmailSubmit = () => {
+    const { enqueueSnackbar, closeSnackbar } = this.props
+    /**
+     * The callback function for the generate button which makes the API call
+     * and updates the state of `shareUrlLink` if the promise successfully returns
+     * the response from the `users` server that we expect.
+     */
+    const { configurations, alloys } = this.props
+    const { emails, message } = this.state
+
+    const alloyStore = this.cleanAlloyStore(alloys)
+    const validConfigs = this.cleanConfigurations(configurations)
+
+    sendShareEmail(
+      emails, message, validConfigs, alloyStore,
+    ).then(() => {
+      enqueueSnackbar('Simulation shared successfully', {
+        variant: 'success',
+        action: key => (
+          <Button
+            appearance="text"
+            className="snackbar__button"
+            onClick={() => closeSnackbar(key)}
+          >
+            Dismiss
+          </Button>
+        ),
+      })
+      setTimeout(this.handleCloseModal, 500)
+    }).catch(() => {
+      enqueueSnackbar('Something went wrong', {
+        variant: 'error',
+        action: key => (
+          <Button
+            appearance="text"
+            className="snackbar__button"
+            onClick={() => closeSnackbar(key)}
+          >
+            Dismiss
+          </Button>
+        ),
+      })
+    })
+  }
+
   copyToClipboard = () => {
     /**
      * Callback function to allow the Copy button to copy the `shareUrlLink`
@@ -96,8 +160,6 @@ class ShareSimButton extends Component {
 
   render() {
     const {
-      configurations,
-      alloys,
       isSessionInitialised,
     } = this.props
 
@@ -106,11 +168,11 @@ class ShareSimButton extends Component {
       shareUrlLink,
       copyLinkSuccess,
       emails,
+      currentEmail,
+      emailError,
+      message,
       visible,
     } = this.state
-
-    const validConfigs = this.cleanConfigurations(configurations)
-    const alloyStore = this.cleanAlloyStore(alloys)
 
     return (
       <AttachModal
@@ -137,77 +199,44 @@ class ShareSimButton extends Component {
               title="By email"
               id="email"
             >
-              <Formik
-                initialValues={{ email: '', message: '' }}
-                // validate={ need to set a validate method in ValidationHelper.js}
-                onSubmit={(values, { setSubmitting, setErrors }) => {
-                  setSubmitting(true)
-                  // We send off to the API which returns a promise
-                  sendShareEmail(
-                    values.email, values.message, validConfigs, alloyStore,
-                  ).then((data) => {
-                    console.log(data)
-                    setSubmitting(false)
-                  }).catch(() => {
-                    // If response is unsuccessful
-                    setErrors({
-                      email: 'Invalid email',
-                    })
-                    // if it fails, we need to disable the button again.
-                    setSubmitting(false)
-                  })
-                }}
-              >
-                {({
-                  values,
-                  errors,
-                  touched,
-                  onEmailSubmit,
-                  setFieldValue,
-                }) => (
-                  // This is the form fields below
-                  <form onSubmit={onEmailSubmit}>
-                    <div>
-                      <div className={styles.email}>
-                        <TextFieldEmail
-                          type="email"
-                          name="email"
-                          onChange={e => setFieldValue('email', e)}
-                          value={''}
-                          placeholder="Emails (separate with commas)"
-                          length="stretch"
-                        />
-                        <h6 className={styles.errors}>
-                          {errors.email && touched.email && errors.email}
-                        </h6>
-                      </div>
-
-                      <div className={styles.message}>
-                        {/* TODO(andrew@neuraldev.io): We need to validate HTML. */}
-                        <TextArea
-                          name="message"
-                          onChange={e => setFieldValue('message', e)}
-                          value={values.message}
-                          placeholder="Message (optional)"
-                          length="stretch"
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.emailButtonContainer}>
-                      <Button
-                        onClick={() => console.log('Email Link')}
-                        name="emailSubmit"
-                        type="button"
-                        appearance="outline"
-                        length="long"
-                        isDisabled={!(emails === undefined || emails === 0)}
-                      >
-                        SEND
-                      </Button>
-                    </div>
-                  </form>
-                )}
-              </Formik>
+              <form onSubmit={this.onEmailSubmit}>
+                <div>
+                  <TextFieldEmail
+                    type="email"
+                    name="email"
+                    onChange={this.handleEmailChanged}
+                    onRemove={this.handleEmailRemoved}
+                    onAdd={this.handleEmailAdded}
+                    emails={emails}
+                    current={currentEmail}
+                    error={emailError}
+                    placeholder="Emails (separate with commas)"
+                    length="stretch"
+                  />
+                  <div className={styles.message}>
+                    {/* TODO(andrew@neuraldev.io): We need to validate HTML. */}
+                    <TextArea
+                      name="message"
+                      onChange={val => this.setState({ message: val })}
+                      value={message}
+                      placeholder="Message (optional)"
+                      length="stretch"
+                    />
+                  </div>
+                </div>
+                <div className={styles.emailButtonContainer}>
+                  <Button
+                    onClick={this.onEmailSubmit}
+                    name="emailSubmit"
+                    type="button"
+                    appearance="outline"
+                    length="long"
+                    isDisabled={emails === undefined || emails.length === 0}
+                  >
+                    SEND
+                  </Button>
+                </div>
+              </form>
             </AccordionSection>
             {/* Link */}
             <AccordionSection
@@ -285,6 +314,8 @@ const textFieldType = PropTypes.oneOfType([
 ])
 
 ShareSimButton.propTypes = {
+  enqueueSnackbar: PropTypes.func.isRequired,
+  closeSnackbar: PropTypes.func.isRequired,
   isSessionInitialised: PropTypes.bool.isRequired,
   configurations: PropTypes.shape({
     method: PropTypes.string,
@@ -319,11 +350,6 @@ ShareSimButton.propTypes = {
         weight: textFieldType,
       })),
     }),
-    mix: PropTypes.arrayOf(PropTypes.shape({
-      symbol: PropTypes.string,
-      weight: textFieldType,
-    })),
-    dilution: textFieldType,
   }).isRequired,
 }
 
@@ -332,4 +358,4 @@ const mapStateToProps = state => ({
   configurations: state.sim.configurations,
 })
 
-export default connect(mapStateToProps, {})(ShareSimButton)
+export default withSnackbar(connect(mapStateToProps, {})(ShareSimButton))

@@ -1102,6 +1102,33 @@ while [[ "$1" != "" ]] ; do
                         shift
                       done
                       ;;
+                    client )
+                      while [[ "$3" != "" ]]; do
+                        case $3 in
+                          create )
+                            # eval $(minikube docker-env)
+                            kubectl create -f "${WORKDIR}/kubernetes/client-minikube-service.yml"
+                            kubectl create -f "${WORKDIR}/kubernetes/client-minikube-deployment.yml" --validate=false
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              kubectl get all -o wide
+                            fi
+                            ;;
+                          delete )
+                            kubectl delete -f "${WORKDIR}/kubernetes/client-minikube-service.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/client-minikube-deployment.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              kubectl get all -o wide
+                            fi
+                            ;;
+                          * )
+                            exit 0
+                            ;;
+                        esac
+                        shift
+                      done
+                      ;;
                     watch )
                       watch kubectl get all -o wide
                       ;;

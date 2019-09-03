@@ -1001,12 +1001,13 @@ while [[ "$1" != "" ]] ; do
                             fi
                             ;;
                           delete )
-                            # TODO(andrew@neuraldev.io)
-                            kubectl delete pvc mongodb-pvc-mongod-0
-                            kubectl delete pvc mongodb-pvc-mongod-1
-                            kubectl delete pvc mongodb-pvc-mongod-2
-                            kubectl delete -f "${WORKDIR}/kubernetes/mongo-minikube-service.yml"
-                            # kubectl delete -f "${WORKDIR}/kubernetes/mongo-deployment.yml"
+                            kubectl delete service mongo-service
+                            kubectl delete statefulset mongo
+                            kubectl delete pod mongo-0
+                            kubectl delete pvc mongo-pvc-mongo-0
+                            kubectl delete pvc mongo-pvc-mongo-1
+                            kubectl delete pvc mongo-pvc-mongo-2
+                            #kubectl delete -f "${WORKDIR}/kubernetes/mongo-minikube-service.yml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
@@ -1031,6 +1032,8 @@ while [[ "$1" != "" ]] ; do
                             ;;
                           delete )
                             kubectl delete -f "${WORKDIR}/kubernetes/redis-minikube-service.yml"
+                            kubectl delete pod redis-0
+                            kubectl delete pvc redis-pvc-redis-0
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
@@ -1070,7 +1073,7 @@ while [[ "$1" != "" ]] ; do
                         shift
                       done
                       ;;
-                    ls )
+                    ls | show )
                       echoSpace
                       headerMessage "KUBERNETES ORECHESTRATION"
                       echoLine
@@ -1082,17 +1085,17 @@ while [[ "$1" != "" ]] ; do
                       echoLine
                       kubectl get pvc -o wide
                       echoLine
-                      generalMessage "StatefuleSets"
+                      generalMessage "StatefulSets"
                       echoLine
                       kubectl get statefulset -o wide
-                      echoLine
-                      generalMessage "Deployments"
-                      echoLine
-                      kubectl get deployments -o wide
                       echoLine
                       generalMessage "Services"
                       echoLine
                       kubectl get services -o wide
+                      echoLine
+                      generalMessage "Deployments"
+                      echoLine
+                      kubectl get deployments -o wide
                       echoLine
                       generalMessage "Pods"
                       echoLine
@@ -1100,6 +1103,7 @@ while [[ "$1" != "" ]] ; do
                       echoLine
                       completeMessage
                       echoSpace
+                      exit 0
                       ;;
                     * )
                       exit 0

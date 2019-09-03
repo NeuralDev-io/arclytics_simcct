@@ -8,6 +8,7 @@ import {
   UPDATE_CONFIG,
   UPDATE_DISPLAY_USER_CURVE,
   UPDATE_CCT_INDEX,
+  LOAD_SIM,
 } from './types'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 
@@ -341,5 +342,12 @@ export const updateCCTIndex = idx => (dispatch) => {
   dispatch({
     type: UPDATE_CCT_INDEX,
     payload: idx,
+  })
+}
+
+export const loadSim = sim => (dispatch) => {
+  dispatch({
+    type: LOAD_SIM,
+    payload: sim,
   })
 }

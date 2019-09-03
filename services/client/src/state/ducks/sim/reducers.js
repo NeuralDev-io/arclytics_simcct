@@ -8,6 +8,7 @@ import {
   UPDATE_CONFIG,
   UPDATE_DISPLAY_USER_CURVE,
   UPDATE_CCT_INDEX,
+  LOAD_SIM,
 } from './types'
 
 const initialState = {
@@ -168,6 +169,12 @@ const reducer = (state = initialState, action) => {
           ...state.results,
           cctIndex: action.payload,
         },
+      }
+    case LOAD_SIM:
+      return {
+        isInitialised: true,
+        displayUserCurve: true,
+        ...action.payload,
       }
     default:
       return state

@@ -282,9 +282,15 @@ class TestAdminCreateService(BaseTestCase):
         with self.client:
             resp = self.client.get(url, content_type='application/json')
 
-            data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 400)
-            self.assertEqual(data['status'], 'fail')
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = \
+                f'http://{client_host}/disable/user/confirm?tokenexpired=true'
+            self.assertRedirects(resp, redirect_url)
+            # data = json.loads(resp.data.decode())
+            # self.assertEqual(resp.status_code, 400)
+            # self.assertEqual(data['status'], 'fail')
 
     def test_confirm_disable_account_user_dne(self):
         kylo = User(
@@ -302,10 +308,16 @@ class TestAdminCreateService(BaseTestCase):
                 account_disable_url, content_type='application/json'
             )
 
-            data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 400)
-            self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'User does not exist.')
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = \
+                f'http://{client_host}/disable/user/confirm?tokenexpired=true'
+            self.assertRedirects(resp, redirect_url)
+            # data = json.loads(resp.data.decode())
+            # self.assertEqual(resp.status_code, 400)
+            # self.assertEqual(data['status'], 'fail')
+            # self.assertEqual(data['message'], 'User does not exist.')
 
     def test_create_admin_success(self):
         """Test create admin is successful"""
@@ -684,9 +696,15 @@ class TestAdminCreateService(BaseTestCase):
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')
 
-            data = json.loads(resp.data.decode())
-            self.assertEquals(resp.status_code, 400)
-            self.assertEqual(data['message'], 'Invalid Token.')
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = \
+                f'http://{client_host}/admin/create/cancel?tokenexpired=true'
+            self.assertRedirects(resp, redirect_url)
+            # data = json.loads(resp.data.decode())
+            # self.assertEquals(resp.status_code, 400)
+            # self.assertEqual(data['message'], 'Invalid Token.')
 
     def test_cancel_promotion_invalid_token_list(self):
         token = generate_promotion_confirmation_token(
@@ -698,9 +716,15 @@ class TestAdminCreateService(BaseTestCase):
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')
 
-            data = json.loads(resp.data.decode())
-            self.assertEquals(resp.status_code, 400)
-            self.assertEqual(data['message'], 'Missing information in Token.')
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = \
+                f'http://{client_host}/admin/create/cancel?tokenexpired=true'
+            self.assertRedirects(resp, redirect_url)
+            # data = json.loads(resp.data.decode())
+            # self.assertEquals(resp.status_code, 400)
+            # self.assertEqual(data['message'], 'Missing information in Token.')
 
     def test_cancel_promotion_token_list_missing_data(self):
         serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
@@ -715,9 +739,15 @@ class TestAdminCreateService(BaseTestCase):
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')
 
-            data = json.loads(resp.data.decode())
-            self.assertEquals(resp.status_code, 400)
-            self.assertEqual(data['message'], 'Invalid data in Token.')
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = \
+                f'http://{client_host}/admin/create/cancel?tokenexpired=true'
+            self.assertRedirects(resp, redirect_url)
+            # data = json.loads(resp.data.decode())
+            # self.assertEquals(resp.status_code, 400)
+            # self.assertEqual(data['message'], 'Invalid data in Token.')
 
     def test_cancel_promotion_promoter_not_admin(self):
         admin = User(
@@ -744,12 +774,18 @@ class TestAdminCreateService(BaseTestCase):
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')
 
-            data = json.loads(resp.data.decode())
-            self.assertEquals(resp.status_code, 401)
-            self.assertEqual(
-                data['message'],
-                'User is not authorised to promote other users.'
-            )
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = \
+                f'http://{client_host}/admin/create/cancel?tokenexpired=true'
+            self.assertRedirects(resp, redirect_url)
+            # data = json.loads(resp.data.decode())
+            # self.assertEquals(resp.status_code, 401)
+            # self.assertEqual(
+            #     data['message'],
+            #     'User is not authorised to promote other users.'
+            # )
 
     def test_cancel_promotion_admin_dne(self):
         token = generate_promotion_confirmation_token(
@@ -760,9 +796,15 @@ class TestAdminCreateService(BaseTestCase):
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')
 
-            data = json.loads(resp.data.decode())
-            self.assertEquals(resp.status_code, 400)
-            self.assertEqual(data['message'], 'Administrator does not exist.')
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = \
+                f'http://{client_host}/admin/create/cancel?tokenexpired=true'
+            self.assertRedirects(resp, redirect_url)
+            # data = json.loads(resp.data.decode())
+            # self.assertEquals(resp.status_code, 400)
+            # self.assertEqual(data['message'], 'Administrator does not exist.')
 
     def test_cancel_promotion_user_dne(self):
         test_admin = User(
@@ -780,9 +822,15 @@ class TestAdminCreateService(BaseTestCase):
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')
 
-            data = json.loads(resp.data.decode())
-            self.assertEquals(resp.status_code, 400)
-            self.assertEqual(data['message'], 'Target User does not exist.')
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = \
+                f'http://{client_host}/admin/create/cancel?tokenexpired=true'
+            self.assertRedirects(resp, redirect_url)
+            # data = json.loads(resp.data.decode())
+            # self.assertEquals(resp.status_code, 400)
+            # self.assertEqual(data['message'], 'Target User does not exist.')
 
     # This test should work 30 days after the 25th of August 2019 as it uses a
     # token generated on that day.
@@ -883,9 +931,15 @@ class TestAdminCreateService(BaseTestCase):
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')
 
-            data = json.loads(resp.data.decode())
-            self.assertEquals(resp.status_code, 400)
-            self.assertEqual(data['message'], 'User does not exist.')
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = \
+                f'http://{client_host}/admin/verify?tokenexpired=true'
+            self.assertRedirects(resp, redirect_url)
+            # data = json.loads(resp.data.decode())
+            # self.assertEquals(resp.status_code, 400)
+            # self.assertEqual(data['message'], 'User does not exist.')
 
     def test_verify_promotion_user_not_verified(self):
         test_user = User(
@@ -902,9 +956,15 @@ class TestAdminCreateService(BaseTestCase):
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')
 
-            data = json.loads(resp.data.decode())
-            self.assertEquals(resp.status_code, 400)
-            self.assertEqual(data['message'], 'User is not verified.')
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = \
+                f'http://{client_host}/admin/verify?tokenexpired=true'
+            self.assertRedirects(resp, redirect_url)
+            # data = json.loads(resp.data.decode())
+            # self.assertEquals(resp.status_code, 400)
+            # self.assertEqual(data['message'], 'User is not verified.')
 
     def test_verify_promotion_user_is_not_admin(self):
         test_user = User(
@@ -922,9 +982,15 @@ class TestAdminCreateService(BaseTestCase):
         with current_app.test_client() as client:
             resp = client.get(url, content_type='application/json')
 
-            data = json.loads(resp.data.decode())
-            self.assertEquals(resp.status_code, 400)
-            self.assertEqual(data['message'], 'User is not an Admin.')
+            client_host = os.environ.get('CLIENT_HOST')
+            self.assertEquals(resp.status_code, 302)
+            self.assertTrue(resp.headers['Location'])
+            redirect_url = \
+                f'http://{client_host}/admin/verify?tokenexpired=true'
+            self.assertRedirects(resp, redirect_url)
+            # data = json.loads(resp.data.decode())
+            # self.assertEquals(resp.status_code, 400)
+            # self.assertEqual(data['message'], 'User is not an Admin.')
 
     # FIXME(davidmatthews1004@gmail.com) Pleas fix
     # def test_verify_promotion_token_expired(self):

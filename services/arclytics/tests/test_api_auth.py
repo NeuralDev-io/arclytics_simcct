@@ -1150,6 +1150,9 @@ class TestAuthEndpoints(BaseTestCase):
             jyn_updated = User.objects.get(email=jyn.email)
             self.assertEqual(jyn_updated.login_data.count(), 3)
 
+    # TODO(davidmatthews1004@gmail.com) write tests for geolocation with
+    #  external ip addresses.
+
 
 if __name__ == '__main__':
     unittest.main()

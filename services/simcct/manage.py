@@ -55,19 +55,16 @@ app = create_app()
 cli = FlaskGroup(create_app=create_app)
 
 
-def get_admin_mongo_uri():
-    host = os.environ.get('MONGO_HOST')
-    port = int(os.environ.get('MONGO_PORT'))
-    username = str(os.environ.get('MONGO_APP_USER'))
-    password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
-    db = str(os.environ.get('MONGO_APP_DB'))
-    return f'mongodb://{username}:{password}@{host}:{port}/{db}'
-
-
 @cli.command('seed_db')
 def seed_alloy_db():
     if os.environ.get('FLASK_ENV', 'development') == 'production':
-        client = MongoClient(get_admin_mongo_uri())
+        client = MongoClient(
+            host=str(os.environ.get('MONGO_HOST')),
+            port=int(os.environ.get('MONGO_PORT')),
+            username=str(os.environ.get('MONGO_APP_USER')),
+            password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
+            connect=False
+        )
     else:
         client = MongoClient(
             host=os.environ.get('MONGO_HOST'),
@@ -102,7 +99,12 @@ def seed_alloy_db():
 @cli.command('flush')
 def flush():
     if os.environ.get('FLASK_ENV', 'development') == 'production':
-        client = MongoClient(get_admin_mongo_uri())
+        client = MongoClient(
+            host=str(os.environ.get('MONGO_HOST')),
+            port=int(os.environ.get('MONGO_PORT')),
+            username=str(os.environ.get('MONGO_APP_USER')),
+            password=str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+        )
         redis_client = redis.Redis(
             host=os.environ.get('REDIS_HOST'),
             port=os.environ.get('REDIS_PORT'),

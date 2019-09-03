@@ -11,12 +11,12 @@
 
 # Initiate replica set configuration
 echo "Configuring the MongoDB Replica Set"
-kubectl exec mongod-0 -c mongod-container -- mongo --eval 'rs.initiate({_id: "MainRepSet", version: 1, members: [ {_id: 0, host: "mongod-0.mongodb-service.default.svc.cluster.local:27017"}, {_id: 1, host: "mongod-1.mongodb-service.default.svc.cluster.local:27017"}, {_id: 2, host: "mongod-2.mongodb-service.default.svc.cluster.local:27017"} ]});'
+kubectl exec mongo-0 -c mongo-container -- mongo --eval 'rs.initiate({_id: "MainRepSet", version: 1, members: [ {_id: 0, host: "mongo-0.mongo-service.default.svc.cluster.local:27017"}, {_id: 1, host: "mongo-1.mongo-service.default.svc.cluster.local:27017"}, {_id: 2, host: "mongo-2.mongo-service.default.svc.cluster.local:27017"} ]});'
 
 # Wait a bit until the replica set should have a primary ready
 echo "Waiting for the Replica Set to initialise..."
 sleep 30
-kubectl exec mongod-0 -c mongod-container -- mongo --eval 'rs.status();'
+kubectl exec mongo-0 -c mongo-container -- mongo --eval 'rs.status();'
 
 # Create the admin user (this will automatically disable the localhost exception)
 echo "Creating user: 'YW5zdG9fYXJjbHl0aWNz'"
@@ -27,11 +27,12 @@ TEMPFILE_USER=$(mktemp)
 kubectl get secret credentials -o jsonpath="{.data.mongo_root_user}" | base64 -d > ${TEMPFILE_USER}
 kubectl get secret credentials -o jsonpath="{.data.mongo_root_password}" | base64 -d > ${TEMPFILE_PW}
 
+# Get the decoded password back from the temp files.
 ROOT_USER=$(<"${TEMPFILE_USER}")
 ROOT_PW=$(<"${TEMPFILE_PW}")
 
-kubectl exec mongod-0 -c mongod-container -- mongo --eval 'db.getSiblingDB("admin").createUser({user:"'"${ROOT_USER}"'",pwd:"'"${ROOT_PW}"'",roles:[{role:"root",db:"admin"}]});'
-# TODO(andrew@neuraldev.io): Add the application user.
+# Run an evaluation command on Mongo to create the Root user.
+kubectl exec mongo-0 -c mongo-container -- mongo --eval 'db.getSiblingDB("admin").createUser({user:"'"${ROOT_USER}"'",pwd:"'"${ROOT_PW}"'",roles:[{role:"root",db:"admin"}]});'
 
 TEMPFILE_DB=$(mktemp)
 kubectl get secret credentials -o jsonpath="{.data.mongo_app_db}" | base64 -d > ${TEMPFILE_DB}
@@ -45,9 +46,13 @@ kubectl get secret credentials -o jsonpath="{.data.mongo_app_user_password}" | b
 APP_USER=$(<"${TEMPFILE_APP_USER}")
 APP_USER_PW=$(<"${TEMPFILE_APP_USER_PW}")
 
-kubectl exec mongod-0 -c mongod-container -- mongo "${MONGO_APP_DB}" -u "${ROOT_USER}" -p "${ROOT_PW}" --authenticationDatabase admin \
-        --eval "db.getSiblingDB('admin').createUser({user: \"${APP_USER}\", pwd: \"${APP_USER_PW}\", roles:[{role: \"dbOwner\",
-        db: \"${MONGO_APP_DB}\"}, {role: \"dbOwner\", db: \"arc_dev\"}]});"
+# Create an application user on the main Production Database
+kubectl exec mongo-0 -c mongo-container -- mongo "${MONGO_APP_DB}" -u "${ROOT_USER}" -p "${ROOT_PW}" --authenticationDatabase admin \
+        --eval "db.getSiblingDB(\"${MONGO_APP_DB}\").createUser({user: \"${APP_USER}\", pwd: \"${APP_USER_PW}\", roles:[{role: \"dbOwner\", db: \"${MONGO_APP_DB}\"}]});"
+
+# Create an application user on the Development Database
+kubectl exec mongo-0 -c mongo-container -- mongo -u "${ROOT_USER}" -p "${ROOT_PW}" --authenticationDatabase admin \
+        --eval "db.getSiblingDB(\"arc_dev\").createUser({user: \"${APP_USER}\", pwd: \"${APP_USER_PW}\", roles:[{role: \"dbOwner\", db: \"arc_dev\"}]});"
 
 rm ${TEMPFILE_USER}
 rm ${TEMPFILE_PW}

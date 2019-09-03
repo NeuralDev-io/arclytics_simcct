@@ -16,8 +16,9 @@ spec:
     spec:
       containers:
         - name: arclytics
-          image: arclytics/arc_sim_flask_service:1.0
-          imagePullPolicy: Never
+          image: arclytics/arc_sim_flask_service:1.0  # -- use local or Docker Hub build
+          #image: gcr.io/arclytics-sim/arc_sim_flask_service:1.0.0
+          #imagePullPolicy: Never  -- use for local
           env:
             - name: FLASK_APP
               value: "arc_app/app.py"

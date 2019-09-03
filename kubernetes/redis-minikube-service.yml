@@ -19,7 +19,7 @@ metadata:
   labels:
     name: database
 spec:
-  serviceName: redis
+  serviceName: redis-service
   replicas: 1
   template:
     metadata:
@@ -29,8 +29,9 @@ spec:
     spec:
       containers:
         - name: redis-container
-          # image: arclytics/arc_sim_redis:1.1
-          image: redis:5.0.5
+          image: arclytics/arc_sim_redis:1.1
+          #image: redis:5.0.5
+          #image: gcr.io/arclytics-sim/arc_sim_redis:1.1.0
           # imagePullPolicy: Never
           args: ["--requirepass", "$(REDIS_PASSWORD)", "--appendonly", "yes",
                  "--save", "900", "1", "--save", "30", "2"]

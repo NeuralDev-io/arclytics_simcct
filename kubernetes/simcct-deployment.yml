@@ -33,7 +33,7 @@ spec:
                   name: credentials
                   key: security_password_salt
           - name: MONGO_HOST
-            value: "mongodb"
+            value: "mongod-0.mongodb-service.default.svc.cluster.local"
           - name: MONGO_PORT
             value: "27017"
           - name: MONOGO_APP_DB
@@ -52,7 +52,7 @@ spec:
                 name: credentials
                 key: app_user_password
           - name: REDIS_HOST
-            value: "redis"
+            value: "redis-0.redis-service.default.svc.cluster.local"
           - name: REDIS_PORT
             value: "6379"
           - name: REDIS_PASSWORD

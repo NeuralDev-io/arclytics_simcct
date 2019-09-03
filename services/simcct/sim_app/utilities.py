@@ -30,10 +30,13 @@ from bson import ObjectId
 def get_mongo_uri():
     host = os.environ.get('MONGO_HOST')
     port = int(os.environ.get('MONGO_PORT'))
-    username = str(os.environ.get('MONGO_APP_USER'))
-    password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
     db = str(os.environ.get('MONGO_APP_DB'))
-    return f'mongodb://{username}:{password}@{host}:{port}/{db}'
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        username = str(os.environ.get('MONGO_APP_USER'))
+        password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+        return f'mongodb://{username}:{password}@{host}:{port}/{db}'
+    else:
+        return f'mongodb://{host}:{port}/{db}'
 
 
 class JSONEncoder(json.JSONEncoder):

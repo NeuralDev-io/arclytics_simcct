@@ -1012,7 +1012,12 @@ while [[ "$1" != "" ]] ; do
                             kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-1.yml"
                             kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-2.yml"
                             kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-3.yml"
-                            # kubectl apply -f "${WORKDIR}/kubernetes/mongo-statefulset.yml"
+
+                            TMPFILE=$(mktemp)
+                            /usr/bin/openssl rand -base64 741 > $TMPFILE
+                            kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth-mongodb-keyfile=$TMPFILE
+                            rm $TMPFILE
+                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-minikube-service.yml" --validate=false
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get deployments
@@ -1020,9 +1025,10 @@ while [[ "$1" != "" ]] ; do
                             fi
                             ;;
                           delete )
-                            # kubectl delete -f "${WORKDIR}/kubernetes/mongo-service.yml"
+                            # TODO(andrew@neuraldev.io)
+                            # kubectl delete -f "${WORKDIR}/kubernetes/mongo-minikube-service.yml"
                             # kubectl delete -f "${WORKDIR}/kubernetes/mongo-deployment.yml"
-                            kubectl delete -f "${WORKDIR}/kubernetes/mongo-statefulset.yml"
+                            # kubectl delete -f "${WORKDIR}/kubernetes/mongo-statefulset.yml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               generalMessage "Deployments"

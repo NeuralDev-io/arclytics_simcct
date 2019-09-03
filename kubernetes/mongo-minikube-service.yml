@@ -23,7 +23,7 @@ spec:
     metadata:
       labels:
         role: mongo
-        environment: test
+        environment: production
         replicaset: MainRepSet
     spec:
       affinity:
@@ -42,11 +42,11 @@ spec:
       volumes:
         - name: secrets-volume
           secret:
-            secretName: shared-bootstrap-data
+            secretName: shared-bootstrap-secrets
             defaultMode: 256
       containers:
         - name: mongod-container
-          #image: pkdone/mongo-ent:3.4  -- can use our own arclytics/arc_sim_mongo:1.1
+          #image: -- can use our own arclytics/arc_sim_mongo:1.1
           image: mongo
           command:
             - "numactl"

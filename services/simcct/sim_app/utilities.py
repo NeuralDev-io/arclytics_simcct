@@ -26,6 +26,8 @@ from datetime import datetime
 
 from bson import ObjectId
 
+from simulation.utilities import Method
+
 
 def get_mongo_uri():
     host = os.environ.get('MONGO_HOST')
@@ -43,6 +45,8 @@ class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""
 
     def default(self, o):
+        if isinstance(o, Method):
+            return o.name
         if isinstance(o, ObjectId):
             return str(o)
         if isinstance(o, set):

@@ -1009,15 +1009,13 @@ while [[ "$1" != "" ]] ; do
                     secrets )
                       kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml"
                       ;;
-                    database )
+                    mongo )
                       while [[ "$3" != "" ]]; do
                         case $3 in
                           create )
                             # kubectl create -f "${WORKDIR}/kubernetes/mongo-service.yml"
                             # kubectl create -f "${WORKDIR}/kubernetes/mongo-deployment.yml"
                             kubectl apply -f "${WORKDIR}/kubernetes/mongo-statefulset.yml"
-                            kubectl create -f "${WORKDIR}/kubernetes/redis-deployment.yml"
-                            kubectl create -f "${WORKDIR}/kubernetes/redis-service.yml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get deployments
@@ -1028,6 +1026,34 @@ while [[ "$1" != "" ]] ; do
                             # kubectl delete -f "${WORKDIR}/kubernetes/mongo-service.yml"
                             # kubectl delete -f "${WORKDIR}/kubernetes/mongo-deployment.yml"
                             kubectl delete -f "${WORKDIR}/kubernetes/mongo-statefulset.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              generalMessage "Deployments"
+                              kubectl get deployments
+                              generalMessage "Pods"
+                              kubectl get pods
+                            fi
+                            ;;
+                          * )
+                            exit 0
+                            ;;
+                        esac
+                        shift
+                      done
+                      ;;
+                    redis )
+                      while [[ "$3" != "" ]]; do
+                        case $3 in
+                          create )
+                            kubectl create -f "${WORKDIR}/kubernetes/redis-deployment.yml"
+                            kubectl create -f "${WORKDIR}/kubernetes/redis-service.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              kubectl get deployments
+                              kubectl get pods
+                            fi
+                            ;;
+                          delete )
                             kubectl delete -f "${WORKDIR}/kubernetes/redis-service.yml"
                             kubectl delete -f "${WORKDIR}/kubernetes/redis-deployment.yml"
 

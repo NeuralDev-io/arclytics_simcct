@@ -1102,7 +1102,10 @@ while [[ "$1" != "" ]] ; do
                         shift
                       done
                       ;;
-                    ls | show )
+                    watch )
+                      watch kubectl get all -o wide
+                      ;;
+                    ls | show | get )
                       echoSpace
                       headerMessage "ARCLYTICS SIM KUBERNETES ORCHESTRATION"
                       echo
@@ -1140,6 +1143,7 @@ while [[ "$1" != "" ]] ; do
                     * )
                       exit 0
                       ;;
+                    # TODO(andrew@neuraldev.io) POD_NAME=$(kubectl get pod -l service=postgres -o jsonpath="{.items[0].metadata.name}")
                 esac
                 shift
             done

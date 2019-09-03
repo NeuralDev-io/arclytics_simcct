@@ -6,13 +6,13 @@ RIGHT_NOW=$(date +"%x %r %Z")
 TIME_STAMP="Started on $RIGHT_NOW by $USER"
 
 ##### Check if DB is up and running
-echo "Waiting for Mongo..."
+#echo "Waiting for Mongo..."
 
-while ! socat - TCP4:mongodb:27017; do
-    sleep 0.1
-done
+#while ! socat - TCP4:"${MONGO_HOST}":27017; do
+#    sleep 0.1
+#done
 
-echo "Mongo started."
+#echo "Mongo started."
 
 # defaults
 HOST=0.0.0.0

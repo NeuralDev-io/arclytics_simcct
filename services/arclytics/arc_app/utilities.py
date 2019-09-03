@@ -19,12 +19,25 @@ __date__ = '2019.07.25'
 {Description}
 """
 
+import os
 import decimal
 import enum
 import json
 from bson import ObjectId
 from datetime import datetime, tzinfo, timedelta
 from typing import Optional
+
+
+def get_mongo_uri():
+    host = os.environ.get('MONGO_HOST')
+    port = int(os.environ.get('MONGO_PORT'))
+    db = str(os.environ.get('MONGO_APP_DB'))
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        username = str(os.environ.get('MONGO_APP_USER'))
+        password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+        return f'mongodb://{username}:{password}@{host}:{port}/{db}'
+    else:
+        return f'mongodb://{host}:{port}/{db}'
 
 
 class JSONEncoder(json.JSONEncoder):

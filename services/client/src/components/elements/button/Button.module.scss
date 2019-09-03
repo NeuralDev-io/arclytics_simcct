@@ -125,7 +125,7 @@
   box-shadow: none;
 
   &:hover {
-    background-color: var(--n50);
+    background-color: rgba(var(--n50-rgb), .5);
     box-shadow: none;
   }
 

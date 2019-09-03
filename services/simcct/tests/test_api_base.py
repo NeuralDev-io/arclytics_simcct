@@ -28,7 +28,7 @@ from redis import Redis
 
 import settings
 from sim_app.app import create_app
-from tests.test_utils import get_mongo_uri
+from sim_app.utilities import get_mongo_uri
 
 
 class BaseTestCase(TestCase):

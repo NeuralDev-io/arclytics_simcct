@@ -22,7 +22,6 @@ services:
       - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
-      - MONGO_URI=mongodb://mongodb:27017
       - MONGO_APP_DB=${MONGO_APP_DB}
       - MONGO_APP_USER=${MONGO_APP_USER}
       - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
@@ -35,7 +34,7 @@ services:
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - SIMCCT_HOST=simcct:8001
-      - CLIENT_HOST=client:3000
+      - CLIENT_HOST=client:80
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
     depends_on:
       - mongodb
@@ -60,17 +59,16 @@ services:
       - APP_SETTINGS=configs.flask_conf.ProductionConfig
       - SECRET_KEY=${SECRET_KEY}
       - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
-      - USERS_HOST=arclytics:8000
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
       - MONGO_APP_DB=${MONGO_APP_DB}
       - MONGO_APP_USER=${MONGO_APP_USER}
       - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
-      - MONGO_URI=mongodb://${MONGO_APP_USER}:${MONGO_APP_USER_PASSWORD}@mongodb:27017/${MONGO_APP_DB}
-      - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - USERS_HOST=arclytics:8000
+      - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
     depends_on:
       - mongodb
       - redis
@@ -101,6 +99,8 @@ services:
         arclytics.io: "production"
     image: arclytics/arc_sim_mongo:1.1
     restart: always
+    volumes:
+      - mongo-volume-mount:/data/db
     ports:
       - 27017:27017
     expose:
@@ -138,5 +138,11 @@ services:
 networks:
   host:
     driver: bridge
+    labels:
+      arclytics.io: "production"
+
+# https://docs.docker.com/compose/compose-file/#volume-configuration-reference
+volumes:
+  mongo-volume-mount:
     labels:
       arclytics.io: "production"

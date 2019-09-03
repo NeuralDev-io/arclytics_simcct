@@ -6,6 +6,9 @@ metadata:
     name: arclytics
     app: arclytics
 spec:
+  selector:
+    matchLabels:
+      run: arclytics
   replicas: 1
   template:
     metadata:
@@ -13,12 +16,13 @@ spec:
         app: arclytics
         role: arclytics
         environment: production
+        run: arclytics
     spec:
       containers:
         - name: arclytics
           image: arclytics/arc_sim_flask_service:1.0  # -- use local or Docker Hub build
           #image: gcr.io/arclytics-sim/arc_sim_flask_service:1.0.0
-          #imagePullPolicy: Never  -- use for local
+          imagePullPolicy: Always  # Never -- use for local
           env:
             - name: FLASK_APP
               value: "arc_app/app.py"

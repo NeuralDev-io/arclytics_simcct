@@ -1151,9 +1151,9 @@ while [[ "$1" != "" ]] ; do
                       echoLine
                       kubectl get statefulset -o wide
                       echoLine
-                      generalMessage "Services"
+                      generalMessage "ReplicaSets"
                       echoLine
-                      kubectl get services -o wide
+                      kubectl get replicasets -o wide
                       echoLine
                       generalMessage "Deployments"
                       echoLine
@@ -1162,6 +1162,14 @@ while [[ "$1" != "" ]] ; do
                       generalMessage "Pods"
                       echoLine
                       kubectl get pods -o wide
+                      echoLine
+                      generalMessage "Services"
+                      echoLine
+                      kubectl get services -o wide
+                      echoLine
+                      generalMessage "Ingress"
+                      echoLine
+                      kubectl get ingresses -o wide
                       echoLine
                       completeMessage
                       echoSpace

@@ -58,11 +58,11 @@ reset="${esc}[0m"
 # ====================================================== #
 # ==================== # Messages # ==================== #
 # ====================================================== #
-function headerMessage() { echo -e "${greenf}${boldon}[ARCLYTICS]  |  $1${boldoff}${reset}"; }
-function actionMessage() { echo -e "${whiteb}${redf}${boldon}[ARCLYTICS]  |  $1...${boldoff}${reset}"; echo ""; }
-function generalMessage() { echo -e "${yellowf}[ARCLYTICS]  |  $1${reset}"; }
+function headerMessage() { echo -e "${greenf}${boldon}# [ARCLYTICS]  |  $1${boldoff}${reset}"; }
+function actionMessage() { echo -e "${whiteb}${redf}${boldon}# [ARCLYTICS]  |  $1...${boldoff}${reset}"; echo ""; }
+function generalMessage() { echo -e "${yellowf}# [ARCLYTICS]  |  $1${reset}"; }
 function echoSpace() { echo ""; }
-function completeMessage() { echo -e "${greenf}${boldon}[ARCLYTICS]  |  Complete${boldoff}${reset}"; }
+function completeMessage() { echo -e "${greenf}${boldon}# [ARCLYTICS]  |  Complete${boldoff}${reset}"; }
 
 function echoLine() {
     width=$terminalColWidth-4;
@@ -373,7 +373,8 @@ ${reset}
 # ==================================================================== #
 
 dockerLsFormatted() {
-  headerMessage "ARCLYTICS SIM LS CONTAINERS, VOLUMES, AND IMAGES"
+  echo
+  headerMessage "ARCLYTICS SIM DOCKER CONTAINERS, VOLUMES, AND IMAGES"
   echoLine
   generalMessage "Containers"
   echoLine
@@ -394,6 +395,7 @@ dockerLsFormatted() {
       --filter "label=arclytics.io"
   echoLine
   completeMessage
+  echo
 }
 
 dockerPs() {
@@ -1073,9 +1075,39 @@ while [[ "$1" != "" ]] ; do
                         shift
                       done
                       ;;
+                    simcct )
+                      while [[ "$3" != "" ]]; do
+                        case $3 in
+                          create )
+                            # eval $(minikube docker-env)
+                            kubectl create -f "${WORKDIR}/kubernetes/simcct-minikube-service.yml"
+                            kubectl create -f "${WORKDIR}/kubernetes/simcct-minikube-deployment.yml" --validate=false
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              kubectl get all -o wide
+                            fi
+                            ;;
+                          delete )
+                            kubectl delete -f "${WORKDIR}/kubernetes/simcct-minikube-service.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/simcct-minikube-deployment.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              kubectl get all -o wide
+                            fi
+                            ;;
+                          * )
+                            exit 0
+                            ;;
+                        esac
+                        shift
+                      done
+                      ;;
                     ls | show )
                       echoSpace
-                      headerMessage "KUBERNETES ORECHESTRATION"
+                      headerMessage "ARCLYTICS SIM KUBERNETES ORCHESTRATION"
+                      echo
+                      kubectl cluster-info
+                      echo
                       echoLine
                       generalMessage "Persistent Volumes"
                       echoLine

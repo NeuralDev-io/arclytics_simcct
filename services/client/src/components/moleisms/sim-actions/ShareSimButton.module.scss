@@ -1,0 +1,34 @@
+.modal {
+  padding: .5rem 2.5rem;
+  width: 30rem;
+
+  & > h4 {
+    margin: 1rem 0 1.5rem 0;
+  }
+}
+
+.linkButtonContainer {
+  flex-direction: row;
+  display: flex;
+  justify-content: flex-end;
+
+  Button {
+      margin-right: 0.75rem;
+    }
+
+  Button:last-of-type {
+    margin-right: 0;
+  }
+}
+
+.emailButtonContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.exportButtonContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}

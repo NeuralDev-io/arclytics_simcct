@@ -14,15 +14,13 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
 import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
-import Share2Icon from 'react-feather/dist/icons/share-2'
 import UploadIcon from 'react-feather/dist/icons/upload'
 import Button from '../../elements/button'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
-import ShareModal from '../../moleisms/share-modal'
 import PhaseFractions from '../../moleisms/charts/PhaseFractions'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
-import { SaveSimButton } from '../../moleisms/sim-actions'
+import { SaveSimButton, ShareSimButton } from '../../moleisms/sim-actions'
 import { TTT, CCT } from '../../moleisms/charts'
 import { postSaveSimulation } from '../../../api/sim/SessionSaveSim'
 
@@ -34,7 +32,6 @@ class SimulationPage extends Component {
     this.state = {
       displayConfig: true,
       displayProfile: true,
-      shareModal: false,
     }
   }
 
@@ -44,9 +41,9 @@ class SimulationPage extends Component {
     }
   }
 
-  handleShowModal = type => this.setState({ [`${type}Modal`]: true })
+  // handleShowModal = type => this.setState({ [`${type}Modal`]: true })
 
-  handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
+  // handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
 
   saveCurrentSimulation = () => {
     const { configurations, alloys } = this.state
@@ -72,7 +69,6 @@ class SimulationPage extends Component {
     const {
       displayConfig,
       displayProfile,
-      shareModal,
       runSimConnect,
     } = this.state
     const { history, isInitialised } = this.props
@@ -104,14 +100,7 @@ class SimulationPage extends Component {
               </Button>
             </div>
             <div className={styles.actions}>
-              <Button
-                appearance="text"
-                onClick={() => this.handleShowModal('share')}
-                IconComponent={props => <Share2Icon {...props} />}
-                isDisabled={!isInitialised}
-              >
-                SHARE
-              </Button>
+              <ShareSimButton isSessionInitialised={isInitialised} />
               <SaveSimButton isSessionInitialised={isInitialised} />
               <Button
                 appearance="outline"
@@ -170,11 +159,6 @@ class SimulationPage extends Component {
             </div>
           </div>
         </div>
-
-        <ShareModal
-          show={shareModal}
-          onClose={() => this.handleCloseModal('share')}
-        />
       </React.Fragment>
     )
   }

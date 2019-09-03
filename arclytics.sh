@@ -1090,6 +1090,7 @@ while [[ "$1" != "" ]] ; do
                       kubectl get pods -o wide
                       echoLine
                       completeMessage
+                      echoSpace
                       ;;
                     * )
                       exit 0
@@ -1097,7 +1098,6 @@ while [[ "$1" != "" ]] ; do
                 esac
                 shift
             done
-
             ;;
     esac
     shift

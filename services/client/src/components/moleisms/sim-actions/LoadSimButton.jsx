@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { withSnackbar } from 'notistack'
 import UploadIcon from 'react-feather/dist/icons/upload'
 import Button from '../../elements/button'
+import FileInput from '../../elements/file-input/FileInput'
 import { AttachModal } from '../../elements/modal'
 import { loadSim } from '../../../state/ducks/sim/actions'
 
@@ -14,6 +15,7 @@ class LoadSimButton extends Component {
     super(props)
     this.state = {
       visible: false,
+      filename: '',
     }
   }
 
@@ -71,13 +73,27 @@ class LoadSimButton extends Component {
 
       // load simulations
       loadSimConnect(sim)
+      this.setState({ filename: file.name })
+      enqueueSnackbar('File imported successfully.', {
+        variant: 'success',
+        action: key => (
+          <Button
+            appearance="text"
+            className="snackbar__button"
+            onClick={() => closeSnackbar(key)}
+          >
+            Dismiss
+          </Button>
+        ),
+      })
+      setTimeout(this.handleCloseModal, 500)
     }
 
     reader.readAsText(file)
   }
 
   render() {
-    const { visible } = this.state
+    const { visible, filename } = this.state
 
     return (
       <AttachModal
@@ -96,7 +112,12 @@ class LoadSimButton extends Component {
           LOAD
         </Button>
         <div className={styles.modal}>
-          <input type="file" onChange={this.handleFileInputChange} />
+          <h4>Import simulation</h4>
+          <FileInput
+            Icon={props => <UploadIcon {...props} />}
+            onChange={this.handleFileInputChange}
+            filename={filename}
+          />
         </div>
       </AttachModal>
     )
@@ -104,8 +125,10 @@ class LoadSimButton extends Component {
 }
 
 LoadSimButton.propTypes = {
+  enqueueSnackbar: PropTypes.func.isRequired,
+  closeSnackbar: PropTypes.func.isRequired,
   // props from connect()
-  saveSimulationConnect: PropTypes.func.isRequired,
+  loadSimConnect: PropTypes.func.isRequired,
 }
 
 const mapDispatchToProps = {

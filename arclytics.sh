@@ -1047,7 +1047,7 @@ while [[ "$1" != "" ]] ; do
                       while [[ "$3" != "" ]]; do
                         case $3 in
                           create )
-                            eval $(minikube docker-env)
+                            # eval $(minikube docker-env)
                             kubectl create -f "${WORKDIR}/kubernetes/arc-minikube-service.yml"
                             kubectl create -f "${WORKDIR}/kubernetes/arc-minikube-deployment.yml"
 

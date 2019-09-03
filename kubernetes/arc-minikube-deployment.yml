@@ -48,12 +48,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: credentials
-                  key: app_user
+                  key: mongo_app_user
             - name: MONGO_APP_USER_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: credentials
-                  key: app_user_password
+                  key: mongo_app_user_password
             - name: REDIS_HOST
               value: "redis-0.redis-service.default.svc.cluster.local"
             - name: REDIS_PORT
@@ -88,4 +88,3 @@ spec:
               value: "client:80"
             - name: DASK_SCHEDULER_ADDRESS
               value: "tcp://dask-scheduler:8786"
-      restartPolicy: Always

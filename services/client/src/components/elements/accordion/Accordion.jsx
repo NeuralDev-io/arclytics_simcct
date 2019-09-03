@@ -13,9 +13,11 @@ class Accordion extends Component {
 
   componentDidMount = () => {
     const { expand } = this.state
-    const { children } = this.props
+    const { children, defaultExpand } = this.props
     if (expand.length === 0) {
-      this.setState({ expand: new Array(children.length).fill(false) })
+      const newExpand = new Array(children.length).fill(false)
+      if (defaultExpand !== -1) newExpand[defaultExpand] = true
+      this.setState({ expand: newExpand })
     }
   }
 
@@ -46,6 +48,11 @@ class Accordion extends Component {
 
 Accordion.propTypes = {
   children: PropTypes.instanceOf(Object).isRequired,
+  defaultExpand: PropTypes.number,
+}
+
+Accordion.defaultProps = {
+  defaultExpand: -1,
 }
 
 export default Accordion

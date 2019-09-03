@@ -1043,6 +1043,33 @@ while [[ "$1" != "" ]] ; do
                         shift
                       done
                       ;;
+                    arclytics )
+                      while [[ "$3" != "" ]]; do
+                        case $3 in
+                          create )
+                            eval $(minikube docker-env)
+                            kubectl create -f "${WORKDIR}/kubernetes/arc-minikube-service.yml"
+                            kubectl create -f "${WORKDIR}/kubernetes/arc-minikube-deployment.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              kubectl get all -o wide
+                            fi
+                            ;;
+                          delete )
+                            kubectl delete -f "${WORKDIR}/kubernetes/arc-minikube-service.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/arc-minikube-deployment.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              kubectl get all -o wide
+                            fi
+                            ;;
+                          * )
+                            exit 0
+                            ;;
+                        esac
+                        shift
+                      done
+                      ;;
                     ls )
                       echoSpace
                       headerMessage "KUBERNETES ORECHESTRATION"

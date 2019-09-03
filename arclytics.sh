@@ -1009,7 +1009,10 @@ while [[ "$1" != "" ]] ; do
                         case $3 in
                           create )
                             kubectl apply -f "${WORKDIR}/kubernetes/gke_ssd.yml"
-                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-statefulset.yml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-1.yml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-2.yml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-3.yml"
+                            # kubectl apply -f "${WORKDIR}/kubernetes/mongo-statefulset.yml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get deployments

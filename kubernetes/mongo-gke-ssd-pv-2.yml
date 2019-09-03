@@ -10,4 +10,4 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: fast
   gcePersistentDisk:
-    pdName: pd-ssd-disk-2  # Make re you sure you use the SSD name created in `gcloud`
+    pdName: pd-ssd-disk-2  # Make sure you use the SSD name created in `gcloud`

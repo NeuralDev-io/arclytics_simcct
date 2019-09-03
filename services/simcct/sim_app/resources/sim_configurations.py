@@ -28,6 +28,9 @@ from sim_app.sim_session import SimSessionService, SaveSessionError
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
 from sim_app.middleware import token_and_session_required
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
 
 configs_blueprint = Blueprint('sim_configurations', __name__)
 
@@ -110,6 +113,10 @@ class Configurations(Resource):
             sess_configs['cct_cooling_rate'] = int(cct_cool_rate)
 
         sess_configs['is_valid'] = False
+
+        logger.debug('Configurations.patch Session Configurations:')
+        logger.pprint(sess_configs)
+
         session_store['configurations'] = sess_configs
 
         try:

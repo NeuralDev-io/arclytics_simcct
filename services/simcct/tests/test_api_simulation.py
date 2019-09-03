@@ -30,7 +30,7 @@ from flask import json
 from pymongo import MongoClient
 
 from tests.test_api_base import BaseTestCase
-from arc_app.utilities import get_mongo_uri
+from sim_app.utilities import get_mongo_uri
 from sim_app.sim_session import SimSessionService
 from sim_app.schemas import AlloySchema, ConfigurationsSchema, AlloyStoreSchema
 from settings import BASE_DIR

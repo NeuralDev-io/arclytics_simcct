@@ -14,5 +14,5 @@ echo 'Creating Development application database data'
 #        {role: \"dbOwner\", db: \"arc_test\"}]});"
 
 # mongoimport -- GOES HERE
-mongoimport --db arc_dev --collection alloys --drop --file seed_alloy.json --jsonArray --port 27017
-mongoimport --db arc_dev --collection users --drop --file seed_user.json --jsonArray --port 27017
+mongoimport --db arc_dev --collection alloys --drop --file /data/test/seed_alloy.json --jsonArray --port 27017
+mongoimport --db arc_dev --collection users --drop --file /data/test/seed_user.json --jsonArray --port 27017

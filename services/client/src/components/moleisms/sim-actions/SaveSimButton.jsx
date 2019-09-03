@@ -34,6 +34,7 @@ class SaveSimButton extends Component {
     const { sim } = this.props
     const blob = new Blob([JSON.stringify(sim)], { type: 'text/plain;charset=utf-8' })
     FileSaver.saveAs(blob, `arc_sim_${new Date().toISOString()}.json`)
+    this.handleCloseModal()
   }
 
   render() {

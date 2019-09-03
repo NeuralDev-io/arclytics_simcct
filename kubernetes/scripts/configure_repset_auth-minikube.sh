@@ -26,7 +26,18 @@ sleep 30
 kubectl exec mongod-0 -c mongod-container -- mongo --eval 'rs.status();'
 
 # Create the admin user (this will automatically disable the localhost exception)
-echo "Creating user: 'main_admin'"
-kubectl exec mongod-0 -c mongod-container -- mongo --eval 'db.getSiblingDB("admin").createUser({user:"main_admin",pwd:"'"${1}"'",roles:[{role:"root",db:"admin"}]});'
+echo "Creating user: 'YW5zdG9fYXJjbHl0aWNz'"
+kubectl exec mongod-0 -c mongod-container -- mongo --eval 'db.getSiblingDB("admin").createUser({user:"YW5zdG9fYXJjbHl0aWNz",pwd:"'"${1}"'",roles:[{role:"root",db:"admin"}]});'
+# TODO(andrew@neuraldev.io): Add the application user.
+#mongo "${MONGO_APP_DB}" \
+#        --host localhost \
+#        --port 27017 \
+#        -u "${MONGO_ROOT_USER}" \
+#        -p "${MONGO_ROOT_PASSWORD}" \
+#        --authenticationDatabase admin \
+#        --eval "db.createUser({user: \"${MONGO_APP_USER}\", pwd: \"${MONGO_APP_USER_PASSWORD}\", roles:
+#        [{role: \"dbOwner\", db: \"${MONGO_APP_DB}\"},
+#        {role: \"dbOwner\", db: \"arc_dev\"},
+#        {role: \"dbOwner\", db: \"arc_test\"}]});"
 echo
 

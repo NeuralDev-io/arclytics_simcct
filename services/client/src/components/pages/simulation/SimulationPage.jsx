@@ -14,13 +14,12 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
 import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
-import UploadIcon from 'react-feather/dist/icons/upload'
 import Button from '../../elements/button'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
 import PhaseFractions from '../../moleisms/charts/PhaseFractions'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
-import { SaveSimButton, ShareSimButton } from '../../moleisms/sim-actions'
+import { SaveSimButton, ShareSimButton, LoadSimButton } from '../../moleisms/sim-actions'
 import { TTT, CCT } from '../../moleisms/charts'
 import { postSaveSimulation } from '../../../api/sim/SessionSaveSim'
 
@@ -102,14 +101,7 @@ class SimulationPage extends Component {
             <div className={styles.actions}>
               <ShareSimButton isSessionInitialised={isInitialised} />
               <SaveSimButton isSessionInitialised={isInitialised} />
-              <Button
-                appearance="outline"
-                type="button"
-                onClick={() => console.log('LOAD NOW')}
-                IconComponent={props => <UploadIcon {...props} />}
-              >
-                LOAD
-              </Button>
+              <LoadSimButton />
             </div>
           </header>
           <div className={styles.configForm} style={{ display: displayConfig ? 'block' : 'none' }}>

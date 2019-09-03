@@ -100,9 +100,12 @@ class SimSessionService(object):
         """
 
         # The storage value dumped to JSON format
-        redis_value = JSONEncoder().encode(
-            ConfigurationsSchema().load(session_data)
-        )
+        # FIXME(andrew@neuraldev.io): Make a proper schema for this as there
+        #  is additional information.
+        # redis_value = JSONEncoder().encode(
+        #     ConfigurationsSchema().load(session_data)
+        # )
+        redis_value = JSONEncoder().encode(session_data)
 
         # converts global expiry time in minutes to seconds
         expiry_duration = self._get_expiry_duration()
@@ -151,9 +154,12 @@ class SimSessionService(object):
         # The storage value dumped to JSON format
         # We use our customer JSON Encoder to ensure that numpy.floats get
         # serialized properly
-        redis_value = JSONEncoder().encode(
-            ConfigurationsSchema().load(session_data)
-        )
+        # FIXME(andrew@neuraldev.io): Make a proper schema for this as there
+        #  is additional information.
+        # redis_value = JSONEncoder().encode(
+        #     ConfigurationsSchema().load(session_data)
+        # )
+        redis_value = JSONEncoder().encode(session_data)
 
         # TODO(andrew@neuraldev.io): Doing the refresh without generating a new
         #  Session Key that has a expiration encoded within will cause the two

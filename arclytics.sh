@@ -973,9 +973,6 @@ while [[ "$1" != "" ]] ; do
                       while [[ "$3" != "" ]]; do
                         case $3 in
                           create )
-                            # kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-mongo.yml"
-                            # kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-claim-mongo.yml"
-                            kubectl apply -f "${WORKDIR}/kubernetes/googlecloud_ssd.yml"
                             kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-redis.yml"
                             kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-claim-redis.yml"
                             if [[ $3 == "-v" || $3 = "--verbose" ]]; then
@@ -986,8 +983,6 @@ while [[ "$1" != "" ]] ; do
                             fi
                             ;;
                           delete )
-                            # kubectl delete -f "${WORKDIR}/kubernetes/persistent-volume-claim-mongo.yml"
-                            # kubectl delete -f "${WORKDIR}/kubernetes/persistent-volume-mongo.yml"
                             kubectl delete pvc mongo-persistent-storage-mongo-0
                             kubectl delete -f "${WORKDIR}/kubernetes/persistent-volume-claim-redis.yml"
                             kubectl delete -f "${WORKDIR}/kubernetes/persistent-volume-redis.yml"
@@ -1013,8 +1008,7 @@ while [[ "$1" != "" ]] ; do
                       while [[ "$3" != "" ]]; do
                         case $3 in
                           create )
-                            # kubectl create -f "${WORKDIR}/kubernetes/mongo-service.yml"
-                            # kubectl create -f "${WORKDIR}/kubernetes/mongo-deployment.yml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/gke_ssd.yml"
                             kubectl apply -f "${WORKDIR}/kubernetes/mongo-statefulset.yml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then

@@ -9,18 +9,19 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
-import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
+import { ReactComponent as Logo } from '../../../assets/ANSTO_Logo_SVG/logo_text.svg'
 import { login, forgotPassword } from '../../../utils/AuthenticationHelper'
 import { loginValidation, forgotPasswordEmail } from '../../../utils/ValidationHelper'
 import { getPersistUserStatus } from '../../../state/ducks/persist/actions'
 import TextField from '../../elements/textfield'
+import Modal from '../../elements/modal'
 import Button from '../../elements/button'
 
 import styles from './LoginPage.module.scss'
 
 /*
-  TODO: 
-  - once the textfield err prop is fixed uncomment err and need just test edge cases and for Formik move it to the 
+  TODO:
+  - once the textfield err prop is fixed uncomment err and need just test edge cases and for Formik move it to the
   err prop
 
   - change all the logos too ansto logos
@@ -35,6 +36,8 @@ class LoginPage extends Component {
       forgotPwdErr: '',
       emailSent: false,
     }
+    this.handleStatus = this.handleStatus.bind(this)
+    this.handleExpiredToken = this.handleExpiredToken.bind(this)
   }
 
   componentDidMount = () => {
@@ -50,6 +53,18 @@ class LoginPage extends Component {
         history.push(userStatus.isProfile ? '/' : '/profileQuestions')
       })
     }
+  }
+
+  handleExpiredToken = ()=> {
+    const { match } = this.props
+    if (match.params.token === "true") {
+      return (
+        <Modal show="true">
+        Your token has expired
+        </Modal>
+      )
+    }
+    return ('')
   }
 
   handleChange = (name, value) => {
@@ -70,8 +85,9 @@ class LoginPage extends Component {
       <div className={styles.outer}>
         <div className={styles.logoContainer}>
           <Logo className={styles.logo} />
-          <h3> ARCLYTICS </h3>
         </div>
+        This is a string from the url: {this.props.match.params.token}
+        { this.handleExpiredToken()} // checks for login parameter
         <div className={`${styles.loginForm} ${!(hasForgotPwd === null)? (hasForgotPwd ? styles.fadeLeftOut : styles.fadeRightIn) : ('')}`}>
           <div className={styles.header}>
             <h3> Sign in to your account  </h3>
@@ -107,13 +123,13 @@ class LoginPage extends Component {
             }}
           >
             {({
-                values,
-                errors,
-                touched,
-                handleSubmit,
-                setFieldValue,
-                isSubmitting,
-              }) => (
+              values,
+              errors,
+              touched,
+              handleSubmit,
+              setFieldValue,
+              isSubmitting,
+            }) => (
               <div className={styles.formContainer}>
                 <form onSubmit={handleSubmit}>
                   <div>
@@ -143,7 +159,9 @@ class LoginPage extends Component {
                     <h6
                       className={styles.help}
                       onClick={ ()=> this.setState({ hasForgotPwd: true})
-                      }>Trouble signing in?</h6>
+                    }>
+                      Trouble signing in?
+                    </h6>
                     <div className={styles.clear}>
                       <Button
                         className={styles.signIn}
@@ -169,7 +187,7 @@ class LoginPage extends Component {
             )}
           </Formik>
         </div>
-        <div 
+        <div
         className={
           `${
             styles.forgotPwdForm} ${!(hasForgotPwd === null) ?
@@ -188,13 +206,13 @@ class LoginPage extends Component {
             placeholder="Email"
             error={forgotPwdErr}
             length="stretch"
-          />    
+          />
           <div>
            {/* // TODO: loading takes time make sure button is disabled during loading  */}
            {/* TODO: give space for the span height  */}
            <h6 className={ emailSent ? styles.confirmation : styles.errors}>
             { emailSent ? ('Email has been sent.'): forgotPwdErr}
-           </h6>     
+           </h6>
             <Button
               className={styles.forgotSubmit}
               type="submit"

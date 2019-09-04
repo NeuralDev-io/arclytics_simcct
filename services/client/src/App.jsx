@@ -1,6 +1,6 @@
 import React from 'react'
 import { Provider } from 'react-redux'
-import { Route, Switch } from 'react-router-dom'
+import { Route, Switch, Link } from 'react-router-dom'
 import store from './state/store'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
@@ -19,8 +19,9 @@ function App() {
     <Provider store={store}>
       <div className="App">
         <Switch>
+          {/* <Link to="/signin">Search</Link> */}
           <Route
-            path="/signin"
+            path="/signin:tokenexpired=:token"
             render={props => <LoginPage {...props} />}
           />
           <Route

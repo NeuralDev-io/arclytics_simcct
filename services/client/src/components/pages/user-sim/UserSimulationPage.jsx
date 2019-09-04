@@ -9,7 +9,7 @@ const UserSimulationPage = ({ history }) => (
   <React.Fragment>
     <AppBar active="savedSimulations" redirect={history.push} />
     <div className={styles.main}>
-      <UserSavedSimulations />
+      <UserSavedSimulations redirect={history.push} />
     </div>
   </React.Fragment>
 )

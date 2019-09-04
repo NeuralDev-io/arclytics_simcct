@@ -396,3 +396,29 @@ export const loadSimFromLink = token => (dispatch) => {
     })
     // .catch(err => console.log(err))
 }
+
+export const loadSimFromAccount = ({
+  alloy_store, configurations, simulation_results,
+}) => (dispatch) => {
+  const { is_valid, grain_size, ...otherConfig } = configurations
+  dispatch({
+    type: LOAD_SIM,
+    payload: {
+      alloys: {
+        alloyOption: alloy_store.alloy_option,
+        parent: alloy_store.alloys.parent,
+        weld: {
+          _id: '',
+          name: '',
+          compositions: [],
+        },
+        mix: [],
+      },
+      configurations: {
+        grain_size_ASTM: grain_size,
+        ...otherConfig,
+      },
+      results: simulation_results,
+    },
+  })
+}

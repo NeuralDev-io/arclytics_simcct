@@ -64,6 +64,10 @@ function App() {
                 path="/user/profile"
                 render={props => <ProfilePage {...props} />}
               />
+              <Route
+                path="/password/reset=:token"
+                render={props => <PasswordResetPage {...props} />}
+              />
             </Switch>
           </div>
         </Provider>

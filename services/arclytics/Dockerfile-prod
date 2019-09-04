@@ -1,0 +1,38 @@
+# base image
+FROM python:3.7.3-alpine
+
+LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
+
+# install dependencies
+RUN apk update && \
+    apk add --virtual build-deps gcc && \
+    apk add --no-cache build-base python3-dev && \
+    apk add --no-cache libffi-dev py-pip && \
+    apk add --no-cache netcat-openbsd
+
+# Pillow dependencies
+# RUN apk --no-cache add python-dev  jpeg-dev \
+#                       zlib-dev \
+#                       freetype-dev \
+#                       lcms2-dev \
+#                       openjpeg-dev \
+#                       tiff-dev \
+#                       tk-dev \
+#                       tcl-dev \
+#                       harfbuzz-dev \
+#                       fribidi-dev
+
+# set working directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+# add and install requirements
+COPY ./requirements.txt /usr/src/app/requirements.txt
+RUN pip install --quiet --upgrade pip
+RUN pip install --quiet --no-cache-dir -r requirements.txt
+
+# add app
+COPY . /usr/src/app
+RUN rm -rf /usr/src/app/docker-entrypoint.sh
+
+CMD ["gunicorn", "-b 0.0.0.0:8000", "manage:app"]

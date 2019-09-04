@@ -30,6 +30,7 @@ from flask import json
 from pymongo import MongoClient
 
 from tests.test_api_base import BaseTestCase
+from sim_app.utilities import get_mongo_uri
 from sim_app.sim_session import SimSessionService
 from sim_app.schemas import AlloySchema, ConfigurationsSchema, AlloyStoreSchema
 from settings import BASE_DIR
@@ -56,15 +57,16 @@ class TestSimulationService(BaseTestCase):
         data = resp.json()
         cls.token = data.get('token')
 
-        user_resp = requests.get(
-            f'{cls.base_url}/auth/status',
-            headers={
-                'Content-type': 'application/json',
-                'Authorization': f'Bearer {cls.token}'
-            }
-        )
-        data = user_resp.json()
-        cls._id = data.get('data')['_id']
+        if os.environ.get('FLASK_ENV') == 'production':
+            mongo = MongoClient(get_mongo_uri())
+        else:
+            mongo = MongoClient(
+                host=os.environ.get('MONGO_HOST'),
+                port=int(os.environ.get('MONGO_PORT'))
+            )
+        user = mongo.arc_dev.users.find_one({'email': 'jane@culver.edu.us'})
+
+        cls._id = str(user['_id'])
 
     @classmethod
     def tearDownClass(cls) -> None:

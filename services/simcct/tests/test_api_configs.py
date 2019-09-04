@@ -33,7 +33,7 @@ class TestDevelopmentConfig(TestCase):
             self.app.config['SECRET_KEY'] == os.environ.get('SECRET_KEY')
         )
         self.assertFalse(current_app is None)
-        self.assertTrue(self.app.config['MONGO_DBNAME'] == 'arc_dev')
+        self.assertTrue(os.environ.get('MONGO_APP_DB') == 'arc_dev')
 
 
 class TestTestingConfig(TestCase):
@@ -48,7 +48,7 @@ class TestTestingConfig(TestCase):
         )
         self.assertTrue(self.app.config['TESTING'])
         self.assertFalse(self.app.config['PRESERVE_CONTEXT_ON_EXCEPTION'])
-        self.assertTrue(self.app.config['MONGO_DBNAME'] == 'arc_test')
+        # self.assertTrue(self.app.config['MONGO_DBNAME'] == 'arc_test')
 
 
 class TestProductionConfig(TestCase):
@@ -62,7 +62,7 @@ class TestProductionConfig(TestCase):
             self.app.config['SECRET_KEY'] == os.environ.get('SECRET_KEY')
         )
         self.assertFalse(self.app.config['TESTING'])
-        self.assertTrue(self.app.config['MONGO_DBNAME'] == 'arclytics')
+        # self.assertTrue(os.environ.get('MONGO_APP_DB') == 'arclytics')
 
 
 if __name__ == '__main__':

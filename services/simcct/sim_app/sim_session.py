@@ -21,6 +21,7 @@ This module defines the class to create a RedisSession instance and the
 interface to validate and operate on the Redis store of this session. 
 """
 
+import os
 import json
 import time
 from datetime import timedelta, datetime, timezone
@@ -34,6 +35,7 @@ from itsdangerous import (
     SignatureExpired
 )
 
+from sim_app.schemas import ConfigurationsSchema
 from sim_app.utilities import JSONEncoder
 from logger.arc_logger import AppLogger
 
@@ -66,11 +68,20 @@ class SimSessionService(object):
     def __init__(self):
         """On initialisation, the service just stores a Redis connection."""
         # Initialise the connection to Redis so the methods can use it
-        self.redis = Redis(
-            host=app.config['REDIS_HOST'],
-            port=int(app.config['REDIS_PORT']),
-            db=int(app.config['REDIS_DB']),
-        )
+
+        if os.environ.get('FLASK_ENV', 'development') == 'production':
+            self.redis = Redis(
+                host=app.config['REDIS_HOST'],
+                port=int(app.config['REDIS_PORT']),
+                password=app.config['REDIS_PASSWORD'],
+                db=int(app.config['REDIS_DB']),
+            )
+        else:
+            self.redis = Redis(
+                host=app.config['REDIS_HOST'],
+                port=int(app.config['REDIS_PORT']),
+                db=int(app.config['REDIS_DB']),
+            )
         # Store some secret Hydra stuff
         self.secret_key = app.config.get('SECRET_KEY', None)
         self.salt = app.config.get('SECURITY_PASSWORD_SALT', None)
@@ -89,7 +100,12 @@ class SimSessionService(object):
         """
 
         # The storage value dumped to JSON format
-        redis_value = JSONEncoder().encode(dict(session_data))
+        # FIXME(andrew@neuraldev.io): Make a proper schema for this as there
+        #  is additional information.
+        # redis_value = JSONEncoder().encode(
+        #     ConfigurationsSchema().load(session_data)
+        # )
+        redis_value = JSONEncoder().encode(session_data)
 
         # converts global expiry time in minutes to seconds
         expiry_duration = self._get_expiry_duration()
@@ -138,7 +154,12 @@ class SimSessionService(object):
         # The storage value dumped to JSON format
         # We use our customer JSON Encoder to ensure that numpy.floats get
         # serialized properly
-        redis_value = JSONEncoder().encode(dict(session_data))
+        # FIXME(andrew@neuraldev.io): Make a proper schema for this as there
+        #  is additional information.
+        # redis_value = JSONEncoder().encode(
+        #     ConfigurationsSchema().load(session_data)
+        # )
+        redis_value = JSONEncoder().encode(session_data)
 
         # TODO(andrew@neuraldev.io): Doing the refresh without generating a new
         #  Session Key that has a expiration encoded within will cause the two

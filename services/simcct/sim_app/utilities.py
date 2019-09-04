@@ -19,16 +19,34 @@ __date__ = '2019.08.07'
 Just some helper functions for the Flask app.
 """
 
+import os
 import json
 import numpy as np
 from datetime import datetime
 
 from bson import ObjectId
 
+from simulation.utilities import Method
+
+
+def get_mongo_uri():
+    host = os.environ.get('MONGO_HOST')
+    port = int(os.environ.get('MONGO_PORT'))
+    db = str(os.environ.get('MONGO_APP_DB'))
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        username = str(os.environ.get('MONGO_APP_USER'))
+        password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+        return f'mongodb://{username}:{password}@{host}:{port}/{db}'
+    else:
+        return f'mongodb://{host}:{port}/{db}'
+
 
 class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""
+
     def default(self, o):
+        if isinstance(o, Method):
+            return o.name
         if isinstance(o, ObjectId):
             return str(o)
         if isinstance(o, set):

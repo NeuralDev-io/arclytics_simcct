@@ -1,0 +1,45 @@
+@import '../../../styles/animation';
+
+.label {
+  position: relative;
+  width: fit-content;
+}
+
+.inputfile {
+  width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+  position: absolute;
+	z-index: -1;
+}
+
+.labelText {
+  padding: .5rem .75rem;
+  background-color: var(--n10);
+  color: var(--n900);
+  border-radius: 6px;
+  transition: all .4s $ease-in-out-quad;
+  cursor: pointer;
+  
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+
+  .icon {
+    width: 1rem;
+    height: 1rem;
+    margin-right: .75rem;
+    flex-shrink: 0;
+  }
+}
+
+.inputfile:focus + .labelText,
+.inputfile + .labelText:hover {
+    background-color: var(--n20);
+    color: var(--arc500);
+}
+
+.inputfile + .labelText * {
+	pointer-events: none;
+}

@@ -6,7 +6,7 @@ import { GET_PERSIST_USER_STATUS } from './types'
 // export const updateUserProfile = values => (dispatch) => {}
 
 export const getPersistUserStatus = () => (dispatch) => { // eslint-disable-line
-  return fetch('http://localhost:8000/auth/status', {
+  return fetch(`${process.env.REACT_APP_USER_HOST}/auth/status`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

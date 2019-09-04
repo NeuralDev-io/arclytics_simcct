@@ -13,7 +13,7 @@
  */
 
 export const login = async (values, resolve, reject) => {
-  fetch('http://localhost:8000/auth/login', {
+  fetch(`${process.env.REACT_APP_USER_HOST}/auth/login`, {
     method: 'POST',
     mode: 'cors',
     headers: {
@@ -37,7 +37,7 @@ export const signup = async (values, resolve, reject) => {
   const {
     email, password, firstName, lastName,
   } = values
-  fetch('http://localhost:8000/auth/register', {
+  fetch(`${process.env.REACT_APP_USER_HOST}/auth/register`, {
     method: 'POST',
     mode: 'cors',
     headers: {
@@ -62,7 +62,7 @@ export const signup = async (values, resolve, reject) => {
 }
 
 export const logout = (callback) => {
-  fetch('http://localhost:8000/auth/logout', {
+  fetch(`${process.env.REACT_APP_USER_HOST}/auth/logout`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -88,29 +88,29 @@ export const logout = (callback) => {
 }
 
 export const forgotPassword = (resolve, reject, email) => {
-  fetch('http://localhost:8000/reset/password', {
+  fetch(`${process.env.REACT_APP_USER_HOST}/reset/password`, {
     method: 'POST',
-    headers:{
+    headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       email,
     }),
   })
-  .then(res => res.json())
-  .then(res => {
-    if (res.status === "success") {
-      resolve(res.message)
-    } else{
+    .then(res => res.json())
+    .then((res) => {
+      if (res.status === 'success') {
+        resolve(res.message)
+      } else {
       // return an error message as string
-      reject(res.message)
-    }
-  })
-  .catch(err => console.log(err))
+        reject(res.message)
+      }
+    })
+    .catch(err => console.log(err))
 }
 
 export const resetPassword = (resolve, reject, values, token) => {
-  fetch('http://localhost:8000/auth/password/reset', {
+  fetch(`${process.env.REACT_APP_USER_HOST}/auth/password/reset`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -118,15 +118,15 @@ export const resetPassword = (resolve, reject, values, token) => {
     },
     body: JSON.stringify(values),
   })
-  .then(res => res.json())
-  .then(res => {
-    if(res.status === "success"){
-      console.log(res.status, res.message)
-      resolve(res)
-    } else {
-      console.log(res.status, res.message)
-      reject(res.message)
-    }
-  })
-  .catch(err => console.log(err))
+    .then(res => res.json())
+    .then((res) => {
+      if (res.status === 'success') {
+        console.log(res.status, res.message)
+        resolve(res)
+      } else {
+        console.log(res.status, res.message)
+        reject(res.message)
+      }
+    })
+    .catch(err => console.log(err))
 }

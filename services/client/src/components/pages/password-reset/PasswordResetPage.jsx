@@ -37,7 +37,6 @@ class PasswordResetPage extends Component {
   handleStatus = () => {
     const { status } = this.state
     const { history } = this
-    console.log('[handleStatus]: ', status, (status === 'success'))
     if (status === '') {
       return ('')
     }
@@ -48,7 +47,7 @@ class PasswordResetPage extends Component {
           <span>
             Your account password has been successfully changed.
           </span>
-          <Button length="long" onClick={() => { history.push('/signin')} }> Go to sign in </Button>
+          <Button length="long" onClick={() => { history.push('/signin') }}> Go to sign in </Button>
         </Modal>
       )
     }
@@ -74,7 +73,7 @@ class PasswordResetPage extends Component {
           match.params.token,
         )
       })
-      promise.then((data) => {
+      promise.then(() => {
         // success
         this.setState({
           status: 'success',
@@ -102,7 +101,7 @@ class PasswordResetPage extends Component {
     })
   }
 
-  render(){
+  render() {
     const {
       newPwd,
       newPwdErr,

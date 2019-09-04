@@ -44,6 +44,7 @@ ALLOY_STORE = {
         'mix': None
     }
 }
+SIM_RESULTS = _TEST_JSON['simulation_results']
 
 
 class TestSaveSimulationService(BaseTestCase):
@@ -137,7 +138,8 @@ class TestSaveSimulationService(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': SIM_RESULTS
                     }
                 ),
                 headers={'Authorization': f'Bearer {token}'},
@@ -167,7 +169,8 @@ class TestSaveSimulationService(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': SIM_RESULTS
                     }
                 ),
                 headers={'Authorization': f'Bearer {token}'},
@@ -192,7 +195,8 @@ class TestSaveSimulationService(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': SIM_RESULTS
                     }
                 ),
                 headers={'Authorization': f'Bearer {token}'},
@@ -247,14 +251,16 @@ class TestSaveSimulationService(BaseTestCase):
                 **{
                     'user': self.user,
                     'configurations': Configuration(**CONFIGS),
-                    'alloy_store': AlloyStore(**ALLOY_STORE)
+                    'alloy_store': AlloyStore(**ALLOY_STORE),
+                    'simulation_results': SIM_RESULTS
                 }
             ).save()
             saved_sim2 = SavedSimulation(
                 **{
                     'user': self.user,
                     'configurations': Configuration(**configs2),
-                    'alloy_store': AlloyStore(**alloy_store2)
+                    'alloy_store': AlloyStore(**alloy_store2),
+                    'simulation_results': SIM_RESULTS
                 }
             ).save()
 
@@ -319,7 +325,8 @@ class TestSaveSimulationService(BaseTestCase):
             saved_sim = SavedSimulation(
                 user=self.user,
                 configurations=Configuration(**CONFIGS),
-                alloy_store=AlloyStore(**ALLOY_STORE)
+                alloy_store=AlloyStore(**ALLOY_STORE),
+                simulation_results=SIM_RESULTS
             ).save()
 
             res = client.get(
@@ -374,7 +381,8 @@ class TestSaveSimulationService(BaseTestCase):
             saved_sim = SavedSimulation(
                 user=self.user,
                 configurations=Configuration(**CONFIGS),
-                alloy_store=AlloyStore(**ALLOY_STORE)
+                alloy_store=AlloyStore(**ALLOY_STORE),
+                simulation_results=SIM_RESULTS
             ).save()
 
             res = client.delete(

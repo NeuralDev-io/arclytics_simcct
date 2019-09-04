@@ -351,3 +351,37 @@ export const loadSim = sim => (dispatch) => {
     payload: sim,
   })
 }
+
+export const loadSimFromLink = token => (dispatch, getState) => {
+  const { alloys } = getState().sim
+  return fetch(`${process.env.REACT_APP_USER_HOST}/user/share/simulation/view/${token}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Session: localStorage.getItem('session'),
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  })
+    .then(res => res.json())
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'success') {
+        const { alloy_store, configurations, simulation_results } = res.data
+        dispatch({
+          type: LOAD_SIM,
+          payload: {
+            alloys: {
+              ...alloys,
+              parent: alloy_store.alloys.parent,
+            },
+            configurations,
+            results: {
+              ...simulation_results,
+              cctIndex: -1,
+            },
+          },
+        })
+      }
+    })
+    // .catch(err => console.log(err))
+}

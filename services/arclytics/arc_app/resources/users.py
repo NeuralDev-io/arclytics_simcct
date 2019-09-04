@@ -21,8 +21,8 @@ This file defines all the API resource routes and controller definitions using
 the Flask Resource inheritance model.
 """
 
+import os
 from datetime import datetime
-
 from typing import Tuple
 
 from flask import Blueprint, request
@@ -44,7 +44,11 @@ class PingTest(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self) -> Tuple[dict, int]:
-        response = {'status': 'success', 'message': 'pong'}
+        response = {
+            'status': 'success',
+            'message': 'pong',
+            'container_id': os.uname()[1]
+        }
         return response, 200
 
 
@@ -275,7 +279,7 @@ class UserProfiles(Resource):
         return response, 201
 
 
-api.add_resource(PingTest, '/ping')
-api.add_resource(UserList, '/users')
-api.add_resource(Users, '/user')
-api.add_resource(UserProfiles, '/user/profile')
+api.add_resource(PingTest, '/api/v1/arc/ping')
+api.add_resource(UserList, '/api/v1/arc/users')
+api.add_resource(Users, '/api/v1/arc/user')
+api.add_resource(UserProfiles, '/api/v1/arc/user/profile')

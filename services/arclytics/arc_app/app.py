@@ -122,14 +122,14 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     )
 
     # ========== # FLASK BLUEPRINTS # ========== #
-    app.register_blueprint(users_blueprint)
-    app.register_blueprint(auth_blueprint)
-    app.register_blueprint(user_alloys_blueprint)
-    app.register_blueprint(admin_blueprint)
-    app.register_blueprint(share_blueprint)
-    app.register_blueprint(last_simulation_blueprint)
-    app.register_blueprint(save_simulation_blueprint)
-    app.register_blueprint(ratings_blueprint)
+    app.register_blueprint(users_blueprint, url_prefix='/api/v1/arc')
+    app.register_blueprint(auth_blueprint, url_prefix='/api/v1/arc')
+    app.register_blueprint(user_alloys_blueprint, url_prefix='/api/v1/arc')
+    app.register_blueprint(admin_blueprint, url_prefix='/api/v1/arc')
+    app.register_blueprint(share_blueprint, url_prefix='/api/v1/arc')
+    app.register_blueprint(last_simulation_blueprint, url_prefix='/api/v1/arc')
+    app.register_blueprint(save_simulation_blueprint, url_prefix='/api/v1/arc')
+    app.register_blueprint(ratings_blueprint, url_prefix='/api/v1/arc')
 
     # Connect to the Mongo Client
     db = init_db(app)

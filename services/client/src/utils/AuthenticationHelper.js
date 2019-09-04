@@ -12,8 +12,10 @@
  * @github Xaraox
  */
 
+const ARC_URL = process.env.REACT_APP_ARC_SERVICE_URL
+
 export const login = async (values, resolve, reject) => {
-  fetch('http://localhost:8000/auth/login', {
+  fetch(`${ARC_URL}/auth/login`, {
     method: 'POST',
     mode: 'cors',
     headers: {
@@ -37,7 +39,7 @@ export const signup = async (values, resolve, reject) => {
   const {
     email, password, firstName, lastName,
   } = values
-  fetch('http://localhost:8000/auth/register', {
+  fetch(`${ARC_URL}/auth/register`, {
     method: 'POST',
     mode: 'cors',
     headers: {
@@ -62,7 +64,7 @@ export const signup = async (values, resolve, reject) => {
 }
 
 export const logout = (callback) => {
-  fetch('http://localhost:8000/auth/logout', {
+  fetch(`${ARC_URL}/auth/logout`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

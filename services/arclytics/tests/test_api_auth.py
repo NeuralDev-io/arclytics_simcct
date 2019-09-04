@@ -71,7 +71,8 @@ class TestAuthEndpoints(BaseTestCase):
             '/auth/register',
             data=json.dumps(
                 {
-                    'email': 'andrew@neuraldev.io',
+                    # 'email': 'andrew@neuraldev.io',
+                    'email': 'natashas@arclytics.io',
                     'first_name': 'Natasha',
                     'last_name': 'Romanoff',
                     'password': 'RedInMyLedger'
@@ -1149,6 +1150,9 @@ class TestAuthEndpoints(BaseTestCase):
 
             jyn_updated = User.objects.get(email=jyn.email)
             self.assertEqual(jyn_updated.login_data.count(), 3)
+
+    # TODO(davidmatthews1004@gmail.com) write tests for geolocation with
+    #  external ip addresses.
 
 
 if __name__ == '__main__':

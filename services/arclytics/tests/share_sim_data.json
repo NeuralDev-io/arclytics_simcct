@@ -148,5 +148,36 @@
                 ]
             }
         }
+    },
+    "simulation_results": {
+        "TTT": {
+            "ferrite_nucleation": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]},
+            "ferrite_completion": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]},
+            "pearlite_nucleation": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]},
+            "pearlite_completion": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]},
+            "bainite_nucleation": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]},
+            "bainite_completion": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]},
+            "martensite": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]}
+        },
+        "CCT": {
+            "ferrite_nucleation": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]},
+            "ferrite_completion": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]},
+            "pearlite_nucleation": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]},
+            "pearlite_completion": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]},
+            "bainite_nucleation": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]},
+            "bainite_completion": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]},
+            "martensite": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]}
+        },
+        "USER": {
+            "user_cooling_curve": {"time": [1, 2, 3, 4], "temp": [1, 2, 3, 4]},
+            "user_phase_fraction_data": {
+              "austenite": [1, 2, 3, 4], "ferrite": [1, 2, 3, 4],
+              "pearlite": [1, 2, 3, 4], "bainite": [1, 2, 3, 4],
+              "martensite": [1, 2, 3, 4]
+            },
+            "slider_time_field": 1.5,
+            "slider_temp_field": 1.5,
+            "slider_max": 5
+        }
     }
 }

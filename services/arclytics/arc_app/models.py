@@ -215,6 +215,9 @@ class SimulationResults(EmbeddedDocument):
     # slider_max: int
     USER = DictField()
 
+    def to_dict(self):
+        return {'TTT': self.TTT, 'CCT': self.CCT, 'USER': self.USER}
+
 
 class Configuration(EmbeddedDocument):
     is_valid = BooleanField(default=False, required=True, null=False)
@@ -665,9 +668,9 @@ class SavedSimulation(Document):
     alloy_store = EmbeddedDocumentField(
         document_type=AlloyStore, required=True, null=False
     )
-    # results = EmbeddedDocumentField(
-    #     document_type=SimulationResults, required=True, null=False
-    # )
+    simulation_results = EmbeddedDocumentField(
+        document_type=SimulationResults, required=True, null=False
+    )
     created = DateTimeField(default=datetime.utcnow(), null=False)
 
     meta = {'collection': 'saved_simulations'}
@@ -677,7 +680,8 @@ class SavedSimulation(Document):
             '_id': str(self.id),
             'configurations': self.configurations.to_dict(),
             'alloy_store': self.alloy_store.to_dict(),
-            'created': str(self.created.isoformat())
+            'created': str(self.created.isoformat()),
+            'simulation_results': self.simulation_results.to_dict()
         }
 
     def __str__(self):
@@ -693,8 +697,10 @@ class SharedSimulation(Document):
     alloy_store = EmbeddedDocumentField(
         document_type=AlloyStore, required=True
     )
+    simulation_results = EmbeddedDocumentField(
+        document_type=SimulationResults, required=True, null=False
+    )
 
-    # add results
     # add views but dont send in dict
 
     def to_dict(self):
@@ -702,14 +708,15 @@ class SharedSimulation(Document):
             'owner_email': self.owner_email,
             'created_date': str(self.created_date),
             'configurations': self.configuration.to_dict(),
-            'alloy_store': self.alloy_store.to_dict()
+            'alloy_store': self.alloy_store.to_dict(),
+            'simulation_results': self.simulation_results.to_dict()
         }
 
 
 class Feedback(Document):
     user = ReferenceField(User, reverse_delete_rule=DO_NOTHING)
     category = StringField(required=True)
-    rating = IntField(min_value=1, max_value=5, required=True)
+    rating = IntField(min_value=1, max_value=5, default=None)
     comment = StringField(required=True)
     created_date = DateTimeField(default=datetime.utcnow(), required=True)
 

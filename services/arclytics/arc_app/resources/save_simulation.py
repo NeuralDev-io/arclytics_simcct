@@ -33,7 +33,9 @@ from arc_app.utilities import (
     ElementInvalid, ElementSymbolInvalid, MissingElementError,
     DuplicateElementError
 )
-from arc_app.models import User, Configuration, AlloyStore, SavedSimulation
+from arc_app.models import (
+    User, Configuration, AlloyStore, SavedSimulation, SimulationResults
+)
 
 save_simulation_blueprint = Blueprint('user_save_simulation', __name__)
 
@@ -66,7 +68,7 @@ class SaveSimulationList(Resource):
 
         post_configs = post_data.get('configurations')
         post_alloy_store = post_data.get('alloy_store')
-        # post_results = post_data.get('simulation_results')
+        post_results = post_data.get('simulation_results')
 
         # Valid the request body
         if not post_configs:
@@ -77,12 +79,19 @@ class SaveSimulationList(Resource):
             response['message'] = 'Missing Alloy Store in payload.'
             return response, 400
 
+        if not post_results:
+            response['message'] = 'Missing Simulation Results in payload.'
+            return response, 400
+
         user = User.objects.get(id=user_id)
 
         saved_sim_inst = SavedSimulation(
             user=user,
             configurations=Configuration.from_json(json.dumps(post_configs)),
-            alloy_store=AlloyStore.from_json(json.dumps(post_alloy_store))
+            alloy_store=AlloyStore.from_json(json.dumps(post_alloy_store)),
+            simulation_results=SimulationResults.from_json(
+                json.dumps(post_results)
+            )
         )
 
         # TODO(andrew@neuraldev.io): Add the graphs also

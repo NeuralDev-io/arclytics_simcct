@@ -48,6 +48,7 @@ def load_test_feedback(self, user: User):
 
 class TestRatingsService(BaseTestCase):
     """Tests for Ratings and feedback endpoints"""
+
     def test_post_rating_no_data(self):
         mace = User(
             email='mace@arclytics.io', first_name='Mace', last_name='Windu'
@@ -227,7 +228,7 @@ class TestRatingsService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'No rating provided.')
+            self.assertEqual(data['message'], 'No comment provided.')
 
     def test_post_feedback_validation_error(self):
         hevy = User(

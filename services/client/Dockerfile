@@ -23,7 +23,18 @@ RUN npm config set unsafe-perm true
 RUN npm run lint-fix-docker
 RUN which react-scripts
 
-RUN export NODE_OPTIONS=--max_old_space_size=4096
+# Set environment variables at BUILD TIME
+ARG REACT_APP_ARC_SERVICE_URL
+ENV REACT_APP_ARC_SERVICE_URL $REACT_APP_ARC_SERVICE_URL
+ARG REACT_APP_SIM_SERVICE_URL
+ENV REACT_APP_SIM_SERVICE_URL $REACT_APP_ARC_SERVICE_URL
+ARG NODE_ENV
+ENV NODE_ENV $NODE_ENV
+#ARG REACT_APP_API_GATEWAY_URL
+#ENV REACT_APP_API_GATEWAY_URL $REACT_APP_API_GATEWAY_URL
+
+# Prevent NODE from running out of memory which by default is just 512
+RUN export NODE_OPTIONS=--max_old_space_size=2048
 
 # start app
 CMD ["npm", "start"]

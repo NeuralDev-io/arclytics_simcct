@@ -111,17 +111,15 @@ class PasswordResetPage extends Component {
       <div className={styles.outer}>
         <div className={styles.logoContainer}>
           <Logo className={styles.logo} />
-          <h3> ARCLYTICS </h3>
         </div>
         <form className={styles.form}>
-          <h3 className={styles.header}> Change Password </h3> 
-          <TextField 
+          <h3 className={styles.header}> Change Password </h3>
+          <TextField
             type="password"
             name="newPwd"
             value={newPwd}
             placeholder="New Password"
             length="stretch"
-            error = "test"
             error={newPwdErr}
             onChange={value => this.handleChange('newPwd', value)}
           />
@@ -131,7 +129,7 @@ class PasswordResetPage extends Component {
             value={cnfrmPwd}
             placeholder="Confirm Password"
             length="stretch"
-            error = {cnfrmPwdErr}
+            error={cnfrmPwdErr}
             onChange={value => this.handleChange('cnfrmPwd', value)}
           />
           {this.handleStatus()}

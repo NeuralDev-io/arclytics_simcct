@@ -107,14 +107,15 @@ class ShareSimButton extends Component {
      * and updates the state of `shareUrlLink` if the promise successfully returns
      * the response from the `users` server that we expect.
      */
-    const { configurations, alloys } = this.props
+    const { configurations, alloys, results } = this.props
     const { emails, message } = this.state
 
     const alloyStore = this.cleanAlloyStore(alloys)
     const validConfigs = this.cleanConfigurations(configurations)
+    const simResults = this.cleanResults(results)
 
     sendShareEmail(
-      emails, message, validConfigs, alloyStore,
+      emails, message, validConfigs, alloyStore, simResults,
     ).then(() => {
       enqueueSnackbar('Simulation shared successfully', {
         variant: 'success',

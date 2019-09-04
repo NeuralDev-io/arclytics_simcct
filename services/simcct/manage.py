@@ -63,7 +63,8 @@ def seed_alloy_db():
             port=int(os.environ.get('MONGO_PORT')),
             username=str(os.environ.get('MONGO_APP_USER')),
             password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
-            connect=False
+            authSource='admin',
+            replicaSet='MainRepSet',
         )
     else:
         client = MongoClient(
@@ -103,7 +104,9 @@ def flush():
             host=str(os.environ.get('MONGO_HOST')),
             port=int(os.environ.get('MONGO_PORT')),
             username=str(os.environ.get('MONGO_APP_USER')),
-            password=str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+            password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
+            authSource='admin',
+            replicaSet='MainRepSet',
         )
         redis_client = redis.Redis(
             host=os.environ.get('REDIS_HOST'),

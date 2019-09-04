@@ -41,7 +41,9 @@ class MongoAlloys(object):
                 host=str(os.environ.get('MONGO_HOST')),
                 port=int(os.environ.get('MONGO_PORT')),
                 username=str(os.environ.get('MONGO_APP_USER')),
-                password=str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+                password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
+                authSource='admin',
+                replicaSet='MainRepSet',
             )
         db_name = str(os.environ.get('MONGO_APP_DB', 'arc_dev'))
         self.db = mongo_client[db_name]

@@ -131,8 +131,7 @@ services:
       - 80
     environment:
       - NODE_ENV=production
-      - REACT_APP_ARC_SERVICE_URL=${REACT_APP_ARC_SERVICE_URL}
-      - REACT_APP_SIM_SERVICE_URL=${REACT_APP_SIM_SERVICE_URL}
+      - API_GATEWAY_URL=${API_GATEWAY_URL}
     depends_on:
       - arclytics
       - mongodb

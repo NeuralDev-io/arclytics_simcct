@@ -33,7 +33,9 @@ from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
 from logger.arc_logger import AppLogger
-from arc_app.models import (User, Configuration, SharedSimulation, AlloyStore)
+from arc_app.models import (
+    User, Configuration, SharedSimulation, AlloyStore, SimulationResults
+)
 from arc_app.middleware import authenticate
 from arc_app.extensions import api
 from arc_app.token import (
@@ -72,9 +74,12 @@ class ShareSimulationLink(Resource):
         shared_date = datetime.utcnow()
         configuration = data.get('configurations', None)
         alloy_store = data.get('alloy_store', None)
+        simulation_results = data.get('simulation_results', None)
 
-        if not configuration or not alloy_store:
-            response['message'] = 'Configurations or Alloy Store not sent.'
+        if not configuration or not alloy_store or not simulation_results:
+            response['message'] = (
+                'Configurations, Alloy Store  or Simulation Results not sent.'
+            )
             return response, 400
 
         # Validate the request simulation data. Validation is done by the
@@ -84,12 +89,14 @@ class ShareSimulationLink(Resource):
             config_object.validate(clean=True)
             alloy_store_object = AlloyStore(**alloy_store)
             alloy_store_object.validate(clean=True)
+            results_object = SimulationResults(**simulation_results)
             shared_simulation_object = SharedSimulation(
                 **{
                     'owner_email': owner.email,
                     'created_date': shared_date,
                     'configuration': config_object,
-                    'alloy_store': alloy_store_object
+                    'alloy_store': alloy_store_object,
+                    'simulation_results': results_object
                 }
             )
             shared_simulation_object.save()
@@ -186,9 +193,12 @@ class ShareSimulationEmail(Resource):
         # we can attempt to make a SharedSimulation object out of it.
         configuration = data.get('configurations', None)
         alloy_store = data.get('alloy_store', None)
+        simulation_results = data.get('simulation_results', None)
 
-        if not configuration or not alloy_store:
-            response['message'] = 'Configurations or Alloy Store not sent.'
+        if not configuration or not alloy_store or not simulation_results:
+            response['message'] = (
+                'Configurations, Alloy Store or Simulation Results not sent.'
+            )
             return response, 400
 
         # We also provide the user an opportunity to send an optional message
@@ -203,12 +213,14 @@ class ShareSimulationEmail(Resource):
             config_object.validate(clean=True)
             alloy_store_object = AlloyStore(**alloy_store)
             alloy_store_object.validate(clean=True)
+            results_object = SimulationResults(**simulation_results)
             shared_simulation_object = SharedSimulation(
                 **{
                     'owner_email': owner.email,
                     'created_date': shared_date,
                     'configuration': config_object,
-                    'alloy_store': alloy_store_object
+                    'alloy_store': alloy_store_object,
+                    'simulation_results': results_object
                 }
             )
             shared_simulation_object.save()
@@ -293,7 +305,7 @@ def request_shared_simulation(token):
     # TODO(davidmatthews1004@gmail.com): Correct this endpoint and make sure I
     #  am correctly sending the signature.
     redirect_url = \
-        f'http://{client_host}/share/simulation/:{token}'
+        f'http://localhost:3000/share/simulation/{token}'
     custom_redir_response.headers['Location'] = redirect_url
     return custom_redir_response
 

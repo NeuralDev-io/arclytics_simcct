@@ -8,7 +8,7 @@
  */
 
 // TODO(andrew@neuraldev.io): Do documentation.
-export const getShareUrlLink = (configs, alloyStore) => new Promise((resolve, reject) => {
+export const getShareUrlLink = (configs, alloyStore, results) => new Promise((resolve, reject) => {
   /**
    * API request method to get the sharing URL link from the `users` server.
    *
@@ -27,6 +27,7 @@ export const getShareUrlLink = (configs, alloyStore) => new Promise((resolve, re
     body: JSON.stringify({
       configurations: configs,
       alloy_store: alloyStore,
+      simulation_results: results,
     }),
   })
     .then(res => res.json())

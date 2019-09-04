@@ -141,11 +141,11 @@ class Simulation(Resource):
 
             # Now we stop the main thread to wait for them to finish.
             # user_time_taken = time_func(sim.user_cooling_profile)
-            user_time_taken = time_func(user_cooling_process.join())
+            user_time_taken = time_func(user_cooling_process.join)
             # ttt_time_taken = time_func(sim.ttt)
-            ttt_time_taken = time_func(ttt_process.join())
+            ttt_time_taken = time_func(ttt_process.join)
             # cct_time_taken = time_func(sim.cct)
-            cct_time_taken = time_func(cct_process.join())
+            cct_time_taken = time_func(cct_process.join)
             finish = time.time()
 
             # TODO(andrew@neuraldev.io): We need to store the results in the
@@ -159,11 +159,13 @@ class Simulation(Resource):
             logger.debug('Total Simulation Time: {}'.format(finish - start))
         except ZeroDivisionError as e:
             response['errors'] = str(e)
-            response['message'] = sim.configs.__dict__
+            response['message'] = 'Zero Division Error.'
+            response['configs'] = sim.configs.__dict__
             return response, 500
         except Exception as e:
             response['errors'] = str(e)
-            response['message'] = sim.configs.__dict__
+            response['message'] = 'Exception.'
+            response['configs'] = sim.configs.__dict__
             return response, 500
 
         # Converting the TTT and CCT `numpy.ndarray` will raise an

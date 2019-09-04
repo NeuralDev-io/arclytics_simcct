@@ -8,6 +8,7 @@ import {
   UPDATE_CONFIG,
   UPDATE_DISPLAY_USER_CURVE,
   UPDATE_CCT_INDEX,
+  LOAD_SIM,
 } from './types'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 
@@ -31,7 +32,7 @@ export const initSession = (option, type, alloy) => (dispatch) => {
   // Only POST the name and compositions to the server,
   // but _id will also be saved to Redux state to refer to
   // the original alloy
-  fetch('http://localhost:8001/alloys/update', {
+  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/alloys/update`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -90,7 +91,7 @@ export const updateAlloyOption = option => (dispatch) => {
  * @param {object} alloy alloy to be updated
  */
 export const updateComp = (option, type, alloy) => (dispatch) => {
-  fetch('http://localhost:8001/alloys/update', {
+  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/alloys/update`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -133,7 +134,7 @@ export const updateDilution = val => (dispatch) => {
  * @param {string} value new method
  */
 export const updateConfigMethod = value => (dispatch) => {
-  fetch('http://localhost:8001/configs/method/update', {
+  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/method/update`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -184,7 +185,7 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
   }
 
   if (isValid) {
-    fetch('http://localhost:8001/configs/update', {
+    fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/update`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -208,7 +209,7 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
 }
 
 export const updateMsBsAe = (name, reqBody) => (dispatch) => {
-  fetch(`http://localhost:8001/configs/${name}`, {
+  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/${name}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -231,7 +232,7 @@ export const updateMsBsAe = (name, reqBody) => (dispatch) => {
 }
 
 export const getMsBsAe = name => (dispatch) => {
-  fetch(`http://localhost:8001/configs/${name}`, {
+  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/${name}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -262,7 +263,7 @@ export const setAutoCalculate = (name, value) => (dispatch) => {
 }
 
 export const updateConfig = (name, value) => (dispatch) => {
-  fetch('http://localhost:8001/configs/update', {
+  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/update`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -301,7 +302,7 @@ export const runSim = () => (dispatch, getState) => {
     start_temp,
   } = getState().sim.configurations
 
-  fetch('http://localhost:8001/configs/update', {
+  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/update`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -316,7 +317,7 @@ export const runSim = () => (dispatch, getState) => {
       start_temp,
     }),
   }).catch(err => console.log(err))
-  fetch('http://localhost:8001/simulate', {
+  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/simulate`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -341,5 +342,12 @@ export const updateCCTIndex = idx => (dispatch) => {
   dispatch({
     type: UPDATE_CCT_INDEX,
     payload: idx,
+  })
+}
+
+export const loadSim = sim => (dispatch) => {
+  dispatch({
+    type: LOAD_SIM,
+    payload: sim,
   })
 }

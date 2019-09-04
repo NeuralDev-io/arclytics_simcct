@@ -27,7 +27,10 @@ spec:
                 name: credentials
                 key: mongo_root_password
           - name: MONGO_APP_DB
-            value: "arclytics"
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: mongo_app_db
           - name: MONGO_APP_USER
             valueFrom:
               secretKeyRef:
@@ -40,7 +43,7 @@ spec:
                 key: mongo_app_user_password
         volumeMounts:
           - name: mongo-volume-mount
-            mountPath: /var/lib/mongo/data
+            mountPath: /data/db
       volumes:
       - name: mongo-volume-mount
         persistentVolumeClaim:

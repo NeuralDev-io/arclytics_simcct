@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis
+  labels:
+    name: database
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: redis
+    spec:
+      containers:
+      - name: redis
+        image: arclytics/arc_sim_redis:1.1
+        imagePullPolicy: Never
+        env:
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: redis_password
+        volumeMounts:
+          - name: redis-volume-mount
+            mountPath: /var/lib/redis/data
+      volumes:
+      - name: redis-volume-mount
+        persistentVolumeClaim:
+          claimName: redis-pvc
+      restartPolicy: Always

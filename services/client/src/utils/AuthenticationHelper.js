@@ -12,7 +12,7 @@
  * @github Xaraox
  */
 
-const ARC_URL = `${process.env.REACT_APP_ARC_SERVICE_URL}/api/v1/arc`
+const ARC_URL = `${process.env.API_GATEWAY_URL}/api/v1/arc`
 
 export const login = async (values, resolve, reject) => {
   fetch(`${ARC_URL}/auth/login`, {

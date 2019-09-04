@@ -345,6 +345,15 @@ export const updateCCTIndex = idx => (dispatch) => {
   })
 }
 
+/**
+ * Schema of simulation object passed as arg
+ * {
+ *  alloys: { alloyOption, parent, weld, mix },
+ *  configurations: {...},
+ *  results: { USER, CCT, TTT },
+ * }
+ * @param {Object} sim simulation object
+ */
 export const loadSim = sim => (dispatch) => {
   dispatch({
     type: LOAD_SIM,
@@ -352,8 +361,7 @@ export const loadSim = sim => (dispatch) => {
   })
 }
 
-export const loadSimFromLink = token => (dispatch, getState) => {
-  const { alloys } = getState().sim
+export const loadSimFromLink = token => (dispatch) => {
   return fetch(`${process.env.REACT_APP_USER_HOST}/user/share/simulation/view/${token}`, {
     method: 'GET',
     headers: {
@@ -371,14 +379,17 @@ export const loadSimFromLink = token => (dispatch, getState) => {
           type: LOAD_SIM,
           payload: {
             alloys: {
-              ...alloys,
+              alloyOption: alloy_store.alloy_option,
               parent: alloy_store.alloys.parent,
+              weld: {
+                _id: '',
+                name: '',
+                compositions: [],
+              },
+              mix: [],
             },
             configurations,
-            results: {
-              ...simulation_results,
-              cctIndex: -1,
-            },
+            results: simulation_results,
           },
         })
       }

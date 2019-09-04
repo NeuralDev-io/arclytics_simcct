@@ -71,7 +71,7 @@ class TextField extends Component {
 
     //Need to fix the iron kick
     return (
-      <div className={styles.textfield}>
+      <div className={styles.container}>
         <input
           {...other}
           type={type}
@@ -82,7 +82,7 @@ class TextField extends Component {
           onChange={e => this.handleChange(e)}
           disabled={isDisabled}
         />
-        {(error !== '')? <AlertCircle className={styles.errorIcon}/>: ('')}          
+        {(error !== '')? <AlertCircle className={styles.errorIcon}/>: ('')}
         {/* <span className="text--sub2">{err}</span> */}
       </div>
     )

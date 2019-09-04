@@ -2,11 +2,7 @@
   display: flex;
   flex-flow: column nowrap;
   //height: 60px;
-  display: inline-block;
-  & > span {
-    color: var(--r500);
-    margin-top: .25rem;
-  }
+  position:relative;
 }
 
 .input {
@@ -63,10 +59,11 @@
 
 .errorIcon{
   color:var(--r400);
-  position:fixed;
-  margin: 0.65rem 0 0 -1.75rem;
+  position:absolute;
   width: 1rem;
   height: 1rem;
+  right: 0.75rem;
+  bottom: 0.5rem;
 }
 
 .error {

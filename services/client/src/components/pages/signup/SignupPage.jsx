@@ -29,10 +29,8 @@ class SignupPage extends Component {
             <Logo className={styles.logo} />
             <h3> ARCLYTICS </h3>
           </div>
-          <div className={styles.signUp}>
-            {' '}
+          <div className={styles.header}>
             <h3> Sign up </h3>
-            {' '}
           </div>
           <Formik
             initialValues={{
@@ -114,7 +112,6 @@ class SignupPage extends Component {
                         {errors.lastName && touched.lastName && errors.lastName}
                       </h6>
                     </div>
-
                   </div>
                   <div className={styles.emailPassword}>
                     <TextField
@@ -130,7 +127,6 @@ class SignupPage extends Component {
                       {errors.email && touched.email && errors.email}
                     </h6>
                   </div>
-
                   <div className={styles.emailPassword}>
                     <TextField
                       type="password"

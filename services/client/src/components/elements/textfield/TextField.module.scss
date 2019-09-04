@@ -61,6 +61,12 @@
   width: 100%
 }
 
+.errorIcon{
+  color:red;
+  position:fixed;
+  margin: 0.35rem 0 0 0.35rem;
+}
+
 .error {
   background-color: rgba(var(--r500-rgb), 0.1);
   border: 1px solid var(--r500);

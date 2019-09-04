@@ -13,6 +13,7 @@
 
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import AlertCircle from 'react-feather/dist/icons/alert-circle'
 
 import styles from './TextField.module.scss'
 
@@ -62,6 +63,7 @@ class TextField extends Component {
       value = '',
       length = 'default',
       name,
+      error = '',
       ...other
     } = this.props
     const { err } = this.state
@@ -79,7 +81,8 @@ class TextField extends Component {
           onChange={e => this.handleChange(e)}
           disabled={isDisabled}
         />
-        <span className="text--sub2">{err}</span>
+        {(error !== '')? <AlertCircle className={styles.errorIcon}/>: ('')}          
+        {/* <span className="text--sub2">{err}</span> */}
       </div>
     )
   }

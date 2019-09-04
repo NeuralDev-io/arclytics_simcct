@@ -86,3 +86,47 @@ export const logout = (callback) => {
     })
     .catch(err => console.log(err))
 }
+
+export const forgotPassword = (resolve, reject, email) => {
+  fetch('http://localhost:8000/reset/password', {
+    method: 'POST',
+    headers:{
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+    }),
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.status === "success") {
+      resolve(res.message)
+    } else{
+      // return an error message as string
+      reject(res.message)
+    }
+  })
+  .catch(err => console.log(err))
+}
+
+export const resetPassword = (resolve, reject, values, token) => {
+  fetch('http://localhost:8000/auth/password/reset', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(values),
+  })
+  .then(res => res.json())
+  .then(res => {
+    if(res.status === "success"){
+      console.log(res.status, res.message)
+      resolve(res)
+    } else {
+      console.log(res.status, res.message)
+      reject(res.message)
+    }
+  })
+  .catch(err => console.log(err))
+}

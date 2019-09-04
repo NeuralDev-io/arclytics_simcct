@@ -188,10 +188,24 @@ services:
       - 3000
     environment:
       - NODE_ENV=development
+      - REACT_APP_ARC_SERVICE_URL=${REACT_APP_ARC_SERVICE_URL}
+      - REACT_APP_SIM_SERVICE_URL=${REACT_APP_SIM_SERVICE_URL}
     depends_on:
       - mongodb
     networks:
       - host
+
+  nginx:
+    build:
+      context: ./services/nginx
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - arclytics
+      - simcct
+      - client
 
   fluentd:
     build:

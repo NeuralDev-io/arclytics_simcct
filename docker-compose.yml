@@ -206,6 +206,8 @@ services:
       - arclytics
       - simcct
       - client
+    networks:
+      - host
 
   fluentd:
     build:

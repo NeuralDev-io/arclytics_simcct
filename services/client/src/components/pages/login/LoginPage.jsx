@@ -21,9 +21,8 @@ import styles from './LoginPage.module.scss'
 
 /*
   TODO:
-  - once the textfield err prop is fixed uncomment err and need just test edge cases and for Formik move it to the
-  err prop
-
+  - once the textfield err prop is fixed uncomment err and need just test edge cases and for
+    Formik move it to the err prop
   - change all the logos too ansto logos
 */
 
@@ -116,7 +115,7 @@ class LoginPage extends Component {
           <Logo className={styles.logo} />
         </div>
         {this.handleExpiredToken()}
-        <div className={`${styles.loginForm} ${!(hasForgotPwd === null)? (hasForgotPwd ? styles.fadeLeftOut : styles.fadeRightIn) : ('')}`}>
+        <div className={`${styles.loginForm} ${!(hasForgotPwd === null) ? (hasForgotPwd ? styles.fadeLeftOut : styles.fadeRightIn) : ('')}`}>
           <div className={styles.header}>
             <h3> Sign in to your account  </h3>
           </div>
@@ -186,7 +185,7 @@ class LoginPage extends Component {
                     </div>
                     <h6
                       className={styles.help}
-                      onClick={ ()=> this.setState({ hasForgotPwd: true})
+                      onClick={() => this.setState({ hasForgotPwd: true })
                     }>
                       Trouble signing in?
                     </h6>
@@ -197,7 +196,8 @@ class LoginPage extends Component {
                         type="submit"
                         length="long"
                         isSubmitting={isSubmitting}
-                        onClick={handleSubmit}>
+                        onClick={handleSubmit}
+                      >
                         SIGN IN
                       </Button>
                       <h6>
@@ -253,7 +253,7 @@ class LoginPage extends Component {
             </Button>
             <h6
               className={styles.help}
-              onClick={()=> this.setState({ hasForgotPwd: false})}
+              onClick={() => this.setState({ hasForgotPwd: false })}
             >
               Go back to login
             </h6>

@@ -8,11 +8,11 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
+import AlertCircleIcon from 'react-feather/dist/icons/alert-circle'
 import { ReactComponent as Logo } from '../../../assets/ANSTO_Logo_SVG/logo_text.svg'
 import { signup } from '../../../utils/AuthenticationHelper'
 import { signupValidation } from '../../../utils/ValidationHelper'
 
-import AlertCircleIcon from 'react-feather/dist/icons/alert-circle'
 import Button from '../../elements/button'
 import TextField from '../../elements/textfield'
 import Modal from '../../elements/modal'
@@ -20,7 +20,7 @@ import Modal from '../../elements/modal'
 import styles from './SignupPage.module.scss'
 
 class SignupPage extends Component {
-  constructor(props){
+  constructor(props) {
     super(props)
     this.state = {
       showCnfrmModal: false,
@@ -28,7 +28,8 @@ class SignupPage extends Component {
   }
 
   componentDidMount = () => {
-    if (localStorage.getItem('token')) this.props.history.push('/')
+    const { history } = this.props
+    if (localStorage.getItem('token')) history.push('/')
   }
 
   render() {
@@ -61,7 +62,7 @@ class SignupPage extends Component {
               const promise = new Promise((resolve, reject) => {
                 signup(values, resolve, reject)
               })
-              promise.then((data) => {
+              promise.then(() => {
                 // If response is successful
                 this.setState({
                   showCnfrmModal: true,
@@ -193,13 +194,17 @@ class SignupPage extends Component {
               Please verify your account.
             </span>
             <div className={styles.buttons}>
-              <Button className={styles.resendEmail}>
+              <Button
+                isDisabled={true}
+                className={styles.resendEmail}
+              >
                 I did not receive an email. Resend.
               </Button>
               <Button
-              appearance="outline"
-              className={styles.goToSignIn}
-              onClick={() => history.push('/signin')}>
+                appearance="outline"
+                className={styles.goToSignIn}
+                onClick={() => history.push('/signin')}
+              >
                 I have verified. Go to login
               </Button>
             </div>

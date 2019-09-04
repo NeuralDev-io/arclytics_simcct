@@ -51,7 +51,7 @@ const initialState = {
     isLoading: false,
     alloyOption: 'single',
     parent: {
-      id: '',
+      _id: '',
       name: '',
       compositions: [],
     },
@@ -170,12 +170,29 @@ const reducer = (state = initialState, action) => {
           cctIndex: action.payload,
         },
       }
-    case LOAD_SIM:
+    case LOAD_SIM: {
+      const { alloys, configurations, results } = action.payload
       return {
         isInitialised: true,
         displayUserCurve: true,
-        ...action.payload,
+        configurations,
+        alloys: {
+          isLoading: false,
+          dilution: 0,
+          ...alloys,
+          weld: {
+            _id: '',
+            name: '',
+            compositions: [],
+          },
+          mix: [],
+        },
+        results: {
+          cctIndex: -1,
+          ...results,
+        },
       }
+    }
     default:
       return state
   }

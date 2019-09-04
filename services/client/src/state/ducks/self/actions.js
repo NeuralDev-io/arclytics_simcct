@@ -127,7 +127,7 @@ export const changePassword = values => (dispatch) => {
  */
 export const saveSimulation = () => (dispatch, getState) => {
   // first, get sim alloys and configs from state
-  const { configurations, alloys } = getState().sim
+  const { configurations, alloys, results } = getState().sim
   const alloyStore = {
     alloy_option: alloys.alloyOption,
     alloys: {
@@ -136,6 +136,11 @@ export const saveSimulation = () => (dispatch, getState) => {
       weld: alloys.parent,
       mix: alloys.parent,
     },
+  }
+  const simResults = {
+    USER: results.USER,
+    CCT: results.CCT,
+    TTT: results.TTT,
   }
 
   // eslint-disable-next-line camelcase
@@ -154,6 +159,7 @@ export const saveSimulation = () => (dispatch, getState) => {
     body: JSON.stringify({
       configurations: validConfigs,
       alloy_store: alloyStore,
+      simulation_results: simResults,
     }),
   }).then(res => res.json())
     .then((res) => {

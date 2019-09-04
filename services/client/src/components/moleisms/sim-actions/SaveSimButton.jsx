@@ -32,7 +32,21 @@ class SaveSimButton extends Component {
 
   saveSimAsFile = () => {
     const { sim } = this.props
-    const blob = new Blob([JSON.stringify(sim)], { type: 'text/plain;charset=utf-8' })
+    const savedSim = {
+      configurations: sim.configurations,
+      alloys: {
+        alloyOption: sim.alloys.alloyOption,
+        parent: sim.alloys.parent,
+        weld: sim.alloys.weld,
+        mix: sim.alloys.mix,
+      },
+      results: {
+        USER: sim.results.USER,
+        CCT: sim.results.CCT,
+        TTT: sim.results.TTT,
+      },
+    }
+    const blob = new Blob([JSON.stringify(savedSim)], { type: 'text/plain;charset=utf-8' })
     FileSaver.saveAs(blob, `arc_sim_${new Date().toISOString()}.json`)
     this.handleCloseModal()
   }
@@ -78,7 +92,20 @@ SaveSimButton.propTypes = {
   isSessionInitialised: PropTypes.bool.isRequired,
   // props from connect()
   saveSimulationConnect: PropTypes.func.isRequired,
-  sim: PropTypes.shape({}).isRequired,
+  sim: PropTypes.shape({
+    configurations: PropTypes.shape({}),
+    results: PropTypes.shape({
+      USER: PropTypes.shape({}),
+      CCT: PropTypes.shape({}),
+      TTT: PropTypes.shape({}),
+    }),
+    alloys: PropTypes.shape({
+      alloyOption: PropTypes.string,
+      parent: PropTypes.shape({}),
+      weld: PropTypes.shape({}),
+      mix: PropTypes.array,
+    }),
+  }).isRequired,
 }
 
 const mapStateToProps = state => ({

@@ -8,6 +8,8 @@ $bg-img: url('../../../assets/login_register_bg.png');
   background: var(--n0) $bg-img no-repeat;
   background-size: 100% 150%;
   background-position: 40vw;
+  position: relative;
+  overflow-y: scroll;
 }
 
 .logoContainer{
@@ -40,7 +42,7 @@ $bg-img: url('../../../assets/login_register_bg.png');
 }
 
 .loginForm{
-  position: fixed;
+  position: absolute;
   margin-left: 11.25rem;
   width: 23.75rem;
   .createAccount{
@@ -84,16 +86,19 @@ $bg-img: url('../../../assets/login_register_bg.png');
   display: flex;
   flex-flow: column;
   justify-content: space-between;
-  .forgotEmail{
-    margin-top: 1rem;
-    margin-bottom: 4rem;
+  span{
+    margin-bottom: 1rem;
   }
-
   .confirmation{
+    margin-top: 1.5rem;
     margin-bottom: 1rem;
     color: var(--g500);
   }
-
+  .errors{
+    color: var(--r400);
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+  }
   .forgotSubmit{
     margin-bottom: 1rem;
   }
@@ -159,7 +164,3 @@ $bg-img: url('../../../assets/login_register_bg.png');
   margin-bottom: 4.375rem;
 }
 
-
-.errors{
-    color: var(--r400);
-}

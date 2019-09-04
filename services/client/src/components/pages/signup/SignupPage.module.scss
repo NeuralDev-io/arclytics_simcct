@@ -8,6 +8,8 @@
   background: var(--n0) $bg-img no-repeat;
   background-size: 100% 150%;
   background-position: 40vw;
+  position:relative;
+  overflow-y: scroll;
 }
 
 .form{
@@ -38,7 +40,7 @@
 }
 
 .firstName{
-  float:left;    
+  float:left;
 }
 
 .lastName{
@@ -103,7 +105,7 @@
   }
 }
 
-//smaller 
+//smaller
 @media only screen and (max-height: 830px) {
   .logoContainer{
     margin-bottom: 2.8125rem

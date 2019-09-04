@@ -14,7 +14,7 @@ services:
 #      - arclytics_dir:/usr/src/app  # This would be using a bind named volume mount
       - ./services/arclytics:/usr/src/app  # This is a bind mount
     ports:
-      - 8000:8000
+      - "8000:8000"
     expose:
       - 8000
     environment:
@@ -25,7 +25,6 @@ services:
       - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
       - MONGO_HOST=mongodb
       - MONGO_PORT=27017
-      - MONGO_URI=mongodb://mongodb:27017
       - MONGO_APP_DB=arc_dev
       - MONGO_APP_USER=${MONGO_APP_USER}
       - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
@@ -71,7 +70,6 @@ services:
       - MONGO_APP_DB=arc_dev
       - MONGO_APP_USER=${MONGO_APP_USER}
       - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
-      - MONGO_URI=mongodb://mongodb:27017
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -190,6 +188,8 @@ services:
       - 3000
     environment:
       - NODE_ENV=development
+      - REACT_APP_USER_HOST=http://0.0.0.0:8000
+      - REACT_APP_SIMCCT_HOST=http://0.0.0.0:8001
     depends_on:
       - mongodb
     networks:

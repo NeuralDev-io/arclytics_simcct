@@ -20,15 +20,6 @@ import styles from './TextFieldEmail.module.scss'
 
 // TODO: include validation
 class TextFieldEmail extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      value: '',
-      emails: [],
-      error: null,
-    }
-  }
-
   // Triggered when called in the 'handleKeyDown' function
   isValid = (email) => {
     let error = null
@@ -45,34 +36,29 @@ class TextFieldEmail extends Component {
 
     // checks if an error exists in any of the above validations
     if (error) {
-      this.setState({ error })
-      return false
+      const { onChange } = this.props
+      onChange('', error)
     }
     return true
   }
 
   // checks if the email contains an @ symbol and at least one period
-  isEmail = (email) => {
-    return /[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/.test(email)
-  }
+  isEmail = email => /[\w\d.-]+@[\w\d.-]+\.[\w\d.-]+/.test(email)
 
   // checks if email already exists in the emails[] array
   isInList = (email) => {
-    const { emails } = this.state
+    const { emails } = this.props
     return emails.includes(email)
   }
 
   handleChange = (e) => {
-    this.setState({
-      value: e.target.value,
-      // sets error to null so that after error when a user starts to type, the error disappears
-      error: null,
-    })
+    const { onChange } = this.props
+    onChange(e.target.value)
   }
 
   // triggered when one of the following keys is pressed: ('Enter', 'Tab', 'Space', 'Comma')
   handleKeyDown = (e) => {
-    const { value } = this.state
+    const { current, onAdd } = this.props
     if (['Enter', 'Tab', 'Space', ','].includes(e.key)) {
       /**
        * The preventDefault() method cancels the event if it is cancellable.
@@ -81,24 +67,19 @@ class TextFieldEmail extends Component {
        * the form, etc.
        */
       e.preventDefault()
-      const email = value.trim()
+      const email = current.trim()
 
       // the following validates the email and check that input is not empty
       if (email && this.isValid(email)) {
-        this.setState(prevState => ({
-          emails: [...prevState.emails, email],
-          value: '',
-        }))
+        onAdd([email])
       }
     }
   }
 
   // Triggered when the delete button next to an email is pressed
   handleDelete = (toBeRemoved) => {
-    this.setState(prevState => ({
-      // delete emails equal to the toBeRemoved argument
-      emails: prevState.emails.filter(email => email !== toBeRemoved),
-    }))
+    const { onRemove } = this.props
+    onRemove(toBeRemoved)
   }
 
   /**
@@ -112,15 +93,13 @@ class TextFieldEmail extends Component {
     e.preventDefault()
 
     const paste = e.clipboardData.getData('text') // get the clipboard data
-    const emails = paste.match(/[\w\d\.-]+@[\w\d\.-]+\.[\w\d\.-]+/g) // validate email format
+    const emails = paste.match(/[\w\d.-]+@[\w\d.-]+\.[\w\d.-]+/g) // validate email format
 
     // check paste is not empty and add it to array
     if (emails) {
       const toBeAdded = emails.filter(email => !this.isInList(email))
-
-      this.setState(prevState => ({
-        emails: [...prevState.emails, ...toBeAdded],
-      }))
+      const { onAdd } = this.props
+      onAdd(toBeAdded)
     }
   }
 
@@ -130,12 +109,13 @@ class TextFieldEmail extends Component {
       isDisabled = false,
       type = 'text',
       className = '',
-      // value = '',
       length = 'default',
       name,
+      emails,
+      current,
+      error,
       ...other
     } = this.props
-    const { emails, value, error } = this.state
     const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${className || ''}`
 
     // TODO: ADD STYLING
@@ -143,7 +123,11 @@ class TextFieldEmail extends Component {
       <div>
         <div className={styles.emails}>
           {emails.map(email => (
-            <div className={styles.emailItem} key={email} {...buttonize(() => this.handleDelete(email))}>
+            <div
+              className={styles.emailItem}
+              key={email}
+              {...buttonize(() => this.handleDelete(email))}
+            >
               <span>{email}</span>
               <XIcon className={styles.icon} />
             </div>
@@ -155,7 +139,7 @@ class TextFieldEmail extends Component {
           className={classname}
           placeholder={placeholder}
           name={name}
-          value={value}
+          value={current}
           onChange={e => this.handleChange(e)}
           onKeyDown={e => this.handleKeyDown(e)}
           onPaste={e => this.handlePaste(e)}
@@ -169,7 +153,6 @@ class TextFieldEmail extends Component {
 
 TextFieldEmail.propTypes = {
   name: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
   length: PropTypes.string,
   value: PropTypes.oneOfType([
     PropTypes.string,
@@ -180,6 +163,12 @@ TextFieldEmail.propTypes = {
   isDisabled: PropTypes.bool,
   className: PropTypes.string,
 
+  emails: PropTypes.arrayOf(PropTypes.string).isRequired,
+  current: PropTypes.string.isRequired,
+  error: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  onRemove: PropTypes.func.isRequired,
+  onAdd: PropTypes.func.isRequired,
 }
 
 TextFieldEmail.defaultProps = {

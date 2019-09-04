@@ -36,6 +36,7 @@ from arc_app.token import (
     generate_promotion_confirmation_token
 )
 from tests.test_api_users import log_test_user_in
+from arc_app.utilities import get_mongo_uri
 
 logger = AppLogger(__name__)
 
@@ -226,7 +227,7 @@ class TestAdminCreateService(BaseTestCase):
             resp = client.get(
                 account_disable_url, content_type='application/json'
             )
-            mongo_client = MongoClient(os.environ.get('MONGO_URI'))
+            mongo_client = MongoClient(get_mongo_uri())
             db = mongo_client['arc_test']
             user = db.users.find_one({'email': piett.email})
             print(f'User.active: {user["active"]}')

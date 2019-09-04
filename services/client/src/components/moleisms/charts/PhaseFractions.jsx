@@ -34,7 +34,7 @@ class PhaseFractions extends Component {
     return labels.map((label, index) => {
       const isDisabled = values[index] === 0
       return (
-        <div key={label} className={isDisabled && styles.disabled}>
+        <div key={label} className={isDisabled ? styles.disabled : undefined}>
           <div className={styles.label}>
             <div style={{ backgroundColor: isDisabled ? getColor('--n300') : chartColors[index] }} />
             <span>{label}</span>
@@ -103,11 +103,11 @@ class PhaseFractions extends Component {
               {this.renderCurrentPercent(chartData[0])}
             </div>
             <div className={styles.timeTemp}>
-              <div className={!hasData && styles.disabled}>
+              <div className={!hasData ? styles.disabled : undefined}>
                 <span>{!hasData ? 0 : Math.round(user_cooling_curve.time[currentIdx])}</span>
                 <span>s</span>
               </div>
-              <div className={!hasData && styles.disabled}>
+              <div className={!hasData ? styles.disabled : undefined}>
                 <span>{!hasData ? 0 : Math.round(user_cooling_curve.temp[currentIdx])}</span>
                 <span>°C</span>
               </div>

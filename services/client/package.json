@@ -3,8 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^4.4.0",
     "classnames": "^2.2.6",
+    "file-saver": "^2.0.2",
     "formik": "^1.5.7",
+    "notistack": "^0.8.9",
     "plotly.js": "^1.49.1",
     "prop-types": "^15.7.2",
     "react": "^16.8.6",

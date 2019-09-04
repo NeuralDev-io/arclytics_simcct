@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import FileSaver from 'file-saver'
 import SaveIcon from 'react-feather/dist/icons/save'
 import ServerIcon from 'react-feather/dist/icons/server'
 import FileIcon from 'react-feather/dist/icons/file'
@@ -27,6 +28,13 @@ class SaveSimButton extends Component {
     const { saveSimulationConnect } = this.props
     this.handleCloseModal()
     saveSimulationConnect()
+  }
+
+  saveSimAsFile = () => {
+    const { sim } = this.props
+    const blob = new Blob([JSON.stringify(sim)], { type: 'text/plain;charset=utf-8' })
+    FileSaver.saveAs(blob, `arc_sim_${new Date().toISOString()}.json`)
+    this.handleCloseModal()
   }
 
   render() {
@@ -56,7 +64,7 @@ class SaveSimButton extends Component {
             <ServerIcon className={styles.icon} />
             <span>Save to your account</span>
           </div>
-          <div className={styles.option}>
+          <div className={styles.option} {...buttonize(this.saveSimAsFile)}>
             <FileIcon className={styles.icon} />
             <span>Save to file</span>
           </div>
@@ -70,10 +78,19 @@ SaveSimButton.propTypes = {
   isSessionInitialised: PropTypes.bool.isRequired,
   // props from connect()
   saveSimulationConnect: PropTypes.func.isRequired,
+  sim: PropTypes.shape({}).isRequired,
 }
+
+const mapStateToProps = state => ({
+  sim: {
+    results: state.sim.results,
+    configurations: state.sim.configurations,
+    alloys: state.sim.alloys,
+  },
+})
 
 const mapDispatchToProps = {
   saveSimulationConnect: saveSimulation,
 }
 
-export default connect(null, mapDispatchToProps)(SaveSimButton)
+export default connect(mapStateToProps, mapDispatchToProps)(SaveSimButton)

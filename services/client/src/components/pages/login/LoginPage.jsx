@@ -36,7 +36,6 @@ class LoginPage extends Component {
       forgotPwdErr: '',
       emailSent: false,
     }
-    this.handleStatus = this.handleStatus.bind(this)
     this.handleExpiredToken = this.handleExpiredToken.bind(this)
   }
 
@@ -55,12 +54,14 @@ class LoginPage extends Component {
     }
   }
 
-  handleExpiredToken = ()=> {
+  handleExpiredToken = () => {
     const { match } = this.props
-    if (match.params.token === "true") {
+    console.log(match.params.token)
+    console.log(match.params.token === 'true')
+    if (match.params.token === 'true') {
       return (
-        <Modal show="true">
-        Your token has expired
+        <Modal shown={true}>
+          Your token has expired. Would you like us too resend ?
         </Modal>
       )
     }
@@ -71,6 +72,34 @@ class LoginPage extends Component {
     this.setState({
       [name]: value,
     })
+  }
+
+  handleForgetPasswordEmail = () => {
+    const { forgotEmail } = this.state
+    const validError = forgotPasswordEmail(forgotEmail)
+    if (validError === '') {
+      const promise = new Promise((resolve, reject) => {
+        forgotPassword(resolve, reject, forgotEmail)
+      })
+      promise.then(() => {
+      // If response is successful
+        this.setState({
+          forgotPwdErr: '',
+          emailSent: true,
+        })
+      })
+        .catch((err) => {
+          // If response is unsuccessful
+          console.log(err)
+          this.setState({
+            forgotPwdErr: err,
+          })
+        })
+    } else {
+      this.setState({
+        forgotPwdErr: validError,
+      })
+    }
   }
 
   render() {
@@ -86,8 +115,7 @@ class LoginPage extends Component {
         <div className={styles.logoContainer}>
           <Logo className={styles.logo} />
         </div>
-        This is a string from the url: {this.props.match.params.token}
-        { this.handleExpiredToken()} // checks for login parameter
+        {this.handleExpiredToken()}
         <div className={`${styles.loginForm} ${!(hasForgotPwd === null)? (hasForgotPwd ? styles.fadeLeftOut : styles.fadeRightIn) : ('')}`}>
           <div className={styles.header}>
             <h3> Sign in to your account  </h3>
@@ -141,7 +169,7 @@ class LoginPage extends Component {
                         value={values.email}
                         placeholder="Email"
                         length="stretch"
-                        error= {errors.email && touched.email && errors.email}
+                        error={errors.email && touched.email && errors.email}
                       />
                     </div>
 
@@ -188,19 +216,19 @@ class LoginPage extends Component {
           </Formik>
         </div>
         <div
-        className={
-          `${
-            styles.forgotPwdForm} ${!(hasForgotPwd === null) ?
-            (hasForgotPwd ? styles.fadeLeftIn: styles.fadeRightOut):
-            ('')
-          }`}>
+          className={
+            `${
+              styles.forgotPwdForm} ${!(hasForgotPwd === null) // TODO: fix eslint error
+              ? (hasForgotPwd ? styles.fadeLeftIn : styles.fadeRightOut)
+              : ('')
+            }`
+          }
+        >
           <h3 className={styles.header}> Password Reset </h3>
           <span> Enter your email to send a password reset email.</span>
           <TextField
             name="forgotEmail"
-            className={styles.forgotEmail}
             type="email"
-            placeholder="Enter your email"
             value={forgotEmail}
             onChange={value => this.handleChange('forgotEmail', value)}
             placeholder="Email"
@@ -208,42 +236,21 @@ class LoginPage extends Component {
             length="stretch"
           />
           <div>
-           {/* // TODO: loading takes time make sure button is disabled during loading  */}
-           {/* TODO: give space for the span height  */}
-           <h6 className={ emailSent ? styles.confirmation : styles.errors}>
-            { emailSent ? ('Email has been sent.'): forgotPwdErr}
-           </h6>
+            {/* // TODO: loading takes time make sure button is disabled during loading  */}
+            {/* TODO: give space for the span height  */}
+            <h6 className={emailSent ? styles.confirmation : styles.errors}>
+              {emailSent ? ('Email has been sent.') : forgotPwdErr}
+              &nbsp;
+            </h6>
             <Button
               className={styles.forgotSubmit}
               type="submit"
               length="long"
               isDisabled={emailSent}
-              onClick={()=> {
-                const validError = forgotPasswordEmail(forgotEmail)
-                if ( validError === ''){
-                  const promise = new Promise((resolve, reject) => {
-                    forgotPassword(resolve, reject, forgotEmail)
-                  })
-                  promise.then((data) => {
-                    // If response is successful
-                    this.setState({
-                      forgotPwdErr: '',
-                      emailSent: true,
-                    })
-                  })
-                    .catch((err) => {
-                      // If response is unsuccessful
-                      console.log(err)
-                      this.setState({
-                        forgotPwdErr: err,
-                      })
-                    })
-                } else {
-                  this.setState({
-                    forgotPwd: validError
-                  })
-                }
-              }}> Send Email </Button>
+              onClick={this.handleForgetPasswordEmail}
+            >
+              Send Email
+            </Button>
             <h6
               className={styles.help}
               onClick={()=> this.setState({ hasForgotPwd: false})}

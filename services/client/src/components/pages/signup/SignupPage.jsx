@@ -156,24 +156,37 @@ class SignupPage extends Component {
                       value={values.passwordConfirmed}
                       onChange={e => setFieldValue('passwordConfirmed', e)}
                       placeholder="Confirm password"
-                      error={errors.passwordConfirmed && touched.passwordConfirmed && errors.passwordConfirmed}
+                      error={
+                        errors.passwordConfirmed
+                        && touched.passwordConfirmed
+                        && errors.passwordConfirmed
+                      }
                     />
                   </div>
 
                   <div className={styles.signUpButton}>
-                    <Button name="SIGN UP" appearance="default" type="submit" length="small" disabled={isSubmitting}>SIGN UP</Button>
+                    <Button
+                      name="SIGN UP"
+                      appearance="default"
+                      type="submit"
+                      length="small"
+                      disabled={isSubmitting}
+                    >
+                      SIGN UP
+                    </Button>
                   </div>
                 </div>
               </form>
             )}
           </Formik>
-          <Modal 
+          <Modal
             className={styles.cnfrmModal}
-            show={showCnfrmModal}>
-            <AlertCircleIcon className={styles.alertCircleIcon}/>
+            show={showCnfrmModal}
+          >
+            <AlertCircleIcon className={styles.alertCircleIcon} />
             <h5> Your account has been successfully registered. Verify your account. </h5>
-            <span>  
-              So that you are able to use the full services of the Arclytics Sim application 
+            <span>
+              So that you are able to use the full services of the Arclytics Sim application
               and to be able to personalise your account.
             </span>
             <span>
@@ -183,14 +196,14 @@ class SignupPage extends Component {
               <Button className={styles.resendEmail}>
                 I did not receive an email. Resend.
               </Button>
-              <Button 
+              <Button
               appearance="outline"
               className={styles.goToSignIn}
               onClick={() => history.push('/signin')}>
-                I have verified. Go to login  
+                I have verified. Go to login
               </Button>
             </div>
-           
+
           </Modal>
           <div>
             <h6>

@@ -43,11 +43,14 @@ class PasswordResetPage extends Component {
     if (status === 'success') {
       return (
         <Modal className={styles.cnfrmModal} show="true">
-          <CheckCircleIcon />
-          <span>
+          <CheckCircleIcon className={styles.checkCircleIcon} />
+          <h5>
             Your account password has been successfully changed.
+          </h5>
+          <span>
+            Click the button below to go back to the login page.
           </span>
-          <Button length="long" onClick={() => { history.push('/signin') }}> Go to sign in </Button>
+          <Button length="long" onClick={() => { this.props.history.push('/signin') }}> Go to log in </Button>
         </Modal>
       )
     }
@@ -115,24 +118,28 @@ class PasswordResetPage extends Component {
         </div>
         <form className={styles.form}>
           <h3 className={styles.header}> Change Password </h3>
-          <TextField
-            type="password"
-            name="newPwd"
-            value={newPwd}
-            placeholder="New Password"
-            length="stretch"
-            error={newPwdErr}
-            onChange={value => this.handleChange('newPwd', value)}
-          />
-          <TextField
-            type="password"
-            name="cnfrmPwd"
-            value={cnfrmPwd}
-            placeholder="Confirm Password"
-            length="stretch"
-            error={cnfrmPwdErr}
-            onChange={value => this.handleChange('cnfrmPwd', value)}
-          />
+          <div className={styles.newPassword}>
+            <TextField
+              type="password"
+              name="newPwd"
+              value={newPwd}
+              placeholder="New Password"
+              length="stretch"
+              error={newPwdErr}
+              onChange={value => this.handleChange('newPwd', value)}
+            />
+          </div>
+          <div className={styles.cnfrmPassword}>
+            <TextField
+              type="password"
+              name="cnfrmPwd"
+              value={cnfrmPwd}
+              placeholder="Confirm Password"
+              length="stretch"
+              error={cnfrmPwdErr}
+              onChange={value => this.handleChange('cnfrmPwd', value)}
+            />
+          </div>
           {this.handleStatus()}
           <Button length="long" onClick={this.handleSubmit}> Reset Password </Button>
         </form>

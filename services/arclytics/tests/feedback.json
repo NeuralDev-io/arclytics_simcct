@@ -1,0 +1,49 @@
+[{
+  "category": "Technical",
+  "rating": "4",
+  "comment": "Good job."
+}, {
+  "category": "Technical",
+  "rating": "4",
+  "comment": "Quite helpful."
+}, {
+  "category": "Technical",
+  "rating": "3",
+  "comment": "Room for improvement."
+}, {
+  "category": "Technical",
+  "rating": "2",
+  "comment": "Not good."
+}, {
+  "category": "Aesthetic",
+  "rating": "4",
+  "comment": "Not bad."
+}, {
+  "category": "Aesthetic",
+  "rating": "3",
+  "comment": "Mediocre."
+}, {
+  "category": "Aesthetic",
+  "rating": "2",
+  "comment": "Front end designers must be plebs!"
+}, {
+  "category": "Aesthetic",
+  "rating": "2",
+  "comment": "Functionally good, design bad though."
+}, {
+  "category": "Commendation",
+  "rating": "5",
+  "comment": "Backend team did a great job!"
+}, {
+  "category": "Commendation",
+  "rating": "5",
+  "comment": "Well done backend team!"
+}, {
+  "category": "Commendation",
+  "rating": "5",
+  "comment": "Functionally awesome!"
+}, {
+  "category": "Commendation",
+  "rating": "5",
+  "comment": "Great job backend team."
+}]

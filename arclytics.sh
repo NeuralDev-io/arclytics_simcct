@@ -13,7 +13,7 @@ WORKDIR=$(dirname "$(readlink -f "$0")")
 DOCKER_COMPOSE_PATH="${WORKDIR}/docker-compose.yml"
 ARGS=""
 CONTAINER_GROUP=""
-CONTAINER_ARGS="users simcct client redis mongodb celery-worker"
+CONTAINER_ARGS="arclytics simcct client redis mongodb"
 CONTAINER_LOG=""
 BUILD_CONTAINER_ARGS=""
 BUILD_FLAG=0
@@ -24,6 +24,10 @@ SCALE_CONTAINERS_ARGS=""
 DOCKER_DOWN_FLAG=0
 SWAGGER_FLAG=0
 JUPYTER_FLAG=0
+
+MONGO_USERNAME=""
+MONGO_PASSWORD=""
+MONGO_APP_DB=""
 
 TEST_SERVER_ARGS=""
 TEST_TYPE="test"
@@ -74,17 +78,52 @@ function echoLine() {
 # =============================================================== #
 # ==================== # Utility Functions # ==================== #
 # =============================================================== #
-# Run only the users tests
-users() {
+
+# Read the .env file and get the password
+getMongoUserAndPassword() {
+    input="${WORKDIR}/.env"
+    user_key=""
+    pass_key=""
+
+    if [[ $1 == 'root' ]]; then
+        user_key='MONGO_ROOT_USER'
+        pass_key='MONGO_ROOT_PASSWORD'
+    elif [[ $1 == 'user' ]]; then
+        user_key="MONGO_APP_USER"
+        pass_key="MONGO_APP_USER_PASSWORD"
+    fi
+
+    if [[ ${user_key} != "" ]]; then
+        while IFS= read -r line
+        do
+            KEY="$(cut -d'=' -f1 <<< "${line}" )"
+
+            if [[ ${KEY} == "${user_key}" ]]; then
+                MONGO_USERNAME="$(cut -d'=' -f2 <<< "${line}" )"
+            fi
+
+            if [[ ${KEY} == "${pass_key}" ]]; then
+                MONGO_PASSWORD="$(cut -d'=' -f2 <<< "${line}" )"
+            fi
+
+            if [[ ${KEY} == "MONGO_APP_DB" ]]; then
+                MONGO_APP_DB="$(cut -d'=' -f2 <<< "${line}" )"
+            fi
+        done < "$input"
+    fi
+}
+
+# Run only the arclytics tests
+arcTest() {
     headerMessage "RUNNING USERS SERVER TESTS"
     generalMessage "Beginning ${TEST_TITLE} for Users Server"
     echoSpace
     if [[ ${tty} == 1 ]]; then
-        generalMessage "docker-compose exec -T users python manage.py ${TEST_TYPE}"
-        docker-compose -f "${DOCKER_COMPOSE_PATH}" exec -T users python manage.py "${TEST_TYPE}"
+        generalMessage "docker-compose exec -T arclytics python manage.py ${TEST_TYPE}"
+        docker-compose -f "${DOCKER_COMPOSE_PATH}" exec -T arclytics python manage.py "${TEST_TYPE}"
     else
-        generalMessage "docker-compose exec users python manage.py ${TEST_TYPE}"
-        docker-compose -f "${DOCKER_COMPOSE_PATH}" exec users python manage.py "${TEST_TYPE}"
+        generalMessage "docker-compose exec arclytics python manage.py ${TEST_TYPE}"
+        docker-compose -f "${DOCKER_COMPOSE_PATH}" exec arclytics python manage.py "${TEST_TYPE}"
     fi
     generalMessage "Finishing ${TEST_TITLE} for Users Server"
 }
@@ -94,7 +133,7 @@ simcct() {
     headerMessage "RUNNING SIMCCT SERVER TESTS"
     generalMessage "Beginning ${TEST_TITLE} for SimCCT Server"
     echoSpace
-    docker-compose exec users python manage.py flush
+    docker-compose exec arclytics python manage.py flush
     if [[ ${tty} == 1 ]]; then
         generalMessage "docker-compose exec -T simcct python manage.py ${TEST_TYPE}"
         docker-compose -f "${DOCKER_COMPOSE_PATH}" exec -T simcct python manage.py "${TEST_TYPE}"
@@ -107,7 +146,7 @@ simcct() {
 
 # Run server-side tests
 server() {
-    users
+    arcTest
     simcct
 }
 
@@ -117,7 +156,7 @@ client() {
 
 # run all tests
 all() {
-    users
+    arcTest
     simcct
     # client
     # e2e
@@ -141,19 +180,18 @@ Options:
 
 Service Group:
   all               Run all available services which includes the following:
-                    users, simcct, celery-worker, redis, mongodb, dask-scheduler,
+                    arclytics, simcct, redis, mongodb, dask-scheduler,
                     dask-worker, jupyter, swagger, fluentd, elasticsearch,
                     kibana, client.
   e2e               Run the services to with the front-end client and back-end
                     microservices to test an end-to-end example of any feature.
-                    This includes: client, users, simcct, celery-worker, mongodb,
-                    redis.
+                    This includes: client, arclytics, simcct, mongodb, redis.
   server            Run all services related to the back-end microservices and
-                    database which includes the following: users, simcct,
-                    celery-worker, mongodb, redis.
+                    database which includes the following: arclytics, simcct,
+                    mongodb, redis.
   server-dask       Run all services related to the back-end and include the
-                    \`dask\` containers. This includes: users, simcct,
-                    celery-worker, mongodb, redis, dask-scheduler, dask-worker.
+                    \`dask\` containers. This includes: arclytics, simcct,
+                    mongodb, redis, dask-scheduler, dask-worker.
   client            Run only the client microservice.
   dask              Run only the services to test the \`dask\` containers which
                     includes: dask-scheduler, dask-worker, jupyter.
@@ -165,7 +203,7 @@ Service Group:
                     This includes: fluent-python, fluent-react, fluentd, kibana,
                     elasticsearch.
   swagger-test      Run the microservices to test the back-end API from swagger.
-                    This includes: swagger, users, simcct, celery-worker, redis,
+                    This includes: swagger, arclytics, simcct, redis,
                     mongodb.
 ${reset}
 """
@@ -195,8 +233,7 @@ Optional Containers:
   -J, --jupyter         Run the Jupyter container with the cluster.
 
 Service (only one for \`logs\`; * default for \`up\`):
-  users *
-  celery-worker *
+  arclytics *
   simcct *
   dask-scheduler *
   dask-worker *
@@ -214,7 +251,7 @@ testUsage() {
     echo -e """
 ${greenf}ARCLYTICS CLI SCRIPT
 
-Usage: arclytics.sh up [OPTIONS] [TEST TYPE]
+Usage: arclytics.sh test [OPTIONS] [TEST TYPE]
 
 The Arclytics CLI command to run Unit Tests.
 
@@ -222,13 +259,14 @@ Options:
   -b, --build      Build the Docker containers before running tests.
   -t, --tty        Attach a pseudo-TTY to the tests.
   -c, --coverage   Run the unit tests with coverage.
+  -f, --file       Set the path of the docker-compose YAML file to use.
   -h, --help       Get the Usage information for this command.
 
 Test Types (one only):
   all         Run all unit tests for Arclytics Sim
   server      Run the server-side unit tests.
   client      Run the client-side unit tests.
-  users       Run only the users tests.
+  arclytics   Run only the arclytics tests.
   simcct      Run only the simcct tests.
 ${reset}
 """
@@ -251,12 +289,13 @@ arclytics.sh logs [SERVICE]
 arclytics.sh test [options] [TEST TYPE]
 arclytics.sh down [options]
 arclytics.sh scale [SERVICE=NUM...]
-arclytics.sh [COMMAND]
+arclytics.sh [COMMAND] [ARGS...]
 
 Options:
   -b, --build           Build the Docker containers before running.
   -d, --detach          Run Docker Engine logs in a detached shell mode.
   -s, --seed_db         Seed the MongoDB database with test data.
+  -f, --file            Set the path of the docker-compose YAML file to use.
   -h, --help            Get the Usage information for this script.
 
   Up Options:
@@ -272,27 +311,45 @@ Options:
   Down Options:
   -D, --docker          Stop the containers using the Docker PS stat.
 
+  System Options:
+  usage, df             Show docker disk usage.
+  events                Get real time events from the server.
+  info                  Display the system-wide information.
+
+
+Management Commands:
+  container   Manage containers. Run \`help | --help\` to get usage options.
+  image       Manage image. Run \`help | --help\` to get usage options.
+  system      Manage Docker system. Additional options available.
+
 Commands:
   build       Build the Docker images from docker-compose.yml only (passing services
               to build specific ones or leave empty to build all).
-  up          Run the main containers in docker-compose.yml or provide a list of
-              arguments to run only those provided.
-  logs        Get the logs of the container.
-  ps          List the running containers.
-  stats       Display a live stream of container(s) resource usage statistics.
+  down        Stop all containers.
   flush       Flush both Redis datastore and MongoDB database only.
+  images      List images build.
+  logs        Get the logs of the container.
+  ls          List all containers, volumes, and images with formatting.
+  mongo       Connect to the \`mongo\` CLI running in the container.
+  ps          List the running containers.
+  pull        Pull an image or a repository from a registry
+  push        Push an image or a repository to a registry
+  prune       Prune all stopped images, containers, networks, and volumes based
+              on the \`labels\` used for this project.
+  pwd         Get the full path directory of the Arclytics CLI script.
   seed        Seed the microservices with test data and flush both Redis
               datastore and MongoDB database.
-  test        Run unit tests on the microservices.
-  down        Stop all containers.
-  prune       Prune all stopped images, containers, and networks.
-  pwd         Get the full path directory of the Arclytics CLI script.
   scale       Set number of containers to run for a service. Numbers are specified
               in the form \`service=num\` as arguments.
+  minikube    Use as a wrapper for the minikube service.
+  stats       Display a live stream of container(s) resource usage statistics.
+  test        Run unit tests on the microservices.
+  up          Run the main containers in docker-compose.yml or provide a list of
+              arguments to run only those provided.
+  help        Get the Usage information for this script and exit.
 
 Service (only one for \`logs\`; * default for \`up\`):
-  users *
-  celery-worker *
+  arclytics *
   simcct *
   dask-scheduler *
   dask-worker *
@@ -305,7 +362,7 @@ Test Types (one only):
   all         Run all unit tests for Arclytics Sim
   server      Run the server-side unit tests.
   client      Run the client-side unit tests.
-  users       Run only the users tests.
+  arclytics   Run only the arclytics tests.
   simcct      Run only the simcct tests.
 ${reset}
 """
@@ -314,6 +371,31 @@ ${reset}
 # ==================================================================== #
 # ==================== # Main Command Functions # ==================== #
 # ==================================================================== #
+
+dockerLsFormatted() {
+  headerMessage "ARCLYTICS SIM LS CONTAINERS, VOLUMES, AND IMAGES"
+  echoLine
+  generalMessage "Containers"
+  echoLine
+  docker container ls -a --format \
+      "table {{.ID}}\t{{.Image}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}" \
+      --filter "label=arclytics.io"
+  echoLine
+  generalMessage "Volumes"
+  echoLine
+  docker volume ls --format \
+      "table {{.Name}}\t{{.Labels}}\t{{.Driver}}\t{{.Mountpoint}}" \
+#      --filter "label=arclytics.io"
+  echoLine
+  generalMessage "Images"
+  echoLine
+  docker image ls --format \
+      "table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}" \
+      --filter "label=arclytics.io"
+  echoLine
+  completeMessage
+}
+
 dockerPs() {
     headerMessage "ARCLYTICS SIM RUNNING CONTAINERS"
     generalMessage "docker ps --size ${ARGS}"
@@ -339,8 +421,9 @@ dockerSystemPrune() {
     running_container_ids=$(docker ps -aq)
     generalMessage "docker stop ${running_container_ids}"
     docker stop ${running_container_ids}
-    generalMessage "docker system prune -af"
-    docker system prune -af
+    generalMessage "docker system prune -af --volumes --filter 'label=arclytics.io'"
+    docker volume prune -f
+    docker system prune -af --volumes --filter 'label=arclytics.io'
     completeMessage
 }
 
@@ -377,9 +460,9 @@ scaleContainers() {
 
 flushDb() {
     headerMessage "FLUSH BACK-END MICROSERVICES"
-    generalMessage "Flushing users microservice database (MongoDB)"
-    generalMessage "docker-compose exec users python manage.py flush"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec users python manage.py flush
+    generalMessage "Flushing arclytics microservice database (MongoDB)"
+    generalMessage "docker-compose exec arclytics python manage.py flush"
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec arclytics python manage.py flush
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
     generalMessage "docker-compose exec simcct python manage.py flush"
     docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
@@ -388,16 +471,16 @@ flushDb() {
 # Flush and seed database
 flushAndSeedDb() {
     headerMessage "SEED AND FLUSH BACK-END MICROSERVICES"
-    generalMessage "Flushing users microservice database (MongoDB)"
-    generalMessage "docker-compose exec users python manage.py flush"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec users python manage.py flush
+    generalMessage "Flushing arclytics microservice database (MongoDB)"
+    generalMessage "docker-compose exec arclytics python manage.py flush"
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec arclytics python manage.py flush
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
     generalMessage "docker-compose exec simcct python manage.py flush"
     docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
     echoSpace
-    generalMessage "Seeding users microservice database with users"
-    generalMessage "docker-compose exec users python manage.py seed_db"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec users python manage.py seed_db
+    generalMessage "Seeding arclytics microservice database with arclytics"
+    generalMessage "docker-compose exec arclytics python manage.py seed_db"
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec arclytics python manage.py seed_db
     echoSpace
     generalMessage "Seeding simcct microservice database with global alloys"
     generalMessage "docker-compose exec simcct python manage.py seed_db"
@@ -423,15 +506,15 @@ runTests() {
         else
             server
         fi
-    elif [[ "${TEST_SERVER_ARGS}" == "users" ]]; then
+    elif [[ "${TEST_SERVER_ARGS}" == "arclytics" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
             docker-compose -f "${DOCKER_COMPOSE_PATH}" up -d --build "${CONTAINER_ARGS}"
-            users
+            arcTest
             generalMessage "docker-compose down"
             docker-compose -f "${DOCKER_COMPOSE_PATH}" down
         else
-            users
+            arcTest
         fi
     elif [[ "${TEST_SERVER_ARGS}" == "simcct" ]]; then
         if [[ ${BUILD_FLAG} == 1 ]]; then
@@ -489,9 +572,9 @@ changeContainerGroup() {
         SWAGGER_FLAG=0
         JUPYTER_FLAG=0
     elif [[ "${CONTAINER_GROUP}" == "server" ]]; then
-        CONTAINER_ARGS="users simcct celery-worker redis mongodb"
+        CONTAINER_ARGS="arclytics simcct redis mongodb"
     elif [[ "${CONTAINER_GROUP}" == "server-dask" ]]; then
-        CONTAINER_ARGS="users simcct celery-worker redis mongodb dask-scheduler dask-worker"
+        CONTAINER_ARGS="arclytics simcct redis mongodb dask-scheduler dask-worker"
     elif [[ "${CONTAINER_GROUP}" == "client" ]]; then
         CONTAINER_ARGS="client"
     elif [[ "${CONTAINER_GROUP}" == "fluentd" ]]; then
@@ -499,11 +582,11 @@ changeContainerGroup() {
     elif [[ "${CONTAINER_GROUP}" == "fluentd-test" ]]; then
         CONTAINER_ARGS="fluentd fluent-python fluent-react elasticsearch kibana"
     elif [[ "${CONTAINER_GROUP}" == "swagger-test" ]]; then
-        CONTAINER_ARGS="users simcct celery-worker redis mongodb swagger"
+        CONTAINER_ARGS="arclytics simcct redis mongodb swagger"
     elif [[ "${CONTAINER_GROUP}" == "dask" ]]; then
         CONTAINER_ARGS="dask-scheduler dask-worker jupyter"
     elif [[ "${CONTAINER_GROUP}" == "e2e" ]]; then
-            CONTAINER_ARGS="client users simcct celery-worker redis mongodb"
+            CONTAINER_ARGS="client arclytics simcct redis mongodb"
     fi
 }
 
@@ -607,6 +690,10 @@ while [[ "$1" != "" ]] ; do
                 shift
             done
             dockerPs
+            ;;
+        ls | list )
+            dockerLsFormatted
+            exit 0
             ;;
         stats )
             ARGS=$2
@@ -747,11 +834,61 @@ while [[ "$1" != "" ]] ; do
                         ;;
                     * )
                         TEST_SERVER_ARGS=$2
-                        runTests
                 esac
                 shift
             done
             runTests
+            ;;
+        images )
+            docker images --format \
+                "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.Size}}"
+            ;;
+        image )
+            ARGS=$2
+            while [[ "$3" != "" ]] ; do
+                ARGS="${ARGS} $3"
+                shift
+            done
+            docker image "${ARGS}"
+            ;;
+        pull )
+            ARGS=$2
+            while [[ "$3" != "" ]] ; do
+                ARGS="${ARGS} $3"
+                shift
+            done
+            docker pull "${ARGS}"
+            ;;
+        push )
+            ARGS=$2
+            while [[ "$3" != "" ]] ; do
+                ARGS="${ARGS} $3"
+                shift
+            done
+            docker push "${ARGS}"
+            ;;
+        container )
+            ARGS=$2
+            while [[ "$3" != "" ]] ; do
+                ARGS="${ARGS} $3"
+                shift
+            done
+            docker container "${ARGS}"
+            ;;
+        system )
+            while [[ "$2" != "" ]] ; do
+                case $2 in
+                    usage | df )
+                      docker system df
+                      exit 0
+                      ;;
+                    * )
+                      ARGS="${ARGS} $2"
+                      ;;
+                esac
+                shift
+            done
+            docker system "${ARGS}"
             ;;
         flush )
             flushDb
@@ -765,6 +902,205 @@ while [[ "$1" != "" ]] ; do
         pwd )
             generalMessage "Arclytics Sim Project Root Directory"
             echo "${WORKDIR}"
+            ;;
+        minikube | mk )
+            headerMessage "MINIKUBE CLI"
+            while [[ "$2" != "" ]] ; do
+                case $2 in
+                    -h | --help )
+                        minikube --help
+                        exit 0
+                        ;;
+                    * )
+                        ARGS=$2
+                        while [[ "$3" != "" ]] ; do
+                            ARGS="${ARGS} $3"
+                            shift
+                        done
+                esac
+                shift
+            done
+            minikube ${ARGS}
+            completeMessage
+            exit 0
+            ;;
+        kubectl | kc )
+            headerMessage "KUBECTL CLI"
+            while [[ "$2" != "" ]] ; do
+                case $2 in
+                    help | -h | --help )
+                        kubectl help
+                        exit 0
+                        ;;
+                    * )
+                        ARGS=$2
+                        while [[ "$3" != "" ]] ; do
+                            ARGS="${ARGS} $3"
+                            shift
+                        done
+                esac
+                shift
+            done
+            kubectl ${ARGS}
+            completeMessage
+            exit 0
+            ;;
+        mongo )
+            while [[ "$2" != "" ]] ; do
+                case $2 in
+                    user )
+                        getMongoUserAndPassword "user"
+                        docker exec -it arc_mongodb_1 mongo \
+                            "-u \"${MONGO_USERNAME}\" -p \"${MONGO_PASSWORD}\" ${MONGO_APP_DB}"
+                        ;;
+                    root )
+                        getMongoUserAndPassword "root"
+                        echo "-u ${MONGO_USERNAME} -p ${MONGO_PASSWORD} admin"
+                        docker exec -it arc_mongodb_1 mongo \
+                            "-u \"${MONGO_USERNAME}\" -p \"${MONGO_PASSWORD}\" admin"
+                        ;;
+                    * )
+                        exit 0
+                        ;;
+                esac
+                shift
+            done
+            ;;
+        deploy )
+            while [[ "$2" != "" ]] ; do
+                case $2 in
+                    volumes )
+                      while [[ "$3" != "" ]]; do
+                        case $3 in
+                          create )
+                            kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-redis.yml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/persistent-volume-claim-redis.yml"
+                            if [[ $3 == "-v" || $3 = "--verbose" ]]; then
+                              generalMessage "Persistent Volumes"
+                              kubectl get pv
+                              generalMessage "Persistent Volume Claims"
+                              kubectl get pvc
+                            fi
+                            ;;
+                          delete )
+                            kubectl delete pvc mongo-persistent-storage-mongo-0
+                            kubectl delete -f "${WORKDIR}/kubernetes/persistent-volume-claim-redis.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/persistent-volume-redis.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              generalMessage "Persistent Volumes"
+                              kubectl get pv
+                              generalMessage "Persistent Volume Claims"
+                              kubectl get pvc
+                            fi
+                            ;;
+                          * )
+                            exit 0
+                            ;;
+                        esac
+                        shift
+                      done
+                      ;;
+                    secrets )
+                      kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml"
+                      ;;
+                    mongo )
+                      while [[ "$3" != "" ]]; do
+                        case $3 in
+                          create )
+                            kubectl apply -f "${WORKDIR}/kubernetes/gke_ssd.yml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-1.yml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-2.yml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-3.yml"
+                            # kubectl apply -f "${WORKDIR}/kubernetes/mongo-statefulset.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              kubectl get deployments
+                              kubectl get pods
+                            fi
+                            ;;
+                          delete )
+                            # kubectl delete -f "${WORKDIR}/kubernetes/mongo-service.yml"
+                            # kubectl delete -f "${WORKDIR}/kubernetes/mongo-deployment.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/mongo-statefulset.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              generalMessage "Deployments"
+                              kubectl get deployments
+                              generalMessage "Pods"
+                              kubectl get pods
+                            fi
+                            ;;
+                          * )
+                            exit 0
+                            ;;
+                        esac
+                        shift
+                      done
+                      ;;
+                    redis )
+                      while [[ "$3" != "" ]]; do
+                        case $3 in
+                          create )
+                            kubectl create -f "${WORKDIR}/kubernetes/redis-deployment.yml"
+                            kubectl create -f "${WORKDIR}/kubernetes/redis-service.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              kubectl get deployments
+                              kubectl get pods
+                            fi
+                            ;;
+                          delete )
+                            kubectl delete -f "${WORKDIR}/kubernetes/redis-service.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/redis-deployment.yml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              generalMessage "Deployments"
+                              kubectl get deployments
+                              generalMessage "Pods"
+                              kubectl get pods
+                            fi
+                            ;;
+                          * )
+                            exit 0
+                            ;;
+                        esac
+                        shift
+                      done
+                      ;;
+                    ls )
+                      echoSpace
+                      headerMessage "KUBERNETES ORECHESTRATION"
+                      echoLine
+                      generalMessage "Persistent Volumes"
+                      echoLine
+                      kubectl get pv -o wide
+                      echoLine
+                      generalMessage "Persistent Volume Claims"
+                      echoLine
+                      kubectl get pvc -o wide
+                      echoLine
+                      generalMessage "StatefuleSets"
+                      echoLine
+                      kubectl get statefulset -o wide
+                      echoLine
+                      generalMessage "Deployments"
+                      echoLine
+                      kubectl get deployments -o wide
+                      echoLine
+                      generalMessage "Pods"
+                      echoLine
+                      kubectl get pods -o wide
+                      echoLine
+                      completeMessage
+                      echoSpace
+                      ;;
+                    * )
+                      exit 0
+                      ;;
+                esac
+                shift
+            done
             ;;
     esac
     shift

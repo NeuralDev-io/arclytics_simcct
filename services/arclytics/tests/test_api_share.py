@@ -620,10 +620,10 @@ class TestShareService(BaseTestCase):
             )
             self.assertEquals(resp_request_simulation.status_code, 302)
             self.assertTrue(resp_request_simulation.headers['Location'])
-            token = resp_request_simulation.headers['Location'].split('=')[1]
+            token = resp_request_simulation.headers['Location'].split(':')[-1]
             client_host = os.environ.get('CLIENT_HOST')
             redirect_url = (
-                f'http://{client_host}/share/simulation/request/token={token}'
+                f'http://{client_host}/share/simulation/:{token}'
             )
             self.assertRedirects(resp_request_simulation, redirect_url)
 

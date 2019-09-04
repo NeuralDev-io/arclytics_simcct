@@ -106,7 +106,7 @@ def confirm_email(token):
     response.pop('message')
     # TODO(andrew@neuraldev.io): Need to check how to change this during
     #  during production and using Ingress/Load balancing for Kubernetes
-    return redirect(f'http://localhost:3000/signin', code=302)
+    return redirect(f'http://{client_host}/signin', code=302)
 
 
 @auth_blueprint.route('/confirm/resend', methods=['GET'])

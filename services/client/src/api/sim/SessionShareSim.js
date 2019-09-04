@@ -38,7 +38,7 @@ export const getShareUrlLink = (configs, alloyStore, results) => new Promise((re
     .catch(err => reject(err))
 })
 
-export const sendShareEmail = (emails, message, configurations, alloyStore) => new Promise(
+export const sendShareEmail = (emails, message, configurations, alloyStore, results) => new Promise(
   (resolve, reject) => {
     /**
      * API request method to get the sharing URL link from the `users` server.
@@ -61,6 +61,7 @@ export const sendShareEmail = (emails, message, configurations, alloyStore) => n
         emails,
         message,
         configurations,
+        simulation_results: results,
       }),
     })
       .then(res => res.json())

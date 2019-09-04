@@ -62,7 +62,6 @@ class TestProductionConfig(TestCase):
             self.app.config['SECRET_KEY'] == os.environ.get('SECRET_KEY')
         )
         self.assertFalse(self.app.config['TESTING'])
-        self.assertTrue(self.app.config['MONGO_DBNAME'] == 'arclytics')
 
 
 if __name__ == '__main__':

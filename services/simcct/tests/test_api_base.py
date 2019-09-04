@@ -28,6 +28,7 @@ from redis import Redis
 
 import settings
 from sim_app.app import create_app
+from tests.test_utils import get_mongo_uri
 
 
 class BaseTestCase(TestCase):
@@ -50,8 +51,11 @@ class BaseTestCase(TestCase):
         )
         redis.flushall()
         redis.flushdb()
-        client = MongoClient(
-            host=os.environ.get('MONGO_HOST'),
-            port=int(os.environ.get('MONGO_PORT'))
-        )
-        client.drop_database('arc_test')
+        if os.environ.get('FLASK_ENV') == 'production':
+            mongo = MongoClient(get_mongo_uri())
+        else:
+            mongo = MongoClient(
+                host=os.environ.get('MONGO_HOST'),
+                port=int(os.environ.get('MONGO_PORT'))
+            )
+        mongo.drop_database('arc_test')

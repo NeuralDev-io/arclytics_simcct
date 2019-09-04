@@ -77,18 +77,23 @@ class ShareSimButton extends Component {
     },
   })
 
+  cleanResults = ({ USER, TTT, CCT }) => ({
+    USER, TTT, CCT,
+  })
+
   onUrlLinkSubmit = () => {
     /**
      * The callback function for the generate button which makes the API call
      * and updates the state of `shareUrlLink` if the promise successfully returns
      * the response from the `users` server that we expect.
      */
-    const { configurations, alloys } = this.props
+    const { configurations, alloys, results } = this.props
     const alloyStore = this.cleanAlloyStore(alloys)
     const validConfigs = this.cleanConfigurations(configurations)
+    const simResults = this.cleanResults(results)
 
     // getShareUrlLink() returns a Promise and we must catch all errors.
-    getShareUrlLink(validConfigs, alloyStore)
+    getShareUrlLink(validConfigs, alloyStore, simResults)
       .then((res) => {
         this.setState({ shareUrlLink: res.link, linkCopyDisabled: false })
       })
@@ -351,11 +356,13 @@ ShareSimButton.propTypes = {
       })),
     }),
   }).isRequired,
+  results: PropTypes.shape({}).isRequired,
 }
 
 const mapStateToProps = state => ({
   alloys: state.sim.alloys,
   configurations: state.sim.configurations,
+  results: state.sim.results,
 })
 
 export default withSnackbar(connect(mapStateToProps, {})(ShareSimButton))

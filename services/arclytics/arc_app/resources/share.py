@@ -305,7 +305,7 @@ def request_shared_simulation(token):
     # TODO(davidmatthews1004@gmail.com): Correct this endpoint and make sure I
     #  am correctly sending the signature.
     redirect_url = \
-        f'http://{client_host}/share/simulation/:{token}'
+        f'http://localhost:3000/share/simulation/{token}'
     custom_redir_response.headers['Location'] = redirect_url
     return custom_redir_response
 

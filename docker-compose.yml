@@ -14,7 +14,7 @@ services:
 #      - arclytics_dir:/usr/src/app  # This would be using a bind named volume mount
       - ./services/arclytics:/usr/src/app  # This is a bind mount
     ports:
-      - 8000:8000
+      - "8000:8000"
     expose:
       - 8000
     environment:
@@ -188,6 +188,8 @@ services:
       - 3000
     environment:
       - NODE_ENV=development
+      - REACT_APP_USER_HOST=http://0.0.0.0:8000
+      - REACT_APP_SIMCCT_HOST=http://0.0.0.0:8001
     depends_on:
       - mongodb
     networks:

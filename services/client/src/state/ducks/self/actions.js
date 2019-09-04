@@ -9,7 +9,7 @@ import {
 } from './types'
 
 export const getUserProfile = () => (dispatch) => { // eslint-disable-line
-  return fetch('http://localhost:8000/user', {
+  return fetch(`${process.env.REACT_APP_USER_HOST}/user`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
 }
 
 export const createUserProfile = values => (dispatch) => {
-  fetch('http://localhost:8000/user/profile', {
+  fetch(`${process.env.REACT_APP_USER_HOST}/user/profile`, {
     method: 'POST',
     mode: 'cors',
     headers: {
@@ -53,7 +53,7 @@ export const createUserProfile = values => (dispatch) => {
 }
 
 export const updateUserProfile = values => (dispatch) => {
-  fetch('http://localhost:8000/user', {
+  fetch(`${process.env.REACT_APP_USER_HOST}/user`, {
     method: 'PATCH',
     mode: 'cors',
     headers: {
@@ -76,7 +76,7 @@ export const updateUserProfile = values => (dispatch) => {
 }
 
 export const updateEmail = values => (dispatch) => {
-  fetch('http://localhost:8000/auth/email/change', {
+  fetch(`${process.env.REACT_APP_USER_HOST}/auth/email/change`, {
     method: 'PUT',
     mode: 'cors',
     headers: {
@@ -99,7 +99,7 @@ export const updateEmail = values => (dispatch) => {
 }
 
 export const changePassword = values => (dispatch) => {
-  fetch('http://localhost:8000/auth/password/change', {
+  fetch(`${process.env.REACT_APP_USER_HOST}/auth/password/change`, {
     method: 'PUT',
     mode: 'cors',
     headers: {
@@ -145,7 +145,7 @@ export const saveSimulation = () => (dispatch, getState) => {
     grain_size: grain_size_ASTM,
   }
 
-  fetch('http://localhost:8000/user/simulation', {
+  fetch(`${process.env.REACT_APP_USER_HOST}/user/simulation`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -184,7 +184,7 @@ export const saveSimulation = () => (dispatch, getState) => {
  * }
  */
 export const getSavedSimulations = () => (dispatch) => {
-  fetch('http://localhost:8000/user/simulation', {
+  fetch(`${process.env.REACT_APP_USER_HOST}/user/simulation`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

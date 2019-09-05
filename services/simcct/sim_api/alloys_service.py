@@ -25,9 +25,9 @@ from typing import Union
 from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
 
-from arc_api.abstract_adapter import AlloyAbstract
-from arc_api.mongo import MongoAlloys
-from arc_api.schemas import AlloySchema
+from sim_api.abstract_adapter import AlloyAbstract
+from sim_api.mongo import MongoAlloys
+from sim_api.schemas import AlloySchema
 
 
 class AlloysService(object):

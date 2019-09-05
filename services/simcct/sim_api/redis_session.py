@@ -45,13 +45,19 @@ def utctimestamp_by_second(utc_date_time):
 
 class RedisSession(CallbackDict, SessionMixin):
     def __init__(self, initial=None, sid=None, new=False):
+        self.initial = initial
+
         def on_update(s):
             s.modified = True
+            self.initial = s.initial
 
         CallbackDict.__init__(self, initial, on_update)
         self.sid = sid
         self.new = new
         self.modified = False
+
+    def __str__(self):
+        return '<RedisSession {}>'.format(self.initial)
 
 
 class RedisSessionInterface(SessionInterface):

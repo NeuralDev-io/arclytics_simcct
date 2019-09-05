@@ -24,8 +24,8 @@ from flask import current_app
 
 import settings
 from tests.test_api_base import BaseTestCase
-from arc_api.sim_session import SimSessionService
-from arc_api.schemas import ConfigurationsSchema, AlloyStoreSchema
+from sim_api.sim_session import SimSessionService
+from sim_api.schemas import ConfigurationsSchema, AlloyStoreSchema
 
 _TEST_CONFIGS_PATH = Path(
     settings.BASE_DIR

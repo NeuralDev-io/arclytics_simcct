@@ -59,7 +59,7 @@ class TestTokenURL(BaseTestCase):
         """Ensure generate_url behaves as expected."""
         token = generate_confirmation_token('dummy@email.com')
         url = generate_url('auth.confirm_email', token)
-        url_token = url.split('/')[4]
+        url_token = url.split('/')[7]
         self.assertEqual(token, url_token)
         email = confirm_token(url_token)
         self.assertEqual(email, 'dummy@email.com')

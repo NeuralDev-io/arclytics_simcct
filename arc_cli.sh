@@ -133,7 +133,6 @@ simcct() {
     headerMessage "RUNNING SIMCCT SERVER TESTS"
     generalMessage "Beginning ${TEST_TITLE} for SimCCT Server"
     echoSpace
-    docker-compose exec simcct python manage.py flush
     if [[ ${tty} == 1 ]]; then
         generalMessage "docker-compose exec -T simcct python manage.py ${TEST_TYPE}"
         docker-compose -f "${DOCKER_COMPOSE_PATH}" exec -T simcct python manage.py "${TEST_TYPE}"
@@ -146,7 +145,6 @@ simcct() {
 
 # Run server-side tests
 server() {
-    arcTest
     simcct
 }
 
@@ -156,7 +154,7 @@ client() {
 
 # run all tests
 all() {
-    arcTest
+    # arcTest
     simcct
     # client
     # e2e

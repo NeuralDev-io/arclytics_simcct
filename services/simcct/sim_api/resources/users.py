@@ -279,7 +279,7 @@ class UserProfiles(Resource):
         return response, 201
 
 
-api.add_resource(PingTest, '/api/v1/arc/ping')
-api.add_resource(UserList, '/api/v1/arc/users')
-api.add_resource(Users, '/api/v1/arc/user')
-api.add_resource(UserProfiles, '/api/v1/arc/user/profile')
+api.add_resource(PingTest, '/api/v1/sim/ping')
+api.add_resource(UserList, '/api/v1/sim/users')
+api.add_resource(Users, '/api/v1/sim/user')
+api.add_resource(UserProfiles, '/api/v1/sim/user/profile')

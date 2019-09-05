@@ -11,7 +11,13 @@
     width: fit-content;
 
     .textDisplay {
-      align-self: center;
+      align-self: flex-start;
+    }
+
+    .passwordConfirm {
+      width: max-content;
+      margin-top: 1rem;
+      align-self: flex-start;
     }
 
     .buttonGroup {

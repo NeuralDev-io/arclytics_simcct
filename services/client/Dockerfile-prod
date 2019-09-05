@@ -4,15 +4,14 @@
 FROM node:10.16.2-alpine as build
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
-COPY package.json /app/package.json
-RUN npm install --silent
-COPY . /app
-
 # Set environment variables at BUILD TIME
 ARG API_GATEWAY_URL
 ENV API_GATEWAY_URL $API_GATEWAY_URL
 ARG NODE_ENV
 ENV NODE_ENV $NODE_ENV
+COPY package.json /app/package.json
+RUN npm install --silent
+COPY . /app
 
 RUN npm run build
 

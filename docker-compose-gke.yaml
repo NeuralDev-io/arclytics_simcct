@@ -132,6 +132,8 @@ services:
     environment:
       - NODE_ENV=production
       - API_GATEWAY_URL=${API_GATEWAY_URL}
+      - ARCLYTICS_SERVICE_HOST=${ARCLYTICS_SERVICE_HOST}
+      - ARCLYTICS_SERVICE_PORT=${ARCLYTICS_SERVICE_PORT}
     depends_on:
       - arclytics
       - mongodb

@@ -268,63 +268,6 @@ def register_user() -> Tuple[dict, int]:
         return jsonify(response), 400
 
 
-def register_session(user: User = None, auth_token: str = None):
-    """We make an synchronous method to allow registering the user to a session
-    during login. This method allows the login endpoint to retrieve the session
-    key from the `/session/login` endpoint on the `simcct` server.
-
-    Args:
-        user: the `sim_api.models.User` to create a session for.
-        auth_token: a stringified type of the User's JWT token.
-
-    Returns:
-        The response from the simcct server.
-    """
-    # We now need to send a request to the simcct server to initiate
-    # a session as a server-side store to save the last compositions/configs
-    simcct_host = os.environ.get('SIMCCT_HOST', None)
-    # Using the `json` param tells requests to serialize the dict to
-    # JSON and write the correct MIME type ('application/json') in
-    # header.
-
-    last_configs = None
-    last_alloy = None
-
-    if isinstance(user, User):
-        if user.last_configuration is not None:
-            last_configs = user.last_configuration.to_dict()
-
-        if user.last_alloy_store is not None:
-            last_alloy = user.last_alloy_store.to_dict()
-
-        resp = requests.post(
-            url=f'http://{simcct_host}/session/login',
-            json={
-                '_id': str(user.id),
-                'is_admin': user.is_admin,
-                'last_configurations': last_configs,
-                'last_alloy_store': last_alloy
-            },
-            headers={
-                'Authorization': f'Bearer {auth_token}',
-                'Content-type': 'application/json'
-            }
-        )
-        data = resp.json()
-        # Because this method is in an async state, we want to know if our
-        # request to the other side has failed by raising an exception.
-        if not data or data.get('status') == 'fail':
-            _id = user.id
-            raise SessionValidationError(
-                f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
-            )
-        return data.get('session_key')
-    else:
-        raise SessionValidationError(
-            f'[DEBUG] A session cannot be initiated because User object failed.'
-        )
-
-
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
 def login() -> any:
     """
@@ -356,7 +299,12 @@ def login() -> any:
         response['message'] = 'Email or password combination incorrect.'
         return jsonify(response), 400
 
-    if not User.objects(email=email):
+    try:
+        if not User.objects(email=email):
+            response['message'] = 'User does not exist.'
+            return jsonify(response), 404
+    except Exception as e:
+        logger.error(str(e))
         response['message'] = 'User does not exist.'
         return jsonify(response), 404
 
@@ -374,9 +322,6 @@ def login() -> any:
 
             user.save()
 
-            # Inject the Simulation Session data
-            logger.debug('Cookie Session: {}'.format(session))
-
             # Get location data
             reader = geoip2.database.Reader(
                 '/usr/src/app/sim_api/resources/GeoLite2-City/'
@@ -389,8 +334,6 @@ def login() -> any:
                 state = location_data.subdivisions[0].names['en']
                 ip_address = location_data.traits.ip_address
 
-                response['country'] = country
-                response['state'] = state
                 user.login_data.append(
                     LoginData(
                         country=country, state=state, ip_address=ip_address
@@ -404,13 +347,15 @@ def login() -> any:
                 user.save()
             reader.close()
 
+            session['logged_in'] = True
             session['ip_address'] = ip_address
-            session['jwt'] = auth_token.decode()
-            session.update()
+            session['token'] = auth_token.decode()
+
+            # Inject the Simulation Session data
+            logger.debug('Cookie Session: {}'.format(session.__dict__))
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
-            response['token'] = auth_token.decode()
             return jsonify(response), 200
 
     response['message'] = 'Email or password combination incorrect.'

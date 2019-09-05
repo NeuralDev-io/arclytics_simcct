@@ -167,9 +167,9 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
 }
 
 export const getGlobalAlloys = () => getAlloys('global')
-export const createGlobalAlloys = alloy => createAlloy('global', alloy)
-export const updateGlobalAlloys = alloy => updateAlloy('global', alloy)
-export const deleteGlobalAlloys = alloyId => deleteAlloy('global', alloyId)
+export const createGlobalAlloy = alloy => createAlloy('global', alloy)
+export const updateGlobalAlloy = alloy => updateAlloy('global', alloy)
+export const deleteGlobalAlloy = alloyId => deleteAlloy('global', alloyId)
 
 export const getUserAlloys = () => getAlloys('user')
 export const createUserAlloy = alloy => createAlloy('user', alloy)

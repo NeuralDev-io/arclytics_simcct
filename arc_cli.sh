@@ -454,7 +454,7 @@ buildContainers() {
 
 scaleContainers() {
   headerMessage "SCALING ARCLYTICS SIM CONTAINERS"
-  docker-compose -f "${DOCKER_COMPOSE_PATH}" SCALE_FLAG ${SCALE_CONTAINERS_ARGS}
+  docker-compose -f "${DOCKER_COMPOSE_PATH}" scale ${SCALE_CONTAINERS_ARGS}
   completeMessage
 }
 

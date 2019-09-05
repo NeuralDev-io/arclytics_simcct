@@ -7,6 +7,7 @@
 # [1] https://gist.github.com/wushaobo/52be20bc801243dddf52a8be4c13179a
 # [2] https://github.com/mrichman/flask-redis
 # -----------------------------------------------------------------------------
+
 __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = 'TBA'
@@ -22,20 +23,24 @@ but instead encoding and storing the JWT token and ensuring it is not tampered
 with at each request. 
 """
 
-import os
 import json
-import re
 import time
+import itsdangerous
 from datetime import timedelta, datetime, timezone
+from typing import Tuple, Union
 from uuid import uuid4
 
 from flask.sessions import SessionMixin, SessionInterface
+from itsdangerous import BadSignature, SignatureExpired
 from redis import ReadOnlyError
-from redis import Redis
 from werkzeug.datastructures import CallbackDict
 
+from sim_api.utilities import JSONEncoder
+from logger.arc_logger import AppLogger
 
-SESSION_EXPIRY_MINUTES = 60
+logger = AppLogger(__name__)
+
+SESSION_EXPIRY_MINUTES = 120
 SESSION_COOKIE_NAME = 'session'
 
 
@@ -45,57 +50,83 @@ def utctimestamp_by_second(utc_date_time):
 
 class RedisSession(CallbackDict, SessionMixin):
     def __init__(self, initial=None, sid=None, new=False):
-        self.initial = initial
 
         def on_update(s):
             s.modified = True
-            self.initial = s.initial
 
         CallbackDict.__init__(self, initial, on_update)
         self.sid = sid
         self.new = new
         self.modified = False
 
-    def __str__(self):
-        return '<RedisSession {}>'.format(self.initial)
-
 
 class RedisSessionInterface(SessionInterface):
-    def __init__(self, redis=None):
-        if redis is None:
-            if os.environ.get('FLASK_ENV', 'development') == 'production':
-                self.redis = Redis(
-                    host=os.environ.get('REDIS_HOST'),
-                    port=int(os.environ.get('REDIS_PORT')),
-                    password=os.environ.get('REDIS_PASSWORD'),
-                    db=1,
-                )
-            else:
-                self.redis = Redis(
-                    host=os.environ.get('REDIS_HOST'),
-                    port=int(os.environ.get('REDIS_PORT')),
-                    db=1,
-                )
+    def __init__(
+            self,
+            app=None,
+            use_signer=True
+    ):
+        if app is not None:
+            self.redis = app.config.get('SESSION_REDIS')
+            self.secret_key = app.config.get('SECRET_KEY', None)
+            self.salt = app.config.get('SECURITY_PASSWORD_SALT', None)
+            self.use_signer = use_signer
 
-    def open_session(self, app, request):
+    def open_session(self, app, request) -> Union[None, RedisSession]:
+        """This method is called at the beginning of every request in the
+        context of a Flask request-response cycle.
+
+        Args:
+            app: the current Flask app context.
+            request: the request from the client as part of the current context.
+
+        Returns:
+            A RedisSession instance whether new with a generated `sid`  or one
+            with the data from the Redis data store.
+        """
         session_key = request.cookies.get(SESSION_COOKIE_NAME)
+        ip_address: str = request.remote_addr
+
+        # We always generate a new RedisSession is the request does not have
+        # the session key.
         if not session_key:
             return self._new_session()
 
+        if self.use_signer:
+            signer = self._get_signer()
+            if signer is None:
+                return None
+            try:
+                sid_as_bytes = signer.unsign(session_key)
+                session_key = sid_as_bytes.decode()
+            except BadSignature as e:
+                return self._new_session()
+
+        # If we have both the session key and the JWT in the cookies, then
+        # we continue.
         sid, expiry_timestamp = self._extract_sid_and_expiry_ts_from(
             session_key
         )
         if not expiry_timestamp:
             return self._new_session()
 
+        # If we don't get anything back from the Redis data store, it usually
+        # means the session has already expired so we create a new one.
         redis_value, redis_key_ttl = self._get_redis_value_and_ttl_of(sid)
         if not redis_value:
             return self._new_session()
 
+        # If the current expiry timestamp from the Cookie and that from Redis
+        # does not match, we also make a new session.
         if self._expiry_timestamp_not_match(expiry_timestamp, redis_key_ttl):
             return self._new_session()
 
         data = json.loads(redis_value.decode())
+
+        if str(ip_address) != data['ip_address']:
+            logger.error('Some idiot tried to access from a different IP.')
+            return self._new_session()
+
         return RedisSession(data, sid=sid)
 
     def save_session(self, app, session, response):
@@ -111,7 +142,8 @@ class RedisSessionInterface(SessionInterface):
             self._clean_redis_and_cookie(app, response, session)
             return
 
-        redis_value = json.dumps(dict(session))
+        redis_value = JSONEncoder().encode(dict(session))
+
         expiry_duration = self._get_expiry_duration(app, session)
         expiry_date = datetime.utcnow() + expiry_duration
         expires_in_seconds = int(expiry_duration.total_seconds())
@@ -121,14 +153,19 @@ class RedisSessionInterface(SessionInterface):
 
         self._write_wrapper(
             self.redis.setex,
-            self._redis_key(session.sid),
-            redis_value,
-            expires_in_seconds
+            name=self._redis_key(session.sid),
+            value=redis_value,
+            time=expires_in_seconds
         )
+
+        if self.use_signer:
+            session_key = self._get_signer().sign(
+                itsdangerous.want_bytes(session_key)
+            )
 
         response.set_cookie(
             SESSION_COOKIE_NAME, session_key, expires=expiry_date,
-            httponly=True, domain=self.get_cookie_domain(app)
+            httponly=True, domain=self.get_cookie_domain(app), secure=True,
         )
 
     @staticmethod
@@ -145,22 +182,48 @@ class RedisSessionInterface(SessionInterface):
     def _redis_key(sid):
         return 's:{}'.format(sid)
 
-    def _write_wrapper(self, write_method, *args):
+    def _get_signer(self):
+        if not self.secret_key:
+            return None
+        return itsdangerous.Signer(
+            secret_key=self.secret_key, salt=self.salt, key_derivation='hmac'
+        )
+
+    def _write_wrapper(self, write_method, *args, **kwargs) -> None:
+        """A basic wrapper to call redis-py methods but allows us to set a
+        retry of 3 attempts if there are Redis ReadOnlyErrors.
+
+        Args:
+            write_method: the `redis-py` method to use.
+            *args: arguments.
+            **kwargs: keyword arguments.
+
+        Returns:
+            None
+        """
         for i in range(3):
             try:
-                write_method(*args)
+                write_method(*args, **kwargs)
                 break
             except ReadOnlyError:
                 self.redis.connection_pool.reset()
                 time.sleep(1)
 
     def _get_redis_value_and_ttl_of(self, sid):
+        """Get the Session value stored in Redis and the Time To Live (TTL)
+        of the store in Redis.
+
+        Args:
+            sid: the session id.
+
+        Returns:
+            A tuple of results.
+        """
         redis_key = self._redis_key(sid)
         pipeline = self.redis.pipeline()
         pipeline.get(redis_key)
         pipeline.ttl(redis_key)
         results = pipeline.execute()
-
         return tuple(results)
 
     @staticmethod
@@ -173,27 +236,76 @@ class RedisSessionInterface(SessionInterface):
         except (ValueError, TypeError):
             return True
 
-    @staticmethod
-    def _extract_sid_and_expiry_ts_from(session_key):
-        matched = re.match(r"^(.+)\.(\d+)$", session_key)
-        if not matched:
-            return session_key, None
+    def _extract_sid_and_expiry_ts_from(
+            self, session_key: str
+    ) -> Union[Tuple[str, None], Tuple[str, int]]:
+        """Given the session key, we decode it using the `itsdangerous` package.
 
-        return matched.group(1), matched.group(2)
+        Args:
+            session_key: an encoded session key with the
+            `itsdangerous.TimedJSONWebSignatureSerializer`
 
-    @staticmethod
-    def _create_session_key(sid, expiry_date):
-        return "{}.{}".format(sid, utctimestamp_by_second(expiry_date))
+        Returns:
+            A Tuple of (str, None) if there is any errors or (str, int).
+        """
+        s = itsdangerous.TimedJSONWebSignatureSerializer(
+            secret_key=self.secret_key
+        )
+
+        try:
+            res = s.loads(session_key, salt=self.salt)
+        except BadSignature as e:
+            return 'BadSignature', None
+        except SignatureExpired as e:
+            return 'SignatureExpired', None
+        return res.get('sid'), res.get('expiry_seconds')
+
+    def _create_session_key(self, sid, expiry_date):
+        """We use the `itsdangerous` package to encode the session id and
+        expiry time using the `itsdangerous.TimedJSONWebSignatureSerializer`
+        which ensures attempting to rainbow attack or have any collisions.
+
+        Args:
+            sid: the session id in uuid4 format.
+            expiry_date: the date that this session will expire.
+
+        Returns:
+            The newly created session key with the session id and expiry time
+            in seconds encoded.
+        """
+        expiry_in_seconds = utctimestamp_by_second(expiry_date)
+        s = itsdangerous.TimedJSONWebSignatureSerializer(
+            secret_key=self.secret_key, expires_in=expiry_in_seconds
+        )
+        return s.dumps({
+            'sid': sid,
+            'expiry_seconds': expiry_in_seconds
+        }, salt=self.salt)
 
     @staticmethod
     def _inject_user_id_in_sid(sid, user_id):
+        """We simply inject the User ObjectId into the SID to further encode."""
         prefix = "{}.".format(user_id)
         if not sid.startswith(prefix):
             sid = prefix + sid
         return sid
 
     def _clean_redis_and_cookie(self, app, response, session):
-        self._write_wrapper(self.redis.delete, self._redis_key(session.sid))
+        """If the Cookie is bad, we clear out the Cookie and Redis store."""
+        self._write_wrapper(
+            self.redis.delete,
+            name=self._redis_key(session.sid)
+        )
         response.delete_cookie(
             SESSION_COOKIE_NAME, domain=self.get_cookie_domain(app)
         )
+
+
+class FlaskRedisSession(object):
+    def __init__(self, app=None):
+        if app is not None:
+            self.init_app(app)
+
+    @staticmethod
+    def init_app(app):
+        app.session_interface = RedisSessionInterface(app=app)

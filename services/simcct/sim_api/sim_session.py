@@ -41,6 +41,7 @@ from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
 
+SESSION_PREFIX = 'session'
 SESSION_EXPIRY_MINUTES = 120
 
 
@@ -81,6 +82,9 @@ class SimSessionService(object):
                 port=int(app.config['REDIS_PORT']),
                 db=int(app.config['REDIS_DB']),
             )
+        # Store some secret Hydra stuff
+        self.secret_key = app.config.get('SECRET_KEY', None)
+        self.salt = app.config.get('SECURITY_PASSWORD_SALT', None)
 
     def new_session(self, token: bytes, session_data: dict) -> str:
         """We initialise a new Session storage for the current user in the Redis
@@ -220,7 +224,34 @@ class SimSessionService(object):
             return None
 
         # Use the wrapper method to delete
-        self._write_wrapper(self.redis.delete, sid)
+        self._write_wrapper(self.redis.delete, self._redis_key(sid))
+
+    @staticmethod
+    def _get_expiry_duration():
+        return timedelta(minutes=SESSION_EXPIRY_MINUTES)
+
+    def _encode_token_and_sid(self, sid, token):
+        """We simply encode the Session ID and Token to avoid collisions."""
+        s = JSONWebSignatureSerializer(secret_key=self.secret_key)
+        return s.dumps({'sid': sid, 'token': token}, salt=self.salt)
+
+    def _generate_session_key(self, sid, expiry_date):
+        """We generate the Session Key as timed to ensure expiry."""
+        expiry_seconds = utc_timestamp_by_second(expiry_date)
+        s = TimedJSONWebSignatureSerializer(
+            secret_key=self.secret_key, expires_in=expiry_seconds
+        )
+        return s.dumps(
+            {
+                'sid': sid,
+                'expiry_seconds': expiry_seconds
+            }, salt=self.salt
+        )
+
+    @staticmethod
+    def _redis_key(sid):
+        """Quick method to add the session prefix to the Redis key."""
+        return f'{SESSION_PREFIX}:{sid}'
 
     def _write_wrapper(self, write_method, *args, **kwargs) -> None:
         """Wrapper to be used for redis-py methods to alloy retrying at least

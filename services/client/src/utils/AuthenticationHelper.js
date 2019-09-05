@@ -5,14 +5,15 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
- * Text field component
+ * Provides an the HTTP request fetch methods to support login and logout
+ * processes to the API server.
  *
- * @version 0.0.0
- * @author Arvy Salazar
+ * @version 0.9.0
+ * @author Arvy Salazar, Andrew Che, Dalton Le
  * @github Xaraox
  */
 
-const ARC_URL = `${process.env.API_GATEWAY_URL}/api/v1/arc`
+const ARC_URL = `http://${process.env.ARCLYTICS_SERVICE_HOST}:${process.env.ARCLYTICS_SERVICE_PORT}/api/v1/arc`
 
 export const login = async (values, resolve, reject) => {
   fetch(`${ARC_URL}/auth/login`, {

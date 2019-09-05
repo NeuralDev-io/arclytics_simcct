@@ -4,6 +4,7 @@ metadata:
   name: mongo-service
   labels:
     name: mongo
+    role: mongo
 spec:
   ports:
   - port: 27017
@@ -33,10 +34,10 @@ spec:
             podAffinityTerm:
               labelSelector:
                 matchExpressions:
-                - key: replicaset
-                  operator: In
-                  values:
-                  - MainRepSet
+                  - key: replicaset
+                    operator: In
+                    values:
+                    - MainRepSet
               topologyKey: kubernetes.io/hostname
       terminationGracePeriodSeconds: 10
       volumes:

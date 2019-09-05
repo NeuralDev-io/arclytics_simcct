@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: simcct-service
+  name: simcct
   labels:
     app: simcct
 spec:

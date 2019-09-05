@@ -41,7 +41,6 @@ from sim_api.resources.user_alloys import user_alloys_blueprint
 from sim_api.resources.last_simulation import last_simulation_blueprint
 from sim_api.resources.save_simulation import save_simulation_blueprint
 from sim_api.resources.ratings import ratings_blueprint
-from sim_api.resources.session import session_blueprint
 from sim_api.resources.sim_configurations import configs_blueprint
 from sim_api.resources.global_alloys import alloys_blueprint
 from sim_api.resources.simulation import sim_blueprint
@@ -153,7 +152,6 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     app.register_blueprint(last_simulation_blueprint, url_prefix='/api/v1/sim')
     app.register_blueprint(save_simulation_blueprint, url_prefix='/api/v1/sim')
     app.register_blueprint(ratings_blueprint, url_prefix='/api/v1/sim')
-    app.register_blueprint(session_blueprint, url_prefix='/api/v1/sim')
     app.register_blueprint(configs_blueprint, url_prefix='/api/v1/sim')
     app.register_blueprint(alloys_blueprint, url_prefix='/api/v1/sim')
     app.register_blueprint(sim_blueprint, url_prefix='/api/v1/sim')

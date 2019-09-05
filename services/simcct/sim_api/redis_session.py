@@ -180,7 +180,7 @@ class RedisSessionInterface(SessionInterface):
 
     @staticmethod
     def _redis_key(sid):
-        return 's:{}'.format(sid)
+        return 'session:{}'.format(sid)
 
     def _get_signer(self):
         if not self.secret_key:

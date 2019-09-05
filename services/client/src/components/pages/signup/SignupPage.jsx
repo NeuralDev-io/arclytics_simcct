@@ -8,26 +8,41 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
-import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
+import AlertCircleIcon from 'react-feather/dist/icons/alert-circle'
+import { ReactComponent as Logo } from '../../../assets/ANSTO_Logo_SVG/logo_text.svg'
 import { signup } from '../../../utils/AuthenticationHelper'
 import { signupValidation } from '../../../utils/ValidationHelper'
 
 import Button from '../../elements/button'
 import TextField from '../../elements/textfield'
+import Modal from '../../elements/modal'
+
 import styles from './SignupPage.module.scss'
 
 class SignupPage extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      showCnfrmModal: false,
+    }
+  }
+
   componentDidMount = () => {
-    if (localStorage.getItem('token')) this.props.history.push('/')
+    const { history } = this.props
+    if (localStorage.getItem('token')) history.push('/')
   }
 
   render() {
+    const { showCnfrmModal } = this.state
+    const { history } = this.props
     return (
       <div className={styles.outer}>
         <div className={styles.form}>
           <div className={styles.logoContainer}>
             <Logo className={styles.logo} />
-            <h3> ARCLYTICS </h3>
+            {/* <h3> ARCLYTICS </h3>
+            <Logo styles.logo/> */}
+
           </div>
           <div className={styles.header}>
             <h3> Sign up </h3>
@@ -47,9 +62,11 @@ class SignupPage extends Component {
               const promise = new Promise((resolve, reject) => {
                 signup(values, resolve, reject)
               })
-              promise.then((data) => {
+              promise.then(() => {
                 // If response is successful
-                this.props.history.push('/signin')
+                this.setState({
+                  showCnfrmModal: true,
+                })
                 setSubmitting(false)
               })
                 .catch((err) => {
@@ -92,11 +109,8 @@ class SignupPage extends Component {
                         value={values.firstName}
                         placeholder="First Name"
                         length="long"
+                        error={errors.firstName && touched.firstName && errors.firstName}
                       />
-                      <h6 className={styles.errors}>
-                        {errors.firstName && touched.firstName && errors.firstName}
-                      </h6>
-
                     </div>
                     <div className={styles.lastName}>
                       <TextField
@@ -107,10 +121,8 @@ class SignupPage extends Component {
                         value={values.lastName}
                         placeholder="Last Name"
                         length="long"
+                        error={errors.lastName && touched.lastName && errors.lastName}
                       />
-                      <h6 className={styles.errors}>
-                        {errors.lastName && touched.lastName && errors.lastName}
-                      </h6>
                     </div>
                   </div>
                   <div className={styles.emailPassword}>
@@ -122,10 +134,8 @@ class SignupPage extends Component {
                       value={values.email}
                       placeholder="Email"
                       length="stretch"
+                      error={errors.email && touched.email && errors.email}
                     />
-                    <h6 className={styles.errors}>
-                      {errors.email && touched.email && errors.email}
-                    </h6>
                   </div>
                   <div className={styles.emailPassword}>
                     <TextField
@@ -135,10 +145,8 @@ class SignupPage extends Component {
                       value={values.password}
                       placeholder="Password"
                       length="stretch"
+                      error={errors.password && touched.password && errors.password}
                     />
-                    <h6 className={styles.errors}>
-                      {errors.password && touched.password && errors.password}
-                    </h6>
                   </div>
 
                   <div className={styles.passwordConfirmed}>
@@ -149,23 +157,59 @@ class SignupPage extends Component {
                       value={values.passwordConfirmed}
                       onChange={e => setFieldValue('passwordConfirmed', e)}
                       placeholder="Confirm password"
-                    />
-                    <h6 className={styles.errors}>
-                      {
+                      error={
                         errors.passwordConfirmed
                         && touched.passwordConfirmed
                         && errors.passwordConfirmed
                       }
-                    </h6>
+                    />
                   </div>
 
                   <div className={styles.signUpButton}>
-                    <Button name="SIGN UP" appearance="default" type="submit" length="small" disabled={isSubmitting}>SIGN UP</Button>
+                    <Button
+                      name="SIGN UP"
+                      appearance="default"
+                      type="submit"
+                      length="small"
+                      disabled={isSubmitting}
+                    >
+                      SIGN UP
+                    </Button>
                   </div>
                 </div>
               </form>
             )}
           </Formik>
+          <Modal
+            className={styles.cnfrmModal}
+            show={showCnfrmModal}
+          >
+            <AlertCircleIcon className={styles.alertCircleIcon} />
+            <h5> Your account has been successfully registered. Verify your account. </h5>
+            <span>
+              So that you are able to use the full services of the Arclytics Sim application
+              and to be able to personalise your account.
+            </span>
+            <span>
+              Please verify your account.
+            </span>
+            <div className={styles.buttons}>
+              <Button
+                isDisabled={true}
+                className={styles.resendEmail}
+              >
+                I did not receive an email. Resend.
+              </Button>
+              <Button
+                appearance="outline"
+                className={styles.goToSignIn}
+                onClick={() => history.push('/signin')}
+              >
+                I have verified. Go to login
+              </Button>
+            </div>
+
+          </Modal>
           <div>
             <h6>
               Already have an account?

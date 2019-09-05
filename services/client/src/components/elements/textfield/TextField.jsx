@@ -67,10 +67,11 @@ class TextField extends Component {
       ...other
     } = this.props
     const { err } = this.state
-    const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${err !== '' && styles.error} ${className || ''}`
+    const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${error !== '' && styles.error} ${className || ''}`
 
+    //Need to fix the iron kick
     return (
-      <div>
+      <div className={styles.container}>
         <input
           {...other}
           type={type}
@@ -81,7 +82,7 @@ class TextField extends Component {
           onChange={e => this.handleChange(e)}
           disabled={isDisabled}
         />
-        {(error !== '')? <AlertCircle className={styles.errorIcon}/>: ('')}          
+        {(error !== '')? <AlertCircle className={styles.errorIcon}/>: ('')}
         {/* <span className="text--sub2">{err}</span> */}
       </div>
     )

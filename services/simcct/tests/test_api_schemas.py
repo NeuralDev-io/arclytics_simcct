@@ -21,7 +21,7 @@ from marshmallow import ValidationError
 
 import settings
 from tests.test_api_base import BaseTestCase
-from arc_api.schemas import (AlloySchema, ConfigurationsSchema)
+from sim_api.schemas import (AlloySchema, ConfigurationsSchema)
 
 _TEST_CONFIGS_PATH = Path(
     settings.BASE_DIR

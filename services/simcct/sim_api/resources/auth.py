@@ -26,7 +26,9 @@ from typing import Tuple
 
 import requests
 from email_validator import EmailNotValidError, validate_email
-from flask import Blueprint, jsonify, redirect, render_template, request
+from flask import (
+    Blueprint, jsonify, redirect, render_template, request, session
+)
 from flask import current_app as app
 from mongoengine.errors import NotUniqueError, ValidationError
 from geoip2.errors import AddressNotFoundError
@@ -34,7 +36,7 @@ import geoip2.database
 
 from logger.arc_logger import AppLogger
 from sim_api.extensions import bcrypt
-from sim_api.middleware import (authenticate_flask, logout_authenticate)
+from sim_api.middleware import authenticate_flask
 from sim_api.models import User, LoginData
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
@@ -372,12 +374,12 @@ def login() -> any:
 
             user.save()
 
-            try:
-                session_key = register_session(user, auth_token.decode())
-            except SessionValidationError as e:
-                response['message'] = 'Session validation error.'
-                response['error'] = str(e)
-                return jsonify(response), 400
+            # try:
+            #     session_key = register_session(user, auth_token.decode())
+            # except SessionValidationError as e:
+            #     response['message'] = 'Session validation error.'
+            #     response['error'] = str(e)
+            #     return jsonify(response), 400
 
             # Get location data
             reader = geoip2.database.Reader(
@@ -404,14 +406,11 @@ def login() -> any:
                 ip_address = request.remote_addr
                 user.login_data.append(LoginData(ip_address=ip_address))
                 user.save()
-
-            response['ip_address'] = ip_address
             reader.close()
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
             response['token'] = auth_token.decode()
-            response['session'] = session_key
             return jsonify(response), 200
 
     response['message'] = 'Email or password combination incorrect.'
@@ -768,29 +767,10 @@ def change_email(user_id) -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])
-@logout_authenticate
-def logout(user_id, token, session_key) -> Tuple[dict, int]:
+@authenticate_flask
+def logout(_) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
     response = {'status': 'success', 'message': 'Successfully logged out.'}
-
-    simcct_host = os.environ.get('SIMCCT_HOST', None)
-    simcct_resp = requests.get(
-        url=f'http://{simcct_host}/session/logout',
-        headers={
-            'Authorization': 'Bearer {token}'.format(token=token),
-            'Session': f'{session_key}',
-            'Content-type': 'application/json'
-        }
-    )
-
-    if simcct_resp.json().get('status', 'fail') == 'fail':
-        # raise SimCCTBadServerLogout(
-        #     f'Unable to logout the user_id: {user_id} from the SimCCT server'
-        # )
-        response['message'
-                 ] = 'Unable to logout the user from the SimCCT server'
-        return jsonify(response), 500
-
     return jsonify(response), 202
 
 

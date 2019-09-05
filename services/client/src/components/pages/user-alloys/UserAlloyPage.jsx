@@ -9,7 +9,7 @@ const UserAlloyPage = ({ history }) => (
   <React.Fragment>
     <AppBar active="userAlloys" redirect={history.push} />
     <div className={styles.main}>
-      <UserAlloys />
+      <UserAlloys history={history} />
     </div>
   </React.Fragment>
 )

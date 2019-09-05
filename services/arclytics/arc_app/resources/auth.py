@@ -51,6 +51,7 @@ class SessionValidationError(Exception):
     A custom exception to be raised by a threaded async call to register if
     the response is not what we are expecting.
     """
+
     def __init__(self, msg: str):
         super(SessionValidationError, self).__init__(msg)
 
@@ -60,6 +61,7 @@ class SimCCTBadServerLogout(Exception):
     A custom exception to be raised by a synchronous call to logout on the
     SimCCT server if the response is not what we are expecting.
     """
+
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
 
@@ -84,21 +86,29 @@ def confirm_email(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        # response['error'] = str(e)
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}//signin?tokenexpired=true', code=302
+        )
     except URLTokenExpired as e:
         return redirect(
-            f'http://{client_host}/signin/tokenexpired?=true', code=302
+            f'http://{client_host}//signin?tokenexpired=true', code=302
         )
     except Exception as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        # response['error'] = str(e)
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}//signin?tokenexpired=true', code=302
+        )
 
     # We ensure there is a user for this email
     user = User.objects.get(email=email)
     # And do the real work confirming their status
     user.verified = True
     user.save()
+
+    logger.debug(client_host)
 
     response['status'] = 'success'
     response.pop('message')

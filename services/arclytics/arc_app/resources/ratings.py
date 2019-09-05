@@ -102,9 +102,9 @@ class UserFeedback(Resource):
         if not category:
             response['message'] = 'No category provided.'
             return response, 400
-        if not rating:
-            response['message'] = 'No rating provided.'
-            return response, 400
+        # if not rating:
+        #     response['message'] = 'No rating provided.'
+        #     return response, 400
         if not comment:
             response['message'] = 'No comment provided.'
             return response, 400

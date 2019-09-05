@@ -3,19 +3,19 @@ version: '3.7'
 
 services:
 
-  arclytics:
+  simcct:
     build:
       context: ./services/arclytics
       dockerfile: Dockerfile-prod
       labels:
         arclytics.io: "production"
-    image: gcr.io/arclytics-sim/arc_sim_flask_service:1.0.0
+    image: gcr.io/arclytics-sim/arc_sim_service:1.1.0
     ports:
       - 8000:8000
     expose:
       - 8000
     environment:
-      - FLASK_APP=arc_app/app.py
+      - FLASK_APP=sim_api/app.py
       - FLASK_ENV=production
       - APP_SETTINGS=configs.flask_conf.ProductionConfig
       - SECRET_KEY=${SECRET_KEY}
@@ -33,8 +33,6 @@ services:
       - MAIL_USE_TLS=${MAIL_USE_TLS}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - SIMCCT_HOST=simcct:8001
-      - CLIENT_HOST=client:80
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
     depends_on:
       - mongodb
@@ -42,19 +40,19 @@ services:
     networks:
       - host
 
-  simcct:
+  arclytics:
     build:
-      context: ./services/simcct
+      context: ./services/arclytics
       dockerfile: Dockerfile-prod
       labels:
         arclytics.io: "production"
-    image: gcr.io/arclytics-sim/arc_sim_service:1.3.0
+    image: gcr.io/arclytics-sim/arclytics_service:1.3.0
     ports:
       - 8001:8001
     expose:
       - 8001
     environment:
-      - FLASK_APP=sim_app/app.py
+      - FLASK_APP=arc_api/app.py
       - FLASK_ENV=production
       - APP_SETTINGS=configs.flask_conf.ProductionConfig
       - SECRET_KEY=${SECRET_KEY}
@@ -67,7 +65,6 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - USERS_HOST=arclytics:8000
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
     depends_on:
       - mongodb
@@ -126,9 +123,9 @@ services:
         arclytics.io: "production"
     image: gcr.io/arclytics-sim/arc_sim_client:1.1.0
     ports:
-      - 80:80
+      - 8080:8080
     expose:
-      - 80
+      - 8080
     environment:
       - NODE_ENV=production
       - API_GATEWAY_URL=${API_GATEWAY_URL}

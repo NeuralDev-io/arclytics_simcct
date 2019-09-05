@@ -3,7 +3,7 @@
 
 BASEDIR=$PWD
 CONFIG="${BASEDIR}/.yapf.cfg"
-ARC_DIR="${BASEDIR}/services/arclytics"
+ARC_DIR="${BASEDIR}/services/simcct"
 EXCLUDE_DIR="${BASEDIR}/services/client"
 echo "Running yapf formatter"
 echo "Current Directory: ${BASEDIR}"

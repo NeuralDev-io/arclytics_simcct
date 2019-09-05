@@ -1,7 +1,7 @@
 {
 	"alloys": [
 		{
-			"name": "Arc Reactor",
+			"name": "330M Alloy1",
 			"compositions": [
 				{
 					"symbol": "C",
@@ -82,7 +82,7 @@
 			]
 		},
 		{
-			"name": "Wakanda Vibranium",
+			"name": "300M Alloy2",
             "compositions": [
 				{
 					"symbol": "C",
@@ -163,7 +163,7 @@
 			]
 		},
 		{
-			"name": "Adamantium",
+			"name": "Bohemen Alloy1",
             "compositions": [
 				{
 					"symbol": "C",
@@ -244,7 +244,7 @@
 			]
         },
         {
-			"name": "Kryptonite",
+			"name": "Bohemen Alloy2",
             "compositions": [
 				{
 					"symbol": "C",
@@ -325,7 +325,7 @@
 			]
         },
         {
-            "name": "Thanos Killing Nanotech",
+            "name": "Alloy that works",
             "compositions": [
                 {"symbol": "C", "weight": 0.044},
                 {"symbol": "Mn", "weight": 1.73},

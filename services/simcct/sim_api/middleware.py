@@ -157,52 +157,6 @@ def authenticate_admin(f):
     return decorated_func
 
 
-def logout_authenticate(f):
-    @wraps(f)
-    def decorated_func(*args, **kwargs):
-        response = {
-            'status': 'fail',
-            'message': 'Provide a valid JWT auth token.'
-        }
-        # get auth token
-        auth_header = request.headers.get('Authorization', None)
-        session_key = request.headers.get('Session', None)
-
-        if not auth_header:
-            return jsonify(response), 400
-
-        if not session_key:
-            response['message'] = 'Provide a valid Session key.'
-            return jsonify(response), 400
-
-        # auth_header = 'Bearer token'
-        auth_token = auth_header.split(' ')[1]
-
-        # Decode either returns bson.ObjectId if successful or a string from an
-        # exception
-        resp = User.decode_auth_token(auth_token=auth_token)
-
-        # Either returns an ObjectId User ID or a string response.
-        if not isinstance(resp, ObjectId):
-            response['message'] = resp
-            return jsonify(response), 401
-
-        # Validate the user is active
-        try:
-            user = User.objects.get(id=resp)
-        except DoesNotExist as e:
-            response['message'] = 'User does not exist.'
-            return response, 404
-
-        if not user.active:
-            response['message'] = 'This user does not exist.'
-            return jsonify(response), 401
-
-        return f(resp, auth_token, session_key, *args, **kwargs)
-
-    return decorated_func
-
-
 def token_required_flask(f):
     @wraps(f)
     def decorated_func(*args, **kwargs):

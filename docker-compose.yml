@@ -13,7 +13,7 @@ services:
     volumes:  # used to mount the code into the container for live updates
       - ./services/simcct:/usr/src/app  # This is a bind mount
     ports:
-      - "8000:8000"
+      - 8000:8000
     expose:
       - 8000
     environment:
@@ -70,8 +70,6 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-    depends_on:
-      - redis
     networks:
       - host
 
@@ -184,10 +182,11 @@ services:
       - 3000
     environment:
       - NODE_ENV=development
-      - REACT_APP_USER_HOST=http://0.0.0.0:8000
-      - REACT_APP_SIMCCT_HOST=http://0.0.0.0:8001
+      - REACT_APP_SIM_HOST=http://localhost
+      - REACT_APP_SIM_PORT=8000
     depends_on:
       - mongodb
+      - simcct
     networks:
       - host
 
@@ -199,7 +198,6 @@ services:
     ports:
       - 80:80
     depends_on:
-      - arclytics
       - simcct
       - client
     networks:

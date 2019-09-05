@@ -374,12 +374,8 @@ def login() -> any:
 
             user.save()
 
-            # try:
-            #     session_key = register_session(user, auth_token.decode())
-            # except SessionValidationError as e:
-            #     response['message'] = 'Session validation error.'
-            #     response['error'] = str(e)
-            #     return jsonify(response), 400
+            # Inject the Simulation Session data
+            logger.debug('Cookie Session: {}'.format(session))
 
             # Get location data
             reader = geoip2.database.Reader(
@@ -407,6 +403,10 @@ def login() -> any:
                 user.login_data.append(LoginData(ip_address=ip_address))
                 user.save()
             reader.close()
+
+            session['ip_address'] = ip_address
+            session['jwt'] = auth_token.decode()
+            session.update()
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'

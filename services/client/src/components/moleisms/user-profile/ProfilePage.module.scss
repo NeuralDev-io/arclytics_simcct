@@ -13,7 +13,7 @@ $bg-img: url('../../../assets/background_img-min.png');
   flex-flow: column;
   justify-content: flex-start;
 
-  
+
   @media screen and (max-width: 1720px) {
     width: 260px;
   }
@@ -22,7 +22,6 @@ $bg-img: url('../../../assets/background_img-min.png');
     margin-top: 0;
   }
 }
-
 
 .main {
   margin-left: calc(4rem);
@@ -62,25 +61,25 @@ $bg-img: url('../../../assets/background_img-min.png');
     flex-basis: 100%;
     flex: 1;
   }
-  
+
   .rightCol{
     display: flex;
     flex-direction: column;
     flex-basis: 100%;
     flex: 3;
   }
-} 
+}
 
 .about{
   .questions {
     display: flex;
     flex-flow: column;
     justify-content: space-between;
-    
+
     .question{
       margin-bottom: 1.5rem;
       width: 35rem;
-  
+
       .questionText{
         margin-bottom:1.25rem;
       }
@@ -127,7 +126,7 @@ $bg-img: url('../../../assets/background_img-min.png');
       flex-basis: 100%;
       flex: 1;
     }
-    
+
     .rCol{
       display: flex;
       flex-direction: column;

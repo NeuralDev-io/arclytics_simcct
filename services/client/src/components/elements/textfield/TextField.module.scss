@@ -2,11 +2,7 @@
   display: flex;
   flex-flow: column nowrap;
   //height: 60px;
-
-  & > span {
-    color: var(--r500);
-    margin-top: .25rem;
-  }
+  position:relative;
 }
 
 .input {
@@ -62,9 +58,13 @@
 }
 
 .errorIcon{
-  color:red;
-  position:fixed;
-  margin: 0.35rem 0 0 0.35rem;
+  color:var(--r400);
+  position:absolute;
+  width: 1rem;
+  height: 1rem;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .error {

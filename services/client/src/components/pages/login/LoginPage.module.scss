@@ -8,6 +8,8 @@ $bg-img: url('../../../assets/login_register_bg.png');
   background: var(--n0) $bg-img no-repeat;
   background-size: 100% 150%;
   background-position: 40vw;
+  position: relative;
+  overflow-y: scroll;
 }
 
 .logoContainer{
@@ -25,6 +27,12 @@ $bg-img: url('../../../assets/login_register_bg.png');
   }
 }
 
+@media only screen and (max-height: 830px) {
+  .logoContainer{
+    margin-bottom: 2.8125rem
+  }
+}
+
 .help{
   float:right;
   cursor:pointer;
@@ -34,8 +42,7 @@ $bg-img: url('../../../assets/login_register_bg.png');
 }
 
 .loginForm{
-  position: fixed;
-  z-index: 1;
+  position: absolute;
   margin-left: 11.25rem;
   width: 23.75rem;
   .createAccount{
@@ -76,21 +83,22 @@ $bg-img: url('../../../assets/login_register_bg.png');
   height: 35vh;
   pointer-events: none;
   opacity: 0;
-  position:fixed;
-  z-index: 2;
   display: flex;
   flex-flow: column;
-  justify-content: space-evenly;
-  .forgotEmail{
-    margin-top: 1rem;
-    margin-bottom: 4rem;
+  justify-content: space-between;
+  span{
+    margin-bottom: 1rem;
   }
-
   .confirmation{
+    margin-top: 1.5rem;
     margin-bottom: 1rem;
     color: var(--g500);
   }
-
+  .errors{
+    color: var(--r400);
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+  }
   .forgotSubmit{
     margin-bottom: 1rem;
   }
@@ -156,7 +164,3 @@ $bg-img: url('../../../assets/login_register_bg.png');
   margin-bottom: 4.375rem;
 }
 
-
-.errors{
-    color: var(--r400);
-}

@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import HardDriveIcon from 'react-feather/dist/icons/hard-drive'
+import {ReactComponent as AnstoLogo} from '../../../assets/ANSTO_Logo_SVG/logo.svg'
 import HelpIcon from 'react-feather/dist/icons/help-circle'
 import MonitorIcon from 'react-feather/dist/icons/monitor'
 import UserIcon from 'react-feather/dist/icons/user'
@@ -19,7 +20,7 @@ const AppBar = (props) => {
   return (
     <nav className={styles.navContainer}>
       <div>
-        <Logo className={styles.logo} />
+        <AnstoLogo className={styles.logo} />
         <a
           id="sim"
           className={`${styles.navIcon} ${active === 'sim' && styles.active}`}
@@ -71,7 +72,9 @@ const AppBar = (props) => {
           {...buttonize(() => logout(redirect))}
         >
           <LogOutIcon className={styles.icon} />
+
         </div>
+        <Logo className={styles.logo} />
       </div>
     </nav>
   )

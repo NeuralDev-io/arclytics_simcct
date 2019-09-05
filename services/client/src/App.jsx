@@ -12,6 +12,8 @@ import ProfileQuestionsPage from './components/pages/profile-questions'
 import ProfilePage from './components/moleisms/user-profile'
 import UserSimulationPage from './components/pages/user-sim'
 import UserAlloyPage from './components/pages/user-alloys'
+import PasswordResetPage from './components/pages/password-reset'
+import SharePage from './components/pages/share'
 
 import './App.scss'
 
@@ -62,6 +64,14 @@ function App() {
               <Route
                 path="/user/profile"
                 render={props => <ProfilePage {...props} />}
+              />
+              <Route
+                path="/password/reset=:token"
+                render={props => <PasswordResetPage {...props} />}
+              />
+              <Route
+                path="/share/simulation/:token"
+                render={props => <SharePage {...props} />}
               />
             </Switch>
           </div>

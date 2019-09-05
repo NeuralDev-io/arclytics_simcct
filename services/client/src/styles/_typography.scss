@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans|Quicksand');
+@import url('https://fonts.googleapis.com/css?family=Ubuntu+Mono&display=swap');
 
 /* typefaces */
 $font-primary: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
@@ -7,6 +8,7 @@ $font-primary: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Robo
 $font-secondary: "Quicksand", "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
   "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
   sans-serif;
+$font-mono: "Ubuntu Mono", monospace;
 
 /* set base values */
 $base-text-size: .875rem;
@@ -139,4 +141,11 @@ p {
 
 .text--disabled {
   color: var(--n300);
+}
+
+.text--code {
+  font-family: $font-mono;
+  font-size: $base-text-size;
+  line-height: $base-line-height;
+  letter-spacing: $letter-spacing-h6;
 }

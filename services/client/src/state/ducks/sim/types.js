@@ -9,3 +9,4 @@ export const UPDATE_DILUTION = 'sim/UPDATE_DILUTION'
 export const RUN_SIM = 'sim/RUN_SIM'
 
 export const UPDATE_CCT_INDEX = 'sim/UPDATE_CCT_INDEX'
+export const LOAD_SIM = 'sim/LOAD_SIM'

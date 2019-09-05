@@ -525,5 +525,5 @@ class UserAlloy(Resource):
         return response, 202
 
 
-api.add_resource(UserAlloysList, '/user/alloys')
-api.add_resource(UserAlloy, '/user/alloys/<alloy_id>')
+api.add_resource(UserAlloysList, '/api/v1/sim/user/alloys')
+api.add_resource(UserAlloy, '/api/v1/sim/user/alloys/<alloy_id>')

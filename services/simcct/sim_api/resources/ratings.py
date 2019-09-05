@@ -227,5 +227,5 @@ class FeedbackList(Resource):
 
 
 api.add_resource(UserRating, '/api/v1/sim/user/rating')
-api.add_resource(UserFeedback, '/user/feedback')
-api.add_resource(FeedbackList, '/admin/feedback/list')
+api.add_resource(UserFeedback, '/api/v1/sim/user/feedback')
+api.add_resource(FeedbackList, '/api/v1/sim/admin/feedback/list')

@@ -28,9 +28,10 @@ from mongoengine import connect
 from mongoengine.connection import (
     disconnect_all, get_connection, get_db, MongoEngineConnectionError
 )
-from sim_api.redis_session import RedisSessionInterface
+from redis import Redis
 
-from sim_api.extensions import cors, bcrypt, api, mail
+from sim_api.redis_session import RedisSessionInterface
+from sim_api.extensions import cors, bcrypt, api, mail, redis_session
 from sim_api.utilities import JSONEncoder
 from sim_api.mongodb import MongoSingleton
 from sim_api.resources.users import users_blueprint
@@ -114,17 +115,33 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
 
     # instantiate the application
     app = Flask(__name__)
-    app.session_interface = RedisSessionInterface()
+    # app.session_interface = RedisSessionInterface()
 
     # Setup the configuration for Flask
     app.config.from_object(configs_path)
+
+    # ========== # CONNECT TO REDIS # ========== #
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        redis = Redis(
+            host=os.environ.get('REDIS_HOST'),
+            port=int(os.environ.get('REDIS_PORT')),
+            password=os.environ.get('REDIS_PASSWORD'),
+            db=1,
+        )
+    else:
+        redis = Redis(
+            host=os.environ.get('REDIS_HOST'),
+            port=int(os.environ.get('REDIS_PORT')),
+            db=1,
+        )
 
     # ========== # CONNECT TO DATABASE # ========== #
     # Mongo Client interface with MongoEngine as Object Document Mapper (ODM)
     app.config.update(
         dict(
             MONGO_HOST=os.environ.get('MONGO_HOST', ''),
-            MONGO_PORT=os.environ.get('MONGO_PORT', 27017)
+            MONGO_PORT=os.environ.get('MONGO_PORT', 27017),
+            SESSION_REDIS=redis
         )
     )
 
@@ -177,5 +194,6 @@ def extensions(app) -> None:
     bcrypt.init_app(app)
     api.init_app(app)
     mail.init_app(app)
+    redis_session.init_app(app)
 
     return None

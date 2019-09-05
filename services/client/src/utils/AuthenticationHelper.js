@@ -13,7 +13,7 @@
  * @github Xaraox
  */
 
-const ARC_URL = `http://${process.env.ARCLYTICS_SERVICE_HOST}:${process.env.ARCLYTICS_SERVICE_PORT}/api/v1/arc`
+const ARC_URL = `http://${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim`
 
 export const login = async (values, resolve, reject) => {
   fetch(`${ARC_URL}/auth/login`, {

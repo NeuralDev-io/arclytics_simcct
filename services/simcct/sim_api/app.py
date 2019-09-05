@@ -30,7 +30,6 @@ from mongoengine.connection import (
 )
 from redis import Redis
 
-from sim_api.redis_session import RedisSessionInterface
 from sim_api.extensions import cors, bcrypt, api, mail, redis_session
 from sim_api.utilities import JSONEncoder
 from sim_api.mongodb import MongoSingleton
@@ -115,10 +114,10 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
 
     # instantiate the application
     app = Flask(__name__)
-    # app.session_interface = RedisSessionInterface()
 
     # Setup the configuration for Flask
     app.config.from_object(configs_path)
+    app.secret_key = os.environ.get('SECRET_KEY')
 
     # ========== # CONNECT TO REDIS # ========== #
     if os.environ.get('FLASK_ENV', 'development') == 'production':

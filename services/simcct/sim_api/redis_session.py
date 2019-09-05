@@ -45,6 +45,8 @@ def utctimestamp_by_second(utc_date_time):
 
 class RedisSession(CallbackDict, SessionMixin):
     def __init__(self, initial=None, sid=None, new=False):
+        self.initial = initial
+
         def on_update(s):
             s.modified = True
 
@@ -52,6 +54,9 @@ class RedisSession(CallbackDict, SessionMixin):
         self.sid = sid
         self.new = new
         self.modified = False
+
+    def __str__(self):
+        return '<RedisSession {}>'.format(self.initial)
 
 
 class RedisSessionInterface(SessionInterface):
@@ -74,20 +79,20 @@ class RedisSessionInterface(SessionInterface):
     def open_session(self, app, request):
         session_key = request.cookies.get(SESSION_COOKIE_NAME)
         if not session_key:
-            return self._new_session()
+            return self._new_session("")
 
         sid, expiry_timestamp = self._extract_sid_and_expiry_ts_from(
             session_key
         )
         if not expiry_timestamp:
-            return self._new_session()
+            return self._new_session("")
 
         redis_value, redis_key_ttl = self._get_redis_value_and_ttl_of(sid)
         if not redis_value:
-            return self._new_session()
+            return self._new_session("")
 
         if self._expiry_timestamp_not_match(expiry_timestamp, redis_key_ttl):
-            return self._new_session()
+            return self._new_session("")
 
         data = json.loads(redis_value.decode())
         return RedisSession(data, sid=sid)
@@ -126,8 +131,11 @@ class RedisSessionInterface(SessionInterface):
         )
 
     @staticmethod
-    def _new_session():
-        return RedisSession(sid=uuid4().hex, new=True)
+    def _new_session(auth_token):
+        init_data = {
+            "jwt_token": auth_token
+        }
+        return RedisSession(initial=init_data, sid=uuid4().hex, new=True)
 
     @staticmethod
     def _get_expiry_duration(app, session):

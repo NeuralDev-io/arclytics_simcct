@@ -26,9 +26,9 @@ from marshmallow import ValidationError
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 
-from arc_api.sim_session import SimSessionService
-from arc_api.schemas import (ConfigurationsSchema, AlloyStoreSchema)
-from arc_api.middleware import token_required_flask, session_key_required_flask
+from sim_api.sim_session import SimSessionService
+from sim_api.schemas import (ConfigurationsSchema, AlloyStoreSchema)
+from sim_api.middleware import token_required_flask, session_key_required_flask
 from simulation.utilities import MissingElementError
 from logger.arc_logger import AppLogger
 

@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# settings.py.py
+# settings.py
 #
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
+__author__ = ['Andrew Che <@codeninja55>']
+
 __credits__ = ['']
 __license__ = 'TBA'
 __version__ = '0.1.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
-__date__ = '2019.08.09'
-"""settings.py.py: 
+__date__ = '2019.06.26'
+"""settings.py: 
 
 {Description}
 """
@@ -24,15 +25,8 @@ import sys
 import json
 from pathlib import Path
 
-from dotenv import load_dotenv
-
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
-
-# Load environment variables
-env_path = os.path.join(BASE_DIR, '.env')
-if os.path.isfile(env_path):
-    load_dotenv(env_path)
 
 APP_CONFIGS = None
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'

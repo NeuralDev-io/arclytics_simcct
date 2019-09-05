@@ -36,7 +36,7 @@ spec:
           image: gcr.io/arclytics-sim/arc_sim_service:1.3.0
           env:
             - name: FLASK_APP
-              value: "sim_app/app.py"
+              value: "sim_api/app.py"
             - name: FLASK_ENV
               value: "production"
             - name: APP_SETTINGS

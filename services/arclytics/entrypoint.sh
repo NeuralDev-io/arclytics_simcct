@@ -16,7 +16,7 @@ TIME_STAMP="Started on $RIGHT_NOW by $USER"
 
 # defaults
 HOST=0.0.0.0
-PORT=8000
+PORT=8001
 
 echo "$TITLE"
 echo "$TIME_STAMP"
@@ -33,4 +33,4 @@ printenv
 echo ""
 
 #rq worker default low --url "redis://${REDIS_HOST}:${REDIS_PORT}/14" &
-python manage.py run -h ${HOST} -p ${PORT}
+#python manage.py run -h ${HOST} -p ${PORT}

@@ -19,7 +19,7 @@ from flask import current_app
 from flask_testing import TestCase
 
 import settings
-from arc_api.app import create_app
+from sim_api.app import create_app
 
 
 class TestDevelopmentConfig(TestCase):

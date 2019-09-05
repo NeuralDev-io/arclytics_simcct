@@ -501,4 +501,4 @@ class AlloyStore(Resource):
         return response, 200, headers
 
 
-api.add_resource(AlloyStore, '/alloys/update')
+api.add_resource(AlloyStore, '/api/v1/sim/alloys/update')

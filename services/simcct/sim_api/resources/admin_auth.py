@@ -547,5 +547,5 @@ def confirm_disable_account(token):
     return custom_redir_response
 
 
-api.add_resource(AdminCreate, '/admin/create')
-api.add_resource(DisableAccount, '/disable/user')
+api.add_resource(AdminCreate, '/api/v1/sim/admin/create')
+api.add_resource(DisableAccount, '/api/v1/sim/disable/user')

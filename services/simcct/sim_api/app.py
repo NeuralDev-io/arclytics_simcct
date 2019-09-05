@@ -28,6 +28,7 @@ from mongoengine import connect
 from mongoengine.connection import (
     disconnect_all, get_connection, get_db, MongoEngineConnectionError
 )
+from sim_api.redis_session import RedisSessionInterface
 
 from sim_api.extensions import cors, bcrypt, api, mail
 from sim_api.utilities import JSONEncoder
@@ -113,6 +114,7 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
 
     # instantiate the application
     app = Flask(__name__)
+    app.session_interface = RedisSessionInterface()
 
     # Setup the configuration for Flask
     app.config.from_object(configs_path)

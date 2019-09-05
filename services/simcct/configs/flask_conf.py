@@ -27,14 +27,22 @@ from sim_api.utilities import JSONEncoder
 class BaseConfig:
     """Base configuration"""
     TESTING = False
-    BCRYPT_LOG_ROUNDS = 13
     SECRET_KEY = os.environ.get('SECRET_KEY', None)
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', None)
+
+    # Bcrypt and Token encoding
+    BCRYPT_LOG_ROUNDS = 13
     RESTFUL_JSON = {'cls': JSONEncoder}
     TOKEN_EXPIRATION_DAYS = 30
     TOKEN_EXPIRATION_SECONDS = 0
 
-    PERMANENT_SESSION_LIFETIME = True
+    # Session variables for Flask
+    SESSION_COOKIE_NAME = 'session'
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    PERMANENT_SESSION_LIFETIME = 1200
+    SESSION_TYPE = 'redis'
+    SESSION_USE_SIGNER = True
 
     # Flask Email
     MAIL_SUBJECT_PREFIX = '[Arclytics]'

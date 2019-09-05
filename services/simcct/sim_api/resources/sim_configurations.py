@@ -666,8 +666,8 @@ class Austenite(Resource):
         return {'status': 'success'}, 202
 
 
-api.add_resource(Configurations, '/configs/update')
-api.add_resource(ConfigsMethod, '/configs/method/update')
-api.add_resource(MartensiteStart, '/configs/ms')
-api.add_resource(BainiteStart, '/configs/bs')
-api.add_resource(Austenite, '/configs/ae')
+api.add_resource(Configurations, '/api/v1/sim/configs/update')
+api.add_resource(ConfigsMethod, '/api/v1/sim/configs/method/update')
+api.add_resource(MartensiteStart, '/api/v1/sim/configs/ms')
+api.add_resource(BainiteStart, '/api/v1/sim/configs/bs')
+api.add_resource(Austenite, '/api/v1/sim/configs/ae')

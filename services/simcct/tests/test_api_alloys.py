@@ -31,8 +31,8 @@ from pymongo import MongoClient
 
 import settings
 from tests.test_api_base import BaseTestCase
-from arc_api.mongo import MongoAlloys
-from arc_api.schemas import AlloySchema, ConfigurationsSchema, AlloyStoreSchema
+from sim_api.mongo import MongoAlloys
+from sim_api.schemas import AlloySchema, ConfigurationsSchema, AlloyStoreSchema
 
 _TEST_CONFIGS_PATH = Path(
     settings.BASE_DIR

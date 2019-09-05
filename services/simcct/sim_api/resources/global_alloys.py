@@ -353,5 +353,5 @@ class Alloys(Resource):
         return response, 202
 
 
-api.add_resource(Alloys, '/global/alloys/<alloy_id>')
-api.add_resource(AlloysList, '/global/alloys')
+api.add_resource(Alloys, '/api/v1/sim/global/alloys/<alloy_id>')
+api.add_resource(AlloysList, '/api/v1/sim/global/alloys')

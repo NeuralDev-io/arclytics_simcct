@@ -23,16 +23,16 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from marshmallow import ValidationError
 
-from arc_api.extensions import api
-from arc_api.schemas import (
+from sim_api.extensions import api
+from sim_api.schemas import (
     AlloySchema, AlloyStoreSchema, ConfigurationsSchema
 )
-from arc_api.middleware import token_and_session_required
-from arc_api.sim_session import SimSessionService
+from sim_api.middleware import token_and_session_required
+from sim_api.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, MissingElementError
 from logger.arc_logger import AppLogger
-from arc_api.sim_session import SaveSessionError
+from sim_api.sim_session import SaveSessionError
 
 logger = AppLogger(__name__)
 

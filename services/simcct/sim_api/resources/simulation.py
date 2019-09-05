@@ -25,13 +25,13 @@ from threading import Thread
 from flask import Blueprint
 from flask_restful import Resource
 
-from arc_api.extensions import api
-from arc_api.middleware import token_and_session_required
-from arc_api.sim_session import SimSessionService, SaveSessionError
+from sim_api.extensions import api
+from sim_api.middleware import token_and_session_required
+from sim_api.sim_session import SimSessionService, SaveSessionError
 from simulation.simconfiguration import SimConfiguration
 from simulation.phasesimulation import PhaseSimulation
 from simulation.utilities import ConfigurationError, SimulationError
-from arc_api.schemas import ConfigurationsSchema, AlloyStoreSchema
+from sim_api.schemas import ConfigurationsSchema, AlloyStoreSchema
 from logger.arc_logger import AppLogger
 from simulation.timer import time_func
 

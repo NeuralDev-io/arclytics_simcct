@@ -35,8 +35,8 @@ from itsdangerous import (
     SignatureExpired
 )
 
-from arc_api.schemas import ConfigurationsSchema
-from arc_api.utilities import JSONEncoder
+from sim_api.schemas import ConfigurationsSchema
+from sim_api.utilities import JSONEncoder
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)

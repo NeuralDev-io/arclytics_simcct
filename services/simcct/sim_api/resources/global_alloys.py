@@ -24,10 +24,10 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from marshmallow import ValidationError
 
-from arc_api.extensions import api
-from arc_api.schemas import AlloySchema
-from arc_api.alloys_service import AlloysService
-from arc_api.middleware import admin_session_and_token_required
+from sim_api.extensions import api
+from sim_api.schemas import AlloySchema
+from sim_api.alloys_service import AlloysService
+from sim_api.middleware import admin_session_and_token_required
 from simulation.utilities import MissingElementError
 from logger.arc_logger import AppLogger
 

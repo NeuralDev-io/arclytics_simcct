@@ -128,7 +128,8 @@ services:
       - 80
     environment:
       - NODE_ENV=production
-      - API_GATEWAY_URL=${API_GATEWAY_URL}
+      - REACT_APP_SIM_HOST=http://localhost
+      - REACT_APP_SIM_PORT=8000
     depends_on:
       - arclytics
       - mongodb
@@ -143,7 +144,6 @@ services:
     ports:
       - 80:80
     depends_on:
-      - arclytics
       - simcct
       - client
     networks:

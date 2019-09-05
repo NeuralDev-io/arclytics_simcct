@@ -21,10 +21,10 @@ from flask import session, current_app
 
 import settings
 from tests.test_api_base import BaseTestCase
-from arc_api.schemas import (
+from sim_api.schemas import (
     AlloyStoreRequestSchema, ConfigurationsSchema, AlloyStoreSchema
 )
-from arc_api.sim_session import SimSessionService
+from sim_api.sim_session import SimSessionService
 from simulation.periodic import PeriodicTable as pT
 
 _TEST_CONFIGS_PATH = Path(

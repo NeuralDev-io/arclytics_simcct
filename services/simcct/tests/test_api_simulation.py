@@ -30,9 +30,9 @@ from flask import json
 from pymongo import MongoClient
 
 from tests.test_api_base import BaseTestCase
-from arc_api.utilities import get_mongo_uri
-from arc_api.sim_session import SimSessionService
-from arc_api.schemas import AlloySchema, ConfigurationsSchema, AlloyStoreSchema
+from sim_api.utilities import get_mongo_uri
+from sim_api.sim_session import SimSessionService
+from sim_api.schemas import AlloySchema, ConfigurationsSchema, AlloyStoreSchema
 from settings import BASE_DIR
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'

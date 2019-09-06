@@ -183,7 +183,7 @@ services:
     environment:
       - NODE_ENV=development
       - REACT_APP_SIM_HOST=localhost
-      - REACT_APP_SIM_PORT=80
+      - REACT_APP_SIM_PORT=8000
     depends_on:
       - mongodb
       - simcct

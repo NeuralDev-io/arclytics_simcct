@@ -25,6 +25,8 @@ import os
 from datetime import datetime
 from typing import Tuple
 
+import geoip2
+from flask_cors import cross_origin
 from email_validator import EmailNotValidError, validate_email
 from flask import (
     Blueprint, jsonify, redirect, render_template, request, session
@@ -47,13 +49,6 @@ from sim_api.sim_session import SimSessionService
 logger = AppLogger(__name__)
 
 auth_blueprint = Blueprint('auth', __name__)
-
-
-RESPONSE_HEADER = {
-    'Content-type': 'application/json',
-    'Access-Control-Allow-Credentials': 'true',
-    'Access-Control-Allow-Origin': '*'
-}
 
 
 class SessionValidationError(Exception):
@@ -364,7 +359,7 @@ def login() -> any:
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
-            return jsonify(response), 200, RESPONSE_HEADER
+            return jsonify(response), 200
 
     response['message'] = 'Email or password combination incorrect.'
     return jsonify(response), 404
@@ -735,7 +730,7 @@ def logout(_) -> Tuple[dict, int]:
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
 @authenticate_user_and_cookie
-def get_user_status(user) -> Tuple[dict, int, dict]:
+def get_user_status(user) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     is_profile = True
     if not user.profile:
@@ -752,4 +747,4 @@ def get_user_status(user) -> Tuple[dict, int, dict]:
         "simulationValid": sim_session['configurations']['is_valid'],
         "admin": user.is_admin,
     }
-    return jsonify(response), 200, RESPONSE_HEADER
+    return jsonify(response), 200

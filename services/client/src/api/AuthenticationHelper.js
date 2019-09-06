@@ -13,7 +13,7 @@
  * @github Xaraox
  */
 
-const ARC_URL = `http://${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim`
+const ARC_URL = `${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim`
 
 export const login = async (values, resolve, reject) => {
   fetch(`${ARC_URL}/auth/login`, {
@@ -92,9 +92,8 @@ export const checkAuthStatus = () => new Promise((resolve, reject) => {
     .then(res => res.json())
     .then((res) => {
       if (res.status === 'success') {
-        resolve(res.message)
+        resolve(true)
       } else {
-      // return an error message as string
         reject(res.message)
       }
     })

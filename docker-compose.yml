@@ -156,6 +156,8 @@ services:
         arclytics.io: "development"
     image: neuraldev/arc_sim_mongo:1.1
     restart: always
+    volumes:
+      - ./services/db/test_data:/data/test
     ports:
       - 27017:27017
     expose:

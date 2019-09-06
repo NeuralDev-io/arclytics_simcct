@@ -38,7 +38,7 @@ import geoip2.database
 
 from logger.arc_logger import AppLogger
 from sim_api.extensions import bcrypt
-from sim_api.middleware import authenticate_flask, authenticate_user_and_cookie
+from sim_api.middleware import authenticate_flask, authenticate_user_and_cookie_flask
 from sim_api.models import User, LoginData
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
@@ -715,7 +715,7 @@ def change_email(user_id) -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])
-@authenticate_user_and_cookie
+@authenticate_user_and_cookie_flask
 def logout(_) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
 
@@ -729,7 +729,7 @@ def logout(_) -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
-@authenticate_user_and_cookie
+@authenticate_user_and_cookie_flask
 def get_user_status(user) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     is_profile = True

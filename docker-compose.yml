@@ -115,10 +115,8 @@ services:
     domainname: io.arclytics.app
     hostname: jupyter
     volumes:
-#      - ./services/jupyter:/home/arclytics/
-#      - jupyter_notebooks_dir:/home/arclytics/
       - type: bind
-        source: ./services/jupyter
+        source: ./services/jupyter/notebooks
         target: /home/arclytics/
     ports:
       - 8888:8888
@@ -324,13 +322,5 @@ networks:
 #    driver: local
 #    driver_opts:
 #      device: "./services/users"
-#      type: none
-#      o: bind
-#  jupyter_notebooks_dir:
-#    labels:
-#      arclytics.io: "development"
-#    driver: local
-#    driver_opts:
-#      device: "./services/jupyter"
 #      type: none
 #      o: bind

@@ -14,7 +14,7 @@
  */
 
 export const initComp = (option, type, alloy) => new Promise((resolve, reject) => {
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/alloys/update`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ export const initComp = (option, type, alloy) => new Promise((resolve, reject) =
 })
 
 export const updateComp = (option, type, alloy) => new Promise((resolve, reject) => {
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/alloys/update`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export const updateComp = (option, type, alloy) => new Promise((resolve, reject)
 })
 
 export const updateConfigMethod = (value) => {
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/method/update`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/method/update`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ export const updateConfigMethod = (value) => {
 }
 
 export const updateConfig = (reqBody) => {
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/update`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ export const updateConfig = (reqBody) => {
 }
 
 export const updateMsBsAe = (name, reqBody) => {
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/${name}`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -109,7 +109,7 @@ export const updateMsBsAe = (name, reqBody) => {
 }
 
 export const getMsBsAe = name => new Promise((resolve, reject) => {
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/${name}`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

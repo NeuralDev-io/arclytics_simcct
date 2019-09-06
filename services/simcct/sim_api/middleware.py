@@ -41,6 +41,7 @@ def async_func(f):
     return wrapper
 
 
+# ========================== # FLASK VERSIONS # ============================= #
 def authenticate_user_and_cookie_flask(f):
     """A wrapper decorator as a middleware to authenticate if the user has a
     cookie in their request. This will check the cookie and session is available

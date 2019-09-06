@@ -381,7 +381,7 @@ class UserAlloy(Resource):
 
         response.pop('message')
         response['status'] = 'success'
-        return response, 204
+        return response, 202
 
 
 api.add_resource(UserAlloysList, '/api/v1/sim/user/alloys')

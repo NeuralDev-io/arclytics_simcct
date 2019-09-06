@@ -39,7 +39,6 @@ app = create_app()
 class BaseTestCase(TestCase):
     def create_app(self):
         app.config.from_object('configs.flask_conf.TestingConfig')
-        # os.environ['APP_SETTINGS'] = 'configs.flask_conf.TestingConfig'
         self.db = init_db(app)
         set_flask_mongo(self.db)
         # app = create_app()

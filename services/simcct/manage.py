@@ -73,16 +73,6 @@ def run_worker():
         worker.work()
 
 
-@cli.command()
-def test():
-    """Runs the tests without code coverage."""
-    tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
-    result = unittest.TextTestRunner(verbosity=3).run(tests)
-    if result.wasSuccessful():
-        return 0
-    sys.exit(result)
-
-
 @cli.command('flush')
 def flush():
     """Drop all collections in the database."""
@@ -233,6 +223,17 @@ def seed_alloy_db():
             tbl.add_row((el['symbol'], el['weight']))
         print(tbl)
         tbl.clear_rows()
+
+
+@cli.command()
+def test():
+    """Runs the tests without code coverage."""
+    tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
+    result = unittest.TextTestRunner(verbosity=3).run(tests)
+    if result.wasSuccessful():
+        return 0
+    sys.exit(result)
+
 
 @cli.command('test_coverage')
 def cov():

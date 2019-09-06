@@ -38,7 +38,7 @@ def log_test_user_in(self, user: User, password: str) -> str:
     """Log in a test user and return their token"""
     with self.client:
         resp_login = self.client.post(
-            '/auth/login',
+            '/api/v1/sim/auth/login',
             data=json.dumps({
                 'email': user.email,
                 'password': password
@@ -76,7 +76,7 @@ class TestUserService(BaseTestCase):
 
         with self.client:
             resp = self.client.get(
-                '/user',
+                '/api/v1/sim/user',
                 content_type='application/json',
                 headers={'Authorization': 'Bearer {}'.format(token)}
             )
@@ -108,7 +108,7 @@ class TestUserService(BaseTestCase):
             tony.save()
 
             resp = self.client.get(
-                '/user',
+                '/api/v1/sim/user',
                 content_type='application/json',
                 headers={'Authorization': 'Bearer {}'.format(token)}
             )
@@ -133,7 +133,7 @@ class TestUserService(BaseTestCase):
         """Ensure error is thrown if the id does not exist."""
         with self.client:
             _id = ObjectId()
-            response = self.client.get('/user')
+            response = self.client.get('/api/v1/sim/user')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 401)
             self.assertIn('Provide a valid JWT auth token.', data['message'])
@@ -152,7 +152,7 @@ class TestUserService(BaseTestCase):
         current_app.config['TOKEN_EXPIRATION_SECONDS'] = -1
         with self.client:
             resp_login = self.client.post(
-                '/auth/login',
+                '/api/v1/sim/auth/login',
                 data=json.dumps(
                     {
                         'email': 'tony@starkindustries.com',
@@ -179,7 +179,7 @@ class TestUserService(BaseTestCase):
     def test_get_all_users_no_header(self):
         with self.client:
             resp = self.client.get(
-                '/users', content_type='application/json', headers={}
+                '/api/v1/sim/users', content_type='application/json', headers={}
             )
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 401)
@@ -199,9 +199,11 @@ class TestUserService(BaseTestCase):
         tony.set_password('IAmTheRealIronMan')
         tony.save()
         nat = User(
-            email='nat@shield.gov.us',
-            first_name='Natasha',
-            last_name='Romanoff'
+            **{
+                'email': 'nat@shield.gov.us',
+                'first_name': 'Natasha',
+                'last_name': 'Romanoff'
+            }
         )
         nat.set_password('IveGotRedInMyLedger')
         nat.save()
@@ -210,7 +212,7 @@ class TestUserService(BaseTestCase):
 
         with self.client:
             resp = self.client.get(
-                '/users',
+                '/api/v1/sim/users',
                 content_type='application/json',
                 headers={'Authorization': 'Bearer {}'.format(token)}
             )
@@ -222,7 +224,11 @@ class TestUserService(BaseTestCase):
 
     def test_get_all_users_expired_token(self):
         thor = User(
-            email='thor@avengers.io', first_name='Thor', last_name='Odinson'
+            **{
+                'email': 'thor@avengers.io',
+                'first_name': 'Thor',
+                'last_name':'Odinson'
+            }
         )
         thor.set_password('StrongestAvenger')
         # thor.is_admin = True
@@ -235,7 +241,7 @@ class TestUserService(BaseTestCase):
         thor.save()
         with self.client:
             resp_login = self.client.post(
-                '/auth/login',
+                '/api/v1/sim/auth/login',
                 data=json.dumps(
                     {
                         'email': 'thor@avengers.io',
@@ -280,14 +286,20 @@ class TestUserService(BaseTestCase):
         tony.verified = True
         tony.save()
         steve = User(
-            email='steve@avengers.io', first_name='Steve', last_name='Rogers'
+            **{
+                'email': 'steve@avengers.io',
+                'first_name': 'Steve',
+                'last_name': 'Rogers'
+            }
         )
         steve.set_password('ICanDoThisAllDay')
         steve.save()
         nat = User(
-            email='nat@shield.gov.us',
-            first_name='Natasha',
-            last_name='Romanoff'
+            **{
+                'email': 'nat@shield.gov.us',
+                'first_name': 'Natasha',
+                'last_name': 'Romanoff'
+            }
         )
         nat.set_password('IveGotRedInMyLedger')
         nat.verified = True
@@ -815,9 +827,11 @@ class TestUserService(BaseTestCase):
     def test_post_user_profile_no_data(self):
         """Test empty post is unsuccessful"""
         lando = User(
-            email='lando@calrissian.io',
-            first_name='Lando',
-            last_name='Calrissian'
+            **{
+                'email': 'lando@calrissian.io',
+                'first_name': 'Lando',
+                'last_name': 'Calrissian'
+            }
         )
         lando.set_password('TheShieldIsStillUp')
         lando.save()

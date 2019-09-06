@@ -28,7 +28,7 @@ from sim_api.extensions import api
 from sim_api.schemas import AlloySchema
 from sim_api.alloys_service import AlloysService
 from sim_api.middleware import (
-    admin_session_and_token_required, authenticate_user_and_cookie
+    authorize_admin_cookie_and_session, authenticate_user_and_cookie
 )
 from simulation.utilities import MissingElementError
 from logger.arc_logger import AppLogger
@@ -44,12 +44,12 @@ class AlloysList(Resource):
     """
 
     method_decorators = {
-        'post': [admin_session_and_token_required],
+        'post': [authorize_admin_cookie_and_session],
         'get': [authenticate_user_and_cookie]
     }
 
     # noinspection PyMethodMayBeStatic
-    def post(self, token, session_key):
+    def post(self, _):
         """Exposes the POST method for `/alloys` to allow creating an alloy.
         The request must also include a request body of data that will need to
         comply to the schema.
@@ -137,8 +137,8 @@ class Alloys(Resource):
 
     method_decorators = {
         'get': [authenticate_user_and_cookie],
-        'put': [admin_session_and_token_required],
-        'delete': [admin_session_and_token_required]
+        'put': [authorize_admin_cookie_and_session],
+        'delete': [authorize_admin_cookie_and_session]
     }
 
     # noinspection PyMethodMayBeStatic
@@ -173,7 +173,7 @@ class Alloys(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def put(self, token, session_key, alloy_id):
+    def put(self, _, alloy_id):
         put_data = request.get_json()
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}
@@ -232,12 +232,13 @@ class Alloys(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, alloy_id):
+    def patch(self, _, _):
         """Exposes the PATCH method for `/alloys` to update an existing alloy by
         an admin to update the existing data.
 
         Args:
-            alloy_id: A valid ObjectId string that will be checked.
+            _: A valid User object that is not used.
+            _: A valid ObjectId string that will be checked  that is not used.
 
         Returns:
             A Response object consisting of a dict and status code as an int.
@@ -334,13 +335,12 @@ class Alloys(Resource):
         # return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def delete(self, token, session_key, alloy_id):
+    def delete(self, _, alloy_id):
         """Exposes the DELETE method on `/alloys/{id}` to delete an existing
         alloy in the database.
 
         Args:
-            token:
-            session_key:
+            _: A valid User object that is not used.
             alloy_id: A valid ObjectId string that will be checked.
 
         Returns:

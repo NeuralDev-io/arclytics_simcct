@@ -42,6 +42,16 @@ def async_func(f):
 
 
 def authenticate_user_and_cookie(f):
+    """A wrapper decorator as a middleware to authenticate if the user has a
+    cookie in their request. This will check the cookie and session is available
+    for the user before it allows any actions on the back-end.
+
+    Args:
+        f: the endpoint View method to run that is being wrapped.
+
+    Returns:
+        the `sim_api.models.User` object if found.
+    """
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {
@@ -89,7 +99,19 @@ def authenticate_user_and_cookie(f):
     return decorated_func
 
 
-def admin_session_and_token_required(f):
+def authorize_admin_cookie_and_session(f):
+    """A wrapper decorator as a middleware to authenticate if the user has a
+    cookie in their request. This will check the cookie and session is
+    available for the user before it allows any actions on the back-end.
+    Additionally, it also checks if the user is an admin and allows to perform
+    actions on admin authorized endpoints.
+
+    Args:
+        f: the endpoint View method to run that is being wrapped.
+
+    Returns:
+        the `sim_api.models.User` object if found.
+    """
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {
@@ -100,6 +122,10 @@ def admin_session_and_token_required(f):
         session_key = request.cookies.get(SESSION_COOKIE_NAME)
 
         if not session_key:
+            return jsonify(response), 401
+
+        if not session:
+            response['message'] = 'Session is invalid.'
             return jsonify(response), 401
 
         # Extract the JWT from the session which we stored at login

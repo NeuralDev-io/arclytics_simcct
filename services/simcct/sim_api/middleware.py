@@ -22,11 +22,16 @@ __date__ = '2019.07.06'
 from functools import wraps
 from threading import Thread
 from bson import ObjectId
-from flask import request, jsonify
+from flask import request, jsonify, session
+from flask import current_app as app
 from mongoengine import DoesNotExist
 
+from sim_api.extensions.Session.redis_session import SESSION_COOKIE_NAME
 from sim_api.models import User
 from sim_api.sim_session import SimSessionService
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
 
 
 def async_func(f):
@@ -37,6 +42,50 @@ def async_func(f):
 
     return wrapper
 
+
+def authenticate_user_and_cookie(f):
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        response = {
+            'status': 'fail',
+            'message': 'Session token is not valid.'
+        }
+        # get auth token
+        session_key = request.cookies.get(SESSION_COOKIE_NAME)
+
+        if not session_key:
+            return jsonify(response), 401
+
+        auth_token = session['jwt']
+
+        # Decode either returns bson.ObjectId if successful or a string from an
+        # exception
+        resp = User.decode_auth_token(auth_token=auth_token)
+
+        # Either returns an ObjectId User ID or a string response.
+        if not isinstance(resp, ObjectId):
+            response['message'] = resp
+            return jsonify(response), 401
+
+        # Validate the user is active
+        try:
+            user = User.objects.get(id=resp)
+        except DoesNotExist as e:
+            response['message'] = 'User does not exist.'
+            return jsonify(response), 404
+
+        if not user.active:
+            response['message'] = 'This user account has been disabled.'
+            return jsonify(response), 401
+
+        return f(user, *args, **kwargs)
+
+    return decorated_func
+
+
+# =========================================================================== #
+# ========================= # OLD MIDDLEWARE # ============================== #
+# =========================================================================== #
 
 def authenticate(f):
     @wraps(f)

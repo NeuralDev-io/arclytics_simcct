@@ -41,6 +41,7 @@ from logger.arc_logger import AppLogger
 logger = AppLogger(__name__)
 
 SESSION_EXPIRY_MINUTES = 120
+SESSION_COOKIE_NAME = 'SESSION_TOKEN'
 
 
 def utctimestamp_by_second(utc_date_time):
@@ -70,9 +71,6 @@ class RedisSessionInterface(SessionInterface):
             self.secret_key = app.config.get('SECRET_KEY', None)
             self.salt = app.config.get('SECURITY_PASSWORD_SALT', None)
             self.use_signer = use_signer
-            self.SESSION_COOKIE_NAME = app.config.get(
-                'SESSION_COOKIE_NAME', 'session'
-            )
 
     def open_session(self, app, request) -> Union[None, RedisSession]:
         """This method is called at the beginning of every request in the
@@ -86,7 +84,7 @@ class RedisSessionInterface(SessionInterface):
             A RedisSession instance whether new with a generated `sid`  or one
             with the data from the Redis data store.
         """
-        session_key = request.cookies.get(self.SESSION_COOKIE_NAME)
+        session_key = request.cookies.get(SESSION_COOKIE_NAME)
         ip_address: str = request.remote_addr
 
         # We always generate a new RedisSession is the request does not have
@@ -178,7 +176,7 @@ class RedisSessionInterface(SessionInterface):
         #     httponly=True, domain=self.get_cookie_domain(app), secure=True,
         # )
         response.set_cookie(
-            self.SESSION_COOKIE_NAME, session_key, expires=expiry_date,
+            SESSION_COOKIE_NAME, session_key, expires=expiry_date,
             httponly=True, domain=self.get_cookie_domain(app)
         )
 
@@ -311,5 +309,5 @@ class RedisSessionInterface(SessionInterface):
             self._redis_key(session.sid)
         )
         response.delete_cookie(
-            self.SESSION_COOKIE_NAME, domain=self.get_cookie_domain(app)
+            SESSION_COOKIE_NAME, domain=self.get_cookie_domain(app)
         )

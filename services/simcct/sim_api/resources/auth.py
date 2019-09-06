@@ -20,6 +20,7 @@ This script describes the Users authentication endpoints for registration,
 login, and logout.
 """
 
+import json
 import os
 from datetime import datetime
 from typing import Tuple
@@ -50,7 +51,7 @@ auth_blueprint = Blueprint('auth', __name__)
 
 RESPONSE_HEADER = {
     'Content-type': 'application/json',
-    'Access-Control-Allow-Credentials': True
+    'Access-Control-Allow-Credentials': 'true'
 }
 
 
@@ -274,56 +275,6 @@ def register_user() -> Tuple[dict, int]:
         return jsonify(response), 400
 
 
-def register_new_sim_session(user: User) -> True:
-    if user.last_configuration is not None:
-        configs = user.last_configuration.to_dict()
-    else:
-        # These are based of defaults in the front-end as agreed to by Andrew
-        # and Dalton.
-        configs = {
-            'is_valid': False,
-            'method': 'Li98',
-            'grain_size': 8.0,
-            'nucleation_start': 1.0,
-            'nucleation_finish': 99.90,
-            'auto_calculate_ms': True,
-            'ms_temp': 0.0,
-            'ms_rate_param': 0.0,
-            'auto_calculate_bs': True,
-            'bs_temp': 0.0,
-            'auto_calculate_ae': True,
-            'ae1_temp': 0.0,
-            'ae3_temp': 0.0,
-            'start_temp': 900,
-            'cct_cooling_rate': 10
-        }
-
-    if user.last_alloy_store is not None:
-        alloy_store = user.last_alloy_store.to_dict()
-    else:
-        alloy_store = {
-            'alloy_option': 'single',
-            'alloys': {
-                'parent': None,
-                'weld': None,
-                'mix': None
-            }
-        }
-    # if user.last_results is not None:
-    #     last_results = user.last_results
-
-    # This dict defines what we store in Redis for the session
-    session_data_store = {
-        'configurations': configs,
-        'alloy_store': alloy_store,
-        # TODO(davidmatthews1004@gmail.com) Update this to get from last in
-        #  user doc
-        'results': None
-    }
-
-    SimSessionService().new_session(session_data_store)
-
-
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
 def login() -> any:
     """
@@ -404,14 +355,11 @@ def login() -> any:
             reader.close()
 
             session['jwt'] = auth_token.decode()
-            session['user_id'] = str(user.id)
             session['ip_address'] = ip_address
+            session['signed_in'] = True
 
             # Inject the Simulation Session data
-            register_new_sim_session(user=user)
-            logger.info('Cookie ID: {}'.format(session.sid))
-            logger.pprint('Cookie Session: {}'.format(session))
-            logger.pprint('Cookie items(): {}'.format(session.items()))
+            SimSessionService().new_session(user=user)
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
@@ -780,16 +728,21 @@ def logout(_) -> Tuple[dict, int]:
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
 @authenticate_user_and_cookie
-def get_user_status(user) -> Tuple[dict, int]:
+def get_user_status(user) -> Tuple[dict, int, dict]:
     """Get the current session status of the user."""
     is_profile = True
     if not user.profile:
         is_profile = False
+
+    sim_session = json.loads(session['simulation'])
+
     response = {
-        "verified": bool,
-        "active": bool,
-        "signedIn": bool,
-        "simulationValid": bool,
-        "admin": False,
+        "status": False,
+        "isProfile": is_profile,
+        "verified": user.verified,
+        "active": user.active,
+        "signedIn": session['signed_in'],
+        "simulationValid": sim_session['configurations']['is_valid'],
+        "admin": user.is_admin,
     }
-    return jsonify(response), 200
+    return jsonify(response), 200, RESPONSE_HEADER

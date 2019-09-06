@@ -19,6 +19,7 @@ export const login = async (values, resolve, reject) => {
   fetch(`${ARC_URL}/auth/login`, {
     method: 'POST',
     mode: 'cors',
+    credentials: 'include',
     headers: {
       'content-Type': 'application/json',
     },
@@ -67,25 +68,15 @@ export const signup = async (values, resolve, reject) => {
 export const logout = (callback) => {
   fetch(`${ARC_URL}/auth/logout`, {
     method: 'GET',
+    mode: 'cors',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())
     .then(() => {
-      /*
-      * TODO(andrew@neuraldev.io): Until you fix the backend logout if there is
-      *  no persistent storage across Redis sessions, just let this one through.
-      * */
-      // if (data.status === 'fail') throw new Error(data.message)
-      // if (data.status === 'success') {
-      localStorage.removeItem('token')
-      localStorage.removeItem('session')
-      localStorage.removeItem('persist:userStatus')
       callback('/signin')
-      // }
     })
     .catch(err => console.log(err))
 }

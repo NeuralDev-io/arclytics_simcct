@@ -27,7 +27,6 @@ import {
 } from './types'
 
 // Change the ports for which server
-const getPort = type => (type === 'global' ? 8001 : 8000)
 
 const getAlloys = type => (dispatch) => {
   /**
@@ -43,7 +42,7 @@ const getAlloys = type => (dispatch) => {
    *   "data": [{"_id": ..., "name": ..., "compositions": [...]}, {...}]
    * }
    */
-  fetch(`http://localhost:${getPort(type)}/${type}/alloys`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -79,7 +78,7 @@ const createAlloy = (type, alloy) => (dispatch) => {
    *   "data": {"_id": ..., "name": ..., "compositions": [...]}
    * }
    */
-  fetch(`http://localhost:${getPort(type)}/${type}/alloys`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -105,7 +104,7 @@ const createAlloy = (type, alloy) => (dispatch) => {
 }
 
 const updateAlloy = (type, alloy) => (dispatch) => {
-  fetch(`http://localhost:${getPort(type)}/${type}/alloys/${alloy._id}`, { // eslint-disable-line
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys/${alloy._id}`, { // eslint-disable-line
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -145,7 +144,7 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
    *   "status": "success",
    * }
    */
-  fetch(`http://localhost:${getPort(type)}/${type}/alloys/${alloyId}`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys/${alloyId}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',

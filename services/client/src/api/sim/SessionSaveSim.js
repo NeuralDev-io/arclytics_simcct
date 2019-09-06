@@ -24,7 +24,7 @@ export const postSaveSimulation = (configs, alloyStore) => {
    * @param {alloyStore} an alloy store object which contains an `alloy_option`,
    * and a nested `alloys` object with `parent`, `weld`, or `mix` alloy objects.
    */
-  fetch(`${process.env.REACT_APP_USER_HOST}/user/simulation`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ export const getSavedSimulationList = () => {
    *    ]
    * }
    */
-  fetch(`${process.env.REACT_APP_USER_HOST}/user/simulation`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

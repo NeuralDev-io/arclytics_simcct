@@ -33,14 +33,12 @@ from .utilities import (
     PeriodicTable
 )
 
-from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_restful import Api
 from flask_mail import Mail
 from .Session import FlaskRedisSession
 
 # Some other extensions to Flask
-cors = CORS()
 bcrypt = Bcrypt()
 api = Api()
 mail = Mail()

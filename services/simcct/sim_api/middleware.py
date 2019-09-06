@@ -32,13 +32,6 @@ from logger.arc_logger import AppLogger
 logger = AppLogger(__name__)
 
 
-RESPONSE_HEADER = {
-    'Content-type': 'application/json',
-    'Access-Control-Allow-Credentials': 'true',
-    'Access-Control-Allow-Origin': '*'
-}
-
-
 def async_func(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -59,13 +52,17 @@ def authenticate_user_and_cookie(f):
         session_key = request.cookies.get(SESSION_COOKIE_NAME)
 
         if not session_key:
-            return jsonify(response), 401, RESPONSE_HEADER
+            return jsonify(response), 401
+
+        if not session:
+            response['message'] = 'Session is invalid.'
+            return jsonify(response), 401
 
         # Extract the JWT from the session which we stored at login
         auth_token = session.get('jwt', None)
         if auth_token is None:
             response['message'] = 'No JWT stored in Session.'
-            return jsonify(response), 500, RESPONSE_HEADER
+            return jsonify(response), 500
 
         # Decode either returns bson.ObjectId if successful or a string from an
         # exception
@@ -74,18 +71,18 @@ def authenticate_user_and_cookie(f):
         # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):
             response['message'] = resp
-            return jsonify(response), 401, RESPONSE_HEADER
+            return jsonify(response), 401
 
         # Validate the user is active
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
             response['message'] = 'User does not exist.'
-            return jsonify(response), 404, RESPONSE_HEADER
+            return jsonify(response), 404
 
         if not user.active:
             response['message'] = 'This user account has been disabled.'
-            return jsonify(response), 403, RESPONSE_HEADER
+            return jsonify(response), 403
 
         return f(user, *args, **kwargs)
 
@@ -103,13 +100,13 @@ def admin_session_and_token_required(f):
         session_key = request.cookies.get(SESSION_COOKIE_NAME)
 
         if not session_key:
-            return jsonify(response), 401, RESPONSE_HEADER
+            return jsonify(response), 401
 
         # Extract the JWT from the session which we stored at login
         auth_token = session.get('jwt', None)
         if auth_token is None:
             response['message'] = 'No JWT stored in Session.'
-            return jsonify(response), 500, RESPONSE_HEADER
+            return jsonify(response), 500
 
         # Decode either returns bson.ObjectId if successful or a string
         # from an exception
@@ -118,18 +115,18 @@ def admin_session_and_token_required(f):
         # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):
             response['message'] = resp
-            return jsonify(response), 401, RESPONSE_HEADER
+            return jsonify(response), 401
 
         # Validate the user is active
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
             response['message'] = 'User does not exist.'
-            return jsonify(response), 404, RESPONSE_HEADER
+            return jsonify(response), 404
 
         if not user.active:
             response['message'] = 'This user account has been disabled.'
-            return jsonify(response), 403, RESPONSE_HEADER
+            return jsonify(response), 403
 
         if not user.is_admin:
             response['message'] = 'Not authorized.'
@@ -167,18 +164,18 @@ def authenticate(f):
         # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):
             response['message'] = resp
-            return response, 401, RESPONSE_HEADER
+            return response, 401
 
         # Validate the user is active
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
             response['message'] = 'User does not exist.'
-            return response, 404, RESPONSE_HEADER
+            return response, 404
 
         if not user.active:
             response['message'] = 'This user account has been disabled.'
-            return response, 403, RESPONSE_HEADER
+            return response, 403
 
         return f(resp, *args, **kwargs)
 
@@ -196,7 +193,7 @@ def authenticate_flask(f):
         auth_header = request.headers.get('Authorization', None)
 
         if not auth_header:
-            return jsonify(response), 401, RESPONSE_HEADER
+            return jsonify(response), 401
 
         # auth_header = 'Bearer token'
         auth_token = auth_header.split(' ')[1]
@@ -208,18 +205,18 @@ def authenticate_flask(f):
         # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):
             response['message'] = resp
-            return jsonify(response), 401, RESPONSE_HEADER
+            return jsonify(response), 401
 
         # Validate the user is active
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
             response['message'] = 'User does not exist.'
-            return jsonify(response), 404, RESPONSE_HEADER
+            return jsonify(response), 404
 
         if not user.active:
             response['message'] = 'This user account has been disabled.'
-            return jsonify(response), 403, RESPONSE_HEADER
+            return jsonify(response), 403
 
         return f(resp, *args, **kwargs)
 
@@ -237,7 +234,7 @@ def authenticate_admin(f):
         auth_header = request.headers.get('Authorization', '')
 
         if not auth_header:
-            return response, 401, RESPONSE_HEADER
+            return response, 401
 
         # auth_header = 'Bearer token'
         auth_token = auth_header.split(' ')[1]
@@ -246,17 +243,17 @@ def authenticate_admin(f):
 
         if isinstance(resp, str):
             response['message'] = resp
-            return response, 401, RESPONSE_HEADER
+            return response, 401
 
         try:
             admin = User.objects.get(id=resp)
         except DoesNotExist as e:
             response['message'] = 'User does not exist.'
-            return response, 404, RESPONSE_HEADER
+            return response, 404
 
         if not admin.is_admin:
             response['message'] = 'Not authorized.'
-            return response, 403, RESPONSE_HEADER
+            return response, 403
 
         return f(resp, *args, **kwargs)
 
@@ -273,13 +270,13 @@ def token_required_flask(f):
 
         if not auth_header:
             response['message'] = 'No valid Authorization in header.'
-            return jsonify(response), 401, RESPONSE_HEADER
+            return jsonify(response), 401
 
         token = auth_header.split(' ')[1]
 
         if token == '':
             response['message'] = 'Invalid JWT token in header.'
-            return jsonify(response), 401, RESPONSE_HEADER
+            return jsonify(response), 401
 
         # TODO(andrew@neuraldev.io -- Sprint 6): Find a way to validate this is
         #  is a valid token for a user.
@@ -300,7 +297,7 @@ def session_key_required_flask(f):
 
         if not session_key:
             response['message'] = 'No Session in header.'
-            return jsonify(response), 401, RESPONSE_HEADER
+            return jsonify(response), 401
 
         return f(session_key, *args, **kwargs)
 
@@ -318,17 +315,17 @@ def session_and_token_required_flask(f):
 
         if not auth_header:
             response['message'] = 'No valid Authorization in header.'
-            return jsonify(response), 401, RESPONSE_HEADER
+            return jsonify(response), 401
 
         token = auth_header.split(' ')[1]
 
         if token == '':
             response['message'] = 'Invalid JWT token in header.'
-            return jsonify(response), 401, RESPONSE_HEADER
+            return jsonify(response), 401
 
         if not session_key:
             response['message'] = 'No Session key in header.'
-            return response, 401, RESPONSE_HEADER
+            return response, 401
 
         return f(token, session_key, *args, **kwargs)
 
@@ -346,20 +343,20 @@ def token_and_session_required(f):
 
         if not auth_header:
             response['message'] = 'No Authorization in header.'
-            return response, 401, RESPONSE_HEADER
+            return response, 401
 
         token = auth_header.split(' ')[1]
 
         if token == '':
             response['message'] = 'Invalid JWT token in header.'
-            return response, 401, RESPONSE_HEADER
+            return response, 401
 
         # TODO(andrew@neuraldev.io -- Sprint 6): Find a way to validate this is
         #  is a valid token for a user.
 
         if not session_key:
             response['message'] = 'No Session key in header.'
-            return response, 401, RESPONSE_HEADER
+            return response, 401
 
         return f(token, session_key, *args, **kwargs)
 
@@ -376,13 +373,13 @@ def token_required_restful(f):
 
         if not auth_header:
             response['message'] = 'No valid Authorization in header.'
-            return response, 401, RESPONSE_HEADER
+            return response, 401
 
         token = auth_header.split(' ')[1]
 
         if token == '':
             response['message'] = 'Invalid JWT token in header.'
-            return response, 401, RESPONSE_HEADER
+            return response, 401
 
         # TODO(andrew@neuraldev.io -- Sprint 6): Find a way to validate this is
         #  is a valid token for a user.

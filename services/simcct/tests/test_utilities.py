@@ -45,8 +45,13 @@ def test_login(client, email: str, password: str):
         content_type='application/json'
     )
 
+    cookie = next(
+        (cookie for cookie in client.cookie_jar if
+         cookie.name == 'SESSION_TOKEN'),
+        None
+    )
+
     resp_set_cookie = resp_login.headers.get('Set-Cookie').split(';')
-    session_key = str(resp_set_cookie[0]).split('=', 1)
     expiry_str = str(resp_set_cookie[1]).split('=', 1)
     expiry_date = datetime.strptime(expiry_str[1], GMT_DATETIME_FORMAT)
     domain = str(resp_set_cookie[3]).split('=', 1)
@@ -59,8 +64,8 @@ def test_login(client, email: str, password: str):
 
     # THIS IS JUST FOR VISUALS. CLIENT AUTOMATICALLY SETS IT.
     cookie = {
-        'SESSION_COOKIE_NAME': session_key[0],
-        'value': session_key[1],
+        'key': cookie.name,
+        'value': cookie.value,
         'expires': expiry_date.strftime(GMT_DATETIME_FORMAT),
         'domain': domain[1]
     }

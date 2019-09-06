@@ -24,7 +24,6 @@ import os
 from datetime import datetime
 from typing import Tuple
 
-import requests
 from email_validator import EmailNotValidError, validate_email
 from flask import (
     Blueprint, jsonify, redirect, render_template, request, session
@@ -41,7 +40,8 @@ from sim_api.models import User, LoginData
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
-from sim_api.utilities import URLTokenError, URLTokenExpired
+from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
+from sim_api.sim_session import SimSessionService
 
 logger = AppLogger(__name__)
 
@@ -268,6 +268,56 @@ def register_user() -> Tuple[dict, int]:
         return jsonify(response), 400
 
 
+def register_new_sim_session(user: User) -> True:
+    if user.last_configuration is not None:
+        configs = user.last_configuration.to_dict()
+    else:
+        # These are based of defaults in the front-end as agreed to by Andrew
+        # and Dalton.
+        configs = {
+            'is_valid': False,
+            'method': 'Li98',
+            'grain_size': 8.0,
+            'nucleation_start': 1.0,
+            'nucleation_finish': 99.90,
+            'auto_calculate_ms': True,
+            'ms_temp': 0.0,
+            'ms_rate_param': 0.0,
+            'auto_calculate_bs': True,
+            'bs_temp': 0.0,
+            'auto_calculate_ae': True,
+            'ae1_temp': 0.0,
+            'ae3_temp': 0.0,
+            'start_temp': 900,
+            'cct_cooling_rate': 10
+        }
+
+    if user.last_alloy_store is not None:
+        alloy_store = user.last_alloy_store.to_dict()
+    else:
+        alloy_store = {
+            'alloy_option': 'single',
+            'alloys': {
+                'parent': None,
+                'weld': None,
+                'mix': None
+            }
+        }
+    # if user.last_results is not None:
+    #     last_results = user.last_results
+
+    # This dict defines what we store in Redis for the session
+    session_data_store = {
+        'configurations': configs,
+        'alloy_store': alloy_store,
+        # TODO(davidmatthews1004@gmail.com) Update this to get from last in
+        #  user doc
+        'results': None
+    }
+
+    SimSessionService().new_session(session_data_store)
+
+
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
 def login() -> any:
     """
@@ -347,12 +397,15 @@ def login() -> any:
                 user.save()
             reader.close()
 
-            session['logged_in'] = True
+            session['jwt'] = auth_token.decode()
+            session['user_id'] = str(user.id)
             session['ip_address'] = ip_address
-            session['token'] = auth_token.decode()
 
             # Inject the Simulation Session data
-            logger.debug('Cookie Session: {}'.format(session.__dict__))
+            register_new_sim_session(user=user)
+            logger.info('Cookie ID: {}'.format(session.sid))
+            logger.pprint('Cookie Session: {}'.format(session))
+            logger.pprint('Cookie items(): {}'.format(session.items()))
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
@@ -727,12 +780,11 @@ def get_user_status(user_id) -> Tuple[dict, int]:
     is_profile = True
     if not user.profile:
         is_profile = False
-    data = {
-        'isProfile': is_profile,
-        'admin': user.is_admin,
-        'verified': user.verified,
-        'email': user.email,
-        'active': user.active
+    response = {
+        "verified": bool,
+        "active": bool,
+        "signedIn": bool,
+        "simulationValid": bool,
+        "admin": False,
     }
-    response = {'status': 'success', 'data': data}
     return jsonify(response), 200

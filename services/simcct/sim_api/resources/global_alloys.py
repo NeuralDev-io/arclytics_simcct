@@ -232,7 +232,7 @@ class Alloys(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, _, _):
+    def patch(self, _):
         """Exposes the PATCH method for `/alloys` to update an existing alloy by
         an admin to update the existing data.
 

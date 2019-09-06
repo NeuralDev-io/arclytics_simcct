@@ -26,7 +26,6 @@ from datetime import datetime
 from typing import Tuple
 
 import geoip2
-from flask_cors import cross_origin
 from email_validator import EmailNotValidError, validate_email
 from flask import (
     Blueprint, jsonify, redirect, render_template, request, session
@@ -38,7 +37,9 @@ import geoip2.database
 
 from logger.arc_logger import AppLogger
 from sim_api.extensions import bcrypt
-from sim_api.middleware import authenticate_flask, authenticate_user_and_cookie_flask
+from sim_api.middleware import (
+    authenticate_flask, authenticate_user_and_cookie_flask
+)
 from sim_api.models import User, LoginData
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
@@ -684,7 +685,7 @@ def change_email(user_id) -> Tuple[dict, int]:
         response['message'] = 'Invalid email.'
         return jsonify(response), 400
 
-    user = User.objects.get(id=user_id)
+    user: User = User.objects.get(id=user_id)
     user.email = valid_new_email
     user.verified = False
     user.save()
@@ -739,7 +740,7 @@ def get_user_status(user) -> Tuple[dict, int]:
     sim_session = json.loads(session['simulation'])
 
     response = {
-        "status": False,
+        "status": 'success',
         "isProfile": is_profile,
         "verified": user.verified,
         "active": user.active,

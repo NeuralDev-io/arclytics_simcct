@@ -33,12 +33,11 @@ from sim_api.app import create_app
 from sim_api.extensions.utilities import get_mongo_uri
 
 logger = AppLogger(__name__)
-app = create_app()
 
 
 class BaseTestCase(TestCase):
     def create_app(self):
-        app.config.from_object('configs.flask_conf.TestingConfig')
+        app = create_app(configs_path='configs.flask_conf.TestingConfig')
         self.db = init_db(app)
         set_flask_mongo(self.db)
         # app = create_app()

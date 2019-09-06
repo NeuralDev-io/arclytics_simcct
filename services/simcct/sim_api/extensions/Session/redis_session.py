@@ -180,8 +180,6 @@ class RedisSessionInterface(SessionInterface):
             httponly=True, domain=self.get_cookie_domain(app)
         )
 
-
-
     @staticmethod
     def _new_session():
         return RedisSession(sid=uuid4().hex, new=True)

@@ -81,6 +81,26 @@ export const logout = (callback) => {
     .catch(err => console.log(err))
 }
 
+export const checkAuthStatus = () => new Promise((resolve, reject) => {
+  fetch(`${ARC_URL}/reset/password`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then(res => res.json())
+    .then((res) => {
+      if (res.status === 'success') {
+        resolve(res.message)
+      } else {
+      // return an error message as string
+        reject(res.message)
+      }
+    })
+    .catch(err => reject(err.message))
+})
+
 export const forgotPassword = (resolve, reject, email) => {
   fetch(`${ARC_URL}/reset/password`, {
     method: 'POST',

@@ -42,6 +42,15 @@ def get_mongo_uri():
         return f'mongodb://{host}:{port}/{db}'
 
 
+RESPONSE_HEADERS = {
+    'Access-Control-Allow-Headers':
+    'Origin, X-Requested-With, Content-Type, Accept, x-auth',
+    'Content-type': 'application/json',
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Origin': '*'
+}
+
+
 class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""
     def default(self, o):

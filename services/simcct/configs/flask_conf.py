@@ -21,7 +21,7 @@ Just some configuration settings.
 """
 
 import os
-from sim_api.utilities import JSONEncoder
+from sim_api.extensions.utilities import JSONEncoder
 
 
 class BaseConfig:
@@ -40,7 +40,7 @@ class BaseConfig:
     SESSION_COOKIE_NAME = 'session'
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
-    PERMANENT_SESSION_LIFETIME = 1200
+    # PERMANENT_SESSION_LIFETIME = True
     SESSION_TYPE = 'redis'
     SESSION_USE_SIGNER = True
 

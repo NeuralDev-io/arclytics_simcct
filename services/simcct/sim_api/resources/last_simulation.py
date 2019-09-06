@@ -28,7 +28,7 @@ from mongoengine import ValidationError, FieldDoesNotExist
 from sim_api.extensions import api
 from sim_api.middleware import authenticate
 from sim_api.models import Configuration, AlloyStore, User
-from sim_api.utilities import (
+from sim_api.extensions.utilities import (
     ElementInvalid, ElementSymbolInvalid, MissingElementError,
     DuplicateElementError
 )

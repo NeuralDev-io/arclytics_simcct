@@ -31,7 +31,7 @@ from mongoengine.errors import (
 )
 
 from sim_api.extensions import api
-from sim_api.middleware import authenticate_user_and_cookie_restful
+from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import Alloy, User
 from sim_api.extensions.utilities import (
     ElementSymbolInvalid, ElementInvalid, MissingElementError,
@@ -47,8 +47,8 @@ class UserAlloysList(Resource):
     """
 
     method_decorators = {
-        'get': [authenticate_user_and_cookie_restful],
-        'post': [authenticate_user_and_cookie_restful]
+        'get': [authenticate_user_cookie_restful],
+        'post': [authenticate_user_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
@@ -158,9 +158,9 @@ class UserAlloysList(Resource):
 
 class UserAlloy(Resource):
     method_decorators = {
-        'get': [authenticate_user_and_cookie_restful],
-        'put': [authenticate_user_and_cookie_restful],
-        'delete': [authenticate_user_and_cookie_restful]
+        'get': [authenticate_user_cookie_restful],
+        'put': [authenticate_user_cookie_restful],
+        'delete': [authenticate_user_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic

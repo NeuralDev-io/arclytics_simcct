@@ -36,7 +36,7 @@ class SimSession(object):
     def __init__(
             self,
             is_valid=False,
-            method='Li98'
+            method='Li98',
     ):
         self.is_valid = is_valid
         self.method = method

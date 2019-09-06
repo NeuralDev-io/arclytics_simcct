@@ -82,7 +82,7 @@ export const logout = (callback) => {
 }
 
 export const checkAuthStatus = () => new Promise((resolve, reject) => {
-  fetch(`${ARC_URL}/reset/password`, {
+  fetch(`${ARC_URL}/auth/status`, {
     method: 'GET',
     credentials: 'include',
     headers: {

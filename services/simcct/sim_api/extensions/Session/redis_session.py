@@ -149,6 +149,8 @@ class RedisSessionInterface(SessionInterface):
 
         redis_value = JSONEncoder().encode(dict(session))
 
+        # Refresh the cookie expiry time if the cookie and session is valid
+        # and we need to send back a new cookie.
         expiry_duration = self._get_expiry_duration(app, session)
         expiry_date = datetime.utcnow() + expiry_duration
         expires_in_seconds = int(expiry_duration.total_seconds())
@@ -168,9 +170,14 @@ class RedisSessionInterface(SessionInterface):
                 itsdangerous.want_bytes(session_key)
             )
 
+        # FIXME(andrew@neuraldev.io): In development, don't do this.
+        # response.set_cookie(
+        #     SESSION_COOKIE_NAME, session_key, expires=expiry_date,
+        #     httponly=True, domain=self.get_cookie_domain(app), secure=True,
+        # )
         response.set_cookie(
             SESSION_COOKIE_NAME, session_key, expires=expiry_date,
-            httponly=True, domain=self.get_cookie_domain(app), secure=True,
+            httponly=True, domain=self.get_cookie_domain(app)
         )
 
     @staticmethod

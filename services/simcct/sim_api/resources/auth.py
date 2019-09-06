@@ -780,12 +780,11 @@ def get_user_status(user_id) -> Tuple[dict, int]:
     is_profile = True
     if not user.profile:
         is_profile = False
-    data = {
-        'isProfile': is_profile,
-        'admin': user.is_admin,
-        'verified': user.verified,
-        'email': user.email,
-        'active': user.active
+    response = {
+        "verified": bool,
+        "active": bool,
+        "signedIn": bool,
+        "simulationValid": bool,
+        "admin": False,
     }
-    response = {'status': 'success', 'data': data}
     return jsonify(response), 200

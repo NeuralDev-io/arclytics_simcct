@@ -34,7 +34,7 @@ from redis import Redis
 
 from sim_api.extensions import bcrypt, api, mail, redis_session
 from sim_api.mongodb import MongoSingleton
-from sim_api.extensions.utilities import JSONEncoder
+from sim_api.extensions import JSONEncoder
 from sim_api.resources.users import users_blueprint
 from sim_api.resources.auth import auth_blueprint
 from sim_api.resources.admin_auth import admin_blueprint

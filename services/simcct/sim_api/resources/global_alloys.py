@@ -28,7 +28,7 @@ from sim_api.extensions import api
 from sim_api.schemas import AlloySchema
 from sim_api.alloys_service import AlloysService
 from sim_api.middleware import (
-    authorize_admin_cookie_and_session, authenticate_user_and_cookie
+    authorize_admin_cookie_and_session, authenticate_user_and_cookie_restful
 )
 from simulation.utilities import MissingElementError
 from logger.arc_logger import AppLogger
@@ -45,7 +45,7 @@ class AlloysList(Resource):
 
     method_decorators = {
         'post': [authorize_admin_cookie_and_session],
-        'get': [authenticate_user_and_cookie]
+        'get': [authenticate_user_and_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
@@ -136,7 +136,7 @@ class Alloys(Resource):
     """
 
     method_decorators = {
-        'get': [authenticate_user_and_cookie],
+        'get': [authenticate_user_and_cookie_restful],
         'put': [authorize_admin_cookie_and_session],
         'delete': [authorize_admin_cookie_and_session]
     }

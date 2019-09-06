@@ -20,17 +20,17 @@ __date__ = '2019.07.03'
 The base TestCase that all others subclass from.
 """
 
+import os
 from pymongo import MongoClient
 from mongoengine.connection import get_db, get_connection
 from flask_testing import TestCase
 from redis import Redis
 
-from sim_api.app import create_app, set_flask_mongo, init_db
+from sim_api.app import set_flask_mongo, init_db
 from logger.arc_logger import AppLogger
 
-import settings
 from sim_api.app import create_app
-from sim_api.utilities import get_mongo_uri
+from sim_api.extensions.utilities import get_mongo_uri
 
 logger = AppLogger(__name__)
 app = create_app()

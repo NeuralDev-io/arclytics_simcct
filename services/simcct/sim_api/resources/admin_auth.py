@@ -25,7 +25,7 @@ import os
 from datetime import datetime
 
 from email_validator import validate_email, EmailNotValidError
-from flask import Blueprint, jsonify, request, render_template, redirect
+from flask import Blueprint, request, render_template, redirect
 from flask import current_app as app
 from flask_restful import Resource
 
@@ -37,7 +37,7 @@ from sim_api.token import (
     generate_confirmation_token, generate_url, confirm_token, URLTokenError,
     generate_promotion_confirmation_token
 )
-from sim_api.utilities import URLTokenExpired
+from sim_api.extensions.utilities import URLTokenExpired
 
 logger = AppLogger(__name__)
 

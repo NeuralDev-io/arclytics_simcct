@@ -9,7 +9,7 @@ import {
 } from './types'
 
 export const getUserProfile = () => (dispatch) => { // eslint-disable-line
-  return fetch(`${process.env.REACT_APP_USER_HOST}/user`, {
+  return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
 }
 
 export const createUserProfile = values => (dispatch) => {
-  fetch(`${process.env.REACT_APP_USER_HOST}/user/profile`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/profile`, {
     method: 'POST',
     mode: 'cors',
     headers: {
@@ -53,7 +53,7 @@ export const createUserProfile = values => (dispatch) => {
 }
 
 export const updateUserProfile = values => (dispatch) => {
-  fetch(`${process.env.REACT_APP_USER_HOST}/user`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user`, {
     method: 'PATCH',
     mode: 'cors',
     headers: {
@@ -76,7 +76,7 @@ export const updateUserProfile = values => (dispatch) => {
 }
 
 export const updateEmail = values => (dispatch) => {
-  fetch(`${process.env.REACT_APP_USER_HOST}/auth/email/change`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/auth/email/change`, {
     method: 'PUT',
     mode: 'cors',
     headers: {
@@ -99,7 +99,7 @@ export const updateEmail = values => (dispatch) => {
 }
 
 export const changePassword = values => (dispatch) => {
-  fetch(`${process.env.REACT_APP_USER_HOST}/auth/password/change`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/auth/password/change`, {
     method: 'PUT',
     mode: 'cors',
     headers: {
@@ -150,7 +150,7 @@ export const saveSimulation = () => (dispatch, getState) => {
     grain_size: grain_size_ASTM,
   }
 
-  fetch(`${process.env.REACT_APP_USER_HOST}/user/simulation`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -190,7 +190,7 @@ export const saveSimulation = () => (dispatch, getState) => {
  * }
  */
 export const getSavedSimulations = () => (dispatch) => {
-  fetch(`${process.env.REACT_APP_USER_HOST}/user/simulation`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

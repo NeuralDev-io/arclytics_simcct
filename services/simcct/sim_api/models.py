@@ -29,13 +29,13 @@ from mongoengine import (
     Document, EmbeddedDocument, StringField, EmailField, BooleanField,
     DateTimeField, EmbeddedDocumentField, IntField, FloatField, DO_NOTHING,
     EmbeddedDocumentListField, queryset_manager, ObjectIdField, ReferenceField,
-    ValidationError, ListField, DictField
+    ValidationError, DictField
 )
 from flask import current_app, json
 
 from logger.arc_logger import AppLogger
 from sim_api.extensions import bcrypt
-from sim_api.utilities import (
+from sim_api.extensions.utilities import (
     JSONEncoder, PeriodicTable, PasswordValidationError, ElementSymbolInvalid,
     ElementInvalid, MissingElementError, DuplicateElementError
 )

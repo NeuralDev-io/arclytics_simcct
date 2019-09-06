@@ -29,10 +29,10 @@ from sim_api.schemas import (
 )
 from sim_api.middleware import token_and_session_required
 from sim_api.sim_session import SimSessionService
+from sim_api.extensions.utilities import RESPONSE_HEADERS
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, MissingElementError
 from logger.arc_logger import AppLogger
-from sim_api.sim_session import SaveSessionError
 
 logger = AppLogger(__name__)
 
@@ -62,7 +62,7 @@ class AlloyStore(Resource):
 
         post_data = request.get_json()
         if not post_data:
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # Extract the method from the post request body
         # REQUEST BODY SHOULD BE
@@ -77,7 +77,7 @@ class AlloyStore(Resource):
 
         if not alloy_option:
             response['message'] = 'No alloy option was provided.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # We have a couple of ways the Alloy is stored in both Session and
         # Database based on what is available with the alloy_option and
@@ -88,21 +88,21 @@ class AlloyStore(Resource):
                 'Alloy option not one of '
                 '["single" | "mix"].'
             )
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         if not alloy_type or not isinstance(alloy_type, str):
             response['message'] = 'No alloy type was provided.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         if alloy_type not in {'parent', 'weld', 'mix'}:
             response['message'] = (
                 'Alloy type not one of ["parent" | "weld" | "mix"].'
             )
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         if not alloy:
             response['message'] = 'No alloy was provided.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         alloy_name = alloy.get('name', None)
         alloy_comp = alloy.get('compositions', None)
@@ -112,26 +112,26 @@ class AlloyStore(Resource):
                 'No valid keys was provided for alloy '
                 '(i.e. must be "name" or "compositions")'
             )
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         if not alloy_comp:
             response['message'] = 'You must provide an alloy composition.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         if not alloy_name:
             response['message'] = 'You must provide an alloy name.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # Let's validate the Alloy follows our schema
         try:
             valid_alloy = AlloySchema().load(alloy)
         except MissingElementError as e:
             response['message'] = str(e)
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
         except ValidationError as e:
             response['errors'] = str(e.messages)
             response['message'] = 'Alloy failed schema validation.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # Otherwise we have all the elements we need
 
@@ -158,18 +158,18 @@ class AlloyStore(Resource):
         except ValidationError as e:
             response['errors'] = e.messages
             response['message'] = 'Alloy failed schema validation.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
-        sid, session_store = SimSessionService().load_session(session_key)
+        session_store = SimSessionService().load_session()
 
         if sid is None:
             response['errors'] = session_store
             response['message'] = 'Unable to load session from Redis.'
-            return response, 401
+            return response, 401, RESPONSE_HEADERS
 
         if not session_store:
             response['message'] = 'Unable to retrieve data from Redis.'
-            return response, 500
+            return response, 500, RESPONSE_HEADERS
 
         session_store['alloy_store'] = valid_store
 
@@ -178,7 +178,7 @@ class AlloyStore(Resource):
         if not session_configs:
             response['message'
                      ] = 'Cannot retrieve configurations from session.'
-            return response, 500
+            return response, 500, RESPONSE_HEADERS
 
         try:
             valid_configs = ConfigurationsSchema().load(session_configs)
@@ -186,7 +186,7 @@ class AlloyStore(Resource):
             response['errors'] = e.messages
             response['message'
                      ] = 'Validation error for session configurations.'
-            return response, 500
+            return response, 500, RESPONSE_HEADERS
 
         # Well, if we don't need to auto calc. anything, let's get out of here
         if (
@@ -196,16 +196,11 @@ class AlloyStore(Resource):
         ):
             # If we are only updating the alloy_store in the session,
             # we access Redis at this point and save it.
-            try:
-                SimSessionService().save_session(sid, session_store)
-            except SaveSessionError as e:
-                response['errors'] = str(e.msg)
-                response['message'] = 'Unable to save to session store.'
-                return response, 500
+            SimSessionService().save_session(session_store)
 
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'
-            return response, 200
+            return response, 200, RESPONSE_HEADERS
 
         # We update the transformation limits based on which option is
         # chosen
@@ -224,7 +219,7 @@ class AlloyStore(Resource):
 
         if comp_np_arr is False:
             response['message'] = 'Compositions conversion error.'
-            return response, 500
+            return response, 500, RESPONSE_HEADERS
 
         # We need to store some results so let's prepare an empty dict
         response['message'] = (
@@ -260,22 +255,10 @@ class AlloyStore(Resource):
         valid_configs['is_valid'] = False
         session_store['configurations'] = valid_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
-
-        headers = {
-            'Access-Control-Allow-Headers':
-            'Origin, X-Requested-With, Content-Type, Accept, x-auth',
-            'Content-type': 'application/json'
-        }
-
-        return response, 201, headers
+        return response, 201, RESPONSE_HEADERS
 
     # noinspection PyMethodMayBeStatic
     def patch(self, _, session_key):
@@ -293,7 +276,7 @@ class AlloyStore(Resource):
 
         patch_data = request.get_json()
         if not patch_data:
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
         # Extract the method from the post request body
         # REQUEST BODY SHOULD BE
         # {
@@ -307,7 +290,7 @@ class AlloyStore(Resource):
 
         if not alloy_option:
             response['message'] = 'No alloy option was provided.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # We have a couple of ways the Alloy is stored in both Session and
         # Database based on what is available with the alloy_option and
@@ -316,7 +299,7 @@ class AlloyStore(Resource):
 
         if not alloy:
             response['message'] = 'No alloy was provided.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # The alloy might be provided but if it's got no valid keys, we need to
         # check that
@@ -328,18 +311,13 @@ class AlloyStore(Resource):
             response['message'] = (
                 'Valid compositions must be provided as a list.'
             )
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
-        sid, session_store = SimSessionService().load_session(session_key)
-
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
+        session_store = SimSessionService().load_session()
 
         if not session_store:
             response['message'] = 'Unable to retrieve data from Redis.'
-            return response, 500
+            return response, 500, RESPONSE_HEADERS
 
         # We get what's currently stored in the session and we update it
         sess_alloy_store = session_store.get('alloy_store')
@@ -347,7 +325,7 @@ class AlloyStore(Resource):
         # Basically, the user should have a session initiated from login
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # We just update the alloy_option straight up
         sess_alloy_store['alloy_option'] = alloy_option
@@ -400,7 +378,7 @@ class AlloyStore(Resource):
         except ValidationError as e:
             response['errors'] = e.messages
             response['message'] = 'Alloy failed schema validation.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # We also need to do auto update fixes if necessary
         session_store['alloy_store'] = sess_alloy_store
@@ -414,16 +392,11 @@ class AlloyStore(Resource):
         ):
             # If we are only updating the alloy_store in the session, we access
             # Redis at this point and save it.
-            try:
-                SimSessionService().save_session(sid, session_store)
-            except SaveSessionError as e:
-                response['errors'] = str(e.msg)
-                response['message'] = 'Unable to save to session store.'
-                return response, 500
+            SimSessionService().save_session(session_store)
 
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'
-            return response, 200
+            return response, 200, RESPONSE_HEADERS
 
         # Since we do need to calculate, must get the compositions first in
         # numpy.ndarray structured format and type
@@ -444,7 +417,7 @@ class AlloyStore(Resource):
 
         if comp_np_arr is False:
             response['message'] = 'Compositions conversion error.'
-            return response, 500
+            return response, 500, RESPONSE_HEADERS
 
         # We need to store some results so let's prepare an empty dict
         response['message'] = 'Compositions and other values updated.'
@@ -484,21 +457,10 @@ class AlloyStore(Resource):
         sess_configs['is_valid'] = False
         session_store['configurations'] = sess_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
-        headers = {
-            'Access-Control-Allow-Headers':
-            'Origin, X-Requested-With, Content-Type, Accept, x-auth',
-            'Content-type': 'application/json'
-        }
-
-        return response, 200, headers
+        return response, 200, RESPONSE_HEADERS
 
 
 api.add_resource(AlloyStore, '/api/v1/sim/alloys/update')

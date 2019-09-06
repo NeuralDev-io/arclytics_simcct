@@ -20,6 +20,7 @@ __date__ = '2019.07.03'
 This script will run all tests on the Users endpoints.
 """
 
+import os
 import json
 import unittest
 

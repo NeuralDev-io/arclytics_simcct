@@ -18,7 +18,7 @@ export const getShareUrlLink = (configs, alloyStore, results) => new Promise((re
    *   "link": "..."
    * }
    * */
-  fetch(`${process.env.REACT_APP_USER_HOST}/user/share/simulation/link`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/share/simulation/link`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ export const sendShareEmail = (emails, message, configurations, alloyStore, resu
      *   "link": "..."
      * }
      * */
-    fetch(`${process.env.REACT_APP_USER_HOST}/user/share/simulation/email`, {
+    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/share/simulation/email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

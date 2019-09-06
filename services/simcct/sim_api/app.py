@@ -24,16 +24,17 @@ This is the entrypoint to our Arclytics Flask API server.
 import os
 
 from flask import Flask
+from flask_cors import CORS
+import logging
 from mongoengine import connect
 from mongoengine.connection import (
     disconnect_all, get_connection, get_db, MongoEngineConnectionError
 )
 from redis import Redis
 
-from sim_api.redis_session import RedisSessionInterface
-from sim_api.extensions import cors, bcrypt, api, mail, redis_session
-from sim_api.utilities import JSONEncoder
+from sim_api.extensions import bcrypt, api, mail, redis_session
 from sim_api.mongodb import MongoSingleton
+from sim_api.extensions import JSONEncoder
 from sim_api.resources.users import users_blueprint
 from sim_api.resources.auth import auth_blueprint
 from sim_api.resources.admin_auth import admin_blueprint
@@ -42,7 +43,6 @@ from sim_api.resources.user_alloys import user_alloys_blueprint
 from sim_api.resources.last_simulation import last_simulation_blueprint
 from sim_api.resources.save_simulation import save_simulation_blueprint
 from sim_api.resources.ratings import ratings_blueprint
-from sim_api.resources.session import session_blueprint
 from sim_api.resources.sim_configurations import configs_blueprint
 from sim_api.resources.global_alloys import alloys_blueprint
 from sim_api.resources.simulation import sim_blueprint
@@ -115,10 +115,10 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
 
     # instantiate the application
     app = Flask(__name__)
-    # app.session_interface = RedisSessionInterface()
 
     # Setup the configuration for Flask
     app.config.from_object(configs_path)
+    app.secret_key = os.environ.get('SECRET_KEY')
 
     # ========== # CONNECT TO REDIS # ========== #
     if os.environ.get('FLASK_ENV', 'development') == 'production':
@@ -145,6 +145,36 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
         )
     )
 
+    # Connect to the Mongo Client
+    db = init_db(app)
+    set_flask_mongo(db)
+
+    # ========== # INIT FLASK EXTENSIONS # ========== #
+
+    # Notes:
+    #  - `headers` will inject the Content-Type in all responses.
+    #  - `expose_headers`: The header or list which are safe to expose to the
+    #     API of a CORS API specification.
+    #  - `support_credentials`: Allows users to make authenticated requests.
+    #     If true, injects the Access-Control-Allow-Credentials header in
+    #     responses. This allows cookies and credentials to be submitted across
+    #     domains.
+    #     Note:	This option cannot be used in conjunction with a ‘*’ origin
+    CORS(
+        app=app,
+        headers=['Content-Type'],
+        expose_headers=[
+            'Access-Control-Allow-Origin',
+            'Access-Control-Allow-Credentials'
+        ],
+        supports_credentials=True
+    )
+    # Uncomment this for debugging logs
+    # logging.getLogger('flask_cors').level = logging.DEBUG
+
+    # Set up Flask extensions
+    extensions(app)
+
     # ========== # FLASK BLUEPRINTS # ========== #
     app.register_blueprint(users_blueprint, url_prefix='/api/v1/sim')
     app.register_blueprint(auth_blueprint, url_prefix='/api/v1/sim')
@@ -154,19 +184,10 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     app.register_blueprint(last_simulation_blueprint, url_prefix='/api/v1/sim')
     app.register_blueprint(save_simulation_blueprint, url_prefix='/api/v1/sim')
     app.register_blueprint(ratings_blueprint, url_prefix='/api/v1/sim')
-    app.register_blueprint(session_blueprint, url_prefix='/api/v1/sim')
     app.register_blueprint(configs_blueprint, url_prefix='/api/v1/sim')
     app.register_blueprint(alloys_blueprint, url_prefix='/api/v1/sim')
     app.register_blueprint(sim_blueprint, url_prefix='/api/v1/sim')
     app.register_blueprint(sim_alloys_blueprint, url_prefix='/api/v1/sim')
-
-    # Connect to the Mongo Client
-    db = init_db(app)
-    set_flask_mongo(db)
-
-    # ========== # INIT FLASK EXTENSIONS # ========== #
-    # Set up Flask extensions
-    extensions(app)
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects
@@ -190,7 +211,6 @@ def extensions(app) -> None:
     Returns:
         None.
     """
-    cors.init_app(app)
     bcrypt.init_app(app)
     api.init_app(app)
     mail.init_app(app)

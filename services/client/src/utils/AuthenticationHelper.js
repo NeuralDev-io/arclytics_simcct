@@ -19,6 +19,7 @@ export const login = async (values, resolve, reject) => {
   fetch(`${ARC_URL}/auth/login`, {
     method: 'POST',
     mode: 'cors',
+    credentials: 'include',
     headers: {
       'content-Type': 'application/json',
     },
@@ -67,31 +68,41 @@ export const signup = async (values, resolve, reject) => {
 export const logout = (callback) => {
   fetch(`${ARC_URL}/auth/logout`, {
     method: 'GET',
+    mode: 'cors',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())
     .then(() => {
-      /*
-      * TODO(andrew@neuraldev.io): Until you fix the backend logout if there is
-      *  no persistent storage across Redis sessions, just let this one through.
-      * */
-      // if (data.status === 'fail') throw new Error(data.message)
-      // if (data.status === 'success') {
-      localStorage.removeItem('token')
-      localStorage.removeItem('session')
-      localStorage.removeItem('persist:userStatus')
       callback('/signin')
-      // }
     })
     .catch(err => console.log(err))
 }
 
+export const checkAuthStatus = () => new Promise((resolve, reject) => {
+  fetch(`${ARC_URL}/auth/status`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then(res => res.json())
+    .then((res) => {
+      if (res.status === 'success') {
+        resolve(res.message)
+      } else {
+      // return an error message as string
+        reject(res.message)
+      }
+    })
+    .catch(err => reject(err.message))
+})
+
 export const forgotPassword = (resolve, reject, email) => {
-  fetch(`${process.env.REACT_APP_USER_HOST}/reset/password`, {
+  fetch(`${ARC_URL}/reset/password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -113,7 +124,7 @@ export const forgotPassword = (resolve, reject, email) => {
 }
 
 export const resetPassword = (resolve, reject, values, token) => {
-  fetch(`${process.env.REACT_APP_USER_HOST}/auth/password/reset`, {
+  fetch(`${ARC_URL}/auth/password/reset`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

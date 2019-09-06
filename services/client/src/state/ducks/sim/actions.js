@@ -32,7 +32,7 @@ export const initSession = (option, type, alloy) => (dispatch) => {
   // Only POST the name and compositions to the server,
   // but _id will also be saved to Redux state to refer to
   // the original alloy
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/alloys/update`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ export const updateAlloyOption = option => (dispatch) => {
  * @param {object} alloy alloy to be updated
  */
 export const updateComp = (option, type, alloy) => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/alloys/update`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -134,7 +134,7 @@ export const updateDilution = val => (dispatch) => {
  * @param {string} value new method
  */
 export const updateConfigMethod = value => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/method/update`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/method/update`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -185,7 +185,7 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
   }
 
   if (isValid) {
-    fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/update`, {
+    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -209,7 +209,7 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
 }
 
 export const updateMsBsAe = (name, reqBody) => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/${name}`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -232,7 +232,7 @@ export const updateMsBsAe = (name, reqBody) => (dispatch) => {
 }
 
 export const getMsBsAe = name => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/${name}`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -263,7 +263,7 @@ export const setAutoCalculate = (name, value) => (dispatch) => {
 }
 
 export const updateConfig = (name, value) => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/update`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -302,7 +302,7 @@ export const runSim = () => (dispatch, getState) => {
     start_temp,
   } = getState().sim.configurations
 
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/configs/update`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -317,7 +317,7 @@ export const runSim = () => (dispatch, getState) => {
       start_temp,
     }),
   }).catch(err => console.log(err))
-  fetch(`${process.env.REACT_APP_SIMCCT_HOST}/simulate`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/simulate`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -362,7 +362,7 @@ export const loadSim = sim => (dispatch) => {
 }
 
 export const loadSimFromLink = token => (dispatch) => {
-  return fetch(`${process.env.REACT_APP_USER_HOST}/user/share/simulation/view/${token}`, {
+  return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/share/simulation/view/${token}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

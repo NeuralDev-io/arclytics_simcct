@@ -28,8 +28,7 @@ from mongoengine.errors import ValidationError, NotUniqueError
 
 from tests.test_api_base import BaseTestCase
 from sim_api.models import (User, Configuration, Element, Alloy)
-from sim_api.utilities import PeriodicTable as pT
-from sim_api.utilities import PasswordValidationError
+from sim_api.extensions.utilities import PasswordValidationError
 
 _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 

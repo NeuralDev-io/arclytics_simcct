@@ -29,7 +29,7 @@ from sim_api.resources.auth import SimCCTBadServerLogout
 from sim_api.resources.auth import register_session
 from sim_api.token import generate_confirmation_token, generate_url
 from tests.test_api_users import log_test_user_in
-from sim_api.utilities import get_mongo_uri
+from sim_api.extensions.utilities import get_mongo_uri
 
 
 class TestAuthEndpoints(BaseTestCase):

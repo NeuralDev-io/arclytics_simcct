@@ -24,7 +24,7 @@ from flask import Blueprint, request
 from flask_restful import Resource
 
 from sim_api.extensions import api
-from sim_api.sim_session import SimSessionService, SaveSessionError
+from sim_api.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
 from sim_api.middleware import token_and_session_required
@@ -76,12 +76,7 @@ class Configurations(Resource):
             return response, 400
 
         # If there are changes to be made, then we will get the session store.
-        sid, session_store = SimSessionService().load_session(session_key)
-
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
+        session_store = SimSessionService().load_session()
 
         if not session_store:
             response['message'] = 'Unable to retrieve data from Redis.'
@@ -119,12 +114,7 @@ class Configurations(Resource):
 
         session_store['configurations'] = sess_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response['message'] = 'Setup configurations values have been updated.'
@@ -168,12 +158,7 @@ class ConfigsMethod(Resource):
             )
             return response, 400
 
-        sid, session_store = SimSessionService().load_session(session_key)
-
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
+        session_store = SimSessionService().load_session()
 
         if not session_store:
             response['message'] = 'Unable to retrieve data from Redis.'
@@ -193,12 +178,7 @@ class ConfigsMethod(Resource):
         session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response['message'] = f'Changed to {method} method.'
@@ -233,12 +213,7 @@ class MartensiteStart(Resource):
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        sid, session_store = SimSessionService().load_session(session_key)
-
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
+        session_store = SimSessionService().load_session()
 
         if not session_store:
             response['message'] = 'Unable to retrieve data from Redis.'
@@ -291,12 +266,7 @@ class MartensiteStart(Resource):
         session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response.pop('message')
@@ -357,12 +327,7 @@ class MartensiteStart(Resource):
         session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         return {'status': 'success'}, 202
 
@@ -394,12 +359,7 @@ class BainiteStart(Resource):
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        sid, session_store = SimSessionService().load_session(session_key)
-
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
+        session_store = SimSessionService().load_session()
 
         if not session_store:
             response['message'] = 'Unable to retrieve data from Redis.'
@@ -448,12 +408,7 @@ class BainiteStart(Resource):
         session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response.pop('message')
@@ -486,7 +441,7 @@ class BainiteStart(Resource):
             response['message'] = 'BS temperature is required.'
             return response, 400
 
-        sid, session_store = SimSessionService().load_session(session_key)
+        session_store = SimSessionService().load_session()
 
         if sid is None:
             response['errors'] = session_store
@@ -507,12 +462,7 @@ class BainiteStart(Resource):
         session_configs['is_valid'] = False
         session_store[f'configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         return {'status': 'success'}, 202
 
@@ -542,12 +492,7 @@ class Austenite(Resource):
         #   * Need to do the validation checks for this.
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        sid, session_store = SimSessionService().load_session(session_key)
-
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
+        session_store = SimSessionService().load_session()
 
         if not session_store:
             response['message'] = 'Unable to retrieve data from Redis.'
@@ -590,12 +535,7 @@ class Austenite(Resource):
         session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response.pop('message')
@@ -633,12 +573,7 @@ class Austenite(Resource):
             response['message'] = 'Ae3 temperature is required.'
             return response, 400
 
-        sid, session_store = SimSessionService().load_session(session_key)
-
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
+        session_store = SimSessionService().load_session()
 
         if not session_store:
             response['message'] = 'Unable to retrieve data from Redis.'
@@ -656,12 +591,7 @@ class Austenite(Resource):
         session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         return {'status': 'success'}, 202
 

@@ -20,11 +20,13 @@ This script describes the Users authentication endpoints for registration,
 login, and logout.
 """
 
+import json
 import os
 from datetime import datetime
 from typing import Tuple
 
-import requests
+import geoip2
+from flask_cors import cross_origin
 from email_validator import EmailNotValidError, validate_email
 from flask import (
     Blueprint, jsonify, redirect, render_template, request, session
@@ -36,12 +38,13 @@ import geoip2.database
 
 from logger.arc_logger import AppLogger
 from sim_api.extensions import bcrypt
-from sim_api.middleware import authenticate_flask
+from sim_api.middleware import authenticate_flask, authenticate_user_and_cookie_flask
 from sim_api.models import User, LoginData
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
-from sim_api.utilities import URLTokenError, URLTokenExpired
+from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
+from sim_api.sim_session import SimSessionService
 
 logger = AppLogger(__name__)
 
@@ -347,12 +350,12 @@ def login() -> any:
                 user.save()
             reader.close()
 
-            session['logged_in'] = True
+            session['jwt'] = auth_token.decode()
             session['ip_address'] = ip_address
-            session['token'] = auth_token.decode()
+            session['signed_in'] = True
 
             # Inject the Simulation Session data
-            logger.debug('Cookie Session: {}'.format(session.__dict__))
+            SimSessionService().new_session(user=user)
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
@@ -712,27 +715,36 @@ def change_email(user_id) -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])
-@authenticate_flask
+@authenticate_user_and_cookie_flask
 def logout(_) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
+
+    # Remove the data from the user's current session.
+    session.clear()
+
+    logger.info(f'Session logout: {session}')
+
     response = {'status': 'success', 'message': 'Successfully logged out.'}
     return jsonify(response), 202
 
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
-@authenticate_flask
-def get_user_status(user_id) -> Tuple[dict, int]:
+@authenticate_user_and_cookie_flask
+def get_user_status(user) -> Tuple[dict, int]:
     """Get the current session status of the user."""
-    user = User.objects.get(id=user_id)
     is_profile = True
     if not user.profile:
         is_profile = False
-    data = {
-        'isProfile': is_profile,
-        'admin': user.is_admin,
-        'verified': user.verified,
-        'email': user.email,
-        'active': user.active
+
+    sim_session = json.loads(session['simulation'])
+
+    response = {
+        "status": False,
+        "isProfile": is_profile,
+        "verified": user.verified,
+        "active": user.active,
+        "signedIn": session['signed_in'],
+        "simulationValid": sim_session['configurations']['is_valid'],
+        "admin": user.is_admin,
     }
-    response = {'status': 'success', 'data': data}
     return jsonify(response), 200

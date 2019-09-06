@@ -21,28 +21,30 @@ This module defines the class to create a RedisSession instance and the
 interface to validate and operate on the Redis store of this session. 
 """
 
-import os
 import json
 import time
 from datetime import timedelta, datetime, timezone
 from typing import Union, Tuple
-from uuid import uuid4
 
-from flask import current_app as app
-from redis import Redis, ReadOnlyError
+from flask import session
+from redis import ReadOnlyError
 from itsdangerous import (
     TimedJSONWebSignatureSerializer, JSONWebSignatureSerializer, BadSignature,
     SignatureExpired
 )
 
-from sim_api.schemas import ConfigurationsSchema
-from sim_api.utilities import JSONEncoder
+from sim_api.extensions.utilities import JSONEncoder
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
 
-SESSION_PREFIX = 'session'
+SESSION_PREFIX = 'simulation'
 SESSION_EXPIRY_MINUTES = 120
+
+
+class SimSession(object):
+    def __init__(self):
+        pass
 
 
 class SaveSessionError(Exception):
@@ -53,85 +55,30 @@ class SaveSessionError(Exception):
         super(SaveSessionError, self).__init__(f'{message}')
 
 
-def new_session_id() -> hex:
-    """Helper to generate new Session ID values from uuid4 library."""
-    return uuid4().hex
-
-
 def utc_timestamp_by_second(utc_date_time: datetime) -> int:
     """Helper to convert datetime objects to timestamp integers."""
     return int((utc_date_time.replace(tzinfo=timezone.utc).timestamp()))
 
 
 class SimSessionService(object):
-    """The interface defines how a service for Simulation Session."""
+    """The interface defines how a service for Simulation Session works."""
     def __init__(self):
-        """On initialisation, the service just stores a Redis connection."""
-        if os.environ.get('FLASK_ENV', 'development') == 'production':
-            self.redis = Redis(
-                host=app.config['REDIS_HOST'],
-                port=int(app.config['REDIS_PORT']),
-                password=app.config['REDIS_PASSWORD'],
-                db=int(app.config['REDIS_DB']),
-            )
-        else:
-            self.redis = Redis(
-                host=app.config['REDIS_HOST'],
-                port=int(app.config['REDIS_PORT']),
-                db=int(app.config['REDIS_DB']),
-            )
-        # Store some secret Hydra stuff
-        self.secret_key = app.config.get('SECRET_KEY', None)
-        self.salt = app.config.get('SECURITY_PASSWORD_SALT', None)
+        self.session = session
 
-    def new_session(self, uid: str, session_data: dict) -> None:
-        """We initialise a new Session storage for the current user in the Redis
-        datastore using the current session id.
-
-        Args:
-            uid: the current User ID in the context.
-            session_data: a Python dictionary of the data to store.
-
-        Returns:
-            None
-        """
-
-        # The storage value dumped to JSON format
-        redis_value = JSONEncoder().encode(session_data)
-
-        # We use a wrapper to write to Redis datastore with setex which stores
-        # the redis_value by the name as key and also sets an expiration
-        # time on the store which when expired will be deleted
-        self._write_wrapper(
-            self.redis.setex,
-            name=self._redis_key(uid),
-            value=redis_value,
-            time=timedelta(days=30)
-        )
+    def new_session(self, session_data: dict) -> None:
+        # The storage value dumped to JSON format. We use our custom JSON
+        # Encoder to ensure that numpy.floats get serialized properly
+        sim_session_data = JSONEncoder().encode(session_data)
+        self.session['simulation'] = sim_session_data
 
     def save_session(self, sid: str, session_data: dict) -> None:
-        """We use this method to update the Redis datastore with the session
-        data that is provided.
-
-        Args:
-            sid: a valid Session ID that is used as the key for Redis.
-            session_data: the Python dict of the data to store.
-
-        Returns:
-            None
-        """
 
         if sid is None or not session_data:
             raise SaveSessionError()
 
         # The storage value dumped to JSON format
-        # We use our customer JSON Encoder to ensure that numpy.floats get
+        # We use our custom JSON Encoder to ensure that numpy.floats get
         # serialized properly
-        # FIXME(andrew@neuraldev.io): Make a proper schema for this as there
-        #  is additional information.
-        # redis_value = JSONEncoder().encode(
-        #     ConfigurationsSchema().load(session_data)
-        # )
         redis_value = JSONEncoder().encode(session_data)
 
         # TODO(andrew@neuraldev.io): Doing the refresh without generating a new
@@ -141,16 +88,6 @@ class SimSessionService(object):
         # We refresh the TTL in Redis at every save to keep the data for longer.
         expiry_duration = self._get_expiry_duration()
         expires_in_seconds = int(expiry_duration.total_seconds())
-
-        # We use a wrapper to write to Redis datastore with setex which stores
-        # the redis_value by the name as key and also sets an expiration
-        # time on the store which when expired will be deleted
-        self._write_wrapper(
-            self.redis.setex,
-            name=self._redis_key(sid),
-            value=redis_value,
-            time=expires_in_seconds
-        )
 
     def load_session(self, session_key: str
                      ) -> Union[Tuple[str, dict], Tuple[None, str]]:

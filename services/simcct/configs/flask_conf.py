@@ -21,7 +21,7 @@ Just some configuration settings.
 """
 
 import os
-from sim_api.utilities import JSONEncoder
+from sim_api.extensions.utilities import JSONEncoder
 
 
 class BaseConfig:

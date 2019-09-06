@@ -40,7 +40,7 @@ from sim_api.models import User, LoginData
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
-from sim_api.utilities import URLTokenError, URLTokenExpired
+from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
 from sim_api.sim_session import SimSessionService
 
 logger = AppLogger(__name__)
@@ -315,7 +315,7 @@ def register_new_sim_session(user: User) -> True:
         'results': None
     }
 
-    SimSessionService().new_session(user.id, session_data_store)
+    SimSessionService().new_session(session_data_store)
 
 
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
@@ -397,9 +397,9 @@ def login() -> any:
                 user.save()
             reader.close()
 
+            session['jwt'] = auth_token.decode()
             session['user_id'] = str(user.id)
             session['ip_address'] = ip_address
-            session['token'] = auth_token.decode()
 
             # Inject the Simulation Session data
             register_new_sim_session(user=user)

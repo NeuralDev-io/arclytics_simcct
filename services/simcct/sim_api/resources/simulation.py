@@ -27,7 +27,7 @@ from flask_restful import Resource
 
 from sim_api.extensions import api
 from sim_api.middleware import token_and_session_required
-from sim_api.sim_session import SimSessionService, SaveSessionError
+from sim_api.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration
 from simulation.phasesimulation import PhaseSimulation
 from simulation.utilities import ConfigurationError, SimulationError
@@ -49,12 +49,7 @@ class Simulation(Resource):
         response = {'status': 'fail'}
 
         # First we need to make sure they logged in and are in a current session
-        sid, session_store = SimSessionService().load_session(session_key)
-
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
+        session_store = SimSessionService().load_session()
 
         if not session_store:
             response['message'] = 'Unable to retrieve data from Redis.'
@@ -184,12 +179,7 @@ class Simulation(Resource):
         # If a valid simulation has been run, the configurations are now valid.
         session_store['configurations']['is_valid'] = True
         session_store['results'] = data
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response['data'] = data

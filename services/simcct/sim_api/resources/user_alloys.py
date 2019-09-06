@@ -33,7 +33,7 @@ from mongoengine.errors import (
 from sim_api.extensions import api
 from sim_api.middleware import authenticate
 from sim_api.models import Alloy, User
-from sim_api.utilities import (
+from sim_api.extensions.utilities import (
     ElementSymbolInvalid, ElementInvalid, MissingElementError,
     DuplicateElementError
 )

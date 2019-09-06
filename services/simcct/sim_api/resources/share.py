@@ -40,7 +40,7 @@ from sim_api.token import (
     URLTokenError, generate_shared_simulation_token, generate_url,
     confirm_simulation_token
 )
-from sim_api.utilities import (
+from sim_api.extensions.utilities import (
     ElementSymbolInvalid, ElementInvalid, MissingElementError,
     DuplicateElementError
 )

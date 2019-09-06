@@ -21,7 +21,7 @@ Just some configuration settings.
 """
 
 import os
-from sim_api.utilities import JSONEncoder
+from sim_api.extensions.utilities import JSONEncoder
 
 
 class BaseConfig:
@@ -38,9 +38,8 @@ class BaseConfig:
 
     # Session variables for Flask
     SESSION_COOKIE_NAME = 'session'
-    SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
-    PERMANENT_SESSION_LIFETIME = 1200
+    SESSION_PERMANENT = True
     SESSION_TYPE = 'redis'
     SESSION_USE_SIGNER = True
 
@@ -86,6 +85,8 @@ class TestingConfig(BaseConfig):
 
 class ProductionConfig(BaseConfig):
     """Production configuration"""
+    SESSION_COOKIE_SECURE = True
+    REMEMBER_COOKIE_SECURE = True
     MONGO_DBNAME = 'arclytics'
     BCRYPT_LOG_ROUNDS = 13
     # TODO(andrew@neuraldev.io): Ensure the database changes over during

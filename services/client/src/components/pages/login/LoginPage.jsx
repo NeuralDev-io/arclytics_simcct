@@ -127,10 +127,8 @@ class LoginPage extends Component {
               const promise = new Promise((resolve, reject) => {
                 login(values, resolve, reject)
               })
-              promise.then((data) => {
+              promise.then(() => {
                 // If response is successful
-                localStorage.setItem('token', data.token)
-                localStorage.setItem('session', data.session)
                 const { history, getUserStatusConnect } = this.props
                 // Wait for promise from fetch if the user has a profile
                 getUserStatusConnect().then(() => {

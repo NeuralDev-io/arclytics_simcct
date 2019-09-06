@@ -3,7 +3,7 @@ import {
 } from './types'
 
 export const getUsers = () => (dispatch) => {
-  fetch(`${process.env.REACT_APP_USER_HOST}/users`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/users`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

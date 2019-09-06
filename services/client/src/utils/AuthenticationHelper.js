@@ -91,7 +91,7 @@ export const logout = (callback) => {
 }
 
 export const forgotPassword = (resolve, reject, email) => {
-  fetch(`${process.env.REACT_APP_USER_HOST}/reset/password`, {
+  fetch(`${ARC_URL}/reset/password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ export const forgotPassword = (resolve, reject, email) => {
 }
 
 export const resetPassword = (resolve, reject, values, token) => {
-  fetch(`${process.env.REACT_APP_USER_HOST}/auth/password/reset`, {
+  fetch(`${ARC_URL}/auth/password/reset`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

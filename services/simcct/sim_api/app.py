@@ -53,38 +53,48 @@ app_settings = os.getenv('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')
 _mongo_client = None
 
 
-def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
+def init_db(
+        app=None, db_name=None, host=None, port=None, alias='default'
+) -> MongoSingleton:
     """Make a connection to the MongoDB container and returns a singleton
     wrapper on a pymongo.MongoClient."""
     disconnect_all()
+
+    testing = False
 
     if app is not None:
         db_name = app.config['MONGO_DBNAME']
         host = app.config['MONGO_HOST']
         port = int(app.config['MONGO_PORT'])
+        testing = app.config['TESTING']
 
     if os.environ.get('FLASK_ENV') == 'production':
         mongo_client = connect(
             db_name,
             host=host,
             port=int(port),
-            alias='default',
+            alias=alias,
             username=os.environ.get('MONGO_APP_USER', None),
             password=os.environ.get('MONGO_APP_USER_PASSWORD', None),
         )
     else:
-        mongo_client = connect(
-            db_name, host=host, port=int(port), alias='default'
-        )
+        if testing:
+            mongo_client = connect(
+                'arc_test', host='mongomock://localhost', alias=alias
+            )
+        else:
+            mongo_client = connect(
+                db_name, host=host, port=int(port), alias=alias
+            )
 
     # Test to make sure the connection has been created.
     try:
-        conn = get_connection('default')
+        conn = get_connection(alias)
     except MongoEngineConnectionError as e:
         print('MongoDB Failed to Connect.\n Error: {}'.format(e))
 
     try:
-        db_curr = get_db('default')
+        db_curr = get_db(alias)
     except MongoEngineConnectionError as e:
         print('MongoDB Failed to Get Database.\n Error: {}'.format(e))
 

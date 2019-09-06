@@ -27,6 +27,7 @@ from mongoengine import DoesNotExist
 
 from sim_api.extensions.Session.redis_session import SESSION_COOKIE_NAME
 from sim_api.models import User
+from sim_api.extensions import RESPONSE_HEADERS
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -41,6 +42,7 @@ def async_func(f):
     return wrapper
 
 
+# ========================== # FLASK VERSIONS # ============================= #
 def authenticate_user_and_cookie_flask(f):
     """A wrapper decorator as a middleware to authenticate if the user has a
     cookie in their request. This will check the cookie and session is available
@@ -99,8 +101,72 @@ def authenticate_user_and_cookie_flask(f):
     return decorated_func
 
 
+def authorize_admin_cookie_flask(f):
+    """A wrapper decorator as a middleware to authenticate if the user has a
+    cookie in their request. This will check the cookie and session is
+    available for the user before it allows any actions on the back-end.
+    Additionally, it also checks if the user is an admin and allows to perform
+    actions on admin authorized endpoints.
+
+    Args:
+        f: the endpoint View method to run that is being wrapped.
+
+    Returns:
+        the `sim_api.models.User` object if found.
+    """
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        response = {
+            'status': 'fail',
+            'message': 'Session token is not valid.'
+        }
+        # Get the session key from the cookies
+        session_key = request.cookies.get(SESSION_COOKIE_NAME)
+
+        if not session_key:
+            return jsonify(response), 401
+
+        if not session:
+            response['message'] = 'Session is invalid.'
+            return jsonify(response), 401
+
+        # Extract the JWT from the session which we stored at login
+        auth_token = session.get('jwt', None)
+        if auth_token is None:
+            response['message'] = 'No JWT stored in Session.'
+            return jsonify(response), 500
+
+        # Decode either returns bson.ObjectId if successful or a string
+        # from an exception
+        resp = User.decode_auth_token(auth_token=auth_token)
+
+        # Either returns an ObjectId User ID or a string response.
+        if not isinstance(resp, ObjectId):
+            response['message'] = resp
+            return jsonify(response), 401
+
+        # Validate the user is active
+        try:
+            user = User.objects.get(id=resp)
+        except DoesNotExist as e:
+            response['message'] = 'User does not exist.'
+            return jsonify(response), 404
+
+        if not user.active:
+            response['message'] = 'This user account has been disabled.'
+            return jsonify(response), 403
+
+        if not user.is_admin:
+            response['message'] = 'Not authorized.'
+            return jsonify(response), 403
+
+        return f(user, *args, **kwargs)
+
+    return decorated_func
+
+
 # ======================== # RESTFUL VERSIONS # ============================= #
-def authenticate_user_and_cookie_restful(f):
+def authenticate_user_cookie_restful(f):
     """A wrapper decorator as a middleware to authenticate if the user has a
     cookie in their request. This will check the cookie and session is available
     for the user before it allows any actions on the back-end.
@@ -121,17 +187,17 @@ def authenticate_user_and_cookie_restful(f):
         session_key = request.cookies.get(SESSION_COOKIE_NAME)
 
         if not session_key:
-            return response, 401
+            return response, 401, RESPONSE_HEADERS
 
         if not session:
             response['message'] = 'Session is invalid.'
-            return response, 401
+            return response, 401, RESPONSE_HEADERS
 
         # Extract the JWT from the session which we stored at login
         auth_token = session.get('jwt', None)
         if auth_token is None:
             response['message'] = 'No JWT stored in Session.'
-            return response, 500
+            return response, 500, RESPONSE_HEADERS
 
         # Decode either returns bson.ObjectId if successful or a string from an
         # exception
@@ -140,26 +206,25 @@ def authenticate_user_and_cookie_restful(f):
         # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):
             response['message'] = resp
-            return response, 401
+            return response, 401, RESPONSE_HEADERS
 
         # Validate the user is active
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
             response['message'] = 'User does not exist.'
-            return response, 404
+            return response, 404, RESPONSE_HEADERS
 
         if not user.active:
             response['message'] = 'This user account has been disabled.'
-            return response, 403
+            return response, 403, RESPONSE_HEADERS
 
         return f(user, *args, **kwargs)
 
     return decorated_func
 
 
-# RESTFUL VERSION
-def authorize_admin_cookie_and_session(f):
+def authorize_admin_cookie_restful(f):
     """A wrapper decorator as a middleware to authenticate if the user has a
     cookie in their request. This will check the cookie and session is
     available for the user before it allows any actions on the back-end.
@@ -295,7 +360,7 @@ def authenticate_flask(f):
 
         # Validate the user is active
         try:
-            user = User.objects.get(id=resp)
+            user: User = User.objects.get(id=resp)
         except DoesNotExist as e:
             response['message'] = 'User does not exist.'
             return jsonify(response), 404

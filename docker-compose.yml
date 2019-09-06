@@ -182,7 +182,7 @@ services:
       - 3000
     environment:
       - NODE_ENV=development
-      - REACT_APP_SIM_HOST=localhost
+      - REACT_APP_SIM_HOST=http://localhost
       - REACT_APP_SIM_PORT=8000
     depends_on:
       - mongodb

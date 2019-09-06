@@ -720,9 +720,15 @@ def change_email(user_id) -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])
-@authenticate_flask
+@authenticate_user_and_cookie
 def logout(_) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
+
+    # Remove the data from the user's current session.
+    session.clear()
+
+    logger.info(f'Session logout: {session}')
+
     response = {'status': 'success', 'message': 'Successfully logged out.'}
     return jsonify(response), 202
 

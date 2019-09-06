@@ -18,6 +18,7 @@ __date__ = '2019.07.31'
 """
 
 from simulation.periodic import PeriodicTable
+from flask import json
 
 
 def convert_json_to_comp(comp_list):
@@ -29,3 +30,17 @@ def convert_json_to_comp(comp_list):
             raise NotImplementedError('Symbol not found error.')
         test_comp[str(idx)] = el
     return test_comp
+
+
+def login(client, email, password):
+    with client:
+        resp_login = client.post(
+            '/api/v1/sim/auth/login',
+            data=json.dumps({
+                'email': email,
+                'password': password
+            }),
+            content_type='application/json'
+        )
+        data = json.loads(resp_login.data.decode())
+        return data

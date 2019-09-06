@@ -99,6 +99,7 @@ def authenticate_user_and_cookie(f):
     return decorated_func
 
 
+# RESTFUL VERSON
 def authorize_admin_cookie_and_session(f):
     """A wrapper decorator as a middleware to authenticate if the user has a
     cookie in their request. This will check the cookie and session is
@@ -122,17 +123,17 @@ def authorize_admin_cookie_and_session(f):
         session_key = request.cookies.get(SESSION_COOKIE_NAME)
 
         if not session_key:
-            return jsonify(response), 401
+            return response, 401
 
         if not session:
             response['message'] = 'Session is invalid.'
-            return jsonify(response), 401
+            return response, 401
 
         # Extract the JWT from the session which we stored at login
         auth_token = session.get('jwt', None)
         if auth_token is None:
             response['message'] = 'No JWT stored in Session.'
-            return jsonify(response), 500
+            return response, 500
 
         # Decode either returns bson.ObjectId if successful or a string
         # from an exception
@@ -141,18 +142,18 @@ def authorize_admin_cookie_and_session(f):
         # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):
             response['message'] = resp
-            return jsonify(response), 401
+            return response, 401
 
         # Validate the user is active
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
             response['message'] = 'User does not exist.'
-            return jsonify(response), 404
+            return response, 404
 
         if not user.active:
             response['message'] = 'This user account has been disabled.'
-            return jsonify(response), 403
+            return response, 403
 
         if not user.is_admin:
             response['message'] = 'Not authorized.'

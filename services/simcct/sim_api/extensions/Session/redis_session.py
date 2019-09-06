@@ -18,9 +18,9 @@ __status__ = 'development'
 __date__ = '2019.08.07'
 """redis_session.py: 
 
-This module implements a Redis Session Server-Side storage without using Cookies
-but instead encoding and storing the JWT token and ensuring it is not tampered
-with at each request. 
+This module implements a Redis Session Server-Side storage using Cookies and
+encoding and storing the JWT token which is signed by the server and ensuring 
+it is not tampered with at each request. 
 """
 
 import json
@@ -35,7 +35,7 @@ from itsdangerous import BadSignature, SignatureExpired
 from redis import ReadOnlyError
 from werkzeug.datastructures import CallbackDict
 
-from sim_api.utilities import JSONEncoder
+from sim_api.extensions.utilities import JSONEncoder
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -130,14 +130,19 @@ class RedisSessionInterface(SessionInterface):
         return RedisSession(data, sid=sid)
 
     def save_session(self, app, session, response):
-        user_id = session.get('user_id')
+        jwt = session.get('jwt')
 
+        # Initial verification of the Session
+
+        # Checking session is not empty or it hasn't been modified
         def session_is_modified_empty():
             return not session and session.modified
 
+        # Checking if this session has a JWT or not
         def session_is_invalid():
-            return not user_id
+            return not jwt
 
+        # If either of those fails
         if session_is_modified_empty() or session_is_invalid():
             self._clean_redis_and_cookie(app, response, session)
             return
@@ -148,7 +153,7 @@ class RedisSessionInterface(SessionInterface):
         expiry_date = datetime.utcnow() + expiry_duration
         expires_in_seconds = int(expiry_duration.total_seconds())
 
-        session.sid = self._inject_user_id_in_sid(session.sid, user_id)
+        session.sid = self._inject_jwt_in_sid(session.sid, jwt)
         session_key = self._create_session_key(session.sid, expiry_date)
 
         self._write_wrapper(
@@ -283,9 +288,9 @@ class RedisSessionInterface(SessionInterface):
         }, salt=self.salt)
 
     @staticmethod
-    def _inject_user_id_in_sid(sid, user_id):
-        """We simply inject the User ObjectId into the SID to further encode."""
-        prefix = "{}.".format(user_id)
+    def _inject_jwt_in_sid(sid, jwt):
+        """We simply inject the JWT into the Session ID to further encode."""
+        prefix = "{}.".format(jwt)
         if not sid.startswith(prefix):
             sid = prefix + sid
         return sid
@@ -294,18 +299,8 @@ class RedisSessionInterface(SessionInterface):
         """If the Cookie is bad, we clear out the Cookie and Redis store."""
         self._write_wrapper(
             self.redis.delete,
-            name=self._redis_key(session.sid)
+            self._redis_key(session.sid)
         )
         response.delete_cookie(
             SESSION_COOKIE_NAME, domain=self.get_cookie_domain(app)
         )
-
-
-class FlaskRedisSession(object):
-    def __init__(self, app=None):
-        if app is not None:
-            self.init_app(app)
-
-    @staticmethod
-    def init_app(app):
-        app.session_interface = RedisSessionInterface(app=app)

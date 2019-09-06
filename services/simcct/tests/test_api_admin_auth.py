@@ -36,7 +36,7 @@ from sim_api.token import (
     generate_promotion_confirmation_token
 )
 from tests.test_api_users import log_test_user_in
-from sim_api.utilities import get_mongo_uri
+from sim_api.extensions.utilities import get_mongo_uri
 
 logger = AppLogger(__name__)
 
@@ -211,7 +211,6 @@ class TestAdminCreateService(BaseTestCase):
 
     def test_confirm_disable_account_success(self):
         from pymongo import MongoClient
-        import os
         with current_app.test_client() as client:
             piett = User(
                 # email='brickmatic479@gmail.com',

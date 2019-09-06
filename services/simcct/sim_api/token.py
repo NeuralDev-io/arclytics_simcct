@@ -24,10 +24,9 @@ from typing import Union
 
 from flask import url_for
 from flask import current_app as app
-from itsdangerous import URLSafeTimedSerializer, JSONWebSignatureSerializer
+from itsdangerous import URLSafeTimedSerializer
 from itsdangerous.exc import BadSignature, SignatureExpired
-from sim_api.models import SharedSimulation
-from sim_api.utilities import URLTokenError, URLTokenExpired
+from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
 
 
 def generate_confirmation_token(email: str):

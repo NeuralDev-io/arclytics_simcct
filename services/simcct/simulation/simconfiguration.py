@@ -84,15 +84,11 @@ class SimConfiguration(object):
             if self.ae1 > 0 and self.ae3 > 0:
                 self.ae_check = True
 
-            # FIXME(andrew@neuraldev.io): If the Alloy compositions change,
-            #  we can probably do this in the background.
             # We need Xfe in simulation calculations and we have defined a cf
             # that is set to 0.012 because that's what Dr. Bendeich thinks works
 
             self.xfe, self.ceut = self.xfe_method2(self.comp, self.ae1)
 
-        # FIXME(andrew@neuraldev.io): This needs to be better implemented to
-        #  raise errors.
         if self.ae1 < 0.0 or self.ae3 < 0.0:
             raise ConfigurationError('Ae1 and Ae3 temperatures not yet set.')
         if self.ms_temp < 0.0 or self.bs_temp < 0.0:

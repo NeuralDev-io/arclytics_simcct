@@ -10,7 +10,7 @@ import { connect } from 'react-redux'
 import { Formik } from 'formik'
 import AlertCircleIcon from 'react-feather/dist/icons/alert-circle'
 import { ReactComponent as Logo } from '../../../assets/ANSTO_Logo_SVG/logo_text.svg'
-import { signup } from '../../../utils/AuthenticationHelper'
+import { signup } from '../../../api/AuthenticationHelper'
 import { signupValidation } from '../../../utils/ValidationHelper'
 
 import Button from '../../elements/button'

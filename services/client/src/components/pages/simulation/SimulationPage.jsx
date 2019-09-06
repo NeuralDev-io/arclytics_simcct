@@ -35,9 +35,9 @@ class SimulationPage extends Component {
   }
 
   componentDidMount = () => {
-    if (!localStorage.getItem('token')) {
-      this.props.history.push('/signin') // eslint-disable-line
-    }
+    // if (!localStorage.getItem('token')) {
+    //   this.props.history.push('/signin') // eslint-disable-line
+    // }
   }
 
   // handleShowModal = type => this.setState({ [`${type}Modal`]: true })

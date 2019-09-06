@@ -30,7 +30,8 @@ from .utilities import (
     MissingElementError,
     DuplicateElementError,
     SimpleUTC,
-    PeriodicTable
+    PeriodicTable,
+    RESPONSE_HEADERS
 )
 
 from flask_bcrypt import Bcrypt

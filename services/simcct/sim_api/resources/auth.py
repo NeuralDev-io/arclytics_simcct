@@ -51,7 +51,8 @@ auth_blueprint = Blueprint('auth', __name__)
 
 RESPONSE_HEADER = {
     'Content-type': 'application/json',
-    'Access-Control-Allow-Credentials': 'true'
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Origin': '*'
 }
 
 

@@ -27,7 +27,9 @@ from marshmallow import ValidationError
 from sim_api.extensions import api
 from sim_api.schemas import AlloySchema
 from sim_api.alloys_service import AlloysService
-from sim_api.middleware import admin_session_and_token_required
+from sim_api.middleware import (
+    admin_session_and_token_required, authenticate_user_and_cookie
+)
 from simulation.utilities import MissingElementError
 from logger.arc_logger import AppLogger
 
@@ -41,7 +43,10 @@ class AlloysList(Resource):
     the global alloy database.
     """
 
-    method_decorators = {'post': [admin_session_and_token_required]}
+    method_decorators = {
+        'post': [admin_session_and_token_required],
+        'get': [authenticate_user_and_cookie]
+    }
 
     # noinspection PyMethodMayBeStatic
     def post(self, token, session_key):
@@ -101,9 +106,12 @@ class AlloysList(Resource):
         return response, 201
 
     # noinspection PyMethodMayBeStatic
-    def get(self):
+    def get(self, _):
         """Exposes the GET method for `/alloys` to retrieve a list of alloys in
         the database.
+
+        Args:
+            _: unused User object returned from middleware.
 
         Returns:
             A Response object with a response dict and status code as int.
@@ -128,16 +136,18 @@ class Alloys(Resource):
     """
 
     method_decorators = {
+        'get': [authenticate_user_and_cookie],
         'put': [admin_session_and_token_required],
         'delete': [admin_session_and_token_required]
     }
 
     # noinspection PyMethodMayBeStatic
-    def get(self, alloy_id):
+    def get(self, _, alloy_id):
         """Allows the GET method with `/alloys/{id}` as an endpoint to get
         a single alloy from the database.
 
         Args:
+            _: unused User object returned from middleware.
             alloy_id: A valid ObjectId string that will be checked.
 
         Returns:

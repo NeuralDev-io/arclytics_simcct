@@ -27,27 +27,15 @@ import unittest
 from pathlib import Path
 
 import coverage
-import redis
 from flask.cli import FlaskGroup
-from prettytable import PrettyTable
-from pymongo import MongoClient
 
 import settings
 from arc_api.app import create_app
 
 COV = coverage.coverage(
     branch=True,
-    include=[
-        'arc_api/schemas.py', 'arc_api/resources/*', 'arc_api/alloys/*',
-        'arc_api/alloys_service.py', 'arc_api/middleware.py',
-        'arc_api/sim_session.py'
-    ],
-    omit=[
-        'arc_api/app.py'
-        'tests/*',
-        'configs/*',
-        'logs/*',
-    ]
+    include=[],
+    omit=['arc_api/app.py']
 )
 COV.start()
 
@@ -55,83 +43,14 @@ app = create_app()
 cli = FlaskGroup(create_app=create_app)
 
 
-@cli.command('seed_db')
-def seed_alloy_db():
-    if os.environ.get('FLASK_ENV', 'development') == 'production':
-        client = MongoClient(
-            host=str(os.environ.get('MONGO_HOST')),
-            port=int(os.environ.get('MONGO_PORT')),
-            username=str(os.environ.get('MONGO_APP_USER')),
-            password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
-            authSource='admin',
-            replicaSet='MainRepSet',
-        )
-    else:
-        client = MongoClient(
-            host=os.environ.get('MONGO_HOST'),
-            port=int(os.environ.get('MONGO_PORT'))
-        )
-    db = client[os.environ.get('MONGO_APP_DB', 'arc_dev')]
-    path = Path(settings.BASE_DIR) / 'seed_alloy_data.json'
-    if os.path.isfile(path):
-        with open(path) as f:
-            json_data = json.load(f)
-
-    from arc_api.schemas import AlloySchema
-    data = AlloySchema(many=True).load(json_data['alloys'])
-
-    print(
-        'Seeding global alloys to <{}> database:'.format(db.name),
-        file=sys.stderr
-    )
-    # Check the correct database -- arc_dev
-    db.alloys.insert_many(data)
-
-    tbl = PrettyTable(['Symbol', 'Weight'])
-
-    for alloy in db.alloys.find():
-        print(f"Alloy name: {alloy['name']}")
-        for el in alloy['compositions']:
-            tbl.add_row((el['symbol'], el['weight']))
-        print(tbl)
-        tbl.clear_rows()
-
-
 @cli.command('flush')
 def flush():
-    if os.environ.get('FLASK_ENV', 'development') == 'production':
-        client = MongoClient(
-            host=str(os.environ.get('MONGO_HOST')),
-            port=int(os.environ.get('MONGO_PORT')),
-            username=str(os.environ.get('MONGO_APP_USER')),
-            password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
-            authSource='admin',
-            replicaSet='MainRepSet',
-        )
-        redis_client = redis.Redis(
-            host=os.environ.get('REDIS_HOST'),
-            port=os.environ.get('REDIS_PORT'),
-            password=os.environ.get('REDIS_PASSWORD')
-        )
-        db = os.environ.get('MONGO_APP_DB')
-        print('Dropping <{}> database:'.format(db), file=sys.stderr)
-        client.drop_database(db)
-    else:
-        client = MongoClient(
-            host=os.environ.get('MONGO_HOST'),
-            port=int(os.environ.get('MONGO_PORT'))
-        )
-        redis_client = redis.Redis(
-            host=os.environ.get('REDIS_HOST'), port=os.environ.get('REDIS_PORT')
-        )
-        print('Dropping <{}> database:'.format('arc_dev'), file=sys.stderr)
-        client.drop_database('arc_dev')
-        print('Dropping <{}> database:'.format('arc_test'), file=sys.stderr)
-        client.drop_database('arc_test')
+    pass
 
-    dbs_created = redis_client.config_get('databases')
-    print('Flushing Redis: {}'.format(dbs_created), file=sys.stderr)
-    redis_client.flushall()
+
+@cli.command('seed_db')
+def seed_user_db():
+    pass
 
 
 @cli.command()

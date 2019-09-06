@@ -41,7 +41,7 @@ def async_func(f):
     return wrapper
 
 
-def authenticate_user_and_cookie(f):
+def authenticate_user_and_cookie_flask(f):
     """A wrapper decorator as a middleware to authenticate if the user has a
     cookie in their request. This will check the cookie and session is available
     for the user before it allows any actions on the back-end.
@@ -99,7 +99,66 @@ def authenticate_user_and_cookie(f):
     return decorated_func
 
 
-# RESTFUL VERSON
+# ======================== # RESTFUL VERSIONS # ============================= #
+def authenticate_user_and_cookie_restful(f):
+    """A wrapper decorator as a middleware to authenticate if the user has a
+    cookie in their request. This will check the cookie and session is available
+    for the user before it allows any actions on the back-end.
+
+    Args:
+        f: the endpoint View method to run that is being wrapped.
+
+    Returns:
+        the `sim_api.models.User` object if found.
+    """
+    @wraps(f)
+    def decorated_func(*args, **kwargs):
+        response = {
+            'status': 'fail',
+            'message': 'Session token is not valid.'
+        }
+        # Get the session key from the cookies
+        session_key = request.cookies.get(SESSION_COOKIE_NAME)
+
+        if not session_key:
+            return response, 401
+
+        if not session:
+            response['message'] = 'Session is invalid.'
+            return response, 401
+
+        # Extract the JWT from the session which we stored at login
+        auth_token = session.get('jwt', None)
+        if auth_token is None:
+            response['message'] = 'No JWT stored in Session.'
+            return response, 500
+
+        # Decode either returns bson.ObjectId if successful or a string from an
+        # exception
+        resp = User.decode_auth_token(auth_token=auth_token)
+
+        # Either returns an ObjectId User ID or a string response.
+        if not isinstance(resp, ObjectId):
+            response['message'] = resp
+            return response, 401
+
+        # Validate the user is active
+        try:
+            user = User.objects.get(id=resp)
+        except DoesNotExist as e:
+            response['message'] = 'User does not exist.'
+            return response, 404
+
+        if not user.active:
+            response['message'] = 'This user account has been disabled.'
+            return response, 403
+
+        return f(user, *args, **kwargs)
+
+    return decorated_func
+
+
+# RESTFUL VERSION
 def authorize_admin_cookie_and_session(f):
     """A wrapper decorator as a middleware to authenticate if the user has a
     cookie in their request. This will check the cookie and session is

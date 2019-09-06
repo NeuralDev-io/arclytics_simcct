@@ -7,7 +7,10 @@ mongoimport --db arc_dev \
     --collection alloys \
     --drop --file /data/test/global_alloys.json \
     --port 27017
-#    --jsonArray \
 
 # User Password not encoded properly. Must use the Python manage.py CLI
-#mongoimport --db arc_dev --collection users --drop --file /data/test/seed_user.json --jsonArray --port 27017
+mongoimport --db arc_dev \
+    --collection users \
+    --drop \
+    --file /data/test/users.json \
+    --port 27017

@@ -268,7 +268,7 @@ def register_user() -> Tuple[dict, int]:
         return jsonify(response), 400
 
 
-def register_new_sim_session(user: User, sid: str) -> True:
+def register_new_sim_session(user: User) -> True:
     if user.last_configuration is not None:
         configs = user.last_configuration.to_dict()
     else:

@@ -33,7 +33,8 @@ from itsdangerous import (
     SignatureExpired
 )
 
-from sim_api.extensions.utilities import JSONEncoder
+from sim_api.models import User
+from sim_api.extensions import JSONEncoder
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -65,10 +66,58 @@ class SimSessionService(object):
     def __init__(self):
         self.session = session
 
-    def new_session(self, session_data: dict) -> None:
+    def new_session(self, user: User) -> None:
+
+        if user.last_configuration is not None:
+            configs = user.last_configuration.to_dict()
+        else:
+            # These are based of defaults in the front-end as agreed to by
+            # Andrew
+            # and Dalton.
+            configs = {
+                'is_valid': False,
+                'method': 'Li98',
+                'grain_size': 8.0,
+                'nucleation_start': 1.0,
+                'nucleation_finish': 99.90,
+                'auto_calculate_ms': True,
+                'ms_temp': 0.0,
+                'ms_rate_param': 0.0,
+                'auto_calculate_bs': True,
+                'bs_temp': 0.0,
+                'auto_calculate_ae': True,
+                'ae1_temp': 0.0,
+                'ae3_temp': 0.0,
+                'start_temp': 900,
+                'cct_cooling_rate': 10
+            }
+
+        if user.last_alloy_store is not None:
+            alloy_store = user.last_alloy_store.to_dict()
+        else:
+            alloy_store = {
+                'alloy_option': 'single',
+                'alloys': {
+                    'parent': None,
+                    'weld': None,
+                    'mix': None
+                }
+            }
+        # if user.last_results is not None:
+        #     last_results = user.last_results
+
+        # This dict defines what we store in Redis for the session
+        session_data_store = {
+            'configurations': configs,
+            'alloy_store': alloy_store,
+            # TODO(davidmatthews1004@gmail.com) Update this to get from last in
+            #  user doc
+            'results': None
+        }
+
         # The storage value dumped to JSON format. We use our custom JSON
         # Encoder to ensure that numpy.floats get serialized properly
-        sim_session_data = JSONEncoder().encode(session_data)
+        sim_session_data = JSONEncoder().encode(session_data_store)
         self.session['simulation'] = sim_session_data
 
     def save_session(self, sid: str, session_data: dict) -> None:

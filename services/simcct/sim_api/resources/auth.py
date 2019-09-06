@@ -35,7 +35,7 @@ import geoip2.database
 
 from logger.arc_logger import AppLogger
 from sim_api.extensions import bcrypt
-from sim_api.middleware import authenticate_flask
+from sim_api.middleware import authenticate_flask, authenticate_user_and_cookie
 from sim_api.models import User, LoginData
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
@@ -46,6 +46,12 @@ from sim_api.sim_session import SimSessionService
 logger = AppLogger(__name__)
 
 auth_blueprint = Blueprint('auth', __name__)
+
+
+RESPONSE_HEADER = {
+    'Content-type': 'application/json',
+    'Access-Control-Allow-Credentials': True
+}
 
 
 class SessionValidationError(Exception):
@@ -409,7 +415,7 @@ def login() -> any:
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
-            return jsonify(response), 200
+            return jsonify(response), 200, RESPONSE_HEADER
 
     response['message'] = 'Email or password combination incorrect.'
     return jsonify(response), 404
@@ -773,10 +779,9 @@ def logout(_) -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
-@authenticate_flask
-def get_user_status(user_id) -> Tuple[dict, int]:
+@authenticate_user_and_cookie
+def get_user_status(user) -> Tuple[dict, int]:
     """Get the current session status of the user."""
-    user = User.objects.get(id=user_id)
     is_profile = True
     if not user.profile:
         is_profile = False

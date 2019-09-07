@@ -66,13 +66,8 @@ def init_db(
         )
     else:
         if testing:
-            mongo_client = connect(
-                'arc_test', host='mongomock://localhost', alias=alias
-            )
-        else:
-            mongo_client = connect(
-                db_name, host=host, port=int(port), alias=alias
-            )
+            db_name = 'arc_test'
+        mongo_client = connect(db_name, host=host, port=int(port), alias=alias)
 
     # Test to make sure the connection has been created.
     try:

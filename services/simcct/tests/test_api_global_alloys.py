@@ -169,13 +169,13 @@ class TestAlloyService(BaseTestCase):
         cls._id = cls.shuri.id
         cls._email = cls.shuri.email
 
-    @classmethod
-    def tearDownClass(cls) -> None:
+    # @classmethod
+    # def tearDownClass(cls) -> None:
         """On finishing, we should delete Shuri so no conflict."""
         # We just delete Shuri from the db
-        cls.mongo.users.delete_one({'email': cls._email})
-        conn = get_flask_mongo()
-        conn.instance.client.drop_database('arc_test')
+        # cls.mongo.users.delete_one({'email': cls._email})
+        # conn = get_flask_mongo()
+        # conn.instance.client.drop_database('arc_test')
 
     def test_get_all_alloys(self):
         """Ensure we can get all alloys."""
@@ -184,11 +184,10 @@ class TestAlloyService(BaseTestCase):
         with open(path) as f:
             json_data = json.load(f)
 
-        conn = MongoClient(
-            host=os.environ.get('MONGO_HOST'),
-            port=int(os.environ.get('MONGO_PORT'))
-        )
-        db = conn['arc_test']
+        db = get_db()
+
+        print(db)
+        print(db.users.find_one({"email": self.shuri.email}))
 
         if len([alloy for alloy in db.alloys.find()]) == 0:
             data = AlloySchema(many=True).load(json_data['alloys'])
@@ -197,7 +196,7 @@ class TestAlloyService(BaseTestCase):
         else:
             alloys_num = len([alloy for alloy in db.alloys.find()])
 
-        with self.client as client:
+        with self.app.test_client() as client:
             # test_login(client, self.shuri.email, self._pw)
 
             resp_login = client.post(
@@ -208,7 +207,7 @@ class TestAlloyService(BaseTestCase):
                 }),
                 content_type='application/json'
             )
-            print(resp_login)
+            print(resp_login.json)
 
             res = client.get(
                 '/api/v1/sim/global/alloys',

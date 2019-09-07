@@ -37,6 +37,7 @@ from sim_api.token import (
 )
 from tests.test_api_users import log_test_user_in
 from sim_api.extensions.utilities import get_mongo_uri
+from tests.test_utilities import test_login
 
 logger = AppLogger(__name__)
 
@@ -68,13 +69,12 @@ class TestAdminCreateService(BaseTestCase):
         )
         vader.save()
 
-        token = log_test_user_in(self, vader, 'AllTooEasy')
-
         with self.client:
+            cookie = test_login(self.client, vader.email, 'AllTooEasy')
+
             resp_disable = self.client.put(
-                '/disable/user',
+                '/api/v1/sim/disable/user',
                 data=json.dumps({'email': 'kyloren@gmail.com'}),
-                headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
 
@@ -100,13 +100,12 @@ class TestAdminCreateService(BaseTestCase):
         )
         jarjar.save()
 
-        token = log_test_user_in(self, jarjar, 'MeesaMakePassword')
-
         with self.client:
+            cookie = test_login(self.client, jarjar.email, 'MeesaMakePassword')
+
             resp = self.client.put(
-                '/disable/user',
+                '/api/v1/sim/disable/user',
                 data=json.dumps(''),
-                headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
 
@@ -130,13 +129,12 @@ class TestAdminCreateService(BaseTestCase):
         )
         r2d2.save()
 
-        token = log_test_user_in(self, r2d2, 'Weeeeeew')
-
         with self.client:
+            cookie = test_login(self.client, r2d2.email, 'Weeeeeew')
+
             resp = self.client.put(
-                '/disable/user',
+                '/api/v1/sim/disable/user',
                 data=json.dumps({'email': 'c3p0@protocol.com'}),
-                headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
 
@@ -150,7 +148,7 @@ class TestAdminCreateService(BaseTestCase):
         Ensure a disable request is rejected when no email is provided.
         """
         vader = User(
-            email='vader@sith.com', first_name='Darth', last_name='Vader'
+            email='vader@arclytics.com', first_name='Darth', last_name='Vader'
         )
         vader.set_password('AllTooEasy')
         # vader.is_admin = True
@@ -162,13 +160,12 @@ class TestAdminCreateService(BaseTestCase):
         )
         vader.save()
 
-        token = log_test_user_in(self, vader, 'AllTooEasy')
-
         with self.client:
+            cookie = test_login(self.client, vader.email, 'AllTooEasy')
+
             resp_disable = self.client.put(
-                '/disable/user',
+                '/api/v1/sim/disable/user',
                 data=json.dumps({'invalid_key': 'invalid_data'}),
-                headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
 
@@ -194,13 +191,12 @@ class TestAdminCreateService(BaseTestCase):
         )
         vader.save()
 
-        token = log_test_user_in(self, vader, 'AllTooEasy')
-
         with self.client:
+            cookie = test_login(self.client, vader.email, 'AllTooEasy')
+
             resp_disable = self.client.put(
-                '/disable/user',
+                '/api/v1/sim/disable/user',
                 data=json.dumps({'email': 'invalid_email.com'}),
-                headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
 
@@ -347,11 +343,11 @@ class TestAdminCreateService(BaseTestCase):
         obiwan.set_password('FromACertainPointOfView')
         obiwan.save()
 
-        token = log_test_user_in(self, quigon, 'ShortNegotiations')
-
         with self.client:
+            cookie = test_login(self.client, quigon.email, 'ShortNegotiations')
+
             resp = self.client.post(
-                '/admin/create',
+                '/api/v1/sim/admin/create',
                 data=json.dumps(
                     {
                         'email': 'obiwan@arclytics.io',
@@ -359,7 +355,6 @@ class TestAdminCreateService(BaseTestCase):
                         'position': 'Jedi Knight.'
                     }
                 ),
-                headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
@@ -391,18 +386,19 @@ class TestAdminCreateService(BaseTestCase):
         biggs.set_password('LukePullUp')
         biggs.save()
 
-        token = log_test_user_in(self, luke, 'IAmAJediLikeMyFatherBeforeMe')
-
         with self.client:
+            cookie = test_login(
+                self.client, luke.email, 'IAmAJediLikeMyFatherBeforeMe'
+            )
+
             resp = self.client.post(
-                '/admin/create',
+                '/api/v1/sim/admin/create',
                 data=json.dumps(
                     {
                         'email': 'invalidbiggs@abcdefghijklmopqrstuvwxyz.com',
                         'position': 'Red Three'
                     }
                 ),
-                headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
@@ -415,7 +411,7 @@ class TestAdminCreateService(BaseTestCase):
         ackbar = User(
             first_name='Admiral',
             last_name='Ackbar',
-            email='admiralackbar@gmail.com'
+            email='admiralackbar@arlytics.io'
         )
         ackbar.set_password('ITSATRAP')
         # ackbar.is_admin = True
@@ -428,25 +424,22 @@ class TestAdminCreateService(BaseTestCase):
         ackbar.save()
 
         jyn = User(
-            first_name='Jyn',
-            last_name='Erso',
-            email='brickmatic479@gmail.com'
+            first_name='Jyn', last_name='Erso', email='ersoj@arclytics.io'
         )
         jyn.set_password('RebellionsAreBuiltOnHope')
         jyn.save()
 
-        token = log_test_user_in(self, ackbar, 'ITSATRAP')
-
         with self.client:
+            cookie = test_login(self.client, ackbar.email, 'ITSATRAP')
+
             resp = self.client.post(
-                '/admin/create',
+                '/api/v1/sim/admin/create',
                 data=json.dumps(
                     {
-                        'email': 'brickmatic479@gmail.com',
+                        'email': 'ersoj@arclytics.io',
                         'position': 'Rogue Leader'
                     }
                 ),
-                headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
@@ -492,18 +485,17 @@ class TestAdminCreateService(BaseTestCase):
         )
         luminara.save()
 
-        token = log_test_user_in(self, aayla, 'KilledByBly')
-
         with self.client:
+            cookie = test_login(self.client, aayla.email, 'KilledByBly')
+
             resp = self.client.post(
-                '/admin/create',
+                '/api/v1/sim/admin/create',
                 data=json.dumps(
                     {
                         'email': 'luminaraunduli@gmail.com',
                         'position': 'Jedi Master'
                     }
                 ),
-                headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
@@ -518,9 +510,7 @@ class TestAdminCreateService(BaseTestCase):
         Ensure a create admin request with no request body is rejected.
         """
         quigon = User(
-            first_name='Qui-Gon',
-            last_name='Jinn',
-            email="davidmatthews1004@gmail.com"
+            first_name='Qui-Gon', last_name='Jinn', email="jinnq@arclytics.io"
         )
         # quigon.is_admin = True
         quigon.admin_profile = AdminProfile(
@@ -532,13 +522,12 @@ class TestAdminCreateService(BaseTestCase):
         quigon.set_password('ShortNegotiations')
         quigon.save()
 
-        token = log_test_user_in(self, quigon, 'ShortNegotiations')
-
         with self.client:
+            cookie = test_login(self.client, quigon.email, 'ShortNegotiations')
+
             resp = self.client.post(
-                '/admin/create',
+                '/api/v1/sim/admin/create',
                 data=json.dumps(''),
-                headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
@@ -553,7 +542,7 @@ class TestAdminCreateService(BaseTestCase):
         quigon = User(
             first_name='Qui-Gon',
             last_name='Jinn',
-            email="davidmatthews1004@gmail.com"
+            email="quigonandhisgin@arclytics.io"
         )
         # quigon.is_admin = True
         quigon.admin_profile = AdminProfile(
@@ -565,13 +554,12 @@ class TestAdminCreateService(BaseTestCase):
         quigon.set_password('ShortNegotiations')
         quigon.save()
 
-        token = log_test_user_in(self, quigon, 'ShortNegotiations')
-
         with self.client:
+            cookie = test_login(self.client, quigon.email, 'ShortNegotiations')
+
             resp = self.client.post(
-                '/admin/create',
+                '/api/v1/sim/admin/create',
                 data=json.dumps({'position': 'Jedi Knight.'}),
-                headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
@@ -586,7 +574,7 @@ class TestAdminCreateService(BaseTestCase):
         quigon = User(
             first_name='Qui-Gon',
             last_name='Jinn',
-            email="davidmatthews1004@gmail.com"
+            email="liamneeson@arclytics.io"
         )
         # quigon.is_admin = True
         quigon.admin_profile = AdminProfile(
@@ -598,13 +586,12 @@ class TestAdminCreateService(BaseTestCase):
         quigon.set_password('ShortNegotiations')
         quigon.save()
 
-        token = log_test_user_in(self, quigon, 'ShortNegotiations')
-
         with self.client:
+            cookie = test_login(self.client, quigon.email, 'ShortNegotiations')
+
             resp = self.client.post(
-                '/admin/create',
+                '/api/v1/sim/admin/create',
                 data=json.dumps({'email': 'brickmatic479@gmail.com'}),
-                headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
@@ -620,7 +607,7 @@ class TestAdminCreateService(BaseTestCase):
         quigon = User(
             first_name='Qui-Gon',
             last_name='Jinn',
-            email="davidmatthews1004@gmail.com"
+            email="quigonjinn@arclytics.io"
         )
         # quigon.is_admin = True
         quigon.admin_profile = AdminProfile(
@@ -632,18 +619,17 @@ class TestAdminCreateService(BaseTestCase):
         quigon.set_password('ShortNegotiations')
         quigon.save()
 
-        token = log_test_user_in(self, quigon, 'ShortNegotiations')
-
         with self.client:
+            cookie = test_login(self.client, quigon.email, 'ShortNegotiations')
+
             resp = self.client.post(
-                '/admin/create',
+                '/api/v1/sim/admin/create',
                 data=json.dumps(
                     {
-                        'email': 'brickmatic479@gmail.com',
+                        'email': 'noobmaster69@arclytics.io',
                         'position': 'Invisible.'
                     }
                 ),
-                headers={'Authorization': 'Bearer {}'.format(token)},
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
@@ -751,7 +737,7 @@ class TestAdminCreateService(BaseTestCase):
 
     def test_cancel_promotion_promoter_not_admin(self):
         admin = User(
-            email='davidmatthews1004@gmail.com',
+            email='davidmatthews1004@arclytics.io',
             first_name='David',
             last_name='Matthews'
         )
@@ -760,7 +746,7 @@ class TestAdminCreateService(BaseTestCase):
         admin.save()
 
         user = User(
-            email='brickmatic479@gmail.com',
+            email='brickmatic479@arclytics.io',
             first_name='David',
             last_name='Jnr'
         )
@@ -873,127 +859,7 @@ class TestAdminCreateService(BaseTestCase):
     #             f'http://{client_host}/admin/create/cancel/tokenexpired'
     #         self.assertRedirects(resp, redirect_url)
 
-    def test_verify_promotion_success(self):
-        admin = User(
-            # email='davidmatthews1004@gmail.com',
-            email='davidmatthews1004@arclytics.io',
-            first_name='David',
-            last_name='Matthews'
-        )
-        admin.set_password('testing123')
-        admin.verified = True
-        # admin.is_admin = True
-        admin_profile = AdminProfile(
-            position='Jedi Master', mobile_number=None, verified=True
-        )
-        admin.admin_profile = admin_profile
-        admin.save()
-
-        user = User(
-            # email='brickmatic479@gmail.com',
-            email='davidjnr@arclytics.io',
-            first_name='David',
-            last_name='Jnr'
-        )
-        user.set_password('testing123')
-        user.verified = True
-        # user.is_admin=True
-        user_admin_profile = AdminProfile(
-            position='Jedi Knight.', mobile_number=None, verified=False
-        )
-        user.admin_profile = user_admin_profile
-        user.admin_profile.promoted_by = admin.id
-        user.save()
-
-        token = generate_confirmation_token(user.email)
-        url = generate_url('admin.verify_promotion', token)
-
-        with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
-
-            self.assertEquals(resp.status_code, 302)
-            self.assertTrue(resp.headers['Location'])
-            redirect_url = 'http://localhost:3000/signin'
-            self.assertRedirects(resp, redirect_url)
-
-            updated_user = User.objects.get(email=user.email)
-            self.assertTrue(updated_user.is_admin)
-            self.assertEqual(
-                updated_user.admin_profile.position, 'Jedi Knight.'
-            )
-            self.assertEqual(updated_user.admin_profile.mobile_number, None)
-            self.assertEqual(updated_user.admin_profile.verified, True)
-
-    def test_verify_promotion_user_dne(self):
-        token = generate_confirmation_token('arclyticstestuser@gmail.com')
-        url = generate_url('admin.verify_promotion', token)
-
-        with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
-
-            client_host = os.environ.get('CLIENT_HOST')
-            self.assertEquals(resp.status_code, 302)
-            self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/admin/verify?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEquals(resp.status_code, 400)
-            # self.assertEqual(data['message'], 'User does not exist.')
-
-    def test_verify_promotion_user_not_verified(self):
-        test_user = User(
-            email='arclyticstestuser@gmail.com',
-            first_name='Arclytics',
-            last_name='Testuser'
-        )
-        test_user.set_password('testing123')
-        test_user.save()
-
-        token = generate_confirmation_token(test_user.email)
-        url = generate_url('admin.verify_promotion', token)
-
-        with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
-
-            client_host = os.environ.get('CLIENT_HOST')
-            self.assertEquals(resp.status_code, 302)
-            self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/admin/verify?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEquals(resp.status_code, 400)
-            # self.assertEqual(data['message'], 'User is not verified.')
-
-    def test_verify_promotion_user_is_not_admin(self):
-        test_user = User(
-            email='arclyticstestuser@gmail.com',
-            first_name='Arclytics',
-            last_name='Testuser'
-        )
-        test_user.set_password('testing123')
-        test_user.verified = True
-        test_user.save()
-
-        token = generate_confirmation_token(test_user.email)
-        url = generate_url('admin.verify_promotion', token)
-
-        with current_app.test_client() as client:
-            resp = client.get(url, content_type='application/json')
-
-            client_host = os.environ.get('CLIENT_HOST')
-            self.assertEquals(resp.status_code, 302)
-            self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/admin/verify?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEquals(resp.status_code, 400)
-            # self.assertEqual(data['message'], 'User is not an Admin.')
-
-    # FIXME(davidmatthews1004@gmail.com) Pleas fix
-    # def test_verify_promotion_token_expired(self):
+    # def test_verify_promotion_success(self):
     #     admin = User(
     #         # email='davidmatthews1004@gmail.com',
     #         email='davidmatthews1004@arclytics.io',
@@ -1025,23 +891,143 @@ class TestAdminCreateService(BaseTestCase):
     #     user.admin_profile.promoted_by = admin.id
     #     user.save()
     #
-    #     token = (
-    #         'ImRhdmlkam5yQGFyY2x5dGljcy5pbyI.XWIx9A.LHcr6fRYpQbB9hKMMoXMn01alcg'
-    #     )
+    #     token = generate_confirmation_token(user.email)
     #     url = generate_url('admin.verify_promotion', token)
     #
     #     with current_app.test_client() as client:
     #         resp = client.get(url, content_type='application/json')
     #
-    #         data = json.loads(resp.data.decode())
-    #         print(data)
+    #         self.assertEquals(resp.status_code, 302)
+    #         self.assertTrue(resp.headers['Location'])
+    #         redirect_url = 'http://localhost:3000/signin'
+    #         self.assertRedirects(resp, redirect_url)
+    #
+    #         updated_user = User.objects.get(email=user.email)
+    #         self.assertTrue(updated_user.is_admin)
+    #         self.assertEqual(
+    #             updated_user.admin_profile.position, 'Jedi Knight.'
+    #         )
+    #         self.assertEqual(updated_user.admin_profile.mobile_number, None)
+    #         self.assertEqual(updated_user.admin_profile.verified, True)
+    #
+    # def test_verify_promotion_user_dne(self):
+    #     token = generate_confirmation_token('arclyticstestuser@gmail.com')
+    #     url = generate_url('admin.verify_promotion', token)
+    #
+    #     with current_app.test_client() as client:
+    #         resp = client.get(url, content_type='application/json')
     #
     #         client_host = os.environ.get('CLIENT_HOST')
     #         self.assertEquals(resp.status_code, 302)
     #         self.assertTrue(resp.headers['Location'])
     #         redirect_url = \
-    #             f'http://{client_host}/admin/create/verify/tokenexpired'
+    #             f'http://{client_host}/admin/verify?tokenexpired=true'
     #         self.assertRedirects(resp, redirect_url)
+    #         # data = json.loads(resp.data.decode())
+    #         # self.assertEquals(resp.status_code, 400)
+    #         # self.assertEqual(data['message'], 'User does not exist.')
+    #
+    # def test_verify_promotion_user_not_verified(self):
+    #     test_user = User(
+    #         email='arclyticstestuser@gmail.com',
+    #         first_name='Arclytics',
+    #         last_name='Testuser'
+    #     )
+    #     test_user.set_password('testing123')
+    #     test_user.save()
+    #
+    #     token = generate_confirmation_token(test_user.email)
+    #     url = generate_url('admin.verify_promotion', token)
+    #
+    #     with current_app.test_client() as client:
+    #         resp = client.get(url, content_type='application/json')
+    #
+    #         client_host = os.environ.get('CLIENT_HOST')
+    #         self.assertEquals(resp.status_code, 302)
+    #         self.assertTrue(resp.headers['Location'])
+    #         redirect_url = \
+    #             f'http://{client_host}/admin/verify?tokenexpired=true'
+    #         self.assertRedirects(resp, redirect_url)
+    #         # data = json.loads(resp.data.decode())
+    #         # self.assertEquals(resp.status_code, 400)
+    #         # self.assertEqual(data['message'], 'User is not verified.')
+    #
+    # def test_verify_promotion_user_is_not_admin(self):
+    #     test_user = User(
+    #         email='arclyticstestuser@gmail.com',
+    #         first_name='Arclytics',
+    #         last_name='Testuser'
+    #     )
+    #     test_user.set_password('testing123')
+    #     test_user.verified = True
+    #     test_user.save()
+    #
+    #     token = generate_confirmation_token(test_user.email)
+    #     url = generate_url('admin.verify_promotion', token)
+    #
+    #     with current_app.test_client() as client:
+    #         resp = client.get(url, content_type='application/json')
+    #
+    #         client_host = os.environ.get('CLIENT_HOST')
+    #         self.assertEquals(resp.status_code, 302)
+    #         self.assertTrue(resp.headers['Location'])
+    #         redirect_url = \
+    #             f'http://{client_host}/admin/verify?tokenexpired=true'
+    #         self.assertRedirects(resp, redirect_url)
+    #         # data = json.loads(resp.data.decode())
+    #         # self.assertEquals(resp.status_code, 400)
+    #         # self.assertEqual(data['message'], 'User is not an Admin.')
+    #
+    # # FIXME(davidmatthews1004@gmail.com) Pleas fix
+    # # def test_verify_promotion_token_expired(self):
+    # #     admin = User(
+    # #         # email='davidmatthews1004@gmail.com',
+    # #         email='davidmatthews1004@arclytics.io',
+    # #         first_name='David',
+    # #         last_name='Matthews'
+    # #     )
+    # #     admin.set_password('testing123')
+    # #     admin.verified = True
+    # #     # admin.is_admin = True
+    # #     admin_profile = AdminProfile(
+    # #         position='Jedi Master', mobile_number=None, verified=True
+    # #     )
+    # #     admin.admin_profile = admin_profile
+    # #     admin.save()
+    # #
+    # #     user = User(
+    # #         # email='brickmatic479@gmail.com',
+    # #         email='davidjnr@arclytics.io',
+    # #         first_name='David',
+    # #         last_name='Jnr'
+    # #     )
+    # #     user.set_password('testing123')
+    # #     user.verified = True
+    # #     # user.is_admin=True
+    # #     user_admin_profile = AdminProfile(
+    # #         position='Jedi Knight.', mobile_number=None, verified=False
+    # #     )
+    # #     user.admin_profile = user_admin_profile
+    # #     user.admin_profile.promoted_by = admin.id
+    # #     user.save()
+    # #
+    # #     token = (
+    # #         'ImRhdmlkam5yQGFyY2x5dGljcy5pbyI.XWIx9A.LHcr6fRYpQbB9hKMMoXMn01alcg'
+    # #     )
+    # #     url = generate_url('admin.verify_promotion', token)
+    # #
+    # #     with current_app.test_client() as client:
+    # #         resp = client.get(url, content_type='application/json')
+    # #
+    # #         data = json.loads(resp.data.decode())
+    # #         print(data)
+    # #
+    # #         client_host = os.environ.get('CLIENT_HOST')
+    # #         self.assertEquals(resp.status_code, 302)
+    # #         self.assertTrue(resp.headers['Location'])
+    # #         redirect_url = \
+    # #             f'http://{client_host}/admin/create/verify/tokenexpired'
+    # #         self.assertRedirects(resp, redirect_url)
 
 
 if __name__ == '__main__':

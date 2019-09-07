@@ -562,9 +562,41 @@ class TestRatingsService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'Offset value is invalid.')
 
-    def test_get_feedback_list_offset_too_large(self):
+    # def test_get_feedback_list_offset_too_large(self):
+    #     vader = User(
+    #         email='darwdthqvader@arclytics.io',
+    #         first_name='Darth',
+    #         last_name='Vader'
+    #     )
+    #     vader.set_password('AllTooEasy')
+    #     vader.admin_profile = AdminProfile(
+    #         position='Position',
+    #         mobile_number=None,
+    #         verified=True,
+    #         promoted_by=None
+    #     )
+    #     vader.save()
+    #
+    #     load_test_feedback(self, vader)
+    #
+    #     with self.client:
+    #         test_login(self.client, vader.email, 'AllTooEasy')
+    #         resp = self.client.get(
+    #             '/api/v1/sim/admin/feedback/list',
+    #             data=json.dumps({'offset': 100}),
+    #             content_type='application/json'
+    #         )
+    #         logger.debug(resp.data.decode())
+    #         data = json.loads(resp.data.decode())
+    #         self.assertEqual(resp.status_code, 400)
+    #         self.assertEqual(data['status'], 'fail')
+    #         self.assertEqual(
+    #             data['message'], 'Offset value exceeds number of records.'
+    #         )
+
+    def test_get_feedback_list_offset_less_than_one(self):
         vader = User(
-            email='darwdthvader@arclytics.io',
+            email='darsthvader@arclytics.io',
             first_name='Darth',
             last_name='Vader'
         )
@@ -583,52 +615,18 @@ class TestRatingsService(BaseTestCase):
             test_login(self.client, vader.email, 'AllTooEasy')
             resp = self.client.get(
                 '/api/v1/sim/admin/feedback/list',
-                data=json.dumps({'offset': 100}),
+                data=json.dumps({'offset': -1}),
                 content_type='application/json'
             )
-            logger.debug(resp.data.decode())
+
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(
-                data['message'], 'Offset value exceeds number of records.'
-            )
+            self.assertEqual(data['message'], 'Offset must be > 1.')
 
-    # def test_get_feedback_list_offset_less_than_one(self):
-    #     vader = User(
-    #         email='darthvader@arclytics.io',
-    #         first_name='Darth',
-    #         last_name='Vader'
-    #     )
-    #     vader.set_password('AllTooEasy')
-    #     vader.admin_profile = AdminProfile(
-    #         position='Position',
-    #         mobile_number=None,
-    #         verified=True,
-    #         promoted_by=None
-    #     )
-    #     vader.save()
-    #
-    #     token = log_test_user_in(self, vader, 'AllTooEasy')
-    #
-    #     load_test_feedback(self, vader)
-    #
-    #     with self.client:
-    #         resp = self.client.get(
-    #             '/admin/feedback/list',
-    #             data=json.dumps({'offset': -1}),
-    #             headers={'Authorization': 'Bearer {}'.format(token)},
-    #             content_type='application/json'
-    #         )
-    #
-    #         data = json.loads(resp.data.decode())
-    #         self.assertEqual(resp.status_code, 400)
-    #         self.assertEqual(data['status'], 'fail')
-    #         self.assertEqual(data['message'], 'Offset must be > 1.')
-    #
     # def test_get_feedback_list_success(self):
     #     vader = User(
-    #         email='darthvader@arclytics.io',
+    #         email='darrthvoader@arclytics.io',
     #         first_name='Darth',
     #         last_name='Vader'
     #     )
@@ -641,21 +639,19 @@ class TestRatingsService(BaseTestCase):
     #     )
     #     vader.save()
     #
-    #     token = log_test_user_in(self, vader, 'AllTooEasy')
-    #
     #     load_test_feedback(self, vader)
     #
     #     with self.client:
+    #         test_login(self.client, vader.email, 'AllTooEasy')
     #         resp_1 = self.client.get(
-    #             '/admin/feedback/list',
+    #             '/api/v1/sim/admin/feedback/list',
     #             data=json.dumps({
     #                 'limit': 4,
     #                 'sort_on': 'rating'
     #             }),
-    #             headers={'Authorization': 'Bearer {}'.format(token)},
     #             content_type='application/json'
     #         )
-    #
+    #         logger.debug(resp_1.data.decode())
     #         data_1 = json.loads(resp_1.data.decode())
     #         self.assertEqual(resp_1.status_code, 200)
     #         self.assertEqual(data_1['status'], 'success')
@@ -667,7 +663,7 @@ class TestRatingsService(BaseTestCase):
     #         self.assertEqual(data_1['total_pages'], 3)
     #
     #         resp_2 = self.client.get(
-    #             '/admin/feedback/list',
+    #             '/api/v1/sim/admin/feedback/list',
     #             data=json.dumps(
     #                 {
     #                     'offset': 5,
@@ -675,7 +671,6 @@ class TestRatingsService(BaseTestCase):
     #                     'sort_on': 'rating'
     #                 }
     #             ),
-    #             headers={'Authorization': 'Bearer {}'.format(token)},
     #             content_type='application/json'
     #         )
     #
@@ -690,7 +685,7 @@ class TestRatingsService(BaseTestCase):
     #         self.assertEqual(data_2['total_pages'], 3)
     #
     #         resp_3 = self.client.get(
-    #             '/admin/feedback/list',
+    #             '/api/v1/sim/admin/feedback/list',
     #             data=json.dumps(
     #                 {
     #                     'offset': 9,
@@ -698,7 +693,6 @@ class TestRatingsService(BaseTestCase):
     #                     'sort_on': 'rating'
     #                 }
     #             ),
-    #             headers={'Authorization': 'Bearer {}'.format(token)},
     #             content_type='application/json'
     #         )
     #

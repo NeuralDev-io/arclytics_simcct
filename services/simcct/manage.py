@@ -231,7 +231,7 @@ def seed_alloy_db():
 @cli.command()
 def test():
     """Runs the tests without code coverage."""
-    tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
+    tests = unittest.TestLoader().discover('tests', pattern='test_api_sim*.py')
     result = unittest.TextTestRunner(verbosity=3).run(tests)
     if result.wasSuccessful():
         return 0

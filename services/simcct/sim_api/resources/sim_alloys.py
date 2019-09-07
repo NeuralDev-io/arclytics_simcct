@@ -27,8 +27,8 @@ from sim_api.extensions import api
 from sim_api.schemas import (
     AlloySchema, AlloyStoreSchema, ConfigurationsSchema
 )
-from sim_api.middleware import token_and_session_required
-from sim_api.sim_session import SimSessionService
+from sim_api.middleware import authenticate_user_and_cookie_flask
+from sim_api.extensions.sim_session import SimSessionService
 from sim_api.extensions.utilities import RESPONSE_HEADERS
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, MissingElementError
@@ -41,18 +41,17 @@ sim_alloys_blueprint = Blueprint('sim_alloys', __name__)
 
 class AlloyStore(Resource):
     method_decorators = {
-        'patch': [token_and_session_required],
-        'post': [token_and_session_required]
+        'patch': [authenticate_user_and_cookie_flask],
+        'post': [authenticate_user_and_cookie_flask]
     }
 
     # noinspection PyMethodMayBeStatic
-    def post(self, _, session_key):
+    def post(self, _):
         """This POST endpoint initiates the Alloy Store by setting the alloy
         in the request body to the Session storage.
 
         Args:
-            _: a valid JWT token.
-            session_key: a valid TimedJSONWebSignature session key.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message
@@ -261,13 +260,12 @@ class AlloyStore(Resource):
         return response, 201, RESPONSE_HEADERS
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, _, session_key):
+    def patch(self, _):
         """This PATCH endpoint simply updates the `alloys` in the session
         store so that we can update all the other transformation temperature.
 
         Args:
-            session_key:
-            _: a JWT token passed in the request header but not used.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message strings.

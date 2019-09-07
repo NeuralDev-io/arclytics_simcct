@@ -376,9 +376,7 @@ class AlloyType(EmbeddedDocument):
 
 
 class AlloyStore(EmbeddedDocument):
-    alloy_option = StringField(
-        required=True, choices=('single', 'both', 'mix')
-    )
+    alloy_option = StringField(required=True, choices=('single', 'mix'))
     alloys = EmbeddedDocumentField(document_type=AlloyType, required=True)
 
     def to_dict(self):

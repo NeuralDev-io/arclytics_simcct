@@ -20,18 +20,9 @@ This module just defines extensions for Flask that can be used across the
 context of the app.
 """
 from .utilities import (
-    get_mongo_uri,
-    JSONEncoder,
-    PasswordValidationError,
-    URLTokenError,
-    URLTokenExpired,
-    ElementSymbolInvalid,
-    ElementInvalid,
-    MissingElementError,
-    DuplicateElementError,
-    SimpleUTC,
-    PeriodicTable,
-    RESPONSE_HEADERS
+    get_mongo_uri, JSONEncoder, PasswordValidationError, URLTokenError,
+    URLTokenExpired, ElementSymbolInvalid, ElementInvalid, MissingElementError,
+    DuplicateElementError, SimpleUTC, PeriodicTable, RESPONSE_HEADERS
 )
 
 from .mongo import MongoAlloys

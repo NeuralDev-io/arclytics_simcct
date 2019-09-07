@@ -22,8 +22,9 @@ import json
 import unittest
 from pathlib import Path
 
+import mongoengine
 from bson.son import SON
-from mongoengine import Document, EmailField, BooleanField
+from mongoengine import get_db
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from tests.test_api_base import BaseTestCase
@@ -35,10 +36,32 @@ _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 
 class TestUserModel(BaseTestCase):
     """Run direct tests on the User model without an API call."""
+
+    def tearDown(self) -> None:
+        db = get_db('default')
+        self.assertTrue(db.name, 'arc_test')
+        db.users.drop()
+
     def test_user_model_schema(self):
-        self.assertIsInstance(User.__base__, Document.__class__)
-        self.assertIsInstance(User.email, EmailField)
-        self.assertIsInstance(User.active, BooleanField)
+        self.assertIsInstance(User.__base__, mongoengine.Document.__class__)
+        self.assertIsInstance(User.email, mongoengine.EmailField)
+        self.assertIsInstance(User.password, mongoengine.StringField)
+        self.assertIsInstance(User.first_name, mongoengine.StringField)
+        self.assertIsInstance(User.last_name, mongoengine.StringField)
+        self.assertIsInstance(User.profile, mongoengine.EmbeddedDocumentField)
+        self.assertIsInstance(
+            User.admin_profile, mongoengine.EmbeddedDocumentField
+        )
+        self.assertIsInstance(
+            User.last_configuration, mongoengine.EmbeddedDocumentField
+        )
+        self.assertIsInstance(
+            User.last_alloy_store, mongoengine.EmbeddedDocumentField
+        )
+        self.assertIsInstance(
+            User.saved_alloys, mongoengine.EmbeddedDocumentListField
+        )
+        self.assertIsInstance(User.active, mongoengine.BooleanField)
 
     def test_password_validation_error(self):
         err = PasswordValidationError()
@@ -47,14 +70,18 @@ class TestUserModel(BaseTestCase):
 
     def test_add_user(self):
         user = User(
-            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
+            **{
+                'email': 'umm_baku@wakanda.io',
+                'first_name': "M'Baku",
+                'last_name': 'Jabari'
+            }
         )
-        user.set_password('IAmIronMan')
+        user.set_password('WeAreVegetarians')
         user.save()
         self.assertTrue(user.id)
-        self.assertEqual(user.first_name, 'Andrew')
-        self.assertEqual(user.last_name, 'Che')
-        self.assertEqual('andrew@neuraldev.io', user.email)
+        self.assertEqual(user.first_name, "M'Baku")
+        self.assertEqual(user.last_name, 'Jabari')
+        self.assertEqual('umm_baku@wakanda.io', user.email)
         self.assertEqual(user.last_updated, user.created)
         self.assertIsNone(user.last_login)
         self.assertTrue(user.active)
@@ -63,7 +90,11 @@ class TestUserModel(BaseTestCase):
     def test_add_configuration(self):
         """Test how we can add configurations as an embedded document."""
         user = User(
-            email='eric@shield.gov.us', first_name='Eric', last_name='Selvig'
+            **{
+                'email': 'eric@shield.gov.us',
+                'first_name': 'Eric',
+                'last_name': 'Selvig'
+            }
         )
         user.set_password('BifrostIsReal')
 
@@ -82,10 +113,15 @@ class TestUserModel(BaseTestCase):
         self.assertEqual(user.last_configuration.start_temp, 900)
         self.assertEqual(user.last_configuration.cct_cooling_rate, 10)
 
+    # noinspection PyTypeChecker
     def test_add_compositions(self):
         """Test how we can add the compositions as an embedded document."""
         user = User(
-            email='eric@shield.gov.us', first_name='Eric', last_name='Selvig'
+            **{
+                'email': 'eric@shield.gov.us',
+                'first_name': 'Eric',
+                'last_name': 'Selvig'
+            }
         )
         user.set_password('BifrostIsReal')
 
@@ -112,10 +148,15 @@ class TestUserModel(BaseTestCase):
         self.assertEqual(alloy['compositions'][1]['symbol'], 'Mn')
         self.assertEqual(alloy['compositions'][1]['weight'], 1.73)
 
+    # noinspection PyTypeChecker
     def test_add_compositions_from_json(self):
         """Ensure we can loop a JSON-converted dict to create a compositions."""
         user = User(
-            email='eric@shield.gov.us', first_name='Eric', last_name='Selvig'
+            **{
+                'email': 'eric@shield.gov.us',
+                'first_name': 'Eric',
+                'last_name': 'Selvig'
+            }
         )
         user.set_password('BifrostIsReal')
 
@@ -149,9 +190,11 @@ class TestUserModel(BaseTestCase):
 
     def test_email_validation(self):
         user = User(
-            email='russianfakeemail@russia',
-            first_name='Vlad',
-            last_name='Ruskie'
+            **{
+                'email': 'russianfakeemail@russia',
+                'first_name': 'Vlad',
+                'last_name': 'Ruskie'
+            }
         )
         user.set_password('IAmIronMan')
         with self.assertRaises(ValidationError):
@@ -159,21 +202,31 @@ class TestUserModel(BaseTestCase):
 
     def test_password_validation(self):
         user = User(
-            email='russianfakeemail@russia.com',
-            first_name='Real',
-            last_name='Trumpie'
+            **{
+                'email': 'russianfakeemail@russia.com',
+                'first_name': 'Real',
+                'last_name': 'Trumpie'
+            }
         )
         with self.assertRaises(PasswordValidationError):
             user.save()
 
     def test_add_user_duplicate_email(self):
         user = User(
-            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
+            **{
+                'email': 'spidey@avengers.io',
+                'first_name': 'Peter',
+                'last_name': 'Parker'
+            }
         )
         user.set_password('IAmIronMan')
         user.save()
         duplicate_user = User(
-            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
+            **{
+                'email': 'spidey@avengers.io',
+                'first_name': 'Peter',
+                'last_name': 'Parker'
+            }
         )
         duplicate_user.set_password('IThinkIAmIronMan')
         with self.assertRaises(NotUniqueError):
@@ -181,7 +234,11 @@ class TestUserModel(BaseTestCase):
 
     def test_to_dict(self):
         user = User(
-            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
+            **{
+                'email': 'spidey@avengers.io',
+                'first_name': 'Peter',
+                'last_name': 'Parker'
+            }
         )
         user.set_password('IAmIronMan')
         user.save()
@@ -190,7 +247,11 @@ class TestUserModel(BaseTestCase):
 
     def test_to_json(self):
         user = User(
-            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
+            **{
+                'email': 'spidey@avengers.io',
+                'first_name': 'Peter',
+                'last_name': 'Parker'
+            }
         )
         user.set_password('IAmIronMan')
         user.save()
@@ -200,14 +261,20 @@ class TestUserModel(BaseTestCase):
 
     def test_passwords_are_random(self):
         user_one = User(
-            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
+            **{
+                'email': 'spidey@avengers.io',
+                'first_name': 'Peter',
+                'last_name': 'Parker'
+            }
         )
 
         user_one.set_password('youknotwhatitwas')
         user_two = User(
-            email='andrew@codeninja55.me',
-            first_name='Andrew',
-            last_name='Che'
+            **{
+                'email': 'ned@avengers.me',
+                'first_name': 'Ned',
+                'last_name': 'Leeds'
+            }
         )
         user_two.set_password('youknotwhatitwas')
         self.assertNotEqual(user_one.password, user_two.password)
@@ -215,9 +282,13 @@ class TestUserModel(BaseTestCase):
     def test_encode_auth_token(self):
         """Ensure that a JWT auth token is generated properly."""
         user = User(
-            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
+            **{
+                'email': 'spidey@avengers.io',
+                'first_name': 'Peter',
+                'last_name': 'Parker'
+            }
         )
-        user.set_password('youknotwhatitis')
+        user.set_password('PeterTingle!')
         user.save()
         auth_token = user.encode_auth_token(user.id)
         self.assertTrue(isinstance(auth_token, bytes))
@@ -225,9 +296,13 @@ class TestUserModel(BaseTestCase):
     def test_decode_auth_token(self):
         """Ensure that a JWT auth token is generated properly."""
         user = User(
-            email='andrew@neuraldev.io', first_name='Andrew', last_name='Che'
+            **{
+                'email': 'spidey@avengers.io',
+                'first_name': 'Peter',
+                'last_name': 'Parker'
+            }
         )
-        user.set_password('youknotwhatitis')
+        user.set_password('PeterTingle!')
         user.save()
         auth_token = user.encode_auth_token(user.id)
         self.assertTrue(isinstance(auth_token, bytes))

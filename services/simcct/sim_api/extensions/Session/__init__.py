@@ -3,7 +3,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # __init__.py.py
-# 
+#
 # Attributions:
 # Inspiration for this design largely drew from the below.
 # [1] https://github.com/mrichman/flask-redis
@@ -19,7 +19,6 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = '{dev_status}'
 __date__ = '2019.09.06'
-
 """__init__.py.py: 
 
 The Session package to change the Flask Session interface to use the Redis

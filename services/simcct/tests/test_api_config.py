@@ -75,7 +75,9 @@ class TestProductionConfig(TestCase):
             app.config['SECRET_KEY'] == os.environ.get('SECRET_KEY')
         )
         self.assertFalse(app.config['TESTING'])
-        self.assertTrue(app.config['MONGO_DBNAME'] == 'arclytics')
+        self.assertEqual(
+            app.config['MONGO_DBNAME'], os.environ.get('MONGO_APP_DB')
+        )
         self.assertTrue(app.config['BCRYPT_LOG_ROUNDS'] == 13)
         self.assertTrue(app.config['TOKEN_EXPIRATION_DAYS'] == 30)
         self.assertTrue(app.config['TOKEN_EXPIRATION_SECONDS'] == 0)

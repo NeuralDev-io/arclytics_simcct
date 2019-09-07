@@ -41,7 +41,7 @@ _mongo_client = None
 
 
 def init_db(
-        app=None, db_name=None, host=None, port=None, alias='default'
+    app=None, db_name=None, host=None, port=None, alias='default'
 ) -> MongoSingleton:
     """Make a connection to the MongoDB container and returns a singleton
     wrapper on a pymongo.MongoClient."""
@@ -155,8 +155,7 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
         app=app,
         headers=['Content-Type'],
         expose_headers=[
-            'Access-Control-Allow-Origin',
-            'Access-Control-Allow-Credentials'
+            'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'
         ],
         supports_credentials=True
     )

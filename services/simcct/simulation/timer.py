@@ -80,6 +80,7 @@ def timeit(method):
     Returns:
         A float as the time taken for the execution of the method.
     """
+
     def timed(*args, **kwargs):
         ts = time.time()
         result = method(*args, **kwargs)

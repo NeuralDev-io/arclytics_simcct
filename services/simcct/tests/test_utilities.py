@@ -46,9 +46,10 @@ def test_login(client, email: str, password: str):
     )
 
     cookie = next(
-        (cookie for cookie in client.cookie_jar if
-         cookie.name == 'SESSION_TOKEN'),
-        None
+        (
+            cookie for cookie in client.cookie_jar
+            if cookie.name == 'SESSION_TOKEN'
+        ), None
     )
 
     resp_set_cookie = resp_login.headers.get('Set-Cookie').split(';')

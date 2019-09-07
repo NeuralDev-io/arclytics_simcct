@@ -52,14 +52,18 @@ class TestRatingsService(BaseTestCase):
 
     def test_post_rating_no_data(self):
         mace = User(
-            email='mace@arclytics.io', first_name='Mace', last_name='Windu'
+            **{
+                'email': 'mace@arclytics.io',
+                'first_name': 'Mace',
+                'last_name': 'Windu'
+            }
         )
         mace.set_password('ThisPartysOver')
         mace.save()
 
-        with self.client:
-            test_login(self.client, mace.email, 'ThisPartysOver')
-            resp = self.client.post(
+        with self.client as client:
+            test_login(client, mace.email, 'ThisPartysOver')
+            resp = client.post(
                 'api/v1/sim/user/rating',
                 data=json.dumps(''),
                 content_type='application/json'
@@ -72,14 +76,17 @@ class TestRatingsService(BaseTestCase):
 
     def test_post_rating_no_rating(self):
         plo = User(
-            email='plokoon@arclytics.io', first_name='Plo', last_name='Koon'
-        )
+            **{
+                'email': 'plokoon@arclytics.io',
+                'first_name': 'Plo',
+                'last_name': 'Koon'
+            })
         plo.set_password('WhenYouAskForTrouble')
         plo.save()
 
-        with self.client:
-            cookie = test_login(self.client, plo.email, 'WhenYouAskForTrouble')
-            resp = self.client.post(
+        with self.client as client:
+            test_login(client, plo.email, 'WhenYouAskForTrouble')
+            resp = client.post(
                 '/api/v1/sim/user/rating',
                 data=json.dumps({'invalid_key': 'some_value'}),
                 content_type='application/json'
@@ -92,14 +99,17 @@ class TestRatingsService(BaseTestCase):
 
     def test_post_rating_invalid_rating(self):
         jhonny = User(
-            email='jhonny@arclytics.io', first_name='Jhonny', last_name='Koon'
-        )
+            **{
+                'email': 'jhonny@arclytics.io',
+                'first_name': 'Jhonny',
+                'last_name': 'Koon'
+            })
         jhonny.set_password('WhenYouAskForTrouble')
         jhonny.save()
 
-        with self.client:
-            cookie = test_login(self.client, jhonny.email, 'WhenYouAskForTrouble')
-            resp = self.client.post(
+        with self.client as client:
+            test_login(client, jhonny.email, 'WhenYouAskForTrouble')
+            resp = client.post(
                 '/api/v1/sim/user/rating',
                 data=json.dumps({'rating': '3.5'}),
                 content_type='application/json'
@@ -112,14 +122,18 @@ class TestRatingsService(BaseTestCase):
 
     def test_post_rating_success(self):
         rex = User(
-            email='rex@arclytics.io', first_name='Captain', last_name='Rex'
+            **{
+                'email': 'rex@arclytics.io',
+                'first_name': 'Captain',
+                'last_name': 'Rex'
+            }
         )
         rex.set_password('ExperienceOutranksEverything')
         rex.save()
 
-        with self.client:
-            cookie = test_login(self.client, rex.email, 'ExperienceOutranksEverything')
-            resp = self.client.post(
+        with self.client as client:
+            test_login(client, rex.email, 'ExperienceOutranksEverything')
+            resp = client.post(
                 '/api/v1/sim/user/rating',
                 data=json.dumps({'rating': '5'}),
                 content_type='application/json'
@@ -137,55 +151,59 @@ class TestRatingsService(BaseTestCase):
 
     def test_post_multiple_ratings_success(self):
         cody = User(
-            email='cody@arclytics.io',
-            first_name='Commander',
-            last_name='Cody'
+            **{
+                'email': 'cody@arclytics.io',
+                'first_name': 'Commander',
+                'last_name': 'Cody'
+            }
         )
         cody.set_password('BlastHim')
         cody.save()
 
-        with self.client:
-            cookie = test_login(self.client, cody.email, 'BlastHim')
-            resp_1 = self.client.post(
-                '/api/v1/sim/user/rating',
-                data=json.dumps({'rating': '3'}),
-                content_type='application/json'
-            )
-            resp_2 = self.client.post(
-                '/api/v1/sim/user/rating',
-                data=json.dumps({'rating': '5'}),
-                content_type='application/json'
-            )
+        with self.client as client:
+            test_login(client, cody.email, 'BlastHim')
+        resp_1 = client.post(
+            '/api/v1/sim/user/rating',
+            data=json.dumps({'rating': '3'}),
+            content_type='application/json'
+        )
+        resp_2 = client.post(
+            '/api/v1/sim/user/rating',
+            data=json.dumps({'rating': '5'}),
+            content_type='application/json'
+        )
 
-            data_1 = json.loads(resp_1.data.decode())
-            self.assertEqual(resp_1.status_code, 200)
-            self.assertEqual(data_1['status'], 'success')
-            self.assertEqual(
-                data_1['message'], f'Rating submitted by {cody.email}.'
-            )
-            data_2 = json.loads(resp_1.data.decode())
-            self.assertEqual(resp_2.status_code, 200)
-            self.assertEqual(data_2['status'], 'success')
-            self.assertEqual(
-                data_2['message'], f'Rating submitted by {cody.email}.'
-            )
+        data_1 = json.loads(resp_1.data.decode())
+        self.assertEqual(resp_1.status_code, 200)
+        self.assertEqual(data_1['status'], 'success')
+        self.assertEqual(
+            data_1['message'], f'Rating submitted by {cody.email}.'
+        )
+        data_2 = json.loads(resp_1.data.decode())
+        self.assertEqual(resp_2.status_code, 200)
+        self.assertEqual(data_2['status'], 'success')
+        self.assertEqual(
+            data_2['message'], f'Rating submitted by {cody.email}.'
+        )
 
-            cody_updated = User.objects.get(email=cody.email)
-            self.assertEqual(cody_updated['ratings'][0]['rating'], 3)
-            self.assertEqual(cody_updated['ratings'][1]['rating'], 5)
+        cody_updated = User.objects.get(email=cody.email)
+        self.assertEqual(cody_updated['ratings'][0]['rating'], 3)
+        self.assertEqual(cody_updated['ratings'][1]['rating'], 5)
 
     def test_post_feedback_no_data(self):
         echo = User(
-            email='echo@arclytics.io',
-            first_name='Arc Trooper',
-            last_name='Echo'
+            **{
+                'email': 'echo@arclytics.io',
+                'first_name': 'Arc Trooper',
+                'last_name': 'Echo'
+            }
         )
         echo.set_password('WeGotToFollowOrders')
         echo.save()
 
-        with self.client:
-            cookie = test_login(self.client, echo.email, 'WeGotToFollowOrders')
-            resp = self.client.post(
+        with self.client as client:
+            test_login(client, echo.email, 'WeGotToFollowOrders')
+            resp = client.post(
                 '/api/v1/sim/user/feedback',
                 data=json.dumps(''),
                 content_type='application/json'
@@ -198,16 +216,18 @@ class TestRatingsService(BaseTestCase):
 
     def test_post_feedback_missing_fields(self):
         fives = User(
-            email='fives@arclytics.io',
-            first_name='Arc Trooper',
-            last_name='Fives'
+            **{
+                'email': 'fives@arclytics.io',
+                'first_name': 'Arc Trooper',
+                'last_name': 'Fives'
+            }
         )
         fives.set_password('WeAreOneAndTheSame')
         fives.save()
 
-        with self.client:
-            cookie = test_login(self.client, fives.email, 'WeAreOneAndTheSame')
-            resp = self.client.post(
+        with self.client as client:
+            test_login(client, fives.email, 'WeAreOneAndTheSame')
+            resp = client.post(
                 'api/v1/sim/user/feedback',
                 data=json.dumps(
                     {
@@ -225,16 +245,18 @@ class TestRatingsService(BaseTestCase):
 
     def test_post_feedback_validation_error(self):
         hevy = User(
-            email='hevy@arclytics.io',
-            first_name='Clone Cadet',
-            last_name='Hevy'
+            **{
+                'email': 'hevy@arclytics.io',
+                'first_name': 'Clone Cadet',
+                'last_name': 'Hevy'
+            }
         )
         hevy.set_password('YouDeserveIt')
         hevy.save()
 
-        with self.client:
-            test_login(self.client, hevy.email, 'YouDeserveIt')
-            resp = self.client.post(
+        with self.client as client:
+            test_login(client, hevy.email, 'YouDeserveIt')
+            resp = client.post(
                 'api/v1/sim/user/feedback',
                 data=json.dumps(
                     {
@@ -446,9 +468,11 @@ class TestRatingsService(BaseTestCase):
     #
     def test_get_feedback_list_invalid_sort(self):
         vader = User(
-            email='darthvader@arclytics.io',
-            first_name='Darth',
-            last_name='Vader'
+            **{
+                'email': 'darthvader@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
         )
         vader.set_password('AllTooEasy')
         vader.admin_profile = AdminProfile(
@@ -461,9 +485,9 @@ class TestRatingsService(BaseTestCase):
 
         load_test_feedback(self, vader)
 
-        with self.client:
-            cookie = test_login(self.client, vader.email, 'AllTooEasy')
-            resp = self.client.get(
+        with self.client as client:
+            test_login(client, vader.email, 'AllTooEasy')
+            resp = client.get(
                 '/api/v1/sim/admin/feedback/list',
                 data=json.dumps({'sort_on': 'invalid_category_value'}),
                 content_type='application/json'
@@ -476,9 +500,11 @@ class TestRatingsService(BaseTestCase):
 
     def test_get_feedback_list_invalid_limit(self):
         vader = User(
-            email='doarthvader@arclytics.io',
-            first_name='Darth',
-            last_name='Vader'
+            **{
+                'email': 'doarthvader@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
         )
         vader.set_password('AllTooEasy')
         vader.admin_profile = AdminProfile(
@@ -491,9 +517,9 @@ class TestRatingsService(BaseTestCase):
 
         load_test_feedback(self, vader)
 
-        with self.client:
-            test_login(self.client, vader.email, 'AllTooEasy')
-            resp = self.client.get(
+        with self.client as client:
+            test_login(client, vader.email, 'AllTooEasy')
+            resp = client.get(
                 '/api/v1/sim/admin/feedback/list',
                 data=json.dumps({'limit': 'invalid_limit_value'}),
                 content_type='application/json'
@@ -506,9 +532,11 @@ class TestRatingsService(BaseTestCase):
 
     def test_get_feedback_list_limit_less_than_one(self):
         vader = User(
-            email='darthevader@arclytics.io',
-            first_name='Darth',
-            last_name='Vader'
+            **{
+                'email': 'darthevader@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
         )
         vader.set_password('AllTooEasy')
         vader.admin_profile = AdminProfile(
@@ -521,9 +549,9 @@ class TestRatingsService(BaseTestCase):
 
         load_test_feedback(self, vader)
 
-        with self.client:
-            test_login(self.client, vader.email, 'AllTooEasy')
-            resp = self.client.get(
+        with self.client as client:
+            test_login(client, vader.email, 'AllTooEasy')
+            resp = client.get(
                 '/api/v1/sim/admin/feedback/list',
                 data=json.dumps({'limit': -1}),
                 content_type='application/json'
@@ -536,9 +564,11 @@ class TestRatingsService(BaseTestCase):
 
     def test_get_feedback_list_invalid_offset(self):
         vader = User(
-            email='dartfhvader@arclytics.io',
-            first_name='Darth',
-            last_name='Vader'
+            **{
+                'email': 'dartfhvader@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
         )
         vader.set_password('AllTooEasy')
         vader.admin_profile = AdminProfile(
@@ -551,9 +581,9 @@ class TestRatingsService(BaseTestCase):
 
         load_test_feedback(self, vader)
 
-        with self.client:
-            test_login(self.client, vader.email, 'AllTooEasy')
-            resp = self.client.get(
+        with self.client as client:
+            test_login(client, vader.email, 'AllTooEasy')
+            resp = client.get(
                 '/api/v1/sim/admin/feedback/list',
                 data=json.dumps({'offset': 'invalid_offset_value'}),
                 content_type='application/json'
@@ -566,9 +596,11 @@ class TestRatingsService(BaseTestCase):
 
     # def test_get_feedback_list_offset_too_large(self):
     #     vader = User(
-    #         email='darwdthqvader@arclytics.io',
-    #         first_name='Darth',
-    #         last_name='Vader'
+    #         **{
+    #             'email': 'darwdthqvader@arclytics.io',
+    #             'first_name': 'Darth',
+    #             'last_name': 'Vader'
+    #         }
     #     )
     #     vader.set_password('AllTooEasy')
     #     vader.admin_profile = AdminProfile(
@@ -581,9 +613,9 @@ class TestRatingsService(BaseTestCase):
     #
     #     load_test_feedback(self, vader)
     #
-    #     with self.client:
-    #         test_login(self.client, vader.email, 'AllTooEasy')
-    #         resp = self.client.get(
+    #     with self.client as client:
+    #         test_login(client, vader.email, 'AllTooEasy')
+    #         resp = client.get(
     #             '/api/v1/sim/admin/feedback/list',
     #             data=json.dumps({'offset': 100}),
     #             content_type='application/json'
@@ -598,9 +630,11 @@ class TestRatingsService(BaseTestCase):
 
     def test_get_feedback_list_offset_less_than_one(self):
         vader = User(
-            email='darsthvader@arclytics.io',
-            first_name='Darth',
-            last_name='Vader'
+            **{
+                'email': 'darsthvader@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
         )
         vader.set_password('AllTooEasy')
         vader.admin_profile = AdminProfile(
@@ -613,9 +647,9 @@ class TestRatingsService(BaseTestCase):
 
         load_test_feedback(self, vader)
 
-        with self.client:
-            test_login(self.client, vader.email, 'AllTooEasy')
-            resp = self.client.get(
+        with self.client as client:
+            test_login(client, vader.email, 'AllTooEasy')
+            resp = client.get(
                 '/api/v1/sim/admin/feedback/list',
                 data=json.dumps({'offset': -1}),
                 content_type='application/json'

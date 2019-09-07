@@ -17,15 +17,14 @@ import unittest
 from pathlib import Path
 
 from bson import ObjectId
-from flask import session, current_app
+from flask import current_app
 
 import settings
 from tests.test_api_base import BaseTestCase
 from sim_api.schemas import (
     AlloyStoreRequestSchema, ConfigurationsSchema, AlloyStoreSchema
 )
-from sim_api.sim_session import SimSessionService
-from simulation.periodic import PeriodicTable as pT
+from sim_api.extensions.sim_session import SimSessionService
 
 _TEST_CONFIGS_PATH = Path(
     settings.BASE_DIR

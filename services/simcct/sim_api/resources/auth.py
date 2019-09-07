@@ -38,14 +38,14 @@ import geoip2.database
 from logger.arc_logger import AppLogger
 from sim_api.extensions import bcrypt
 from sim_api.middleware import (
-    authenticate_flask, authenticate_user_and_cookie_flask
+    authenticate_user_and_cookie_flask
 )
 from sim_api.models import User, LoginData
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
 from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
-from sim_api.sim_session import SimSessionService
+from sim_api.extensions.sim_session import SimSessionService
 
 logger = AppLogger(__name__)
 

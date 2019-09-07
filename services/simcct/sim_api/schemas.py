@@ -140,9 +140,7 @@ class AlloysTypeSchema(Schema):
 
 class AlloyStoreRequestSchema(Schema):
     """This is the schema that defines the request body for changing alloys."""
-    alloy_option = fields.Str(
-        required=True, validate=OneOf(['single', 'mix'])
-    )
+    alloy_option = fields.Str(required=True, validate=OneOf(['single', 'mix']))
     alloy_type = fields.Str(
         required=True, validate=OneOf(['parent', 'weld', 'mix'])
     )
@@ -153,9 +151,7 @@ class AlloyStoreSchema(Schema):
     """This is the schema that defines how the Alloy is stored in the Session
     and the User's Mongo Document.
     """
-    alloy_option = fields.Str(
-        required=True, validate=OneOf(['single', 'mix'])
-    )
+    alloy_option = fields.Str(required=True, validate=OneOf(['single', 'mix']))
     alloys = fields.Nested(AlloysTypeSchema)
 
 

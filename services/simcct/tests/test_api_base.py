@@ -33,7 +33,6 @@ from sim_api.app import create_app
 
 logger = AppLogger(__name__)
 
-
 app = create_app(configs_path='configs.flask_conf.TestingConfig')
 
 

@@ -26,7 +26,7 @@ from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
 
 from sim_api.abstract_adapter import AlloyAbstract
-from sim_api.mongo import MongoAlloys
+from sim_api.extensions import MongoAlloys
 from sim_api.schemas import AlloySchema
 
 

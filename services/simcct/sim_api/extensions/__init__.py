@@ -34,6 +34,8 @@ from .utilities import (
     RESPONSE_HEADERS
 )
 
+from .mongo import MongoAlloys
+from .mongodb import MongoSingleton
 from flask_bcrypt import Bcrypt
 from flask_restful import Api
 from flask_mail import Mail

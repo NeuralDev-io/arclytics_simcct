@@ -286,14 +286,27 @@ class AlloyStore(Resource):
         alloy_type = patch_data.get('alloy_type', None)
         alloy = patch_data.get('alloy', None)
 
-        if not alloy_option:
-            response['message'] = 'No alloy option was provided.'
+        if alloy_option not in {'single', 'mix'}:
+            response['message'] = (
+                'Alloy option not one of '
+                '["single" | "mix"].'
+            )
             return response, 400, RESPONSE_HEADERS
 
         # We have a couple of ways the Alloy is stored in both Session and
         # Database based on what is available with the alloy_option and
         # alloy_type. From the client, we expect these two keys to at the
         # very least be in the request body. Otherwise we won't do anything.
+
+        if not alloy_type or not isinstance(alloy_type, str):
+            response['message'] = 'No alloy type was provided.'
+            return response, 400, RESPONSE_HEADERS
+
+        if alloy_type not in {'parent', 'weld', 'mix'}:
+            response['message'] = (
+                'Alloy type not one of ["parent" | "weld" | "mix"].'
+            )
+            return response, 400, RESPONSE_HEADERS
 
         if not alloy:
             response['message'] = 'No alloy was provided.'
@@ -367,9 +380,6 @@ class AlloyStore(Resource):
 
                 # Just quickly validate the alloy stored based on schema
                 sess_alloy_store = AlloyStoreSchema().load(sess_alloy_store)
-            elif alloy_option == 'mix':
-                # TODO(andrew@neuraldev.io): Implement this.
-                pass
             else:
                 # TODO(andrew@neuraldev.io): Implement this.
                 pass

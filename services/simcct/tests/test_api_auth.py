@@ -659,7 +659,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_change_pw_no_old_pw(self):
         vader = User(
-            first_name='Darth', last_name='Vader', email='vader@arclytics.io'
+            **{
+                'first_name': 'Darth',
+                'last_name': 'Vader',
+                'email': 'vader@arclytics.io'
+            }
         )
         vader.set_password('IAmYourFather')
         vader.save()
@@ -681,7 +685,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_change_pw_missing_other_pw(self):
         vader = User(
-            first_name='Darth', last_name='Vader', email='darth@arclytics.io'
+            **{
+                'first_name': 'Darth',
+                'last_name': 'Vader',
+                'email': 'darth@arclytics.io'
+            }
         )
         vader.set_password('IAmYourFather')
         vader.save()
@@ -727,9 +735,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_change_pw_invalid_pw(self):
         vader = User(
-            first_name='Darth',
-            last_name='Vader',
-            email='vaderscoming@arclytics.io'
+            **{
+                'first_name': 'Darth',
+                'last_name': 'Vader',
+                'email': 'vaderscoming@arclytics.io'
+            }
         )
         vader.set_password('IAmYourFather')
         vader.save()
@@ -755,9 +765,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_change_pw_not_matching_pw(self):
         vader = User(
-            first_name='Darth',
-            last_name='Vader',
-            email='lordvader@arclytics.io'
+            **{
+                'first_name': 'Darth',
+                'last_name': 'Vader',
+                'email': 'lordvader@arclytics.io'
+            }
         )
         vader.set_password('IAmYourFather')
         vader.save()
@@ -783,9 +795,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_change_pw_bad_current_pw(self):
         vader = User(
-            first_name='Darth',
-            last_name='Vader',
-            email='darthvaderisawesome@arclytics.io'
+            **{
+                'first_name': 'Darth',
+                'last_name': 'Vader',
+                'email': 'darthvaderisawesome@arclytics.io'
+            }
         )
         vader.set_password('IAmYourFather')
         vader.verified = True
@@ -910,17 +924,19 @@ class TestAuthEndpoints(BaseTestCase):
             self.assert200(res)
 
     def test_change_email_success(self):
-        obiwan = User(
-            email='obiwankenobi@arclytics.com',
-            first_name='Obi-Wan',
-            last_name='Kenobi'
+        user = User(
+            **{
+                'email': 'obiwankenobi@arclytics.com',
+                'first_name': 'Obi-Wan',
+                'last_name': 'Kenobi'
+            }
         )
-        obiwan.set_password('TVShowPlease')
-        obiwan.verified = True
-        obiwan.save()
+        user.set_password('TVShowPlease')
+        user.verified = True
+        user.save()
 
         with self.client as client:
-            cookie = test_login(client, obiwan.email, 'TVShowPlease')
+            cookie = test_login(client, user.email, 'TVShowPlease')
 
             resp = client.put(
                 '/api/v1/sim/auth/email/change',
@@ -942,16 +958,18 @@ class TestAuthEndpoints(BaseTestCase):
             # self.assertEqual(data['new_email'], 'brickmatic479@gmail.com')
 
     def test_change_email_empty_payload(self):
-        obiwan = User(
-            email='obiwankenobi@arclytics.io',
-            first_name='Obi-Wan',
-            last_name='Kenobi'
+        user = User(
+            **{
+                'email': 'obiwankenobi@arclytics.io',
+                'first_name': 'Obi-Wan',
+                'last_name': 'Kenobi'
+            }
         )
-        obiwan.set_password('TVShowPlease')
-        obiwan.save()
+        user.set_password('TVShowPlease')
+        user.save()
 
         with self.client:
-            cookie = test_login(self.client, obiwan.email, 'TVShowPlease')
+            cookie = test_login(self.client, user.email, 'TVShowPlease')
 
             resp = self.client.put(
                 '/api/v1/sim/auth/email/change',
@@ -966,9 +984,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_change_email_no_email(self):
         vader = User(
-            email='darthvader@arclytics.io',
-            first_name='Darth',
-            last_name='Vader'
+            **{
+                'email': 'darthvader@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
         )
         vader.set_password('AllTooEasy')
         vader.save()
@@ -988,16 +1008,18 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(data['message'], 'No new email given.')
 
     def test_change_email_invalid_email(self):
-        jabba = User(
-            email='jabba@arclytics.io',
-            first_name='Jabba',
-            last_name='The Hutt'
+        user = User(
+            **{
+                'email': 'jabba@arclytics.io',
+                'first_name': 'Jabba',
+                'last_name': 'The Hutt'
+            }
         )
-        jabba.set_password('HanMyBoy')
-        jabba.save()
+        user.set_password('HanMyBoy')
+        user.save()
 
         with self.client:
-            cookie = test_login(self.client, jabba.email, 'HanMyBoy')
+            cookie = test_login(self.client, user.email, 'HanMyBoy')
 
             resp = self.client.put(
                 '/api/v1/sim/auth/email/change',
@@ -1011,17 +1033,19 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(data['message'], 'Invalid email.')
 
     def test_resend_confirm_email_success(self):
-        obiwan = User(
-            # email='davidmatthews1004@gmail.com',
-            email='benkenobi@arclytics.io',
-            first_name='Obi-Wan',
-            last_name='Kenobi'
+        user = User(
+            **{
+                # 'email': 'davidmatthews1004@gmail.com',
+                'email': 'benkenobi@arclytics.io',
+                'first_name': 'Obi-Wan',
+                'last_name': 'Kenobi'
+            }
         )
-        obiwan.set_password('helloThere')
-        obiwan.save()
+        user.set_password('helloThere')
+        user.save()
 
         with self.client as client:
-            cookie = test_login(client, obiwan.email, 'helloThere')
+            cookie = test_login(client, user.email, 'helloThere')
 
             resp = client.get(
                 '/api/v1/sim/confirm/resend', content_type='application/json'
@@ -1035,17 +1059,19 @@ class TestAuthEndpoints(BaseTestCase):
             )
 
     def test_resend_confirm_email_already_verified(self):
-        obiwan = User(
-            email='oldmanben@arclytics.io',
-            first_name='Obi-Wan',
-            last_name='Kenobi'
+        user = User(
+            **{
+                'email': 'oldmanben@arclytics.io',
+                'first_name': 'Obi-Wan',
+                'last_name': 'Kenobi'
+            }
         )
-        obiwan.set_password('helloThere')
-        obiwan.verified = True
-        obiwan.save()
+        user.set_password('helloThere')
+        user.verified = True
+        user.save()
 
         with self.client as client:
-            cookie = test_login(client, obiwan.email, 'helloThere')
+            cookie = test_login(client, user.email, 'helloThere')
 
             resp = self.client.get(
                 '/api/v1/sim/confirm/resend', content_type='application/json'
@@ -1058,9 +1084,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_check_password_success(self):
         luke = User(
-            email='luke@arclytics.io',
-            first_name='Luke',
-            last_name='Skywalker'
+            **{
+                'email': 'luke@arclytics.io',
+                'first_name': 'Luke',
+                'last_name': 'Skywalker'
+            }
         )
         luke.set_password('IAmAJedi')
         luke.save()
@@ -1079,9 +1107,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_check_password_incorrect_password(self):
         luke = User(
-            email='lukeskywalker@arclytics.io',
-            first_name='Luke',
-            last_name='Skywalker'
+            **{
+                'email': 'lukeskywalker@arclytics.io',
+                'first_name': 'Luke',
+                'last_name': 'Skywalker'
+            }
         )
         luke.set_password('IAmAJedi')
         luke.save()

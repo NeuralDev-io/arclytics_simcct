@@ -27,7 +27,7 @@ from sim_api.extensions import api
 from sim_api.extensions.sim_session import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
-from sim_api.middleware import token_and_session_required
+from sim_api.middleware import authenticate_user_and_cookie_flask
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -36,17 +36,15 @@ configs_blueprint = Blueprint('sim_configurations', __name__)
 
 
 class Configurations(Resource):
-    method_decorators = {'patch': [token_and_session_required]}
+    method_decorators = {'patch': [authenticate_user_and_cookie_flask]}
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, _, session_key):
+    def patch(self, _):
         """This PATCH endpoint updates the other configurations that are
         not part of the transformation temperatures.
 
         Args:
-            session_key:
-            token: the returned token from the `token_required_restful`
-                   middleware decorator.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A valid HTTP Response with application/json content.
@@ -122,16 +120,15 @@ class Configurations(Resource):
 
 
 class ConfigsMethod(Resource):
-    method_decorators = {'put': [token_and_session_required]}
+    method_decorators = {'put': [authenticate_user_and_cookie_flask]}
 
     # noinspection PyMethodMayBeStatic
-    def put(self, _, session_key):
+    def put(self, _):
         """This PUT endpoint simply updates the `method` for CCT and TTT
         calculations in the session store
 
         Args:
-            session_key:
-            _: a valid JWT token.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message strings.
@@ -187,20 +184,19 @@ class ConfigsMethod(Resource):
 
 class MartensiteStart(Resource):
     method_decorators = {
-        'get': [token_and_session_required],
-        'put': [token_and_session_required]
+        'get': [authenticate_user_and_cookie_flask],
+        'put': [authenticate_user_and_cookie_flask]
     }
 
     # noinspection PyMethodMayBeStatic
-    def get(self, _, session_key):
+    def get(self, _):
         """This GET endpoint auto calculates the `MS` and `MS Rate Param` as the
         user has selected the auto calculate feature without the need for
         sending
         the compositions as they are already stored in the session store.
 
         Args:
-            session_key:
-            _: a token passed in the request but not used.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message strings
@@ -275,13 +271,12 @@ class MartensiteStart(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def put(self, _, session_key):
+    def put(self, _):
         """If the user manually updates the MS temperatures in the client,
         we receive those and update the session cache.
 
         Args:
-            _: a token passed in the request but not used.
-            session_key:
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response body of with the `status` and a 202 status code.
@@ -304,12 +299,7 @@ class MartensiteStart(Resource):
             response['message'] = 'MS Rate Parameter temperature is required.'
             return response, 400
 
-        sid, session_store = SimSessionService().load_session(session_key)
-
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
+        session_store = SimSessionService().load_session()
 
         if not session_store:
             response['message'] = 'Unable to retrieve data from Redis.'
@@ -334,19 +324,18 @@ class MartensiteStart(Resource):
 
 class BainiteStart(Resource):
     method_decorators = {
-        'get': [token_and_session_required],
-        'put': [token_and_session_required]
+        'get': [authenticate_user_and_cookie_flask],
+        'put': [authenticate_user_and_cookie_flask]
     }
 
     # noinspection PyMethodMayBeStatic
-    def get(self, token, session_key):
+    def get(self, _):
         """This POST endpoint auto calculates the `BS` as the user has
         selected the auto calculate feature without the need for sending the
         compositions as they are already stored in the session store.
 
         Args:
-            session_key:
-            token: a valid JWT token.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message strings
@@ -417,13 +406,12 @@ class BainiteStart(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def put(self, token, session_key):
+    def put(self, _):
         """If the user manually updates the BS temperatures in the client, we
         receive those and update the session cache.
 
         Args:
-            session_key:
-            token: a valid JWT token.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response body of with the `status` and a 202 status code.
@@ -442,11 +430,6 @@ class BainiteStart(Resource):
             return response, 400
 
         session_store = SimSessionService().load_session()
-
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
 
         if not session_store:
             response['message'] = 'Unable to retrieve data from Redis.'
@@ -469,19 +452,18 @@ class BainiteStart(Resource):
 
 class Austenite(Resource):
     method_decorators = {
-        'get': [token_and_session_required],
-        'put': [token_and_session_required]
+        'get': [authenticate_user_and_cookie_flask],
+        'put': [authenticate_user_and_cookie_flask]
     }
 
     # noinspection PyMethodMayBeStatic
-    def get(self, token, session_key):
+    def get(self, _):
         """This GET endpoint auto calculates the `Ae1` and `Ae3` as the user has
         selected the auto calculate feature without the need for sending the
         compositions as they are already stored in the session store.
 
         Args:
-            session_key:
-            token: a valid JWT token.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message strings as
@@ -544,13 +526,12 @@ class Austenite(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def put(self, token, session_key):
+    def put(self, _):
         """If the user manually updates the Ae1 and Ae3 temperatures in the
         client, we receive those and update the session cache.
 
         Args:
-            session_key:
-            token: a valid JWT token.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response body of with the `status` and a 202 status code.

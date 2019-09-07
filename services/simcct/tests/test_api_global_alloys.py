@@ -50,7 +50,7 @@ schema = AlloySchema()
 class TestAlloyService(BaseTestCase):
     alloy_data = {
         'name':
-            'Alloy-101',
+        'Alloy-101',
         'compositions': [
             {
                 "symbol": "C",
@@ -216,8 +216,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.shuri.email, self._shuri_pw)
 
             res = client.get(
-                '/api/v1/sim/global/alloys',
-                content_type='application/json'
+                '/api/v1/sim/global/alloys', content_type='application/json'
             )
             data = res.json
 
@@ -237,8 +236,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.shuri.email, self._shuri_pw)
 
             res = client.get(
-                '/api/v1/sim/global/alloys',
-                content_type='application/json'
+                '/api/v1/sim/global/alloys', content_type='application/json'
             )
             data = json.loads(res.data.decode())
 
@@ -299,9 +297,7 @@ class TestAlloyService(BaseTestCase):
             )
             data = json.loads(res.data.decode())
 
-            self.assertEqual(
-                data['message'], 'Session token is not valid.'
-            )
+            self.assertEqual(data['message'], 'Session token is not valid.')
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(res.status_code, 401)
 
@@ -314,15 +310,15 @@ class TestAlloyService(BaseTestCase):
 
             # Save the cookie from login
             cookie = next(
-                (cookie for cookie in client.cookie_jar if
-                 cookie.name == 'SESSION_TOKEN'),
-                None
+                (
+                    cookie for cookie in client.cookie_jar
+                    if cookie.name == 'SESSION_TOKEN'
+                ), None
             )
 
             # Logging out should clear the session
             client.get(
-                '/api/v1/sim/auth/logout',
-                content_type='application/json'
+                '/api/v1/sim/auth/logout', content_type='application/json'
             )
 
             # Clear the cookie from previously although it should be

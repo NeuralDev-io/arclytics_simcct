@@ -351,7 +351,7 @@ def login() -> any:
             reader.close()
 
             session['jwt'] = auth_token.decode()
-            session['ip_address'] = ip_address
+            session['ip_address'] = request.remote_addr
             session['signed_in'] = True
 
             # Inject the Simulation Session data

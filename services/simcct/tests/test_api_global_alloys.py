@@ -186,9 +186,6 @@ class TestAlloyService(BaseTestCase):
 
         db = get_db()
 
-        print(db)
-        print(db.users.find_one({"email": self.shuri.email}))
-
         if len([alloy for alloy in db.alloys.find()]) == 0:
             data = AlloySchema(many=True).load(json_data['alloys'])
             created_id_list = MongoAlloys().create_many(data)
@@ -197,17 +194,7 @@ class TestAlloyService(BaseTestCase):
             alloys_num = len([alloy for alloy in db.alloys.find()])
 
         with self.app.test_client() as client:
-            # test_login(client, self.shuri.email, self._pw)
-
-            resp_login = client.post(
-                '/api/v1/sim/auth/login',
-                data=json.dumps({
-                    'email': self.shuri.email,
-                    'password': self._pw
-                }),
-                content_type='application/json'
-            )
-            print(resp_login.json)
+            test_login(client, self.shuri.email, self._pw)
 
             res = client.get(
                 '/api/v1/sim/global/alloys',

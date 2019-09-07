@@ -50,10 +50,6 @@ class BaseTestCase(TestCase):
         db_in_use = get_db()
         self.assertEqual(db_in_use.name, 'arc_test')
 
-    # def tearDown(self) -> None:
-    #     self.db.instance.client.drop_database('arc_test')
-    #     disconnect('default')
-
     @classmethod
     def tearDownClass(cls) -> None:
         """Clean up logic for the test suite declared in the test module."""

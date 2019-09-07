@@ -32,27 +32,26 @@ class MongoAlloys(object):
     """
 
     def __init__(self):
-        with app.app_context():
-            if os.environ.get('FLASK_ENV', 'production') == 'development':
-                mongo_client = MongoClient(
-                    host=os.environ.get('MONGO_HOST'),
-                    port=int(os.environ.get('MONGO_PORT')),
-                )
-            else:
-                mongo_client = MongoClient(
-                    host=str(os.environ.get('MONGO_HOST')),
-                    port=int(os.environ.get('MONGO_PORT')),
-                    username=str(os.environ.get('MONGO_APP_USER')),
-                    password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
-                    authSource='admin',
-                    replicaSet='MainRepSet',
-                )
+        if os.environ.get('FLASK_ENV', 'production') == 'development':
+            mongo_client = MongoClient(
+                host=os.environ.get('MONGO_HOST'),
+                port=int(os.environ.get('MONGO_PORT')),
+            )
+        else:
+            mongo_client = MongoClient(
+                host=str(os.environ.get('MONGO_HOST')),
+                port=int(os.environ.get('MONGO_PORT')),
+                username=str(os.environ.get('MONGO_APP_USER')),
+                password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
+                authSource='admin',
+                replicaSet='MainRepSet',
+            )
+        db_name = app.config['MONGO_DBNAME']
+        # db_name = str(os.environ.get('MONGO_APP_DB', 'arc_dev'))
+        self.db = mongo_client[db_name]
 
-            db_name = app.config['MONGO_DBNAME']
-            # db_name = str(os.environ.get('MONGO_APP_DB', 'arc_dev'))
-            self.db = mongo_client[db_name]
-            # We create an index to avoid duplicates
-            self.db.alloys.create_index([('name', ASCENDING)], unique=True)
+        # We create an index to avoid duplicates
+        self.db.alloys.create_index([('name', ASCENDING)], unique=True)
 
     def find_all(self):
         return self.db.alloys.find()

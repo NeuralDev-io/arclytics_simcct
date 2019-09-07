@@ -33,7 +33,7 @@ from sim_api.extensions.utilities import (
     DuplicateElementError
 )
 
-last_simulation_blueprint = Blueprint('user_last_simulation', __name__)
+last_sim_blueprint = Blueprint('user_last_simulation', __name__)
 
 
 class LastSimulation(Resource):

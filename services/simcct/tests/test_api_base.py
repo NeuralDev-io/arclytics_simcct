@@ -35,9 +35,12 @@ from sim_api.app import create_app
 logger = AppLogger(__name__)
 
 
+app = create_app(configs_path='configs.flask_conf.TestingConfig')
+
+
 class BaseTestCase(TestCase):
     def create_app(self):
-        app = create_app(configs_path='configs.flask_conf.TestingConfig')
+        app.config.from_object('configs.flask_conf.TestingConfig')
         self.db = init_db(app)
         set_flask_mongo(self.db)
         return app

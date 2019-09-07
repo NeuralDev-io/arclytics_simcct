@@ -30,7 +30,7 @@ from flask import current_app as app
 from flask_restful import Resource
 from mongoengine import ValidationError
 
-from sim_api.middleware import authenticate_user_and_cookie_restful
+from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.extensions import api
 from sim_api.models import Rating, Feedback, User
 from sim_api.extensions.utilities import RESPONSE_HEADERS
@@ -45,7 +45,7 @@ class UserRating(Resource):
     Route for Users to submit ratings.
     """
 
-    method_decorators = {'post': [authenticate_user_and_cookie_restful()]}
+    method_decorators = {'post': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
     def post(self, user) -> Tuple[dict, int, dict]:
@@ -84,7 +84,7 @@ class UserFeedback(Resource):
     Route for user to submit feedback.
     """
 
-    method_decorators = {'post': [authenticate_user_and_cookie_restful()]}
+    method_decorators = {'post': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
     def post(self, user) -> Tuple[dict, int, dict]:
@@ -134,10 +134,10 @@ class FeedbackList(Resource):
     Route for admins to view a list of feedback submissions.
     """
 
-    method_decorators = {'get': [authenticate_user_and_cookie_restful()]}
+    method_decorators = {'get': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def get(self, resp):
+    def get(self, _):
         """Return a list of feedback based of get request from Admin"""
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}

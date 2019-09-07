@@ -26,7 +26,6 @@ from marshmallow import ValidationError
 
 from sim_api.extensions import api
 from sim_api.schemas import AlloySchema
-from sim_api.alloys_service import AlloysService
 from sim_api.middleware import (
     authorize_admin_cookie_restful, authenticate_user_cookie_restful
 )
@@ -90,6 +89,7 @@ class AlloysList(Resource):
             response['message'] = 'Request data failed schema validation.'
             return response, 400
 
+        from sim_api.alloys_service import AlloysService
         id_or_error = AlloysService().create_alloy(valid_data)
 
         # create_alloy() will return a string on DuplicateKeyError meaning it
@@ -118,7 +118,10 @@ class AlloysList(Resource):
         """
         response = {'status': 'fail', 'message': 'Empty.'}
 
+        from sim_api.alloys_service import AlloysService
         alloys = AlloysService().find_all_alloys()
+
+        print(AlloysService().client.client.db)
 
         # No point returning data if there is none to return.
         if len(alloys) == 0:
@@ -159,6 +162,7 @@ class Alloys(Resource):
         if not ObjectId.is_valid(alloy_id):
             return response, 400
 
+        from sim_api.alloys_service import AlloysService
         alloy = AlloysService().find_alloy(ObjectId(alloy_id))
 
         # The service will return True or False based on successfully finding
@@ -216,6 +220,7 @@ class Alloys(Resource):
             response['message'] = 'Request data failed schema validation.'
             return response, 400
 
+        from sim_api.alloys_service import AlloysService
         good = AlloysService().update_alloy(ObjectId(alloy_id), new_alloy)
 
         # The service will return True or False based on successfully updating
@@ -352,6 +357,7 @@ class Alloys(Resource):
         if not ObjectId.is_valid(alloy_id):
             return response, 400
 
+        from sim_api.alloys_service import AlloysService
         good = AlloysService().delete_alloy(ObjectId(alloy_id))
 
         if not good:

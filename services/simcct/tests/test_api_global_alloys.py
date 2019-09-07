@@ -185,7 +185,6 @@ class TestAlloyService(BaseTestCase):
             json_data = json.load(f)
 
         db = get_db()
-
         if len([alloy for alloy in db.alloys.find()]) == 0:
             data = AlloySchema(many=True).load(json_data['alloys'])
             created_id_list = MongoAlloys().create_many(data)
@@ -193,14 +192,14 @@ class TestAlloyService(BaseTestCase):
         else:
             alloys_num = len([alloy for alloy in db.alloys.find()])
 
-        with self.app.test_client() as client:
+        with self.client as client:
             test_login(client, self.shuri.email, self._pw)
 
             res = client.get(
                 '/api/v1/sim/global/alloys',
                 content_type='application/json'
             )
-            data = json.loads(res.data.decode())
+            data = res.json
 
             self.assertEqual(res.status_code, 200)
             self.assertEqual(data['status'], 'success')

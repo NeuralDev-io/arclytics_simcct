@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# sim_session.py
+# sim_session_service.py
 #
 # Attributions:
 # [1] https://gist.github.com/wushaobo/52be20bc801243dddf52a8be4c13179a
@@ -15,7 +15,7 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.08.08'
-"""sim_session.py: 
+"""sim_session_service.py: 
 
 This module defines the class to create a RedisSession instance and the
 interface to validate and operate on the Redis store of this session. 
@@ -30,16 +30,6 @@ from sim_api.extensions import JSONEncoder
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
-
-
-class SimSession(object):
-    def __init__(
-        self,
-        is_valid=False,
-        method='Li98',
-    ):
-        self.is_valid = is_valid
-        self.method = method
 
 
 class SimSessionService(object):
@@ -112,7 +102,7 @@ class SimSessionService(object):
         if not session_data_store:
             return 'Cannot retrieve data from Redis.'
 
-        sess_data = json.loads(session_data_store)
+        sess_data: dict = json.loads(session_data_store)
         # Return the data as a dict and the sid to be used later for saving
         return sess_data
 

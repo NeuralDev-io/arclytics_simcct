@@ -27,7 +27,7 @@ from flask_restful import Resource
 
 from sim_api.extensions import api
 from sim_api.middleware import authenticate_user_and_cookie_flask
-from sim_api.extensions.sim_session import SimSessionService
+from sim_api.extensions.SimSession import SimSessionService
 from simulation.simconfiguration import SimConfiguration
 from simulation.phasesimulation import PhaseSimulation
 from simulation.utilities import ConfigurationError, SimulationError

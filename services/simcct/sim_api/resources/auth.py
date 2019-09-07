@@ -45,7 +45,7 @@ from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
 from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
-from sim_api.extensions.sim_session import SimSessionService
+from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 
 logger = AppLogger(__name__)
 

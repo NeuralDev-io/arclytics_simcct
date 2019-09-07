@@ -28,7 +28,7 @@ from sim_api.schemas import (
     AlloySchema, AlloyStoreSchema, ConfigurationsSchema
 )
 from sim_api.middleware import authenticate_user_and_cookie_flask
-from sim_api.extensions.sim_session import SimSessionService
+from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.extensions.utilities import RESPONSE_HEADERS
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, MissingElementError

@@ -15,6 +15,7 @@ ARGS=""
 CONTAINER_GROUP=""
 CONTAINER_ARGS="simcct client redis mongodb nginx"
 CONTAINER_LOG=""
+LOGS_WATCH=0
 BUILD_CONTAINER_ARGS=""
 BUILD_FLAG=0
 DETACH_FLAG=0
@@ -402,9 +403,14 @@ dockerPs() {
 }
 
 dockerLogs() {
-    headerMessage "ARCLYTICS SIM CONTAINER LOGS"
-    generalMessage "docker-compose logs ${CONTAINER_LOG}"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" logs ${CONTAINER_LOG}
+    if [[ $LOGS_WATCH == 1 ]] ; then
+        echo "watch docker-compose -f ${DOCKER_COMPOSE_PATH} logs ${CONTAINER_LOG}"
+        watch docker-compose -f "${DOCKER_COMPOSE_PATH}" logs ${CONTAINER_LOG}
+    else
+        headerMessage "ARCLYTICS SIM CONTAINER LOGS"
+        generalMessage "docker-compose logs ${CONTAINER_LOG}"
+        docker-compose -f "${DOCKER_COMPOSE_PATH}" logs ${CONTAINER_LOG}
+    fi
     completeMessage
 }
 
@@ -801,6 +807,12 @@ while [[ "$1" != "" ]] ; do
             ;;
         logs )
             CONTAINER_LOG=$2
+            shift
+
+            if [[ $2 == "--watch" ]] ; then
+                LOGS_WATCH=1
+            fi
+
             dockerLogs
             ;;
         test )

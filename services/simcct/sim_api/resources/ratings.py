@@ -112,17 +112,14 @@ class UserFeedback(Resource):
             return response, 400, RESPONSE_HEADERS
 
         try:
-            Feedback(category=category, rating=rating,
-                     comment=comment).validate()
+            feedback = Feedback(
+                user=user.id, category=category, rating=rating, comment=comment
+            )
+            feedback.save()
         except ValidationError as e:
             response['error'] = str(e.message)
             response['message'] = 'Feedback validation error.'
             return response, 400, RESPONSE_HEADERS
-
-        feedback = Feedback(
-            user=user.id, category=category, rating=rating, comment=comment
-        )
-        feedback.save()
 
         response['status'] = 'success'
         response['message'] = f'Feedback submitted by {user.email}.'

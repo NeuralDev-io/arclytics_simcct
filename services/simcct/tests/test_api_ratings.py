@@ -233,7 +233,7 @@ class TestRatingsService(BaseTestCase):
         hevy.save()
 
         with self.client:
-            cookie = test_login(self.client, hevy.email, 'YouDeserveIt')
+            test_login(self.client, hevy.email, 'YouDeserveIt')
             resp = self.client.post(
                 'api/v1/sim/user/feedback',
                 data=json.dumps(
@@ -253,16 +253,18 @@ class TestRatingsService(BaseTestCase):
 
     def test_post_feedback_success(self):
         heavy = User(
-            email='heavy@arclytics.io',
-            first_name='Clone Cadet',
-            last_name='Hevy'
+            **{
+                'email': 'heavy@arclytics.io',
+                'first_name': 'Clone Cadet',
+                'last_name': 'Heavy'
+            }
         )
         heavy.set_password('YouDeserveIt')
         heavy.save()
 
-        with self.client:
-            cookie = test_login(self.client, heavy.email, 'YouDeserveIt')
-            resp = self.client.post(
+        with self.client as client:
+            test_login(client, heavy.email, 'YouDeserveIt')
+            resp = client.post(
                 '/api/v1/sim/user/feedback',
                 data=json.dumps(
                     {

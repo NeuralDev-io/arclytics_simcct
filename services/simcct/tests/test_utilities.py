@@ -44,7 +44,6 @@ def test_login(client, email: str, password: str):
         }),
         content_type='application/json'
     )
-    print(resp_login)
 
     cookie = next(
         (cookie for cookie in client.cookie_jar if
@@ -62,7 +61,6 @@ def test_login(client, email: str, password: str):
     #       SESSION_COOKIE_NAME, session_key, expires=expiry_date,
     #        httponly=True, domain=self.get_cookie_domain(app)
     # )
-    print(client.cookie_jar)
 
     # THIS IS JUST FOR VISUALS. CLIENT AUTOMATICALLY SETS IT.
     cookie = {

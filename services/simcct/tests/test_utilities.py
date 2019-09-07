@@ -42,13 +42,15 @@ def test_login(client, email: str, password: str):
             'email': email,
             'password': password
         }),
-        content_type='application/json'
+        content_type='application/json',
+        environ_base={'REMOTE_ADDR': '127.0.0.1'}
     )
 
     cookie = next(
-        (cookie for cookie in client.cookie_jar if
-         cookie.name == 'SESSION_TOKEN'),
-        None
+        (
+            cookie for cookie in client.cookie_jar
+            if cookie.name == 'SESSION_TOKEN'
+        ), None
     )
 
     resp_set_cookie = resp_login.headers.get('Set-Cookie').split(';')

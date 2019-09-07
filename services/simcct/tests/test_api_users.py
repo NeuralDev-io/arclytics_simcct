@@ -217,17 +217,20 @@ class TestUserService(BaseTestCase):
         with self.client as client:
             resp_login = client.post(
                 '/api/v1/sim/auth/login',
-                data=json.dumps({
-                    'email': thor.email,
-                    'password': 'StrongestAvenger'
-                }),
+                data=json.dumps(
+                    {
+                        'email': thor.email,
+                        'password': 'StrongestAvenger'
+                    }
+                ),
                 content_type='application/json'
             )
 
             cookie = next(
-                (cookie for cookie in client.cookie_jar if
-                 cookie.name == 'SESSION_TOKEN'),
-                None
+                (
+                    cookie for cookie in client.cookie_jar
+                    if cookie.name == 'SESSION_TOKEN'
+                ), None
             )
 
             cookie_value = str(cookie.value)[3:-1]

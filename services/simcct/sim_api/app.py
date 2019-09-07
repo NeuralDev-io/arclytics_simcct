@@ -25,7 +25,6 @@ import os
 
 from flask import Flask
 from flask_cors import CORS
-import logging
 from mongoengine import connect
 from mongoengine.connection import (
     disconnect_all, get_connection, get_db, MongoEngineConnectionError
@@ -33,7 +32,7 @@ from mongoengine.connection import (
 from redis import Redis
 
 from sim_api.extensions import bcrypt, api, mail, redis_session
-from sim_api.mongodb import MongoSingleton
+from sim_api.extensions import MongoSingleton
 from sim_api.extensions import JSONEncoder
 from sim_api.resources.users import users_blueprint
 from sim_api.resources.auth import auth_blueprint

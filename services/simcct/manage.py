@@ -43,7 +43,7 @@ COV = coverage.coverage(
     include=[
         'sim_api/schemas.py', 'sim_api/resources/*', 'sim_api/alloys/*',
         'sim_api/alloys_service.py', 'sim_api/middleware.py',
-        'sim_api/sim_session.py', 'sim_api/models.py',
+        'sim_api/sim_session_service.py', 'sim_api/models.py',
         'sim_api/resources/users.py', 'sim_api/resources/auth.py',
         'sim_api/middleware.py', 'sim_api/mongodb.py', 'sim_api/token.py',
         'sim_api/resources/share.py', 'sim_api/resources/admin_auth.py',

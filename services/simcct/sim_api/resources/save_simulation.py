@@ -35,7 +35,7 @@ from sim_api.extensions.utilities import (
 )
 from sim_api.models import User, Configuration, AlloyStore, SavedSimulation
 
-save_simulation_blueprint = Blueprint('user_save_simulation', __name__)
+save_sim_blueprint = Blueprint('user_save_simulation', __name__)
 
 # NOTE: An is_valid = False Configuration instance means it has not been run.
 

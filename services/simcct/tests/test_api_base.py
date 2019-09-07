@@ -22,8 +22,7 @@ The base TestCase that all others subclass from.
 
 import os
 from pymongo import MongoClient
-from mongomock import MongoClient
-from mongoengine.connection import get_db, get_connection, connect, disconnect
+from mongoengine.connection import get_db, get_connection, disconnect
 from flask_testing import TestCase
 from redis import Redis
 
@@ -35,9 +34,12 @@ from sim_api.app import create_app
 logger = AppLogger(__name__)
 
 
+app = create_app(configs_path='configs.flask_conf.TestingConfig')
+
+
 class BaseTestCase(TestCase):
     def create_app(self):
-        app = create_app(configs_path='configs.flask_conf.TestingConfig')
+        app.config.from_object('configs.flask_conf.TestingConfig')
         self.db = init_db(app)
         set_flask_mongo(self.db)
         return app
@@ -47,10 +49,6 @@ class BaseTestCase(TestCase):
         self.assertIsInstance(conn, MongoClient)
         db_in_use = get_db()
         self.assertEqual(db_in_use.name, 'arc_test')
-
-    def tearDown(self) -> None:
-        self.db.instance.client.drop_database('arc_test')
-        disconnect('default')
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -63,6 +61,7 @@ class BaseTestCase(TestCase):
         )
         redis.flushall()
         redis.flushdb()
-        mongo = connect('arc_test', host='mongomock://localhost')
-        mongo.drop_database('arc_test')
+        db = get_db()
+        db.alloys.drop()
+        db.users.drop()
         disconnect('default')

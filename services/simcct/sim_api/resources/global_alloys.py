@@ -121,8 +121,6 @@ class AlloysList(Resource):
         from sim_api.alloys_service import AlloysService
         alloys = AlloysService().find_all_alloys()
 
-        print(AlloysService().client.client.db)
-
         # No point returning data if there is none to return.
         if len(alloys) == 0:
             return response, 404
@@ -237,12 +235,11 @@ class Alloys(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, _):
+    def patch(self, alloy_id):
         """Exposes the PATCH method for `/alloys` to update an existing alloy by
         an admin to update the existing data.
 
         Args:
-            _: A valid User object that is not used.
             _: A valid ObjectId string that will be checked  that is not used.
 
         Returns:

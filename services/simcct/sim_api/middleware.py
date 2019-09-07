@@ -54,12 +54,10 @@ def authenticate_user_and_cookie_flask(f):
     Returns:
         the `sim_api.models.User` object if found.
     """
+
     @wraps(f)
     def decorated_func(*args, **kwargs):
-        response = {
-            'status': 'fail',
-            'message': 'Session token is not valid.'
-        }
+        response = {'status': 'fail', 'message': 'Session token is not valid.'}
         # Get the session key from the cookies
         session_key = request.cookies.get(SESSION_COOKIE_NAME)
 
@@ -114,12 +112,10 @@ def authorize_admin_cookie_flask(f):
     Returns:
         the `sim_api.models.User` object if found.
     """
+
     @wraps(f)
     def decorated_func(*args, **kwargs):
-        response = {
-            'status': 'fail',
-            'message': 'Session token is not valid.'
-        }
+        response = {'status': 'fail', 'message': 'Session token is not valid.'}
         # Get the session key from the cookies
         session_key = request.cookies.get(SESSION_COOKIE_NAME)
 
@@ -177,12 +173,10 @@ def authenticate_user_cookie_restful(f):
     Returns:
         the `sim_api.models.User` object if found.
     """
+
     @wraps(f)
     def decorated_func(*args, **kwargs):
-        response = {
-            'status': 'fail',
-            'message': 'Session token is not valid.'
-        }
+        response = {'status': 'fail', 'message': 'Session token is not valid.'}
         # Get the session key from the cookies
         session_key = request.cookies.get(SESSION_COOKIE_NAME)
 
@@ -237,12 +231,10 @@ def authorize_admin_cookie_restful(f):
     Returns:
         the `sim_api.models.User` object if found.
     """
+
     @wraps(f)
     def decorated_func(*args, **kwargs):
-        response = {
-            'status': 'fail',
-            'message': 'Session token is not valid.'
-        }
+        response = {'status': 'fail', 'message': 'Session token is not valid.'}
         # Get the session key from the cookies
         session_key = request.cookies.get(SESSION_COOKIE_NAME)
 
@@ -286,6 +278,7 @@ def authorize_admin_cookie_restful(f):
         return f(user, *args, **kwargs)
 
     return decorated_func
+
 
 # =========================================================================== #
 # ========================= # OLD MIDDLEWARE # ============================== #

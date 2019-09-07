@@ -50,7 +50,6 @@ def utctimestamp_by_second(utc_date_time):
 
 class RedisSession(CallbackDict, SessionMixin):
     def __init__(self, initial=None, sid=None, new=False):
-
         def on_update(s):
             s.modified = True
 
@@ -61,11 +60,7 @@ class RedisSession(CallbackDict, SessionMixin):
 
 
 class RedisSessionInterface(SessionInterface):
-    def __init__(
-            self,
-            app=None,
-            use_signer=True
-    ):
+    def __init__(self, app=None, use_signer=True):
         if app is not None:
             self.redis = app.config.get('SESSION_REDIS')
             self.secret_key = app.config.get('SECRET_KEY', None)
@@ -123,8 +118,12 @@ class RedisSessionInterface(SessionInterface):
 
         data = json.loads(redis_value.decode())
 
-        if str(ip_address) != data['ip_address']:
-            logger.error('Some idiot tried to access from a different IP.')
+        if str(ip_address) != data.get('ip_address', ''):
+            logger.debug(
+                f'Some idiot tried to access from a different IP.\n'
+                f'Session IP: {data["ip_address"]}\n'
+                f'Request IP: {ip_address}'
+            )
             return self._new_session()
 
         return RedisSession(data, sid=sid)
@@ -176,8 +175,11 @@ class RedisSessionInterface(SessionInterface):
         #     httponly=True, domain=self.get_cookie_domain(app), secure=True,
         # )
         response.set_cookie(
-            SESSION_COOKIE_NAME, session_key, expires=expiry_date,
-            httponly=True, domain=self.get_cookie_domain(app)
+            SESSION_COOKIE_NAME,
+            session_key,
+            expires=expiry_date,
+            httponly=True,
+            domain=self.get_cookie_domain(app)
         )
 
     @staticmethod
@@ -240,7 +242,9 @@ class RedisSessionInterface(SessionInterface):
 
     @staticmethod
     def _expiry_timestamp_not_match(expiry_timestamp, redis_key_ttl):
-        datetime_from_ttl = datetime.utcnow() + timedelta(seconds=redis_key_ttl)
+        datetime_from_ttl = datetime.utcnow() + timedelta(
+            seconds=redis_key_ttl
+        )
         timestamp_from_ttl = utctimestamp_by_second(datetime_from_ttl)
 
         try:
@@ -249,7 +253,7 @@ class RedisSessionInterface(SessionInterface):
             return True
 
     def _extract_sid_and_expiry_ts_from(
-            self, session_key: str
+        self, session_key: str
     ) -> Union[Tuple[str, None], Tuple[str, int]]:
         """Given the session key, we decode it using the `itsdangerous` package.
 
@@ -289,10 +293,12 @@ class RedisSessionInterface(SessionInterface):
         s = itsdangerous.TimedJSONWebSignatureSerializer(
             secret_key=self.secret_key, expires_in=expiry_in_seconds
         )
-        return s.dumps({
-            'sid': sid,
-            'expiry_seconds': expiry_in_seconds
-        }, salt=self.salt)
+        return s.dumps(
+            {
+                'sid': sid,
+                'expiry_seconds': expiry_in_seconds
+            }, salt=self.salt
+        )
 
     @staticmethod
     def _inject_jwt_in_sid(sid, jwt):
@@ -304,10 +310,7 @@ class RedisSessionInterface(SessionInterface):
 
     def _clean_redis_and_cookie(self, app, response, session):
         """If the Cookie is bad, we clear out the Cookie and Redis store."""
-        self._write_wrapper(
-            self.redis.delete,
-            self._redis_key(session.sid)
-        )
+        self._write_wrapper(self.redis.delete, self._redis_key(session.sid))
         response.delete_cookie(
             SESSION_COOKIE_NAME, domain=self.get_cookie_domain(app)
         )

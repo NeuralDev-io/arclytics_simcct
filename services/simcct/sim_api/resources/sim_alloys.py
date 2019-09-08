@@ -27,9 +27,8 @@ from sim_api.extensions import api
 from sim_api.schemas import (
     AlloySchema, AlloyStoreSchema, ConfigurationsSchema
 )
-from sim_api.middleware import authenticate_user_and_cookie_flask
+from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.extensions.SimSession.sim_session_service import SimSessionService
-from sim_api.extensions.utilities import RESPONSE_HEADERS
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, MissingElementError
 from logger.arc_logger import AppLogger
@@ -41,8 +40,8 @@ sim_alloys_blueprint = Blueprint('sim_alloys', __name__)
 
 class AlloyStore(Resource):
     method_decorators = {
-        'patch': [authenticate_user_and_cookie_flask],
-        'post': [authenticate_user_and_cookie_flask]
+        'patch': [authenticate_user_cookie_restful],
+        'post': [authenticate_user_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
@@ -61,7 +60,7 @@ class AlloyStore(Resource):
 
         post_data = request.get_json()
         if not post_data:
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         # Extract the method from the post request body
         # REQUEST BODY SHOULD BE
@@ -76,7 +75,7 @@ class AlloyStore(Resource):
 
         if not alloy_option:
             response['message'] = 'No alloy option was provided.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         # We have a couple of ways the Alloy is stored in both Session and
         # Database based on what is available with the alloy_option and
@@ -87,21 +86,21 @@ class AlloyStore(Resource):
                 'Alloy option not one of '
                 '["single" | "mix"].'
             )
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         if not alloy_type or not isinstance(alloy_type, str):
             response['message'] = 'No alloy type was provided.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         if alloy_type not in {'parent', 'weld', 'mix'}:
             response['message'] = (
                 'Alloy type not one of ["parent" | "weld" | "mix"].'
             )
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         if not alloy:
             response['message'] = 'No alloy was provided.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         alloy_name = alloy.get('name', None)
         alloy_comp = alloy.get('compositions', None)
@@ -111,26 +110,26 @@ class AlloyStore(Resource):
                 'No valid keys was provided for alloy '
                 '(i.e. must be "name" or "compositions")'
             )
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         if not alloy_comp:
             response['message'] = 'You must provide an alloy composition.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         if not alloy_name:
             response['message'] = 'You must provide an alloy name.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         # Let's validate the Alloy follows our schema
         try:
             valid_alloy = AlloySchema().load(alloy)
         except MissingElementError as e:
             response['message'] = str(e)
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
         except ValidationError as e:
             response['errors'] = str(e.messages)
             response['message'] = 'Alloy failed schema validation.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         # Otherwise we have all the elements we need
 
@@ -148,6 +147,7 @@ class AlloyStore(Resource):
         try:
             if alloy_option == 'single':
                 # In this situation, we will only use the parent alloy
+                # noinspection PyTypeChecker
                 session_alloy_store['alloys']['parent'] = valid_alloy
                 # Just quickly validate the alloy stored based on schema
                 valid_store = AlloyStoreSchema().load(session_alloy_store)
@@ -157,13 +157,13 @@ class AlloyStore(Resource):
         except ValidationError as e:
             response['errors'] = e.messages
             response['message'] = 'Alloy failed schema validation.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         session_store = SimSessionService().load_session()
 
         if isinstance(session_store, str):
             response['message'] = session_store
-            return response, 500, RESPONSE_HEADERS
+            return response, 500
 
         session_store['alloy_store'] = valid_store
 
@@ -172,7 +172,7 @@ class AlloyStore(Resource):
         if not session_configs:
             response['message'
                      ] = 'Cannot retrieve configurations from session.'
-            return response, 500, RESPONSE_HEADERS
+            return response, 500
 
         try:
             valid_configs = ConfigurationsSchema().load(session_configs)
@@ -180,7 +180,7 @@ class AlloyStore(Resource):
             response['errors'] = e.messages
             response['message'
                      ] = 'Validation error for session configurations.'
-            return response, 500, RESPONSE_HEADERS
+            return response, 500
 
         # Well, if we don't need to auto calc. anything, let's get out of here
         if (
@@ -194,7 +194,7 @@ class AlloyStore(Resource):
 
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'
-            return response, 200, RESPONSE_HEADERS
+            return response, 200
 
         # We update the transformation limits based on which option is
         # chosen
@@ -213,7 +213,7 @@ class AlloyStore(Resource):
 
         if comp_np_arr is False:
             response['message'] = 'Compositions conversion error.'
-            return response, 500, RESPONSE_HEADERS
+            return response, 500
 
         # We need to store some results so let's prepare an empty dict
         response['message'] = (
@@ -252,7 +252,7 @@ class AlloyStore(Resource):
         SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
-        return response, 201, RESPONSE_HEADERS
+        return response, 201
 
     # noinspection PyMethodMayBeStatic
     def patch(self, _):
@@ -269,7 +269,7 @@ class AlloyStore(Resource):
 
         patch_data = request.get_json()
         if not patch_data:
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
         # Extract the method from the post request body
         # REQUEST BODY SHOULD BE
         # {
@@ -286,7 +286,7 @@ class AlloyStore(Resource):
                 'Alloy option not one of '
                 '["single" | "mix"].'
             )
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         # We have a couple of ways the Alloy is stored in both Session and
         # Database based on what is available with the alloy_option and
@@ -295,17 +295,17 @@ class AlloyStore(Resource):
 
         if not alloy_type or not isinstance(alloy_type, str):
             response['message'] = 'No alloy type was provided.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         if alloy_type not in {'parent', 'weld', 'mix'}:
             response['message'] = (
                 'Alloy type not one of ["parent" | "weld" | "mix"].'
             )
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         if not alloy:
             response['message'] = 'No alloy was provided.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         # The alloy might be provided but if it's got no valid keys, we need to
         # check that
@@ -317,13 +317,13 @@ class AlloyStore(Resource):
             response['message'] = (
                 'Valid compositions must be provided as a list.'
             )
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         session_store = SimSessionService().load_session()
 
         if isinstance(session_store, str):
             response['message'] = session_store
-            return response, 500, RESPONSE_HEADERS
+            return response, 500
 
         # We get what's currently stored in the session and we update it
         sess_alloy_store = session_store.get('alloy_store')
@@ -331,7 +331,7 @@ class AlloyStore(Resource):
         # Basically, the user should have a session initiated from login
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         # We just update the alloy_option straight up
         sess_alloy_store['alloy_option'] = alloy_option
@@ -381,7 +381,7 @@ class AlloyStore(Resource):
         except ValidationError as e:
             response['errors'] = e.messages
             response['message'] = 'Alloy failed schema validation.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         # We also need to do auto update fixes if necessary
         session_store['alloy_store'] = sess_alloy_store
@@ -399,7 +399,7 @@ class AlloyStore(Resource):
 
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'
-            return response, 200, RESPONSE_HEADERS
+            return response, 200
 
         # Since we do need to calculate, must get the compositions first in
         # numpy.ndarray structured format and type
@@ -420,7 +420,7 @@ class AlloyStore(Resource):
 
         if comp_np_arr is False:
             response['message'] = 'Compositions conversion error.'
-            return response, 500, RESPONSE_HEADERS
+            return response, 500
 
         # We need to store some results so let's prepare an empty dict
         response['message'] = 'Compositions and other values updated.'
@@ -463,7 +463,7 @@ class AlloyStore(Resource):
         SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
-        return response, 200, RESPONSE_HEADERS
+        return response, 200
 
 
 api.add_resource(AlloyStore, '/api/v1/sim/alloys/update')

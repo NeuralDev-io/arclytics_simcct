@@ -48,6 +48,7 @@ ALLOY_STORE = {
         'mix': None
     }
 }
+RESULTS = _TEST_JSON['simulation_results']
 
 
 class TestLastSimulation(BaseTestCase):
@@ -105,36 +106,6 @@ class TestLastSimulation(BaseTestCase):
         db = get_db('default')
         assert db.name == 'arc_test'
         db.users.drop()
-
-    # user = None
-    #
-    # def setUp(self) -> None:
-    #     self.user = User(
-    #         **{
-    #             'first_name': 'Henry',
-    #             'last_name': 'Pym',
-    #             'email': 'hank@pymtechnologies.com'
-    #         }
-    #     )
-    #     self.user.set_password('Subatomic!')
-    #     self.user.verified = True
-    #     self.user.save()
-    #
-    # def tearDown(self) -> None:
-    #     self.user.delete()
-    #
-    # @staticmethod
-    # def login(client, email='hank@pymtechnologies.com', password='Subatomic!'):
-    #     resp_login = client.post(
-    #         '/auth/login',
-    #         data=json.dumps({
-    #             'email': email,
-    #             'password': password
-    #         }),
-    #         content_type='application/json'
-    #     )
-    #     token = json.loads(resp_login.data.decode())['token']
-    #     return token
 
     def test_create_last_no_token(self):
         with app.test_client() as client:
@@ -209,7 +180,8 @@ class TestLastSimulation(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': configs,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
                     }
                 ),
                 content_type='application/json'
@@ -235,7 +207,8 @@ class TestLastSimulation(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': configs,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
                     }
                 ),
                 content_type='application/json'
@@ -262,7 +235,8 @@ class TestLastSimulation(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': configs,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
                     }
                 ),
                 content_type='application/json'
@@ -293,7 +267,8 @@ class TestLastSimulation(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': configs,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
                     }
                 ),
                 content_type='application/json'
@@ -330,7 +305,8 @@ class TestLastSimulation(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': RESULTS
                     }
                 ),
                 content_type='application/json'
@@ -368,7 +344,8 @@ class TestLastSimulation(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': RESULTS
                     }
                 ),
                 content_type='application/json'
@@ -402,7 +379,8 @@ class TestLastSimulation(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': RESULTS
                     }
                 ),
                 content_type='application/json'
@@ -440,7 +418,8 @@ class TestLastSimulation(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': RESULTS
                     }
                 ),
                 content_type='application/json'
@@ -466,7 +445,8 @@ class TestLastSimulation(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
                     }
                 ),
                 content_type='application/json'
@@ -558,7 +538,8 @@ class TestLastSimulation(BaseTestCase):
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
                     }
                 ),
                 content_type='application/json'

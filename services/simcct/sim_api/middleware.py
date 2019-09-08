@@ -27,7 +27,6 @@ from mongoengine import DoesNotExist
 
 from sim_api.extensions.Session.redis_session import SESSION_COOKIE_NAME
 from sim_api.models import User
-from sim_api.extensions import RESPONSE_HEADERS
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -87,6 +86,7 @@ def authenticate_user_and_cookie_flask(f):
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
+            response['errors'] = str(e)
             response['message'] = 'User does not exist.'
             return jsonify(response), 404
 
@@ -145,6 +145,7 @@ def authorize_admin_cookie_flask(f):
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
+            response['errors'] = str(e)
             response['message'] = 'User does not exist.'
             return jsonify(response), 404
 
@@ -181,17 +182,17 @@ def authenticate_user_cookie_restful(f):
         session_key = request.cookies.get(SESSION_COOKIE_NAME)
 
         if not session_key:
-            return response, 401, RESPONSE_HEADERS
+            return response, 401
 
         if not session:
             response['message'] = 'Session is invalid.'
-            return response, 401, RESPONSE_HEADERS
+            return response, 401
 
         # Extract the JWT from the session which we stored at login
         auth_token = session.get('jwt', None)
         if auth_token is None:
             response['message'] = 'No JWT stored in Session.'
-            return response, 500, RESPONSE_HEADERS
+            return response, 500
 
         # Decode either returns bson.ObjectId if successful or a string from an
         # exception
@@ -200,7 +201,7 @@ def authenticate_user_cookie_restful(f):
         # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):
             response['message'] = resp
-            return response, 401, RESPONSE_HEADERS
+            return response, 401
 
         # Validate the user is active
         try:
@@ -208,11 +209,11 @@ def authenticate_user_cookie_restful(f):
         except DoesNotExist as e:
             response['errors'] = str(e)
             response['message'] = 'User does not exist.'
-            return response, 404, RESPONSE_HEADERS
+            return response, 404
 
         if not user.active:
             response['message'] = 'This user account has been disabled.'
-            return response, 403, RESPONSE_HEADERS
+            return response, 403
 
         return f(user, *args, **kwargs)
 
@@ -265,6 +266,7 @@ def authorize_admin_cookie_restful(f):
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
+            response['errors'] = str(e)
             response['message'] = 'User does not exist.'
             return response, 404
 
@@ -323,112 +325,6 @@ def authenticate(f):
             return response, 403
 
         return f(resp, *args, **kwargs)
-
-    return decorated_func
-
-
-def authenticate_flask(f):
-    @wraps(f)
-    def decorated_func(*args, **kwargs):
-        response = {
-            'status': 'fail',
-            'message': 'Provide a valid JWT auth token.'
-        }
-        # get auth token
-        auth_header = request.headers.get('Authorization', None)
-
-        if not auth_header:
-            return jsonify(response), 401
-
-        # auth_header = 'Bearer token'
-        auth_token = auth_header.split(' ')[1]
-
-        # Decode either returns bson.ObjectId if successful or a string from an
-        # exception
-        resp = User.decode_auth_token(auth_token=auth_token)
-
-        # Either returns an ObjectId User ID or a string response.
-        if not isinstance(resp, ObjectId):
-            response['message'] = resp
-            return jsonify(response), 401
-
-        # Validate the user is active
-        try:
-            user: User = User.objects.get(id=resp)
-        except DoesNotExist as e:
-            response['message'] = 'User does not exist.'
-            return jsonify(response), 404
-
-        if not user.active:
-            response['message'] = 'This user account has been disabled.'
-            return jsonify(response), 403
-
-        return f(resp, *args, **kwargs)
-
-    return decorated_func
-
-
-def authenticate_admin(f):
-    @wraps(f)
-    def decorated_func(*args, **kwargs):
-        response = {
-            'status': 'fail',
-            'message': 'Provide a valid JWT auth token.'
-        }
-
-        auth_header = request.headers.get('Authorization', '')
-
-        if not auth_header:
-            return response, 401
-
-        # auth_header = 'Bearer token'
-        auth_token = auth_header.split(' ')[1]
-
-        resp = User.decode_auth_token(auth_token=auth_token)
-
-        if isinstance(resp, str):
-            response['message'] = resp
-            return response, 401
-
-        try:
-            admin = User.objects.get(id=resp)
-        except DoesNotExist as e:
-            response['message'] = 'User does not exist.'
-            return response, 404
-
-        if not admin.is_admin:
-            response['message'] = 'Not authorized.'
-            return response, 403
-
-        return f(resp, *args, **kwargs)
-
-    return decorated_func
-
-
-def token_required_flask(f):
-    @wraps(f)
-    def decorated_func(*args, **kwargs):
-        response = {'status': 'fail', 'message': 'Invalid payload.'}
-
-        # Get the auth header
-        auth_header = request.headers.get('Authorization', None)
-
-        if not auth_header:
-            response['message'] = 'No valid Authorization in header.'
-            return jsonify(response), 401
-
-        token = auth_header.split(' ')[1]
-
-        if token == '':
-            response['message'] = 'Invalid JWT token in header.'
-            return jsonify(response), 401
-
-        # TODO(andrew@neuraldev.io -- Sprint 6): Find a way to validate this is
-        #  is a valid token for a user.
-        #  - We can check the session store to confirm if the token is valid
-        #    for a user.
-
-        return f(token, *args, **kwargs)
 
     return decorated_func
 

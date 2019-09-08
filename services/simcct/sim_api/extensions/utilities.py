@@ -45,8 +45,11 @@ def get_mongo_uri():
 RESPONSE_HEADERS = {
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Credentials': 'true',
-    'Access-Control-Allow-Origin': '*'
+    # 'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Expose-Headers':
+        ['Access-Control-Allow-Credentials', 'Access-Control-Allow-Origin'],
+    # 'Access-Control-Allow-Origin': '*',
+    'Vary': 'Origin'
 }
 
 

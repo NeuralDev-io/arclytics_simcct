@@ -303,9 +303,13 @@ class TestSimConfigurations(BaseTestCase):
     def test_configurations_no_session(self):
         """Ensure it fails with no header."""
         with app.test_client() as client:
+            # We login to get a valid cookie
             cookie = test_login(client, self.user.email, self._user_pw)
+            # Logout should clear the Cookie and Session from being valid
             self.logout_client(client)
 
+            # Reset the cookie for the next request but it should not
+            # be the one that retrieves a valid session.
             client.set_cookie('localhost', cookie['key'], cookie['value'])
 
             method = 'Kirkaldy83'
@@ -314,7 +318,6 @@ class TestSimConfigurations(BaseTestCase):
                 data=json.dumps({'method': method}),
                 content_type='application/json'
             )
-            logger.debug(res)
             data = json.loads(res.data.decode())
             self.assert401(res)
             self.assertEqual(data['message'], 'Session is invalid.')
@@ -620,17 +623,22 @@ class TestSimConfigurations(BaseTestCase):
             # We login to get a cookie
             _, _ = self.login_client(client)
 
-            # We reset the session by doing this
-            with client.session_transaction() as session:
+            # We change the session by making a transaction on it within context
+            # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
+            #  is set because otherwise opening a transaction will not use
+            #  a standard HTTP request environ_base.
+            with client.session_transaction(
+                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ) as session:
                 session['simulation'] = None
-            with client.session_transaction():
+            with client.session_transaction(
+                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ):
                 # At this point the session transaction has been updated so
                 # we can check the session within the context
                 session_store = SimSessionService().load_session()
                 self.assertIsInstance(session_store, str)
                 self.assertEqual(session_store, 'Session is empty.')
-
-            logger.info(client.environ_base)
 
             ms_configs = {
                 'ms_temp': 464.196,
@@ -650,24 +658,43 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(res.status_code, 500)
             self.assertEquals(data['status'], 'fail')
 
-    # def test_update_bs_no_prev_configs(self):
-    #     """Ensure if there is no prev. configs BS payload does not pass."""
-    #     with app.test_client() as client:
-    #         # We don't login to set the previous configs
-    #         # _, _, token = self.login_client(client)
-    #         bs_configs = {'bs_temp': 563.238}
-    #
-    #         res = client.put(
-    #             '/api/v1/sim/configs/bs',
-    #             data=json.dumps(bs_configs),
-    #             content_type='application/json'
-    #         )
-    #         data = json.loads(res.data.decode())
-    #         self.assertEquals(
-    #             data['message'], 'Unable to load session from Redis.'
-    #         )
-    #         self.assertEquals(data['status'], 'fail')
-    #         self.assert401(res)
+    def test_update_bs_no_prev_configs(self):
+        """Ensure if there is no prev. configs BS payload does not pass."""
+        with app.test_client() as client:
+            # We login to get a cookie
+            _, _ = self.login_client(client)
+
+            # We change the session by making a transaction on it within context
+            # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
+            #  is set because otherwise opening a transaction will not use
+            #  a standard HTTP request environ_base.
+            with client.session_transaction(
+                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ) as session:
+                session['simulation'] = None
+            with client.session_transaction(
+                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ):
+                # At this point the session transaction has been updated so
+                # we can check the session within the context
+                session_store = SimSessionService().load_session()
+                self.assertIsInstance(session_store, str)
+                self.assertEqual(session_store, 'Session is empty.')
+
+            bs_configs = {'bs_temp': 563.238}
+
+            res = client.put(
+                '/api/v1/sim/configs/bs',
+                data=json.dumps(bs_configs),
+                content_type='application/json',
+                environ_base={'REMOTE_ADDR': '127.0.0.1'}
+            )
+            data = json.loads(res.data.decode())
+            self.assertEquals(
+                data['message'], 'Cannot retrieve data from Session store.'
+            )
+            self.assertEquals(data['status'], 'fail')
+            self.assertEqual(res.status_code, 500)
 
     def test_update_ms(self):
         """Ensure a valid payload of MS will do just as we expect."""
@@ -759,24 +786,43 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEquals(data['status'], 'fail')
             self.assertEquals(data['message'], 'Ae3 temperature is required.')
 
-    # def test_update_ae_no_prev_configs(self):
-    #     """Ensure an missing bs_temp payload does not pass."""
-    #     with app.test_client() as client:
-    #         # We don't login to set the previous configs
-    #         # _, _, token = self.login_client(client)
-    #         ae_configs = {'ae1_temp': 700.902, 'ae3_temp': 845.838}
-    #
-    #         res = client.put(
-    #             '/api/v1/sim/configs/ae',
-    #             data=json.dumps(ae_configs),
-    #             content_type='application/json'
-    #         )
-    #         data = json.loads(res.data.decode())
-    #         self.assertEquals(data['status'], 'fail')
-    #         self.assertEquals(
-    #             data['message'], 'Unable to load session from Redis.'
-    #         )
-    #         self.assert401(res)
+    def test_update_ae_no_prev_configs(self):
+        """Ensure an missing bs_temp payload does not pass."""
+        with app.test_client() as client:
+            # We login to get a cookie
+            _, _ = self.login_client(client)
+
+            # We change the session by making a transaction on it within context
+            # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
+            #  is set because otherwise opening a transaction will not use
+            #  a standard HTTP request environ_base.
+            with client.session_transaction(
+                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ) as session:
+                session['simulation'] = None
+            with client.session_transaction(
+                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ):
+                # At this point the session transaction has been updated so
+                # we can check the session within the context
+                session_store = SimSessionService().load_session()
+                self.assertIsInstance(session_store, str)
+                self.assertEqual(session_store, 'Session is empty.')
+
+            ae_configs = {'ae1_temp': 700.902, 'ae3_temp': 845.838}
+
+            res = client.put(
+                '/api/v1/sim/configs/ae',
+                data=json.dumps(ae_configs),
+                content_type='application/json',
+                environ_base={'REMOTE_ADDR': '127.0.0.1'}
+            )
+            data = json.loads(res.data.decode())
+            self.assertEquals(data['status'], 'fail')
+            self.assertEquals(
+                data['message'], 'Cannot retrieve data from Session store.'
+            )
+            self.assertEqual(res.status_code, 500)
 
     def test_update_ae(self):
         """Ensure a valid payload of MS and BS will do just as we expect."""

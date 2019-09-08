@@ -119,7 +119,6 @@ class RedisSessionInterface(SessionInterface):
         data = json.loads(redis_value.decode())
 
         if str(ip_address) != data.get('ip_address', ''):
-            logger.info(f'open_session: {request.environ}')
             logger.debug(
                 f'Some idiot tried to access from a different IP.\n'
                 f'Session IP: {data["ip_address"]}\n'

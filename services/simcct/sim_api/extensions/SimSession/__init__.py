@@ -45,7 +45,10 @@ class SimSession(object):
     cct_cooling_rate: float = 0.0
     # xfe: float = 0.0
 
-
-
-
+    # TODO(andrew@neuraldev.io): THIS CLASS NEEDS TO BE SOMETHING CONCRETE
+    #  - We can then use it to serialize and deserialise from the Session
+    #    store as a concrete object to pass around rather than a Dictionary.
+    #  - Gives us the opportunity to include internal error checking via
+    #    decorators and other methods.
+    #  - Can potentially use a Factory method to alloy serialization.
 

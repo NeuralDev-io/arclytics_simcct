@@ -56,7 +56,7 @@ class SaveSimulationList(Resource):
         `user_id` which is decoded from Authorization JWT by the middleware.
 
         Args:
-            user_id: a valid user ObjectId passed from the middleware.
+            user: a valid `sim_api.models.User` passed from the middleware.
 
         Returns:
             A valid HTTP Response with a dict and a HTTP status code.

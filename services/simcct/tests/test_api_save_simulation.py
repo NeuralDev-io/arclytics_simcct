@@ -19,11 +19,14 @@ from pathlib import Path
 from bson import ObjectId
 from flask import json
 from flask import current_app as app
-from mongoengine import DoesNotExist
+from mongoengine import DoesNotExist, get_db
 
 import settings
 from tests.test_api_base import BaseTestCase
-from sim_api.models import User, Configuration, AlloyStore, SavedSimulation
+from sim_api.models import (
+    User, Configuration, AlloyStore, SavedSimulation, UserProfile, AdminProfile
+)
+from tests.test_utilities import test_login
 
 _TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'tests' / 'sim_configs.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
@@ -48,40 +51,68 @@ SIM_RESULTS = _TEST_JSON['simulation_results']
 
 
 class TestSaveSimulationService(BaseTestCase):
-    user = None
+    _email = None
+    _tony_pw = 'IAmIronMan!!!'
+    mongo = None
 
     def setUp(self) -> None:
-        self.user = User(
-            first_name='Scott', last_name='Lang', email='ant-man@marvel.com'
+        assert app.config['TESTING'] is True
+        self.mongo = get_db('default')
+
+        # Tony is an admin
+        self.tony = User(
+            **{
+                'email': 'ironman@avengers.com',
+                'first_name': 'Tony',
+                'last_name': 'Stark'
+            }
         )
-        self.user.set_password('TimeVortex!')
-        self.user.verified = True
-        self.user.save()
+        self.tony.set_password(self._tony_pw)
+        self.tony.verified = True
+        self.tony.profile = UserProfile(
+            **{
+                'aim': 'Save the world',
+                'highest_education': 'Genius',
+                'sci_tech_exp': 'Invented J.A.R.V.I.S.',
+                'phase_transform_exp': 'More than you'
+            }
+        )
+        self.tony.admin_profile = AdminProfile(
+            **{
+                'position': 'Billionaire Playboy Philanthropist',
+                'mobile_number': None,
+                'verified': True,
+                'promoted_by': None
+            }
+        )
+        self.tony.disable_admin = False
+        self.tony.save()
+        user_tony = self.mongo.users.find_one(
+            {'email': 'ironman@avengers.com'}
+        )
+        assert user_tony is not None
+        assert user_tony['admin'] is True
+        self._email = self.tony.email
 
     def tearDown(self) -> None:
-        self.user.delete()
+        db = get_db('default')
+        self.assertTrue(db.name, 'arc_test')
+        db.users.drop()
 
-    @staticmethod
-    def login(client, email='ant-man@marvel.com', password='TimeVortex!'):
-        resp_login = client.post(
-            '/auth/login',
-            data=json.dumps({
-                'email': email,
-                'password': password
-            }),
-            content_type='application/json'
-        )
-        token = json.loads(resp_login.data.decode())['token']
-        return token
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """On finishing, we should delete users collection so no conflict."""
+        db = get_db('default')
+        assert db.name == 'arc_test'
+        db.users.drop()
 
     def test_save_user_sim_empty_json(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/user/simulation',
+                '/api/v1/sim/user/simulation',
                 data=json.dumps({}),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -92,12 +123,11 @@ class TestSaveSimulationService(BaseTestCase):
 
     def test_save_user_sim_invalid_json_no_configs(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/user/simulation',
+                '/api/v1/sim/user/simulation',
                 data=json.dumps({'alloy_store': ALLOY_STORE}),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -110,12 +140,11 @@ class TestSaveSimulationService(BaseTestCase):
 
     def test_save_user_sim_invalid_json_no_alloy(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/user/simulation',
+                '/api/v1/sim/user/simulation',
                 data=json.dumps({'configurations': CONFIGS}),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -128,13 +157,13 @@ class TestSaveSimulationService(BaseTestCase):
 
     def test_save_user_sim_invalid_missing_alloy(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             alloy_store = deepcopy(ALLOY_STORE)
             del alloy_store['alloys']['parent']['compositions'][-1]
 
             res = client.post(
-                '/user/simulation',
+                '/api/v1/sim/user/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -142,7 +171,6 @@ class TestSaveSimulationService(BaseTestCase):
                         'simulation_results': SIM_RESULTS
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -154,7 +182,7 @@ class TestSaveSimulationService(BaseTestCase):
 
     def test_save_user_sim_invalid_bad_alloy(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             alloy_store = deepcopy(ALLOY_STORE)
             alloy_store['alloys']['parent']['compositions'].append(
@@ -165,7 +193,7 @@ class TestSaveSimulationService(BaseTestCase):
             )
 
             res = client.post(
-                '/user/simulation',
+                '/api/v1/sim/user/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -173,7 +201,6 @@ class TestSaveSimulationService(BaseTestCase):
                         'simulation_results': SIM_RESULTS
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -188,10 +215,10 @@ class TestSaveSimulationService(BaseTestCase):
 
     def test_save_user_sim_success(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/user/simulation',
+                '/api/v1/sim/user/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -199,7 +226,6 @@ class TestSaveSimulationService(BaseTestCase):
                         'simulation_results': SIM_RESULTS
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -212,9 +238,9 @@ class TestSaveSimulationService(BaseTestCase):
             _id = data['data']['_id']
             saved_inst = SavedSimulation.objects.get(id=_id)
 
-            self.assertEqual(saved_inst.user.email, 'ant-man@marvel.com')
-            self.assertEqual(saved_inst.user.first_name, 'Scott')
-            self.assertEqual(saved_inst.user.last_name, 'Lang')
+            self.assertEqual(saved_inst.user.email, 'ironman@avengers.com')
+            self.assertEqual(saved_inst.user.first_name, 'Tony')
+            self.assertEqual(saved_inst.user.last_name, 'Stark')
 
             expected_alloy = deepcopy(ALLOY_STORE)
             alloy_id = data['data']['alloy_store']['alloys']['parent']['_id']
@@ -227,12 +253,10 @@ class TestSaveSimulationService(BaseTestCase):
 
     def test_get_empty_sim_list(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.get(
-                '/user/simulation',
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
+                '/api/v1/sim/user/simulation', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'fail')
@@ -241,7 +265,7 @@ class TestSaveSimulationService(BaseTestCase):
 
     def test_get_saved_sim_list(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
             configs2 = deepcopy(CONFIGS)
             alloy_store2 = deepcopy(ALLOY_STORE)
             configs2['method'] = 'Kirkaldy83'
@@ -249,7 +273,7 @@ class TestSaveSimulationService(BaseTestCase):
 
             saved_sim1 = SavedSimulation(
                 **{
-                    'user': self.user,
+                    'user': self.tony,
                     'configurations': Configuration(**CONFIGS),
                     'alloy_store': AlloyStore(**ALLOY_STORE),
                     'simulation_results': SIM_RESULTS
@@ -257,7 +281,7 @@ class TestSaveSimulationService(BaseTestCase):
             ).save()
             saved_sim2 = SavedSimulation(
                 **{
-                    'user': self.user,
+                    'user': self.tony,
                     'configurations': Configuration(**configs2),
                     'alloy_store': AlloyStore(**alloy_store2),
                     'simulation_results': SIM_RESULTS
@@ -265,9 +289,7 @@ class TestSaveSimulationService(BaseTestCase):
             ).save()
 
             res = client.get(
-                '/user/simulation',
-                headers={'Authorization': f'Bearer {token}'},
-                content_type='application/json'
+                '/api/v1/sim/user/simulation', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
@@ -292,11 +314,10 @@ class TestSaveSimulationService(BaseTestCase):
 
     def test_get_saved_sim_invalid_id(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.get(
-                '/user/simulation/BadObjectId',
-                headers={'Authorization': f'Bearer {token}'},
+                '/api/v1/sim/user/simulation/BadObjectId',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -306,12 +327,11 @@ class TestSaveSimulationService(BaseTestCase):
 
     def test_get_saved_sim_empty(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
             sim_id = ObjectId()
 
             res = client.get(
-                f'/user/simulation/{sim_id}',
-                headers={'Authorization': f'Bearer {token}'},
+                f'/api/v1/sim/user/simulation/{sim_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -321,17 +341,16 @@ class TestSaveSimulationService(BaseTestCase):
 
     def test_get_saved_sim_detail_success(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
             saved_sim = SavedSimulation(
-                user=self.user,
+                user=self.tony,
                 configurations=Configuration(**CONFIGS),
                 alloy_store=AlloyStore(**ALLOY_STORE),
                 simulation_results=SIM_RESULTS
             ).save()
 
             res = client.get(
-                f'/user/simulation/{saved_sim.id}',
-                headers={'Authorization': f'Bearer {token}'},
+                f'/api/v1/sim/user/simulation/{saved_sim.id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -348,11 +367,10 @@ class TestSaveSimulationService(BaseTestCase):
 
     def test_delete_saved_sim_invalid_id(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.delete(
-                '/user/simulation/BadObjectId',
-                headers={'Authorization': f'Bearer {token}'},
+                '/api/v1/sim/user/simulation/BadObjectId',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -362,12 +380,11 @@ class TestSaveSimulationService(BaseTestCase):
 
     def test_delete_saved_sim_empty(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
             sim_id = ObjectId()
 
             res = client.delete(
-                f'/user/simulation/{sim_id}',
-                headers={'Authorization': f'Bearer {token}'},
+                f'/api/v1/sim/user/simulation/{sim_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -377,17 +394,16 @@ class TestSaveSimulationService(BaseTestCase):
 
     def test_delete_saved_sim_detail_success(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
             saved_sim = SavedSimulation(
-                user=self.user,
+                user=self.tony,
                 configurations=Configuration(**CONFIGS),
                 alloy_store=AlloyStore(**ALLOY_STORE),
                 simulation_results=SIM_RESULTS
             ).save()
 
             res = client.delete(
-                f'/user/simulation/{saved_sim.id}',
-                headers={'Authorization': f'Bearer {token}'},
+                f'/api/v1/sim/user/simulation/{saved_sim.id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())

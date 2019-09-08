@@ -637,9 +637,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_change_pw_empty_json(self):
         vader = User(
-            first_name='Darth',
-            last_name='Vader',
-            email='darklordofthesith@arclytics.io'
+            **{
+                'first_name': 'Darth',
+                'last_name': 'Vader',
+                'email': 'darklordofthesith@arclytics.io'
+            }
         )
         vader.set_password('IAmYourFather')
         vader.save()

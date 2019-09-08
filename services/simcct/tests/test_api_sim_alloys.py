@@ -36,18 +36,19 @@ with open(_TEST_CONFIGS_PATH, 'r') as f:
 
 class TestSimAlloys(BaseTestCase):
     _email = None
-    _user_pw = 'IAmIronMan!!!'
+    _user_pw = 'IllShowYouFerocity!@!@'
     mongo = None
 
+    @classmethod
     def setUpClass(cls) -> None:
         assert app.config['TESTING'] is True
 
         # Tony is an admin
         cls.user = User(
             **{
-                'email': 'ironman@avengers.com',
-                'first_name': 'Tony',
-                'last_name': 'Stark'
+                'email': 'antman@pymindustries.io',
+                'first_name': 'Hank',
+                'last_name': 'Pym'
             }
         )
         cls.user.set_password(cls._user_pw)
@@ -74,7 +75,7 @@ class TestSimAlloys(BaseTestCase):
         cls._email = cls.user.email
 
         mongo = get_db('default')
-        user = mongo.users.find_one({'email': 'ironman@avengers.com'})
+        user = mongo.users.find_one({'email': 'antman@pymindustries.io'})
         assert user is not None
 
     @classmethod
@@ -89,16 +90,17 @@ class TestSimAlloys(BaseTestCase):
         test_login(client, self._email, self._user_pw)
 
         session_store: dict = SimSessionService().load_session()
-        # self.assertDictEqual()
+        configs: dict = session_store['configurations']
+        alloy_store: dict = session_store['alloy_store']
 
-        return self.user.last_configuration, self.user.last_alloy_store
+        return configs, alloy_store
 
     def test_post_alloy_missing_elements(self):
         with app.test_client() as client:
             _, _ = self.login_client(client)
 
             res = client.post(
-                '/api/v1/sim//alloys/update',
+                '/api/v1/sim/alloys/update',
                 data=json.dumps(
                     {
                         'alloy_option': 'single',
@@ -114,7 +116,7 @@ class TestSimAlloys(BaseTestCase):
                 ),
                 content_type='application/json'
             )
-            data = json.loads(res.data.decode())
+            data = res.json
             msg = (
                 "Missing elements ['Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', 'W', "
                 "'As', 'Fe']"
@@ -171,7 +173,7 @@ class TestSimAlloys(BaseTestCase):
             ]
 
             res = client.post(
-                '/api/v1/sim//alloys/update',
+                '/api/v1/sim/alloys/update',
                 data=json.dumps(
                     {
                         'alloy_option': 'single',
@@ -184,7 +186,7 @@ class TestSimAlloys(BaseTestCase):
                 ),
                 content_type='application/json'
             )
-            data = json.loads(res.data.decode())
+            data = res.json
             self.assertEqual(
                 data['message'],
                 'Compositions and Configurations in Session initiated.'
@@ -206,7 +208,7 @@ class TestSimAlloys(BaseTestCase):
             # By default the auto calculate bools are all true so we need to
             # set them to false to get this working.
             client.put(
-                '/configs/ms',
+                '/api/v1/sim/configs/ms',
                 data=json.dumps(
                     {
                         'ms_temp': 464.196,
@@ -216,12 +218,12 @@ class TestSimAlloys(BaseTestCase):
                 content_type='application/json'
             )
             client.put(
-                '/configs/bs',
+                '/api/v1/sim/configs/bs',
                 data=json.dumps({'bs_temp': 563.238}),
                 content_type='application/json'
             )
             client.put(
-                '/configs/ae',
+                '/api/v1/sim/configs/ae',
                 data=json.dumps({
                     'ae1_temp': 700.902,
                     'ae3_temp': 845.838
@@ -252,11 +254,11 @@ class TestSimAlloys(BaseTestCase):
             req_alloy = AlloyStoreRequestSchema().load(new_alloy_store)
 
             res = client.patch(
-                '/api/v1/sim//alloys/update',
+                '/api/v1/sim/alloys/update',
                 data=json.dumps(req_alloy),
                 content_type='application/json'
             )
-            data = json.loads(res.data.decode())
+            data = res.json
 
             self.assertEqual(data['message'], 'Compositions updated.')
             self.assert200(res)
@@ -282,11 +284,11 @@ class TestSimAlloys(BaseTestCase):
             }
 
             res = client.patch(
-                '/api/v1/sim//alloys/update',
+                '/api/v1/sim/alloys/update',
                 data=json.dumps(new_comp),
                 content_type='application/json'
             )
-            data = json.loads(res.data.decode())
+            data = res.json
 
             self.assertEqual(
                 data['message'],
@@ -313,11 +315,11 @@ class TestSimAlloys(BaseTestCase):
             }
 
             res = client.patch(
-                '/api/v1/sim//alloys/update',
+                '/api/v1/sim/alloys/update',
                 data=json.dumps(new_comp),
                 content_type='application/json'
             )
-            data = json.loads(res.data.decode())
+            data = res.json
 
             self.assertEqual(
                 data['message'], 'No valid key in the alloy was provided.'
@@ -335,15 +337,15 @@ class TestSimAlloys(BaseTestCase):
 
             # We need to make auto_calculate true by using the endpoints
             client.get(
-                '/configs/ms',
+                '/api/v1/sim/configs/ms',
                 content_type='application/json'
             )
             client.get(
-                '/configs/ae',
+                '/api/v1/sim/configs/ae',
                 content_type='application/json'
             )
             client.get(
-                '/configs/bs',
+                '/api/v1/sim/configs/bs',
                 content_type='application/json'
             )
 
@@ -369,11 +371,11 @@ class TestSimAlloys(BaseTestCase):
             req_alloy = AlloyStoreRequestSchema().load(new_alloy_store)
 
             res = client.patch(
-                '/api/v1/sim//alloys/update',
+                '/api/v1/sim/alloys/update',
                 data=json.dumps(req_alloy),
                 content_type='application/json'
             )
-            data = json.loads(res.data.decode())
+            data = res.json
 
             self.assertEqual(
                 data['message'], 'Compositions and other values updated.'
@@ -414,7 +416,7 @@ class TestSimAlloys(BaseTestCase):
             session_store = SimSessionService().load_session()
             prev_sess_comp = session_store.get('alloy_store')
             res = client.patch(
-                '/api/v1/sim//alloys/update',
+                '/api/v1/sim/alloys/update',
                 data=json.dumps(
                     {
                         'alloy_option': 'single',
@@ -426,7 +428,7 @@ class TestSimAlloys(BaseTestCase):
                 ),
                 content_type='application/json'
             )
-            data = json.loads(res.data.decode())
+            data = res.json
 
             self.assertEqual(
                 data['message'], 'No valid key in the alloy was provided.'
@@ -465,7 +467,7 @@ class TestSimAlloys(BaseTestCase):
     #             headers={'Authorization': f'Bearer {token}'},
     #             content_type='application/json'
     #         )
-    #         data = json.loads(res.data.decode())
+    #         data = res.json
     #         sess_store = session.get(f'{token}:configurations')
     #
     #         self.assertEqual(

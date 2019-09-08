@@ -26,7 +26,7 @@ from flask_restful import Resource
 from mongoengine import ValidationError, FieldDoesNotExist
 
 from sim_api.extensions import api
-from sim_api.middleware import authenticate
+from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import Configuration, AlloyStore, User
 from sim_api.extensions.utilities import (
     ElementInvalid, ElementSymbolInvalid, MissingElementError,
@@ -38,10 +38,13 @@ last_sim_blueprint = Blueprint('user_last_simulation', __name__)
 
 class LastSimulation(Resource):
 
-    method_decorators = {'post': [authenticate], 'get': [authenticate]}
+    method_decorators = {
+        'post': [authenticate_user_cookie_restful],
+        'get': [authenticate_user_cookie_restful]
+    }
 
     # noinspection PyMethodMayBeStatic
-    def post(self, user_id):
+    def post(self, user):
         """Exposes the POST method to save the last configurations and alloy
         storage to the `sim_api.models.User` document in the fields
         `last_configurations` and `last_alloy_store`.
@@ -115,7 +118,6 @@ class LastSimulation(Resource):
             return response, 400
 
         # Passing all the validations built into the models so we can save
-        user = User.objects.get(id=user_id)
         user.last_configuration = valid_configs
         user.last_alloy_store = valid_store
         # TODO(andrew@neuraldev.io): Add the last_results
@@ -130,7 +132,7 @@ class LastSimulation(Resource):
         return response, 201
 
     # noinspection PyMethodMayBeStatic
-    def get(self, user_id):
+    def get(self, user):
         """Exposes the GET method to get the last configurations and alloy
         storage from the `sim_api.models.User` document.
 
@@ -142,8 +144,6 @@ class LastSimulation(Resource):
             A HTTP Flask Restful Response.
         """
         response = {'status': 'fail'}
-
-        user = User.objects.get(id=user_id)
 
         # We need to check there's something to return first.
         if not user.last_configuration:

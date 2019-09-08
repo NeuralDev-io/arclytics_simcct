@@ -194,6 +194,9 @@ services:
     build:
       context: ./services/nginx
       dockerfile: Dockerfile
+    labels:
+      arclytics.io: "development"
+    image: neuraldev/arc_sim_nginx:1.0
     restart: always
     ports:
       - 80:80

@@ -27,7 +27,7 @@ from mongoengine import ValidationError, FieldDoesNotExist
 
 from sim_api.extensions import api
 from sim_api.middleware import authenticate_user_cookie_restful
-from sim_api.models import Configuration, AlloyStore, User
+from sim_api.models import Configuration, AlloyStore, User, SimulationResults
 from sim_api.extensions.utilities import (
     ElementInvalid, ElementSymbolInvalid, MissingElementError,
     DuplicateElementError
@@ -66,6 +66,7 @@ class LastSimulation(Resource):
 
         post_configs = post_data.get('configurations', None)
         post_alloy_store = post_data.get('alloy_store', None)
+        post_results = post_data.get('simulation_results', None)
 
         if not post_configs:
             response['message'] = 'Missing Configurations in payload.'
@@ -73,6 +74,10 @@ class LastSimulation(Resource):
 
         if not post_alloy_store:
             response['message'] = 'Missing Alloy Store in payload.'
+            return response, 400
+
+        if not post_results:
+            response['message'] = 'Missing Simulation results in payload.'
             return response, 400
 
         # TODO(andrew@neuraldev.io): Add the graphs also\
@@ -83,6 +88,10 @@ class LastSimulation(Resource):
             valid_configs.validate(clean=True)
             valid_store = AlloyStore.from_json(json.dumps(post_alloy_store))
             valid_store.validate(clean=True)
+            valid_results = SimulationResults.from_json(
+                json.dumps(post_results)
+            )
+            valid_results.validate(clean=True)
         except FieldDoesNotExist as e:
             # In case the request has fields we do not expect.
             response['error'] = str(e)
@@ -120,6 +129,7 @@ class LastSimulation(Resource):
         # Passing all the validations built into the models so we can save
         user.last_configuration = valid_configs
         user.last_alloy_store = valid_store
+        user.last_simulation_results = valid_results
         # TODO(andrew@neuraldev.io): Add the last_results
         user.save()
 
@@ -127,7 +137,8 @@ class LastSimulation(Resource):
         response['message'] = 'Saved Alloy Store, Configurations and Results.'
         response['data'] = {
             'last_configuration': user.last_configuration.to_dict(),
-            'last_alloy_store': user.last_alloy_store.to_dict()
+            'last_alloy_store': user.last_alloy_store.to_dict(),
+            'last_simulation_results': user.last_simulation_results.to_dict()
         }
         return response, 201
 

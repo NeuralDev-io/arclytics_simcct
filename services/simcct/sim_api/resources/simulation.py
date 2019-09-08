@@ -26,8 +26,8 @@ from flask import Blueprint
 from flask_restful import Resource
 
 from sim_api.extensions import api
-from sim_api.middleware import token_and_session_required
-from sim_api.sim_session import SimSessionService
+from sim_api.middleware import authenticate_user_and_cookie_flask
+from sim_api.extensions.SimSession import SimSessionService
 from simulation.simconfiguration import SimConfiguration
 from simulation.phasesimulation import PhaseSimulation
 from simulation.utilities import ConfigurationError, SimulationError
@@ -42,10 +42,10 @@ sim_blueprint = Blueprint('simulation', __name__)
 
 class Simulation(Resource):
 
-    method_decorators = {'get': [token_and_session_required]}
+    method_decorators = {'get': [authenticate_user_and_cookie_flask]}
 
     # noinspection PyMethodMayBeStatic
-    def get(self, _, session_key):
+    def get(self, _):
         response = {'status': 'fail'}
 
         # First we need to make sure they logged in and are in a current session
@@ -118,8 +118,6 @@ class Simulation(Resource):
 
         logger.debug('PhaseSimulation Instance Configurations')
         logger.pprint(sim.configs.__dict__)
-        # TODO(andrew@neuraldev.io): add a Division by Zero check here or find
-        #  out what is causing it and raise a custom Exception.
 
         # Now we do the simulation part but catch all exceptions and return it
         try:

@@ -27,8 +27,8 @@ from sim_api.extensions import api
 from sim_api.schemas import (
     AlloySchema, AlloyStoreSchema, ConfigurationsSchema
 )
-from sim_api.middleware import token_and_session_required
-from sim_api.sim_session import SimSessionService
+from sim_api.middleware import authenticate_user_and_cookie_flask
+from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.extensions.utilities import RESPONSE_HEADERS
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, MissingElementError
@@ -41,18 +41,17 @@ sim_alloys_blueprint = Blueprint('sim_alloys', __name__)
 
 class AlloyStore(Resource):
     method_decorators = {
-        'patch': [token_and_session_required],
-        'post': [token_and_session_required]
+        'patch': [authenticate_user_and_cookie_flask],
+        'post': [authenticate_user_and_cookie_flask]
     }
 
     # noinspection PyMethodMayBeStatic
-    def post(self, _, session_key):
+    def post(self, _):
         """This POST endpoint initiates the Alloy Store by setting the alloy
         in the request body to the Session storage.
 
         Args:
-            _: a valid JWT token.
-            session_key: a valid TimedJSONWebSignature session key.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message
@@ -261,13 +260,12 @@ class AlloyStore(Resource):
         return response, 201, RESPONSE_HEADERS
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, _, session_key):
+    def patch(self, _):
         """This PATCH endpoint simply updates the `alloys` in the session
         store so that we can update all the other transformation temperature.
 
         Args:
-            session_key:
-            _: a JWT token passed in the request header but not used.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message strings.
@@ -288,14 +286,27 @@ class AlloyStore(Resource):
         alloy_type = patch_data.get('alloy_type', None)
         alloy = patch_data.get('alloy', None)
 
-        if not alloy_option:
-            response['message'] = 'No alloy option was provided.'
+        if alloy_option not in {'single', 'mix'}:
+            response['message'] = (
+                'Alloy option not one of '
+                '["single" | "mix"].'
+            )
             return response, 400, RESPONSE_HEADERS
 
         # We have a couple of ways the Alloy is stored in both Session and
         # Database based on what is available with the alloy_option and
         # alloy_type. From the client, we expect these two keys to at the
         # very least be in the request body. Otherwise we won't do anything.
+
+        if not alloy_type or not isinstance(alloy_type, str):
+            response['message'] = 'No alloy type was provided.'
+            return response, 400, RESPONSE_HEADERS
+
+        if alloy_type not in {'parent', 'weld', 'mix'}:
+            response['message'] = (
+                'Alloy type not one of ["parent" | "weld" | "mix"].'
+            )
+            return response, 400, RESPONSE_HEADERS
 
         if not alloy:
             response['message'] = 'No alloy was provided.'
@@ -369,9 +380,6 @@ class AlloyStore(Resource):
 
                 # Just quickly validate the alloy stored based on schema
                 sess_alloy_store = AlloyStoreSchema().load(sess_alloy_store)
-            elif alloy_option == 'mix':
-                # TODO(andrew@neuraldev.io): Implement this.
-                pass
             else:
                 # TODO(andrew@neuraldev.io): Implement this.
                 pass

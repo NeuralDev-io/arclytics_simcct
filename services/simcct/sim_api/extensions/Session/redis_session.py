@@ -118,13 +118,15 @@ class RedisSessionInterface(SessionInterface):
 
         data = json.loads(redis_value.decode())
 
-        if str(ip_address) != data.get('ip_address', ''):
-            logger.debug(
-                f'Some idiot tried to access from a different IP.\n'
-                f'Session IP: {data["ip_address"]}\n'
-                f'Request IP: {ip_address}'
-            )
-            return self._new_session()
+        logger.debug(f'open_session: {data}')
+
+        # if str(ip_address) != data.get('ip_address', ''):
+        #     logger.debug(
+        #         f'Some idiot tried to access from a different IP.\n'
+        #         f'Session IP: {data["ip_address"]}\n'
+        #         f'Request IP: {ip_address}'
+        #     )
+        #     return self._new_session()
 
         return RedisSession(data, sid=sid)
 

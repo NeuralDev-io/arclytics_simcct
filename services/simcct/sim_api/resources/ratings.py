@@ -30,9 +30,10 @@ from flask import current_app as app
 from flask_restful import Resource
 from mongoengine import ValidationError
 
-from sim_api.middleware import authenticate, authenticate_admin
+from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.extensions import api
 from sim_api.models import Rating, Feedback, User
+from sim_api.extensions.utilities import RESPONSE_HEADERS
 
 logger = AppLogger(__name__)
 
@@ -44,38 +45,38 @@ class UserRating(Resource):
     Route for Users to submit ratings.
     """
 
-    method_decorators = {'post': [authenticate]}
+    method_decorators = {'post': [authenticate_user_cookie_restful]}
 
-    def post(self, resp) -> Tuple[dict, int]:
+    # noinspection PyMethodMayBeStatic
+    def post(self, user) -> Tuple[dict, int, dict]:
         # Get post data
         data = request.get_json()
 
         # Validating empty payload
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not data:
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # Extract the request body data
         rating = data.get('rating', None)
 
         if not rating:
             response['message'] = 'No rating provided.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         try:
             Rating(rating=rating).validate()
         except ValidationError as e:
             response['error'] = str(e.message)
             response['message'] = 'Rating validation error.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
-        user = User.objects.get(id=resp)
         user.ratings.append(Rating(rating=rating))
         user.save()
 
         response['status'] = 'success'
         response['message'] = f'Rating submitted by {user.email}.'
-        return response, 200
+        return response, 200, RESPONSE_HEADERS
 
 
 class UserFeedback(Resource):
@@ -83,16 +84,17 @@ class UserFeedback(Resource):
     Route for user to submit feedback.
     """
 
-    method_decorators = {'post': [authenticate]}
+    method_decorators = {'post': [authenticate_user_cookie_restful]}
 
-    def post(self, resp) -> Tuple[dict, int]:
+    # noinspection PyMethodMayBeStatic
+    def post(self, user) -> Tuple[dict, int, dict]:
         # Get post data
         data = request.get_json()
 
         # Validating empty payload
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not data:
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # Extract the request body data
         category = data.get('category', None)
@@ -101,31 +103,27 @@ class UserFeedback(Resource):
 
         if not category:
             response['message'] = 'No category provided.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
         # if not rating:
         #     response['message'] = 'No rating provided.'
         #     return response, 400
         if not comment:
             response['message'] = 'No comment provided.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         try:
-            Feedback(category=category, rating=rating,
-                     comment=comment).validate()
+            feedback = Feedback(
+                user=user.id, category=category, rating=rating, comment=comment
+            )
+            feedback.save()
         except ValidationError as e:
             response['error'] = str(e.message)
             response['message'] = 'Feedback validation error.'
-            return response, 400
-
-        user = User.objects.get(id=resp)
-        feedback = Feedback(
-            user=user.id, category=category, rating=rating, comment=comment
-        )
-        feedback.save()
+            return response, 400, RESPONSE_HEADERS
 
         response['status'] = 'success'
         response['message'] = f'Feedback submitted by {user.email}.'
-        return response, 200
+        return response, 200, RESPONSE_HEADERS
 
 
 class FeedbackList(Resource):
@@ -133,9 +131,10 @@ class FeedbackList(Resource):
     Route for admins to view a list of feedback submissions.
     """
 
-    method_decorators = {'get': [authenticate_admin]}
+    method_decorators = {'get': [authenticate_user_cookie_restful]}
 
-    def get(self, resp):
+    # noinspection PyMethodMayBeStatic
+    def get(self, _):
         """Return a list of feedback based of get request from Admin"""
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}
@@ -160,16 +159,16 @@ class FeedbackList(Resource):
 
             if not sort_valid:
                 response['message'] = 'Sort value is invalid.'
-                return response, 400
+                return response, 400, RESPONSE_HEADERS
 
         # Validate limit
         if limit:
             if not isinstance(limit, int):
                 response['message'] = 'Limit value is invalid.'
-                return response, 400
+                return response, 400, RESPONSE_HEADERS
             if not limit >= 1:
                 response['message'] = 'Limit must be > 1.'
-                return response, 400
+                return response, 400, RESPONSE_HEADERS
         else:
             limit = 10
 
@@ -179,13 +178,13 @@ class FeedbackList(Resource):
         if offset:
             if not isinstance(offset, int):
                 response['message'] = 'Offset value is invalid.'
-                return response, 400
+                return response, 400, RESPONSE_HEADERS
             if offset > feedback_size + 1:
                 response['message'] = 'Offset value exceeds number of records.'
-                return response, 400
+                return response, 400, RESPONSE_HEADERS
             if offset < 1:
                 response['message'] = 'Offset must be > 1.'
-                return response, 400
+                return response, 400, RESPONSE_HEADERS
         else:
             offset = 1
 
@@ -223,7 +222,7 @@ class FeedbackList(Resource):
         response['current_page'] = current_page
         response['total_pages'] = total_pages
         response['data'] = [obj.to_dict() for obj in query_set]
-        return response, 200
+        return response, 200, RESPONSE_HEADERS
 
 
 api.add_resource(UserRating, '/api/v1/sim/user/rating')

@@ -161,13 +161,8 @@ class AlloyStore(Resource):
 
         session_store = SimSessionService().load_session()
 
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401, RESPONSE_HEADERS
-
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
+        if isinstance(session_store, str):
+            response['message'] = session_store
             return response, 500, RESPONSE_HEADERS
 
         session_store['alloy_store'] = valid_store
@@ -326,8 +321,8 @@ class AlloyStore(Resource):
 
         session_store = SimSessionService().load_session()
 
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
+        if isinstance(session_store, str):
+            response['message'] = session_store
             return response, 500, RESPONSE_HEADERS
 
         # We get what's currently stored in the session and we update it

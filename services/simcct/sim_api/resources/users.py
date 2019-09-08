@@ -33,7 +33,6 @@ from sim_api.middleware import (
     authenticate_user_cookie_restful, authorize_admin_cookie_restful
 )
 from sim_api.extensions import api
-from sim_api.extensions import RESPONSE_HEADERS
 from logger.arc_logger import AppLogger
 
 users_blueprint = Blueprint('users', __name__)
@@ -45,13 +44,13 @@ class PingTest(Resource):
     """Just a sanity check"""
 
     # noinspection PyMethodMayBeStatic
-    def get(self) -> Tuple[dict, int, dict]:
+    def get(self) -> Tuple[dict, int]:
         response = {
             'status': 'success',
             'message': 'pong',
             'container_id': os.uname()[1]
         }
-        return response, 200, RESPONSE_HEADERS
+        return response, 200
 
 
 class UserList(Resource):
@@ -60,11 +59,11 @@ class UserList(Resource):
     method_decorators = {'get': [authorize_admin_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def get(self, _) -> Tuple[dict, int, dict]:
+    def get(self, _) -> Tuple[dict, int]:
         """Get all users only available to admins."""
         user_list = User.as_dict
         response = {'status': 'success', 'data': {'users': user_list}}
-        return response, 200, RESPONSE_HEADERS
+        return response, 200
 
 
 class Users(Resource):
@@ -76,19 +75,19 @@ class Users(Resource):
     }
 
     # noinspection PyMethodMayBeStatic
-    def get(self, user) -> Tuple[dict, int, dict]:
+    def get(self, user) -> Tuple[dict, int]:
         response = {'status': 'success', 'data': user.to_dict()}
-        return response, 200, RESPONSE_HEADERS
+        return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, user: User) -> Tuple[dict, int, dict]:
+    def patch(self, user: User) -> Tuple[dict, int]:
         # Get patch data
         data = request.get_json()
 
         # Validating empty payload
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not data:
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         # Ensure there are valid keys in the request body
         valid_keys = [
@@ -104,7 +103,7 @@ class Users(Resource):
         # If there are no valid keys, reject request.
         if not is_update:
             response['message'] = 'Payload does not have any valid keys.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         response['data'] = {}
 
@@ -135,7 +134,7 @@ class Users(Resource):
                     'User profile cannot be updated as '
                     'there is no existing profile.'
                 )
-                return response, 400, RESPONSE_HEADERS
+                return response, 400
 
             # Once we have ensured we have all the fields, we can create the
             # profile object and put the information in the response body.
@@ -179,7 +178,7 @@ class Users(Resource):
             if not user.admin_profile.verified:
                 response['message'] = 'User is not verified as an admin.'
                 response.pop('data')
-                return response, 401, RESPONSE_HEADERS
+                return response, 401
 
             # Otherwise, we can proceed to update the admin profile fields.
             mobile_number = data.get('mobile_number', None)
@@ -216,12 +215,12 @@ class Users(Resource):
             response.pop('data')
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
-            return response, 418, RESPONSE_HEADERS
+            return response, 418
 
         # Return response body.
         response['status'] = 'success'
         response.pop('message')
-        return response, 200, RESPONSE_HEADERS
+        return response, 200
 
 
 class UserProfiles(Resource):
@@ -230,14 +229,14 @@ class UserProfiles(Resource):
     method_decorators = {'post': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def post(self, user) -> Tuple[dict, int, dict]:
+    def post(self, user) -> Tuple[dict, int]:
         # Get post data
         data = request.get_json()
 
         # Validating empty payload
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not data:
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         # Extract the request body data
         aim = data.get('aim', None)
@@ -263,7 +262,7 @@ class UserProfiles(Resource):
         except ValidationError as e:
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         # Otherwise the save was successful and a response with the updated
         # fields can be sent.
@@ -275,7 +274,7 @@ class UserProfiles(Resource):
             'sci_tech_exp': sci_tech_exp,
             'phase_transform_exp': phase_transform_exp
         }
-        return response, 201, RESPONSE_HEADERS
+        return response, 201
 
 
 api.add_resource(PingTest, '/api/v1/sim/ping')

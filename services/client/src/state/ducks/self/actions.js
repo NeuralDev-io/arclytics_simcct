@@ -11,9 +11,9 @@ import {
 export const getUserProfile = () => (dispatch) => { // eslint-disable-line
   return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())
@@ -33,9 +33,9 @@ export const createUserProfile = values => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/profile`, {
     method: 'POST',
     mode: 'cors',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(values),
   })
@@ -56,9 +56,9 @@ export const updateUserProfile = values => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user`, {
     method: 'PATCH',
     mode: 'cors',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(values),
   })
@@ -79,9 +79,9 @@ export const updateEmail = values => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/auth/email/change`, {
     method: 'PUT',
     mode: 'cors',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(values),
   })
@@ -102,9 +102,9 @@ export const changePassword = values => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/auth/password/change`, {
     method: 'PUT',
     mode: 'cors',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(values),
   })
@@ -152,9 +152,9 @@ export const saveSimulation = () => (dispatch, getState) => {
 
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
       configurations: validConfigs,
@@ -192,9 +192,9 @@ export const saveSimulation = () => (dispatch, getState) => {
 export const getSavedSimulations = () => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   }).then(res => res.json())
     .then((res) => {

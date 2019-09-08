@@ -319,7 +319,7 @@ class UserAlloy(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def patch(self):
+    def patch(self, alloy_id):
         """The endpoint that exposes a PATCH HTTP method to partially update
         an alloy in the User's document.
 

@@ -71,12 +71,12 @@ def init_db(
 
     # Test to make sure the connection has been created.
     try:
-        conn = get_connection(alias)
+        get_connection(alias)
     except MongoEngineConnectionError as e:
         print('MongoDB Failed to Connect.\n Error: {}'.format(e))
 
     try:
-        db_curr = get_db(alias)
+        get_db(alias)
     except MongoEngineConnectionError as e:
         print('MongoDB Failed to Get Database.\n Error: {}'.format(e))
 
@@ -141,7 +141,6 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     set_flask_mongo(db)
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
-
     # Notes:
     #  - `headers` will inject the Content-Type in all responses.
     #  - `expose_headers`: The header or list which are safe to expose to the

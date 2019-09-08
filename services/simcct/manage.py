@@ -43,7 +43,7 @@ COV = coverage.coverage(
     include=[
         'sim_api/schemas.py', 'sim_api/resources/*', 'sim_api/alloys/*',
         'sim_api/alloys_service.py', 'sim_api/middleware.py',
-        'sim_api/sim_session.py', 'sim_api/models.py',
+        'sim_api/sim_session_service.py', 'sim_api/models.py',
         'sim_api/resources/users.py', 'sim_api/resources/auth.py',
         'sim_api/middleware.py', 'sim_api/mongodb.py', 'sim_api/token.py',
         'sim_api/resources/share.py', 'sim_api/resources/admin_auth.py',
@@ -231,7 +231,7 @@ def seed_alloy_db():
 @cli.command()
 def test():
     """Runs the tests without code coverage."""
-    tests = unittest.TestLoader().discover('tests', pattern='test_api_ratings.py')
+    tests = unittest.TestLoader().discover('tests', pattern='test_api_sim*.py')
     result = unittest.TextTestRunner(verbosity=3).run(tests)
     if result.wasSuccessful():
         return 0

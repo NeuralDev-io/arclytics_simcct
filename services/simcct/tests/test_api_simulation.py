@@ -31,7 +31,7 @@ from pymongo import MongoClient
 
 from tests.test_api_base import BaseTestCase
 from sim_api.extensions.utilities import get_mongo_uri
-from sim_api.sim_session import SimSessionService
+from sim_api.extensions.SimSession import SimSessionService
 from sim_api.schemas import AlloySchema, ConfigurationsSchema, AlloyStoreSchema
 from settings import BASE_DIR
 

@@ -6,11 +6,11 @@ import { GET_PERSIST_USER_STATUS } from './types'
 // export const updateUserProfile = values => (dispatch) => {}
 
 export const getPersistUserStatus = () => (dispatch) => { // eslint-disable-line
-  return fetch('http://localhost:8000/auth/status', {
+  return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/auth/status`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())

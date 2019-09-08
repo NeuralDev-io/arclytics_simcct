@@ -28,30 +28,35 @@ from flask_restful import Resource
 from mongoengine import ValidationError, FieldDoesNotExist, DoesNotExist
 
 from sim_api.extensions import api
-from sim_api.middleware import authenticate
-from sim_api.utilities import (
+from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.extensions.utilities import (
     ElementInvalid, ElementSymbolInvalid, MissingElementError,
     DuplicateElementError
 )
-from sim_api.models import User, Configuration, AlloyStore, SavedSimulation
+from sim_api.models import (
+    User, Configuration, AlloyStore, SavedSimulation, SimulationResults
+)
 
-save_simulation_blueprint = Blueprint('user_save_simulation', __name__)
+save_sim_blueprint = Blueprint('user_save_simulation', __name__)
 
 # NOTE: An is_valid = False Configuration instance means it has not been run.
 
 
 class SaveSimulationList(Resource):
 
-    method_decorators = {'get': [authenticate], 'post': [authenticate]}
+    method_decorators = {
+        'get': [authenticate_user_cookie_restful],
+        'post': [authenticate_user_cookie_restful]
+    }
 
     # noinspection PyMethodMayBeStatic
-    def post(self, user_id):
+    def post(self, user):
         """The endpoint that exposes a POST HTTP method to created a saved
         simulation in the saved_simulation collection with reference to the
         `user_id` which is decoded from Authorization JWT by the middleware.
 
         Args:
-            user_id: a valid user ObjectId passed from the middleware.
+            user: a valid `sim_api.models.User` passed from the middleware.
 
         Returns:
             A valid HTTP Response with a dict and a HTTP status code.
@@ -66,7 +71,7 @@ class SaveSimulationList(Resource):
 
         post_configs = post_data.get('configurations')
         post_alloy_store = post_data.get('alloy_store')
-        # post_results = post_data.get('simulation_results')
+        post_results = post_data.get('simulation_results')
 
         # Valid the request body
         if not post_configs:
@@ -77,12 +82,13 @@ class SaveSimulationList(Resource):
             response['message'] = 'Missing Alloy Store in payload.'
             return response, 400
 
-        user = User.objects.get(id=user_id)
-
         saved_sim_inst = SavedSimulation(
             user=user,
             configurations=Configuration.from_json(json.dumps(post_configs)),
-            alloy_store=AlloyStore.from_json(json.dumps(post_alloy_store))
+            alloy_store=AlloyStore.from_json(json.dumps(post_alloy_store)),
+            simulation_results=SimulationResults.from_json(
+                json.dumps(post_results)
+            )
         )
 
         # TODO(andrew@neuraldev.io): Add the graphs also
@@ -130,7 +136,7 @@ class SaveSimulationList(Resource):
         return response, 201
 
     # noinspection PyMethodMayBeStatic
-    def get(self, user_id):
+    def get(self, user):
         """The endpoint that exposes a GET HTTP method to retrieve a list of
         saved simulations with reference to the `user_id` passed in the params
         from the saved_simulation collection.
@@ -144,7 +150,7 @@ class SaveSimulationList(Resource):
 
         # First we get the queryset via the in-built filter and exclude the
         # user reference which would return a user id.
-        qs = SavedSimulation.objects(user=user_id).exclude('user')
+        qs = SavedSimulation.objects(user=user.id).exclude('user')
 
         if qs.count() == 0:
             response = {
@@ -162,7 +168,10 @@ class SaveSimulationList(Resource):
 
 class SaveSimulationDetail(Resource):
 
-    method_decorators = {'get': [authenticate], 'delete': [authenticate]}
+    method_decorators = {
+        'get': [authenticate_user_cookie_restful],
+        'delete': [authenticate_user_cookie_restful]
+    }
 
     # noinspection PyMethodMayBeStatic
     def get(self, _, sim_id):
@@ -210,5 +219,5 @@ class SaveSimulationDetail(Resource):
         return {'status': 'success'}, 202
 
 
-api.add_resource(SaveSimulationList, '/user/simulation')
-api.add_resource(SaveSimulationDetail, '/user/simulation/<sim_id>')
+api.add_resource(SaveSimulationList, '/api/v1/sim/user/simulation')
+api.add_resource(SaveSimulationDetail, '/api/v1/sim/user/simulation/<sim_id>')

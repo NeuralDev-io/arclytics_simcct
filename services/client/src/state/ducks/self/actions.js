@@ -9,11 +9,11 @@ import {
 } from './types'
 
 export const getUserProfile = () => (dispatch) => { // eslint-disable-line
-  return fetch('http://localhost:8000/user', {
+  return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())
@@ -30,12 +30,12 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
 }
 
 export const createUserProfile = values => (dispatch) => {
-  fetch('http://localhost:8000/user/profile', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/profile`, {
     method: 'POST',
     mode: 'cors',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(values),
   })
@@ -53,12 +53,12 @@ export const createUserProfile = values => (dispatch) => {
 }
 
 export const updateUserProfile = values => (dispatch) => {
-  fetch('http://localhost:8000/user', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user`, {
     method: 'PATCH',
     mode: 'cors',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(values),
   })
@@ -76,12 +76,12 @@ export const updateUserProfile = values => (dispatch) => {
 }
 
 export const updateEmail = values => (dispatch) => {
-  fetch('http://localhost:8000/auth/email/change', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/auth/email/change`, {
     method: 'PUT',
     mode: 'cors',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(values),
   })
@@ -99,12 +99,12 @@ export const updateEmail = values => (dispatch) => {
 }
 
 export const changePassword = values => (dispatch) => {
-  fetch('http://localhost:8000/auth/password/change', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/auth/password/change`, {
     method: 'PUT',
     mode: 'cors',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(values),
   })
@@ -127,7 +127,7 @@ export const changePassword = values => (dispatch) => {
  */
 export const saveSimulation = () => (dispatch, getState) => {
   // first, get sim alloys and configs from state
-  const { configurations, alloys } = getState().sim
+  const { configurations, alloys, results } = getState().sim
   const alloyStore = {
     alloy_option: alloys.alloyOption,
     alloys: {
@@ -137,6 +137,11 @@ export const saveSimulation = () => (dispatch, getState) => {
       mix: alloys.parent,
     },
   }
+  const simResults = {
+    USER: results.USER,
+    CCT: results.CCT,
+    TTT: results.TTT,
+  }
 
   // eslint-disable-next-line camelcase
   const { grain_size_ASTM, grain_size_diameter, ...others } = configurations
@@ -145,15 +150,16 @@ export const saveSimulation = () => (dispatch, getState) => {
     grain_size: grain_size_ASTM,
   }
 
-  fetch('http://localhost:8000/user/simulation', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
       configurations: validConfigs,
       alloy_store: alloyStore,
+      simulation_results: simResults,
     }),
   }).then(res => res.json())
     .then((res) => {
@@ -184,11 +190,11 @@ export const saveSimulation = () => (dispatch, getState) => {
  * }
  */
 export const getSavedSimulations = () => (dispatch) => {
-  fetch('http://localhost:8000/user/simulation', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   }).then(res => res.json())
     .then((res) => {

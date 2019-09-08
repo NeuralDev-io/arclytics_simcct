@@ -25,19 +25,19 @@ import os
 from datetime import datetime
 
 from email_validator import validate_email, EmailNotValidError
-from flask import Blueprint, jsonify, request, render_template, redirect
+from flask import Blueprint, request, render_template, redirect
 from flask import current_app as app
 from flask_restful import Resource
 
 from logger.arc_logger import AppLogger
 from sim_api.models import (User, AdminProfile)
-from sim_api.middleware import authenticate_admin
+from sim_api.middleware import authorize_admin_cookie_restful
 from sim_api.extensions import api
 from sim_api.token import (
     generate_confirmation_token, generate_url, confirm_token, URLTokenError,
     generate_promotion_confirmation_token
 )
-from sim_api.utilities import URLTokenExpired
+from sim_api.extensions.utilities import URLTokenExpired
 
 logger = AppLogger(__name__)
 
@@ -47,10 +47,10 @@ admin_blueprint = Blueprint('admin', __name__)
 class AdminCreate(Resource):
     """Route for Admins to Create Admin."""
 
-    method_decorators = {'post': [authenticate_admin]}
+    method_decorators = {'post': [authorize_admin_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def post(self, resp):
+    def post(self, admin):
         """Make a user an administrator"""
         post_data = request.get_json()
 
@@ -96,9 +96,6 @@ class AdminCreate(Resource):
         if user.is_admin:
             response['message'] = 'User is already an Administrator.'
             return response, 400
-
-        # Get the admin object so we can email them a confirmation email.
-        admin = User.objects.get(id=resp)
 
         # Start promotion
         user.admin_profile = AdminProfile(
@@ -191,56 +188,93 @@ def cancel_promotion(token):
         # Change expiration parameter to 30 days instead of 1 hour.
         email_list = confirm_token(token, 2592000)
     except URLTokenError as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        # response['error'] = str(e)
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
+            code=302
+        )
     except URLTokenExpired as e:
         # This redirect might need to be changed as it is very close to
         # /admin/create/cancel/<token>
         return redirect(
-            f'http://{client_host}/admin/create/cancel/tokenexpired', code=302
+            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
+            code=302
         )
     except Exception as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        # response['error'] = str(e)
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
+            code=302
+        )
 
     # If a list is not returned, we should get out of here.
     if not isinstance(email_list, list):
-        response['message'] = 'Invalid Token.'
-        return jsonify(response), 400
+        # response['message'] = 'Invalid Token.'
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
+            code=302
+        )
 
     # Ensure both admin and user email is present in list
     if not len(email_list) == 2:
-        response['message'] = 'Invalid data in Token.'
-        return jsonify(response), 400
+        # response['message'] = 'Invalid data in Token.'
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
+            code=302
+        )
 
     # Let's just be sure that we don't go out of index range
     try:
         admin_email = email_list[0]
         user_email = email_list[1]
     except IndexError as e:
-        response['message'] = 'Invalid list from token.'
-        response['error'] = str(e)
-        return jsonify(response), 400
+        # response['message'] = 'Invalid list from token.'
+        # response['error'] = str(e)
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
+            code=302
+        )
 
     if not admin_email or not user_email:
-        response['message'] = 'Missing information in Token.'
-        return jsonify(response), 400
+        # response['message'] = 'Missing information in Token.'
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
+            code=302
+        )
 
     # Ensure both users exist in the database
     if not User.objects(email=admin_email):
-        response['message'] = 'Administrator does not exist.'
-        return jsonify(response), 400
+        # response['message'] = 'Administrator does not exist.'
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
+            code=302
+        )
     if not User.objects(email=user_email):
-        response['message'] = 'Target User does not exist.'
-        return jsonify(response), 400
+        # response['message'] = 'Target User does not exist.'
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
+            code=302
+        )
 
     # Get Admin user object
     admin_user = User.objects.get(email=admin_email)
 
     # Ensure the admin user is allowed to promote other users.
     if not admin_user.is_admin or not admin_user.admin_profile.verified:
-        response['message'] = 'User is not authorised to promote other users.'
-        return jsonify(response), 401
+        # response['message'] = 'User is not authorised to promote other users.'
+        # return jsonify(response), 401
+        return redirect(
+            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
+            code=302
+        )
 
     # Get target user object
     target_user = User.objects.get(email=user_email)
@@ -276,20 +310,29 @@ def verify_promotion(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        # response['error'] = str(e)
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
+        )
     except URLTokenExpired as e:
         return redirect(
-            f'http://{client_host}/admin/create/verify/tokenexpired', code=302
+            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
         )
     except Exception as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        # response['error'] = str(e)
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
+        )
 
     # Ensure the user exists in the database
     if not User.objects(email=email):
-        response['message'] = 'User does not exist.'
-        return jsonify(response), 400
+        # response['message'] = 'User does not exist.'
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
+        )
 
     # Get the user object
     user = User.objects.get(email=email)
@@ -297,17 +340,26 @@ def verify_promotion(token):
     # Ensure the user is verified, an admin and that they have a valid admin
     # profile
     if not user.verified:
-        response['message'] = 'User is not verified.'
-        return jsonify(response), 400
+        # response['message'] = 'User is not verified.'
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
+        )
     # The user's admin profile is created in the admin create endpoint. The
     # database clean method for user will set user.is_admin to true after the
     # admin profile is created.
     if not user.is_admin:
-        response['message'] = 'User is not an Admin.'
-        return jsonify(response), 400
+        # response['message'] = 'User is not an Admin.'
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
+        )
     if user.disable_admin:
-        response['message'] = 'User is not an Admin.'
-        return jsonify(response), 400
+        # response['message'] = 'User is not an Admin.'
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
+        )
 
     # Verify user's admin status
     user.admin_profile.verified = True
@@ -351,10 +403,10 @@ def verify_promotion(token):
 class DisableAccount(Resource):
     """Route for Admins to disable user accounts"""
 
-    method_decorators = {'put': [authenticate_admin]}
+    method_decorators = {'put': [authorize_admin_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def put(self, resp):
+    def put(self, admin):
         post_data = request.get_json()
 
         # Validating empty payload
@@ -387,7 +439,6 @@ class DisableAccount(Resource):
             return response, 404
 
         user = User.objects.get(email=valid_email)
-        admin = User.objects.get(id=resp)
 
         account_disable_token = generate_confirmation_token(user.email)
         # Apparently url_for wants 'admin' rather than 'admin_auth'
@@ -432,21 +483,33 @@ def confirm_disable_account(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        # response['error'] = str(e)
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/disable/user/confirm?tokenexpired=true',
+            code=302
+        )
     except URLTokenExpired as e:
         return redirect(
-            f'http://{client_host}/disable/user/confirm/tokenexpired',
+            f'http://{client_host}/disable/user/confirm?tokenexpired=true',
             code=302
         )
     except Exception as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        # response['error'] = str(e)
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/disable/user/confirm?tokenexpired=true',
+            code=302
+        )
 
     # Ensure the user exists in the database
     if not User.objects(email=email):
-        response['message'] = 'User does not exist.'
-        return jsonify(response), 400
+        # response['message'] = 'User does not exist.'
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}/disable/user/confirm?tokenexpired=true',
+            code=302
+        )
 
     # Get the user object
     user = User.objects.get(email=email)
@@ -480,5 +543,5 @@ def confirm_disable_account(token):
     return custom_redir_response
 
 
-api.add_resource(AdminCreate, '/admin/create')
-api.add_resource(DisableAccount, '/disable/user')
+api.add_resource(AdminCreate, '/api/v1/sim/admin/create')
+api.add_resource(DisableAccount, '/api/v1/sim/disable/user')

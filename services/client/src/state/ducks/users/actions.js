@@ -3,11 +3,11 @@ import {
 } from './types'
 
 export const getUsers = () => (dispatch) => {
-  fetch('http://localhost:8000/users', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/users`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())

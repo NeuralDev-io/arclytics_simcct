@@ -31,22 +31,26 @@ import coverage
 import redis
 from flask.cli import FlaskGroup
 from prettytable import PrettyTable
+from pymongo import MongoClient
 from rq import Connection, Worker
 
 import settings
-from sim_api.app import create_app, get_flask_mongo
+from sim_api.app import create_app
 from sim_api.models import User, AdminProfile, UserProfile
 
 COV = coverage.coverage(
     branch=True,
     include=[
-        'sim_api/models.py', 'sim_api/resources/users.py',
-        'sim_api/resources/auth.py', 'sim_api/middleware.py',
-        'sim_api/mongodb.py', 'sim_api/token.py', 'sim_api/resources/share.py',
-        'sim_api/resources/admin_auth.py', 'sim_api/resources/ratings.py'
+        'sim_api/schemas.py', 'sim_api/resources/*', 'sim_api/alloys/*',
+        'sim_api/alloys_service.py', 'sim_api/middleware.py',
+        'sim_api/sim_session_service.py', 'sim_api/models.py',
+        'sim_api/resources/users.py', 'sim_api/resources/auth.py',
+        'sim_api/middleware.py', 'sim_api/mongodb.py', 'sim_api/token.py',
+        'sim_api/resources/share.py', 'sim_api/resources/admin_auth.py',
+        'sim_api/resources/ratings.py'
     ],
     omit=[
-        'sim_api/app.py'
+        'arc_api/app.py'
         'configs/flask_conf.py',
         'tests/*',
         'configs/*',
@@ -69,24 +73,53 @@ def run_worker():
         worker.work()
 
 
-@cli.command()
-def test():
-    """Runs the tests without code coverage."""
-    tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
-    result = unittest.TextTestRunner(verbosity=3).run(tests)
-    if result.wasSuccessful():
-        return 0
-    sys.exit(result)
-
-
 @cli.command('flush')
 def flush():
     """Drop all collections in the database."""
     from mongoengine.connection import get_db
-    conn = get_flask_mongo()
     db = get_db('default')
-    print('Dropping <{}> database:'.format(db.name), file=sys.stderr)
-    conn.instance.client.drop_database(db.name)
+    print(
+        'Dropping <{}.{}> database:'.format(db.name, 'users'), file=sys.stderr
+    )
+    db.users.drop()
+
+
+@cli.command('flush_all')
+def flush():
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        client = MongoClient(
+            host=str(os.environ.get('MONGO_HOST')),
+            port=int(os.environ.get('MONGO_PORT')),
+            username=str(os.environ.get('MONGO_APP_USER')),
+            password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
+            authSource='admin',
+            replicaSet='MainRepSet',
+        )
+        redis_client = redis.Redis(
+            host=os.environ.get('REDIS_HOST'),
+            port=os.environ.get('REDIS_PORT'),
+            password=os.environ.get('REDIS_PASSWORD')
+        )
+        db = os.environ.get('MONGO_APP_DB')
+        print('Dropping <{}> database:'.format(db), file=sys.stderr)
+        client.drop_database(db)
+    else:
+        client = MongoClient(
+            host=os.environ.get('MONGO_HOST'),
+            port=int(os.environ.get('MONGO_PORT'))
+        )
+        redis_client = redis.Redis(
+            host=os.environ.get('REDIS_HOST'),
+            port=os.environ.get('REDIS_PORT')
+        )
+        print('Dropping <{}> database:'.format('arc_dev'), file=sys.stderr)
+        client.drop_database('arc_dev')
+        print('Dropping <{}> database:'.format('arc_test'), file=sys.stderr)
+        client.drop_database('arc_test')
+
+    dbs_created = redis_client.config_get('databases')
+    print('Flushing Redis: {}'.format(dbs_created), file=sys.stderr)
+    redis_client.flushall()
 
 
 @cli.command('seed_db')
@@ -151,6 +184,58 @@ def seed_user_db():
     tbl.align['Name'] = 'l'
     tbl.align['Email'] = 'l'
     print(tbl)
+
+
+@cli.command('seed_alloys_db')
+def seed_alloy_db():
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        client = MongoClient(
+            host=str(os.environ.get('MONGO_HOST')),
+            port=int(os.environ.get('MONGO_PORT')),
+            username=str(os.environ.get('MONGO_APP_USER')),
+            password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
+            authSource='admin',
+            replicaSet='MainRepSet',
+        )
+    else:
+        client = MongoClient(
+            host=os.environ.get('MONGO_HOST'),
+            port=int(os.environ.get('MONGO_PORT'))
+        )
+    db = client[os.environ.get('MONGO_APP_DB', 'arc_dev')]
+    path = Path(settings.BASE_DIR) / 'seed_global_alloys_data.json'
+    if os.path.isfile(path):
+        with open(path) as f:
+            json_data = json.load(f)
+
+    from sim_api.schemas import AlloySchema
+    data = AlloySchema(many=True).load(json_data['alloys'])
+
+    print(
+        'Seeding global alloys to <{}> database:'.format(db.name),
+        file=sys.stderr
+    )
+    # Check the correct database -- arc_dev
+    db.alloys.insert_many(data)
+
+    tbl = PrettyTable(['Symbol', 'Weight'])
+
+    for alloy in db.alloys.find():
+        print(f"Alloy name: {alloy['name']}")
+        for el in alloy['compositions']:
+            tbl.add_row((el['symbol'], el['weight']))
+        print(tbl)
+        tbl.clear_rows()
+
+
+@cli.command()
+def test():
+    """Runs the tests without code coverage."""
+    tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
+    result = unittest.TextTestRunner(verbosity=3).run(tests)
+    if result.wasSuccessful():
+        return 0
+    sys.exit(result)
 
 
 @cli.command('test_coverage')

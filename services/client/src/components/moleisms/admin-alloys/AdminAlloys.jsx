@@ -12,14 +12,11 @@ import AlloyModal from './AlloyModal'
 import AlloyDeleteModal from './AlloyDeleteModal'
 import {
   getGlobalAlloys,
-  createGlobalAlloys,
-  updateGlobalAlloys,
-  deleteGlobalAlloys,
+  createGlobalAlloy,
+  updateGlobalAlloy,
+  deleteGlobalAlloy,
 } from '../../../state/ducks/alloys/actions'
-import {
-  updateAlloyOption,
-  updateComp,
-} from '../../../state/ducks/sim/actions'
+import { initSession } from '../../../state/ducks/sim/actions'
 import { DEFAULT_ELEMENTS } from '../../../utils/alloys'
 
 import styles from './AdminAlloys.module.scss'
@@ -73,15 +70,15 @@ class AdminAlloys extends Component {
   }
 
   addAlloy = (alloy) => {
-    const { createGlobalAlloysConnect } = this.props
-    createGlobalAlloysConnect(alloy)
+    const { createGlobalAlloyConnect } = this.props
+    createGlobalAlloyConnect(alloy)
     this.handleCloseModal('add')
   }
 
   editAlloy = (alloy) => {
-    const { updateGlobalAlloysConnect } = this.props
+    const { updateGlobalAlloyConnect } = this.props
     const { currentAlloy } = this.state
-    updateGlobalAlloysConnect({
+    updateGlobalAlloyConnect({
       _id: currentAlloy._id, // eslint-disable-line
       ...alloy,
     })
@@ -89,8 +86,8 @@ class AdminAlloys extends Component {
   }
 
   deleteAlloy = (alloyId) => {
-    const { deleteGlobalAlloysConnect } = this.props
-    deleteGlobalAlloysConnect(alloyId)
+    const { deleteGlobalAlloyConnect } = this.props
+    deleteGlobalAlloyConnect(alloyId)
     this.handleCloseModal('delete')
   }
 
@@ -98,13 +95,13 @@ class AdminAlloys extends Component {
 
   handleLoadAlloy = alloy => {
     const {
-      updateAlloyOptionConnect,
-      updateCompConnect,
+      initSessionConnect,
       history,
     } = this.props
 
-    updateAlloyOptionConnect('single')
-    updateCompConnect('single', 'parent', alloy)
+    // updateAlloyOptionConnect('single')
+    // updateCompConnect('single', 'parent', alloy)
+    initSessionConnect('single', 'parent', alloy)
     history.push('/')
   }
 
@@ -250,11 +247,10 @@ AdminAlloys.propTypes = {
     })),
   })).isRequired,
   getGlobalAlloysConnect: PropTypes.func.isRequired,
-  createGlobalAlloysConnect: PropTypes.func.isRequired,
-  updateGlobalAlloysConnect: PropTypes.func.isRequired,
-  deleteGlobalAlloysConnect: PropTypes.func.isRequired,
-  updateAlloyOptionConnect: PropTypes.func.isRequired,
-  updateCompConnect: PropTypes.func.isRequired,
+  createGlobalAlloyConnect: PropTypes.func.isRequired,
+  updateGlobalAlloyConnect: PropTypes.func.isRequired,
+  deleteGlobalAlloyConnect: PropTypes.func.isRequired,
+  initSessionConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -263,11 +259,10 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   getGlobalAlloysConnect: getGlobalAlloys,
-  createGlobalAlloysConnect: createGlobalAlloys,
-  updateGlobalAlloysConnect: updateGlobalAlloys,
-  deleteGlobalAlloysConnect: deleteGlobalAlloys,
-  updateAlloyOptionConnect: updateAlloyOption,
-  updateCompConnect: updateComp,
+  createGlobalAlloyConnect: createGlobalAlloy,
+  updateGlobalAlloyConnect: updateGlobalAlloy,
+  deleteGlobalAlloyConnect: deleteGlobalAlloy,
+  initSessionConnect: initSession,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdminAlloys)

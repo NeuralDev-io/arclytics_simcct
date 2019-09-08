@@ -47,6 +47,7 @@ class DynamicNdarray(object):
         # This will get you [[0., 0.], [0., 0.]] `numpy.ndarray`
         mat = DynamicNdarray(rows=2)
     """
+
     def __init__(
         self,
         shape: Union[Tuple[int, int], int],
@@ -162,6 +163,7 @@ class ResultsContainer(object):
     some helper instance methods to allow plotting with Plotly or printing to
     stdout.
     """
+
     def __init__(self):
         self.user_cooling_curve: Union[np.ndarray, None] = None
         self.user_phase_fraction_data: Union[np.ndarray, None] = None

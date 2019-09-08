@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
 import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
+import { buttonize } from '../../../utils/accessibility'
 
 import styles from './AccordionSection.module.scss'
 
@@ -18,24 +19,14 @@ class AccordionSection extends PureComponent {
     const labelId = `label-${id}`
 
     return (
-      <>
+      <React.Fragment>
         <div
           className={styles.title}
           role="button"
           aria-expanded={expanded}
           aria-controls={sectionId}
           id={labelId}
-          tabIndex={0}
-          onClick={onToggle}
-          onKeyDown={(e) => {
-            switch (e.key) {
-              case ' ':
-              case 'Enter':
-                onToggle()
-                break
-              default:
-            }
-          }}
+          {...buttonize(onToggle)}
         >
           <h6>{title}</h6>
           {expanded ? (
@@ -53,7 +44,7 @@ class AccordionSection extends PureComponent {
         >
           {expanded && children}
         </div>
-      </>
+      </React.Fragment>
     )
   }
 }

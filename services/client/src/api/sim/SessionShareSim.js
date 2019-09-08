@@ -8,7 +8,7 @@
  */
 
 // TODO(andrew@neuraldev.io): Do documentation.
-export const getShareUrlLink = (configs, alloyStore) => new Promise((resolve, reject) => {
+export const getShareUrlLink = (configs, alloyStore, results) => new Promise((resolve, reject) => {
   /**
    * API request method to get the sharing URL link from the `users` server.
    *
@@ -18,15 +18,16 @@ export const getShareUrlLink = (configs, alloyStore) => new Promise((resolve, re
    *   "link": "..."
    * }
    * */
-  fetch('http://localhost:8000/user/share/simulation/link', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/share/simulation/link`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
       configurations: configs,
       alloy_store: alloyStore,
+      simulation_results: results,
     }),
   })
     .then(res => res.json())
@@ -37,7 +38,7 @@ export const getShareUrlLink = (configs, alloyStore) => new Promise((resolve, re
     .catch(err => reject(err))
 })
 
-export const sendShareEmail = (emails, message, configurations, alloyStore) => new Promise(
+export const sendShareEmail = (emails, message, configurations, alloyStore, results) => new Promise(
   (resolve, reject) => {
     /**
      * API request method to get the sharing URL link from the `users` server.
@@ -49,17 +50,18 @@ export const sendShareEmail = (emails, message, configurations, alloyStore) => n
      *   "link": "..."
      * }
      * */
-    fetch('http://localhost:8000/user/share/simulation/email', {
+    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/share/simulation/email`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
       body: JSON.stringify({
         alloy_store: alloyStore,
         emails,
         message,
         configurations,
+        simulation_results: results,
       }),
     })
       .then(res => res.json())

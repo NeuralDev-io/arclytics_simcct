@@ -23,11 +23,11 @@ configurations for the main simulations page.
 from flask import Blueprint, request
 from flask_restful import Resource
 
-from arc_api.extensions import api
-from arc_api.sim_session import SimSessionService, SaveSessionError
+from sim_api.extensions import api
+from sim_api.extensions.SimSession import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
-from arc_api.middleware import token_and_session_required
+from sim_api.middleware import authenticate_user_cookie_restful
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -36,17 +36,15 @@ configs_blueprint = Blueprint('sim_configurations', __name__)
 
 
 class Configurations(Resource):
-    method_decorators = {'patch': [token_and_session_required]}
+    method_decorators = {'patch': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, _, session_key):
+    def patch(self, _):
         """This PATCH endpoint updates the other configurations that are
         not part of the transformation temperatures.
 
         Args:
-            session_key:
-            token: the returned token from the `token_required_restful`
-                   middleware decorator.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A valid HTTP Response with application/json content.
@@ -76,15 +74,10 @@ class Configurations(Resource):
             return response, 400
 
         # If there are changes to be made, then we will get the session store.
-        sid, session_store = SimSessionService().load_session(session_key)
+        session_store = SimSessionService().load_session()
 
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
-
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
+        if isinstance(session_store, str):
+            response['message'] = session_store
             return response, 500
 
         sess_configs = session_store.get('configurations')
@@ -119,12 +112,7 @@ class Configurations(Resource):
 
         session_store['configurations'] = sess_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response['message'] = 'Setup configurations values have been updated.'
@@ -132,16 +120,15 @@ class Configurations(Resource):
 
 
 class ConfigsMethod(Resource):
-    method_decorators = {'put': [token_and_session_required]}
+    method_decorators = {'put': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def put(self, _, session_key):
+    def put(self, _):
         """This PUT endpoint simply updates the `method` for CCT and TTT
         calculations in the session store
 
         Args:
-            session_key:
-            _: a valid JWT token.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message strings.
@@ -168,15 +155,10 @@ class ConfigsMethod(Resource):
             )
             return response, 400
 
-        sid, session_store = SimSessionService().load_session(session_key)
+        session_store = SimSessionService().load_session()
 
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
-
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
+        if isinstance(session_store, str):
+            response['message'] = session_store
             return response, 500
 
         session_configs = session_store.get('configurations')
@@ -193,12 +175,7 @@ class ConfigsMethod(Resource):
         session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response['message'] = f'Changed to {method} method.'
@@ -207,20 +184,19 @@ class ConfigsMethod(Resource):
 
 class MartensiteStart(Resource):
     method_decorators = {
-        'get': [token_and_session_required],
-        'put': [token_and_session_required]
+        'get': [authenticate_user_cookie_restful],
+        'put': [authenticate_user_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
-    def get(self, _, session_key):
+    def get(self, _):
         """This GET endpoint auto calculates the `MS` and `MS Rate Param` as the
         user has selected the auto calculate feature without the need for
         sending
         the compositions as they are already stored in the session store.
 
         Args:
-            session_key:
-            _: a token passed in the request but not used.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message strings
@@ -233,15 +209,10 @@ class MartensiteStart(Resource):
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        sid, session_store = SimSessionService().load_session(session_key)
+        session_store = SimSessionService().load_session()
 
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
-
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
+        if isinstance(session_store, str):
+            response['message'] = session_store
             return response, 500
 
         session_configs = session_store.get('configurations')
@@ -291,12 +262,7 @@ class MartensiteStart(Resource):
         session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response.pop('message')
@@ -305,13 +271,12 @@ class MartensiteStart(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def put(self, _, session_key):
+    def put(self, _):
         """If the user manually updates the MS temperatures in the client,
         we receive those and update the session cache.
 
         Args:
-            _: a token passed in the request but not used.
-            session_key:
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response body of with the `status` and a 202 status code.
@@ -334,15 +299,10 @@ class MartensiteStart(Resource):
             response['message'] = 'MS Rate Parameter temperature is required.'
             return response, 400
 
-        sid, session_store = SimSessionService().load_session(session_key)
+        session_store = SimSessionService().load_session()
 
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
-
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
+        if isinstance(session_store, str):
+            response['message'] = session_store
             return response, 500
 
         session_configs = session_store.get('configurations', None)
@@ -357,31 +317,25 @@ class MartensiteStart(Resource):
         session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         return {'status': 'success'}, 202
 
 
 class BainiteStart(Resource):
     method_decorators = {
-        'get': [token_and_session_required],
-        'put': [token_and_session_required]
+        'get': [authenticate_user_cookie_restful],
+        'put': [authenticate_user_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
-    def get(self, token, session_key):
+    def get(self, _):
         """This POST endpoint auto calculates the `BS` as the user has
         selected the auto calculate feature without the need for sending the
         compositions as they are already stored in the session store.
 
         Args:
-            session_key:
-            token: a valid JWT token.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message strings
@@ -394,15 +348,10 @@ class BainiteStart(Resource):
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        sid, session_store = SimSessionService().load_session(session_key)
+        session_store = SimSessionService().load_session()
 
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
-
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
+        if isinstance(session_store, str):
+            response['message'] = session_store
             return response, 500
 
         session_configs = session_store.get('configurations')
@@ -448,12 +397,7 @@ class BainiteStart(Resource):
         session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response.pop('message')
@@ -462,13 +406,12 @@ class BainiteStart(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def put(self, token, session_key):
+    def put(self, _):
         """If the user manually updates the BS temperatures in the client, we
         receive those and update the session cache.
 
         Args:
-            session_key:
-            token: a valid JWT token.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response body of with the `status` and a 202 status code.
@@ -486,15 +429,10 @@ class BainiteStart(Resource):
             response['message'] = 'BS temperature is required.'
             return response, 400
 
-        sid, session_store = SimSessionService().load_session(session_key)
+        session_store = SimSessionService().load_session()
 
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
-
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
+        if isinstance(session_store, str):
+            response['message'] = session_store
             return response, 500
 
         session_configs = session_store.get('configurations')
@@ -507,31 +445,25 @@ class BainiteStart(Resource):
         session_configs['is_valid'] = False
         session_store[f'configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         return {'status': 'success'}, 202
 
 
 class Austenite(Resource):
     method_decorators = {
-        'get': [token_and_session_required],
-        'put': [token_and_session_required]
+        'get': [authenticate_user_cookie_restful],
+        'put': [authenticate_user_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
-    def get(self, token, session_key):
+    def get(self, _):
         """This GET endpoint auto calculates the `Ae1` and `Ae3` as the user has
         selected the auto calculate feature without the need for sending the
         compositions as they are already stored in the session store.
 
         Args:
-            session_key:
-            token: a valid JWT token.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message strings as
@@ -542,15 +474,10 @@ class Austenite(Resource):
         #   * Need to do the validation checks for this.
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-        sid, session_store = SimSessionService().load_session(session_key)
+        session_store = SimSessionService().load_session()
 
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
-
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
+        if isinstance(session_store, str):
+            response['message'] = session_store
             return response, 500
 
         session_configs = session_store.get('configurations')
@@ -590,12 +517,7 @@ class Austenite(Resource):
         session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response.pop('message')
@@ -604,13 +526,12 @@ class Austenite(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def put(self, token, session_key):
+    def put(self, _):
         """If the user manually updates the Ae1 and Ae3 temperatures in the
         client, we receive those and update the session cache.
 
         Args:
-            session_key:
-            token: a valid JWT token.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response body of with the `status` and a 202 status code.
@@ -633,15 +554,10 @@ class Austenite(Resource):
             response['message'] = 'Ae3 temperature is required.'
             return response, 400
 
-        sid, session_store = SimSessionService().load_session(session_key)
+        session_store = SimSessionService().load_session()
 
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
-
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
+        if isinstance(session_store, str):
+            response['message'] = session_store
             return response, 500
 
         session_configs = session_store.get('configurations')
@@ -656,18 +572,13 @@ class Austenite(Resource):
         session_configs['is_valid'] = False
         session_store['configurations'] = session_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         return {'status': 'success'}, 202
 
 
-api.add_resource(Configurations, '/configs/update')
-api.add_resource(ConfigsMethod, '/configs/method/update')
-api.add_resource(MartensiteStart, '/configs/ms')
-api.add_resource(BainiteStart, '/configs/bs')
-api.add_resource(Austenite, '/configs/ae')
+api.add_resource(Configurations, '/api/v1/sim/configs/update')
+api.add_resource(ConfigsMethod, '/api/v1/sim/configs/method/update')
+api.add_resource(MartensiteStart, '/api/v1/sim/configs/ms')
+api.add_resource(BainiteStart, '/api/v1/sim/configs/bs')
+api.add_resource(Austenite, '/api/v1/sim/configs/ae')

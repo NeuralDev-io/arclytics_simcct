@@ -25,13 +25,13 @@ from threading import Thread
 from flask import Blueprint
 from flask_restful import Resource
 
-from arc_api.extensions import api
-from arc_api.middleware import token_and_session_required
-from arc_api.sim_session import SimSessionService, SaveSessionError
+from sim_api.extensions import api
+from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.extensions.SimSession import SimSessionService
 from simulation.simconfiguration import SimConfiguration
 from simulation.phasesimulation import PhaseSimulation
 from simulation.utilities import ConfigurationError, SimulationError
-from arc_api.schemas import ConfigurationsSchema, AlloyStoreSchema
+from sim_api.schemas import ConfigurationsSchema, AlloyStoreSchema
 from logger.arc_logger import AppLogger
 from simulation.timer import time_func
 
@@ -42,22 +42,17 @@ sim_blueprint = Blueprint('simulation', __name__)
 
 class Simulation(Resource):
 
-    method_decorators = {'get': [token_and_session_required]}
+    method_decorators = {'get': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def get(self, _, session_key):
+    def get(self, _):
         response = {'status': 'fail'}
 
         # First we need to make sure they logged in and are in a current session
-        sid, session_store = SimSessionService().load_session(session_key)
+        session_store = SimSessionService().load_session()
 
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
-
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
+        if isinstance(session_store, str):
+            response['message'] = session_store
             return response, 500
 
         logger.debug('Session Store')
@@ -123,8 +118,6 @@ class Simulation(Resource):
 
         logger.debug('PhaseSimulation Instance Configurations')
         logger.pprint(sim.configs.__dict__)
-        # TODO(andrew@neuraldev.io): add a Division by Zero check here or find
-        #  out what is causing it and raise a custom Exception.
 
         # Now we do the simulation part but catch all exceptions and return it
         try:
@@ -184,16 +177,11 @@ class Simulation(Resource):
         # If a valid simulation has been run, the configurations are now valid.
         session_store['configurations']['is_valid'] = True
         session_store['results'] = data
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response['data'] = data
         return response, 200
 
 
-api.add_resource(Simulation, '/simulate')
+api.add_resource(Simulation, '/api/v1/sim/simulate')

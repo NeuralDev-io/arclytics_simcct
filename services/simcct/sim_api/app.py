@@ -25,7 +25,6 @@ import os
 
 from flask import Flask
 from flask_cors import CORS
-import logging
 from mongoengine import connect
 from mongoengine.connection import (
     disconnect_all, get_connection, get_db, MongoEngineConnectionError
@@ -33,58 +32,51 @@ from mongoengine.connection import (
 from redis import Redis
 
 from sim_api.extensions import bcrypt, api, mail, redis_session
-from sim_api.mongodb import MongoSingleton
+from sim_api.extensions import MongoSingleton
 from sim_api.extensions import JSONEncoder
-from sim_api.resources.users import users_blueprint
-from sim_api.resources.auth import auth_blueprint
-from sim_api.resources.admin_auth import admin_blueprint
-from sim_api.resources.share import share_blueprint
-from sim_api.resources.user_alloys import user_alloys_blueprint
-from sim_api.resources.last_simulation import last_simulation_blueprint
-from sim_api.resources.save_simulation import save_simulation_blueprint
-from sim_api.resources.ratings import ratings_blueprint
-from sim_api.resources.sim_configurations import configs_blueprint
-from sim_api.resources.global_alloys import alloys_blueprint
-from sim_api.resources.simulation import sim_blueprint
-from sim_api.resources.sim_alloys import sim_alloys_blueprint
 
 # Instantiate the Mongo object to store a connection
 app_settings = os.getenv('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')
 _mongo_client = None
 
 
-def init_db(app=None, db_name=None, host=None, port=None) -> MongoSingleton:
+def init_db(
+    app=None, db_name=None, host=None, port=None, alias='default'
+) -> MongoSingleton:
     """Make a connection to the MongoDB container and returns a singleton
     wrapper on a pymongo.MongoClient."""
     disconnect_all()
+
+    testing = False
 
     if app is not None:
         db_name = app.config['MONGO_DBNAME']
         host = app.config['MONGO_HOST']
         port = int(app.config['MONGO_PORT'])
+        testing = app.config['TESTING']
 
     if os.environ.get('FLASK_ENV') == 'production':
         mongo_client = connect(
             db_name,
             host=host,
             port=int(port),
-            alias='default',
+            alias=alias,
             username=os.environ.get('MONGO_APP_USER', None),
             password=os.environ.get('MONGO_APP_USER_PASSWORD', None),
         )
     else:
-        mongo_client = connect(
-            db_name, host=host, port=int(port), alias='default'
-        )
+        if testing:
+            db_name = 'arc_test'
+        mongo_client = connect(db_name, host=host, port=int(port), alias=alias)
 
     # Test to make sure the connection has been created.
     try:
-        conn = get_connection('default')
+        get_connection(alias)
     except MongoEngineConnectionError as e:
         print('MongoDB Failed to Connect.\n Error: {}'.format(e))
 
     try:
-        db_curr = get_db('default')
+        get_db(alias)
     except MongoEngineConnectionError as e:
         print('MongoDB Failed to Get Database.\n Error: {}'.format(e))
 
@@ -120,7 +112,7 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     app.config.from_object(configs_path)
     app.secret_key = os.environ.get('SECRET_KEY')
 
-    # ========== # CONNECT TO REDIS # ========== #
+    # ========== # CONNECT TO DATABASES # ========== #
     if os.environ.get('FLASK_ENV', 'development') == 'production':
         redis = Redis(
             host=os.environ.get('REDIS_HOST'),
@@ -135,7 +127,6 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
             db=1,
         )
 
-    # ========== # CONNECT TO DATABASE # ========== #
     # Mongo Client interface with MongoEngine as Object Document Mapper (ODM)
     app.config.update(
         dict(
@@ -150,7 +141,6 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     set_flask_mongo(db)
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
-
     # Notes:
     #  - `headers` will inject the Content-Type in all responses.
     #  - `expose_headers`: The header or list which are safe to expose to the
@@ -164,8 +154,7 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
         app=app,
         headers=['Content-Type'],
         expose_headers=[
-            'Access-Control-Allow-Origin',
-            'Access-Control-Allow-Credentials'
+            'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'
         ],
         supports_credentials=True
     )
@@ -175,19 +164,27 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     # Set up Flask extensions
     extensions(app)
 
-    # ========== # FLASK BLUEPRINTS # ========== #
-    app.register_blueprint(users_blueprint, url_prefix='/api/v1/sim')
-    app.register_blueprint(auth_blueprint, url_prefix='/api/v1/sim')
-    app.register_blueprint(user_alloys_blueprint, url_prefix='/api/v1/sim')
-    app.register_blueprint(admin_blueprint, url_prefix='/api/v1/sim')
-    app.register_blueprint(share_blueprint, url_prefix='/api/v1/sim')
-    app.register_blueprint(last_simulation_blueprint, url_prefix='/api/v1/sim')
-    app.register_blueprint(save_simulation_blueprint, url_prefix='/api/v1/sim')
-    app.register_blueprint(ratings_blueprint, url_prefix='/api/v1/sim')
-    app.register_blueprint(configs_blueprint, url_prefix='/api/v1/sim')
-    app.register_blueprint(alloys_blueprint, url_prefix='/api/v1/sim')
-    app.register_blueprint(sim_blueprint, url_prefix='/api/v1/sim')
-    app.register_blueprint(sim_alloys_blueprint, url_prefix='/api/v1/sim')
+    # Set up the Flask App Context
+    with app.app_context():
+        from sim_api.resources import (
+            users_blueprint, auth_blueprint, user_alloys_blueprint,
+            admin_blueprint, share_blueprint, last_sim_blueprint,
+            save_sim_blueprint, ratings_blueprint, configs_blueprint,
+            alloys_blueprint, sim_blueprint, sim_alloys_blueprint
+        )
+        # ========== # FLASK BLUEPRINTS # ========== #
+        app.register_blueprint(users_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(auth_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(user_alloys_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(admin_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(share_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(last_sim_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(save_sim_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(ratings_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(configs_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(alloys_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(sim_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(sim_alloys_blueprint, url_prefix='/api/v1/sim')
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects

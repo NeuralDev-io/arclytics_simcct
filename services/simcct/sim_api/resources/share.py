@@ -344,4 +344,6 @@ def view_shared_simulation(token):
 
 
 api.add_resource(ShareSimulationLink, '/api/v1/sim/user/share/simulation/link')
-api.add_resource(ShareSimulationEmail, '/api/v1/sim/user/share/simulation/email')
+api.add_resource(
+    ShareSimulationEmail, '/api/v1/sim/user/share/simulation/email'
+)

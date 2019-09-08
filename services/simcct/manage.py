@@ -43,7 +43,7 @@ COV = coverage.coverage(
     include=[
         'sim_api/schemas.py', 'sim_api/resources/*', 'sim_api/alloys/*',
         'sim_api/alloys_service.py', 'sim_api/middleware.py',
-        'sim_api/sim_session.py', 'sim_api/models.py',
+        'sim_api/sim_session_service.py', 'sim_api/models.py',
         'sim_api/resources/users.py', 'sim_api/resources/auth.py',
         'sim_api/middleware.py', 'sim_api/mongodb.py', 'sim_api/token.py',
         'sim_api/resources/share.py', 'sim_api/resources/admin_auth.py',
@@ -73,22 +73,14 @@ def run_worker():
         worker.work()
 
 
-@cli.command()
-def test():
-    """Runs the tests without code coverage."""
-    tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
-    result = unittest.TextTestRunner(verbosity=3).run(tests)
-    if result.wasSuccessful():
-        return 0
-    sys.exit(result)
-
-
 @cli.command('flush')
 def flush():
     """Drop all collections in the database."""
     from mongoengine.connection import get_db
     db = get_db('default')
-    print('Dropping <{}.{}> database:'.format(db.name, 'users'),file=sys.stderr)
+    print(
+        'Dropping <{}.{}> database:'.format(db.name, 'users'), file=sys.stderr
+    )
     db.users.drop()
 
 
@@ -117,7 +109,8 @@ def flush():
             port=int(os.environ.get('MONGO_PORT'))
         )
         redis_client = redis.Redis(
-            host=os.environ.get('REDIS_HOST'), port=os.environ.get('REDIS_PORT')
+            host=os.environ.get('REDIS_HOST'),
+            port=os.environ.get('REDIS_PORT')
         )
         print('Dropping <{}> database:'.format('arc_dev'), file=sys.stderr)
         client.drop_database('arc_dev')
@@ -233,6 +226,17 @@ def seed_alloy_db():
             tbl.add_row((el['symbol'], el['weight']))
         print(tbl)
         tbl.clear_rows()
+
+
+@cli.command()
+def test():
+    """Runs the tests without code coverage."""
+    tests = unittest.TestLoader().discover('tests', pattern='test_api_*.py')
+    result = unittest.TextTestRunner(verbosity=3).run(tests)
+    if result.wasSuccessful():
+        return 0
+    sys.exit(result)
+
 
 @cli.command('test_coverage')
 def cov():

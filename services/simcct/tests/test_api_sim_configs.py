@@ -15,37 +15,52 @@ __date__ = '2019.07.13'
 import json
 import unittest
 import numpy as np
-from datetime import datetime
-from uuid import uuid4
 from pathlib import Path
-
-from bson import ObjectId
-from flask import current_app
+from mongoengine import get_db
 
 import settings
-from tests.test_api_base import BaseTestCase
-from sim_api.sim_session import SimSessionService
+from tests.test_api_base import BaseTestCase, app
+from tests.test_utilities import test_login
+from sim_api.models import User, AlloyStore, Configuration
+from sim_api.extensions.SimSession import SimSessionService
 from sim_api.schemas import ConfigurationsSchema, AlloyStoreSchema
+from logger.arc_logger import AppLogger
+
+logger = AppLogger(__name__)
 
 _TEST_CONFIGS_PATH = Path(
     settings.BASE_DIR
 ) / 'simulation' / 'sim_configs.json'
 
-
-def generate_fake_session_key():
-    service = SimSessionService()
-    return service._generate_session_key(uuid4().hex, datetime.utcnow())
+with open(_TEST_CONFIGS_PATH, 'r') as f:
+    test_json = json.load(f)
 
 
+# noinspection PyTypeChecker
 class TestSimConfigurations(BaseTestCase):
 
     # NOTE:
     #  - We can treat the session stores of the compositions and configurations
     #    as always being the one that's displayed on the Client UI.
 
-    def login_client(self, client):
-        with open(_TEST_CONFIGS_PATH, 'r') as f:
-            test_json = json.load(f)
+    _email = None
+    _user_pw = 'IllShowYouFerocity!@!@'
+    mongo = None
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        assert app.config['TESTING'] is True
+
+        # Tony is an admin
+        cls.user = User(
+            **{
+                'email': 'antman@pymindustries.io',
+                'first_name': 'Hank',
+                'last_name': 'Pym'
+            }
+        )
+        cls.user.set_password(cls._user_pw)
+        cls.user.verified = True
 
         configs = ConfigurationsSchema().load(test_json['configurations'])
         store_dict = {
@@ -61,168 +76,143 @@ class TestSimConfigurations(BaseTestCase):
         }
         alloy_store = AlloyStoreSchema().load(store_dict)
 
-        token = 'ABCDEFGHIJKLMOPQRSTUVWXYZ123'
-        _id = ObjectId()
+        cls.user.last_alloy_store = AlloyStore(**alloy_store)
+        cls.user.last_configuration = Configuration(**configs)
 
-        sess_res = client.post(
-            '/session/login',
-            data=json.dumps(
-                {
-                    '_id': str(_id),
-                    'is_admin': False,
-                    'last_configurations': configs,
-                    'last_alloy_store': alloy_store
-                }
-            ),
-            headers={'Authorization': f'Bearer {token}'},
-            content_type='application/json'
+        cls.user.save()
+        cls._email = cls.user.email
+
+        mongo = get_db('default')
+        user = mongo.users.find_one({'email': 'antman@pymindustries.io'})
+        assert user is not None
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """On finishing, we should delete users collection so no conflict."""
+        db = get_db('default')
+        assert db.name == 'arc_test'
+        db.users.drop()
+
+    def login_client(self, client):
+        """Set up a User for the simulation."""
+        test_login(client, self._email, self._user_pw)
+
+        session_store: dict = SimSessionService().load_session()
+        configs: dict = session_store['configurations']
+        alloy_store: dict = session_store['alloy_store']
+
+        return configs, alloy_store
+
+    def logout_client(self, client):
+        resp_login = client.get(
+            '/api/v1/sim/auth/logout',
+            content_type='application/json',
+            environ_base={'REMOTE_ADDR': '127.0.0.1'}
         )
-        data = json.loads(sess_res.data.decode())
-        session_key = data['session_key']
-        _, session_store = SimSessionService().load_session(session_key)
-        session_alloy = session_store.get('alloy_store')
-        self.assertEqual(data['status'], 'success')
-        self.assertTrue(sess_res.status_code == 201)
-        self.assertEqual(alloy_store, session_alloy)
-
-        return configs, alloy_store, token, session_key
+        self.assertStatus(resp_login, 202)
 
     def test_sim_configs_no_session_key(self):
         """Ensure if we don't pass a session key it fails."""
-        with current_app.test_client() as client:
-            configs, comp, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
+
+            client.cookie_jar.clear()
 
             # Don't need data in any of these as Middleware should go first.
             res = client.patch(
-                '/configs/update',
+                '/api/v1/sim/configs/update',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': ''
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assertEqual(data['message'], 'Session token is not valid.')
             self.assert401(res)
 
             res = client.put(
-                '/configs/method/update',
+                '/api/v1/sim/configs/method/update',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': ''
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assertEqual(data['message'], 'Session token is not valid.')
             self.assert401(res)
 
             res = client.get(
-                '/configs/ms',
+                '/api/v1/sim/configs/ms',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': ''
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assertEqual(data['message'], 'Session token is not valid.')
             self.assert401(res)
 
             res = client.put(
-                '/configs/ms',
+                '/api/v1/sim/configs/ms',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': ''
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assertEqual(data['message'], 'Session token is not valid.')
             self.assert401(res)
 
             res = client.get(
-                '/configs/bs',
+                '/api/v1/sim/configs/bs',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': ''
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assertEqual(data['message'], 'Session token is not valid.')
             self.assert401(res)
 
             res = client.put(
-                '/configs/bs',
+                '/api/v1/sim/configs/bs',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': ''
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assertEqual(data['message'], 'Session token is not valid.')
             self.assert401(res)
 
             res = client.get(
-                '/configs/ae',
+                '/api/v1/sim/configs/ae',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': ''
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assertEqual(data['message'], 'Session token is not valid.')
             self.assert401(res)
 
             res = client.put(
-                '/configs/ae',
+                '/api/v1/sim/configs/ae',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': ''
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(data['message'], 'No Session key in header.')
+            self.assertEqual(data['message'], 'Session token is not valid.')
             self.assert401(res)
 
     def test_on_method_change(self):
         """Ensure we can change the method in the session store."""
-        with current_app.test_client() as client:
-            configs, comp, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
 
             method = 'Kirkaldy83'
             res = client.put(
-                '/configs/method/update',
+                '/api/v1/sim/configs/method/update',
                 data=json.dumps({'method': method}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
 
-            _, session_store = SimSessionService().load_session(session_key)
+            session_store = SimSessionService().load_session()
             session_configs = session_store.get('configurations')
             self.assertEqual(data['message'], f'Changed to {method} method.')
             self.assertEqual(data['status'], 'success')
@@ -231,17 +221,13 @@ class TestSimConfigurations(BaseTestCase):
 
             method = 'Li98'
             res = client.put(
-                '/configs/method/update',
+                '/api/v1/sim/configs/method/update',
                 data=json.dumps({'method': method}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
 
-            _, session_store = SimSessionService().load_session(session_key)
+            session_store = SimSessionService().load_session()
             session_configs = session_store.get('configurations')
             self.assertEqual(data['message'], f'Changed to {method} method.')
             self.assertEqual(data['status'], 'success')
@@ -250,19 +236,15 @@ class TestSimConfigurations(BaseTestCase):
 
     def test_auto_update_ms(self):
         """Ensure we get the correct calculations for MS given the alloy."""
-        with current_app.test_client() as client:
-            configs, comp, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
 
             res = client.get(
-                '/configs/ms',
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
+                '/api/v1/sim/configs/ms',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            _, session_store = SimSessionService().load_session(session_key)
+            session_store = SimSessionService().load_session()
             sess_configs = session_store.get('configurations')
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
@@ -276,19 +258,15 @@ class TestSimConfigurations(BaseTestCase):
 
     def test_auto_update_bs(self):
         """Ensure we get the correct calculations for BS given the alloy."""
-        with current_app.test_client() as client:
-            configs, comp, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
 
             res = client.get(
-                '/configs/bs',
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
+                '/api/v1/sim/configs/bs',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            _, session_store = SimSessionService().load_session(session_key)
+            session_store = SimSessionService().load_session()
             sess_configs = session_store.get('configurations')
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
@@ -301,20 +279,16 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure we get the correct calculations for Ae1 and Ae3 given the
         testing configs and the testing compositions.
         """
-        with current_app.test_client() as client:
-            configs, comp, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
 
             res = client.get(
-                '/configs/ae',
+                '/api/v1/sim/configs/ae',
                 data=json.dumps({'auto_calculate_ae': True}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            _, session_store = SimSessionService().load_session(session_key)
+            session_store = SimSessionService().load_session()
             sess_configs = session_store['configurations']
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
@@ -326,46 +300,56 @@ class TestSimConfigurations(BaseTestCase):
             self.assertAlmostEqual(ae1, 700.90196, 4)
             self.assertAlmostEqual(ae3, 845.83715, 4)
 
-    def test_configurations_no_auth_header(self):
+    def test_configurations_no_session(self):
         """Ensure it fails with no header."""
-        with current_app.test_client() as client:
+        with app.test_client() as client:
+            # We login to get a valid cookie
+            cookie = test_login(client, self.user.email, self._user_pw)
+            # Logout should clear the Cookie and Session from being valid
+            self.logout_client(client)
+
+            # Reset the cookie for the next request but it should not
+            # be the one that retrieves a valid session.
+            client.set_cookie('localhost', cookie['key'], cookie['value'])
+
             method = 'Kirkaldy83'
             res = client.put(
-                '/configs/method/update',
+                '/api/v1/sim/configs/method/update',
                 data=json.dumps({'method': method}),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assert401(res)
-            self.assertEqual(data['message'], 'No Authorization in header.')
+            self.assertEqual(data['message'], 'Session is invalid.')
             self.assertEqual(data['status'], 'fail')
 
-    def test_configurations_bad_auth_header(self):
+    def test_configurations_bad_cookie(self):
         """Ensure it fails with a bad header."""
-        with current_app.test_client() as client:
+        with app.test_client() as client:
+            cookie = test_login(client, self.user.email, self._user_pw)
+            self.logout_client(client)
+
+            client.set_cookie('localhost', 'BAD_KEY', cookie['value'])
+
             method = 'Kirkaldy83'
             res = client.put(
-                '/configs/method/update',
+                '/api/v1/sim/configs/method/update',
                 data=json.dumps({'method': method}),
-                headers={'Authorization': 'Bearer '},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assert401(res)
-            self.assertEqual(data['message'], 'Invalid JWT token in header.')
+            self.assertEqual(data['message'], 'Session token is not valid.')
             self.assertEqual(data['status'], 'fail')
 
     def test_configurations_empty_payload(self):
         """Ensure you miss 100% of the shots you don't take."""
-        with current_app.test_client() as client:
-            token = 'EncodedHelloWorld!'
+        with app.test_client() as client:
+            self.login_client(client)
+
             res = client.put(
-                '/configs/method/update',
+                '/api/v1/sim/configs/method/update',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': generate_fake_session_key()
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -374,12 +358,8 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
 
             res = client.patch(
-                '/alloys/update',
+                '/api/v1/sim/alloys/update',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': generate_fake_session_key()
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -388,12 +368,8 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
 
             res = client.patch(
-                '/configs/update',
+                '/api/v1/sim/configs/update',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': generate_fake_session_key()
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -402,15 +378,12 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
 
     def test_on_method_change_no_method_payload(self):
-        with current_app.test_client() as client:
-            token = 'EncodedHelloWorld!'
+        with app.test_client() as client:
+            self.login_client(client)
+
             res = client.put(
-                '/configs/method/update',
+                '/api/v1/sim/configs/method/update',
                 data=json.dumps({'method': ''}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': generate_fake_session_key()
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -419,16 +392,12 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
 
     def test_on_method_change_incorrect_method_payload(self):
-        with current_app.test_client() as client:
-            token = 'EncodedHelloWorld!'
+        with app.test_client() as client:
+            self.login_client(client)
 
             res = client.put(
-                '/configs/method/update',
+                '/api/v1/sim/configs/method/update',
                 data=json.dumps({'method': 'AndrewMethod!'}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': generate_fake_session_key()
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -440,21 +409,19 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
 
     def test_on_method_change_empty_session_store(self):
-        with current_app.test_client() as client:
-            token = 'EncodedHelloWorld!'
+        with app.test_client() as client:
+            cookie = test_login(client, self.user.email, self._user_pw)
+            self.logout_client(client)
+
+            client.set_cookie('localhost', cookie['key'], cookie['value'])
+
             res = client.put(
-                '/configs/method/update',
+                '/api/v1/sim/configs/method/update',
                 data=json.dumps({'method': 'Kirkaldy83'}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': generate_fake_session_key()
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'], 'Unable to load session from Redis.'
-            )
+            self.assertEqual(data['message'], 'Session is invalid.')
             self.assert401(res)
             self.assertEqual(data['status'], 'fail')
 
@@ -462,30 +429,22 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure we get the correct calculations for MS and BS given Kirkaldy83
         method testing configs and the testing compositions.
         """
-        with current_app.test_client() as client:
-            configs, comp, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
 
             res_method_update = client.put(
-                'configs/method/update',
+                '/api/v1/sim/configs/method/update',
                 data=json.dumps({'method': 'Kirkaldy83'}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             self.assert200(res_method_update)
 
             res = client.get(
-                '/configs/ms',
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
+                '/api/v1/sim/configs/ms',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            _, session_store = SimSessionService().load_session(session_key)
+            session_store = SimSessionService().load_session()
             sess_configs = session_store.get('configurations')
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
@@ -501,30 +460,22 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure we get the correct calculations for BS given Kirkaldy83
         method testing configs and the testing compositions.
         """
-        with current_app.test_client() as client:
-            configs, comp, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
 
             res_method_update = client.put(
-                'configs/method/update',
+                '/api/v1/sim/configs/method/update',
                 data=json.dumps({'method': 'Kirkaldy83'}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             self.assert200(res_method_update)
 
             res = client.get(
-                '/configs/bs',
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
+                '/api/v1/sim/configs/bs',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            _, session_store = SimSessionService().load_session(session_key)
+            session_store = SimSessionService().load_session()
             sess_configs = session_store['configurations']
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
@@ -535,25 +486,21 @@ class TestSimConfigurations(BaseTestCase):
 
     def test_on_configs_change(self):
         """Ensure that if we send new configurations we store it in session."""
-        with current_app.test_client() as client:
-            configs, _, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            configs, _ = self.login_client(client)
             # Since login stores the configs already, we need to make some
             # changes to see if it updates.
 
             # Since this is a patch method and we only want to change 1 thing
             res = client.patch(
-                '/configs/update',
+                '/api/v1/sim/configs/update',
                 data=json.dumps({'start_temp': 901}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             self.assertEqual(res.status_code, 202)
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
-            _, session_store = SimSessionService().load_session(session_key)
+            session_store = SimSessionService().load_session()
             sess_configs = session_store.get('configurations')
             # This is just for ensuring they're the same overall
             setup_configs = {
@@ -574,15 +521,11 @@ class TestSimConfigurations(BaseTestCase):
 
     def test_on_configs_change_empty_json(self):
         """Ensure that if we send an empty JSON we get an error."""
-        with current_app.test_client() as client:
-            configs, comp, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
             res = client.patch(
-                '/configs/update',
+                '/api/v1/sim/configs/update',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': generate_fake_session_key()
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -592,42 +535,34 @@ class TestSimConfigurations(BaseTestCase):
 
     def test_on_configs_change_before_login(self):
         """Ensure if the user has not logged in, they have no previous store."""
-        with open(_TEST_CONFIGS_PATH, 'r') as f:
-            test_json = json.load(f)
 
         configs = test_json['configurations']
-        token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123'
         configs.pop('nucleation_start')
         configs.pop('nucleation_finish')
 
-        with current_app.test_client() as client:
+        with app.test_client() as client:
+            cookie = test_login(client, self.user.email, self._user_pw)
+            self.logout_client(client)
+
+            client.set_cookie('localhost', cookie['key'], cookie['value'])
+
             res = client.patch(
-                '/configs/update',
+                '/api/v1/sim/configs/update',
                 data=json.dumps(configs),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': generate_fake_session_key()
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'], 'Unable to load session from Redis.'
-            )
+            self.assertEqual(data['message'], 'Session is invalid.')
             self.assertEqual(data['status'], 'fail')
             self.assert401(res)
 
     def test_on_configs_change_invalid_schema(self):
         """Ensure if we send no valid data we get an error response."""
-        with current_app.test_client() as client:
-            _, _, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
             res = client.patch(
-                '/configs/update',
+                '/api/v1/sim/configs/update',
                 data=json.dumps({'nuc_start': 123}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -639,15 +574,11 @@ class TestSimConfigurations(BaseTestCase):
 
     def test_update_ms_empty_payload(self):
         """Ensure an empty payload for MS does not pass."""
-        with current_app.test_client() as client:
-            _, _, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
             res = client.put(
-                '/configs/ms',
+                '/api/v1/sim/configs/ms',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -657,16 +588,12 @@ class TestSimConfigurations(BaseTestCase):
 
     def test_update_bs_empty_payload(self):
         """Ensure an empty payload for BS does not pass."""
-        with current_app.test_client() as client:
-            _, _, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
 
             res = client.put(
-                '/configs/bs',
+                '/api/v1/sim/configs/bs',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -676,17 +603,13 @@ class TestSimConfigurations(BaseTestCase):
 
     def test_update_ms_missing_ms_payload(self):
         """Ensure an missing ms_temp payload does not pass."""
-        with current_app.test_client() as client:
-            _, _, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
             ms_configs = {'ms_rate_param': 0.9}
 
             res = client.put(
-                '/configs/ms',
+                '/api/v1/sim/configs/ms',
                 data=json.dumps(ms_configs),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -696,112 +619,130 @@ class TestSimConfigurations(BaseTestCase):
 
     def test_update_ms_no_prev_configs(self):
         """Ensure if there is no prev. configs MS payload does not pass."""
-        with current_app.test_client() as client:
-            # We don't login to set the previous configs
-            # _, _, token = self.login_client(client)
+        with app.test_client() as client:
+            # We login to get a cookie
+            _, _ = self.login_client(client)
+
+            # We change the session by making a transaction on it within context
+            # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
+            #  is set because otherwise opening a transaction will not use
+            #  a standard HTTP request environ_base.
+            with client.session_transaction(
+                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ) as session:
+                session['simulation'] = None
+            with client.session_transaction(
+                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ):
+                # At this point the session transaction has been updated so
+                # we can check the session within the context
+                session_store = SimSessionService().load_session()
+                self.assertIsInstance(session_store, str)
+                self.assertEqual(session_store, 'Session is empty.')
+
             ms_configs = {
                 'ms_temp': 464.196,
                 'ms_rate_param': 0.0168,
             }
 
-            token = 'BoGuSToKeN'
             res = client.put(
-                '/configs/ms',
+                '/api/v1/sim/configs/ms',
                 data=json.dumps(ms_configs),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': generate_fake_session_key()
-                },
-                content_type='application/json'
+                content_type='application/json',
+                environ_base={'REMOTE_ADDR': '127.0.0.1'}
             )
             data = json.loads(res.data.decode())
             self.assertEquals(
-                data['message'], 'Unable to load session from Redis.'
+                data['message'], 'Cannot retrieve data from Session store.'
             )
-            self.assert401(res)
+            self.assertEqual(res.status_code, 500)
             self.assertEquals(data['status'], 'fail')
 
     def test_update_bs_no_prev_configs(self):
         """Ensure if there is no prev. configs BS payload does not pass."""
-        with current_app.test_client() as client:
-            # We don't login to set the previous configs
-            # _, _, token = self.login_client(client)
+        with app.test_client() as client:
+            # We login to get a cookie
+            _, _ = self.login_client(client)
+
+            # We change the session by making a transaction on it within context
+            # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
+            #  is set because otherwise opening a transaction will not use
+            #  a standard HTTP request environ_base.
+            with client.session_transaction(
+                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ) as session:
+                session['simulation'] = None
+            with client.session_transaction(
+                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ):
+                # At this point the session transaction has been updated so
+                # we can check the session within the context
+                session_store = SimSessionService().load_session()
+                self.assertIsInstance(session_store, str)
+                self.assertEqual(session_store, 'Session is empty.')
+
             bs_configs = {'bs_temp': 563.238}
 
-            token = 'BoGuSToKeN'
             res = client.put(
-                '/configs/bs',
+                '/api/v1/sim/configs/bs',
                 data=json.dumps(bs_configs),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': generate_fake_session_key()
-                },
-                content_type='application/json'
+                content_type='application/json',
+                environ_base={'REMOTE_ADDR': '127.0.0.1'}
             )
             data = json.loads(res.data.decode())
             self.assertEquals(
-                data['message'], 'Unable to load session from Redis.'
+                data['message'], 'Cannot retrieve data from Session store.'
             )
             self.assertEquals(data['status'], 'fail')
-            self.assert401(res)
+            self.assertEqual(res.status_code, 500)
 
     def test_update_ms(self):
         """Ensure a valid payload of MS will do just as we expect."""
-        with current_app.test_client() as client:
-            _, _, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
             configs = {
                 'ms_temp': 464.196,
                 'ms_rate_param': 0.0168,
             }
 
             res = client.put(
-                '/configs/ms',
+                '/api/v1/sim/configs/ms',
                 data=json.dumps(configs),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 202)
-            _, session_store = SimSessionService().load_session(session_key)
+            session_store = SimSessionService().load_session()
             sess = session_store.get('configurations')
             self.assertEquals(sess['ms_temp'], configs['ms_temp'])
             self.assertEquals(sess['ms_rate_param'], configs['ms_rate_param'])
 
     def test_update_bs(self):
         """Ensure a valid payload of BS will do just as we expect."""
-        with current_app.test_client() as client:
-            _, _, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
 
             res = client.put(
-                '/configs/bs',
+                '/api/v1/sim/configs/bs',
                 data=json.dumps({'bs_temp': 563.238}),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 202)
-            _, session_store = SimSessionService().load_session(session_key)
+            session_store = SimSessionService().load_session()
             sess = session_store.get('configurations')
             self.assertEquals(sess['bs_temp'], 563.238)
 
     def test_update_ae_empty_payload(self):
         """Ensure an empty payload does not pass."""
-        with current_app.test_client() as client:
+        with app.test_client() as client:
+            self.login_client(client)
+            
             res = client.put(
-                '/configs/ae',
+                '/api/v1/sim/configs/ae',
                 data=json.dumps({}),
-                headers={
-                    'Authorization': f'Bearer abcde',
-                    'Session': generate_fake_session_key()
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -811,19 +752,15 @@ class TestSimConfigurations(BaseTestCase):
 
     def test_update_ae_missing_ae1_payload(self):
         """Ensure an missing ms_temp payload does not pass."""
-        with current_app.test_client() as client:
-            _, _, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
             bad_ae_configs = {
                 'ae3_temp': 700.902,
             }
 
             res = client.put(
-                '/configs/ae',
+                '/api/v1/sim/configs/ae',
                 data=json.dumps(bad_ae_configs),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -833,19 +770,15 @@ class TestSimConfigurations(BaseTestCase):
 
     def test_update_ae_missing_ae3_payload(self):
         """Ensure an missing bs_temp payload does not pass."""
-        with current_app.test_client() as client:
-            _, _, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
             bad_ae_configs = {
                 'ae1_temp': 700.902,
             }
 
             res = client.put(
-                '/configs/ae',
+                '/api/v1/sim/configs/ae',
                 data=json.dumps(bad_ae_configs),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -855,47 +788,57 @@ class TestSimConfigurations(BaseTestCase):
 
     def test_update_ae_no_prev_configs(self):
         """Ensure an missing bs_temp payload does not pass."""
-        with current_app.test_client() as client:
-            # We don't login to set the previous configs
-            # _, _, token = self.login_client(client)
+        with app.test_client() as client:
+            # We login to get a cookie
+            _, _ = self.login_client(client)
+
+            # We change the session by making a transaction on it within context
+            # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
+            #  is set because otherwise opening a transaction will not use
+            #  a standard HTTP request environ_base.
+            with client.session_transaction(
+                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ) as session:
+                session['simulation'] = None
+            with client.session_transaction(
+                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ):
+                # At this point the session transaction has been updated so
+                # we can check the session within the context
+                session_store = SimSessionService().load_session()
+                self.assertIsInstance(session_store, str)
+                self.assertEqual(session_store, 'Session is empty.')
+
             ae_configs = {'ae1_temp': 700.902, 'ae3_temp': 845.838}
 
-            token = 'BoGuSToKeN'
             res = client.put(
-                '/configs/ae',
+                '/api/v1/sim/configs/ae',
                 data=json.dumps(ae_configs),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': generate_fake_session_key()
-                },
-                content_type='application/json'
+                content_type='application/json',
+                environ_base={'REMOTE_ADDR': '127.0.0.1'}
             )
             data = json.loads(res.data.decode())
             self.assertEquals(data['status'], 'fail')
             self.assertEquals(
-                data['message'], 'Unable to load session from Redis.'
+                data['message'], 'Cannot retrieve data from Session store.'
             )
-            self.assert401(res)
+            self.assertEqual(res.status_code, 500)
 
     def test_update_ae(self):
         """Ensure a valid payload of MS and BS will do just as we expect."""
-        with current_app.test_client() as client:
-            _, _, token, session_key = self.login_client(client)
+        with app.test_client() as client:
+            self.login_client(client)
             new_ae = {'ae1_temp': 700.902, 'ae3_temp': 845.838}
 
             res = client.put(
-                '/configs/ae',
+                '/api/v1/sim/configs/ae',
                 data=json.dumps(new_ae),
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Session': session_key
-                },
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 202)
-            _, session_store = SimSessionService().load_session(session_key)
+            session_store = SimSessionService().load_session()
             sess = session_store.get('configurations')
             self.assertEquals(sess['ae1_temp'], new_ae['ae1_temp'])
             self.assertEquals(sess['ae3_temp'], new_ae['ae3_temp'])

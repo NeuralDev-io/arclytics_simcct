@@ -10,7 +10,7 @@ import LogOutIcon from 'react-feather/dist/icons/log-out'
 import DatabaseIcon from 'react-feather/dist/icons/database'
 import SlidersIcon from 'react-feather/dist/icons/sliders'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
-import { logout } from '../../../utils/AuthenticationHelper'
+import { logout } from '../../../api/AuthenticationHelper'
 import { buttonize } from '../../../utils/accessibility'
 
 import styles from './AppBar.module.scss'

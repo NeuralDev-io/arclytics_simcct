@@ -27,6 +27,7 @@ import prettytable
 
 class Element(object):
     """Simple element object to store as value in the Periodic Table enum."""
+
     def __init__(
         self, atomic_num: int, name: str, symbol: str, atomic_mass: float
     ):

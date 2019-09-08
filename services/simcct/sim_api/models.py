@@ -376,9 +376,7 @@ class AlloyType(EmbeddedDocument):
 
 
 class AlloyStore(EmbeddedDocument):
-    alloy_option = StringField(
-        required=True, choices=('single', 'both', 'mix')
-    )
+    alloy_option = StringField(required=True, choices=('single', 'mix'))
     alloys = EmbeddedDocumentField(document_type=AlloyType, required=True)
 
     def to_dict(self):
@@ -436,6 +434,10 @@ class User(Document):
 
     last_alloy_store = EmbeddedDocumentField(
         document_type=AlloyStore, default=None
+    )
+
+    last_simulation_results = EmbeddedDocumentField(
+        document_type=SimulationResults, default=None
     )
 
     saved_alloys = EmbeddedDocumentListField(document_type=Alloy)

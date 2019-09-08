@@ -26,9 +26,8 @@ from marshmallow import ValidationError
 
 from sim_api.extensions import api
 from sim_api.schemas import AlloySchema
-from sim_api.alloys_service import AlloysService
 from sim_api.middleware import (
-    authorize_admin_cookie_and_session, authenticate_user_and_cookie_restful
+    authorize_admin_cookie_restful, authenticate_user_cookie_restful
 )
 from simulation.utilities import MissingElementError
 from logger.arc_logger import AppLogger
@@ -44,8 +43,8 @@ class AlloysList(Resource):
     """
 
     method_decorators = {
-        'post': [authorize_admin_cookie_and_session],
-        'get': [authenticate_user_and_cookie_restful]
+        'post': [authorize_admin_cookie_restful],
+        'get': [authenticate_user_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
@@ -90,6 +89,7 @@ class AlloysList(Resource):
             response['message'] = 'Request data failed schema validation.'
             return response, 400
 
+        from sim_api.alloys_service import AlloysService
         id_or_error = AlloysService().create_alloy(valid_data)
 
         # create_alloy() will return a string on DuplicateKeyError meaning it
@@ -118,6 +118,7 @@ class AlloysList(Resource):
         """
         response = {'status': 'fail', 'message': 'Empty.'}
 
+        from sim_api.alloys_service import AlloysService
         alloys = AlloysService().find_all_alloys()
 
         # No point returning data if there is none to return.
@@ -136,9 +137,9 @@ class Alloys(Resource):
     """
 
     method_decorators = {
-        'get': [authenticate_user_and_cookie_restful],
-        'put': [authorize_admin_cookie_and_session],
-        'delete': [authorize_admin_cookie_and_session]
+        'get': [authenticate_user_cookie_restful],
+        'put': [authorize_admin_cookie_restful],
+        'delete': [authorize_admin_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
@@ -159,6 +160,7 @@ class Alloys(Resource):
         if not ObjectId.is_valid(alloy_id):
             return response, 400
 
+        from sim_api.alloys_service import AlloysService
         alloy = AlloysService().find_alloy(ObjectId(alloy_id))
 
         # The service will return True or False based on successfully finding
@@ -216,6 +218,7 @@ class Alloys(Resource):
             response['message'] = 'Request data failed schema validation.'
             return response, 400
 
+        from sim_api.alloys_service import AlloysService
         good = AlloysService().update_alloy(ObjectId(alloy_id), new_alloy)
 
         # The service will return True or False based on successfully updating
@@ -232,12 +235,11 @@ class Alloys(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, _):
+    def patch(self, alloy_id):
         """Exposes the PATCH method for `/alloys` to update an existing alloy by
         an admin to update the existing data.
 
         Args:
-            _: A valid User object that is not used.
             _: A valid ObjectId string that will be checked  that is not used.
 
         Returns:
@@ -352,6 +354,7 @@ class Alloys(Resource):
         if not ObjectId.is_valid(alloy_id):
             return response, 400
 
+        from sim_api.alloys_service import AlloysService
         good = AlloysService().delete_alloy(ObjectId(alloy_id))
 
         if not good:

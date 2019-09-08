@@ -31,7 +31,7 @@ from mongoengine.errors import (
 )
 
 from sim_api.extensions import api
-from sim_api.middleware import authenticate
+from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import Alloy, User
 from sim_api.extensions.utilities import (
     ElementSymbolInvalid, ElementInvalid, MissingElementError,
@@ -46,15 +46,18 @@ class UserAlloysList(Resource):
     to the User's database.
     """
 
-    method_decorators = {'get': [authenticate], 'post': [authenticate]}
+    method_decorators = {
+        'get': [authenticate_user_cookie_restful],
+        'post': [authenticate_user_cookie_restful]
+    }
 
     # noinspection PyMethodMayBeStatic
-    def post(self, user_id) -> Tuple[dict, int]:
+    def post(self, user) -> Tuple[dict, int]:
         """The endpoint that exposes a POST HTTP method to create an alloy in
         the User's document.
 
         Args:
-            user_id: a valid user ObjectId passed from the middleware.
+            user: a valid `sim_api.models.User` passed from the middleware.
 
         Returns:
             A valid HTTP Response with a dict and a HTTP status code.
@@ -119,8 +122,6 @@ class UserAlloysList(Resource):
             response['message'] = 'Alloy validation error.'
             return response, 400
 
-        user = User.objects.get(id=user_id)
-
         valid_data = {
             'name': post_data.pop('name'),
             'compositions': post_data.pop('compositions')
@@ -135,17 +136,16 @@ class UserAlloysList(Resource):
         return response, 201
 
     # noinspection PyMethodMayBeStatic
-    def get(self, user_id) -> Tuple[dict, int]:
+    def get(self, user) -> Tuple[dict, int]:
         """The endpoint that exposes a GET HTTP method to retrieve a list of
         alloys on the User's document.
 
         Args:
-            user_id: a valid user ObjectId passed from the middleware.
+            user: a valid `sim_api.models.User` passed from the middleware.
 
         Returns:
             A valid HTTP Response with a dict and a HTTP status code.
         """
-        user = User.objects.get(id=user_id)
         # To avoid running a list comprehension loop, if there's nothing
         # to return we get out of here and notify the client.
         if user.saved_alloys.count() == 0:
@@ -158,19 +158,18 @@ class UserAlloysList(Resource):
 
 class UserAlloy(Resource):
     method_decorators = {
-        'get': [authenticate],
-        'put': [authenticate],
-        'patch': [authenticate],
-        'delete': [authenticate]
+        'get': [authenticate_user_cookie_restful],
+        'put': [authenticate_user_cookie_restful],
+        'delete': [authenticate_user_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
-    def get(self, user_id, alloy_id):
+    def get(self, user, alloy_id):
         """The endpoint that exposes a GET HTTP method to retrieve an alloy
         detail from the User's document.
 
         Args:
-            user_id: a valid user ObjectId passed from the middleware.
+            user: a valid `sim_api.models.User` passed from the middleware.
             alloy_id: a valid Alloy ObjectId of the embedded document.
 
         Returns:
@@ -181,8 +180,6 @@ class UserAlloy(Resource):
         # Verify the request params is a valid ObjectId to use
         if not ObjectId.is_valid(alloy_id):
             return response, 400
-
-        user = User.objects.get(id=user_id)
 
         if user.saved_alloys.count() == 1:
             # If there is only one alloy to return.
@@ -203,12 +200,12 @@ class UserAlloy(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def put(self, user_id, alloy_id):
+    def put(self, user, alloy_id):
         """The endpoint that exposes a PUT HTTP method to update an alloy
         from the User's document.
 
         Args:
-            user_id: a valid user ObjectId passed from the middleware.
+            user: a valid `sim_api.models.User` passed from the middleware.
             alloy_id: a valid Alloy ObjectId of the embedded document.
 
         Returns:
@@ -281,8 +278,6 @@ class UserAlloy(Resource):
             response['message'] = 'Alloy validation error.'
             return response, 400
 
-        user = User.objects.get(id=user_id)
-
         if user.saved_alloys.count() == 0:
             response['message'] = 'No alloys found.'
             return response, 404
@@ -324,13 +319,9 @@ class UserAlloy(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, user_id, alloy_id):
+    def patch(self, alloy_id):
         """The endpoint that exposes a PATCH HTTP method to partially update
         an alloy in the User's document.
-
-        Args:
-            user_id: a valid user ObjectId passed from the middleware.
-            alloy_id: a valid Alloy ObjectId of the embedded document.
 
         Returns:
             A valid HTTP Response with a dict and a HTTP status code.
@@ -342,143 +333,13 @@ class UserAlloy(Resource):
 
         return {'message': msg}, 405
 
-        # patch_data = request.get_json()
-        #
-        # if not patch_data:
-        #     return response, 400
-        #
-        # # Verify the request params is a valid ObjectId to use
-        # if not ObjectId.is_valid(alloy_id):
-        #     response['message'] = 'Invalid ObjectId.'
-        #     return response, 400
-        #
-        # patch_name = patch_data.get('name', None)
-        # patch_comp = patch_data.get('compositions', None)
-        #
-        # # If there are no keys in the request body that match what we want.
-        # if not patch_name and not patch_comp:
-        #     response['message'] = (
-        #         'Invalid keys in request payload (i.e. must '
-        #         'be either "name" or "compositions").'
-        #     )
-        #     return response, 400
-        #
-        # if patch_comp and not isinstance(patch_comp, list):
-        #     response['message'] = (
-        #         'Compositions must be provided as a list of valid elements '
-        #         'e.g. {"symbol": "C", "weight": 1.0}'
-        #     )
-        #     return response, 400
-        #
-        # # If we only have the compositions, we need to validate with just
-        # # using the elements. We should not worry about the loop as there
-        # # will only likely be a few compositions sent.
-        # if patch_comp:
-        #     for el in patch_comp:
-        #         try:
-        #             Element(**el).validate(clean=True)
-        #         except FieldDoesNotExist as e:
-        #             response['error'] = str(e)
-        #             response['message'] = 'Alloy validation error.'
-        #             return response, 400
-        #         except ElementSymbolInvalid as e:
-        #             # This validation is a custom one used to validate the
-        #             # symbol used in the element is one that is valid with the
-        #             # Periodic Table.
-        #             response['error'] = str(e)
-        #             response['message'] = 'Invalid element symbol error.'
-        #             return response, 400
-        #         except ElementInvalid as e:
-        #             # This validation is a custom one used to validate the
-        #             # Element used
-        #             response['error'] = str(e)
-        #             response['message'] = 'Invalid element error.'
-        #             return response, 400
-        #
-        # # We continue to validate the sent data if both name and compositions
-        # # are sent before we move onto getting the document. Note that if only
-        # # the name is sent, then we don't need to validate this.
-        # if patch_comp and patch_name:
-        #     try:
-        #         Alloy(name=patch_name,
-        #               compositions=patch_comp).validate(clean=True)
-        #     except FieldDoesNotExist as e:
-        #         response['error'] = str(e)
-        #         response['message'] = 'Alloy validation error.'
-        #         return response, 400
-        #     except ElementSymbolInvalid as e:
-        #         # This validation is a custom one used to validate the symbol
-        #         # used
-        #         # in the element is one that is valid with the Periodic Table.
-        #         response['error'] = str(e)
-        #         response['message'] = 'Invalid element symbol error.'
-        #         return response, 400
-        #     except ElementInvalid as e:
-        #         # This validation is a custom one used to validate the
-        #         # Element used
-        #         response['error'] = str(e)
-        #         response['message'] = 'Invalid element error.'
-        #         return response, 400
-        #     except ValidationError as e:
-        #         response['error'] = str(e.message)
-        #         response['message'] = 'Alloy validation error.'
-        #         return response, 400
-        #
-        # user = User.objects.get(id=user_id)
-        #
-        # if user.saved_alloys.count() == 0:
-        #     response['message'] = 'No alloys found.'
-        #     return response, 404
-        #
-        # # Make sure the existing alloy exists
-        # try:
-        #     alloy = user.saved_alloys.get(**{'oid': ObjectId(alloy_id)})
-        # except DoesNotExist as e:
-        #     response['error'] = str(e)
-        #     response['message'] = 'Alloy does not exist.'
-        #     return response, 404
-        # except MultipleObjectsReturned as e:
-        #     response['error'] = str(e)
-        #     response['message'] = 'Multiple objects returned.'
-        #     return response, 418
-        #
-        # # Now we do the real updating work
-        # if patch_comp:
-        #     for el in patch_comp:
-        #         try:
-        #             existing_elem = alloy.compositions.get(
-        #                 **{'symbol': el.get('symbol')}
-        #             )
-        #             existing_elem.weight = el['weight']
-        #         except DoesNotExist as e:
-        #             # If the query does not find it, and it's already been
-        #             # validated, we need to add the new element.
-        #             alloy.compositions.create(**el)
-        #
-        # if patch_name and patch_name != alloy.name:
-        #     alloy.name = patch_name
-        #
-        # try:
-        #     user.save()
-        # except ValidationError as e:
-        #     # We do this to ensure there isn't some error that occurs on
-        #     # saving and if there is, then we return an internal server error.
-        #     response['error'] = str(e.message)
-        #     response['message'] = 'Validation error on updating.'
-        #     return response, 500
-        #
-        # response['data'] = alloy.to_dict()
-        # response['status'] = 'success'
-        # response.pop('message')
-        # return response, 200
-
     # noinspection PyMethodMayBeStatic
-    def delete(self, user_id, alloy_id):
+    def delete(self, user, alloy_id):
         """The endpoint that exposes a DELETE HTTP method to delete an alloy
         from the User's document.
 
         Args:
-            user_id: a valid user ObjectId passed from the middleware.
+            user: a valid `sim_api.models.User` passed from the middleware.
             alloy_id: a valid Alloy ObjectId of the embedded document.
 
         Returns:
@@ -489,8 +350,6 @@ class UserAlloy(Resource):
         # Verify the request params is a valid ObjectId to use
         if not ObjectId.is_valid(alloy_id):
             return response, 400
-
-        user = User.objects.get(id=user_id)
 
         if user.saved_alloys.count() == 0:
             # If there is no alloy to delete.

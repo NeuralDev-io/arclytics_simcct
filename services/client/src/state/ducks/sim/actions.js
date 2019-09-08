@@ -34,10 +34,9 @@ export const initSession = (option, type, alloy) => (dispatch) => {
   // the original alloy
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
       alloy_option: option,
@@ -93,10 +92,9 @@ export const updateAlloyOption = option => (dispatch) => {
 export const updateComp = (option, type, alloy) => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
     method: 'PATCH',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
       alloy_option: option,
@@ -136,10 +134,9 @@ export const updateDilution = val => (dispatch) => {
 export const updateConfigMethod = value => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/method/update`, {
     method: 'PUT',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({ method: value }),
   })
@@ -187,10 +184,9 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
   if (isValid) {
     fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
       method: 'PATCH',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        Session: localStorage.getItem('session'),
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
       body: JSON.stringify({ grain_size: grainSize }),
     })
@@ -211,10 +207,9 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
 export const updateMsBsAe = (name, reqBody) => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
     method: 'PUT',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(reqBody),
   })
@@ -234,10 +229,9 @@ export const updateMsBsAe = (name, reqBody) => (dispatch) => {
 export const getMsBsAe = name => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())
@@ -265,10 +259,9 @@ export const setAutoCalculate = (name, value) => (dispatch) => {
 export const updateConfig = (name, value) => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
     method: 'PATCH',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({ [name]: value }),
   })
@@ -304,10 +297,9 @@ export const runSim = () => (dispatch, getState) => {
 
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
     method: 'PATCH',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
       grain_size: grain_size_ASTM,
@@ -319,10 +311,9 @@ export const runSim = () => (dispatch, getState) => {
   }).catch(err => console.log(err))
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/simulate`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(simRes => simRes.json())
@@ -364,10 +355,9 @@ export const loadSim = sim => (dispatch) => {
 export const loadSimFromLink = token => (dispatch) => {
   return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/share/simulation/view/${token}`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())

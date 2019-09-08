@@ -101,6 +101,20 @@ class TestUserAlloyService(BaseTestCase):
         )
         test_login(client, email, password)
 
+    @staticmethod
+    def bad_cookie(self, client):
+        self.login(client)
+        cookie = next(
+            (
+                cookie for cookie in client.cookie_jar
+                if cookie.name == 'SESSION_TOKEN'
+            ), None
+        )
+
+        cookie_value = str(cookie.value)[3:-1]
+        client.cookie_jar.clear()
+        client.set_cookie('localhost', 'BAD_KEY', cookie_value)
+
     def test_create_alloy(self):
         with app.test_client() as client:
             self.login(client)
@@ -788,6 +802,34 @@ class TestUserAlloyService(BaseTestCase):
             )
             self.assertEqual(data['message'], msg)
             self.assert405(res)
+
+    def test_create_unauthorized(self):
+        with app.test_client() as client:
+            self.bad_cookie(self, client)
+
+            res = client.post(
+                '/api/v1/sim/user/alloys',
+                data=json.dumps(alloy_data),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual('Session token is not valid.', data['message'])
+            self.assertEqual(data['status'], 'fail')
+            self.assert401(res)
+
+    def test_retrieve_list_unauthorized(self):
+        with app.test_client() as client:
+            self.bad_cookie(self, client)
+
+            res = client.post(
+                '/api/v1/sim/user/alloys',
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual('fail', data['status'])
+            self.assertNotIn('data', data)
+            self.assertEqual('Session token is not valid.', data['message'])
+            self.assertEqual(res.status_code, 401)
 
 
 if __name__ == '__main__':

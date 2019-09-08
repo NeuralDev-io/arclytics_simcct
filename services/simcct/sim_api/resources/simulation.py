@@ -25,7 +25,7 @@ from threading import Thread
 from flask import Blueprint
 from flask_restful import Resource
 
-from sim_api.extensions import api
+from sim_api.extensions import api, RESPONSE_HEADERS
 from sim_api.middleware import authenticate_user_and_cookie_flask
 from sim_api.extensions.SimSession import SimSessionService
 from simulation.simconfiguration import SimConfiguration
@@ -51,9 +51,9 @@ class Simulation(Resource):
         # First we need to make sure they logged in and are in a current session
         session_store = SimSessionService().load_session()
 
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
-            return response, 500
+        if isinstance(session_store, str):
+            response['message'] = session_store
+            return response, 500, RESPONSE_HEADERS
 
         logger.debug('Session Store')
         logger.pprint(session_store['configurations'])
@@ -61,7 +61,7 @@ class Simulation(Resource):
         session_configs = session_store.get('configurations')
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
-            return response, 404
+            return response, 404, RESPONSE_HEADERS
 
         configs = ConfigurationsSchema().load(session_configs)
 
@@ -70,7 +70,7 @@ class Simulation(Resource):
         if configs.get('is_valid', False):
             response['status'] = 'success'
             response['data'] = session_store['simulation_results']
-            return response, 200
+            return response, 200, RESPONSE_HEADERS
 
         # By default, the session alloy store is single and parent but the
         # parent alloy is set to none.
@@ -81,7 +81,7 @@ class Simulation(Resource):
             and not sess_alloy_store['alloys']['mix']
         ) or not sess_alloy_store:
             response['message'] = 'No previous session alloy was set.'
-            return response, 404
+            return response, 404, RESPONSE_HEADERS
 
         alloy_store = AlloyStoreSchema().load(sess_alloy_store)
 
@@ -89,11 +89,11 @@ class Simulation(Resource):
         # the calculations for CCT/TTT will cause many problems.
         if not configs['ae1_temp'] > 0.0 or not configs['ae3_temp'] > 0.0:
             response['message'] = 'Ae1 and Ae3 value cannot be less than 0.0.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         if not configs['ms_temp'] > 0.0 or not configs['bs_temp'] > 0.0:
             response['message'] = 'MS and BS value cannot be less than 0.0.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # TODO(andrew@neuraldev.io): Implement the other options
         alloy = None
@@ -110,11 +110,11 @@ class Simulation(Resource):
         except ConfigurationError as e:
             response['errors'] = str(e)
             response['message'] = 'Configuration error.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
         except SimulationError as e:
             response['errors'] = str(e)
             response['message'] = 'Simulation error.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         logger.debug('PhaseSimulation Instance Configurations')
         logger.pprint(sim.configs.__dict__)
@@ -154,12 +154,12 @@ class Simulation(Resource):
             response['errors'] = str(e)
             response['message'] = 'Zero Division Error.'
             response['configs'] = sim.configs.__dict__
-            return response, 500
+            return response, 500, RESPONSE_HEADERS
         except Exception as e:
             response['errors'] = str(e)
             response['message'] = 'Exception.'
             response['configs'] = sim.configs.__dict__
-            return response, 500
+            return response, 500, RESPONSE_HEADERS
 
         # Converting the TTT and CCT `numpy.ndarray` will raise an
         # AssertionError if the shape of the ndarray is not correct.
@@ -172,7 +172,7 @@ class Simulation(Resource):
         except AssertionError as e:
             response['errors'] = str(e)
             response['message'] = 'Assertion error building response data.'
-            return response, 500
+            return response, 500, RESPONSE_HEADERS
 
         # If a valid simulation has been run, the configurations are now valid.
         session_store['configurations']['is_valid'] = True
@@ -181,7 +181,7 @@ class Simulation(Resource):
 
         response['status'] = 'success'
         response['data'] = data
-        return response, 200
+        return response, 200, RESPONSE_HEADERS
 
 
 api.add_resource(Simulation, '/api/v1/sim/simulate')

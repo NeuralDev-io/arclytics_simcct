@@ -23,11 +23,11 @@ configurations for the main simulations page.
 from flask import Blueprint, request
 from flask_restful import Resource
 
-from sim_api.extensions import api
-from sim_api.extensions.SimSession.sim_session_service import SimSessionService
+from sim_api.extensions import api, RESPONSE_HEADERS
+from sim_api.extensions.SimSession import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
-from sim_api.middleware import authenticate_user_and_cookie_flask
+from sim_api.middleware import authenticate_user_cookie_restful
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
@@ -36,7 +36,7 @@ configs_blueprint = Blueprint('sim_configurations', __name__)
 
 
 class Configurations(Resource):
-    method_decorators = {'patch': [authenticate_user_and_cookie_flask]}
+    method_decorators = {'patch': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
     def patch(self, _):
@@ -52,7 +52,7 @@ class Configurations(Resource):
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         patch_data = request.get_json()
         if not patch_data:
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # First we need to make sure there are actually some changes to be made
         # by ensuring the request body data has some keys that are valid.
@@ -71,19 +71,19 @@ class Configurations(Resource):
 
         if not is_update:
             response['message'] = 'Payload does not have any valid keys.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # If there are changes to be made, then we will get the session store.
         session_store = SimSessionService().load_session()
 
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
-            return response, 500
+        if isinstance(session_store, str):
+            response['message'] = session_store
+            return response, 500, RESPONSE_HEADERS
 
         sess_configs = session_store.get('configurations')
         if sess_configs is None:
             response['message'] = 'No previous session configurations was set.'
-            return response, 404
+            return response, 404, RESPONSE_HEADERS
 
         grain_size = patch_data.get('grain_size', None)
         if grain_size:
@@ -116,11 +116,11 @@ class Configurations(Resource):
 
         response['status'] = 'success'
         response['message'] = 'Setup configurations values have been updated.'
-        return response, 202
+        return response, 202, RESPONSE_HEADERS
 
 
 class ConfigsMethod(Resource):
-    method_decorators = {'put': [authenticate_user_and_cookie_flask]}
+    method_decorators = {'put': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
     def put(self, _):
@@ -137,13 +137,13 @@ class ConfigsMethod(Resource):
 
         post_data = request.get_json()
         if not post_data:
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
         # Extract the method from the post request body
         method = post_data.get('method', None)
 
         if not method:
             response['message'] = 'No method was provided.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         if (
             not method == Method.Li98.name
@@ -153,19 +153,19 @@ class ConfigsMethod(Resource):
                 'Invalid method provided (must be Li98 or '
                 'Kirkaldy83).'
             )
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         session_store = SimSessionService().load_session()
 
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
-            return response, 500
+        if isinstance(session_store, str):
+            response['message'] = session_store
+            return response, 500, RESPONSE_HEADERS
 
         session_configs = session_store.get('configurations')
 
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
-            return response, 404
+            return response, 404, RESPONSE_HEADERS
 
         # Change the configs
         session_configs['method'] = Method.Li98.name
@@ -179,13 +179,13 @@ class ConfigsMethod(Resource):
 
         response['status'] = 'success'
         response['message'] = f'Changed to {method} method.'
-        return response, 200
+        return response, 200, RESPONSE_HEADERS
 
 
 class MartensiteStart(Resource):
     method_decorators = {
-        'get': [authenticate_user_and_cookie_flask],
-        'put': [authenticate_user_and_cookie_flask]
+        'get': [authenticate_user_cookie_restful],
+        'put': [authenticate_user_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
@@ -211,15 +211,15 @@ class MartensiteStart(Resource):
 
         session_store = SimSessionService().load_session()
 
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
-            return response, 500
+        if isinstance(session_store, str):
+            response['message'] = session_store
+            return response, 500, RESPONSE_HEADERS
 
         session_configs = session_store.get('configurations')
 
         if not session_configs:
             response['message'] = "No previous session initiated."
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # We need to convert them to our enums as required by the calculations.
         transformation_method = Method.Li98
@@ -234,7 +234,7 @@ class MartensiteStart(Resource):
 
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # TODO(andrew@neuraldev.io): Implement the other options
         comp_list: list = []
@@ -243,13 +243,13 @@ class MartensiteStart(Resource):
 
         if comp_list is None:
             response['message'] = 'User has not set an Alloy.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         comp_np_arr = SimConfig.get_compositions(comp_list)
 
         if comp_np_arr is False:
             response['message'] = 'Compositions conversion error.'
-            return response, 500
+            return response, 500, RESPONSE_HEADERS
 
         ms_temp = SimConfig.get_ms(
             method=transformation_method, comp=comp_np_arr
@@ -268,7 +268,7 @@ class MartensiteStart(Resource):
         response.pop('message')
         response['data'] = {'ms_temp': ms_temp, 'ms_rate_param': ms_rate_param}
 
-        return response, 200
+        return response, 200, RESPONSE_HEADERS
 
     # noinspection PyMethodMayBeStatic
     def put(self, _):
@@ -285,7 +285,7 @@ class MartensiteStart(Resource):
 
         post_data = request.get_json()
         if not post_data:
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # Let's do some validation of those arguments we really need.
         ms_temp = post_data.get('ms_temp', None)
@@ -293,23 +293,23 @@ class MartensiteStart(Resource):
 
         if not ms_temp:
             response['message'] = 'MS temperature is required.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         if not ms_rate_param:
             response['message'] = 'MS Rate Parameter temperature is required.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         session_store = SimSessionService().load_session()
 
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
-            return response, 500
+        if isinstance(session_store, str):
+            response['message'] = session_store
+            return response, 500, RESPONSE_HEADERS
 
         session_configs = session_store.get('configurations', None)
 
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
-            return response, 404
+            return response, 404, RESPONSE_HEADERS
 
         session_configs['auto_calculate_ms'] = False
         session_configs['ms_temp'] = ms_temp
@@ -324,8 +324,8 @@ class MartensiteStart(Resource):
 
 class BainiteStart(Resource):
     method_decorators = {
-        'get': [authenticate_user_and_cookie_flask],
-        'put': [authenticate_user_and_cookie_flask]
+        'get': [authenticate_user_cookie_restful],
+        'put': [authenticate_user_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
@@ -350,15 +350,15 @@ class BainiteStart(Resource):
 
         session_store = SimSessionService().load_session()
 
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
-            return response, 500
+        if isinstance(session_store, str):
+            response['message'] = session_store
+            return response, 500, RESPONSE_HEADERS
 
         session_configs = session_store.get('configurations')
 
         if not session_configs:
             response['message'] = "No previous session initiated."
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # We need to convert them to our enums as required by the calculations.
         transformation_method = Method.Li98
@@ -371,7 +371,7 @@ class BainiteStart(Resource):
 
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # TODO(andrew@neuraldev.io): Implement the other options
         comp_list: list = []
@@ -380,13 +380,13 @@ class BainiteStart(Resource):
 
         if comp_list is None:
             response['message'] = 'User has not set an Alloy.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         comp_np_arr = SimConfig.get_compositions(comp_list)
 
         if comp_np_arr is False:
             response['message'] = 'Compositions conversion error.'
-            return response, 500
+            return response, 500, RESPONSE_HEADERS
 
         bs_temp = SimConfig.get_bs(
             method=transformation_method, comp=comp_np_arr
@@ -403,7 +403,7 @@ class BainiteStart(Resource):
         response.pop('message')
         response['data'] = {'bs_temp': bs_temp}
 
-        return response, 200
+        return response, 200, RESPONSE_HEADERS
 
     # noinspection PyMethodMayBeStatic
     def put(self, _):
@@ -420,25 +420,25 @@ class BainiteStart(Resource):
 
         post_data = request.get_json()
         if not post_data:
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # Let's do some validation of those arguments we really need.
         bs_temp = post_data.get('bs_temp', None)
 
         if not bs_temp:
             response['message'] = 'BS temperature is required.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         session_store = SimSessionService().load_session()
 
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
-            return response, 500
+        if isinstance(session_store, str):
+            response['message'] = session_store
+            return response, 500, RESPONSE_HEADERS
 
         session_configs = session_store.get('configurations')
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
-            return response, 404
+            return response, 404, RESPONSE_HEADERS
 
         session_configs['auto_calculate_bs'] = False
         session_configs['bs_temp'] = bs_temp
@@ -452,8 +452,8 @@ class BainiteStart(Resource):
 
 class Austenite(Resource):
     method_decorators = {
-        'get': [authenticate_user_and_cookie_flask],
-        'put': [authenticate_user_and_cookie_flask]
+        'get': [authenticate_user_cookie_restful],
+        'put': [authenticate_user_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
@@ -476,15 +476,15 @@ class Austenite(Resource):
 
         session_store = SimSessionService().load_session()
 
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
-            return response, 500
+        if isinstance(session_store, str):
+            response['message'] = session_store
+            return response, 500, RESPONSE_HEADERS
 
         session_configs = session_store.get('configurations')
 
         if not session_configs:
             response['message'] = "No previous session initiated."
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         session_configs['auto_calculate_ae'] = True
 
@@ -492,7 +492,7 @@ class Austenite(Resource):
 
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # TODO(andrew@neuraldev.io): Implement the other options
         comp_list: list = []
@@ -501,13 +501,13 @@ class Austenite(Resource):
 
         if comp_list is None:
             response['message'] = 'User has not set an Alloy.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         comp_np_arr = SimConfig.get_compositions(comp_list)
 
         if comp_np_arr is False:
             response['message'] = 'Compositions conversion error.'
-            return response, 500
+            return response, 500, RESPONSE_HEADERS
 
         ae1, ae3 = SimConfig.calc_ae1_ae3(comp_np_arr)
 
@@ -523,7 +523,7 @@ class Austenite(Resource):
         response.pop('message')
         response['data'] = {'ae1_temp': ae1, 'ae3_temp': ae3}
 
-        return response, 200
+        return response, 200, RESPONSE_HEADERS
 
     # noinspection PyMethodMayBeStatic
     def put(self, _):
@@ -540,7 +540,7 @@ class Austenite(Resource):
 
         post_data = request.get_json()
         if not post_data:
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         # Let's do some validation of those arguments we really need.
         ae1_temp = post_data.get('ae1_temp', None)
@@ -548,23 +548,23 @@ class Austenite(Resource):
 
         if not ae1_temp:
             response['message'] = 'Ae1 temperature is required.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         if not ae3_temp:
             response['message'] = 'Ae3 temperature is required.'
-            return response, 400
+            return response, 400, RESPONSE_HEADERS
 
         session_store = SimSessionService().load_session()
 
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
-            return response, 500
+        if isinstance(session_store, str):
+            response['message'] = session_store
+            return response, 500, RESPONSE_HEADERS
 
         session_configs = session_store.get('configurations')
 
         if session_configs is None:
             response['message'] = 'No previous session configurations was set.'
-            return response, 404
+            return response, 404, RESPONSE_HEADERS
 
         session_configs['auto_calculate_ae'] = False
         session_configs['ae1_temp'] = ae1_temp

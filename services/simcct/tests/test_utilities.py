@@ -20,6 +20,7 @@ __date__ = '2019.07.31'
 from datetime import datetime
 from simulation.periodic import PeriodicTable
 from flask import json
+from sim_api.extensions.Session.redis_session import SESSION_COOKIE_NAME
 
 GMT_DATETIME_FORMAT = "%a, %d-%b-%Y %H:%M:%S GMT"
 
@@ -49,7 +50,7 @@ def test_login(client, email: str, password: str):
     cookie = next(
         (
             cookie for cookie in client.cookie_jar
-            if cookie.name == 'SESSION_TOKEN'
+            if cookie.name == SESSION_COOKIE_NAME
         ), None
     )
 

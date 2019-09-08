@@ -33,6 +33,13 @@ spec:
     spec:
       containers:
       - name: client
-        image: gcr.io/arclytics-sim/arc_sim_client:1.1.0
+        image: gcr.io/arclytics-sim/arc_sim_client:1.1.2
         ports:
         - containerPort: 80
+        env:
+          - name: NODE_ENV
+            value: "production"
+          - name: REACT_APP_SIM_HOST
+            value: simcct
+          - name: REACT_APP_SIM_PORT
+            value: "8000"

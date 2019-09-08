@@ -74,3 +74,12 @@ def test_login(client, email: str, password: str):
     }
 
     return cookie
+
+
+class FlaskTestClientProxy(object):
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response, *args, **kwargs):
+        environ['REMOTE_ADDR'] = environ.get('REMOTE_ADDR', '127.0.0.1')
+        return self.app(environ, start_response, *args, **kwargs)

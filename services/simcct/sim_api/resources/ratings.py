@@ -22,18 +22,15 @@ Rating and Feedback endpoints using the Flask Resource inheritance model.
 """
 
 from typing import Tuple
-from datetime import datetime
 
 from logger.arc_logger import AppLogger
-from flask import Blueprint, jsonify, request, render_template
-from flask import current_app as app
+from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine import ValidationError
 
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.extensions import api
-from sim_api.models import Rating, Feedback, User
-from sim_api.extensions.utilities import RESPONSE_HEADERS
+from sim_api.models import Rating, Feedback
 
 logger = AppLogger(__name__)
 
@@ -48,35 +45,35 @@ class UserRating(Resource):
     method_decorators = {'post': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def post(self, user) -> Tuple[dict, int, dict]:
+    def post(self, user) -> Tuple[dict, int]:
         # Get post data
         data = request.get_json()
 
         # Validating empty payload
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not data:
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         # Extract the request body data
         rating = data.get('rating', None)
 
         if not rating:
             response['message'] = 'No rating provided.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         try:
             Rating(rating=rating).validate()
         except ValidationError as e:
             response['error'] = str(e.message)
             response['message'] = 'Rating validation error.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         user.ratings.append(Rating(rating=rating))
         user.save()
 
         response['status'] = 'success'
         response['message'] = f'Rating submitted by {user.email}.'
-        return response, 200, RESPONSE_HEADERS
+        return response, 200
 
 
 class UserFeedback(Resource):
@@ -87,14 +84,14 @@ class UserFeedback(Resource):
     method_decorators = {'post': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def post(self, user) -> Tuple[dict, int, dict]:
+    def post(self, user) -> Tuple[dict, int]:
         # Get post data
         data = request.get_json()
 
         # Validating empty payload
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not data:
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         # Extract the request body data
         category = data.get('category', None)
@@ -103,13 +100,13 @@ class UserFeedback(Resource):
 
         if not category:
             response['message'] = 'No category provided.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
         # if not rating:
         #     response['message'] = 'No rating provided.'
         #     return response, 400
         if not comment:
             response['message'] = 'No comment provided.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         try:
             feedback = Feedback(
@@ -119,11 +116,11 @@ class UserFeedback(Resource):
         except ValidationError as e:
             response['error'] = str(e.message)
             response['message'] = 'Feedback validation error.'
-            return response, 400, RESPONSE_HEADERS
+            return response, 400
 
         response['status'] = 'success'
         response['message'] = f'Feedback submitted by {user.email}.'
-        return response, 200, RESPONSE_HEADERS
+        return response, 200
 
 
 class FeedbackList(Resource):
@@ -159,16 +156,16 @@ class FeedbackList(Resource):
 
             if not sort_valid:
                 response['message'] = 'Sort value is invalid.'
-                return response, 400, RESPONSE_HEADERS
+                return response, 400
 
         # Validate limit
         if limit:
             if not isinstance(limit, int):
                 response['message'] = 'Limit value is invalid.'
-                return response, 400, RESPONSE_HEADERS
+                return response, 400
             if not limit >= 1:
                 response['message'] = 'Limit must be > 1.'
-                return response, 400, RESPONSE_HEADERS
+                return response, 400
         else:
             limit = 10
 
@@ -178,13 +175,13 @@ class FeedbackList(Resource):
         if offset:
             if not isinstance(offset, int):
                 response['message'] = 'Offset value is invalid.'
-                return response, 400, RESPONSE_HEADERS
+                return response, 400
             if offset > feedback_size + 1:
                 response['message'] = 'Offset value exceeds number of records.'
-                return response, 400, RESPONSE_HEADERS
+                return response, 400
             if offset < 1:
                 response['message'] = 'Offset must be > 1.'
-                return response, 400, RESPONSE_HEADERS
+                return response, 400
         else:
             offset = 1
 
@@ -222,7 +219,7 @@ class FeedbackList(Resource):
         response['current_page'] = current_page
         response['total_pages'] = total_pages
         response['data'] = [obj.to_dict() for obj in query_set]
-        return response, 200, RESPONSE_HEADERS
+        return response, 200
 
 
 api.add_resource(UserRating, '/api/v1/sim/user/rating')

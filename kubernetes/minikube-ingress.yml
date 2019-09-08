@@ -5,6 +5,7 @@ metadata:
   annotations:
 spec:
   rules:
+  - host: staging.arclytics.io
   - http:
       paths:
       - path: /*

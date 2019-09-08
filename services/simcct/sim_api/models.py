@@ -436,6 +436,10 @@ class User(Document):
         document_type=AlloyStore, default=None
     )
 
+    last_simulation_results = EmbeddedDocumentField(
+        document_type=SimulationResults, default=None
+    )
+
     saved_alloys = EmbeddedDocumentListField(document_type=Alloy)
 
     # Some rather useful metadata information that's not core to the

@@ -8,7 +8,7 @@
 
 import React, { Component } from 'react'
 import CheckCircleIcon from 'react-feather/dist/icons/check-circle'
-import { resetPassword } from '../../../utils/AuthenticationHelper'
+import { resetPassword } from '../../../api/AuthenticationHelper'
 import { ReactComponent as Logo } from '../../../assets/ANSTO_Logo_SVG/logo_text.svg'
 import { passwordResetValidation } from '../../../utils/ValidationHelper'
 

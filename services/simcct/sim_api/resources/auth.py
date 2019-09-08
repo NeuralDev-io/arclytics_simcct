@@ -26,7 +26,6 @@ from datetime import datetime
 from typing import Tuple
 
 import geoip2
-from flask_cors import cross_origin
 from email_validator import EmailNotValidError, validate_email
 from flask import (
     Blueprint, jsonify, redirect, render_template, request, session
@@ -38,13 +37,15 @@ import geoip2.database
 
 from logger.arc_logger import AppLogger
 from sim_api.extensions import bcrypt
-from sim_api.middleware import authenticate_flask, authenticate_user_and_cookie_flask
+from sim_api.middleware import (
+    authenticate_user_and_cookie_flask
+)
 from sim_api.models import User, LoginData
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
 from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
-from sim_api.sim_session import SimSessionService
+from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 
 logger = AppLogger(__name__)
 
@@ -123,12 +124,11 @@ def confirm_email(token):
 
 
 @auth_blueprint.route('/confirm/resend', methods=['GET'])
-@authenticate_flask
-def confirm_email_resend(user_id):
+@authenticate_user_and_cookie_flask
+def confirm_email_resend(user):
 
     response = {'status': 'fail', 'message': 'Bad request'}
 
-    user = User.objects.get(id=user_id)
     if user.verified:
         response['message'] = 'User is already verified.'
         return jsonify(response), 400
@@ -351,7 +351,7 @@ def login() -> any:
             reader.close()
 
             session['jwt'] = auth_token.decode()
-            session['ip_address'] = ip_address
+            session['ip_address'] = request.remote_addr
             session['signed_in'] = True
 
             # Inject the Simulation Session data
@@ -366,8 +366,8 @@ def login() -> any:
 
 
 @auth_blueprint.route(rule='/auth/password/check', methods=['POST'])
-@authenticate_flask
-def check_password(user_id) -> Tuple[dict, int]:
+@authenticate_user_and_cookie_flask
+def check_password(user) -> Tuple[dict, int]:
     """
     Route for verifying a user's password.
     """
@@ -388,8 +388,6 @@ def check_password(user_id) -> Tuple[dict, int]:
     if len(str(password)) < 6 or len(str(password)) > 254:
         response['message'] = 'Password incorrect.'
         return jsonify(response), 400
-
-    user = User.objects.get(id=user_id)
 
     if bcrypt.check_password_hash(user.password, password):
         response.pop('message')
@@ -583,8 +581,8 @@ def reset_password_email() -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/password/change', methods=['PUT'])
-@authenticate_flask
-def change_password(user_id):
+@authenticate_user_and_cookie_flask
+def change_password(user):
     """The endpoint that allows a user to change password after they have been
     authorized by the authentication middleware.
 
@@ -623,8 +621,6 @@ def change_password(user_id):
         return jsonify(response), 400
 
     # Validate the user is active
-    user = User.objects.get(id=user_id)
-
     if not user.verified:
         response['message'] = 'User needs to verify account.'
         return jsonify(response), 401
@@ -661,8 +657,8 @@ def change_password(user_id):
 
 
 @auth_blueprint.route('/auth/email/change', methods=['PUT'])
-@authenticate_flask
-def change_email(user_id) -> Tuple[dict, int]:
+@authenticate_user_and_cookie_flask
+def change_email(user) -> Tuple[dict, int]:
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
     request_data = request.get_json()
@@ -684,7 +680,6 @@ def change_email(user_id) -> Tuple[dict, int]:
         response['message'] = 'Invalid email.'
         return jsonify(response), 400
 
-    user = User.objects.get(id=user_id)
     user.email = valid_new_email
     user.verified = False
     user.save()
@@ -739,7 +734,7 @@ def get_user_status(user) -> Tuple[dict, int]:
     sim_session = json.loads(session['simulation'])
 
     response = {
-        "status": False,
+        "status": 'success',
         "isProfile": is_profile,
         "verified": user.verified,
         "active": user.active,

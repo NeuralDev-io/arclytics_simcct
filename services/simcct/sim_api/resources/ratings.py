@@ -22,17 +22,15 @@ Rating and Feedback endpoints using the Flask Resource inheritance model.
 """
 
 from typing import Tuple
-from datetime import datetime
 
 from logger.arc_logger import AppLogger
-from flask import Blueprint, jsonify, request, render_template
-from flask import current_app as app
+from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine import ValidationError
 
-from sim_api.middleware import authenticate, authenticate_admin
+from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.extensions import api
-from sim_api.models import Rating, Feedback, User
+from sim_api.models import Rating, Feedback
 
 logger = AppLogger(__name__)
 
@@ -44,9 +42,10 @@ class UserRating(Resource):
     Route for Users to submit ratings.
     """
 
-    method_decorators = {'post': [authenticate]}
+    method_decorators = {'post': [authenticate_user_cookie_restful]}
 
-    def post(self, resp) -> Tuple[dict, int]:
+    # noinspection PyMethodMayBeStatic
+    def post(self, user) -> Tuple[dict, int]:
         # Get post data
         data = request.get_json()
 
@@ -69,7 +68,6 @@ class UserRating(Resource):
             response['message'] = 'Rating validation error.'
             return response, 400
 
-        user = User.objects.get(id=resp)
         user.ratings.append(Rating(rating=rating))
         user.save()
 
@@ -83,9 +81,10 @@ class UserFeedback(Resource):
     Route for user to submit feedback.
     """
 
-    method_decorators = {'post': [authenticate]}
+    method_decorators = {'post': [authenticate_user_cookie_restful]}
 
-    def post(self, resp) -> Tuple[dict, int]:
+    # noinspection PyMethodMayBeStatic
+    def post(self, user) -> Tuple[dict, int]:
         # Get post data
         data = request.get_json()
 
@@ -110,18 +109,14 @@ class UserFeedback(Resource):
             return response, 400
 
         try:
-            Feedback(category=category, rating=rating,
-                     comment=comment).validate()
+            feedback = Feedback(
+                user=user.id, category=category, rating=rating, comment=comment
+            )
+            feedback.save()
         except ValidationError as e:
             response['error'] = str(e.message)
             response['message'] = 'Feedback validation error.'
             return response, 400
-
-        user = User.objects.get(id=resp)
-        feedback = Feedback(
-            user=user.id, category=category, rating=rating, comment=comment
-        )
-        feedback.save()
 
         response['status'] = 'success'
         response['message'] = f'Feedback submitted by {user.email}.'
@@ -133,9 +128,10 @@ class FeedbackList(Resource):
     Route for admins to view a list of feedback submissions.
     """
 
-    method_decorators = {'get': [authenticate_admin]}
+    method_decorators = {'get': [authenticate_user_cookie_restful]}
 
-    def get(self, resp):
+    # noinspection PyMethodMayBeStatic
+    def get(self, _):
         """Return a list of feedback based of get request from Admin"""
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}

@@ -26,22 +26,25 @@ from flask_restful import Resource
 from mongoengine import ValidationError, FieldDoesNotExist
 
 from sim_api.extensions import api
-from sim_api.middleware import authenticate
-from sim_api.models import Configuration, AlloyStore, User
+from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.models import Configuration, AlloyStore, User, SimulationResults
 from sim_api.extensions.utilities import (
     ElementInvalid, ElementSymbolInvalid, MissingElementError,
     DuplicateElementError
 )
 
-last_simulation_blueprint = Blueprint('user_last_simulation', __name__)
+last_sim_blueprint = Blueprint('user_last_simulation', __name__)
 
 
 class LastSimulation(Resource):
 
-    method_decorators = {'post': [authenticate], 'get': [authenticate]}
+    method_decorators = {
+        'post': [authenticate_user_cookie_restful],
+        'get': [authenticate_user_cookie_restful]
+    }
 
     # noinspection PyMethodMayBeStatic
-    def post(self, user_id):
+    def post(self, user):
         """Exposes the POST method to save the last configurations and alloy
         storage to the `sim_api.models.User` document in the fields
         `last_configurations` and `last_alloy_store`.
@@ -63,6 +66,7 @@ class LastSimulation(Resource):
 
         post_configs = post_data.get('configurations', None)
         post_alloy_store = post_data.get('alloy_store', None)
+        post_results = post_data.get('simulation_results', None)
 
         if not post_configs:
             response['message'] = 'Missing Configurations in payload.'
@@ -72,7 +76,10 @@ class LastSimulation(Resource):
             response['message'] = 'Missing Alloy Store in payload.'
             return response, 400
 
-        # TODO(andrew@neuraldev.io): Add the graphs also\
+        if not post_results:
+            response['message'] = 'Missing Simulation results in payload.'
+            return response, 400
+
         # The following `mongoengine.EmbeddedDocument` models have in-built
         # custom validation that will be passed down.
         try:
@@ -80,6 +87,10 @@ class LastSimulation(Resource):
             valid_configs.validate(clean=True)
             valid_store = AlloyStore.from_json(json.dumps(post_alloy_store))
             valid_store.validate(clean=True)
+            valid_results = SimulationResults.from_json(
+                json.dumps(post_results)
+            )
+            valid_results.validate(clean=True)
         except FieldDoesNotExist as e:
             # In case the request has fields we do not expect.
             response['error'] = str(e)
@@ -115,9 +126,9 @@ class LastSimulation(Resource):
             return response, 400
 
         # Passing all the validations built into the models so we can save
-        user = User.objects.get(id=user_id)
         user.last_configuration = valid_configs
         user.last_alloy_store = valid_store
+        user.last_simulation_results = valid_results
         # TODO(andrew@neuraldev.io): Add the last_results
         user.save()
 
@@ -125,12 +136,13 @@ class LastSimulation(Resource):
         response['message'] = 'Saved Alloy Store, Configurations and Results.'
         response['data'] = {
             'last_configuration': user.last_configuration.to_dict(),
-            'last_alloy_store': user.last_alloy_store.to_dict()
+            'last_alloy_store': user.last_alloy_store.to_dict(),
+            'last_simulation_results': user.last_simulation_results.to_dict()
         }
         return response, 201
 
     # noinspection PyMethodMayBeStatic
-    def get(self, user_id):
+    def get(self, user):
         """Exposes the GET method to get the last configurations and alloy
         storage from the `sim_api.models.User` document.
 
@@ -142,8 +154,6 @@ class LastSimulation(Resource):
             A HTTP Flask Restful Response.
         """
         response = {'status': 'fail'}
-
-        user = User.objects.get(id=user_id)
 
         # We need to check there's something to return first.
         if not user.last_configuration:

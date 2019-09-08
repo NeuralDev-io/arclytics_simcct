@@ -87,8 +87,6 @@ class ProductionConfig(BaseConfig):
     """Production configuration"""
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
-    MONGO_DBNAME = 'arclytics'
+    MONGO_DBNAME = os.environ.get('MONGO_APP_DB')
     BCRYPT_LOG_ROUNDS = 13
-    # TODO(andrew@neuraldev.io): Ensure the database changes over during
-    #  production mode and that there are passwords set on Mongo and Redis.
     REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)

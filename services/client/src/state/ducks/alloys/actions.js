@@ -44,10 +44,9 @@ const getAlloys = type => (dispatch) => {
    */
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())
@@ -80,10 +79,9 @@ const createAlloy = (type, alloy) => (dispatch) => {
    */
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(alloy),
   })
@@ -106,10 +104,9 @@ const createAlloy = (type, alloy) => (dispatch) => {
 const updateAlloy = (type, alloy) => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys/${alloy._id}`, { // eslint-disable-line
     method: 'PUT',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
       name: alloy.name,
@@ -146,10 +143,9 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
    */
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys/${alloyId}`, {
     method: 'DELETE',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())

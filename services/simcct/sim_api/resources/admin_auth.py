@@ -31,7 +31,7 @@ from flask_restful import Resource
 
 from logger.arc_logger import AppLogger
 from sim_api.models import (User, AdminProfile)
-from sim_api.middleware import authenticate_admin
+from sim_api.middleware import authorize_admin_cookie_restful
 from sim_api.extensions import api
 from sim_api.token import (
     generate_confirmation_token, generate_url, confirm_token, URLTokenError,
@@ -47,10 +47,10 @@ admin_blueprint = Blueprint('admin', __name__)
 class AdminCreate(Resource):
     """Route for Admins to Create Admin."""
 
-    method_decorators = {'post': [authenticate_admin]}
+    method_decorators = {'post': [authorize_admin_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def post(self, resp):
+    def post(self, admin):
         """Make a user an administrator"""
         post_data = request.get_json()
 
@@ -96,9 +96,6 @@ class AdminCreate(Resource):
         if user.is_admin:
             response['message'] = 'User is already an Administrator.'
             return response, 400
-
-        # Get the admin object so we can email them a confirmation email.
-        admin = User.objects.get(id=resp)
 
         # Start promotion
         user.admin_profile = AdminProfile(
@@ -406,10 +403,10 @@ def verify_promotion(token):
 class DisableAccount(Resource):
     """Route for Admins to disable user accounts"""
 
-    method_decorators = {'put': [authenticate_admin]}
+    method_decorators = {'put': [authorize_admin_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def put(self, resp):
+    def put(self, admin):
         post_data = request.get_json()
 
         # Validating empty payload
@@ -442,7 +439,6 @@ class DisableAccount(Resource):
             return response, 404
 
         user = User.objects.get(email=valid_email)
-        admin = User.objects.get(id=resp)
 
         account_disable_token = generate_confirmation_token(user.email)
         # Apparently url_for wants 'admin' rather than 'admin_auth'

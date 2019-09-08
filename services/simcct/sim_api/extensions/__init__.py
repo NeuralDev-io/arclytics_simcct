@@ -20,19 +20,13 @@ This module just defines extensions for Flask that can be used across the
 context of the app.
 """
 from .utilities import (
-    get_mongo_uri,
-    JSONEncoder,
-    PasswordValidationError,
-    URLTokenError,
-    URLTokenExpired,
-    ElementSymbolInvalid,
-    ElementInvalid,
-    MissingElementError,
-    DuplicateElementError,
-    SimpleUTC,
-    PeriodicTable
+    get_mongo_uri, JSONEncoder, PasswordValidationError, URLTokenError,
+    URLTokenExpired, ElementSymbolInvalid, ElementInvalid, MissingElementError,
+    DuplicateElementError, SimpleUTC, PeriodicTable, RESPONSE_HEADERS
 )
 
+from .mongo import MongoAlloys
+from .mongodb import MongoSingleton
 from flask_bcrypt import Bcrypt
 from flask_restful import Api
 from flask_mail import Mail

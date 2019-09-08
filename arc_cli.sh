@@ -15,6 +15,8 @@ ARGS=""
 CONTAINER_GROUP=""
 CONTAINER_ARGS="simcct client redis mongodb nginx"
 CONTAINER_LOG=""
+LOGS_WATCH=0
+FLUSH_ALL=0
 BUILD_CONTAINER_ARGS=""
 BUILD_FLAG=0
 DETACH_FLAG=0
@@ -402,9 +404,14 @@ dockerPs() {
 }
 
 dockerLogs() {
-    headerMessage "ARCLYTICS SIM CONTAINER LOGS"
-    generalMessage "docker-compose logs ${CONTAINER_LOG}"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" logs ${CONTAINER_LOG}
+    if [[ $LOGS_WATCH == 1 ]] ; then
+        echo "watch docker-compose -f ${DOCKER_COMPOSE_PATH} logs ${CONTAINER_LOG}"
+        watch docker-compose -f "${DOCKER_COMPOSE_PATH}" logs ${CONTAINER_LOG}
+    else
+        headerMessage "ARCLYTICS SIM CONTAINER LOGS"
+        generalMessage "docker-compose logs ${CONTAINER_LOG}"
+        docker-compose -f "${DOCKER_COMPOSE_PATH}" logs ${CONTAINER_LOG}
+    fi
     completeMessage
 }
 
@@ -459,20 +466,26 @@ scaleContainers() {
 flushDb() {
     headerMessage "FLUSH BACK-END MICROSERVICES"
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
-    generalMessage "docker-compose exec simcct python manage.py flush"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
+    if [[ $FLUSH_ALL == 1 ]] ; then
+      generalMessage "docker-compose exec simcct python manage.py flush_all"
+      docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush_all
+    else
+      generalMessage "docker-compose exec simcct python manage.py flush"
+      docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
+    fi
 }
 
 # Flush and seed database
 flushAndSeedDb() {
     headerMessage "SEED AND FLUSH BACK-END MICROSERVICES"
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
-    generalMessage "docker-compose exec simcct python manage.py flush"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
+    generalMessage "docker-compose exec simcct python manage.py flush_all"
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush_all
     echoSpace
     generalMessage "Seeding simcct microservice database with global alloys"
     generalMessage "docker-compose exec simcct python manage.py seed_db"
     docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py seed_db
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py seed_alloys_db
     echoSpace
 }
 
@@ -801,6 +814,12 @@ while [[ "$1" != "" ]] ; do
             ;;
         logs )
             CONTAINER_LOG=$2
+            shift
+
+            if [[ $2 == "--watch" ]] ; then
+                LOGS_WATCH=1
+            fi
+
             dockerLogs
             ;;
         test )
@@ -879,6 +898,14 @@ while [[ "$1" != "" ]] ; do
             docker system "${ARGS}"
             ;;
         flush )
+            while [[ "$2" != "" ]] ; do
+                case $2 in
+                    -a | --all )
+                      FLUSH_ALL=1
+                      ;;
+                esac
+                shift
+            done
             flushDb
             ;;
         seed )

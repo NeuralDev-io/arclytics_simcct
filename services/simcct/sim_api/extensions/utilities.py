@@ -42,17 +42,26 @@ def get_mongo_uri():
         return f'mongodb://{host}:{port}/{db}'
 
 
+# Note: This is not being used anymore as the CORS package is automatically
+# setting these headers as we defined them in `sim_api.app.py`. These headers
+# are crucially necessary for the Cookies and Server-Side Sessions to work.
 RESPONSE_HEADERS = {
-    'Access-Control-Allow-Headers':
-    'Origin, X-Requested-With, Content-Type, Accept, x-auth',
-    'Content-type': 'application/json',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json',
     'Access-Control-Allow-Credentials': 'true',
-    'Access-Control-Allow-Origin': '*'
+    'Access-Control-Expose-Headers':
+        ['Access-Control-Allow-Credentials', 'Access-Control-Allow-Origin'],
+    'Vary': 'Origin'
+    # 'Access-Control-Allow-Origin': '*',  # Don't set this because it fails
+    # Reason being that allow from all origins with
+    # `'Access-Control-Allow-Credentials': 'true'` will raise an error from
+    # the client-side browser.
 }
 
 
 class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""
+
     def default(self, o):
         if isinstance(o, Method):
             return o.name
@@ -80,6 +89,7 @@ class PasswordValidationError(Exception):
     Raises an Exception if now password was set before trying to save
     the User model.
     """
+
     def __init__(self):
         super(PasswordValidationError,
               self).__init__('A password must be set before saving.')
@@ -89,6 +99,7 @@ class URLTokenError(Exception):
     """
     A custom exception to be raised from any itsdangerous package exceptions.
     """
+
     def __init__(self, msg: str = None):
         super(URLTokenError, self).__init__(msg)
 
@@ -97,6 +108,7 @@ class URLTokenExpired(Exception):
     """
     Custom exception to be raised from any itsdangerous package exceptions.
     """
+
     def __init__(self, msg: str = None):
         super(URLTokenExpired, self).__init__(msg)
 

@@ -1,0 +1,47 @@
+@import '../../../styles/typography';
+
+.modal {
+  display: flex;
+  flex-flow: row nowrap;
+  height: 95vh;
+
+  .periodic {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+  }
+
+  .content {
+    margin-left: 2.5rem;
+    width: 20rem;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: space-between;
+
+    .name {
+      margin-bottom: 1.5rem;
+    }
+
+    span.info {
+      @extend .text--sub1;
+      align-self: center;
+    }
+
+    .elementContainer {
+      padding-bottom: 1rem;
+      overflow-y: auto;
+
+      .element {
+        margin-bottom: .5rem;
+        justify-content: space-between;
+      }
+    }
+
+    .saveButton {
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+      flex-shrink: 0;
+      align-self: center;
+    }
+  }
+}

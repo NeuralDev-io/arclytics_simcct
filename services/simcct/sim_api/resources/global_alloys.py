@@ -24,10 +24,11 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from marshmallow import ValidationError
 
-from arc_api.extensions import api
-from arc_api.schemas import AlloySchema
-from arc_api.alloys_service import AlloysService
-from arc_api.middleware import admin_session_and_token_required
+from sim_api.extensions import api
+from sim_api.schemas import AlloySchema
+from sim_api.middleware import (
+    authorize_admin_cookie_restful, authenticate_user_cookie_restful
+)
 from simulation.utilities import MissingElementError
 from logger.arc_logger import AppLogger
 
@@ -41,10 +42,13 @@ class AlloysList(Resource):
     the global alloy database.
     """
 
-    method_decorators = {'post': [admin_session_and_token_required]}
+    method_decorators = {
+        'post': [authorize_admin_cookie_restful],
+        'get': [authenticate_user_cookie_restful]
+    }
 
     # noinspection PyMethodMayBeStatic
-    def post(self, token, session_key):
+    def post(self, _):
         """Exposes the POST method for `/alloys` to allow creating an alloy.
         The request must also include a request body of data that will need to
         comply to the schema.
@@ -85,6 +89,7 @@ class AlloysList(Resource):
             response['message'] = 'Request data failed schema validation.'
             return response, 400
 
+        from sim_api.alloys_service import AlloysService
         id_or_error = AlloysService().create_alloy(valid_data)
 
         # create_alloy() will return a string on DuplicateKeyError meaning it
@@ -101,15 +106,19 @@ class AlloysList(Resource):
         return response, 201
 
     # noinspection PyMethodMayBeStatic
-    def get(self):
+    def get(self, _):
         """Exposes the GET method for `/alloys` to retrieve a list of alloys in
         the database.
+
+        Args:
+            _: unused User object returned from middleware.
 
         Returns:
             A Response object with a response dict and status code as int.
         """
         response = {'status': 'fail', 'message': 'Empty.'}
 
+        from sim_api.alloys_service import AlloysService
         alloys = AlloysService().find_all_alloys()
 
         # No point returning data if there is none to return.
@@ -128,16 +137,18 @@ class Alloys(Resource):
     """
 
     method_decorators = {
-        'put': [admin_session_and_token_required],
-        'delete': [admin_session_and_token_required]
+        'get': [authenticate_user_cookie_restful],
+        'put': [authorize_admin_cookie_restful],
+        'delete': [authorize_admin_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
-    def get(self, alloy_id):
+    def get(self, _, alloy_id):
         """Allows the GET method with `/alloys/{id}` as an endpoint to get
         a single alloy from the database.
 
         Args:
+            _: unused User object returned from middleware.
             alloy_id: A valid ObjectId string that will be checked.
 
         Returns:
@@ -149,6 +160,7 @@ class Alloys(Resource):
         if not ObjectId.is_valid(alloy_id):
             return response, 400
 
+        from sim_api.alloys_service import AlloysService
         alloy = AlloysService().find_alloy(ObjectId(alloy_id))
 
         # The service will return True or False based on successfully finding
@@ -163,7 +175,7 @@ class Alloys(Resource):
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def put(self, token, session_key, alloy_id):
+    def put(self, _, alloy_id):
         put_data = request.get_json()
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}
@@ -206,6 +218,7 @@ class Alloys(Resource):
             response['message'] = 'Request data failed schema validation.'
             return response, 400
 
+        from sim_api.alloys_service import AlloysService
         good = AlloysService().update_alloy(ObjectId(alloy_id), new_alloy)
 
         # The service will return True or False based on successfully updating
@@ -227,7 +240,7 @@ class Alloys(Resource):
         an admin to update the existing data.
 
         Args:
-            alloy_id: A valid ObjectId string that will be checked.
+            _: A valid ObjectId string that will be checked  that is not used.
 
         Returns:
             A Response object consisting of a dict and status code as an int.
@@ -324,13 +337,12 @@ class Alloys(Resource):
         # return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def delete(self, token, session_key, alloy_id):
+    def delete(self, _, alloy_id):
         """Exposes the DELETE method on `/alloys/{id}` to delete an existing
         alloy in the database.
 
         Args:
-            token:
-            session_key:
+            _: A valid User object that is not used.
             alloy_id: A valid ObjectId string that will be checked.
 
         Returns:
@@ -342,6 +354,7 @@ class Alloys(Resource):
         if not ObjectId.is_valid(alloy_id):
             return response, 400
 
+        from sim_api.alloys_service import AlloysService
         good = AlloysService().delete_alloy(ObjectId(alloy_id))
 
         if not good:
@@ -353,5 +366,5 @@ class Alloys(Resource):
         return response, 202
 
 
-api.add_resource(Alloys, '/global/alloys/<alloy_id>')
-api.add_resource(AlloysList, '/global/alloys')
+api.add_resource(Alloys, '/api/v1/sim/global/alloys/<alloy_id>')
+api.add_resource(AlloysList, '/api/v1/sim/global/alloys')

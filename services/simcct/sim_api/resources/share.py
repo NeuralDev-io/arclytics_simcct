@@ -40,7 +40,7 @@ from sim_api.token import (
     URLTokenError, generate_shared_simulation_token, generate_url,
     confirm_simulation_token
 )
-from sim_api.utilities import (
+from sim_api.extensions.utilities import (
     ElementSymbolInvalid, ElementInvalid, MissingElementError,
     DuplicateElementError
 )
@@ -343,5 +343,7 @@ def view_shared_simulation(token):
     return jsonify(response), 200
 
 
-api.add_resource(ShareSimulationLink, '/user/share/simulation/link')
-api.add_resource(ShareSimulationEmail, '/user/share/simulation/email')
+api.add_resource(ShareSimulationLink, '/api/v1/sim/user/share/simulation/link')
+api.add_resource(
+    ShareSimulationEmail, '/api/v1/sim/user/share/simulation/email'
+)

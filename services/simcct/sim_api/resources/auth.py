@@ -20,13 +20,16 @@ This script describes the Users authentication endpoints for registration,
 login, and logout.
 """
 
+import json
 import os
 from datetime import datetime
 from typing import Tuple
 
-import requests
+import geoip2
 from email_validator import EmailNotValidError, validate_email
-from flask import Blueprint, jsonify, redirect, render_template, request
+from flask import (
+    Blueprint, jsonify, redirect, render_template, request, session
+)
 from flask import current_app as app
 from mongoengine.errors import NotUniqueError, ValidationError
 from geoip2.errors import AddressNotFoundError
@@ -34,12 +37,15 @@ import geoip2.database
 
 from logger.arc_logger import AppLogger
 from sim_api.extensions import bcrypt
-from sim_api.middleware import (authenticate_flask, logout_authenticate)
+from sim_api.middleware import (
+    authenticate_user_and_cookie_flask
+)
 from sim_api.models import User, LoginData
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
-from sim_api.utilities import URLTokenError, URLTokenExpired
+from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
+from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 
 logger = AppLogger(__name__)
 
@@ -51,6 +57,7 @@ class SessionValidationError(Exception):
     A custom exception to be raised by a threaded async call to register if
     the response is not what we are expecting.
     """
+
     def __init__(self, msg: str):
         super(SessionValidationError, self).__init__(msg)
 
@@ -60,6 +67,7 @@ class SimCCTBadServerLogout(Exception):
     A custom exception to be raised by a synchronous call to logout on the
     SimCCT server if the response is not what we are expecting.
     """
+
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
 
@@ -84,21 +92,29 @@ def confirm_email(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        # response['error'] = str(e)
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}//signin?tokenexpired=true', code=302
+        )
     except URLTokenExpired as e:
         return redirect(
-            f'http://{client_host}/signin/tokenexpired?=true', code=302
+            f'http://{client_host}//signin?tokenexpired=true', code=302
         )
     except Exception as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        # response['error'] = str(e)
+        # return jsonify(response), 400
+        return redirect(
+            f'http://{client_host}//signin?tokenexpired=true', code=302
+        )
 
     # We ensure there is a user for this email
     user = User.objects.get(email=email)
     # And do the real work confirming their status
     user.verified = True
     user.save()
+
+    logger.debug(client_host)
 
     response['status'] = 'success'
     response.pop('message')
@@ -108,12 +124,11 @@ def confirm_email(token):
 
 
 @auth_blueprint.route('/confirm/resend', methods=['GET'])
-@authenticate_flask
-def confirm_email_resend(user_id):
+@authenticate_user_and_cookie_flask
+def confirm_email_resend(user):
 
     response = {'status': 'fail', 'message': 'Bad request'}
 
-    user = User.objects.get(id=user_id)
     if user.verified:
         response['message'] = 'User is already verified.'
         return jsonify(response), 400
@@ -256,63 +271,6 @@ def register_user() -> Tuple[dict, int]:
         return jsonify(response), 400
 
 
-def register_session(user: User = None, auth_token: str = None):
-    """We make an synchronous method to allow registering the user to a session
-    during login. This method allows the login endpoint to retrieve the session
-    key from the `/session/login` endpoint on the `simcct` server.
-
-    Args:
-        user: the `sim_api.models.User` to create a session for.
-        auth_token: a stringified type of the User's JWT token.
-
-    Returns:
-        The response from the simcct server.
-    """
-    # We now need to send a request to the simcct server to initiate
-    # a session as a server-side store to save the last compositions/configs
-    simcct_host = os.environ.get('SIMCCT_HOST', None)
-    # Using the `json` param tells requests to serialize the dict to
-    # JSON and write the correct MIME type ('application/json') in
-    # header.
-
-    last_configs = None
-    last_alloy = None
-
-    if isinstance(user, User):
-        if user.last_configuration is not None:
-            last_configs = user.last_configuration.to_dict()
-
-        if user.last_alloy_store is not None:
-            last_alloy = user.last_alloy_store.to_dict()
-
-        resp = requests.post(
-            url=f'http://{simcct_host}/session/login',
-            json={
-                '_id': str(user.id),
-                'is_admin': user.is_admin,
-                'last_configurations': last_configs,
-                'last_alloy_store': last_alloy
-            },
-            headers={
-                'Authorization': f'Bearer {auth_token}',
-                'Content-type': 'application/json'
-            }
-        )
-        data = resp.json()
-        # Because this method is in an async state, we want to know if our
-        # request to the other side has failed by raising an exception.
-        if not data or data.get('status') == 'fail':
-            _id = user.id
-            raise SessionValidationError(
-                f'[DEBUG] A session cannot be initiated for the user_id: {_id}'
-            )
-        return data.get('session_key')
-    else:
-        raise SessionValidationError(
-            f'[DEBUG] A session cannot be initiated because User object failed.'
-        )
-
-
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
 def login() -> any:
     """
@@ -344,7 +302,12 @@ def login() -> any:
         response['message'] = 'Email or password combination incorrect.'
         return jsonify(response), 400
 
-    if not User.objects(email=email):
+    try:
+        if not User.objects(email=email):
+            response['message'] = 'User does not exist.'
+            return jsonify(response), 404
+    except Exception as e:
+        logger.error(str(e))
         response['message'] = 'User does not exist.'
         return jsonify(response), 404
 
@@ -362,13 +325,6 @@ def login() -> any:
 
             user.save()
 
-            try:
-                session_key = register_session(user, auth_token.decode())
-            except SessionValidationError as e:
-                response['message'] = 'Session validation error.'
-                response['error'] = str(e)
-                return jsonify(response), 400
-
             # Get location data
             reader = geoip2.database.Reader(
                 '/usr/src/app/sim_api/resources/GeoLite2-City/'
@@ -381,8 +337,6 @@ def login() -> any:
                 state = location_data.subdivisions[0].names['en']
                 ip_address = location_data.traits.ip_address
 
-                response['country'] = country
-                response['state'] = state
                 user.login_data.append(
                     LoginData(
                         country=country, state=state, ip_address=ip_address
@@ -394,14 +348,17 @@ def login() -> any:
                 ip_address = request.remote_addr
                 user.login_data.append(LoginData(ip_address=ip_address))
                 user.save()
-
-            response['ip_address'] = ip_address
             reader.close()
+
+            session['jwt'] = auth_token.decode()
+            session['ip_address'] = request.remote_addr
+            session['signed_in'] = True
+
+            # Inject the Simulation Session data
+            SimSessionService().new_session(user=user)
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'
-            response['token'] = auth_token.decode()
-            response['session'] = session_key
             return jsonify(response), 200
 
     response['message'] = 'Email or password combination incorrect.'
@@ -409,8 +366,8 @@ def login() -> any:
 
 
 @auth_blueprint.route(rule='/auth/password/check', methods=['POST'])
-@authenticate_flask
-def check_password(user_id) -> Tuple[dict, int]:
+@authenticate_user_and_cookie_flask
+def check_password(user) -> Tuple[dict, int]:
     """
     Route for verifying a user's password.
     """
@@ -431,8 +388,6 @@ def check_password(user_id) -> Tuple[dict, int]:
     if len(str(password)) < 6 or len(str(password)) > 254:
         response['message'] = 'Password incorrect.'
         return jsonify(response), 400
-
-    user = User.objects.get(id=user_id)
 
     if bcrypt.check_password_hash(user.password, password):
         response.pop('message')
@@ -626,8 +581,8 @@ def reset_password_email() -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/password/change', methods=['PUT'])
-@authenticate_flask
-def change_password(user_id):
+@authenticate_user_and_cookie_flask
+def change_password(user):
     """The endpoint that allows a user to change password after they have been
     authorized by the authentication middleware.
 
@@ -666,8 +621,6 @@ def change_password(user_id):
         return jsonify(response), 400
 
     # Validate the user is active
-    user = User.objects.get(id=user_id)
-
     if not user.verified:
         response['message'] = 'User needs to verify account.'
         return jsonify(response), 401
@@ -704,8 +657,8 @@ def change_password(user_id):
 
 
 @auth_blueprint.route('/auth/email/change', methods=['PUT'])
-@authenticate_flask
-def change_email(user_id) -> Tuple[dict, int]:
+@authenticate_user_and_cookie_flask
+def change_email(user) -> Tuple[dict, int]:
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
     request_data = request.get_json()
@@ -727,7 +680,6 @@ def change_email(user_id) -> Tuple[dict, int]:
         response['message'] = 'Invalid email.'
         return jsonify(response), 400
 
-    user = User.objects.get(id=user_id)
     user.email = valid_new_email
     user.verified = False
     user.save()
@@ -758,46 +710,36 @@ def change_email(user_id) -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])
-@logout_authenticate
-def logout(user_id, token, session_key) -> Tuple[dict, int]:
+@authenticate_user_and_cookie_flask
+def logout(_) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
+
+    # Remove the data from the user's current session.
+    session.clear()
+
+    logger.info(f'Session logout: {session}')
+
     response = {'status': 'success', 'message': 'Successfully logged out.'}
-
-    simcct_host = os.environ.get('SIMCCT_HOST', None)
-    simcct_resp = requests.get(
-        url=f'http://{simcct_host}/session/logout',
-        headers={
-            'Authorization': 'Bearer {token}'.format(token=token),
-            'Session': f'{session_key}',
-            'Content-type': 'application/json'
-        }
-    )
-
-    if simcct_resp.json().get('status', 'fail') == 'fail':
-        # raise SimCCTBadServerLogout(
-        #     f'Unable to logout the user_id: {user_id} from the SimCCT server'
-        # )
-        response['message'
-                 ] = 'Unable to logout the user from the SimCCT server'
-        return jsonify(response), 500
-
     return jsonify(response), 202
 
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
-@authenticate_flask
-def get_user_status(user_id) -> Tuple[dict, int]:
+@authenticate_user_and_cookie_flask
+def get_user_status(user) -> Tuple[dict, int]:
     """Get the current session status of the user."""
-    user = User.objects.get(id=user_id)
     is_profile = True
     if not user.profile:
         is_profile = False
-    data = {
-        'isProfile': is_profile,
-        'admin': user.is_admin,
-        'verified': user.verified,
-        'email': user.email,
-        'active': user.active
+
+    sim_session = json.loads(session['simulation'])
+
+    response = {
+        "status": 'success',
+        "isProfile": is_profile,
+        "verified": user.verified,
+        "active": user.active,
+        "signedIn": session['signed_in'],
+        "simulationValid": sim_session['configurations']['is_valid'],
+        "admin": user.is_admin,
     }
-    response = {'status': 'success', 'data': data}
     return jsonify(response), 200

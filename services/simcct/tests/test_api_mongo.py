@@ -25,8 +25,9 @@ import unittest
 import pymongo
 from mongoengine.connection import get_db, get_connection
 
-from tests.test_api_base import BaseTestCase, app
-from sim_api.mongodb import MongoSingleton
+from flask import current_app as app
+from tests.test_api_base import BaseTestCase
+from sim_api.extensions import MongoSingleton
 from sim_api.app import get_flask_mongo, set_flask_mongo, init_db
 
 

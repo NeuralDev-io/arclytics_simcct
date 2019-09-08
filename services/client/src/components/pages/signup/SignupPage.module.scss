@@ -1,18 +1,15 @@
-// @import "../../../styles/_colors-light.scss";
-// @import "../../../styles/_typography.scss";
-// @import "src/assets/background.png";
- 
-$bg-img: url('../../../assets/background_img-min.png');
+ $bg-img: url('../../../assets/login_register_bg.png');
 
 .outer{
   width: 100vw;
   height: 100vh;
-  padding-top: 8rem;
-  padding-bottom: 8rem;
+  padding-top: 5rem;
+  padding-bottom: 5rem;
   background: var(--n0) $bg-img no-repeat;
-  background-size: 150% 150%;
-  background-position: -90%;
-  
+  background-size: 100% 150%;
+  background-position: 40vw;
+  position:relative;
+  overflow-y: scroll;
 }
 
 .form{
@@ -21,20 +18,19 @@ $bg-img: url('../../../assets/background_img-min.png');
   width: 23.75rem;
   display:flex;
   flex-flow: column;
-  justify-content: center;
 }
 
 .logoContainer{
-  margin-bottom: 7.624375rem; 
-}
-
-.logo{
+  margin-bottom: 7.624375rem;
   height: 3.750625rem;
-  margin-right: 1.5rem;
-  float:left;
+  .logo{
+    height:100%;
+    margin-right: 1.5rem;
+    float:left;
+  }
 }
 
-.signUp{
+.header{
   margin-bottom: 2.3125rem;
 }
 
@@ -44,7 +40,7 @@ $bg-img: url('../../../assets/background_img-min.png');
 }
 
 .firstName{
-  float:left;    
+  float:left;
 }
 
 .lastName{
@@ -65,7 +61,6 @@ $bg-img: url('../../../assets/background_img-min.png');
   margin-bottom: 1rem;
 }
 
-
 .signIn{
   color: var(--arc500);
   text-decoration: none;
@@ -75,14 +70,43 @@ $bg-img: url('../../../assets/background_img-min.png');
   color: var(--r400);
 }
 
+.cnfrmModal{
+  width: 30rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .alertCircleIcon{
+    height: 4rem;
+    width: 4rem;
+    margin-bottom: 1rem;
+    color: var(--n500);
+  }
+
+  .buttons{
+    width: 100%;
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+    button{
+      width: 45%;
+      height: 3rem;
+    }
+  }
+
+  h5{
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  span{
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+}
+
+//smaller
 @media only screen and (max-height: 830px) {
-  // .outer{
-  //   width: 100%;
-  //   height: 100%;
-  //   padding-top: 3.5rem;
-  //   padding-bottom: 3.5rem;
-  //   background-size: 135%;
-  // }
   .logoContainer{
     margin-bottom: 2.8125rem
   }
@@ -94,3 +118,4 @@ $bg-img: url('../../../assets/background_img-min.png');
     margin-bottom: 3rem;
   }
 }
+

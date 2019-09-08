@@ -8,6 +8,7 @@ import {
   UPDATE_CONFIG,
   UPDATE_DISPLAY_USER_CURVE,
   UPDATE_CCT_INDEX,
+  LOAD_SIM,
 } from './types'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 
@@ -31,12 +32,11 @@ export const initSession = (option, type, alloy) => (dispatch) => {
   // Only POST the name and compositions to the server,
   // but _id will also be saved to Redux state to refer to
   // the original alloy
-  fetch('http://localhost:8001/alloys/update', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
       alloy_option: option,
@@ -90,12 +90,11 @@ export const updateAlloyOption = option => (dispatch) => {
  * @param {object} alloy alloy to be updated
  */
 export const updateComp = (option, type, alloy) => (dispatch) => {
-  fetch('http://localhost:8001/alloys/update', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
     method: 'PATCH',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
       alloy_option: option,
@@ -133,12 +132,11 @@ export const updateDilution = val => (dispatch) => {
  * @param {string} value new method
  */
 export const updateConfigMethod = value => (dispatch) => {
-  fetch('http://localhost:8001/configs/method/update', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/method/update`, {
     method: 'PUT',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({ method: value }),
   })
@@ -184,12 +182,11 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
   }
 
   if (isValid) {
-    fetch('http://localhost:8001/configs/update', {
+    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
       method: 'PATCH',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        Session: localStorage.getItem('session'),
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
       body: JSON.stringify({ grain_size: grainSize }),
     })
@@ -208,12 +205,11 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
 }
 
 export const updateMsBsAe = (name, reqBody) => (dispatch) => {
-  fetch(`http://localhost:8001/configs/${name}`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
     method: 'PUT',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(reqBody),
   })
@@ -231,12 +227,11 @@ export const updateMsBsAe = (name, reqBody) => (dispatch) => {
 }
 
 export const getMsBsAe = name => (dispatch) => {
-  fetch(`http://localhost:8001/configs/${name}`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())
@@ -262,12 +257,11 @@ export const setAutoCalculate = (name, value) => (dispatch) => {
 }
 
 export const updateConfig = (name, value) => (dispatch) => {
-  fetch('http://localhost:8001/configs/update', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
     method: 'PATCH',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({ [name]: value }),
   })
@@ -301,12 +295,11 @@ export const runSim = () => (dispatch, getState) => {
     start_temp,
   } = getState().sim.configurations
 
-  fetch('http://localhost:8001/configs/update', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
     method: 'PATCH',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
       grain_size: grain_size_ASTM,
@@ -316,12 +309,11 @@ export const runSim = () => (dispatch, getState) => {
       start_temp,
     }),
   }).catch(err => console.log(err))
-  fetch('http://localhost:8001/simulate', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/simulate`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(simRes => simRes.json())
@@ -341,5 +333,82 @@ export const updateCCTIndex = idx => (dispatch) => {
   dispatch({
     type: UPDATE_CCT_INDEX,
     payload: idx,
+  })
+}
+
+/**
+ * Schema of simulation object passed as arg
+ * {
+ *  alloys: { alloyOption, parent, weld, mix },
+ *  configurations: {...},
+ *  results: { USER, CCT, TTT },
+ * }
+ * @param {Object} sim simulation object
+ */
+export const loadSim = sim => (dispatch) => {
+  dispatch({
+    type: LOAD_SIM,
+    payload: sim,
+  })
+}
+
+export const loadSimFromLink = token => (dispatch) => {
+  return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/share/simulation/view/${token}`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then(res => res.json())
+    .then((res) => {
+      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'success') {
+        const { alloy_store, configurations, simulation_results } = res.data
+        dispatch({
+          type: LOAD_SIM,
+          payload: {
+            alloys: {
+              alloyOption: alloy_store.alloy_option,
+              parent: alloy_store.alloys.parent,
+              weld: {
+                _id: '',
+                name: '',
+                compositions: [],
+              },
+              mix: [],
+            },
+            configurations,
+            results: simulation_results,
+          },
+        })
+      }
+    })
+    // .catch(err => console.log(err))
+}
+
+export const loadSimFromAccount = ({
+  alloy_store, configurations, simulation_results,
+}) => (dispatch) => {
+  const { is_valid, grain_size, ...otherConfig } = configurations
+  dispatch({
+    type: LOAD_SIM,
+    payload: {
+      alloys: {
+        alloyOption: alloy_store.alloy_option,
+        parent: alloy_store.alloys.parent,
+        weld: {
+          _id: '',
+          name: '',
+          compositions: [],
+        },
+        mix: [],
+      },
+      configurations: {
+        grain_size_ASTM: grain_size,
+        ...otherConfig,
+      },
+      results: simulation_results,
+    },
   })
 }

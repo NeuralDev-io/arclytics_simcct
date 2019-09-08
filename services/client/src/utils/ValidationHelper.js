@@ -64,3 +64,35 @@ export const signupValidation = (values) => {
 
   return errors
 }
+
+export const forgotPasswordEmail = (email) => {
+  if (!email) {
+    return 'Required'
+  } else if (
+    !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)
+  ) {
+    return 'Invalid email'
+  } else {
+    return ''
+  }
+
+}
+
+export const passwordResetValidation = (values) => {
+  const { newPwd, cnfrmPwd, } = values
+  const errors = {}
+
+  if (!newPwd) {
+    errors.newPwdErr = 'Required'
+  } else if (newPwd.length < 6 || newPwd.length > 254) {
+    errors.newPwdErr = 'Password is invalid'
+  }
+
+  if (!cnfrmPwd) {
+    errors.cnfrmPwdErr = 'Required'
+  } else if (newPwd !== cnfrmPwd) {
+    errors.cnfrmPwdErr = 'Password does not match'
+  }
+  
+  return errors
+}

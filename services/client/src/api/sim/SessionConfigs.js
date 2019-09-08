@@ -14,12 +14,11 @@
  */
 
 export const initComp = (option, type, alloy) => new Promise((resolve, reject) => {
-  fetch('http://localhost:8001/alloys/update', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
       alloy_option: option,
@@ -36,12 +35,11 @@ export const initComp = (option, type, alloy) => new Promise((resolve, reject) =
 })
 
 export const updateComp = (option, type, alloy) => new Promise((resolve, reject) => {
-  fetch('http://localhost:8001/alloys/update', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
     method: 'PATCH',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
       alloy_option: option,
@@ -58,12 +56,11 @@ export const updateComp = (option, type, alloy) => new Promise((resolve, reject)
 })
 
 export const updateConfigMethod = (value) => {
-  fetch('http://localhost:8001/configs/method/update', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/method/update`, {
     method: 'PUT',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({ method: value }),
   })
@@ -75,12 +72,11 @@ export const updateConfigMethod = (value) => {
 }
 
 export const updateConfig = (reqBody) => {
-  fetch('http://localhost:8001/configs/update', {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
     method: 'PATCH',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(reqBody),
   })
@@ -92,12 +88,11 @@ export const updateConfig = (reqBody) => {
 }
 
 export const updateMsBsAe = (name, reqBody) => {
-  fetch(`http://localhost:8001/configs/${name}`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
     method: 'PUT',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(reqBody),
   })
@@ -109,12 +104,11 @@ export const updateMsBsAe = (name, reqBody) => {
 }
 
 export const getMsBsAe = name => new Promise((resolve, reject) => {
-  fetch(`http://localhost:8001/configs/${name}`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())

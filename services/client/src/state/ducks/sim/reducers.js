@@ -8,6 +8,7 @@ import {
   UPDATE_CONFIG,
   UPDATE_DISPLAY_USER_CURVE,
   UPDATE_CCT_INDEX,
+  LOAD_SIM,
 } from './types'
 
 const initialState = {
@@ -50,7 +51,7 @@ const initialState = {
     isLoading: false,
     alloyOption: 'single',
     parent: {
-      id: '',
+      _id: '',
       name: '',
       compositions: [],
     },
@@ -169,6 +170,29 @@ const reducer = (state = initialState, action) => {
           cctIndex: action.payload,
         },
       }
+    case LOAD_SIM: {
+      const { alloys, configurations, results } = action.payload
+      return {
+        isInitialised: true,
+        displayUserCurve: true,
+        configurations,
+        alloys: {
+          isLoading: false,
+          dilution: 0,
+          ...alloys,
+          weld: {
+            _id: '',
+            name: '',
+            compositions: [],
+          },
+          mix: [],
+        },
+        results: {
+          cctIndex: -1,
+          ...results,
+        },
+      }
+    }
     default:
       return state
   }

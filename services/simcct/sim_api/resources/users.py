@@ -7,7 +7,6 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
-
 __credits__ = ['']
 __license__ = 'TBA'
 __version__ = '0.1.0'
@@ -29,10 +28,12 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
-from logger.arc_logger import AppLogger
 from sim_api.models import (User, UserProfile)
-from sim_api.middleware import authenticate, authenticate_admin
+from sim_api.middleware import (
+    authenticate_user_cookie_restful, authorize_admin_cookie_restful
+)
 from sim_api.extensions import api
+from logger.arc_logger import AppLogger
 
 users_blueprint = Blueprint('users', __name__)
 
@@ -55,10 +56,10 @@ class PingTest(Resource):
 class UserList(Resource):
     """Return all users (admin only)"""
 
-    method_decorators = {'get': [authenticate_admin]}
+    method_decorators = {'get': [authorize_admin_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def get(self, resp) -> Tuple[dict, int]:
+    def get(self, _) -> Tuple[dict, int]:
         """Get all users only available to admins."""
         user_list = User.as_dict
         response = {'status': 'success', 'data': {'users': user_list}}
@@ -68,16 +69,18 @@ class UserList(Resource):
 class Users(Resource):
     """Get/Put a single user's details."""
 
-    method_decorators = {'get': [authenticate], 'patch': [authenticate]}
+    method_decorators = {
+        'get': [authenticate_user_cookie_restful],
+        'patch': [authenticate_user_cookie_restful]
+    }
 
     # noinspection PyMethodMayBeStatic
-    def get(self, resp) -> Tuple[dict, int]:
-        user = User.objects.get(id=resp)
+    def get(self, user) -> Tuple[dict, int]:
         response = {'status': 'success', 'data': user.to_dict()}
         return response, 200
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, resp) -> Tuple[dict, int]:
+    def patch(self, user: User) -> Tuple[dict, int]:
         # Get patch data
         data = request.get_json()
 
@@ -116,9 +119,6 @@ class Users(Resource):
         # that we can store the updated profile fields for the response body.
         if aim or highest_education or sci_tech_exp or highest_education:
             response['data'] = {'profile': {}}
-
-        # Get the user so we can begin updating fields.
-        user = User.objects.get(id=resp)
 
         # If the user does not already have profile details set we need to
         # create a user profile object.
@@ -226,10 +226,10 @@ class Users(Resource):
 class UserProfiles(Resource):
     """Create/Retrieve/Update User's profile details"""
 
-    method_decorators = {'post': [authenticate]}
+    method_decorators = {'post': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def post(self, resp) -> Tuple[dict, int]:
+    def post(self, user) -> Tuple[dict, int]:
         # Get post data
         data = request.get_json()
 
@@ -244,8 +244,6 @@ class UserProfiles(Resource):
         sci_tech_exp = data.get('sci_tech_exp', None)
         phase_transform_exp = data.get('phase_transform_exp', None)
 
-        # Get the user
-        user = User.objects.get(id=resp)
         # Create a user profile object that can replace any existing user
         # profile information.
         profile = UserProfile(
@@ -279,7 +277,7 @@ class UserProfiles(Resource):
         return response, 201
 
 
-api.add_resource(PingTest, '/api/v1/arc/ping')
-api.add_resource(UserList, '/api/v1/arc/users')
-api.add_resource(Users, '/api/v1/arc/user')
-api.add_resource(UserProfiles, '/api/v1/arc/user/profile')
+api.add_resource(PingTest, '/api/v1/sim/ping')
+api.add_resource(UserList, '/api/v1/sim/users')
+api.add_resource(Users, '/api/v1/sim/user')
+api.add_resource(UserProfiles, '/api/v1/sim/user/profile')

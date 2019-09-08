@@ -21,16 +21,27 @@ Just some configuration settings.
 """
 
 import os
+from sim_api.extensions.utilities import JSONEncoder
 
 
 class BaseConfig:
     """Base configuration"""
     TESTING = False
-    BCRYPT_LOG_ROUNDS = 13
     SECRET_KEY = os.environ.get('SECRET_KEY', None)
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', None)
+
+    # Bcrypt and Token encoding
+    BCRYPT_LOG_ROUNDS = 13
+    RESTFUL_JSON = {'cls': JSONEncoder}
     TOKEN_EXPIRATION_DAYS = 30
     TOKEN_EXPIRATION_SECONDS = 0
+
+    # Session variables for Flask
+    SESSION_COOKIE_NAME = 'session'
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_PERMANENT = True
+    SESSION_TYPE = 'redis'
+    SESSION_USE_SIGNER = True
 
     # Flask Email
     MAIL_SUBJECT_PREFIX = '[Arclytics]'
@@ -47,7 +58,10 @@ class BaseConfig:
     redis_host = os.environ.get('REDIS_HOST', '')
     redis_port = os.environ.get('REDIS_PORT', '')
     REDIS_URL = f'redis://{redis_host}:{redis_port}/14'
+    REDIS_HOST = os.environ.get('REDIS_HOST', None)
+    REDIS_PORT = os.environ.get('REDIS_PORT', None)
     QUEUES = ['default', 'low']
+    REDIS_DB = 0
 
 
 class DevelopmentConfig(BaseConfig):
@@ -66,9 +80,13 @@ class TestingConfig(BaseConfig):
     PRESERVE_CONTEXT_ON_EXCEPTION = False
 
     SESSION_PERMANENT = False
+    REDIS_DB = 2
 
 
 class ProductionConfig(BaseConfig):
     """Production configuration"""
-    MONGO_DBNAME = 'arclytics'
+    SESSION_COOKIE_SECURE = True
+    REMEMBER_COOKIE_SECURE = True
+    MONGO_DBNAME = os.environ.get('MONGO_APP_DB')
     BCRYPT_LOG_ROUNDS = 13
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)

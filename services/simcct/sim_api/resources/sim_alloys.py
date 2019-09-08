@@ -23,16 +23,15 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from marshmallow import ValidationError
 
-from arc_api.extensions import api
-from arc_api.schemas import (
+from sim_api.extensions import api
+from sim_api.schemas import (
     AlloySchema, AlloyStoreSchema, ConfigurationsSchema
 )
-from arc_api.middleware import token_and_session_required
-from arc_api.sim_session import SimSessionService
+from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, MissingElementError
 from logger.arc_logger import AppLogger
-from arc_api.sim_session import SaveSessionError
 
 logger = AppLogger(__name__)
 
@@ -41,18 +40,17 @@ sim_alloys_blueprint = Blueprint('sim_alloys', __name__)
 
 class AlloyStore(Resource):
     method_decorators = {
-        'patch': [token_and_session_required],
-        'post': [token_and_session_required]
+        'patch': [authenticate_user_cookie_restful],
+        'post': [authenticate_user_cookie_restful]
     }
 
     # noinspection PyMethodMayBeStatic
-    def post(self, _, session_key):
+    def post(self, _):
         """This POST endpoint initiates the Alloy Store by setting the alloy
         in the request body to the Session storage.
 
         Args:
-            _: a valid JWT token.
-            session_key: a valid TimedJSONWebSignature session key.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message
@@ -149,6 +147,7 @@ class AlloyStore(Resource):
         try:
             if alloy_option == 'single':
                 # In this situation, we will only use the parent alloy
+                # noinspection PyTypeChecker
                 session_alloy_store['alloys']['parent'] = valid_alloy
                 # Just quickly validate the alloy stored based on schema
                 valid_store = AlloyStoreSchema().load(session_alloy_store)
@@ -160,15 +159,10 @@ class AlloyStore(Resource):
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
-        sid, session_store = SimSessionService().load_session(session_key)
+        session_store = SimSessionService().load_session()
 
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
-
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
+        if isinstance(session_store, str):
+            response['message'] = session_store
             return response, 500
 
         session_store['alloy_store'] = valid_store
@@ -196,12 +190,7 @@ class AlloyStore(Resource):
         ):
             # If we are only updating the alloy_store in the session,
             # we access Redis at this point and save it.
-            try:
-                SimSessionService().save_session(sid, session_store)
-            except SaveSessionError as e:
-                response['errors'] = str(e.msg)
-                response['message'] = 'Unable to save to session store.'
-                return response, 500
+            SimSessionService().save_session(session_store)
 
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'
@@ -260,31 +249,18 @@ class AlloyStore(Resource):
         valid_configs['is_valid'] = False
         session_store['configurations'] = valid_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
-
-        headers = {
-            'Access-Control-Allow-Headers':
-            'Origin, X-Requested-With, Content-Type, Accept, x-auth',
-            'Content-type': 'application/json'
-        }
-
-        return response, 201, headers
+        return response, 201
 
     # noinspection PyMethodMayBeStatic
-    def patch(self, _, session_key):
+    def patch(self, _):
         """This PATCH endpoint simply updates the `alloys` in the session
         store so that we can update all the other transformation temperature.
 
         Args:
-            session_key:
-            _: a JWT token passed in the request header but not used.
+            _: a `sim_api.models.User` that is not used.
 
         Returns:
             A response object with appropriate status and message strings.
@@ -305,14 +281,27 @@ class AlloyStore(Resource):
         alloy_type = patch_data.get('alloy_type', None)
         alloy = patch_data.get('alloy', None)
 
-        if not alloy_option:
-            response['message'] = 'No alloy option was provided.'
+        if alloy_option not in {'single', 'mix'}:
+            response['message'] = (
+                'Alloy option not one of '
+                '["single" | "mix"].'
+            )
             return response, 400
 
         # We have a couple of ways the Alloy is stored in both Session and
         # Database based on what is available with the alloy_option and
         # alloy_type. From the client, we expect these two keys to at the
         # very least be in the request body. Otherwise we won't do anything.
+
+        if not alloy_type or not isinstance(alloy_type, str):
+            response['message'] = 'No alloy type was provided.'
+            return response, 400
+
+        if alloy_type not in {'parent', 'weld', 'mix'}:
+            response['message'] = (
+                'Alloy type not one of ["parent" | "weld" | "mix"].'
+            )
+            return response, 400
 
         if not alloy:
             response['message'] = 'No alloy was provided.'
@@ -330,15 +319,10 @@ class AlloyStore(Resource):
             )
             return response, 400
 
-        sid, session_store = SimSessionService().load_session(session_key)
+        session_store = SimSessionService().load_session()
 
-        if sid is None:
-            response['errors'] = session_store
-            response['message'] = 'Unable to load session from Redis.'
-            return response, 401
-
-        if not session_store:
-            response['message'] = 'Unable to retrieve data from Redis.'
+        if isinstance(session_store, str):
+            response['message'] = session_store
             return response, 500
 
         # We get what's currently stored in the session and we update it
@@ -391,9 +375,6 @@ class AlloyStore(Resource):
 
                 # Just quickly validate the alloy stored based on schema
                 sess_alloy_store = AlloyStoreSchema().load(sess_alloy_store)
-            elif alloy_option == 'mix':
-                # TODO(andrew@neuraldev.io): Implement this.
-                pass
             else:
                 # TODO(andrew@neuraldev.io): Implement this.
                 pass
@@ -414,12 +395,7 @@ class AlloyStore(Resource):
         ):
             # If we are only updating the alloy_store in the session, we access
             # Redis at this point and save it.
-            try:
-                SimSessionService().save_session(sid, session_store)
-            except SaveSessionError as e:
-                response['errors'] = str(e.msg)
-                response['message'] = 'Unable to save to session store.'
-                return response, 500
+            SimSessionService().save_session(session_store)
 
             response['status'] = 'success'
             response['message'] = 'Compositions updated.'
@@ -484,21 +460,10 @@ class AlloyStore(Resource):
         sess_configs['is_valid'] = False
         session_store['configurations'] = sess_configs
 
-        try:
-            SimSessionService().save_session(sid, session_store)
-        except SaveSessionError as e:
-            response['errors'] = str(e.msg)
-            response['message'] = 'Unable to save to session store.'
-            return response, 500
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
-        headers = {
-            'Access-Control-Allow-Headers':
-            'Origin, X-Requested-With, Content-Type, Accept, x-auth',
-            'Content-type': 'application/json'
-        }
-
-        return response, 200, headers
+        return response, 200
 
 
-api.add_resource(AlloyStore, '/alloys/update')
+api.add_resource(AlloyStore, '/api/v1/sim/alloys/update')

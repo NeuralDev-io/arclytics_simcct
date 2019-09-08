@@ -22,10 +22,12 @@ from pathlib import Path
 
 from flask import json
 from flask import current_app as app
+from mongoengine import get_db
 
 import settings
 from tests.test_api_base import BaseTestCase
-from sim_api.models import User, Configuration
+from sim_api.models import User, Configuration, UserProfile, AdminProfile
+from tests.test_utilities import test_login
 
 _TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'tests' / 'sim_configs.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
@@ -46,61 +48,84 @@ ALLOY_STORE = {
         'mix': None
     }
 }
+RESULTS = _TEST_JSON['simulation_results']
 
 
 class TestLastSimulation(BaseTestCase):
-    user = None
+    _email = None
+    _tony_pw = 'IAmIronMan!!!'
+    mongo = None
 
     def setUp(self) -> None:
-        self.user = User(
+        assert app.config['TESTING'] is True
+        self.mongo = get_db('default')
+
+        # Tony is an admin
+        self.tony = User(
             **{
-                'first_name': 'Henry',
-                'last_name': 'Pym',
-                'email': 'hank@pymtechnologies.com'
+                'email': 'ironman@avengers.com',
+                'first_name': 'Tony',
+                'last_name': 'Stark'
             }
         )
-        self.user.set_password('Subatomic!')
-        self.user.verified = True
-        self.user.save()
+        self.tony.set_password(self._tony_pw)
+        self.tony.verified = True
+        self.tony.profile = UserProfile(
+            **{
+                'aim': 'Save the world',
+                'highest_education': 'Genius',
+                'sci_tech_exp': 'Invented J.A.R.V.I.S.',
+                'phase_transform_exp': 'More than you'
+            }
+        )
+        self.tony.admin_profile = AdminProfile(
+            **{
+                'position': 'Billionaire Playboy Philanthropist',
+                'mobile_number': None,
+                'verified': True,
+                'promoted_by': None
+            }
+        )
+        self.tony.disable_admin = False
+        self.tony.save()
+        user_tony = self.mongo.users.find_one(
+            {'email': 'ironman@avengers.com'}
+        )
+        assert user_tony is not None
+        assert user_tony['admin'] is True
+        self._email = self.tony.email
 
     def tearDown(self) -> None:
-        self.user.delete()
+        db = get_db('default')
+        self.assertTrue(db.name, 'arc_test')
+        db.users.drop()
 
-    @staticmethod
-    def login(client, email='hank@pymtechnologies.com', password='Subatomic!'):
-        resp_login = client.post(
-            '/auth/login',
-            data=json.dumps({
-                'email': email,
-                'password': password
-            }),
-            content_type='application/json'
-        )
-        token = json.loads(resp_login.data.decode())['token']
-        return token
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """On finishing, we should delete users collection so no conflict."""
+        db = get_db('default')
+        assert db.name == 'arc_test'
+        db.users.drop()
 
     def test_create_last_no_token(self):
         with app.test_client() as client:
             res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps({}),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'], 'Provide a valid JWT auth token.'
-            )
+            self.assertEqual(data['message'], 'Session token is not valid.')
             self.assertEqual(data['status'], 'fail')
             self.assert401(res)
 
     def test_create_last_empty_json(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps({}),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -110,12 +135,11 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_missing_configurations(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps({'alloy_store': {}}),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -127,14 +151,13 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_missing_alloy_store(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps({'configurations': {
                     'is_valid': False
                 }}),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -146,21 +169,21 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_configs_missing(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(_TEST_JSON['configurations'])
 
             configs.pop('method')
             configs.pop('grain_size')
 
             res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'configurations': configs,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -175,19 +198,19 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_configs_bad_method(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(CONFIGS)
             configs['method'] = 'KirkaldyAndLi2019'
 
             res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'configurations': configs,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -202,20 +225,20 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_configs_bad_nuc(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(CONFIGS)
             configs['nucleation_start'] = -1
             configs['nucleation_finish'] = 101
 
             res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'configurations': configs,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -231,7 +254,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_configs_negative_trans_temps(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(CONFIGS)
             configs['ms_temp'] = -1
             configs['ms_rate_param'] = -1
@@ -240,14 +263,14 @@ class TestLastSimulation(BaseTestCase):
             configs['ae3_temp'] = -1
 
             res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'configurations': configs,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -263,7 +286,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_alloy_option(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             alloy_store = {
                 'alloy_option': 'random',
@@ -278,20 +301,20 @@ class TestLastSimulation(BaseTestCase):
             }
 
             res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': RESULTS
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             err = (
                 "ValidationError (AlloyStore:None) (Value must be one of "
-                "('single', 'both', 'mix'): ['alloy_option'])"
+                "('single', 'mix'): ['alloy_option'])"
             )
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
@@ -300,7 +323,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_alloy_missing_elem(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
             comp = deepcopy(COMP)
             del comp[-1]
 
@@ -317,14 +340,14 @@ class TestLastSimulation(BaseTestCase):
             }
 
             res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': RESULTS
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -335,7 +358,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_alloy_bad_elem(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
             comp = deepcopy(COMP)
             comp.append({'symbol': 'Vb', 'weight': 0.0})
 
@@ -352,14 +375,14 @@ class TestLastSimulation(BaseTestCase):
             }
 
             res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': RESULTS
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -374,7 +397,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_alloy_bad_elem_weight(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
             comp = deepcopy(COMP)
             comp.append({'symbol': 'Li', 'weight': -1})
 
@@ -391,20 +414,20 @@ class TestLastSimulation(BaseTestCase):
             }
 
             res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': alloy_store
+                        'alloy_store': alloy_store,
+                        'simulation_results': RESULTS
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
             err = (
                 "ValidationError (AlloyStore:None) (Value must be one of "
-                "('single', 'both', 'mix'): ['alloy_option'] parent."
+                "('single', 'mix'): ['alloy_option'] parent."
                 "compositions.19.weight.Cannot be a negative number.: "
                 "['alloys'])"
             )
@@ -415,17 +438,17 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_alloy_configs(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -435,7 +458,7 @@ class TestLastSimulation(BaseTestCase):
             )
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 201)
-            user = self.user
+            user = self.tony
             user.reload()
 
             self.assertDictEqual(user.last_configuration.to_dict(), CONFIGS)
@@ -443,12 +466,11 @@ class TestLastSimulation(BaseTestCase):
     def test_get_detail_last_no_token(self):
         with app.test_client() as client:
             res = client.get(
-                '/user/last/simulation', content_type='application/json'
+                '/api/v1/sim/user/last/simulation',
+                content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'], 'Provide a valid JWT auth token.'
-            )
+            self.assertEqual(data['message'], 'Session token is not valid.')
             self.assertEqual(data['status'], 'fail')
             self.assert401(res)
 
@@ -465,11 +487,10 @@ class TestLastSimulation(BaseTestCase):
             user.verified = True
             user.save()
 
-            token = self.login(client, email='janet@pymtechnologies.com')
+            cookie = test_login(client, user.email, 'Subatomic!')
 
             res = client.get(
-                '/user/last/simulation',
-                headers={'Authorization': f'Bearer {token}'},
+                '/api/v1/sim/user/last/simulation',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -494,11 +515,10 @@ class TestLastSimulation(BaseTestCase):
             user.last_configuration = Configuration(**CONFIGS)
             user.save()
 
-            token = self.login(client, email='janet@pymtechnologies.com')
+            cookie = test_login(client, user.email, 'Subatomic!')
 
             res = client.get(
-                '/user/last/simulation',
-                headers={'Authorization': f'Bearer {token}'},
+                '/api/v1/sim/user/last/simulation',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -511,17 +531,17 @@ class TestLastSimulation(BaseTestCase):
 
     def test_get_detail_last_success(self):
         with app.test_client() as client:
-            token = self.login(client)
+            cookie = test_login(client, self.tony.email, self._tony_pw)
 
             post_res = client.post(
-                '/user/last/simulation',
+                '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
-                        'alloy_store': ALLOY_STORE
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
                     }
                 ),
-                headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
             data = json.loads(post_res.data.decode())
@@ -531,8 +551,7 @@ class TestLastSimulation(BaseTestCase):
             )
 
             res = client.get(
-                '/user/last/simulation',
-                headers={'Authorization': f'Bearer {token}'},
+                '/api/v1/sim/user/last/simulation',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())

@@ -6,34 +6,22 @@ FROM continuumio/miniconda3:4.6.14
 
 LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
 
-RUN conda install --yes --freeze-installed -q \
-    -c anaconda \
-    python==3.7.3 \
-    python-blosc \
-    cytoolz \
-    conda-forge::pip \
-    nomkl \
-    numpy==1.16.4 \
-    conda-forge::flask==1.0.2 \
-    conda-forge::socat \
-    && conda clean -tipsy \
-    && find /opt/conda/ -type f,l -name '*.a' -delete \
-    && find /opt/conda/ -type f,l -name '*.pyc' -delete \
-    && find /opt/conda/ -type f,l -name '*.js.map' -delete \
-    && find /opt/conda/lib/python*/site-packages/bokeh/server/static -type f,l -name '*.js' -not -name '*.min.js' -delete \
-    && rm -rf /opt/conda/pkgs
-
-# Pillow dependencies
-# RUN apk --no-cache add python-dev  jpeg-dev \
-#                       zlib-dev \
-#                       freetype-dev \
-#                       lcms2-dev \
-#                       openjpeg-dev \
-#                       tiff-dev \
-#                       tk-dev \
-#                       tcl-dev \
-#                       harfbuzz-dev \
-#                       fribidi-dev
+#RUN conda install --yes --freeze-installed -q \
+#    -c anaconda \
+#    python==3.7.3 \
+#    python-blosc \
+#    cytoolz \
+#    conda-forge::pip \
+#    nomkl \
+#    numpy==1.16.4 \
+#    conda-forge::flask==1.0.2 \
+#    conda-forge::socat \
+#    && conda clean -tipsy \
+#    && find /opt/conda/ -type f,l -name '*.a' -delete \
+#    && find /opt/conda/ -type f,l -name '*.pyc' -delete \
+#    && find /opt/conda/ -type f,l -name '*.js.map' -delete \
+#    && find /opt/conda/lib/python*/site-packages/bokeh/server/static -type f,l -name '*.js' -not -name '*.min.js' -delete \
+#    && rm -rf /opt/conda/pkgs
 
 # set working directory
 RUN mkdir -p /usr/src/app

@@ -33,8 +33,10 @@ from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
 from logger.arc_logger import AppLogger
-from sim_api.models import (User, Configuration, SharedSimulation, AlloyStore)
-from sim_api.middleware import authenticate
+from sim_api.models import (
+    User, Configuration, SharedSimulation, AlloyStore, SimulationResults
+)
+from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.extensions import api
 from sim_api.token import (
     URLTokenError, generate_shared_simulation_token, generate_url,
@@ -55,10 +57,10 @@ class ShareSimulationLink(Resource):
     Allow a user to generate a link that can be used to share configurations.
     """
 
-    method_decorators = {'post': [authenticate]}
+    method_decorators = {'post': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def post(self, resp) -> Tuple[dict, int]:
+    def post(self, user) -> Tuple[dict, int]:
         # Get post data
         data = request.get_json()
 
@@ -68,10 +70,11 @@ class ShareSimulationLink(Resource):
             return response, 400
 
         # Extract the data
-        owner = User.objects.get(id=resp)
+        owner = user
         shared_date = datetime.utcnow()
         configuration = data.get('configurations', None)
         alloy_store = data.get('alloy_store', None)
+        simulation_results = data.get('simulation_results', None)
 
         if not configuration or not alloy_store:
             response['message'] = 'Configurations or Alloy Store not sent.'
@@ -81,15 +84,16 @@ class ShareSimulationLink(Resource):
         # clean() methods for each object/document in sim_api/models.py.
         try:
             config_object = Configuration(**configuration)
-            config_object.validate(clean=True)
             alloy_store_object = AlloyStore(**alloy_store)
-            alloy_store_object.validate(clean=True)
+            sim_results_object = SimulationResults(**simulation_results)
+
             shared_simulation_object = SharedSimulation(
                 **{
                     'owner_email': owner.email,
                     'created_date': shared_date,
                     'configuration': config_object,
-                    'alloy_store': alloy_store_object
+                    'alloy_store': alloy_store_object,
+                    'simulation_results': sim_results_object
                 }
             )
             shared_simulation_object.save()
@@ -135,10 +139,10 @@ class ShareSimulationEmail(Resource):
     and send that link out to a list of email addresses provided.
     """
 
-    method_decorators = {'post': [authenticate]}
+    method_decorators = {'post': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def post(self, resp) -> Tuple[dict, int]:
+    def post(self, user) -> Tuple[dict, int]:
         # Get post data
         data = request.get_json()
 
@@ -148,7 +152,7 @@ class ShareSimulationEmail(Resource):
             return response, 400
 
         # Extract the data
-        owner = User.objects.get(id=resp)
+        owner = user
         shared_date = datetime.utcnow()
 
         # Get the email address/addresses from the response and validate them.
@@ -186,6 +190,7 @@ class ShareSimulationEmail(Resource):
         # we can attempt to make a SharedSimulation object out of it.
         configuration = data.get('configurations', None)
         alloy_store = data.get('alloy_store', None)
+        simulation_results = data.get('simulation_results', None)
 
         if not configuration or not alloy_store:
             response['message'] = 'Configurations or Alloy Store not sent.'
@@ -200,15 +205,15 @@ class ShareSimulationEmail(Resource):
         # clean() methods for each object/document in sim_api/models.py.
         try:
             config_object = Configuration(**configuration)
-            config_object.validate(clean=True)
             alloy_store_object = AlloyStore(**alloy_store)
-            alloy_store_object.validate(clean=True)
+            sim_results_object = SimulationResults(**simulation_results)
             shared_simulation_object = SharedSimulation(
                 **{
                     'owner_email': owner.email,
                     'created_date': shared_date,
                     'configuration': config_object,
-                    'alloy_store': alloy_store_object
+                    'alloy_store': alloy_store_object,
+                    'simulation_results': sim_results_object
                 }
             )
             shared_simulation_object.save()

@@ -80,7 +80,6 @@ class LastSimulation(Resource):
             response['message'] = 'Missing Simulation results in payload.'
             return response, 400
 
-        # TODO(andrew@neuraldev.io): Add the graphs also\
         # The following `mongoengine.EmbeddedDocument` models have in-built
         # custom validation that will be passed down.
         try:

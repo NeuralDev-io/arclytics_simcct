@@ -35,6 +35,9 @@ services:
       - MAIL_USE_TLS=${MAIL_USE_TLS}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - CLIENT_PROTOCOL=http
+      - CLIENT_HOST=localhost
+      - CLIENT_PORT=80
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
     depends_on:
       - mongodb
@@ -194,6 +197,9 @@ services:
     build:
       context: ./services/nginx
       dockerfile: Dockerfile
+    labels:
+      arclytics.io: "development"
+    image: neuraldev/arc_sim_nginx:1.0
     restart: always
     ports:
       - 80:80

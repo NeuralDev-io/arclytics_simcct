@@ -30,13 +30,16 @@ spec:
         role: api_server
         environment: production
         run: simcct
+        replicaset: ArcRepSet
     spec:
       containers:
         - name: simcct
-          image: gcr.io/arclytics-sim/arc_sim_service:1.3.0
+          image: gcr.io/arclytics-sim/arc_sim_service:1.1.2
+          ports:
+            - containerPort: 8000
           env:
             - name: FLASK_APP
-              value: "sim_api/app.py"
+              value: "sim_app/app.py"
             - name: FLASK_ENV
               value: "production"
             - name: APP_SETTINGS
@@ -79,7 +82,30 @@ spec:
                 secretKeyRef:
                   name: credentials
                   key: redis_password
-            - name: USER_HOST
-              value: "arclytics:8000"
+            - name: MAIL_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: mail_server
+            - name: MAIL_PORT
+              value: "587"
+            - name: MAIL_USE_TLS
+              value: "True"
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: mail_username
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: mail_password
+            - name: CLIENT_PROTOCOL
+              value: "http"
+            - name: CLIENT_HOST
+              value: "app.arclytics.io"
+            - name: CLIENT_PORT
+              value: "80"
             - name: DASK_SCHEDULER_ADDRESS
               value: "tcp://dask-scheduler:8786"

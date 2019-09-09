@@ -86,26 +86,25 @@ def confirm_email(token):
     """
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+    protocol = os.environ.get('CLIENT_PROTOCOL')
     client_host = os.environ.get('CLIENT_HOST')
+    client_port = os.environ.get('CLIENT_PORT')
+    redirect_url = f"{protocol}://{client_host}:{client_port}"
 
     # We must confirm the token by decoding it
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        # response['error'] = str(e)
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}//signin?tokenexpired=true', code=302
+            f'{redirect_url}/signin?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
         return redirect(
-            f'http://{client_host}//signin?tokenexpired=true', code=302
+            f'{redirect_url}/signin?tokenexpired=true', code=302
         )
     except Exception as e:
-        # response['error'] = str(e)
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}//signin?tokenexpired=true', code=302
+            f'{redirect_url}/signin?tokenexpired=true', code=302
         )
 
     # We ensure there is a user for this email
@@ -114,13 +113,9 @@ def confirm_email(token):
     user.verified = True
     user.save()
 
-    logger.debug(client_host)
-
     response['status'] = 'success'
     response.pop('message')
-    # TODO(andrew@neuraldev.io): Need to check how to change this during
-    #  during production and using Ingress/Load balancing for Kubernetes
-    return redirect(f'http://{client_host}/signin', code=302)
+    return redirect(f'{redirect_url}/signin', code=302)
 
 
 @auth_blueprint.route('/confirm/resend', methods=['GET'])

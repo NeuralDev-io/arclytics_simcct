@@ -37,14 +37,11 @@ _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 class TestUserModel(BaseTestCase):
     """Run direct tests on the User model without an API call."""
 
-<<<<<<< refs/remotes/origin/fixes/ratings.py
     def tearDown(self) -> None:
         db = get_db('default')
         self.assertTrue(db.name, 'arc_test')
         db.users.drop()
 
-=======
->>>>>>> Updated user format for test auth + styling others so they stop annoying me
     def test_user_model_schema(self):
         self.assertIsInstance(User.__base__, mongoengine.Document.__class__)
         self.assertIsInstance(User.email, mongoengine.EmailField)

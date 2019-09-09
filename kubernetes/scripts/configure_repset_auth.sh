@@ -15,7 +15,7 @@ kubectl exec mongo-0 -c mongo-container -- mongo --eval 'rs.initiate({_id: "Main
 
 # Wait for the MongoDB Replica Set to have a primary ready
 echo "Waiting for the MongoDB Replica Set to initialise..."
-kubectl exec mongod-0 -c mongod-container -- mongo --eval 'while (rs.status().hasOwnProperty("myState") && rs.status().myState != 1) { print("."); sleep(1000); };'
+kubectl exec mongo-0 -c mongo-container -- mongo --eval 'while (rs.status().hasOwnProperty("myState") && rs.status().myState != 1) { print("."); sleep(1000); };'
 #sleep 2 # Just a little more sleep to ensure everything is ready!
 sleep 20 # More sleep to ensure everything is ready! (3.6.0 workaround for https://jira.mongodb.org/browse/SERVER-31916 )
 echo "...initialisation of MongoDB Replica Set completed"

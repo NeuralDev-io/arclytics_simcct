@@ -126,6 +126,8 @@ class RedisSessionInterface(SessionInterface):
             )
             return self._new_session()
 
+        # TODO(andrew@neuraldev.io): Add a check for User-Agent 
+
         return RedisSession(data, sid=sid)
 
     def save_session(self, app, session, response):

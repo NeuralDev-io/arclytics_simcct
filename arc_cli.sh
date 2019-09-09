@@ -692,7 +692,7 @@ while [[ "$1" != "" ]] ; do
             done
             dockerPs
             ;;
-        ls | list )
+        ls | list | show )
             dockerLsFormatted
             exit 0
             ;;

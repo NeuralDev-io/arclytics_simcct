@@ -5,13 +5,13 @@ metadata:
   labels:
     app: client
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: client
   ports:
   - name: http
     port: 80
-    targetPort: 80
+    targetPort: 8080
     protocol: TCP
 ---
 apiVersion: extensions/v1beta1
@@ -35,11 +35,11 @@ spec:
       - name: client
         image: gcr.io/arclytics-sim/arc_sim_client:1.1.2
         ports:
-        - containerPort: 80
+        - containerPort: 8080
         env:
           - name: NODE_ENV
             value: "production"
           - name: REACT_APP_SIM_HOST
-            value: simcct
+            value: "app.arclytics.io"
           - name: REACT_APP_SIM_PORT
-            value: "8000"
+            value: "80"

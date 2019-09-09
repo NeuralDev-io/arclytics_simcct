@@ -5,7 +5,7 @@ services:
 
   simcct:
     build:
-      context: ./services/arclytics
+      context: ./services/simcct
       dockerfile: Dockerfile-prod
       labels:
         arclytics.io: "production"
@@ -35,7 +35,7 @@ services:
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - CLIENT_PROTOCOL=http
       - CLIENT_HOST=app.arclytics.io
-      - CLIENT_PORT=80
+      - CLIENT_PORT=8000
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
     depends_on:
       - mongodb

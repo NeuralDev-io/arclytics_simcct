@@ -15,4 +15,4 @@ spec:
       - path: /api/*
         backend:
           serviceName: simcct
-          servicePort: 8000
+          servicePort: 5000

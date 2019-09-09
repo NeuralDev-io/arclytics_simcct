@@ -7,9 +7,10 @@ metadata:
 spec:
   type: NodePort
   selector:
-    app: simcct
+    app: simcct-service
+    role: api_server
   ports:
-  - port: 8000
+  - port: 5000
     targetPort: 8000
     protocol: TCP
 ---
@@ -22,18 +23,17 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: simcct
+      app: simcct-service
   replicas: 1
   template:
     metadata:
       labels:
-        app: simcct
+        app: simcct-service
         role: api_server
         environment: production
-        run: simcct
     spec:
       containers:
-        - name: simcct
+        - name: simcct-container
           image: gcr.io/arclytics-sim/arc_sim_service:1.1.2
           imagePullPolicy: Always
           ports:
@@ -75,7 +75,7 @@ spec:
                   name: credentials
                   key: mongo_app_user_password
             - name: REDIS_HOST
-              value: "redis-0.redis-service.default.svc.cluster.local"
+              value: "redis.default.svc.cluster.local"
             - name: REDIS_PORT
               value: "6379"
             - name: REDIS_PASSWORD

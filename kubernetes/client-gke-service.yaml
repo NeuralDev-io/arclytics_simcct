@@ -7,7 +7,7 @@ metadata:
 spec:
   type: NodePort
   selector:
-    app: client
+    app: client-service
   ports:
   - name: http
     port: 80
@@ -23,7 +23,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: client
+      app: client-service
   replicas: 1
   template:
     metadata:
@@ -32,7 +32,7 @@ spec:
         environment: production
     spec:
       containers:
-      - name: client
+      - name: client-container
         image: gcr.io/arclytics-sim/arc_sim_client:1.1.2
         ports:
         - containerPort: 8080

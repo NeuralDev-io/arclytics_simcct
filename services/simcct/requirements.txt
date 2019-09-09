@@ -11,7 +11,6 @@ Flask-Testing==0.7.1
 geoip2==2.9.0
 gunicorn==19.9.0
 mongoengine==0.18.2
-mongomock==3.17.0
 prettytable==0.7.2
 PyJWT==1.7.1
 pymongo==3.9.0

@@ -19,7 +19,7 @@ metadata:
   name: mongo
 spec:
   serviceName: mongo-service
-  replicas: 3
+  replicas: 2
   template:
     metadata:
       labels:
@@ -48,6 +48,7 @@ spec:
       containers:
         - name: mongo-container
           image: gcr.io/arclytics-sim/arc_sim_mongo:1.1.0
+          imagePullPolicy: Always
           command:
             - "numactl"
             - "--interleave=all"
@@ -86,4 +87,4 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 10Gi
+          storage: 30Gi

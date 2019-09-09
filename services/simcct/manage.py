@@ -34,9 +34,24 @@ from prettytable import PrettyTable
 from pymongo import MongoClient
 from rq import Connection, Worker
 
-import settings
 from sim_api.app import create_app
 from sim_api.models import User, AdminProfile, UserProfile
+
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(BASE_DIR)
+
+APP_CONFIGS = None
+DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'
+DATE_FMT = '%Y-%m-%d'
+
+DEFAULT_CONFIGS = Path(BASE_DIR) / 'configs' / 'app.json'
+if os.path.isfile(DEFAULT_CONFIGS):
+    with open(DEFAULT_CONFIGS) as config_file:
+        APP_CONFIGS = json.load(config_file)
+else:
+    raise FileNotFoundError('Cannot find app.json')
+
 
 COV = coverage.coverage(
     branch=True,
@@ -128,8 +143,8 @@ def seed_user_db():
     from mongoengine.connection import get_db
     db = get_db('default')
 
-    user_data_path = Path(settings.BASE_DIR) / 'seed_user_data.json'
-    alloy_data_path = Path(settings.BASE_DIR) / 'seed_alloy_data.json'
+    user_data_path = Path(BASE_DIR) / 'seed_user_data.json'
+    alloy_data_path = Path(BASE_DIR) / 'seed_alloy_data.json'
     if os.path.isfile(user_data_path):
         with open(user_data_path) as f:
             user_data = json.load(f)
@@ -203,7 +218,7 @@ def seed_alloy_db():
             port=int(os.environ.get('MONGO_PORT'))
         )
     db = client[os.environ.get('MONGO_APP_DB', 'arc_dev')]
-    path = Path(settings.BASE_DIR) / 'seed_global_alloys_data.json'
+    path = Path(BASE_DIR) / 'seed_global_alloys_data.json'
     if os.path.isfile(path):
         with open(path) as f:
             json_data = json.load(f)

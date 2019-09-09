@@ -57,12 +57,14 @@ def init_db(
 
     if os.environ.get('FLASK_ENV') == 'production':
         mongo_client = connect(
-            db_name,
-            host=host,
-            port=int(port),
+            str(os.environ.get('MONGO_APP_DB')),
+            host=os.environ.get('MONGO_HOST'),
+            port=int(os.environ.get('MONGO_PORT')),
             alias=alias,
-            username=os.environ.get('MONGO_APP_USER', None),
-            password=os.environ.get('MONGO_APP_USER_PASSWORD', None),
+            username=os.environ.get('MONGO_APP_USER'),
+            password=os.environ.get('MONGO_APP_USER_PASSWORD'),
+            authentication_source='admin',
+            replicaset='MainRepSet'
         )
     else:
         if testing:
@@ -74,11 +76,6 @@ def init_db(
         get_connection(alias)
     except MongoEngineConnectionError as e:
         print('MongoDB Failed to Connect.\n Error: {}'.format(e))
-
-    try:
-        get_db(alias)
-    except MongoEngineConnectionError as e:
-        print('MongoDB Failed to Get Database.\n Error: {}'.format(e))
 
     return MongoSingleton(mongo_client)
 

@@ -9,8 +9,9 @@ spec:
   selector:
     app: simcct
   ports:
-  - port: 8001
-    targetPort: 8001
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -30,16 +31,16 @@ spec:
         role: api_server
         environment: production
         run: simcct
-        replicaset: ArcRepSet
     spec:
       containers:
         - name: simcct
           image: gcr.io/arclytics-sim/arc_sim_service:1.1.2
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:
             - name: FLASK_APP
-              value: "sim_app/app.py"
+              value: "sim_api/app.py"
             - name: FLASK_ENV
               value: "production"
             - name: APP_SETTINGS

@@ -72,6 +72,23 @@ spec:
               memory: 2Gi
           ports:
             - containerPort: 27017
+          env:
+            - name: MONGO_HOST
+              value: "mongo-0.mongo-service.default.svc.cluster.local"
+            - name: MONGO_PORT
+              value: "27017"
+            - name: MONOGO_APP_DB
+              value: "arclytics"
+            - name: MONGO_APP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: mongo_app_user
+            - name: MONGO_APP_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: mongo_app_user_password
           volumeMounts:
             - name: secrets-volume
               readOnly: true

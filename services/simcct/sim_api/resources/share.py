@@ -27,7 +27,7 @@ from datetime import datetime
 from typing import Tuple
 
 from email_validator import validate_email, EmailNotValidError
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify, request, render_template, redirect
 from flask import current_app as app
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
@@ -142,7 +142,7 @@ class ShareSimulationEmail(Resource):
     method_decorators = {'post': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def post(self, user) -> Tuple[dict, int]:
+    def post(self, owner) -> Tuple[dict, int]:
         # Get post data
         data = request.get_json()
 
@@ -152,7 +152,6 @@ class ShareSimulationEmail(Resource):
             return response, 400
 
         # Extract the data
-        owner = user
         shared_date = datetime.utcnow()
 
         # Get the email address/addresses from the response and validate them.
@@ -289,18 +288,24 @@ def request_shared_simulation(token):
     on the front end which will request the configuration data from the backend.
     """
 
-    # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
+    protocol = os.environ.get('CLIENT_PROTOCOL')
     client_host = os.environ.get('CLIENT_HOST')
-    # We can make our own redirect response by doing the following
-    custom_redir_response = app.response_class(
-        status=302, mimetype='application/json'
-    )
-    # TODO(davidmatthews1004@gmail.com): Correct this endpoint and make sure I
-    #  am correctly sending the signature.
-    redirect_url = \
-        f'http://{client_host}/share/simulation/request/token={token}'
-    custom_redir_response.headers['Location'] = redirect_url
-    return custom_redir_response
+    client_port = os.environ.get('CLIENT_PORT')
+    redirect_url = f'{protocol}://{client_host}:{client_port}'
+
+    return redirect(f'{redirect_url}/token={token}')
+
+    # # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
+    # client_host = os.environ.get('CLIENT_HOST')
+    # # We can make our own redirect response by doing the following
+    # custom_redir_response = app.response_class(
+    #     status=302, mimetype='application/json'
+    # )
+    # # TODO(davidmatthews1004@gmail.com): Correct this endpoint and make sure I
+    # #  am correctly sending the signature.
+    # redirect_url = \
+    #     f'http://{client_host}/share/simulation/request/token={token}'
+    # return redirect(redirect_url, code=302)
 
 
 @share_blueprint.route('/user/share/simulation/view/<token>', methods=['GET'])

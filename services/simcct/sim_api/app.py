@@ -56,16 +56,18 @@ def init_db(
         testing = app.config['TESTING']
 
     if os.environ.get('FLASK_ENV') == 'production':
+        _db_name = str(os.environ.get('MONGO_APP_DB'))
+        _host = os.environ.get('MONGO_HOST')
+        _port = os.environ.get('MONGO_PORT')
+        _username = os.environ.get('MONGO_APP_USER')
+        _password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+        mongo_uri = (f'mongodb://{_username}:{_password}@{_host}:{_port}'
+                     f'/?authSource=admin')
         mongo_client = connect(
-            str(os.environ.get('MONGO_APP_DB')),
-            host=os.environ.get('MONGO_HOST'),
-            port=int(os.environ.get('MONGO_PORT')),
-            alias=alias,
-            username=os.environ.get('MONGO_APP_USER'),
-            password=os.environ.get('MONGO_APP_USER_PASSWORD'),
-            authentication_source='admin',
-            replicaset='MainRepSet'
-        )
+            _db_name,
+            host=mongo_uri,
+            alias='default',
+            authentication_mechanism='SCRAM-SHA-1')
     else:
         if testing:
             db_name = 'arc_test'
@@ -133,10 +135,6 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
         )
     )
 
-    # Connect to the Mongo Client
-    db = init_db(app)
-    set_flask_mongo(db)
-
     # ========== # INIT FLASK EXTENSIONS # ========== #
     # Notes:
     #  - `headers` will inject the Content-Type in all responses.
@@ -163,6 +161,10 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
 
     # Set up the Flask App Context
     with app.app_context():
+        # Connect to the Mongo Client
+        db = init_db(app)
+        set_flask_mongo(db)
+
         from sim_api.resources import (
             users_blueprint, auth_blueprint, user_alloys_blueprint,
             admin_blueprint, share_blueprint, last_sim_blueprint,

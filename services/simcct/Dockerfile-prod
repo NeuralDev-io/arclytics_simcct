@@ -38,4 +38,4 @@ RUN pip install --quiet --no-cache-dir -r requirements.txt
 COPY . /usr/src/app
 RUN rm -rf /usr/src/app/entrypoint.sh
 
-CMD ["gunicorn", "-b 0.0.0.0:8000", "manage:app"]
+CMD ["gunicorn", "manage:app", "--config=configs/gunicorn_conf.py"]

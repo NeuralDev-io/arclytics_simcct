@@ -994,6 +994,13 @@ while [[ "$1" != "" ]] ; do
                     mongo )
                       while [[ "$3" != "" ]]; do
                         case $3 in
+                          build )
+                            # Prune to avoid collisions of names:tags output
+                            docker system prune -af --volumes --filter 'label=service=mongodb'
+                            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build mongodb
+                            TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=mongodb")
+                            docker push gcr.io/arclytics-sim/arc_sim_mongo:${TAG}
+                            ;;
                           create )
                             # shellcheck disable=SC1090
                             # Create new GKE Kubernetes cluster (using host node VM images based on Ubuntu
@@ -1106,40 +1113,15 @@ while [[ "$1" != "" ]] ; do
                         shift
                       done
                       ;;
-                    arclytics )
-                      while [[ "$3" != "" ]]; do
-                        case $3 in
-                          create )
-                            # eval $(minikube docker-env)
-                            kubectl create -f "${WORKDIR}/kubernetes/arc-minikube-service.yml"
-                            kubectl create -f "${WORKDIR}/kubernetes/arc-minikube-deployment.yml"
-
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/arc-minikube-service.yml"
-                            kubectl delete -f "${WORKDIR}/kubernetes/arc-minikube-deployment.yml"
-
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          * )
-                            exit 0
-                            ;;
-                        esac
-                        shift
-                      done
-                      ;;
                     simcct )
                       while [[ "$3" != "" ]]; do
                         case $3 in
                           build )
+                            # Prune to avoid collisions of names:tags output
+                            docker system prune -af --volumes --filter 'label=service=simcct'
                             docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
                             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
-                            docker push gcr.io/arclytics-sim/arc_sim_service:${TAG}
+                            docker push gcr.io/arclytics-sim/arc_sim_service:"${TAG}"
                             ;;
                           create )
                             # eval $(minikube docker-env)  <-- If using Docker and self-built images
@@ -1166,18 +1148,23 @@ while [[ "$1" != "" ]] ; do
                     client )
                       while [[ "$3" != "" ]]; do
                         case $3 in
+                          build )
+                            # Prune to avoid collisions of names:tags output
+                            docker system prune -af --volumes --filter 'label=service=client'
+                            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
+                            TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
+                            docker push gcr.io/arclytics-sim/arc_sim_client:${TAG}
+                            ;;
                           create )
                             # eval $(minikube docker-env)
-                            kubectl create -f "${WORKDIR}/kubernetes/client-minikube-service.yml"
-                            kubectl create -f "${WORKDIR}/kubernetes/client-minikube-deployment.yml" --validate=false
+                            kubectl create -f "${WORKDIR}/kubernetes/client-gke-service.yml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
                             fi
                             ;;
                           delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/client-minikube-service.yml"
-                            kubectl delete -f "${WORKDIR}/kubernetes/client-minikube-deployment.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/client-gke-service.yml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide

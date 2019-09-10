@@ -41,6 +41,6 @@ spec:
           - name: NODE_ENV
             value: "production"
           - name: REACT_APP_SIM_HOST
-            value: "app.arclytics.io"
+            value: "api.arclytics.io"
           - name: REACT_APP_SIM_PORT
             value: "80"

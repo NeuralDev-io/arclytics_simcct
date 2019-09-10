@@ -10,9 +10,5 @@ spec:
       paths:
       - path: /*
         backend:
-          serviceName: client
+          serviceName: client-service
           servicePort: 80
-      - path: /api/*
-        backend:
-          serviceName: simcct
-          servicePort: 5000

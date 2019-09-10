@@ -32,11 +32,27 @@ import redis
 from flask.cli import FlaskGroup
 from prettytable import PrettyTable
 from pymongo import MongoClient
+from mongoengine.connection import get_db, disconnect_all, connect
 from rq import Connection, Worker
 
-import settings
 from sim_api.app import create_app
 from sim_api.models import User, AdminProfile, UserProfile
+
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(BASE_DIR)
+
+APP_CONFIGS = None
+DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'
+DATE_FMT = '%Y-%m-%d'
+
+DEFAULT_CONFIGS = Path(BASE_DIR) / 'configs' / 'app.json'
+if os.path.isfile(DEFAULT_CONFIGS):
+    with open(DEFAULT_CONFIGS) as config_file:
+        APP_CONFIGS = json.load(config_file)
+else:
+    raise FileNotFoundError('Cannot find app.json')
+
 
 COV = coverage.coverage(
     branch=True,
@@ -76,7 +92,6 @@ def run_worker():
 @cli.command('flush')
 def flush():
     """Drop all collections in the database."""
-    from mongoengine.connection import get_db
     db = get_db('default')
     print(
         'Dropping <{}.{}> database:'.format(db.name, 'users'), file=sys.stderr
@@ -93,7 +108,6 @@ def flush():
             username=str(os.environ.get('MONGO_APP_USER')),
             password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
             authSource='admin',
-            replicaSet='MainRepSet',
         )
         redis_client = redis.Redis(
             host=os.environ.get('REDIS_HOST'),
@@ -122,14 +136,49 @@ def flush():
     redis_client.flushall()
 
 
+@cli.command('test_conn')
+def test_data_conn():
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        disconnect_all()
+
+        _db_name = str(os.environ.get('MONGO_APP_DB'))
+        _host = os.environ.get('MONGO_HOST')
+        _port = os.environ.get('MONGO_PORT')
+        _username = os.environ.get('MONGO_APP_USER')
+        _password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+        mongo_uri = (f'mongodb://{_username}:{_password}@{_host}:{_port}'
+                     f'/?authSource=admin')
+        client = connect(
+            db=_db_name,
+            host=mongo_uri,
+            alias='default',
+            authentication_mechanism='SCRAM-SHA-1'
+        )
+        db = get_db('default')
+
+        redis_client = redis.Redis(
+            host=os.environ.get('REDIS_HOST'),
+            port=os.environ.get('REDIS_PORT'),
+            password=os.environ.get('REDIS_PASSWORD')
+        )
+        print(f'MongoDB Client: \n{client}\n', file=sys.stderr)
+        print(f'MongoDB Database: \n{db}\n', file=sys.stderr)
+        print(f'Redis Datastore Client: \n{redis_client}\n', file=sys.stderr)
+    else:
+        print(
+            f'This CLI command is only used for Production\nCurrent Flask ENV: '
+            f'{os.environ.get("FLASK_ENV")}', file=sys.stderr
+        )
+
+
 @cli.command('seed_db')
 def seed_user_db():
     """Seed the database with some basic users."""
-    from mongoengine.connection import get_db
     db = get_db('default')
+    print('Seeding users to <{}> database:'.format(db.name), file=sys.stderr)
 
-    user_data_path = Path(settings.BASE_DIR) / 'seed_user_data.json'
-    alloy_data_path = Path(settings.BASE_DIR) / 'seed_alloy_data.json'
+    user_data_path = Path(BASE_DIR) / 'seed_user_data.json'
+    alloy_data_path = Path(BASE_DIR) / 'seed_alloy_data.json'
     if os.path.isfile(user_data_path):
         with open(user_data_path) as f:
             user_data = json.load(f)
@@ -138,7 +187,6 @@ def seed_user_db():
             alloy_data = json.load(f)
 
     tbl = PrettyTable(['No.', 'Email', 'Name', 'Admin', 'Alloys'])
-    print('Seeding users to <{}> database:'.format(db.name), file=sys.stderr)
     for i, u in enumerate(user_data):
         new_user = User(
             email=u['email'],
@@ -195,7 +243,6 @@ def seed_alloy_db():
             username=str(os.environ.get('MONGO_APP_USER')),
             password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
             authSource='admin',
-            replicaSet='MainRepSet',
         )
     else:
         client = MongoClient(
@@ -203,7 +250,7 @@ def seed_alloy_db():
             port=int(os.environ.get('MONGO_PORT'))
         )
     db = client[os.environ.get('MONGO_APP_DB', 'arc_dev')]
-    path = Path(settings.BASE_DIR) / 'seed_global_alloys_data.json'
+    path = Path(BASE_DIR) / 'seed_global_alloys_data.json'
     if os.path.isfile(path):
         with open(path) as f:
             json_data = json.load(f)

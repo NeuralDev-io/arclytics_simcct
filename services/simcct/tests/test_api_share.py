@@ -866,6 +866,6 @@ class TestShareService(BaseTestCase):
             self.assertEqual('Session is invalid.', data['message'])
             self.assertEqual(resp.status_code, 401)
 
-            
+
 if __name__ == '__main__':
     unittest.main()

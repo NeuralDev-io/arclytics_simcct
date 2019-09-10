@@ -218,11 +218,11 @@ class TestAuthEndpoints(BaseTestCase):
             user = db.users.find_one({'email': mandolorian.email})
             print(f'User.verified: {user["verified"]}')
 
-            client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
-            self.assertTrue(resp.headers['Location'])
-            redirect_url = f'http://{client_host}/signin'
-            self.assertRedirects(resp, redirect_url)
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
 
     # FIXME(davidmatthews1004@gmail.com) Pleas fix
     # def test_user_confirm_email_token_expired(self):

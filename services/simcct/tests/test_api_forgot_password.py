@@ -20,17 +20,31 @@ __date__ = '2019.07.26'
 """
 
 import unittest
+import os
 
 from flask import current_app as app
 from flask import json
+from mongoengine import get_db
 
 from sim_api.extensions import bcrypt
-from sim_api.models import User
+from sim_api.models import User, UserProfile, AdminProfile
 from tests.test_api_base import BaseTestCase
 from sim_api.token import generate_url, generate_confirmation_token
 
 
 class TestForgotPassword(BaseTestCase):
+    def tearDown(self) -> None:
+        db = get_db('default')
+        self.assertTrue(db.name, 'arc_test')
+        db.users.drop()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """On finishing, we should delete users collection so no conflict."""
+        db = get_db('default')
+        assert db.name == 'arc_test'
+        db.users.drop()
+
     def preprocess_reset_password(self, client):
         # We do some setup first to get a valid token.
         email = 'punisher@arclytics.neuraldev.io'
@@ -54,7 +68,7 @@ class TestForgotPassword(BaseTestCase):
         """Ensure an empty request body fails during reset password."""
         with app.test_client() as client:
             res = client.post(
-                '/reset/password',
+                '/api/v1/sim/reset/password',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -67,7 +81,7 @@ class TestForgotPassword(BaseTestCase):
         """Ensure a request body without email fails."""
         with app.test_client() as client:
             res = client.post(
-                '/reset/password',
+                '/api/v1/sim/reset/password',
                 data=json.dumps(
                     {'address': '123 Forgetful Street, Old Town, 2222'}
                 ),
@@ -82,7 +96,7 @@ class TestForgotPassword(BaseTestCase):
         """Ensure if an invalid email we receive an error from validation."""
         with app.test_client() as client:
             res = client.post(
-                '/reset/password',
+                '/api/v1/sim/reset/password',
                 data=json.dumps({'email': 'bademail@nodomain'}),
                 content_type='application/json'
             )
@@ -110,7 +124,7 @@ class TestForgotPassword(BaseTestCase):
             # self.assertEqual(data['message'], 'Invalid email.')
 
             res = client.post(
-                '/reset/password',
+                '/api/v1/sim/reset/password',
                 data=json.dumps({'email': 'bademailatyahoo.com'}),
                 content_type='application/json'
             )
@@ -127,7 +141,7 @@ class TestForgotPassword(BaseTestCase):
         """Ensure if the user does not exist we don't send an email."""
         with app.test_client() as client:
             res = client.post(
-                '/reset/password',
+                '/api/v1/sim/reset/password',
                 data=json.dumps({'email': 'carol@systemssecurity.com'}),
                 content_type='application/json'
             )
@@ -149,7 +163,7 @@ class TestForgotPassword(BaseTestCase):
 
         with app.test_client() as client:
             res = client.post(
-                '/reset/password',
+                '/api/v1/sim/reset/password',
                 data=json.dumps({'email': 'loki@asgard.space'}),
                 content_type='application/json'
             )
@@ -169,7 +183,7 @@ class TestForgotPassword(BaseTestCase):
         user.save()
         with app.test_client() as client:
             res = client.post(
-                '/reset/password',
+                '/api/v1/sim/reset/password',
                 data=json.dumps({'email': email}),
                 content_type='application/json',
             )
@@ -183,11 +197,19 @@ class TestForgotPassword(BaseTestCase):
         reset_url = generate_url('auth.confirm_reset_password', bad_token)
         with app.test_client() as client:
             res = client.get(reset_url, content_type='application/json')
-            data = json.loads(res.data.decode())
-            self.assertEqual(data['error'], 'Bad signature.')
-            self.assertEqual(data['message'], 'Invalid token.')
-            self.assertEqual(data['status'], 'fail')
-            self.assert400(res)
+            # data = json.loads(res.data.decode())
+            # self.assertEqual(data['error'], 'Bad signature.')
+            # self.assertEqual(data['message'], 'Invalid token.')
+            # self.assertEqual(data['status'], 'fail')
+            # self.assert400(res)
+            self.assertEquals(res.status_code, 302)
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = (
+                f"{protocol}://{client_host}:{client_port}/password/"
+                "reset?tokenexpired=true"
+            )
 
     def test_confirm_reset_password_successful_redirect(self):
         """Ensure if we send a valid token it will redirect."""
@@ -202,19 +224,27 @@ class TestForgotPassword(BaseTestCase):
                 reset_url,
                 content_type='application/json',
             )
-            self.assertEquals(res.status_code, 302)
+            # self.assertEquals(res.status_code, 302)
             # self.assertTrue(res.headers['Authorization'])
-            self.assertTrue(res.headers['Location'])
+            # self.assertTrue(res.headers['Location'])
             # Every redirect will be different.
             token = res.headers['Location'].split('=')[1]
-            redirect_url = f'http://localhost:3000/password/reset={token}'
-            self.assertRedirects(res, redirect_url)
+            # redirect_url = f'http://localhost:3000/password/reset={token}'
+            # self.assertRedirects(res, redirect_url)
+            self.assertEquals(res.status_code, 302)
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = (
+                f"{protocol}://{client_host}:{client_port}/rest/password/"
+                f"{token}"
+            )
 
     def test_reset_password_no_token(self):
         """Ensure if no token is provided it fails."""
         with app.test_client() as client:
             res = client.put(
-                '/auth/password/reset',
+                '/api/v1/sim/auth/password/reset',
                 data=json.dumps({}),  # token will fail before data
                 content_type='application/json'
             )
@@ -230,7 +260,7 @@ class TestForgotPassword(BaseTestCase):
         token = ''
         with app.test_client() as client:
             res = client.put(
-                '/auth/password/reset',
+                '/api/v1/sim/auth/password/reset',
                 data=json.dumps({}),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
@@ -248,7 +278,7 @@ class TestForgotPassword(BaseTestCase):
             _, jwt_token, user = self.preprocess_reset_password(client)
 
             res = client.put(
-                '/auth/password/reset',
+                '/api/v1/sim/auth/password/reset',
                 data=json.dumps({}),
                 headers={'Authorization': f'Bearer {jwt_token}'},
                 content_type='application/json'
@@ -266,13 +296,13 @@ class TestForgotPassword(BaseTestCase):
 
             # Both requests have one or the other required request body
             res1 = client.put(
-                '/auth/password/reset',
+                '/api/v1/sim/auth/password/reset',
                 data=json.dumps({'password': 'IDontNeedToConfirm'}),
                 headers={'Authorization': f'Bearer {jwt_token}'},
                 content_type='application/json'
             )
             res2 = client.put(
-                '/auth/password/reset',
+                '/api/v1/sim/auth/password/reset',
                 data=json.dumps({'confirm_password': 'IDontNeedToConfirm'}),
                 headers={'Authorization': f'Bearer {jwt_token}'},
                 content_type='application/json'
@@ -286,7 +316,7 @@ class TestForgotPassword(BaseTestCase):
             self.assert400(res2)
 
             res3 = client.put(
-                '/auth/password/reset',
+                '/api/v1/sim/auth/password/reset',
                 data=json.dumps(
                     {
                         'password': 'short',
@@ -306,7 +336,7 @@ class TestForgotPassword(BaseTestCase):
             _, jwt_token, user = self.preprocess_reset_password(client)
 
             res = client.put(
-                '/auth/password/reset',
+                '/api/v1/sim/auth/password/reset',
                 data=json.dumps(
                     {
                         'password': 'NewPassword',
@@ -328,7 +358,7 @@ class TestForgotPassword(BaseTestCase):
             user.save()
 
             res = client.put(
-                '/auth/password/reset',
+                '/api/v1/sim/auth/password/reset',
                 data=json.dumps(
                     {
                         'password': 'NewPassword',
@@ -351,7 +381,7 @@ class TestForgotPassword(BaseTestCase):
             new_pw = 'IAmFrankCastelleone'
 
             res = client.put(
-                '/auth/password/reset',
+                '/api/v1/sim/auth/password/reset',
                 data=json.dumps(
                     {
                         'password': new_pw,
@@ -383,7 +413,7 @@ class TestForgotPassword(BaseTestCase):
 
         with app.test_client() as client:
             res = client.post(
-                '/reset/password',
+                '/api/v1/sim/reset/password',
                 data=json.dumps({'email': test_email}),
                 content_type='application/json'
             )

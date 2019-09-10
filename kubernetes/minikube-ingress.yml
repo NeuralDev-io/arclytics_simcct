@@ -1,18 +1,18 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: arc-ingress
+  name: arclytics-ingress
   annotations:
-    kubernetes.io/ingress.global-static-ip-name: arc-ip
 spec:
   rules:
+  - host: staging.arclytics.io
   - http:
       paths:
       - path: /*
         backend:
-          serviceName: client-service
+          serviceName: client
           servicePort: 80
-      - path: /api/v1/sim/*
+      - path: /api/v1/sim
         backend:
-          serviceName: simcct-service
+          serviceName: simcct
           servicePort: 8000

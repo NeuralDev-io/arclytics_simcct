@@ -15,7 +15,7 @@ __date__ = '2019.08.02'
 
 Unit Testing the User Alloy Service.
 """
-
+import os
 import unittest
 from pathlib import Path
 
@@ -24,10 +24,10 @@ from flask import current_app as app
 from flask import json
 
 from tests.test_api_base import BaseTestCase
-from settings import BASE_DIR
 from sim_api.models import User
 from tests.test_utilities import test_login
 
+BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'seed_alloy_data.json'
 
 alloy_data = {

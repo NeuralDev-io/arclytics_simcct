@@ -66,12 +66,19 @@ def init_db(
         mongo_client = connect(
             _db_name,
             host=mongo_uri,
-            alias='default',
-            authentication_mechanism='SCRAM-SHA-1')
+            alias=alias,
+            authentication_mechanism='SCRAM-SHA-1'
+        )
     else:
         if testing:
             db_name = 'arc_test'
         mongo_client = connect(db_name, host=host, port=int(port), alias=alias)
+
+    try:
+        # This is necessary to connect at least once
+        get_db(alias)
+    except MongoEngineConnectionError as e:
+        print('MongoDB Failed to Get Database.\n Error: {}'.format(e))
 
     # Test to make sure the connection has been created.
     try:
@@ -135,6 +142,10 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
         )
     )
 
+    # Connect to the Mongo Client
+    db = init_db(app)
+    set_flask_mongo(db)
+
     # ========== # INIT FLASK EXTENSIONS # ========== #
     # Notes:
     #  - `headers` will inject the Content-Type in all responses.
@@ -161,10 +172,6 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
 
     # Set up the Flask App Context
     with app.app_context():
-        # Connect to the Mongo Client
-        db = init_db(app)
-        set_flask_mongo(db)
-
         from sim_api.resources import (
             users_blueprint, auth_blueprint, user_alloys_blueprint,
             admin_blueprint, share_blueprint, last_sim_blueprint,

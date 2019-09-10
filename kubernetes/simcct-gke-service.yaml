@@ -37,76 +37,73 @@ spec:
           image: gcr.io/arclytics-sim/arc_sim_service:1.1.2
           imagePullPolicy: Always
           ports:
-            - containerPort: 8000
+          - containerPort: 8000
           env:
-            - name: FLASK_APP
-              value: "sim_api/app.py"
-            - name: FLASK_ENV
-              value: "production"
-            - name: APP_SETTINGS
-              value: "configs.flask_conf.ProductionConfig"
-            - name: SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: credentials
-                  key: secret_key
-            - name: SECURITY_PASSWORD_SALT
-              valueFrom:
-                secretKeyRef:
-                  name: credentials
-                  key: security_password_salt
-            - name: MONGO_HOST
-              value: "mongo-0.mongo-service.default.svc.cluster.local"
-            - name: MONGO_PORT
-              value: "27017"
-            - name: MONOGO_APP_DB
-              valueFrom:
-                secretKeyRef:
-                  name: credentials
-                  key: mongo_app_db
-            - name: MONGO_APP_USER
-              valueFrom:
-                secretKeyRef:
-                  name: credentials
-                  key: mongo_app_user
-            - name: MONGO_APP_USER_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: credentials
-                  key: mongo_app_user_password
-            - name: REDIS_HOST
-              value: "redis.default.svc.cluster.local"
-            - name: REDIS_PORT
-              value: "6379"
-            - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: credentials
-                  key: redis_password
-            - name: MAIL_SERVER
-              valueFrom:
-                secretKeyRef:
-                  name: credentials
-                  key: mail_server
-            - name: MAIL_PORT
-              value: "587"
-            - name: MAIL_USE_TLS
-              value: "True"
-            - name: MAIL_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: credentials
-                  key: mail_username
-            - name: MAIL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: credentials
-                  key: mail_password
-            - name: CLIENT_PROTOCOL
-              value: "http"
-            - name: CLIENT_HOST
-              value: "app.arclytics.io"
-            - name: CLIENT_PORT
-              value: "80"
-            - name: DASK_SCHEDULER_ADDRESS
-              value: "tcp://dask-scheduler:8786"
+          - name: FLASK_APP
+            value: "sim_api/app.py"
+          - name: FLASK_ENV
+            value: "production"
+          - name: APP_SETTINGS
+            value: "configs.flask_conf.ProductionConfig"
+          - name: SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: secret_key
+          - name: SECURITY_PASSWORD_SALT
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: security_password_salt
+          - name: MONGO_HOST
+            value: "mongo-0.mongo-service.default.svc.cluster.local"
+          - name: MONGO_PORT
+            value: "27017"
+          - name: MONGO_APP_DB
+            value: "arclytics"
+          - name: MONGO_APP_USER
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: mongo_app_user
+          - name: MONGO_APP_USER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: mongo_app_user_password
+          - name: REDIS_HOST
+            value: "redis.default.svc.cluster.local"
+          - name: REDIS_PORT
+            value: "6379"
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: redis_password
+          - name: MAIL_SERVER
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: mail_server
+          - name: MAIL_PORT
+            value: "587"
+          - name: MAIL_USE_TLS
+            value: "True"
+          - name: MAIL_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: mail_username
+          - name: MAIL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: mail_password
+          - name: CLIENT_PROTOCOL
+            value: "http"
+          - name: CLIENT_HOST
+            value: "app.arclytics.io"
+          - name: CLIENT_PORT
+            value: "80"
+          - name: DASK_SCHEDULER_ADDRESS
+            value: "tcp://dask-scheduler:8786"

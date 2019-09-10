@@ -832,6 +832,40 @@ class TestShareService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'Simulation does not exist.')
 
+    def test_different_IP_address(self):
 
+        luke = User(
+            **{
+                'email': 'luke@skywalker.io',
+                'first_name': 'Luke',
+                'last_name': 'Skywalker'
+            }
+        )
+        luke.set_password('NeverJoinYou')
+        luke.verified = True
+        luke.save()
+
+        with self.client as client:
+            test_login(client, luke.email, 'NeverJoinYou')
+            resp = self.client.post(
+                '/api/v1/sim/user/share/simulation/link',
+                data=json.dumps(
+                    {
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': SIMULATION_RESULTS
+                    }
+                ),
+                content_type='application/json',
+                environ_base = {'REMOTE_ADDR': '127.0.0.12'}
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual('fail', data['status'])
+            self.assertNotIn('data', data)
+            self.assertEqual('Session is invalid.', data['message'])
+            self.assertEqual(resp.status_code, 401)
+
+            
 if __name__ == '__main__':
     unittest.main()

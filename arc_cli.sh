@@ -960,36 +960,32 @@ while [[ "$1" != "" ]] ; do
             completeMessage
             exit 0
             ;;
-        mongo )
-            while [[ "$2" != "" ]] ; do
-                case $2 in
-                    user )
-                        getMongoUserAndPassword "user"
-                        docker exec -it arc_mongodb_1 mongo \
-                            "-u \"${MONGO_USERNAME}\" -p \"${MONGO_PASSWORD}\" ${MONGO_APP_DB}"
-                        ;;
-                    root )
-                        getMongoUserAndPassword "root"
-                        echo "-u ${MONGO_USERNAME} -p ${MONGO_PASSWORD} admin"
-                        docker exec -it arc_mongodb_1 mongo \
-                            "-u \"${MONGO_USERNAME}\" -p \"${MONGO_PASSWORD}\" admin"
-                        ;;
-                    * )
-                        exit 0
-                        ;;
-                esac
-                shift
-            done
-            ;;
         deploy )
             while [[ "$2" != "" ]] ; do
                 case $2 in
                     secrets )
                       kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml"
+                      kubectl apply -f "${WORKDIR}/kubernetes/nginxsecret.yaml"
                       TMPFILE=$(mktemp)
                       /usr/bin/openssl rand -base64 741 > $TMPFILE
                       kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth-mongodb-keyfile=$TMPFILE
                       rm $TMPFILE
+                      ;;
+                    ingress )
+                      while [[ "$3" != "" ]]; do
+                        case $3 in
+                          create )
+                            kubectl apply -f "${WORKDIR}/kubernetes/gke-ingress.yaml"
+                            ;;
+                          delete )
+                            kubectl delete -f "${WORKDIR}/kubernetes/gke-ingress.yaml"
+                            ;;
+                          * )
+                            exit 0
+                            ;;
+                        esac
+                        shift
+                      done
                       ;;
                     mongo )
                       while [[ "$3" != "" ]]; do
@@ -1091,16 +1087,19 @@ while [[ "$1" != "" ]] ; do
                       while [[ "$3" != "" ]]; do
                         case $3 in
                           create )
-                            kubectl create -f "${WORKDIR}/kubernetes/redis-minikube-service.yml" --validate=false
+                            gcloud compute disks create --size 30GB --type pd-ssd redis-ssd-disk
+                            kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
+                            kubectl create -f "${WORKDIR}/kubernetes/redis-gke-service.yaml" --validate=false
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
                             fi
                             ;;
                           delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/redis-minikube-service.yml"
-                            kubectl delete pod redis-0
+                            kubectl delete -f "${WORKDIR}/kubernetes/redis-gke-service.yaml"
                             kubectl delete pvc redis-pvc-redis-0
+                            kubectl delete pv redis-pv
+                            gcloud compute disks delete redis-ssd-disk
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
@@ -1157,14 +1156,14 @@ while [[ "$1" != "" ]] ; do
                             ;;
                           create )
                             # eval $(minikube docker-env)
-                            kubectl create -f "${WORKDIR}/kubernetes/client-gke-service.yml"
+                            kubectl create -f "${WORKDIR}/kubernetes/client-gke-service.yaml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
                             fi
                             ;;
                           delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/client-gke-service.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/client-gke-service.yaml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide

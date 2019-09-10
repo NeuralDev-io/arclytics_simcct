@@ -995,20 +995,62 @@ while [[ "$1" != "" ]] ; do
                       while [[ "$3" != "" ]]; do
                         case $3 in
                           create )
-                            # TODO(andrew@neuraldev.io): Make the GKE version and put it under a flag.
-                            # kubectl apply -f "${WORKDIR}/kubernetes/gke_ssd.yml"
-                            # kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-1.yml"
-                            # kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-2.yml"
-                            # kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-3.yml"
+                            # shellcheck disable=SC1090
+                            # Create new GKE Kubernetes cluster (using host node VM images based on Ubuntu
+                            # rather than ChromiumOS default & also use slightly larger VMs than default)
+                            #gcloud container clusters create "arclytics-sim-cluster" --image-type=UBUNTU --machine-type=n1-standard-2
 
-                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-minikube-service.yml" --validate=false
-                            # Wait for a bit to let it initialise
+                            # Configure host VM using daemonset to disable hugepages
+                            kubectl apply -f "${WORKDIR}/kubernetes/hostvm-node-configurer-daemonset.yaml"
+
+                            # Register GCE Fast SSD persistent disks and then create the persistent disks
+                            echo "Creating GCE disks"
+                            for i in 1 2
+                            do
+                                gcloud compute disks create --size 30GB --type pd-ssd pd-ssd-disk-$i
+                            done
+                            sleep 3
+
+                            # Create persistent volumes using disks created above
+                            echo "Creating GKE Persistent Volumes"
+                            for i in 1 2
+                            do
+                                sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/mongo-gke-xfs-ssd-pv.yaml" > /tmp/xfs-gke-ssd-pv.yaml
+                                kubectl apply -f /tmp/xfs-gke-ssd-pv.yaml
+                            done
+                            rm /tmp/xfs-gke-ssd-pv.yaml
+                            sleep 3
+
+                            # Create keyfile for the MongoD cluster as a Kubernetes shared secret
+                            # TMPFILE=$(mktemp)
+                            # /usr/bin/openssl rand -base64 741 > $TMPFILE
+                            # kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth-mongodb-keyfile=$TMPFILE
+                            # rm $TMPFILE
+
+                            # Create mongodb service with mongod stateful-set
+                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-service.yaml"
+                            echo
+
+                            # Wait until the final (2nd) mongod has started properly
+                            echo "Waiting for the 2 containers to come up $(date)..."
+                            echo " (IGNORE any reported not found & connection errors)"
+                            sleep 30
+                            echo -n "  "
+                            until kubectl --v=0 exec mongo-1 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
+                                sleep 5
+                                echo -n "  "
+                            done
+                            echo "...mongo containers are now running $(date)"
+                            echo
+
+                            # Pods and Containers should be running now
                             read -p "Are all the mongodb-n containers ready? " -n 1 -r
                             echo    # (optional) move to a new line
+
                             if [[ $REPLY =~ ^[Yy]$ ]]
                             then
                               # shellcheck disable=SC1090
-                              . ${WORKDIR}/kubernetes/scripts/configure_repset_auth-minikube.sh
+                              . ${WORKDIR}/kubernetes/scripts/configure_repset_auth.sh
                             fi
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
@@ -1016,13 +1058,16 @@ while [[ "$1" != "" ]] ; do
                             fi
                             ;;
                           delete )
-                            kubectl delete service mongo-service
-                            kubectl delete statefulset mongo
-                            kubectl delete pod mongo-0
+                            kubectl delete -f "${WORKDIR}/kubernetes/mongo-minikube-service.yml"
                             kubectl delete pvc mongo-pvc-mongo-0
                             kubectl delete pvc mongo-pvc-mongo-1
-                            kubectl delete pvc mongo-pvc-mongo-2
-                            #kubectl delete -f "${WORKDIR}/kubernetes/mongo-minikube-service.yml"
+                            kubectl delete pv mongo-pv-1
+                            kubectl delete pv mongo-pv-2
+
+                            sleep 5
+                            # Wait till the PV and PVC are deleted first
+                            gcloud compute disks delete pd-ssd-disk-1
+                            gcloud compute disks delete pd-ssd-disk-2
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide

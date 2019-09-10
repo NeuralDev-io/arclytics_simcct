@@ -742,6 +742,30 @@ class TestRatingsService(BaseTestCase):
     #         self.assertEqual(data_3['current_page'], 3)
     #         self.assertEqual(data_3['total_pages'], 3)
 
+    def test_different_IP_address(self):
+        rex = User(
+            **{
+                'email': 'reex@arclytics.io',
+                'first_name': 'Captain',
+                'last_name': 'Rex'
+            }
+        )
+        rex.set_password('ExperienceOutranksEverything')
+        rex.save()
+        with self.client as client:
+            test_login(client, rex.email, 'ExperienceOutranksEverything')
+            resp = client.post(
+                '/api/v1/sim/user/rating',
+                data=json.dumps({'rating': '5'}),
+                content_type='application/json',
+                environ_base={'REMOTE_ADDR': '127.0.0.12'}
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual('fail', data['status'])
+            self.assertNotIn('data', data)
+            self.assertEqual('Session is invalid.', data['message'])
+            self.assertEqual(resp.status_code, 401)
+
 
 if __name__ == '__main__':
     unittest.main()

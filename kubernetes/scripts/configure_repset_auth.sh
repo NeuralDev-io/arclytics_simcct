@@ -55,7 +55,7 @@ kubectl exec mongo-0 -c mongo-container -- mongo -u "${ROOT_USER}" -p "${ROOT_PW
 
 # Create an application user on the Development Database
 kubectl exec mongo-0 -c mongo-container -- mongo -u "${ROOT_USER}" -p "${ROOT_PW}" --authenticationDatabase admin \
-        --eval "db.getSiblingDB(\"arc_dev\").createUser({user: \"${APP_USER}\", pwd: \"${APP_USER_PW}\", roles:[{role: \"dbOwner\", db: \"arc_dev\"}]});"
+        --eval "db.getSiblingDB(\"admin\").createUser({user: \"${APP_USER}\", pwd: \"${APP_USER_PW}\", roles:[{role: \"dbOwner\", db: \"arc_dev\"}]});"
 
 rm ${TEMPFILE_USER}
 rm ${TEMPFILE_PW}

@@ -1,16 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: simcct
+  name: simcct-service
   labels:
     app: simcct
 spec:
-  type: NodePort
+  type: LoadBalancer
+  loadBalancerIP: 35.189.61.10
   selector:
-    app: simcct-service
-    role: api_server
+    app: simcct
   ports:
-  - port: 5000
+  - name: http
+    port: 8000
     targetPort: 8000
     protocol: TCP
 ---
@@ -23,12 +24,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: simcct-service
-  replicas: 1
+      app: simcct
+  replicas: 2
   template:
     metadata:
       labels:
-        app: simcct-service
+        app: simcct
         role: api_server
         environment: production
     spec:
@@ -38,6 +39,14 @@ spec:
           imagePullPolicy: Always
           ports:
           - containerPort: 8000
+          #readinessProbe:  -- Not Working
+          #  httpGet:
+          #    path: /healthy/
+          #    port: 8000
+          #  periodSeconds: 10
+          #  timeoutSeconds: 5
+          #  successThreshold: 1
+          #  failureThreshold: 2
           env:
           - name: FLASK_APP
             value: "sim_api/app.py"

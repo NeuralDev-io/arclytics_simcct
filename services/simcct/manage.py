@@ -108,7 +108,6 @@ def flush():
             username=str(os.environ.get('MONGO_APP_USER')),
             password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
             authSource='admin',
-            replicaSet='MainRepSet',
         )
         redis_client = redis.Redis(
             host=os.environ.get('REDIS_HOST'),
@@ -137,11 +136,47 @@ def flush():
     redis_client.flushall()
 
 
+@cli.command('test_conn')
+def test_data_conn():
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        from mongoengine.connection import connect, disconnect_all, get_db
+        disconnect_all()
+
+        _db_name = str(os.environ.get('MONGO_APP_DB'))
+        _host = os.environ.get('MONGO_HOST')
+        _port = os.environ.get('MONGO_PORT')
+        _username = os.environ.get('MONGO_APP_USER')
+        _password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+        mongo_uri = (f'mongodb://{_username}:{_password}@{_host}:{_port}'
+                     f'/?authSource=admin')
+        client = connect(
+            _db_name,
+            host=mongo_uri,
+            alias='default',
+            authentication_mechanism='SCRAM-SHA-1'
+        )
+        db = get_db('default', reconnect=True)
+
+        redis_client = redis.Redis(
+            host=os.environ.get('REDIS_HOST'),
+            port=os.environ.get('REDIS_PORT'),
+            password=os.environ.get('REDIS_PASSWORD')
+        )
+        print(f'MongoDB Client: {client}', file=sys.stderr)
+        print(f'MongoDB Database: {db}', file=sys.stderr)
+        print(f'Redis Datastore Client: {redis_client}', file=sys.stderr)
+    else:
+        print(
+            f'This CLI command is only used for Production\nCurrent Flask ENV: '
+            f'{os.environ.get("FLASK_ENV")}', file=sys.stderr
+        )
+
+
 @cli.command('seed_db')
 def seed_user_db():
     """Seed the database with some basic users."""
     from mongoengine.connection import get_db
-    db = get_db('default')
+    db = get_db('default', reconnect=True)
 
     user_data_path = Path(BASE_DIR) / 'seed_user_data.json'
     alloy_data_path = Path(BASE_DIR) / 'seed_alloy_data.json'
@@ -210,7 +245,6 @@ def seed_alloy_db():
             username=str(os.environ.get('MONGO_APP_USER')),
             password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
             authSource='admin',
-            replicaSet='MainRepSet',
         )
     else:
         client = MongoClient(

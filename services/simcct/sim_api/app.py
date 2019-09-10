@@ -146,30 +146,6 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     db = init_db(app)
     set_flask_mongo(db)
 
-    # ========== # INIT FLASK EXTENSIONS # ========== #
-    # Notes:
-    #  - `headers` will inject the Content-Type in all responses.
-    #  - `expose_headers`: The header or list which are safe to expose to the
-    #     API of a CORS API specification.
-    #  - `support_credentials`: Allows users to make authenticated requests.
-    #     If true, injects the Access-Control-Allow-Credentials header in
-    #     responses. This allows cookies and credentials to be submitted across
-    #     domains.
-    #     Note:	This option cannot be used in conjunction with a ‘*’ origin
-    CORS(
-        app=app,
-        headers=['Content-Type'],
-        expose_headers=[
-            'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'
-        ],
-        supports_credentials=True
-    )
-    # Uncomment this for debugging logs
-    # logging.getLogger('flask_cors').level = logging.DEBUG
-
-    # Set up Flask extensions
-    extensions(app)
-
     # Set up the Flask App Context
     with app.app_context():
         from sim_api.resources import (
@@ -191,6 +167,34 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
         app.register_blueprint(alloys_blueprint, url_prefix='/api/v1/sim')
         app.register_blueprint(sim_blueprint, url_prefix='/api/v1/sim')
         app.register_blueprint(sim_alloys_blueprint, url_prefix='/api/v1/sim')
+
+    # ========== # INIT FLASK EXTENSIONS # ========== #
+    # Notes:
+    #  - `headers` will inject the Content-Type in all responses.
+    #  - `expose_headers`: The header or list which are safe to expose to
+    #  the
+    #     API of a CORS API specification.
+    #  - `support_credentials`: Allows users to make authenticated requests.
+    #     If true, injects the Access-Control-Allow-Credentials header in
+    #     responses. This allows cookies and credentials to be submitted
+    #     across
+    #     domains.
+    #     Note:	This option cannot be used in conjunction with a ‘*’ origin
+    CORS(
+        app=app,
+        headers=['Content-Type'],
+        expose_headers=[
+            'Access-Control-Allow-Origin',
+            'Access-Control-Allow-Credentials',
+            'Content-Type'
+        ],
+        supports_credentials=True
+    )
+    # Uncomment this for debugging logs
+    # logging.getLogger('flask_cors').level = logging.DEBUG
+
+    # Set up Flask extensions
+    extensions(app)
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects

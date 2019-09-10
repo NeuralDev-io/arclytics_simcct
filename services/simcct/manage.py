@@ -155,7 +155,7 @@ def test_data_conn():
             alias='default',
             authentication_mechanism='SCRAM-SHA-1'
         )
-        db = get_db('default', reconnect=True)
+        db = get_db('default')
 
         redis_client = redis.Redis(
             host=os.environ.get('REDIS_HOST'),
@@ -176,7 +176,7 @@ def test_data_conn():
 def seed_user_db():
     """Seed the database with some basic users."""
     from mongoengine.connection import get_db
-    db = get_db('default', reconnect=True)
+    db = get_db('default')
 
     user_data_path = Path(BASE_DIR) / 'seed_user_data.json'
     alloy_data_path = Path(BASE_DIR) / 'seed_alloy_data.json'

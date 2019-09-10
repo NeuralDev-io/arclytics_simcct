@@ -28,7 +28,7 @@ import settings
 from mongoengine import get_db
 from copy import deepcopy
 
-from tests.test_api_base import BaseTestCase
+from tests.test_api_base import BaseTestCase, app
 from logger.arc_logger import AppLogger
 from sim_api.models import User, SharedSimulation
 from sim_api.token import (generate_shared_simulation_token, generate_url)
@@ -49,28 +49,22 @@ SIMULATION_RESULTS = _TEST_JSON['simulation_results']
 class TestShareService(BaseTestCase):
     """Test for sharing simulations via link and email"""
 
+    def setUp(self) -> None:
+        assert app.config['TESTING'] is True
+        self.mongo = get_db('default')
+
     def tearDown(self) -> None:
-        """On finishing, we should delete users collection so no conflict."""
+        db = get_db('default')
+        self.assertTrue(db.name, 'arc_test')
+        db.users.drop()
+        SharedSimulation.objects.delete()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
         db = get_db('default')
         assert db.name == 'arc_test'
         db.users.drop()
-
-    # user = None
-    #
-    # def setUp(self) -> None:
-    #     self.user = luke = User(
-    #         **{
-    #             'first_name': 'Luke',
-    #             'last_name': 'Skywalker',
-    #             'email': 'luke@skywalker.io'
-    #         }
-    #     )
-    #     self.user.set_password('IronHeart!')
-    #     self.user.verified = True
-    #     self.user.save()
-    #
-    # def tearDown(self) -> None:
-    #     self.user.delete()
+        SharedSimulation.objects.delete()
     #
     # @staticmethod
     # def login(
@@ -87,40 +81,49 @@ class TestShareService(BaseTestCase):
     #     test_login(client, email, password)
     #     return email
 
-    # def test_share_configuration_link_success(self):
-    #     """
-    #     Ensure a user is able to obtain a shareable link for valid simulation
-    #     data.
-    #     """
-    #
-    #     with self.client as client:
-    #         self.login(client)
-    #         resp = self.client.post(
-    #             '/api/v1/sim/user/share/simulation/link',
-    #             data=json.dumps(
-    #                 {
-    #                     'configurations': CONFIGS,
-    #                     'alloy_store': ALLOY_STORE,
-    #                     'simulation_results': SIMULATION_RESULTS
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #         logger.debug(self.client.email)
-    #         print(client.email)
-    #         data = json.loads(resp.data.decode())
-    #         self.assertEqual(resp.status_code, 201)
-    #         self.assertEqual(data['status'], 'success')
-    #         shared_simulation = SharedSimulation.objects.get(
-    #             owner_email='luke@skywalker.io'
-    #         )
-    #         sim_token = generate_shared_simulation_token(
-    #             str(shared_simulation.id)
-    #         )
-    #         sim_url = generate_url(
-    #             'share.request_shared_simulation', sim_token
-    #         )
-    #         self.assertEqual(data['link'], sim_url)
+    def test_share_configuration_link_success(self):
+        """
+        Ensure a user is able to obtain a shareable link for valid simulation
+        data.
+        """
+
+        luke = User(
+            **{
+                'email': 'luke@skywalker.io',
+                'first_name': 'Luke',
+                'last_name': 'Skywalker'
+            }
+        )
+        luke.set_password('NeverJoinYou')
+        luke.verified = True
+        luke.save()
+
+        with self.client as client:
+            test_login(client, luke.email, 'NeverJoinYou')
+            resp = self.client.post(
+                '/api/v1/sim/user/share/simulation/link',
+                data=json.dumps(
+                    {
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': SIMULATION_RESULTS
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 201)
+            self.assertEqual(data['status'], 'success')
+            shared_simulation = SharedSimulation.objects.get(
+                owner_email='luke@skywalker.io'
+            )
+            sim_token = generate_shared_simulation_token(
+                str(shared_simulation.id)
+            )
+            sim_url = generate_url(
+                'share.request_shared_simulation', sim_token
+            )
+            self.assertEqual(data['link'], sim_url)
 
     def test_share_configuration_link_no_data(self):
         """
@@ -140,7 +143,7 @@ class TestShareService(BaseTestCase):
 
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
-            resp = self.client.post(
+            resp = client.post(
                 '/api/v1/sim/user/share/simulation/link',
                 data=json.dumps(''),
                 content_type='application/json'
@@ -178,7 +181,7 @@ class TestShareService(BaseTestCase):
 
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
-            resp = self.client.post(
+            resp = client.post(
                 '/api/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
@@ -219,7 +222,7 @@ class TestShareService(BaseTestCase):
 
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
-            resp = self.client.post(
+            resp = client.post(
                 '/api/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
@@ -260,7 +263,7 @@ class TestShareService(BaseTestCase):
 
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
-            resp = self.client.post(
+            resp = client.post(
                 '/api/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
@@ -307,7 +310,7 @@ class TestShareService(BaseTestCase):
 
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
-            resp = self.client.post(
+            resp = client.post(
                 '/api/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
@@ -346,7 +349,7 @@ class TestShareService(BaseTestCase):
 
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
-            resp = self.client.post(
+            resp = client.post(
                 '/api/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
@@ -377,7 +380,7 @@ class TestShareService(BaseTestCase):
     #
     #     luke = User(
     #         **{
-    #             'email': 'Duke@skywalker.io',
+    #             'email': 'luke@arclytics.com',
     #             'first_name': 'Luke',
     #             'last_name': 'Skywalker'
     #         }
@@ -388,12 +391,12 @@ class TestShareService(BaseTestCase):
     #
     #     with self.client as client:
     #         test_login(client, luke.email, 'NeverJoinYou')
-    #         resp = self.client.post(
+    #         resp = client.post(
     #             '/api/v1/sim/user/share/simulation/email',
     #             data=json.dumps(
     #                 {
     #                     # 'emails': ['davidmatthews1004@gmail.com'],
-    #                     'emails': ['davidtest@arclytics.io'],
+    #                     'emails': ['davidtest@arclytics.com'],
     #                     'configurations': CONFIGS,
     #                     'alloy_store': ALLOY_STORE,
     #                     'simulation_results': SIMULATION_RESULTS
@@ -402,7 +405,6 @@ class TestShareService(BaseTestCase):
     #
     #             content_type='application/json'
     #         )
-    #         logger.debug(resp.data.decode())
     #         data = json.loads(resp.data.decode())
     #         self.assertEqual(data['message'], 'Email(s) sent.')
     #         self.assertEqual(data['status'], 'success')
@@ -429,7 +431,7 @@ class TestShareService(BaseTestCase):
     #
     #     luke = User(
     #         **{
-    #             'email': 'luke@kywalker.io',
+    #             'email': 'skywalkerl@arclytics.com',
     #             'first_name': 'Luke',
     #             'last_name': 'Skywalker'
     #         }
@@ -440,32 +442,27 @@ class TestShareService(BaseTestCase):
     #
     #     with self.client as client:
     #         test_login(client, luke.email, 'NeverJoinYou')
-    #         resp = self.client.post(
+    #         resp = client.post(
     #             '/api/v1/sim/user/share/simulation/email',
     #             data=json.dumps(
     #                 {
-    #                     # 'emails': [
-    #                     #     'davidmatthews1004@gmail.com',
-    #                     #     'brickmatic479@gmail.com'
-    #                     # ],
-    #                     'emails':
-    #                         ['davidtest@arclytics.io', 'davidtest2@arclytics.io'],
-    #                     'configurations':
-    #                         CONFIGS,
-    #                     'alloy_store':
-    #                         ALLOY_STORE,
-    #                     'simulation_results':
-    #                         SIMULATION_RESULTS
+    #                     # 'emails': ['davidmatthews1004@gmail.com'],
+    #                     'emails': [
+    #                         'davidtest@arclytics.com',
+    #                         'davidtest2@arclytics.com'
+    #                     ],
+    #                     'configurations': CONFIGS,
+    #                     'alloy_store': ALLOY_STORE,
+    #                     'simulation_results': SIMULATION_RESULTS
     #                 }
     #             ),
     #
     #             content_type='application/json'
     #         )
-    #
     #         data = json.loads(resp.data.decode())
-    #         self.assertEqual(resp.status_code, 201)
-    #         self.assertEqual(data['status'], 'success')
     #         self.assertEqual(data['message'], 'Email(s) sent.')
+    #         self.assertEqual(data['status'], 'success')
+    #         self.assertEqual(resp.status_code, 201)
     #         shared_simulation = SharedSimulation.objects.get(
     #             owner_email=luke.email
     #         )
@@ -495,7 +492,7 @@ class TestShareService(BaseTestCase):
 
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
-            resp = self.client.post(
+            resp = client.post(
                 '/api/v1/sim/user/share/simulation/email',
                 data=json.dumps(
                     {
@@ -532,7 +529,7 @@ class TestShareService(BaseTestCase):
 
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
-            resp = self.client.post(
+            resp = client.post(
                 '/api/v1/sim/user/share/simulation/email',
                 data=json.dumps(
                     {
@@ -572,7 +569,7 @@ class TestShareService(BaseTestCase):
 
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
-            resp = self.client.post(
+            resp = client.post(
                 '/api/v1/sim/user/share/simulation/email',
                 data=json.dumps(
                     {
@@ -610,7 +607,7 @@ class TestShareService(BaseTestCase):
 
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
-            resp = self.client.post(
+            resp = client.post(
                 '/api/v1/sim/user/share/simulation/email',
                 data=json.dumps(
                     {
@@ -630,52 +627,55 @@ class TestShareService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'Invalid email.')
 
-    # def test_request_shared_simulation(self):
-    #     """
-    #     Ensure that when a link to a shared simulation link is clicked on, the
-    #     client is redirected successfully.
-    #     """
-    #
-    #     luke = User(
-    #         **{
-    #             'email': 'luke@skywalker.io',
-    #             'first_name': 'Luke',
-    #             'last_name': 'Skywalker'
-    #         }
-    #     )
-    #     luke.set_password('NeverJoinYou')
-    #     luke.verified = True
-    #     luke.save()
-    #
-    #     with self.client as client:
-    #         test_login(client, luke.email, 'NeverJoinYou')
-    #         resp_create_link = self.client.post(
-    #             '/api/v1/sim/user/share/simulation/link',
-    #             data=json.dumps(
-    #                 {
-    #                     'configurations': CONFIGS,
-    #                     'alloy_store': ALLOY_STORE,
-    #                     'simulation_results': SIMULATION_RESULTS
-    #                 }
-    #             ),
-    #
-    #             content_type='application/json'
-    #         )
-    #         data_1 = json.loads(resp_create_link.data.decode())
-    #         self.assertEqual(resp_create_link.status_code, 201)
-    #         self.assertEqual(data_1['status'], 'success')
-    #
-    #         link = data_1['link']
-    #
-    #         resp_request_simulation = self.client.get(
-    #             link, content_type='application/json'
-    #         )
-    #         self.assertEquals(resp_request_simulation.status_code, 302)
-    #         self.assertTrue(resp_request_simulation.headers['Location'])
-    #         token = resp_request_simulation.headers['Location'].split(':')[-1]
-    #         client_host = os.environ.get('CLIENT_HOST')
-    #         redirect_url = (f'http://{client_host}/share/simulation/:{token}')
-    #         self.assertRedirects(resp_request_simulation, redirect_url)
+    def test_request_shared_simulation(self):
+        """
+        Ensure that when a link to a shared simulation link is clicked on, the
+        client is redirected successfully.
+        """
+
+        luke = User(
+            **{
+                'email': 'luke@skywalker.io',
+                'first_name': 'Luke',
+                'last_name': 'Skywalker'
+            }
+        )
+        luke.set_password('NeverJoinYou')
+        luke.verified = True
+        luke.save()
+
+        with self.client as client:
+            test_login(client, luke.email, 'NeverJoinYou')
+            resp_create_link = self.client.post(
+                '/api/v1/sim/user/share/simulation/link',
+                data=json.dumps(
+                    {
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': SIMULATION_RESULTS
+                    }
+                ),
+
+                content_type='application/json'
+            )
+            data_1 = json.loads(resp_create_link.data.decode())
+            self.assertEqual(resp_create_link.status_code, 201)
+            self.assertEqual(data_1['status'], 'success')
+
+            link = data_1['link']
+
+            resp_request_simulation = self.client.get(
+                link, content_type='application/json'
+            )
+            self.assertEquals(resp_request_simulation.status_code, 302)
+            token = resp_request_simulation.headers['Location'].split('=')[-1]
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = (
+                f'{protocol}://{client_host}:{client_port}/token={token}'
+            )
+            self.assertRedirects(resp_request_simulation, redirect_url)
 
     def test_view_shared_simulation(self):
         """
@@ -695,7 +695,7 @@ class TestShareService(BaseTestCase):
 
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
-            resp_create = self.client.post(
+            resp_create = client.post(
                 '/api/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
@@ -718,7 +718,7 @@ class TestShareService(BaseTestCase):
                 'share.view_shared_simulation', sim_token
             )
 
-            resp_view = self.client.get(
+            resp_view = client.get(
                 sim_view_url, content_type='application/json'
             )
 
@@ -764,13 +764,23 @@ class TestShareService(BaseTestCase):
         Ensure a view shared simulation request with an invalid simulation token
         fails.
         """
+        luke = User(
+            **{
+                'email': 'luke@skylwalker.io',
+                'first_name': 'Luke',
+                'last_name': 'Skywalker'
+            }
+        )
+        luke.set_password('NeverJoinYou')
+        luke.verified = True
+        luke.save()
 
         bad_token = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaa'
         url = generate_url('share.view_shared_simulation', bad_token)
 
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
-            resp = self.client.get(url, content_type='application/json')
+            resp = client.get(url, content_type='application/json')
 
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 400)
@@ -796,7 +806,7 @@ class TestShareService(BaseTestCase):
 
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
-            resp_create = self.client.post(
+            resp_create = client.post(
                 '/api/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
@@ -813,7 +823,7 @@ class TestShareService(BaseTestCase):
             sim_token = generate_shared_simulation_token(str(shared_sim.id))
             sim_url = generate_url('share.view_shared_simulation', sim_token)
             shared_sim.delete()
-            resp_view = self.client.get(
+            resp_view = client.get(
                 sim_url, content_type='application/json'
             )
 

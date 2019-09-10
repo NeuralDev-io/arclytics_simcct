@@ -9,6 +9,7 @@ services:
       dockerfile: Dockerfile-prod
       labels:
         arclytics.io: "production"
+        service: "simcct"
     image: gcr.io/arclytics-sim/arc_sim_service:1.1.2
     ports:
       - 8000:8000

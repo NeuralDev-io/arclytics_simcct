@@ -1136,18 +1136,21 @@ while [[ "$1" != "" ]] ; do
                     simcct )
                       while [[ "$3" != "" ]]; do
                         case $3 in
+                          build )
+                            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
+                            TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
+                            docker push gcr.io/arclytics-sim/arc_sim_service:${TAG}
+                            ;;
                           create )
-                            # eval $(minikube docker-env)
-                            kubectl create -f "${WORKDIR}/kubernetes/simcct-minikube-service.yml"
-                            kubectl create -f "${WORKDIR}/kubernetes/simcct-minikube-deployment.yml" --validate=false
+                            # eval $(minikube docker-env)  <-- If using Docker and self-built images
+                            kubectl create -f "${WORKDIR}/kubernetes/simcct-gke-service.yaml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
                             fi
                             ;;
                           delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/simcct-minikube-service.yml"
-                            kubectl delete -f "${WORKDIR}/kubernetes/simcct-minikube-deployment.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-service.yaml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide

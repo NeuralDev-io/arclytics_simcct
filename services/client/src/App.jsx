@@ -3,7 +3,7 @@ import { Provider } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
 import { SnackbarProvider } from 'notistack'
 import store from './state/store'
-import { PrivateRoute, AdminRoute } from './components/moleisms/routers'
+import { PrivateRoute, AdminRoute, DemoRoute } from './components/moleisms/routers'
 import ErrorBoundary from './components/pages/error-boundary/ErrorBoundary'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
@@ -39,7 +39,7 @@ function App() {
                 path="/signup"
                 render={props => <SignupPage {...props} />}
               />
-              <PrivateRoute
+              <DemoRoute
                 exact
                 path="/"
                 component={SimulationPage}

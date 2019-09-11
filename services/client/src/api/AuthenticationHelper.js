@@ -81,24 +81,40 @@ export const logout = (callback) => {
     .catch(err => console.log(err))
 }
 
-export const checkAuthStatus = () => new Promise((resolve, reject) => {
-  fetch(`${ARC_URL}/auth/status`, {
-    method: 'GET',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then(res => res.json())
-    .then((res) => {
-      if (res.status === 'success') {
-        resolve(true)
-      } else {
-        reject(res.message)
-      }
+/**
+ * Check authentication status of current user.
+ * This function will always return a resolved promise with
+ * the state being the authentication status.
+ *
+ * Use it like this
+ * checkAuthStatus()
+ *  .then((res) => {
+ *    if (res.status === 'success') { // do something }
+ *    else { // do something }
+ *  })
+ */
+export const checkAuthStatus = async () => {
+  let auth
+  try {
+    auth = await fetch(`${ARC_URL}/auth/status`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     })
-    .catch(err => reject(err.message))
-})
+      .then((res) => {
+        if (res.status !== 200) {
+          throw new Error('Unauthorised')
+        }
+        return res.json()
+      })
+      .then(res => res)
+  } catch (err) {
+    return { status: 'fail' }
+  }
+  return auth
+}
 
 export const forgotPassword = (resolve, reject, email) => {
   fetch(`${ARC_URL}/reset/password`, {

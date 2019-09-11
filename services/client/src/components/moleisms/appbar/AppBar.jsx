@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
 import HardDriveIcon from 'react-feather/dist/icons/hard-drive'
 import HelpIcon from 'react-feather/dist/icons/help-circle'
 import MonitorIcon from 'react-feather/dist/icons/monitor'
@@ -11,13 +10,13 @@ import SlidersIcon from 'react-feather/dist/icons/sliders'
 import { ReactComponent as AnstoLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import Tooltip from '../../elements/tooltip'
-import { logout } from '../../../utils/AuthenticationHelper'
+import { logout } from '../../../api/AuthenticationHelper'
 import { buttonize } from '../../../utils/accessibility'
 
 import styles from './AppBar.module.scss'
 
 const AppBar = (props) => {
-  const { active, redirect, user } = props
+  const { active, redirect, isAdmin } = props
   return (
     <nav className={styles.navContainer}>
       <div>
@@ -65,7 +64,7 @@ const AppBar = (props) => {
         <a
           id="admin"
           className={`${styles.navIcon} ${active === 'admin' && styles.active}`}
-          style={{ display: user.admin ? 'flex' : 'none' }}
+          style={{ display: isAdmin ? 'flex' : 'none' }}
           href="/admin/analytics"
         >
           <Tooltip className={styles.tooltip} position="right">
@@ -94,7 +93,6 @@ const AppBar = (props) => {
             <LogOutIcon className={styles.icon} />
             <p> Logout </p>
           </Tooltip>
-          
         </div>
         <Logo className={styles.logo} />
       </div>
@@ -105,11 +103,7 @@ const AppBar = (props) => {
 AppBar.propTypes = {
   active: PropTypes.string.isRequired,
   redirect: PropTypes.func.isRequired,
-  user: PropTypes.shape({ admin: PropTypes.bool.isRequired }).isRequired,
+  isAdmin: PropTypes.bool.isRequired,
 }
 
-const mapStateToProps = state => ({
-  user: state.persist.userStatus,
-})
-
-export default connect(mapStateToProps, {})(AppBar)
+export default AppBar

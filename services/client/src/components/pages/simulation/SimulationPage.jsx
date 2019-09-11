@@ -34,19 +34,8 @@ class SimulationPage extends Component {
     }
   }
 
-  componentDidMount = () => {
-    // if (!localStorage.getItem('token')) {
-    //   this.props.history.push('/signin') // eslint-disable-line
-    // }
-  }
-
-  // handleShowModal = type => this.setState({ [`${type}Modal`]: true })
-
-  // handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
-
   saveCurrentSimulation = () => {
     const { configurations, alloys } = this.state
-    console.log(configurations)
     const alloyStore = {
       alloy_option: alloys.alloyOption,
       alloys: {
@@ -60,7 +49,6 @@ class SimulationPage extends Component {
       ...others,
       grain_size: grain_size_ASTM,
     }
-    console.log(alloyStore)
     postSaveSimulation(validConfigs, alloyStore)
   }
 
@@ -70,11 +58,11 @@ class SimulationPage extends Component {
       displayProfile,
       runSimConnect,
     } = this.state
-    const { history, isInitialised } = this.props
+    const { history, isInitialised, isAdmin } = this.props
 
     return (
       <React.Fragment>
-        <AppBar active="sim" redirect={history.push} />
+        <AppBar active="sim" redirect={history.push} isAdmin={isAdmin} />
         <div className={styles.compSidebar}>
           <CompSidebar
             sessionIsInitialised={isInitialised}
@@ -170,6 +158,7 @@ SimulationPage.propTypes = {
   })).isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
   isInitialised: PropTypes.bool.isRequired,
+  isAdmin: PropTypes.bool.isRequired,
 }
 
 const mapStateToProps = state => ({

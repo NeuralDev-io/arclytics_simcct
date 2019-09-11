@@ -3,6 +3,7 @@ import { Provider } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
 import { SnackbarProvider } from 'notistack'
 import store from './state/store'
+import { PrivateRoute, AdminRoute } from './components/moleisms/routers'
 import ErrorBoundary from './components/pages/error-boundary/ErrorBoundary'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
@@ -38,32 +39,32 @@ function App() {
                 path="/signup"
                 render={props => <SignupPage {...props} />}
               />
-              <Route
+              <PrivateRoute
                 exact
                 path="/"
-                render={props => <SimulationPage {...props} />}
+                component={SimulationPage}
               />
-              <Route
+              <PrivateRoute
                 exact
                 path="/user/simulations"
-                render={props => <UserSimulationPage {...props} />}
+                component={UserSimulationPage}
               />
-              <Route
+              <PrivateRoute
                 exact
                 path="/user/alloys"
-                render={props => <UserAlloyPage {...props} />}
+                component={UserAlloyPage}
               />
-              <Route
+              <PrivateRoute
                 path="/profileQuestions"
-                render={props => <ProfileQuestionsPage {...props} />}
+                component={ProfileQuestionsPage}
               />
-              <Route
+              <AdminRoute
                 path="/admin"
-                render={props => <AdminPage {...props} />}
+                component={AdminPage}
               />
-              <Route
+              <PrivateRoute
                 path="/user/profile"
-                render={props => <ProfilePage {...props} />}
+                component={ProfilePage}
               />
               <Route
                 path="/password/reset=:token"

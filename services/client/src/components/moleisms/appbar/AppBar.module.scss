@@ -40,7 +40,7 @@
       }
 
       &.active {
-        & > .icon { stroke: var(--arc500); }
+        & .icon { stroke: var(--arc500); }
       }
 
       &:last-child {

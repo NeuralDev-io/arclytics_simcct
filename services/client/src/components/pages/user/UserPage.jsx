@@ -26,17 +26,17 @@ class UserPage extends Component {
 
   render() {
     // this.props.getUserProfileConnect()
-    const { history, user } = this.props
+    const { history, user, isAdmin } = this.props
     return (
       <React.Fragment>
-        <AppBar active="user" redirect={history.push} />
+        <AppBar active="user" redirect={history.push} isAdmin={isAdmin} />
         <div className={styles.sidebar}>
           {/* A sidebar with the sub navigation for the children components. */}
           <UserSidebar />
         </div>
         <div className={styles.main}>
           {/* Define the routes for the right panel. */}
-          <Route path="/user/profile" render={props => <ProfilePage {...props} userProf={user}/>} />
+          <Route path="/user/profile" render={props => <ProfilePage {...props} userProf={user} />} />
         </div>
       </React.Fragment>
     )
@@ -45,6 +45,7 @@ class UserPage extends Component {
 
 UserPage.propTypes = {
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+  isAdmin: PropTypes.bool.isRequired,
 }
 
 const mapStateToProps = state => ({

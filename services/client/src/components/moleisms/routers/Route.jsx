@@ -77,3 +77,46 @@ export class AdminRoute extends React.Component {
 AdminRoute.propTypes = {
   component: PropTypes.elementType.isRequired,
 }
+
+export class DemoRoute extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      isLoading: true,
+      isAuthenticated: false,
+      isAdmin: true,
+    }
+  }
+
+  componentDidMount = () => {
+    checkAuthStatus()
+      .then((res) => {
+        if (res.status === 'success') {
+          this.setState({
+            isLoading: false,
+            isAuthenticated: true,
+            isAdmin: res.admin,
+          })
+        }
+        this.setState({ isLoading: false })
+      })
+  }
+
+  render() {
+    const { component: Component, ...rest } = this.props
+    const { isAuthenticated, isLoading, isAdmin } = this.state
+    if (isLoading) return <div />
+    return (
+      <Route
+        {...rest}
+        render={props => (
+          <Component {...props} isAdmin={isAdmin} isAuthenticated={isAuthenticated} />
+        )}
+      />
+    )
+  }
+}
+
+DemoRoute.propTypes = {
+  component: PropTypes.elementType.isRequired,
+}

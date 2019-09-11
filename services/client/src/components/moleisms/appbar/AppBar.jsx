@@ -76,12 +76,12 @@ const AppBar = (props) => {
       <div>
         <a
           id="profile"
-          className={`${styles.navIcon} ${active === 'profile' && styles.active}`}
+          className={`${styles.navIcon} ${active === 'user' && styles.active}`}
           href="/user/profile"
         >
           <Tooltip className={styles.tooltip} position="right">
             <UserIcon className={styles.icon} />
-            <p> Profile </p>
+            <p> Account </p>
           </Tooltip>
         </a>
         <div

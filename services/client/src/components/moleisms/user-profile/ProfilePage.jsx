@@ -12,11 +12,8 @@ import {
   getUserProfile,
   createUserProfile,
   updateUserProfile,
-  updateEmail,
-  changePassword,
 } from '../../../state/ducks/self/actions'
 
-import AppBar from '../appbar/AppBar'
 import TextField from '../../elements/textfield'
 import Select from '../../elements/select'
 
@@ -56,27 +53,13 @@ class ProfilePage extends Component {
         { label: 'Intermediate', value: 'Intermediate' },
         { label: 'Advanced', value: 'Advanced' },
       ],
-      currentPassword: '',
-      currPwdErr: '',
-      newPassword: '',
-      confirmPassword: '',
-      isChangeEmail: false,
-      isChangePassword: false,
-      editPassword: false,
       updateError: null,
       edit: false,
-      editEmail: false,
-      newEmail: '',
-      emailErr: '',
-      isCurrPwdCorrect: false,
     }
   }
 
   componentDidMount = () => {
-    const { history, getUserProfileConnect } = this.props
-    if (!localStorage.getItem('token')) history.push('/signin')
-    // TODO(arvy@neuraldev.io): This pattern is not ideal either as it turns
-    //  an async call to one that is blocking and updates based on returned promise.
+    const { getUserProfileConnect } = this.props
     getUserProfileConnect().then(() => {
       const { user } = this.props
       this.setState({
@@ -130,12 +113,6 @@ class ProfilePage extends Component {
     }
   }
 
-  toggleEditButtons = (type) => {
-    const { editEmail, editPassword } = this.state
-    if (type === 'email') this.setState({ editEmail: !editEmail })
-    else if (type === 'password') this.setState({ editPassword: !editPassword })
-  }
-
   handleChange = (name, value) => {
     this.setState({
       [name]: value,
@@ -179,46 +156,6 @@ class ProfilePage extends Component {
     }
   }
 
-  handleUpdateEmail = (value) => {
-    const { updateEmailConnect } = this.props
-    if (!value) {
-      this.setState({
-        emailErr: 'Required',
-      })
-    } else if (
-      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)
-    ) {
-      this.setState({
-        emailErr: 'Invalid email',
-      })
-    } else {
-      console.log(value)
-      updateEmailConnect({ new_email: value })
-    }
-  }
-
-  handleChangeCurrPwd = (value) => {
-    this.setState({
-      currentPassword: value,
-    })
-    if (value.length >= 6) {
-      this.setState({
-        isCurrPwdCorrect: true,
-      })
-    }
-  }
-
-  submitNewPassword = () => {
-    const { currentPassword, newPassword, confirmPassword } = this.state
-    const { changePasswordConnect } = this.props
-
-    changePasswordConnect({
-      password: currentPassword,
-      new_password: newPassword,
-      confirm_password: confirmPassword,
-    })
-  }
-
   render() {
     const {
       email,
@@ -234,218 +171,125 @@ class ProfilePage extends Component {
       phaseTransformOptions,
       updateError,
       edit,
-      currentPassword,
-      currPwdErr,
-      newPassword,
-      confirmPassword,
-      isChangeEmail,
-      isChangePassword,
-      isCurrPwdCorrect,
-      newEmail,
-      emailErr,
-      editPassword,
-      editEmail,
     } = this.state
 
-    const { history } = this.props
-
     return (
-      <React.Fragment>
-        <AppBar active="profile" redirect={history.push} />
+      <div className={styles.main}>
+        <h3>General</h3>
+        <div className={styles.generalFields}>
+          <div className={`input-row ${styles.row}`}>
+            <span>First name</span>
+            <TextField
+              type="firstName"
+              name="firstName"
+              value={firstName}
+              placeholder="First Name"
+              length="stretch"
+              isDisabled={!edit}
+              onChange={value => this.handleChange('firstName', value)}
+            />
+          </div>
+          <div className={`input-row ${styles.row}`}>
+            <span> Last name </span>
+            <TextField
+              type="lastName"
+              name="lastName"
+              value={lastName}
+              placeholder="Last Name"
+              length="stretch"
+              isDisabled={!edit}
+              onChange={value => this.handleChange('lastName', value)}
+            />
+          </div>
+        </div>
 
-        <div className={styles.main}>
-          <h4 className={styles.header}>General</h4>
-          <div className={styles.generalFields}>
-            <div className={styles.row}>
-              <h6 className={styles.leftCol}> Email </h6>
-              <div className={styles.rightCol}>
-                <h6>
-                  {email}
-                </h6>
-              </div>
+        <h3> About yourself </h3>
+        <div className={styles.about}>
+          <div className={styles.questions}>
+            <div className={styles.question}>
+              <span className={styles.questionText}>What sentence best describes you?</span>
+              <Select
+                type="aim"
+                name="aim"
+                placeholder="---"
+                value={aimValue}
+                options={aimOptions}
+                length="stretch"
+                isDisabled={!edit}
+                onChange={value => this.handleChange('aimValue', value)}
+              />
             </div>
-            <div className={styles.row}>
-              <h6 className={styles.leftCol}>First name</h6>
-              <div className={styles.rightCol}>
-                <TextField
-                  type="firstName"
-                  name="firstName"
-                  value={firstName}
-                  placeholder="First Name"
-                  length="stretch"
-                  isDisabled={!edit}
-                  onChange={value => this.handleChange('firstName', value)}
-                />
-              </div>
+
+            <div className={styles.question}>
+              <span className={styles.questionText}>
+                What is the highest level of education have you studied?
+              </span>
+              <Select
+                type="highestEducation"
+                name="highestEducation"
+                placeholder="---"
+                value={highestEducationValue}
+                options={highestEducationOptions}
+                length="stretch"
+                isDisabled={!edit}
+                onChange={value => this.handleChange('highestEducationValue', value)}
+              />
             </div>
-            <div className={styles.row}>
-              <h6 className={styles.leftCol}> Last name </h6>
-              <div className={styles.rightCol}>
-                <TextField
-                  type="lastName"
-                  name="lastName"
-                  value={lastName}
-                  placeholder="Last Name"
-                  length="stretch"
-                  isDisabled={!edit}
-                  onChange={value => this.handleChange('lastName', value)}
-                />
-              </div>
+
+            <div className={styles.question}>
+              <span className={styles.questionText}>
+                What is your experience with solid-state phase transformation?
+              </span>
+              <Select
+                type="sciTechExp"
+                name="sciTechExp"
+                placeholder="---"
+                value={sciTechExpValue}
+                options={sciTechOptions}
+                length="stretch"
+                isDisabled={!edit}
+                onChange={value => this.handleChange('sciTechExpValue', value)}
+              />
+            </div>
+
+            <div className={styles.question}>
+              <span className={styles.questionText}>
+                What is your experience with scientific software?
+              </span>
+              <Select
+                type="phaseTransformExp"
+                name="phaseTransformExp"
+                placeholder="---"
+                value={phaseTransformExpValue}
+                options={phaseTransformOptions}
+                length="stretch"
+                isDisabled={!edit}
+                onChange={value => this.handleChange('phaseTransformExpValue', value)}
+              />
             </div>
           </div>
-
-          <div className={styles.about}>
-            <h4 className={styles.header}> About yourself </h4>
-            <div className={styles.questions}>
-              <div className={styles.question}>
-                <h6 className={styles.questionText}>What sentence best describes you?</h6>
-                <Select
-                  type="aim"
-                  name="aim"
-                  placeholder="---"
-                  value={aimValue}
-                  options={aimOptions}
-                  length="stretch"
-                  isDisabled={!edit}
-                  onChange={value => this.handleChange('aimValue', value)}
-                />
-              </div>
-
-              <div className={styles.question}>
-                <h6 className={styles.questionText}>
-                  What is the highest level of education have you studied?
-                </h6>
-                <Select
-                  type="highestEducation"
-                  name="highestEducation"
-                  placeholder="---"
-                  value={highestEducationValue}
-                  options={highestEducationOptions}
-                  length="stretch"
-                  isDisabled={!edit}
-                  onChange={value => this.handleChange('highestEducationValue', value)}
-                />
-              </div>
-
-              <div className={styles.question}>
-                <h6 className={styles.questionText}>
-                  What is your experience with solid-state phase transformation?
-                </h6>
-                <Select
-                  type="sciTechExp"
-                  name="sciTechExp"
-                  placeholder="---"
-                  value={sciTechExpValue}
-                  options={sciTechOptions}
-                  length="stretch"
-                  isDisabled={!edit}
-                  onChange={value => this.handleChange('sciTechExpValue', value)}
-                />
-              </div>
-
-              <div className={styles.question}>
-                <h6 className={styles.questionText}>
-                  What is your experience with scientific software?
-                </h6>
-                <Select
-                  type="phaseTransformExp"
-                  name="phaseTransformExp"
-                  placeholder="---"
-                  value={phaseTransformExpValue}
-                  options={phaseTransformOptions}
-                  length="stretch"
-                  isDisabled={!edit}
-                  onChange={value => this.handleChange('phaseTransformExpValue', value)}
-                />
-              </div>
-            </div>
-          </div>
-          <h6 className={styles.updateError}>{updateError}</h6>
-          <div className={styles.editButtons}>
-            {
-              !edit ? (
+        </div>
+        <h6 className={styles.updateError}>{updateError}</h6>
+        <div className={styles.editButtons}>
+          {
+            !edit ? (
+              <Button onClick={this.handleEdit} appearance="outline">Edit</Button>
+            )
+              : (
                 <>
-                  {' '}
-                  <Button onClick={this.handleEdit} appearance="text">Edit</Button>
-                  {' '}
+                  <Button onClick={this.updateUser}>Save</Button>
+                  <Button
+                    className={styles.cancel}
+                    appearance="outline"
+                    onClick={this.handleEdit}
+                  >
+                    Cancel
+                  </Button>
                 </>
               )
-                : (
-                  <>
-                    <Button onClick={this.updateUser}>Save</Button>
-                    <Button
-                      className={styles.cancel}
-                      appearance="outline"
-                      onClick={this.handleEdit}
-                    >
-                      Cancel
-                    </Button>
-                  </>
-                )
-            }
-          </div>
-
-          <div className={styles.security}>
-            <h4 className={styles.header}>Security</h4>
-            <div className={styles.row}>
-              <h5>Change your email</h5>
-              <div>
-                {
-                  !editEmail ? (
-                    <>
-                      {' '}
-                      <Button
-                        appearance="text"
-                        onClick={() => this.toggleEditButtons('email')}
-                      >
-                        Change
-                      </Button>
-                      {' '}
-                    </>
-                  ) : (
-                    <>
-                      <Button onClick={() => console.log('Save New Email')}>Save</Button>
-                      <Button
-                        appearance="outline"
-                        onClick={() => this.toggleEditButtons('email')}
-                      >
-                        Cancel
-                      </Button>
-                    </>
-                  )
-                }
-              </div>
-            </div>
-            <div className={styles.row}>
-              <h5>Change your password</h5>
-              <div>
-                <Button
-                  appearance="text"
-                  onClick={() => this.toggleEditButtons('password')}
-                >
-                  Update
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.dataAndPersonal}>
-            <h4 className={styles.header}> Data and Personalisation </h4>
-            <h6>
-              Your data, activities and preferences that help make Arclytics Sim service more
-              useful for you.
-            </h6>
-            <Button
-              appearance="outline"
-              onClick={() => console.log('Review Data Personalisation')}
-              className={styles.review}
-            >
-              Review
-            </Button>
-          </div>
-
+          }
         </div>
-      </React.Fragment>
+      </div>
     )
   }
 }
@@ -470,8 +314,6 @@ ProfilePage.propTypes = {
   getUserProfileConnect: PropTypes.func.isRequired,
   updateUserProfileConnect: PropTypes.func.isRequired,
   createUserProfileConnect: PropTypes.func.isRequired,
-  updateEmailConnect: PropTypes.func.isRequired,
-  changePasswordConnect: PropTypes.func.isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
 }
 
@@ -484,8 +326,6 @@ const mapDispatchToProps = {
   getUserProfileConnect: getUserProfile,
   updateUserProfileConnect: updateUserProfile,
   createUserProfileConnect: createUserProfile,
-  updateEmailConnect: updateEmail,
-  changePasswordConnect: changePassword,
 }
 
 

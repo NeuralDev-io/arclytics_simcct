@@ -10,7 +10,7 @@ import SignupPage from './components/pages/signup/SignupPage'
 import SimulationPage from './components/pages/simulation'
 import AdminPage from './components/pages/admin'
 import ProfileQuestionsPage from './components/pages/profile-questions'
-import ProfilePage from './components/moleisms/user-profile'
+import UserPage from './components/pages/user'
 import UserSimulationPage from './components/pages/user-sim'
 import UserAlloyPage from './components/pages/user-alloys'
 import PasswordResetPage from './components/pages/password-reset'
@@ -63,8 +63,8 @@ function App() {
                 component={AdminPage}
               />
               <PrivateRoute
-                path="/user/profile"
-                component={ProfilePage}
+                path="/user"
+                component={UserPage}
               />
               <Route
                 path="/password/reset=:token"

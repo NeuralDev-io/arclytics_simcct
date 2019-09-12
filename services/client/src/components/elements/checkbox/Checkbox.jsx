@@ -27,7 +27,7 @@ const Checkbox = (props) => {
     name,
     onChange,
   } = props
-  const classname = `${styles.checkbox} ${className || ''}`
+  const classname = `${styles.checkbox} ${isDisabled && styles.disabled} ${className || ''}`
 
   return (
     <div className={classname}>

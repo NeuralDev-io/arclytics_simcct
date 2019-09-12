@@ -5,9 +5,9 @@ import UserAlloys from '../../moleisms/user-alloys'
 
 import styles from './UserAlloyPage.module.scss'
 
-const UserAlloyPage = ({ history }) => (
+const UserAlloyPage = ({ history, isAdmin }) => (
   <React.Fragment>
-    <AppBar active="userAlloys" redirect={history.push} />
+    <AppBar active="userAlloys" redirect={history.push} isAdmin={isAdmin} isAuthenticated />
     <div className={styles.main}>
       <UserAlloys history={history} />
     </div>
@@ -18,6 +18,7 @@ UserAlloyPage.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
+  isAdmin: PropTypes.bool.isRequired,
 }
 
 export default UserAlloyPage

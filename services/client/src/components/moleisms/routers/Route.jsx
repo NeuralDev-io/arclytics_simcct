@@ -84,7 +84,7 @@ export class DemoRoute extends React.Component {
     this.state = {
       isLoading: true,
       isAuthenticated: false,
-      isAdmin: true,
+      isAdmin: false,
     }
   }
 

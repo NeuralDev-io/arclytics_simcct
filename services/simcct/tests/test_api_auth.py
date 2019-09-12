@@ -1180,6 +1180,85 @@ class TestAuthEndpoints(BaseTestCase):
     # TODO(davidmatthews1004@gmail.com) write tests for geolocation with
     #  external ip addresses.
 
+    def test_resend_confirm_email_after_registration_user_dne(self):
+        with self.client as client:
+            resp = client.put(
+                '/api/v1/sim/confirm/register/resend',
+                data=json.dumps(
+                    {
+                        'email': 'lordvader@arclytics.com'
+                    }
+                ),
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+            # self.assertEqual(
+            #     data['message'], 'User does not exist.'
+            # )
+
+    def test_resend_confirm_email_after_registration_already_verified(self):
+        user = User(
+            **{
+                'email': 'kenobi@arclytics.io',
+                'first_name': 'Obi-Wan',
+                'last_name': 'Kenobi'
+            }
+        )
+        user.set_password('helloThere')
+        user.verified = True
+        user.save()
+
+        with self.client as client:
+            resp = client.put(
+                '/api/v1/sim/confirm/register/resend',
+                data=json.dumps(
+                    {
+                        'email': 'kenobi@arclytics.io'
+                    }
+                ),
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            # self.assertEqual(data['status'], 'success')
+            # self.assertEqual(
+            #     data['message'], 'User is already verified.'
+            # )
+
+    def test_resend_confirm_email_after_registration_success(self):
+        user = User(
+            **{
+                'email': 'kenobi@arclytics.com',
+                'first_name': 'Obi-Wan',
+                'last_name': 'Kenobi'
+            }
+        )
+        user.set_password('helloThere')
+        user.save()
+
+        with self.client as client:
+            resp = client.put(
+                '/api/v1/sim/confirm/register/resend',
+                data=json.dumps(
+                    {
+                        'email': 'kenobi@arclytics.com'
+                    }
+                ),
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+            # self.assertEqual(
+            #     data['message'], 'Another confirmation email has been sent.'
+            # )
+
+
 
 if __name__ == '__main__':
     unittest.main()

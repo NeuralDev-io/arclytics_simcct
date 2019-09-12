@@ -170,7 +170,7 @@ class SignupPage extends Component {
                       name="SIGN UP"
                       appearance="default"
                       type="submit"
-                      length="small"
+                      length="long"
                       disabled={isSubmitting}
                     >
                       SIGN UP

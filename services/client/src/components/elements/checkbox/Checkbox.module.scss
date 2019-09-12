@@ -53,4 +53,13 @@
   input[type="checkbox"]:focus ~ .checkmark {
     box-shadow: inset 0 0 1px 1px var(--arc500);
   }
+
+  &.disabled {
+    .checkmark { border: 1px solid var(--n100); }
+    span { color: var(--n300) }
+    input[type="checkbox"]:checked ~ .checkmark {
+      background-color: var(--n100);
+      border: 1px solid var(--n100);
+    }
+  }
 }

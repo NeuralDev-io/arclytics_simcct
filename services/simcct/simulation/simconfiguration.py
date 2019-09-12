@@ -20,6 +20,7 @@ __package__ = 'simulation'
 {Description}
 """
 
+import os
 import json
 from pathlib import Path
 from typing import Union
@@ -27,11 +28,11 @@ from typing import Union
 import numpy as np
 from prettytable import PrettyTable
 
-from settings import BASE_DIR
 from simulation.utilities import Method, ConfigurationError
 from simulation.ae3_utilities import ae3_single_carbon, ae3_multi_carbon
 from simulation.periodic import PeriodicTable
 
+BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
 _TEST_CONFIGS = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 
 

@@ -37,9 +37,7 @@ import geoip2.database
 
 from logger.arc_logger import AppLogger
 from sim_api.extensions import bcrypt
-from sim_api.middleware import (
-    authenticate_user_and_cookie_flask
-)
+from sim_api.middleware import (authenticate_user_and_cookie_flask)
 from sim_api.models import User, LoginData
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
@@ -86,27 +84,20 @@ def confirm_email(token):
     """
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+    protocol = os.environ.get('CLIENT_PROTOCOL')
     client_host = os.environ.get('CLIENT_HOST')
+    client_port = os.environ.get('CLIENT_PORT')
+    redirect_url = f"{protocol}://{client_host}:{client_port}"
 
     # We must confirm the token by decoding it
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        # response['error'] = str(e)
-        # return jsonify(response), 400
-        return redirect(
-            f'http://{client_host}//signin?tokenexpired=true', code=302
-        )
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except URLTokenExpired as e:
-        return redirect(
-            f'http://{client_host}//signin?tokenexpired=true', code=302
-        )
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except Exception as e:
-        # response['error'] = str(e)
-        # return jsonify(response), 400
-        return redirect(
-            f'http://{client_host}//signin?tokenexpired=true', code=302
-        )
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     # We ensure there is a user for this email
     user = User.objects.get(email=email)
@@ -114,13 +105,9 @@ def confirm_email(token):
     user.verified = True
     user.save()
 
-    logger.debug(client_host)
-
     response['status'] = 'success'
     response.pop('message')
-    # TODO(andrew@neuraldev.io): Need to check how to change this during
-    #  during production and using Ingress/Load balancing for Kubernetes
-    return redirect(f'http://{client_host}/signin', code=302)
+    return redirect(f'{redirect_url}/signin', code=302)
 
 
 @auth_blueprint.route('/confirm/resend', methods=['GET'])
@@ -158,25 +145,68 @@ def confirm_email_resend(user):
     return jsonify(response), 200
 
 
+@auth_blueprint.route('/confirm/register/resend', methods=['PUT'])
+def confirm_email_resend_after_registration() -> Tuple[dict, int]:
+
+    # response = {'status': 'fail', 'message': 'Invalid payload.'}
+    response = {'status': 'success'}
+
+    data = request.get_json()
+
+    email = data.get('email', None)
+
+    if not User.objects(email=email):
+        # response['message'] = 'User does not exist.'
+        return jsonify(response), 200
+
+    user = User.objects.get(email=email)
+
+    if user.verified:
+        # response['message'] = 'User is already verified.'
+        return jsonify(response), 200
+
+    # generate the confirmation token for verifying email
+    confirmation_token = generate_confirmation_token(user.email)
+    confirm_url = generate_url('auth.confirm_email', confirmation_token)
+
+    from tasks import send_email
+    send_email(
+        to=[user.email],
+        subject_suffix='Please Confirm Your Email',
+        html_template=render_template(
+            'activate.html',
+            confirm_url=confirm_url,
+            user_name=f'{user.first_name} {user.last_name}'
+        ),
+        text_template=render_template(
+            'activate.txt',
+            confirm_url=confirm_url,
+            user_name=f'{user.first_name} {user.last_name}'
+        )
+    )
+
+    response['status'] = 'success'
+    # response['message'] = 'Another confirmation email has been sent.'
+    return jsonify(response), 200
+
+
 @auth_blueprint.route('/confirmadmin/<token>', methods=['GET'])
 def confirm_email_admin(token):
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+    protocol = os.environ.get('CLIENT_PROTOCOL')
     client_host = os.environ.get('CLIENT_HOST')
+    client_port = os.environ.get('CLIENT_PORT')
+    redirect_url = f"{protocol}://{client_host}:{client_port}"
 
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        response['error'] = e
-        return jsonify(response), 400
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except URLTokenExpired as e:
-        response['error'] = e
-        return jsonify(response), 400
-        # TODO(davidmatthews1004@gmail.com) Redirect them to a place where they
-        #  can resend this token if it has expired.
-        # return redirect(f'http://{client_host}/tokenexpired', code=302)
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except Exception as e:
-        return jsonify(response), 400
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     user = User.objects.get(email=email)
     user.admin_profile.verified = True
@@ -184,9 +214,7 @@ def confirm_email_admin(token):
 
     response['status'] = 'success'
     response.pop('message')
-    # TODO(davidmatthews1004@gmail.com): Need to check how to change this during
-    #  during production and using Ingress/Load balancing for Kubernetes
-    return redirect(f'http://{client_host}:3000/signin', code=302)
+    return redirect(f'{redirect_url}/signin', code=302)
 
 
 @auth_blueprint.route(rule='/auth/register', methods=['POST'])
@@ -467,17 +495,24 @@ def reset_password() -> Tuple[dict, int]:
 
 @auth_blueprint.route('/reset/password/confirm/<token>', methods=['GET'])
 def confirm_reset_password(token):
-    response = {'status': 'fail', 'message': 'Invalid token.'}
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    protocol = os.environ.get('CLIENT_PROTOCOL')
+    client_host = os.environ.get('CLIENT_HOST')
+    client_port = os.environ.get('CLIENT_PORT')
+    redirect_url = f"{protocol}://{client_host}:{client_port}"
 
     # Decode the token from the email to the confirm it was the right one
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        return redirect(
+            f'{redirect_url}/password/reset?tokenexpired=true', code=302
+        )
     except Exception as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        return redirect(
+            f'{redirect_url}/password/reset?tokenexpired=true', code=302
+        )
 
     # Confirm and validate that the user exists
     user = User.objects.get(email=email)
@@ -486,17 +521,9 @@ def confirm_reset_password(token):
     # it as part of the next request
     jwt_token = user.encode_password_reset_token(user_id=user.id).decode()
 
-    # TODO(andrew@neuraldev.io): Ensure the link can be dynamic.
-    client_host = os.environ.get('CLIENT_HOST')
-    # We can make our own redirect response by doing the following
-    custom_redir_response = app.response_class(
-        status=302, mimetype='application/json'
-    )
-    redirect_url = f'http://localhost:3000/password/reset={jwt_token}'
-    custom_redir_response.headers['Location'] = redirect_url
-    # Additionally, if we need to, we can attach the JWT token in the header
-    # custom_redir_response.headers['Authorization'] = f'Bearer {jwt_token}'
-    return custom_redir_response
+    response['status'] = 'success'
+    response.pop('message')
+    return redirect(f'{redirect_url}/password/reset={jwt_token}', code=302)
 
 
 @auth_blueprint.route('/reset/password', methods=['POST'])

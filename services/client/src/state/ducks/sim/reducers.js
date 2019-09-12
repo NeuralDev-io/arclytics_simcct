@@ -13,6 +13,7 @@ import {
 
 const initialState = {
   isInitialised: false,
+  isSimulated: false,
   displayUserCurve: true,
   results: {
     USER: {
@@ -157,6 +158,7 @@ const reducer = (state = initialState, action) => {
     case RUN_SIM:
       return {
         ...state,
+        isSimulated: true,
         results: {
           ...state.results,
           ...action.payload,
@@ -174,6 +176,7 @@ const reducer = (state = initialState, action) => {
       const { alloys, configurations, results } = action.payload
       return {
         isInitialised: true,
+        isSimulated: true,
         displayUserCurve: true,
         configurations,
         alloys: {

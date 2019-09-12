@@ -126,7 +126,7 @@ class RedisSessionInterface(SessionInterface):
             )
             return self._new_session()
 
-        # TODO(andrew@neuraldev.io): Add a check for User-Agent 
+        # TODO(andrew@neuraldev.io): Add a check for User-Agent
 
         return RedisSession(data, sid=sid)
 

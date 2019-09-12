@@ -923,6 +923,35 @@ while [[ "$1" != "" ]] ; do
             generalMessage "Arclytics Sim Project Root Directory"
             echo "${WORKDIR}"
             ;;
+        style )
+          while [[ "$2" != "" ]] ; do
+            case $2 in
+              python )
+                headerMessage "ARC CLI STYLING PYTHON"
+                CONFIG="${WORKDIR}/.yapf.cfg"
+                ARC_DIR="${WORKDIR}/services/simcct"
+                CELERY_DIR="${WORKDIR}/services/celery-worker"
+                EXCLUDE_DIR="${WORKDIR}/services/client"
+                echo "Running yapf formatter"
+                echo "Current Directory: ${WORKDIR}"
+                echo "Configuration used: ${CONFIG}"
+                echo "Exclude directory: ${EXCLUDE_DIR}"
+                yapf -ri --verbose --style=${CONFIG} --exclude=${EXCLUDE_DIR} ${ARC_DIR} ${CELERY_DIR}
+                completeMessage
+                exit 0
+                ;;
+              #eslint | js | client )
+              #  headerMessage "ARC CLI STYLING PYTHON"
+              #  CLIENT_DIR="${WORKDIR}/services/client"
+              #  npm run lint-fix
+              #  completeMessage
+              #  exit 0
+              #  ;;
+            esac
+            shift
+            done
+
+          ;;
         minikube | mk )
             headerMessage "MINIKUBE CLI"
             while [[ "$2" != "" ]] ; do

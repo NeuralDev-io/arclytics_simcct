@@ -1011,9 +1011,7 @@ class TestAdminCreateService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
-            self.assertRedirects(
-                resp, f'{redirect_url}/signin'
-            )
+            self.assertRedirects(resp, f'{redirect_url}/signin')
 
             updated_user = User.objects.get(email=user.email)
             self.assertTrue(updated_user.is_admin)

@@ -190,32 +190,27 @@ def cancel_promotion(token):
         email_list = confirm_token(token, 2592000)
     except URLTokenError as e:
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     except Exception as e:
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # If a list is not returned, we should get out of here.
     if not isinstance(email_list, list):
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Ensure both admin and user email is present in list
     if not len(email_list) == 2:
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Let's just be sure that we don't go out of index range
@@ -224,26 +219,22 @@ def cancel_promotion(token):
         user_email = email_list[1]
     except IndexError as e:
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     if not admin_email or not user_email:
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Ensure both users exist in the database
     if not User.objects(email=admin_email):
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     if not User.objects(email=user_email):
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Get Admin user object
@@ -254,8 +245,7 @@ def cancel_promotion(token):
         # response['message'] = 'User is not authorised to promote other users.'
         # return jsonify(response), 401
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Get target user object
@@ -448,25 +438,21 @@ def confirm_disable_account(token):
         email = confirm_token(token)
     except URLTokenError as e:
         return redirect(
-            f'{redirect_url}/disable/user/confirm?tokenexpired=true',
-            code=302
+            f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
         return redirect(
-            f'{redirect_url}/disable/user/confirm?tokenexpired=true',
-            code=302
+            f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
     except Exception as e:
         return redirect(
-            f'{redirect_url}/disable/user/confirm?tokenexpired=true',
-            code=302
+            f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
 
     # Ensure the user exists in the database
     if not User.objects(email=email):
         return redirect(
-            f'{redirect_url}/disable/user/confirm?tokenexpired=true',
-            code=302
+            f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
 
     # Get the user object

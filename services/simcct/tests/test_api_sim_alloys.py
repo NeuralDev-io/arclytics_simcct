@@ -335,16 +335,13 @@ class TestSimAlloys(BaseTestCase):
 
             # We need to make auto_calculate true by using the endpoints
             client.get(
-                '/api/v1/sim/configs/ms',
-                content_type='application/json'
+                '/api/v1/sim/configs/ms', content_type='application/json'
             )
             client.get(
-                '/api/v1/sim/configs/ae',
-                content_type='application/json'
+                '/api/v1/sim/configs/ae', content_type='application/json'
             )
             client.get(
-                '/api/v1/sim/configs/bs',
-                content_type='application/json'
+                '/api/v1/sim/configs/bs', content_type='application/json'
             )
 
             session_store = SimSessionService().load_session()

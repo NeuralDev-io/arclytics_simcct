@@ -132,7 +132,7 @@ def confirm_email_resend(user):
     confirmation_token = generate_confirmation_token(user.email)
     confirm_url = generate_url('auth.confirm_email', confirmation_token)
 
-    from tasks import send_email
+    from sim_api.email_service import send_email
     send_email(
         to=[user.email],
         subject_suffix='Please Confirm Your Email',
@@ -236,7 +236,7 @@ def register_user() -> Tuple[dict, int]:
         confirmation_token = generate_confirmation_token(email)
         confirm_url = generate_url('auth.confirm_email', confirmation_token)
 
-        from tasks import send_email
+        from sim_api.email_service import send_email
         send_email(
             to=[email],
             subject_suffix='Please Confirm Your Email',
@@ -553,7 +553,7 @@ def reset_password_email() -> Tuple[dict, int]:
     reset_url = generate_url('auth.confirm_reset_password', reset_token)
 
     # Send with the url to an email stored in the document of that user
-    from tasks import send_email
+    from sim_api.email_service import send_email
     send_email(
         to=[user.email],
         subject_suffix='Reset your Arclytics Sim password',
@@ -626,7 +626,7 @@ def change_password(user):
         user.save()
 
         # The email to notify users.
-        from tasks import send_email
+        from sim_api.email_service import send_email
         send_email(
             to=[user.email],
             subject_suffix='Your Arclytics Sim password has been changed',
@@ -683,7 +683,7 @@ def change_email(user) -> Tuple[dict, int]:
     confirm_token = generate_confirmation_token(valid_new_email)
     confirm_url = generate_url('auth.confirm_email', confirm_token)
 
-    from tasks import send_email
+    from sim_api.email_service import send_email
     send_email(
         to=[valid_new_email],
         subject_suffix='Your have changed your Arclytics Sim account email.',

@@ -29,7 +29,7 @@ class UserPage extends Component {
     const { history, user, isAdmin } = this.props
     return (
       <React.Fragment>
-        <AppBar active="user" redirect={history.push} isAdmin={isAdmin} />
+        <AppBar active="user" redirect={history.push} isAdmin={isAdmin} isAuthenticated />
         <div className={styles.sidebar}>
           {/* A sidebar with the sub navigation for the children components. */}
           <UserSidebar />

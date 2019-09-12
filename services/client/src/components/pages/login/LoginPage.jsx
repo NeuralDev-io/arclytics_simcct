@@ -9,14 +9,16 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
-import { ReactComponent as Logo } from '../../../assets/ANSTO_Logo_SVG/logo_text.svg'
+import { Link } from 'react-router-dom'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
-import { login, forgotPassword } from '../../../api/AuthenticationHelper'
-import { loginValidation, forgotPasswordEmail } from '../../../utils/ValidationHelper'
+import { login } from '../../../api/AuthenticationHelper'
+import { loginValidation } from '../../../utils/ValidationHelper'
 import { getPersistUserStatus } from '../../../state/ducks/persist/actions'
+import ForgotPassword from '../../moleisms/forgot-password'
 import TextField from '../../elements/textfield'
 import Modal from '../../elements/modal'
 import Button from '../../elements/button'
+import { buttonize } from '../../../utils/accessibility'
 
 import styles from './LoginPage.module.scss'
 
@@ -28,15 +30,13 @@ import styles from './LoginPage.module.scss'
 */
 
 class LoginPage extends Component {
-  constructor(props){
+  constructor(props) {
     super(props)
     this.state = {
       hasForgotPwd: null,
-      forgotEmail: '',
-      forgotPwdErr: '',
-      emailSent: false,
     }
     this.handleExpiredToken = this.handleExpiredToken.bind(this)
+    // this.handler = this.handler.bind(this)
   }
 
   componentDidMount = () => {
@@ -56,11 +56,9 @@ class LoginPage extends Component {
 
   handleExpiredToken = () => {
     const { match } = this.props
-    console.log(match.params.token)
-    console.log(match.params.token === 'true')
     if (match.params.token === 'true') {
       return (
-        <Modal shown={true}>
+        <Modal shown>
           Your token has expired. Would you like us too resend ?
         </Modal>
       )
@@ -74,52 +72,37 @@ class LoginPage extends Component {
     })
   }
 
-  handleForgetPasswordEmail = () => {
-    const { forgotEmail } = this.state
-    const validError = forgotPasswordEmail(forgotEmail)
-    if (validError === '') {
-      const promise = new Promise((resolve, reject) => {
-        forgotPassword(resolve, reject, forgotEmail)
-      })
-      promise.then(() => {
-      // If response is successful
-        this.setState({
-          forgotPwdErr: '',
-          emailSent: true,
-        })
-      })
-        .catch((err) => {
-          // If response is unsuccessful
-          console.log(err)
-          this.setState({
-            forgotPwdErr: err,
-          })
-        })
-    } else {
-      this.setState({
-        forgotPwdErr: validError,
-      })
-    }
+  handleForgotPassword = () => {
+  /*
+    This method is too update this state from ForgotPassword component.
+  */
+    this.setState({
+      hasForgotPwd: false,
+    })
   }
 
   render() {
     const {
       hasForgotPwd,
-      forgotEmail,
-      emailSent,
-      forgotPwdErr,
     } = this.state
+
+    let fadeForgot = ('')
+    let fadeLogin = ('')
+    if (hasForgotPwd !== null) {
+      fadeForgot = (hasForgotPwd ? styles.fadeLeftIn : styles.fadeRightOut)
+      fadeLogin = (hasForgotPwd ? styles.fadeLeftOut : styles.fadeRightIn)
+    }
 
     return (
       <div className={styles.outer}>
         <div className={styles.logoContainer}>
           <Logo className={styles.logo} />
-          <h3> ARCLYTICS </h3>
+          <h3>ARCLYTICS</h3>
         </div>
         {this.handleExpiredToken()}
-        <div className={`${styles.loginForm} ${!(hasForgotPwd === null) ? (hasForgotPwd ? styles.fadeLeftOut : styles.fadeRightIn) : ('')}`}>
+        <div className={`${styles.loginForm} ${fadeLogin}`}>
           <div className={styles.header}>
-            <h3> Sign in to your account  </h3>
+            <h3>Sign in to your account</h3>
           </div>
           <Formik
             initialValues={{ email: '', password: '' }}
@@ -171,7 +154,6 @@ class LoginPage extends Component {
                         error={errors.email && touched.email && errors.email}
                       />
                     </div>
-
                     <div className={styles.password}>
                       <TextField
                         type="password"
@@ -185,8 +167,8 @@ class LoginPage extends Component {
                     </div>
                     <h6
                       className={styles.help}
-                      onClick={() => this.setState({ hasForgotPwd: true })
-                    }>
+                      {...buttonize(() => this.setState({ hasForgotPwd: true }))}
+                    >
                       Trouble signing in?
                     </h6>
                     <div className={styles.clear}>
@@ -203,9 +185,7 @@ class LoginPage extends Component {
                       <h6>
                         {' '}
                         Don&apos;t have an account?&nbsp;
-                        <a className={styles.createAccount} href="http://localhost:3000/signup">
-                          Sign up
-                        </a>
+                        <Link className={styles.createAccount} to="/signup">Sign up</Link>
                         {' '}
                       </h6>
                     </div>
@@ -217,47 +197,10 @@ class LoginPage extends Component {
         </div>
         <div
           className={
-            `${
-              styles.forgotPwdForm} ${!(hasForgotPwd === null) // TODO: fix eslint error
-              ? (hasForgotPwd ? styles.fadeLeftIn : styles.fadeRightOut)
-              : ('')
-            }`
+            `${styles.forgotPwdForm} ${fadeForgot}`
           }
         >
-          <h3 className={styles.header}> Password Reset </h3>
-          <span> Enter your email to send a password reset email.</span>
-          <TextField
-            name="forgotEmail"
-            type="email"
-            value={forgotEmail}
-            onChange={value => this.handleChange('forgotEmail', value)}
-            placeholder="Email"
-            error={forgotPwdErr}
-            length="stretch"
-          />
-          <div>
-            {/* // TODO: loading takes time make sure button is disabled during loading  */}
-            {/* TODO: give space for the span height  */}
-            <h6 className={emailSent ? styles.confirmation : styles.errors}>
-              {emailSent ? ('Email has been sent.') : forgotPwdErr}
-              &nbsp;
-            </h6>
-            <Button
-              className={styles.forgotSubmit}
-              type="submit"
-              length="long"
-              isDisabled={emailSent}
-              onClick={this.handleForgetPasswordEmail}
-            >
-              Send Email
-            </Button>
-            <h6
-              className={styles.help}
-              onClick={() => this.setState({ hasForgotPwd: false })}
-            >
-              Go back to login
-            </h6>
-          </div>
+          <ForgotPassword forgotPwdHandler={this.handleForgotPassword} />
         </div>
       </div>
     )
@@ -271,6 +214,11 @@ LoginPage.propTypes = {
     isProfile: PropTypes.object,
     verified: PropTypes.bool,
     admin: PropTypes.bool,
+  }).isRequired,
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      token: PropTypes.string,
+    }),
   }).isRequired,
 }
 

@@ -21,9 +21,7 @@ pipelines:
             - pip3 install --quiet --cache-dir ~/.pip3/cache docker-compose==1.24.1
             - docker-compose -v
             - docker-compose -p arc up -d --build simcct celery-worker redis nginx mongodb client
-            # This should start the test runner for the API server
-#            - ./run_tests.sh -c -t server
-            - docker exec -t arc_simcct_1 python manage.py test
+            #- docker exec -t arc_simcct_1 python manage.py test
             - docker-compose -p arc down
 
 definitions:

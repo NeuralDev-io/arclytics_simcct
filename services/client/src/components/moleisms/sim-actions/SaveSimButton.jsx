@@ -52,7 +52,7 @@ class SaveSimButton extends Component {
   }
 
   render() {
-    const { isSessionInitialised } = this.props
+    const { isSessionInitialised, isAuthenticated } = this.props
     const { visible } = this.state
 
     return (
@@ -68,7 +68,7 @@ class SaveSimButton extends Component {
           type="button"
           onClick={() => {}}
           IconComponent={props => <SaveIcon {...props} />}
-          isDisabled={!isSessionInitialised}
+          isDisabled={!isSessionInitialised || !isAuthenticated}
         >
           SAVE
         </Button>
@@ -90,6 +90,7 @@ class SaveSimButton extends Component {
 
 SaveSimButton.propTypes = {
   isSessionInitialised: PropTypes.bool.isRequired,
+  isAuthenticated: PropTypes.bool.isRequired,
   // props from connect()
   saveSimulationConnect: PropTypes.func.isRequired,
   sim: PropTypes.shape({

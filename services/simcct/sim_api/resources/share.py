@@ -248,7 +248,7 @@ class ShareSimulationEmail(Resource):
 
         # Send email/emails to the email address/addresses provided in the
         # request with the link to the shared simulation.
-        from tasks import send_email
+        from sim_api.email_service import send_email
         send_email(
             to=valid_email_list,
             subject_suffix=(

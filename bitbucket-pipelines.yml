@@ -25,7 +25,7 @@ pipelines:
 #            - ./run_tests.sh -c -t server
 #            - docker-compose exec -T arclytics python manage.py test
 #            - docker-compose exec -T simcct python manage.py test
-            - docker-compose down
+            - docker-compose -p arc down
 
 definitions:
   caches:

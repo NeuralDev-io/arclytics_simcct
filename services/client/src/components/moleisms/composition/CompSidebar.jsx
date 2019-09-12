@@ -14,12 +14,12 @@ class CompSidebar extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      showSettings: true,
+      showSettings: props.isAuthenticated,
     }
   }
 
   render() {
-    const { runSimConnect, sessionIsInitialised } = this.props
+    const { runSimConnect, sessionIsInitialised, isAuthenticated } = this.props
     const { showSettings } = this.state
 
     return (
@@ -35,6 +35,7 @@ class CompSidebar extends Component {
               if (showSettings) return <ChevronUpIcon {...props} />
               return <ChevronDownIcon {...props} />
             }}
+            isDisabled={!isAuthenticated}
           >
             {showSettings ? 'Collapse' : 'Expand'}
           </Button>
@@ -49,7 +50,7 @@ class CompSidebar extends Component {
           onClick={runSimConnect}
           length="long"
           className={styles.btn}
-          isDisabled={!sessionIsInitialised}
+          isDisabled={!sessionIsInitialised || !isAuthenticated}
         >
           RUN
         </Button>
@@ -61,6 +62,7 @@ class CompSidebar extends Component {
 CompSidebar.propTypes = {
   runSimConnect: PropTypes.func.isRequired,
   sessionIsInitialised: PropTypes.bool.isRequired,
+  isAuthenticated: PropTypes.bool.isRequired,
 }
 
 const mapDispatchToProps = {

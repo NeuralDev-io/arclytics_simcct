@@ -22,7 +22,7 @@ class UserSidebar extends Component {
     const { active } = this.state
     return (
       <div className={styles.sidebar}>
-        <h4>User</h4>
+        <h4>Account</h4>
         <a
           id="profile"
           href="/user/profile"
@@ -33,19 +33,19 @@ class UserSidebar extends Component {
         </a>
         <a
           id="alloy"
-          href="/user/alloys"
+          href="/user/profile"
           className={`${styles.item} ${active === 'alloys' && styles.active}`}
         >
           <DatabaseIcon className={styles.icon} />
-          <span>Alloy database</span>
+          <span>Security</span>
         </a>
         <a
           id="simulations"
-          href="/user/simulations"
+          href="/user/profile"
           className={`${styles.item} ${active === 'simulations' && styles.active}`}
         >
           <SlidersIcon className={styles.icon} />
-          <span>Saved simulations</span>
+          <span>Data personalisation</span>
         </a>
       </div>
     )

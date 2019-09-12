@@ -72,6 +72,7 @@ class SimulationPage extends Component {
           <CompSidebar
             sessionIsInitialised={isInitialised}
             onSimulate={runSimConnect}
+            isAuthenticated={isAuthenticated}
           />
         </div>
         <div className={styles.main}>

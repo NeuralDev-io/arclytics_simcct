@@ -47,6 +47,13 @@
       &:last-child {
         margin-bottom: 1.5rem;
       }
+
+      &.disabled {
+        cursor: not-allowed;
+        & .icon {
+          stroke: var(--n200);
+        }
+      }
     }
   }
 }

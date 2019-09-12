@@ -58,11 +58,16 @@ class SimulationPage extends Component {
       displayProfile,
       runSimConnect,
     } = this.state
-    const { history, isInitialised, isAdmin } = this.props
+    const {
+      history,
+      isInitialised,
+      isAdmin,
+      isAuthenticated,
+    } = this.props
 
     return (
       <React.Fragment>
-        <AppBar active="sim" redirect={history.push} isAdmin={isAdmin} />
+        <AppBar active="sim" redirect={history.push} isAdmin={isAdmin} isAuthenticated={isAuthenticated} />
         <div className={styles.compSidebar}>
           <CompSidebar
             sessionIsInitialised={isInitialised}

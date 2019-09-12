@@ -166,7 +166,8 @@ class ShareSimButton extends Component {
 
   render() {
     const {
-      isSessionInitialised,
+      isSimulated,
+      isAuthenticated,
     } = this.props
 
     const {
@@ -193,7 +194,7 @@ class ShareSimButton extends Component {
           type="button"
           onClick={() => {}}
           IconComponent={props => <Share2Icon {...props} />}
-          isDisabled={!isSessionInitialised}
+          isDisabled={!isSimulated || !isAuthenticated}
         >
           SHARE
         </Button>
@@ -322,7 +323,8 @@ const textFieldType = PropTypes.oneOfType([
 ShareSimButton.propTypes = {
   enqueueSnackbar: PropTypes.func.isRequired,
   closeSnackbar: PropTypes.func.isRequired,
-  isSessionInitialised: PropTypes.bool.isRequired,
+  isSimulated: PropTypes.bool.isRequired,
+  isAuthenticated: PropTypes.bool.isRequired,
   configurations: PropTypes.shape({
     method: PropTypes.string,
     grain_size_ASTM: textFieldType,

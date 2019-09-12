@@ -18,7 +18,7 @@ __date__ = '2019.07.17'
 
 {Description}
 """
-
+import os
 import unittest
 from pathlib import Path
 
@@ -30,11 +30,11 @@ from tests.test_utilities import test_login
 from sim_api.extensions.SimSession import SimSessionService
 from sim_api.models import User, AlloyStore, Configuration
 from sim_api.schemas import ConfigurationsSchema, AlloyStoreSchema
-from settings import BASE_DIR
 from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
 
+BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 
 with open(_TEST_CONFIGS_PATH, 'r') as f:

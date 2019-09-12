@@ -692,7 +692,7 @@ while [[ "$1" != "" ]] ; do
             done
             dockerPs
             ;;
-        ls | list )
+        ls | list | show )
             dockerLsFormatted
             exit 0
             ;;
@@ -960,55 +960,100 @@ while [[ "$1" != "" ]] ; do
             completeMessage
             exit 0
             ;;
-        mongo )
-            while [[ "$2" != "" ]] ; do
-                case $2 in
-                    user )
-                        getMongoUserAndPassword "user"
-                        docker exec -it arc_mongodb_1 mongo \
-                            "-u \"${MONGO_USERNAME}\" -p \"${MONGO_PASSWORD}\" ${MONGO_APP_DB}"
-                        ;;
-                    root )
-                        getMongoUserAndPassword "root"
-                        echo "-u ${MONGO_USERNAME} -p ${MONGO_PASSWORD} admin"
-                        docker exec -it arc_mongodb_1 mongo \
-                            "-u \"${MONGO_USERNAME}\" -p \"${MONGO_PASSWORD}\" admin"
-                        ;;
-                    * )
-                        exit 0
-                        ;;
-                esac
-                shift
-            done
-            ;;
         deploy )
             while [[ "$2" != "" ]] ; do
                 case $2 in
                     secrets )
                       kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml"
+                      kubectl apply -f "${WORKDIR}/kubernetes/nginxsecret.yaml"
                       TMPFILE=$(mktemp)
                       /usr/bin/openssl rand -base64 741 > $TMPFILE
                       kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth-mongodb-keyfile=$TMPFILE
                       rm $TMPFILE
                       ;;
-                    mongo )
+                    ingress )
                       while [[ "$3" != "" ]]; do
                         case $3 in
                           create )
-                            # TODO(andrew@neuraldev.io): Make the GKE version and put it under a flag.
-                            # kubectl apply -f "${WORKDIR}/kubernetes/gke_ssd.yml"
-                            # kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-1.yml"
-                            # kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-2.yml"
-                            # kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-ssd-pv-3.yml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/gke-ingress.yaml"
+                            ;;
+                          delete )
+                            kubectl delete -f "${WORKDIR}/kubernetes/gke-ingress.yaml"
+                            ;;
+                          * )
+                            exit 0
+                            ;;
+                        esac
+                        shift
+                      done
+                      ;;
+                    mongo )
+                      while [[ "$3" != "" ]]; do
+                        case $3 in
+                          build )
+                            # Prune to avoid collisions of names:tags output
+                            docker system prune -af --volumes --filter 'label=service=mongodb'
+                            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build mongodb
+                            TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=mongodb")
+                            docker push gcr.io/arclytics-sim/arc_sim_mongo:${TAG}
+                            ;;
+                          create )
+                            # shellcheck disable=SC1090
+                            # Create new GKE Kubernetes cluster (using host node VM images based on Ubuntu
+                            # rather than ChromiumOS default & also use slightly larger VMs than default)
+                            #gcloud container clusters create "arclytics-sim-cluster" --image-type=UBUNTU --machine-type=n1-standard-2
 
-                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-minikube-service.yml" --validate=false
-                            # Wait for a bit to let it initialise
+                            # Configure host VM using daemonset to disable hugepages
+                            kubectl apply -f "${WORKDIR}/kubernetes/hostvm-node-configurer-daemonset.yaml"
+
+                            # Register GCE Fast SSD persistent disks and then create the persistent disks
+                            echo "Creating GCE disks"
+                            for i in 1 2
+                            do
+                                gcloud compute disks create --size 30GB --type pd-ssd pd-ssd-disk-$i
+                            done
+                            sleep 3
+
+                            # Create persistent volumes using disks created above
+                            echo "Creating GKE Persistent Volumes"
+                            for i in 1 2
+                            do
+                                sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/mongo-gke-xfs-ssd-pv.yaml" > /tmp/xfs-gke-ssd-pv.yaml
+                                kubectl apply -f /tmp/xfs-gke-ssd-pv.yaml
+                            done
+                            rm /tmp/xfs-gke-ssd-pv.yaml
+                            sleep 3
+
+                            # Create keyfile for the MongoD cluster as a Kubernetes shared secret
+                            # TMPFILE=$(mktemp)
+                            # /usr/bin/openssl rand -base64 741 > $TMPFILE
+                            # kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth-mongodb-keyfile=$TMPFILE
+                            # rm $TMPFILE
+
+                            # Create mongodb service with mongod stateful-set
+                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-service.yaml"
+                            echo
+
+                            # Wait until the final (2nd) mongod has started properly
+                            echo "Waiting for the 2 containers to come up $(date)..."
+                            echo " (IGNORE any reported not found & connection errors)"
+                            sleep 30
+                            echo -n "  "
+                            until kubectl --v=0 exec mongo-1 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
+                                sleep 5
+                                echo -n "  "
+                            done
+                            echo "...mongo containers are now running $(date)"
+                            echo
+
+                            # Pods and Containers should be running now
                             read -p "Are all the mongodb-n containers ready? " -n 1 -r
                             echo    # (optional) move to a new line
+
                             if [[ $REPLY =~ ^[Yy]$ ]]
                             then
                               # shellcheck disable=SC1090
-                              . ${WORKDIR}/kubernetes/scripts/configure_repset_auth-minikube.sh
+                              . ${WORKDIR}/kubernetes/scripts/configure_repset_auth.sh
                             fi
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
@@ -1016,13 +1061,16 @@ while [[ "$1" != "" ]] ; do
                             fi
                             ;;
                           delete )
-                            kubectl delete service mongo-service
-                            kubectl delete statefulset mongo
-                            kubectl delete pod mongo-0
+                            kubectl delete -f "${WORKDIR}/kubernetes/mongo-minikube-service.yml"
                             kubectl delete pvc mongo-pvc-mongo-0
                             kubectl delete pvc mongo-pvc-mongo-1
-                            kubectl delete pvc mongo-pvc-mongo-2
-                            #kubectl delete -f "${WORKDIR}/kubernetes/mongo-minikube-service.yml"
+                            kubectl delete pv mongo-pv-1
+                            kubectl delete pv mongo-pv-2
+
+                            sleep 5
+                            # Wait till the PV and PVC are deleted first
+                            gcloud compute disks delete pd-ssd-disk-1
+                            gcloud compute disks delete pd-ssd-disk-2
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
@@ -1039,43 +1087,19 @@ while [[ "$1" != "" ]] ; do
                       while [[ "$3" != "" ]]; do
                         case $3 in
                           create )
-                            kubectl create -f "${WORKDIR}/kubernetes/redis-minikube-service.yml" --validate=false
+                            gcloud compute disks create --size 30GB --type pd-ssd redis-ssd-disk
+                            kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
+                            kubectl create -f "${WORKDIR}/kubernetes/redis-gke-service.yaml" --validate=false
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
                             fi
                             ;;
                           delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/redis-minikube-service.yml"
-                            kubectl delete pod redis-0
+                            kubectl delete -f "${WORKDIR}/kubernetes/redis-gke-service.yaml"
                             kubectl delete pvc redis-pvc-redis-0
-
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          * )
-                            exit 0
-                            ;;
-                        esac
-                        shift
-                      done
-                      ;;
-                    arclytics )
-                      while [[ "$3" != "" ]]; do
-                        case $3 in
-                          create )
-                            # eval $(minikube docker-env)
-                            kubectl create -f "${WORKDIR}/kubernetes/arc-minikube-service.yml"
-                            kubectl create -f "${WORKDIR}/kubernetes/arc-minikube-deployment.yml"
-
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/arc-minikube-service.yml"
-                            kubectl delete -f "${WORKDIR}/kubernetes/arc-minikube-deployment.yml"
+                            kubectl delete pv redis-pv
+                            gcloud compute disks delete redis-ssd-disk
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
@@ -1091,18 +1115,23 @@ while [[ "$1" != "" ]] ; do
                     simcct )
                       while [[ "$3" != "" ]]; do
                         case $3 in
+                          build )
+                            # Prune to avoid collisions of names:tags output
+                            docker system prune -af --volumes --filter 'label=service=simcct'
+                            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
+                            TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
+                            docker push gcr.io/arclytics-sim/arc_sim_service:"${TAG}"
+                            ;;
                           create )
-                            # eval $(minikube docker-env)
-                            kubectl create -f "${WORKDIR}/kubernetes/simcct-minikube-service.yml"
-                            kubectl create -f "${WORKDIR}/kubernetes/simcct-minikube-deployment.yml" --validate=false
+                            # eval $(minikube docker-env)  <-- If using Docker and self-built images
+                            kubectl create -f "${WORKDIR}/kubernetes/simcct-gke-service.yaml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
                             fi
                             ;;
                           delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/simcct-minikube-service.yml"
-                            kubectl delete -f "${WORKDIR}/kubernetes/simcct-minikube-deployment.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-service.yaml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
@@ -1118,18 +1147,23 @@ while [[ "$1" != "" ]] ; do
                     client )
                       while [[ "$3" != "" ]]; do
                         case $3 in
+                          build )
+                            # Prune to avoid collisions of names:tags output
+                            docker system prune -af --volumes --filter 'label=service=client'
+                            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
+                            TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
+                            docker push gcr.io/arclytics-sim/arc_sim_client:${TAG}
+                            ;;
                           create )
                             # eval $(minikube docker-env)
-                            kubectl create -f "${WORKDIR}/kubernetes/client-minikube-service.yml"
-                            kubectl create -f "${WORKDIR}/kubernetes/client-minikube-deployment.yml" --validate=false
+                            kubectl create -f "${WORKDIR}/kubernetes/client-gke-service.yaml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
                             fi
                             ;;
                           delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/client-minikube-service.yml"
-                            kubectl delete -f "${WORKDIR}/kubernetes/client-minikube-deployment.yml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/client-gke-service.yaml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide

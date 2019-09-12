@@ -189,7 +189,6 @@ class AdminProfile(EmbeddedDocument):
         }
 
 
-# TODO(andrew@neuraldev.io): Add these
 class SimulationResults(EmbeddedDocument):
     # Using DictField() because it requires no validation on the internal
     # nesting but we don't really need to validate this data.

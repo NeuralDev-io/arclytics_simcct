@@ -97,6 +97,7 @@ class ConfigForm extends Component {
       updateConfigMethodConnect,
       updateGrainSizeConnect,
       updateConfigConnect,
+      isAuthenticated,
     } = this.props
     const methodOptions = [
       { label: 'Li (98)', value: 'Li98' },
@@ -118,6 +119,7 @@ class ConfigForm extends Component {
               }
               length="long"
               onChange={option => updateConfigMethodConnect(option.value)}
+              isDisabled={!isAuthenticated}
             />
           </div>
           <div className="input-col">
@@ -131,6 +133,7 @@ class ConfigForm extends Component {
                   onChange={val => updateGrainSizeConnect('astm', val)}
                   value={configurations.grain_size_ASTM}
                   length="short"
+                  isDisabled={!isAuthenticated}
                 />
               </div>
               <span> = </span>
@@ -143,6 +146,7 @@ class ConfigForm extends Component {
                   value={configurations.grain_size_diameter}
                   length="short"
                   suffix="μm"
+                  isDisabled={!isAuthenticated}
                 />
               </div>
             </div>
@@ -166,7 +170,7 @@ class ConfigForm extends Component {
                     value={roundTo(configurations.ae1_temp, 1)}
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_ae}
+                    isDisabled={configurations.auto_calculate_ae || !isAuthenticated}
                   />
                 </div>
                 <div className="input-row">
@@ -181,7 +185,7 @@ class ConfigForm extends Component {
                     value={roundTo(configurations.ae3_temp, 1)}
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_ae}
+                    isDisabled={configurations.auto_calculate_ae || !isAuthenticated}
                   />
                 </div>
               </div>
@@ -190,6 +194,7 @@ class ConfigForm extends Component {
                 onChange={val => this.toggleAeAutoCalc(val)}
                 isChecked={configurations.auto_calculate_ae}
                 label="Auto-calculate Ae"
+                isDisabled={!isAuthenticated}
               />
             </div>
             <div>
@@ -207,7 +212,7 @@ class ConfigForm extends Component {
                     value={roundTo(configurations.bs_temp, 1)}
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_bs}
+                    isDisabled={configurations.auto_calculate_bs || !isAuthenticated}
                   />
                 </div>
               </div>
@@ -216,6 +221,7 @@ class ConfigForm extends Component {
                 onChange={val => this.toggleBsAutoCalc(val)}
                 isChecked={configurations.auto_calculate_bs}
                 label="Auto-calculate BS"
+                isDisabled={!isAuthenticated}
               />
             </div>
             <div>
@@ -233,7 +239,7 @@ class ConfigForm extends Component {
                     value={roundTo(configurations.ms_temp, 1)}
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_ms}
+                    isDisabled={configurations.auto_calculate_ms || !isAuthenticated}
                   />
                 </div>
                 <div className="input-row">
@@ -248,7 +254,7 @@ class ConfigForm extends Component {
                     onChange={val => this.handleUpdateMs('ms_rate_param', val)}
                     value={roundTo(configurations.ms_rate_param, 1)}
                     length="short"
-                    isDisabled={configurations.auto_calculate_ms}
+                    isDisabled={configurations.auto_calculate_ms || !isAuthenticated}
                   />
                 </div>
               </div>
@@ -257,6 +263,7 @@ class ConfigForm extends Component {
                 onChange={val => this.toggleMsAutoCalc(val)}
                 isChecked={configurations.auto_calculate_ms}
                 label="Auto-calculate MS"
+                isDisabled={!isAuthenticated}
               />
             </div>
           </div>
@@ -273,6 +280,7 @@ class ConfigForm extends Component {
                 value={configurations.nucleation_start}
                 length="short"
                 suffix="%"
+                isDisabled={!isAuthenticated}
               />
             </div>
             <div className="input-row">
@@ -284,6 +292,7 @@ class ConfigForm extends Component {
                 value={configurations.nucleation_finish}
                 length="short"
                 suffix="%"
+                isDisabled={!isAuthenticated}
               />
             </div>
           </div>
@@ -299,6 +308,7 @@ const textFieldType = PropTypes.oneOfType([
 ])
 
 ConfigForm.propTypes = {
+  isAuthenticated: PropTypes.bool.isRequired,
   // props from connect()
   configurations: PropTypes.shape({
     method: PropTypes.string,

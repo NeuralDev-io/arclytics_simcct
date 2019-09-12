@@ -53,6 +53,14 @@ class PingTest(Resource):
         return response, 200
 
 
+class HealthTest(Resource):
+    """Readiness probe for GCP Ingress."""
+
+    # noinspection PyMethodMayBeStatic
+    def get(self) -> Tuple[dict, int]:
+        return {'message': 'Healthy'}, 200
+
+
 class UserList(Resource):
     """Return all users (admin only)"""
 
@@ -277,7 +285,8 @@ class UserProfiles(Resource):
         return response, 201
 
 
-api.add_resource(PingTest, '/api/v1/sim/ping')
+api.add_resource(PingTest, '/ping')
+api.add_resource(HealthTest, '/healthy/')
 api.add_resource(UserList, '/api/v1/sim/users')
 api.add_resource(Users, '/api/v1/sim/user')
 api.add_resource(UserProfiles, '/api/v1/sim/user/profile')

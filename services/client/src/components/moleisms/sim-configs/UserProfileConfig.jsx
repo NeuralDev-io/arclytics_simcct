@@ -12,6 +12,7 @@ const UserProfileConfig = ({
   displayUserCurve,
   updateConfigConnect,
   toggleDisplayUserCurveConnect,
+  isAuthenticated,
 }) => (
   <React.Fragment>
     <Checkbox
@@ -20,6 +21,7 @@ const UserProfileConfig = ({
       onChange={val => toggleDisplayUserCurveConnect(val)}
       isChecked={displayUserCurve}
       label="Show user profile"
+      isDisabled={!isAuthenticated}
     />
     <div className={`input-row ${styles.config}`}>
       <span>Start temperature</span>
@@ -30,6 +32,7 @@ const UserProfileConfig = ({
         value={configurations.start_temp}
         length="short"
         suffix="°C"
+        isDisabled={!isAuthenticated}
       />
     </div>
     <div className={`input-row ${styles.config}`}>
@@ -42,6 +45,7 @@ const UserProfileConfig = ({
         length="short"
         suffix="°C/sec"
         className={styles.textfield}
+        isDisabled={!isAuthenticated}
       />
     </div>
   </React.Fragment>
@@ -55,6 +59,7 @@ UserProfileConfig.propTypes = {
   displayUserCurve: PropTypes.bool.isRequired,
   updateConfigConnect: PropTypes.func.isRequired,
   toggleDisplayUserCurveConnect: PropTypes.func.isRequired,
+  isAuthenticated: PropTypes.bool.isRequired,
 }
 
 const mapStateToProps = state => ({

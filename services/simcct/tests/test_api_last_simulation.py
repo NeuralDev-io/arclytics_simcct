@@ -29,8 +29,8 @@ from tests.test_api_base import BaseTestCase
 from sim_api.models import User, Configuration, UserProfile, AdminProfile
 from tests.test_utilities import test_login
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'tests' / 'sim_configs.json'
+BASE_DIR = os.path.dirname(__file__)
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'sim_configs.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     _TEST_JSON = json.load(f)
 

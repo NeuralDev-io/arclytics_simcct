@@ -176,7 +176,7 @@ class TestForgotPassword(BaseTestCase):
 
     def test_reset_password_email_success(self):
         """Ensure we get the response after sending email."""
-        email = 'happy@arclytics.neuraldev.io'
+        email = 'happy@arclytics.com'
         user = User(email=email, first_name='Happy', last_name='Hogan')
         user.set_password('ImIronsManBodyguard')
         user.verified = True
@@ -404,7 +404,7 @@ class TestForgotPassword(BaseTestCase):
         """Ensure everything works correctly with sending a reset email."""
         debug = True
         test_email = (
-            'help@arclytics.neuraldev.io' if debug else 'andrew@codeninja55.me'
+            'help@arclytics.com' if debug else 'andrew@codeninja55.me'
         )
         user = User(first_name='Andrew', last_name='Che', email=test_email)
         user.set_password('IAmIronManJr')

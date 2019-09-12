@@ -943,7 +943,7 @@ class TestAuthEndpoints(BaseTestCase):
             resp = client.put(
                 '/api/v1/sim/auth/email/change',
                 # data=json.dumps({'new_email': 'brickmatic479@gmail.com'}),
-                data=json.dumps({'new_email': 'obiwan@arclytics.io'}),
+                data=json.dumps({'new_email': 'obiwan@arclytics.com'}),
                 content_type='application/json'
             )
 
@@ -956,7 +956,7 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
             self.assertEqual(data['message'], 'Email changed.')
-            self.assertEqual(data['new_email'], 'obiwan@arclytics.io')
+            self.assertEqual(data['new_email'], 'obiwan@arclytics.com')
             # self.assertEqual(data['new_email'], 'brickmatic479@gmail.com')
 
     def test_change_email_empty_payload(self):

@@ -3,6 +3,30 @@ version: '3.7'
 
 services:
 
+  client:
+    build:
+      context: ./services/client
+      dockerfile: Dockerfile-prod
+      args:
+        - REACT_APP_SIM_HOST=http://api.arclytics.io
+        - REACT_APP_SIM_PORT=8000
+      labels:
+        arclytics.io: "production"
+        service: "client"
+    image: gcr.io/arclytics-sim/arc_sim_client:1.1.2
+    ports:
+      - 8080:8080
+    expose:
+      - 8080
+    environment:
+      - REACT_APP_SIM_HOST=http://api.arclytics.io
+      - REACT_APP_SIM_PORT=8000
+    depends_on:
+      - simcct
+      - mongodb
+    networks:
+      - host
+
   simcct:
     build:
       context: ./services/simcct
@@ -31,17 +55,43 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - MAIL_SERVER=${MAIL_SERVER}
-      - MAIL_PORT=${MAIL_PORT}
-      - MAIL_USE_TLS=${MAIL_USE_TLS}
-      - MAIL_USERNAME=${MAIL_USERNAME}
-      - MAIL_PASSWORD=${MAIL_PASSWORD}
       - CLIENT_PROTOCOL=http
       - CLIENT_HOST=app.arclytics.io
       - CLIENT_PORT=80
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
     depends_on:
       - mongodb
+      - redis
+    networks:
+      - host
+
+  celery-worker:
+    build:
+      context: ./services/celery-worker
+      dockerfile: Dockerfile-prod
+    labels:
+      arclytics.io: "development"
+      service: "celery-worker"
+    image: neuraldev/arc_sim_celery:1.0
+    volumes:
+      - ./services/celery-worker:/usr/src/app
+    ports:
+      - 5555:5555  # Flower Web GUI management of Celery
+    expose:
+      - 5555
+    environment:
+      - C_FORCE_ROOT=true
+      - FLASK_ENV=production
+      - APP_SETTINGS=flask_conf.ProductionConfig
+      - MAIL_SERVER=${MAIL_SERVER}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USE_TLS=${MAIL_USE_TLS}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    depends_on:
       - redis
     networks:
       - host
@@ -88,30 +138,6 @@ services:
       - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
       - MONGO_DATA_DIR=/usr/data/db
       - MONGO_LOG_DIR=/dev/null
-    networks:
-      - host
-
-  client:
-    build:
-      context: ./services/client
-      dockerfile: Dockerfile-prod
-      args:
-        - REACT_APP_SIM_HOST=http://api.arclytics.io
-        - REACT_APP_SIM_PORT=8000
-      labels:
-        arclytics.io: "production"
-        service: "client"
-    image: gcr.io/arclytics-sim/arc_sim_client:1.1.2
-    ports:
-      - 8080:8080
-    expose:
-      - 8080
-    environment:
-      - REACT_APP_SIM_HOST=http://api.arclytics.io
-      - REACT_APP_SIM_PORT=8000
-    depends_on:
-      - simcct
-      - mongodb
     networks:
       - host
 

@@ -12,13 +12,14 @@ __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.13'
 
+import os
 import json
 import unittest
 import numpy as np
 from pathlib import Path
 from mongoengine import get_db
 
-import settings
+from manage import BASE_DIR
 from tests.test_api_base import BaseTestCase, app
 from tests.test_utilities import test_login
 from sim_api.models import User, AlloyStore, Configuration
@@ -28,10 +29,7 @@ from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
 
-_TEST_CONFIGS_PATH = Path(
-    settings.BASE_DIR
-) / 'simulation' / 'sim_configs.json'
-
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     test_json = json.load(f)
 

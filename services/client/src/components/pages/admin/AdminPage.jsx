@@ -10,7 +10,7 @@ import styles from './AdminPage.module.scss'
 
 const AdminPage = ({ history }) => (
   <React.Fragment>
-    <AppBar active="admin" redirect={history.push} isAdmin />
+    <AppBar active="admin" redirect={history.push} isAdmin isAuthenticated />
     <div className={styles.sidebar}>
       <AdminSidebar />
     </div>

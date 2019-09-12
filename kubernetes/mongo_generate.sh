@@ -17,15 +17,15 @@ kubectl apply -f ./hostvm-node-configurer-daemonset.yaml
 
 # Register GCE Fast SSD persistent disks and then create the persistent disks 
 echo "Creating GCE disks"
-for i in 1 2 3
+for i in 1 2
 do
-    gcloud compute disks create --size 10GB --type pd-ssd pd-ssd-disk-$i
+    gcloud compute disks create --size 30GB --type pd-ssd pd-ssd-disk-$i
 done
 sleep 3
 
 # Create persistent volumes using disks created above
-echo "Creating GKE Persistent Volumes"
-for i in 1 2 3
+echo "Creating GKE Persistent Vopd-ssd-disk-1lumes"
+for i in 1 2
 do
     sed -e "s/INST/${i}/g" ./mongo-gke-xfs-ssd-pv.yaml > /tmp/xfs-gke-ssd-pv.yaml
     kubectl apply -f /tmp/xfs-gke-ssd-pv.yaml
@@ -40,15 +40,15 @@ kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth
 rm $TMPFILE
 
 # Create mongodb service with mongod stateful-set
-kubectl apply -f ./mongo-gke-service.yml
+kubectl apply -f ./mongo-gke-service.yaml
 echo
 
-# Wait until the final (3rd) mongod has started properly
-echo "Waiting for the 3 containers to come up (`date`)..."
+# Wait until the final (2nd) mongod has started properly
+echo "Waiting for the 2 containers to come up (`date`)..."
 echo " (IGNORE any reported not found & connection errors)"
 sleep 30
 echo -n "  "
-until kubectl --v=0 exec mongo-2 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
+until kubectl --v=0 exec mongo-1 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
     sleep 5
     echo -n "  "
 done

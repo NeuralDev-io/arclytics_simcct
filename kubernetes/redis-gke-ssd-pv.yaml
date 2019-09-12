@@ -4,10 +4,10 @@ metadata:
   name: redis-pv
 spec:
   capacity:
-    storage: 10Gi
+    storage: 30Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: fast
   gcePersistentDisk:
-    pdName: redis  # Make sure you use the SSD name created in `gcloud`
+    pdName: redis-ssd-disk  # Make sure you use the SSD name created in `gcloud`

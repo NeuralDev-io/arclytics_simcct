@@ -8,9 +8,8 @@ spec:
   ports:
   - port: 6379
     targetPort: 6379
-  clusterIP: None
   selector:
-    role: redis
+    role: redis-persistence
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
@@ -19,13 +18,15 @@ metadata:
   labels:
     name: database
 spec:
-  serviceName: redis-service
+  selector:
+    matchLabels:
+      role: redis-persistence
+  serviceName: redis
   replicas: 1
   template:
     metadata:
       labels:
-        role: redis
-        environment: production
+        role: redis-persistence
     spec:
       containers:
         - name: redis-container
@@ -52,4 +53,4 @@ spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 10Gi
+            storage: 30Gi

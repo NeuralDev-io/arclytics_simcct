@@ -61,6 +61,7 @@ class SimulationPage extends Component {
     const {
       history,
       isInitialised,
+      isSimulated,
       isAdmin,
       isAuthenticated,
     } = this.props
@@ -94,11 +95,11 @@ class SimulationPage extends Component {
             </div>
             <div className={styles.actions}>
               <ShareSimButton
-                isSessionInitialised={isInitialised}
+                isSimulated={isSimulated}
                 isAuthenticated={isAuthenticated}
               />
               <SaveSimButton
-                isSessionInitialised={isInitialised}
+                isSimulated={isSimulated}
                 isAuthenticated={isAuthenticated}
               />
               <LoadSimButton />
@@ -170,6 +171,7 @@ SimulationPage.propTypes = {
   })).isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
   isInitialised: PropTypes.bool.isRequired,
+  isSimulated: PropTypes.bool.isRequired,
   isAdmin: PropTypes.bool.isRequired,
   isAuthenticated: PropTypes.bool.isRequired,
 }
@@ -177,6 +179,7 @@ SimulationPage.propTypes = {
 const mapStateToProps = state => ({
   globalAlloys: state.alloys.global,
   isInitialised: state.sim.isInitialised,
+  isSimulated: state.sim.isSimulated,
 })
 
 const mapDispatchToProps = {}

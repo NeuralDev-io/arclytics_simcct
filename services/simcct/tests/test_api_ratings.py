@@ -24,7 +24,6 @@ import os
 import json
 import unittest
 from pathlib import Path
-import settings
 
 from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
@@ -34,7 +33,8 @@ from tests.test_utilities import test_login
 
 logger = AppLogger(__name__)
 
-_TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'tests' / 'feedback.json'
+BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'feedback.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     _TEST_JSON = json.load(f)
 

@@ -56,29 +56,35 @@ def init_db(
         testing = app.config['TESTING']
 
     if os.environ.get('FLASK_ENV') == 'production':
+        _db_name = str(os.environ.get('MONGO_APP_DB'))
+        _host = os.environ.get('MONGO_HOST')
+        _port = os.environ.get('MONGO_PORT')
+        _username = os.environ.get('MONGO_APP_USER')
+        _password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+        mongo_uri = (f'mongodb://{_username}:{_password}@{_host}:{_port}'
+                     f'/?authSource=admin')
         mongo_client = connect(
-            db_name,
-            host=host,
-            port=int(port),
+            _db_name,
+            host=mongo_uri,
             alias=alias,
-            username=os.environ.get('MONGO_APP_USER', None),
-            password=os.environ.get('MONGO_APP_USER_PASSWORD', None),
+            authentication_mechanism='SCRAM-SHA-1'
         )
     else:
         if testing:
             db_name = 'arc_test'
         mongo_client = connect(db_name, host=host, port=int(port), alias=alias)
 
+    try:
+        # This is necessary to connect at least once
+        get_db(alias)
+    except MongoEngineConnectionError as e:
+        print('MongoDB Failed to Get Database.\n Error: {}'.format(e))
+
     # Test to make sure the connection has been created.
     try:
         get_connection(alias)
     except MongoEngineConnectionError as e:
         print('MongoDB Failed to Connect.\n Error: {}'.format(e))
-
-    try:
-        get_db(alias)
-    except MongoEngineConnectionError as e:
-        print('MongoDB Failed to Get Database.\n Error: {}'.format(e))
 
     return MongoSingleton(mongo_client)
 
@@ -140,30 +146,6 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     db = init_db(app)
     set_flask_mongo(db)
 
-    # ========== # INIT FLASK EXTENSIONS # ========== #
-    # Notes:
-    #  - `headers` will inject the Content-Type in all responses.
-    #  - `expose_headers`: The header or list which are safe to expose to the
-    #     API of a CORS API specification.
-    #  - `support_credentials`: Allows users to make authenticated requests.
-    #     If true, injects the Access-Control-Allow-Credentials header in
-    #     responses. This allows cookies and credentials to be submitted across
-    #     domains.
-    #     Note:	This option cannot be used in conjunction with a ‘*’ origin
-    CORS(
-        app=app,
-        headers=['Content-Type'],
-        expose_headers=[
-            'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'
-        ],
-        supports_credentials=True
-    )
-    # Uncomment this for debugging logs
-    # logging.getLogger('flask_cors').level = logging.DEBUG
-
-    # Set up Flask extensions
-    extensions(app)
-
     # Set up the Flask App Context
     with app.app_context():
         from sim_api.resources import (
@@ -185,6 +167,34 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
         app.register_blueprint(alloys_blueprint, url_prefix='/api/v1/sim')
         app.register_blueprint(sim_blueprint, url_prefix='/api/v1/sim')
         app.register_blueprint(sim_alloys_blueprint, url_prefix='/api/v1/sim')
+
+    # ========== # INIT FLASK EXTENSIONS # ========== #
+    # Notes:
+    #  - `headers` will inject the Content-Type in all responses.
+    #  - `expose_headers`: The header or list which are safe to expose to
+    #  the
+    #     API of a CORS API specification.
+    #  - `support_credentials`: Allows users to make authenticated requests.
+    #     If true, injects the Access-Control-Allow-Credentials header in
+    #     responses. This allows cookies and credentials to be submitted
+    #     across
+    #     domains.
+    #     Note:	This option cannot be used in conjunction with a ‘*’ origin
+    CORS(
+        app=app,
+        headers=['Content-Type'],
+        expose_headers=[
+            'Access-Control-Allow-Origin',
+            'Access-Control-Allow-Credentials',
+            'Content-Type'
+        ],
+        supports_credentials=True
+    )
+    # Uncomment this for debugging logs
+    # logging.getLogger('flask_cors').level = logging.DEBUG
+
+    # Set up Flask extensions
+    extensions(app)
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects
@@ -212,5 +222,6 @@ def extensions(app) -> None:
     api.init_app(app)
     mail.init_app(app)
     redis_session.init_app(app)
+    # talisman.init_app(app, force_https_permanent=False, force_https=False)
 
     return None

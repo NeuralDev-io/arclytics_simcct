@@ -24,7 +24,6 @@ import os
 import json
 import unittest
 from pathlib import Path
-import settings
 from mongoengine import get_db
 from copy import deepcopy
 
@@ -37,7 +36,8 @@ from tests.test_utilities import test_login
 
 logger = AppLogger(__name__)
 
-_TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'tests' / 'share_sim_data.json'
+BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'share_sim_data.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     _TEST_JSON = json.load(f)
 
@@ -673,7 +673,8 @@ class TestShareService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = (
-                f'{protocol}://{client_host}:{client_port}/token={token}'
+                f'{protocol}://{client_host}:{client_port}/share/simulation/'
+                f'token={token}'
             )
             self.assertRedirects(resp_request_simulation, redirect_url)
 

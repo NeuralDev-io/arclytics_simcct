@@ -353,7 +353,7 @@ class TestAdminCreateService(BaseTestCase):
                 'first_name': 'Qui-Gon',
                 'last_name': 'Jinn',
                 # 'email': 'davidmatthews1004@gmail.com'
-                'email': 'quigon@arclytics.io'
+                'email': 'quigon@arclytics.com'
             }
         )
         # quigon.is_admin = True
@@ -373,7 +373,7 @@ class TestAdminCreateService(BaseTestCase):
                 'first_name': 'Obi-Wan',
                 'last_name': 'Kenobi',
                 # 'email': 'brickmatic479@gmail.com'
-                'email': 'obiwan@arclytics.io'
+                'email': 'obiwan@arclytics.com'
             }
         )
         obiwan.verified = True
@@ -387,7 +387,7 @@ class TestAdminCreateService(BaseTestCase):
                 '/api/v1/sim/admin/create',
                 data=json.dumps(
                     {
-                        'email': 'obiwan@arclytics.io',
+                        'email': 'obiwan@arclytics.com',
                         # 'email': 'brickmatic479@gmail.com',
                         'position': 'Jedi Knight.'
                     }
@@ -455,7 +455,7 @@ class TestAdminCreateService(BaseTestCase):
             **{
                 'first_name': 'Admiral',
                 'last_name': 'Ackbar',
-                'email': 'admiralackbar@arlytics.io'
+                'email': 'admiralackbar@arlytics.com'
             }
         )
         ackbar.set_password('ITSATRAP')
@@ -474,7 +474,7 @@ class TestAdminCreateService(BaseTestCase):
             **{
                 'first_name': 'Jyn',
                 'last_name': 'Erso',
-                'email': 'ersoj@arclytics.io'
+                'email': 'ersoj@arclytics.com'
             }
         )
         jyn.set_password('RebellionsAreBuiltOnHope')
@@ -487,7 +487,7 @@ class TestAdminCreateService(BaseTestCase):
                 '/api/v1/sim/admin/create',
                 data=json.dumps(
                     {
-                        'email': 'ersoj@arclytics.io',
+                        'email': 'ersoj@arclytics.com',
                         'position': 'Rogue Leader'
                     }
                 ),
@@ -681,7 +681,7 @@ class TestAdminCreateService(BaseTestCase):
             **{
                 'first_name': 'Qui-Gon',
                 'last_name': 'Jinn',
-                'email': "quigonjinn@arclytics.io"
+                'email': "quigonjinn@arclytics.com"
             }
         )
         # quigon.is_admin = True
@@ -703,7 +703,7 @@ class TestAdminCreateService(BaseTestCase):
                 '/api/v1/sim/admin/create',
                 data=json.dumps(
                     {
-                        'email': 'noobmaster69@arclytics.io',
+                        'email': 'noobmaster69@arclytics.com',
                         'position': 'Invisible.'
                     }
                 ),

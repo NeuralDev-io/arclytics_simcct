@@ -31,7 +31,7 @@ from mongoengine.connection import (
 )
 from redis import Redis
 
-from sim_api.extensions import bcrypt, api, mail, redis_session
+from sim_api.extensions import bcrypt, api, redis_session
 from sim_api.extensions import MongoSingleton
 from sim_api.extensions import JSONEncoder
 
@@ -220,7 +220,6 @@ def extensions(app) -> None:
     """
     bcrypt.init_app(app)
     api.init_app(app)
-    mail.init_app(app)
     redis_session.init_app(app)
     # talisman.init_app(app, force_https_permanent=False, force_https=False)
 

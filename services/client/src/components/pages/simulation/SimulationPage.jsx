@@ -93,8 +93,14 @@ class SimulationPage extends Component {
               </Button>
             </div>
             <div className={styles.actions}>
-              <ShareSimButton isSessionInitialised={isInitialised} />
-              <SaveSimButton isSessionInitialised={isInitialised} />
+              <ShareSimButton
+                isSessionInitialised={isInitialised}
+                isAuthenticated={isAuthenticated}
+              />
+              <SaveSimButton
+                isSessionInitialised={isInitialised}
+                isAuthenticated={isAuthenticated}
+              />
               <LoadSimButton />
             </div>
           </header>

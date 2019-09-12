@@ -285,7 +285,7 @@ class UserProfiles(Resource):
         return response, 201
 
 
-api.add_resource(PingTest, '/ping')
+api.add_resource(PingTest, '/api/v1/sim/ping')
 api.add_resource(HealthTest, '/healthy/')
 api.add_resource(UserList, '/api/v1/sim/users')
 api.add_resource(Users, '/api/v1/sim/user')

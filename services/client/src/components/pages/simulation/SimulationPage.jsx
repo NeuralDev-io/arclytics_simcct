@@ -105,7 +105,7 @@ class SimulationPage extends Component {
             </div>
           </header>
           <div className={styles.configForm} style={{ display: displayConfig ? 'block' : 'none' }}>
-            <ConfigForm />
+            <ConfigForm isAuthenticated={isAuthenticated} />
           </div>
           <div className={styles.results}>
             <h4>Results</h4>
@@ -145,7 +145,7 @@ class SimulationPage extends Component {
             </header>
             <div style={{ display: displayProfile ? 'flex' : 'none' }}>
               <div className={styles.userConfig}>
-                <UserProfileConfig />
+                <UserProfileConfig isAuthenticated={isAuthenticated} />
               </div>
               <PhaseFractions />
             </div>

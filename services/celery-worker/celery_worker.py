@@ -25,7 +25,6 @@ import os
 import sys
 
 from celery import Celery
-from dotenv import load_dotenv
 from flask import Flask
 from flask_mail import Mail
 

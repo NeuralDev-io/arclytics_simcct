@@ -14,5 +14,4 @@ RUN pip install --quiet --no-cache-dir -r requirements.txt
 # add app
 COPY . /usr/src/app
 
-#ENTRYPOINT celery flower -A celery_runner -l info --address=0.0.0.0 --port=5555
 ENTRYPOINT celery worker -A celery_worker.celery -l info

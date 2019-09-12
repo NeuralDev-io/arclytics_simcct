@@ -218,11 +218,11 @@ class TestAuthEndpoints(BaseTestCase):
             user = db.users.find_one({'email': mandolorian.email})
             print(f'User.verified: {user["verified"]}')
 
-            client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
-            self.assertTrue(resp.headers['Location'])
-            redirect_url = f'http://{client_host}/signin'
-            self.assertRedirects(resp, redirect_url)
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
 
     # FIXME(davidmatthews1004@gmail.com) Pleas fix
     # def test_user_confirm_email_token_expired(self):
@@ -943,7 +943,7 @@ class TestAuthEndpoints(BaseTestCase):
             resp = client.put(
                 '/api/v1/sim/auth/email/change',
                 # data=json.dumps({'new_email': 'brickmatic479@gmail.com'}),
-                data=json.dumps({'new_email': 'obiwan@arclytics.io'}),
+                data=json.dumps({'new_email': 'obiwan@arclytics.com'}),
                 content_type='application/json'
             )
 
@@ -956,7 +956,7 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
             self.assertEqual(data['message'], 'Email changed.')
-            self.assertEqual(data['new_email'], 'obiwan@arclytics.io')
+            self.assertEqual(data['new_email'], 'obiwan@arclytics.com')
             # self.assertEqual(data['new_email'], 'brickmatic479@gmail.com')
 
     def test_change_email_empty_payload(self):

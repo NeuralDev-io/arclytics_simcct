@@ -32,5 +32,4 @@ echo "ENVIRONMENT VARIABLES"
 printenv
 echo ""
 
-#rq worker default low --url "redis://${REDIS_HOST}:${REDIS_PORT}/14" &
 python manage.py run -h ${HOST} -p ${PORT}

@@ -33,7 +33,6 @@ from flask.cli import FlaskGroup
 from prettytable import PrettyTable
 from pymongo import MongoClient
 from mongoengine.connection import get_db, disconnect_all, connect
-from rq import Connection, Worker
 
 from sim_api.app import create_app
 from sim_api.models import User, AdminProfile, UserProfile
@@ -79,14 +78,6 @@ COV.start()
 
 app = create_app()
 cli = FlaskGroup(create_app=create_app)
-
-
-@cli.command('run_worker')
-def run_worker():
-    redis_url = app.config['REDIS_URL']
-    with Connection(redis.from_url(redis_url)):
-        worker = Worker(app.config['QUEUES'])
-        worker.work()
 
 
 @cli.command('flush')

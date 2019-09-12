@@ -132,7 +132,7 @@ def confirm_email_resend(user):
     confirmation_token = generate_confirmation_token(user.email)
     confirm_url = generate_url('auth.confirm_email', confirmation_token)
 
-    from tasks import send_email
+    from sim_api.email_service import send_email
     send_email(
         to=[user.email],
         subject_suffix='Please Confirm Your Email',
@@ -157,21 +157,25 @@ def confirm_email_resend(user):
 def confirm_email_admin(token):
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
+    protocol = os.environ.get('CLIENT_PROTOCOL')
     client_host = os.environ.get('CLIENT_HOST')
+    client_port = os.environ.get('CLIENT_PORT')
+    redirect_url = f"{protocol}://{client_host}:{client_port}"
 
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        response['error'] = e
-        return jsonify(response), 400
+        return redirect(
+            f'{redirect_url}/signin?tokenexpired=true', code=302
+        )
     except URLTokenExpired as e:
-        response['error'] = e
-        return jsonify(response), 400
-        # TODO(davidmatthews1004@gmail.com) Redirect them to a place where they
-        #  can resend this token if it has expired.
-        # return redirect(f'http://{client_host}/tokenexpired', code=302)
+        return redirect(
+            f'{redirect_url}/signin?tokenexpired=true', code=302
+        )
     except Exception as e:
-        return jsonify(response), 400
+        return redirect(
+            f'{redirect_url}/signin?tokenexpired=true', code=302
+        )
 
     user = User.objects.get(email=email)
     user.admin_profile.verified = True
@@ -179,9 +183,7 @@ def confirm_email_admin(token):
 
     response['status'] = 'success'
     response.pop('message')
-    # TODO(davidmatthews1004@gmail.com): Need to check how to change this during
-    #  during production and using Ingress/Load balancing for Kubernetes
-    return redirect(f'http://{client_host}:3000/signin', code=302)
+    return redirect(f'{redirect_url}/signin', code=302)
 
 
 @auth_blueprint.route(rule='/auth/register', methods=['POST'])
@@ -234,7 +236,7 @@ def register_user() -> Tuple[dict, int]:
         confirmation_token = generate_confirmation_token(email)
         confirm_url = generate_url('auth.confirm_email', confirmation_token)
 
-        from tasks import send_email
+        from sim_api.email_service import send_email
         send_email(
             to=[email],
             subject_suffix='Please Confirm Your Email',
@@ -462,17 +464,24 @@ def reset_password() -> Tuple[dict, int]:
 
 @auth_blueprint.route('/reset/password/confirm/<token>', methods=['GET'])
 def confirm_reset_password(token):
-    response = {'status': 'fail', 'message': 'Invalid token.'}
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+    protocol = os.environ.get('CLIENT_PROTOCOL')
+    client_host = os.environ.get('CLIENT_HOST')
+    client_port = os.environ.get('CLIENT_PORT')
+    redirect_url = f"{protocol}://{client_host}:{client_port}"
 
     # Decode the token from the email to the confirm it was the right one
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        return redirect(
+            f'{redirect_url}/password/reset?tokenexpired=true', code=302
+        )
     except Exception as e:
-        response['error'] = str(e)
-        return jsonify(response), 400
+        return redirect(
+            f'{redirect_url}/password/reset?tokenexpired=true', code=302
+        )
 
     # Confirm and validate that the user exists
     user = User.objects.get(email=email)
@@ -481,17 +490,9 @@ def confirm_reset_password(token):
     # it as part of the next request
     jwt_token = user.encode_password_reset_token(user_id=user.id).decode()
 
-    # TODO(andrew@neuraldev.io): Ensure the link can be dynamic.
-    client_host = os.environ.get('CLIENT_HOST')
-    # We can make our own redirect response by doing the following
-    custom_redir_response = app.response_class(
-        status=302, mimetype='application/json'
-    )
-    redirect_url = f'http://localhost:3000/password/reset={jwt_token}'
-    custom_redir_response.headers['Location'] = redirect_url
-    # Additionally, if we need to, we can attach the JWT token in the header
-    # custom_redir_response.headers['Authorization'] = f'Bearer {jwt_token}'
-    return custom_redir_response
+    response['status'] = 'success'
+    response.pop('message')
+    return redirect(f'{redirect_url}/password/reset={jwt_token}', code=302)
 
 
 @auth_blueprint.route('/reset/password', methods=['POST'])
@@ -552,7 +553,7 @@ def reset_password_email() -> Tuple[dict, int]:
     reset_url = generate_url('auth.confirm_reset_password', reset_token)
 
     # Send with the url to an email stored in the document of that user
-    from tasks import send_email
+    from sim_api.email_service import send_email
     send_email(
         to=[user.email],
         subject_suffix='Reset your Arclytics Sim password',
@@ -625,7 +626,7 @@ def change_password(user):
         user.save()
 
         # The email to notify users.
-        from tasks import send_email
+        from sim_api.email_service import send_email
         send_email(
             to=[user.email],
             subject_suffix='Your Arclytics Sim password has been changed',
@@ -682,7 +683,7 @@ def change_email(user) -> Tuple[dict, int]:
     confirm_token = generate_confirmation_token(valid_new_email)
     confirm_url = generate_url('auth.confirm_email', confirm_token)
 
-    from tasks import send_email
+    from sim_api.email_service import send_email
     send_email(
         to=[valid_new_email],
         subject_suffix='Your have changed your Arclytics Sim account email.',

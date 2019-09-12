@@ -831,6 +831,26 @@ class TestUserAlloyService(BaseTestCase):
             self.assertEqual('Session token is not valid.', data['message'])
             self.assertEqual(res.status_code, 401)
 
+    def test_different_IP_address(self):
+        with app.test_client() as client:
+            self.login(client)
+
+            user = User.objects.get(email='morgan@starkindustries.com')
+            user.saved_alloys.create(**alloy_data)
+            user.save()
+            _id = str(user.saved_alloys[0].oid)
+
+            res = client.get(
+                f'/api/v1/sim/user/alloys/{_id}',
+                content_type='application/json',
+                environ_base={'REMOTE_ADDR': '127.0.0.12'}
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual('fail', data['status'])
+            self.assertNotIn('data', data)
+            self.assertEqual('Session is invalid.', data['message'])
+            self.assertEqual(res.status_code, 401)
+
 
 if __name__ == '__main__':
     unittest.main()

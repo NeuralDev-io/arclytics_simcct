@@ -43,17 +43,6 @@ class BaseConfig:
     SESSION_TYPE = 'redis'
     SESSION_USE_SIGNER = True
 
-    # Flask Email
-    MAIL_SUBJECT_PREFIX = '[Arclytics]'
-    MAIL_DEFAULT_SENDER = 'Arclytics Team <admin@arclytics.io>'
-    MAIL_SERVER = os.environ.get('MAIL_SERVER', None)
-    MAIL_PORT = os.environ.get('MAIL_PORT', None)
-    MAIL_USE_TLS = True
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
-    # Unset this to see the debug messages to logs
-    MAIL_DEBUG = False
-
     # Redis Queue
     redis_host = os.environ.get('REDIS_HOST', '')
     redis_port = os.environ.get('REDIS_PORT', '')
@@ -62,6 +51,12 @@ class BaseConfig:
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     QUEUES = ['default', 'low']
     REDIS_DB = 0
+
+    # CELERY REDIS
+    REDIS_HOST = os.environ.get('REDIS_HOST', None)
+    REDIS_PORT = os.environ.get('REDIS_PORT', None)
+    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/5'
+    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'
 
 
 class DevelopmentConfig(BaseConfig):
@@ -89,4 +84,10 @@ class ProductionConfig(BaseConfig):
     REMEMBER_COOKIE_SECURE = True
     MONGO_DBNAME = os.environ.get('MONGO_APP_DB')
     BCRYPT_LOG_ROUNDS = 13
+
+    # Production Celery
+    REDIS_HOST = os.environ.get('REDIS_HOST', None)
+    REDIS_PORT = os.environ.get('REDIS_PORT', None)
     REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
+    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/5'
+    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'

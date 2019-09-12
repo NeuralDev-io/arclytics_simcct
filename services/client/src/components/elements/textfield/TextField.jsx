@@ -67,11 +67,11 @@ class TextField extends Component {
       ...other
     } = this.props
     const { err } = this.state
-    const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${error !== '' && styles.error} ${className || ''}`
+    const classname = `${styles.input} ${error !== '' && styles.error} ${className || ''}`
 
     //Need to fix the iron kick
     return (
-      <div className={styles.container}>
+      <div className={`${styles.container} ${length === 'default' ? '' : styles[length]}`}>
         <input
           {...other}
           type={type}

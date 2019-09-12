@@ -8,6 +8,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
+import { Link } from 'react-router-dom'
 import AlertCircleIcon from 'react-feather/dist/icons/alert-circle'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { signup } from '../../../api/AuthenticationHelper'
@@ -211,8 +212,8 @@ class SignupPage extends Component {
           </Modal>
           <div>
             <h6>
-              Already have an account?
-              <a href="http://localhost:3000/signin" className={styles.signIn}> Sign in </a>
+              Already have an account?&nbsp;
+              <Link className={styles.signIn} to="/signin">Sign in</Link>
             </h6>
           </div>
         </div>

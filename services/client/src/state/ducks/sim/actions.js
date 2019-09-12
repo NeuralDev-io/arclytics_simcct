@@ -364,7 +364,14 @@ export const loadSimFromLink = token => (dispatch) => {
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
-        const { alloy_store, configurations, simulation_results } = res.data
+        const {
+          alloy_store,
+          configurations: {
+            grain_size,
+            ...otherConfigs
+          },
+          simulation_results,
+        } = res.data
         dispatch({
           type: LOAD_SIM,
           payload: {
@@ -378,7 +385,11 @@ export const loadSimFromLink = token => (dispatch) => {
               },
               mix: [],
             },
-            configurations,
+            configurations: {
+              grain_size_ASTM: grain_size,
+              grain_size_diameter: ASTM2Dia(grain_size),
+              ...otherConfigs,
+            },
             results: simulation_results,
           },
         })

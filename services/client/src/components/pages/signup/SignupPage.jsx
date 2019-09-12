@@ -9,7 +9,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
 import AlertCircleIcon from 'react-feather/dist/icons/alert-circle'
-import { ReactComponent as Logo } from '../../../assets/ANSTO_Logo_SVG/logo_text.svg'
+import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { signup } from '../../../api/AuthenticationHelper'
 import { signupValidation } from '../../../utils/ValidationHelper'
 
@@ -40,8 +40,7 @@ class SignupPage extends Component {
         <div className={styles.form}>
           <div className={styles.logoContainer}>
             <Logo className={styles.logo} />
-            {/* <h3> ARCLYTICS </h3>
-            <Logo styles.logo/> */}
+            <h3> ARCLYTICS </h3>
 
           </div>
           <div className={styles.header}>

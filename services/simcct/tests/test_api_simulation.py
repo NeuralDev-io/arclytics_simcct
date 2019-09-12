@@ -112,11 +112,11 @@ class TestSimulationService(BaseTestCase):
             #  is set because otherwise opening a transaction will not use
             #  a standard HTTP request environ_base.
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ) as session:
                 session['simulation'] = None
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ):
                 # At this point the session transaction has been updated so
                 # we can check the session within the context
@@ -125,8 +125,7 @@ class TestSimulationService(BaseTestCase):
                 self.assertEqual(session_store, 'Session is empty.')
 
             res = client.get(
-                '/api/v1/sim/simulate',
-                content_type='application/json'
+                '/api/v1/sim/simulate', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(
@@ -147,7 +146,7 @@ class TestSimulationService(BaseTestCase):
             #  is set because otherwise opening a transaction will not use
             #  a standard HTTP request environ_base.
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ) as session:
                 session_store = json.loads(session['simulation'])
                 session_store['alloy_store']['alloys']['parent'] = None
@@ -156,8 +155,7 @@ class TestSimulationService(BaseTestCase):
                 session[prefix] = ser_session_data
 
             res = client.get(
-                '/api/v1/sim/simulate',
-                content_type='application/json'
+                '/api/v1/sim/simulate', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(
@@ -173,26 +171,22 @@ class TestSimulationService(BaseTestCase):
 
             # MUST have AE and MS/BS > 0.0 before we can run simulate
             res = client.get(
-                '/api/v1/sim/configs/ae',
-                content_type='application/json'
+                '/api/v1/sim/configs/ae', content_type='application/json'
             )
             self.assert200(res)
 
             res = client.get(
-                '/api/v1/sim/configs/ms',
-                content_type='application/json'
+                '/api/v1/sim/configs/ms', content_type='application/json'
             )
             self.assert200(res)
             res = client.get(
-                '/api/v1/sim/configs/bs',
-                content_type='application/json'
+                '/api/v1/sim/configs/bs', content_type='application/json'
             )
             self.assert200(res)
 
             # Now we can run
             res = client.get(
-                '/api/v1/sim/simulate',
-                content_type='application/json'
+                '/api/v1/sim/simulate', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertFalse(data.get('message', None))

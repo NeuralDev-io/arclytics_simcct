@@ -37,9 +37,7 @@ import geoip2.database
 
 from logger.arc_logger import AppLogger
 from sim_api.extensions import bcrypt
-from sim_api.middleware import (
-    authenticate_user_and_cookie_flask
-)
+from sim_api.middleware import (authenticate_user_and_cookie_flask)
 from sim_api.models import User, LoginData
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
@@ -95,17 +93,11 @@ def confirm_email(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        return redirect(
-            f'{redirect_url}/signin?tokenexpired=true', code=302
-        )
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except URLTokenExpired as e:
-        return redirect(
-            f'{redirect_url}/signin?tokenexpired=true', code=302
-        )
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except Exception as e:
-        return redirect(
-            f'{redirect_url}/signin?tokenexpired=true', code=302
-        )
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     # We ensure there is a user for this email
     user = User.objects.get(email=email)
@@ -165,17 +157,11 @@ def confirm_email_admin(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        return redirect(
-            f'{redirect_url}/signin?tokenexpired=true', code=302
-        )
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except URLTokenExpired as e:
-        return redirect(
-            f'{redirect_url}/signin?tokenexpired=true', code=302
-        )
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except Exception as e:
-        return redirect(
-            f'{redirect_url}/signin?tokenexpired=true', code=302
-        )
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     user = User.objects.get(email=email)
     user.admin_profile.verified = True

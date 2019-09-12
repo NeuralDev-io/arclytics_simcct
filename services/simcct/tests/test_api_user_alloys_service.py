@@ -32,7 +32,7 @@ _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'seed_alloy_data.json'
 
 alloy_data = {
     'name':
-        'Alloy-101',
+    'Alloy-101',
     'compositions': [
         {
             "symbol": "C",
@@ -89,7 +89,7 @@ class TestUserAlloyService(BaseTestCase):
 
     @staticmethod
     def login(
-            client, email='morgan@starkindustries.com', password='IronHeart!'
+        client, email='morgan@starkindustries.com', password='IronHeart!'
     ):
         client.post(
             '/api/v1/sim/auth/login',
@@ -261,7 +261,7 @@ class TestUserAlloyService(BaseTestCase):
 
             alloy_data2 = {
                 'name':
-                    'Alloy-102',
+                'Alloy-102',
                 'compositions': [
                     {
                         "symbol": "C",
@@ -303,8 +303,7 @@ class TestUserAlloyService(BaseTestCase):
             user.save()
 
             res = client.get(
-                '/api/v1/sim/user/alloys',
-                content_type='application/json'
+                '/api/v1/sim/user/alloys', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
@@ -317,7 +316,7 @@ class TestUserAlloyService(BaseTestCase):
 
             alloy_data2 = {
                 'name':
-                    'Alloy-102',
+                'Alloy-102',
                 'compositions': [
                     {
                         "symbol": "C",
@@ -425,7 +424,7 @@ class TestUserAlloyService(BaseTestCase):
 
             alloy_data2 = {
                 'name':
-                    'Alloy-102',
+                'Alloy-102',
                 'compositions': [
                     {
                         "symbol": "C",
@@ -726,7 +725,7 @@ class TestUserAlloyService(BaseTestCase):
 
             updated_alloy = {
                 'name':
-                    'Alloy-102',
+                'Alloy-102',
                 'compositions': [
                     {
                         "symbol": "C",
@@ -822,8 +821,7 @@ class TestUserAlloyService(BaseTestCase):
             self.bad_cookie(self, client)
 
             res = client.post(
-                '/api/v1/sim/user/alloys',
-                content_type='application/json'
+                '/api/v1/sim/user/alloys', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual('fail', data['status'])

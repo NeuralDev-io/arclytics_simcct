@@ -80,7 +80,8 @@ class TestRatingsService(BaseTestCase):
                 'email': 'plokoon@arclytics.io',
                 'first_name': 'Plo',
                 'last_name': 'Koon'
-            })
+            }
+        )
         plo.set_password('WhenYouAskForTrouble')
         plo.save()
 
@@ -103,7 +104,8 @@ class TestRatingsService(BaseTestCase):
                 'email': 'jhonny@arclytics.io',
                 'first_name': 'Jhonny',
                 'last_name': 'Koon'
-            })
+            }
+        )
         jhonny.set_password('WhenYouAskForTrouble')
         jhonny.save()
 
@@ -460,7 +462,7 @@ class TestRatingsService(BaseTestCase):
     #                     'offset': data_2['next_offset']
     #                 }
     #             ),
-    #             content_type='application/json'   
+    #             content_type='application/json'
     #         )
     #
     #         data_4 = json.loads(resp_4.data.decode())

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# test_api_alloys.py
+# test_api_global_alloys.py
 #
 # Attributions:
 # [1]
@@ -14,20 +14,19 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.14'
-"""test_api_alloys.py: 
+"""test_api_global_alloys.py: 
 
 Test all the endpoints on the Alloy resources endpoint.
 """
 
-import os
 import unittest
 from pathlib import Path
 
 from bson import ObjectId
 from flask import json
-from mongoengine import get_db, get_connection
+from mongoengine import get_db
 
-import settings
+from manage import BASE_DIR
 from sim_api.extensions import MongoAlloys
 from sim_api.models import User, Configuration, AlloyStore, AdminProfile
 from sim_api.schemas import AlloySchema, ConfigurationsSchema, AlloyStoreSchema
@@ -37,9 +36,7 @@ from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
 
-_TEST_CONFIGS_PATH = Path(
-    settings.BASE_DIR
-) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     test_json = json.load(f)
@@ -199,7 +196,7 @@ class TestAlloyService(BaseTestCase):
     def test_get_all_alloys(self):
         """Ensure we can get all alloys."""
         # Clear the database so we can count properly.
-        path = Path(settings.BASE_DIR) / 'seed_alloy_data.json'
+        path = Path(BASE_DIR) / 'seed_alloy_data.json'
         with open(path) as f:
             json_data = json.load(f)
 

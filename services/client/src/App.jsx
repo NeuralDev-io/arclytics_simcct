@@ -3,13 +3,14 @@ import { Provider } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
 import { SnackbarProvider } from 'notistack'
 import store from './state/store'
+import { PrivateRoute, AdminRoute, DemoRoute } from './components/moleisms/routers'
 import ErrorBoundary from './components/pages/error-boundary/ErrorBoundary'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
 import SimulationPage from './components/pages/simulation'
 import AdminPage from './components/pages/admin'
 import ProfileQuestionsPage from './components/pages/profile-questions'
-import ProfilePage from './components/moleisms/user-profile'
+import UserPage from './components/pages/user'
 import UserSimulationPage from './components/pages/user-sim'
 import UserAlloyPage from './components/pages/user-alloys'
 import PasswordResetPage from './components/pages/password-reset'
@@ -38,32 +39,32 @@ function App() {
                 path="/signup"
                 render={props => <SignupPage {...props} />}
               />
-              <Route
+              <DemoRoute
                 exact
                 path="/"
-                render={props => <SimulationPage {...props} />}
+                component={SimulationPage}
               />
-              <Route
+              <PrivateRoute
                 exact
                 path="/user/simulations"
-                render={props => <UserSimulationPage {...props} />}
+                component={UserSimulationPage}
               />
-              <Route
+              <PrivateRoute
                 exact
                 path="/user/alloys"
-                render={props => <UserAlloyPage {...props} />}
+                component={UserAlloyPage}
               />
-              <Route
+              <PrivateRoute
                 path="/profileQuestions"
-                render={props => <ProfileQuestionsPage {...props} />}
+                component={ProfileQuestionsPage}
               />
-              <Route
+              <AdminRoute
                 path="/admin"
-                render={props => <AdminPage {...props} />}
+                component={AdminPage}
               />
-              <Route
-                path="/user/profile"
-                render={props => <ProfilePage {...props} />}
+              <PrivateRoute
+                path="/user"
+                component={UserPage}
               />
               <Route
                 path="/password/reset=:token"

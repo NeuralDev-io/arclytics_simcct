@@ -5,9 +5,9 @@ import UserSavedSimulations from '../../moleisms/user-sim'
 
 import styles from './UserSimulationPage.module.scss'
 
-const UserSimulationPage = ({ history }) => (
+const UserSimulationPage = ({ history, isAdmin }) => (
   <React.Fragment>
-    <AppBar active="savedSimulations" redirect={history.push} />
+    <AppBar active="savedSimulations" redirect={history.push} isAdmin={isAdmin} />
     <div className={styles.main}>
       <UserSavedSimulations redirect={history.push} />
     </div>
@@ -18,6 +18,7 @@ UserSimulationPage.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
+  isAdmin: PropTypes.bool.isRequired,
 }
 
 export default UserSimulationPage

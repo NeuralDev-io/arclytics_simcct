@@ -34,19 +34,8 @@ class SimulationPage extends Component {
     }
   }
 
-  componentDidMount = () => {
-    // if (!localStorage.getItem('token')) {
-    //   this.props.history.push('/signin') // eslint-disable-line
-    // }
-  }
-
-  // handleShowModal = type => this.setState({ [`${type}Modal`]: true })
-
-  // handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
-
   saveCurrentSimulation = () => {
     const { configurations, alloys } = this.state
-    console.log(configurations)
     const alloyStore = {
       alloy_option: alloys.alloyOption,
       alloys: {
@@ -60,7 +49,6 @@ class SimulationPage extends Component {
       ...others,
       grain_size: grain_size_ASTM,
     }
-    console.log(alloyStore)
     postSaveSimulation(validConfigs, alloyStore)
   }
 
@@ -70,15 +58,22 @@ class SimulationPage extends Component {
       displayProfile,
       runSimConnect,
     } = this.state
-    const { history, isInitialised } = this.props
+    const {
+      history,
+      isInitialised,
+      isSimulated,
+      isAdmin,
+      isAuthenticated,
+    } = this.props
 
     return (
       <React.Fragment>
-        <AppBar active="sim" redirect={history.push} />
+        <AppBar active="sim" redirect={history.push} isAdmin={isAdmin} isAuthenticated={isAuthenticated} />
         <div className={styles.compSidebar}>
           <CompSidebar
             sessionIsInitialised={isInitialised}
             onSimulate={runSimConnect}
+            isAuthenticated={isAuthenticated}
           />
         </div>
         <div className={styles.main}>
@@ -99,13 +94,19 @@ class SimulationPage extends Component {
               </Button>
             </div>
             <div className={styles.actions}>
-              <ShareSimButton isSessionInitialised={isInitialised} />
-              <SaveSimButton isSessionInitialised={isInitialised} />
+              <ShareSimButton
+                isSimulated={isSimulated}
+                isAuthenticated={isAuthenticated}
+              />
+              <SaveSimButton
+                isSimulated={isSimulated}
+                isAuthenticated={isAuthenticated}
+              />
               <LoadSimButton />
             </div>
           </header>
           <div className={styles.configForm} style={{ display: displayConfig ? 'block' : 'none' }}>
-            <ConfigForm />
+            <ConfigForm isAuthenticated={isAuthenticated} />
           </div>
           <div className={styles.results}>
             <h4>Results</h4>
@@ -145,7 +146,7 @@ class SimulationPage extends Component {
             </header>
             <div style={{ display: displayProfile ? 'flex' : 'none' }}>
               <div className={styles.userConfig}>
-                <UserProfileConfig />
+                <UserProfileConfig isAuthenticated={isAuthenticated} />
               </div>
               <PhaseFractions />
             </div>
@@ -170,11 +171,15 @@ SimulationPage.propTypes = {
   })).isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
   isInitialised: PropTypes.bool.isRequired,
+  isSimulated: PropTypes.bool.isRequired,
+  isAdmin: PropTypes.bool.isRequired,
+  isAuthenticated: PropTypes.bool.isRequired,
 }
 
 const mapStateToProps = state => ({
   globalAlloys: state.alloys.global,
   isInitialised: state.sim.isInitialised,
+  isSimulated: state.sim.isSimulated,
 })
 
 const mapDispatchToProps = {}

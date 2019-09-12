@@ -10,6 +10,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
 import { ReactComponent as Logo } from '../../../assets/ANSTO_Logo_SVG/logo_text.svg'
+import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { login, forgotPassword } from '../../../api/AuthenticationHelper'
 import { loginValidation, forgotPasswordEmail } from '../../../utils/ValidationHelper'
 import { getPersistUserStatus } from '../../../state/ducks/persist/actions'
@@ -113,6 +114,7 @@ class LoginPage extends Component {
       <div className={styles.outer}>
         <div className={styles.logoContainer}>
           <Logo className={styles.logo} />
+          <h3> ARCLYTICS </h3>
         </div>
         {this.handleExpiredToken()}
         <div className={`${styles.loginForm} ${!(hasForgotPwd === null) ? (hasForgotPwd ? styles.fadeLeftOut : styles.fadeRightIn) : ('')}`}>

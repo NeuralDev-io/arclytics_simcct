@@ -29,14 +29,12 @@ from .mongo import MongoAlloys
 from .mongodb import MongoSingleton
 from flask_bcrypt import Bcrypt
 from flask_restful import Api
-from flask_mail import Mail
 # from flask_talisman import Talisman
 from .Session import FlaskRedisSession
 
 # Some other extensions to Flask
 bcrypt = Bcrypt()
 api = Api()
-mail = Mail()
 redis_session = FlaskRedisSession()
 # To use add flask-talisman==0.7.0 to requirements.txt
 # talisman = Talisman()

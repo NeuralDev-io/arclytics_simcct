@@ -3,14 +3,59 @@ version: '3.7'
 
 services:
 
+  client:
+    build:
+      context: ./services/client
+      dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
+        service: "client"
+    image: neuraldev/arc_sim_client:1.1
+    volumes:
+      - ./services/client:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - 3000:3000
+    expose:
+      - 3000
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_SIM_HOST=http://localhost
+      - REACT_APP_SIM_PORT=8000
+    depends_on:
+      - mongodb
+      - simcct
+    networks:
+      - host
+
+  nginx:
+    build:
+      context: ./services/nginx
+      dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
+        service: "simcct"
+    labels:
+      arclytics.io: "development"
+    image: neuraldev/arc_sim_nginx:1.0
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - simcct
+      - client
+    networks:
+      - host
+
   simcct:
     build:
       context: ./services/simcct
       dockerfile: Dockerfile
       labels:
         arclytics.io: "development"
+        service: "simcct"
     image: neuraldev/arc_sim_service:1.1
-    volumes:  # used to mount the code into the container for live updates
+    volumes:
       - ./services/simcct:/usr/src/app  # This is a bind mount
     ports:
       - 8000:8000
@@ -51,6 +96,7 @@ services:
       dockerfile: Dockerfile
       labels:
         arclytics.io: "development"
+        service: "arclytics"
     image: neuraldev/arclytics_service:1.3
     volumes:
       - ./services/arclytics:/usr/src/app
@@ -76,12 +122,80 @@ services:
     networks:
       - host
 
+  celery-worker:
+    build:
+      context: ./services/celery-worker
+      dockerfile: Dockerfile
+    labels:
+      arclytics.io: "development"
+      service: "celery-worker"
+    image: neuraldev/arc_sim_celery:1.0
+    volumes:
+      - ./services/celery-worker:/usr/src/app
+    ports:
+      - 5555:5555  # Flower Web GUI management of Celery
+    expose:
+      - 5555
+    environment:
+      - C_FORCE_ROOT=true
+      - FLASK_ENV=development
+      - APP_SETTINGS=flask_conf.DevelopmentConfig
+      - MAIL_SERVER=${MAIL_SERVER}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USE_TLS=${MAIL_USE_TLS}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - host
+
+  redis:
+    build:
+      context: ./services/redis
+      dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
+        service: "redis"
+    image: neuraldev/arc_sim_redis:1.1
+    restart: always
+    ports:
+      - 6379:6379
+    expose:
+      - 6379
+    networks:
+      - host
+
+  mongodb:
+    build:
+      context: ./services/db
+      dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
+        service: "mongodb"
+    image: neuraldev/arc_sim_mongo:1.1
+    restart: always
+    volumes:
+      - ./services/db/test_data:/data/test
+    ports:
+      - 27017:27017
+    expose:
+      - 27017
+    environment:
+      - MONGO_DATA_DIR=/usr/data/db
+      - MONGO_LOG_DIR=/dev/null
+    networks:
+      - host
+
   dask-scheduler:
     build:
       context: ./services/dask
       dockerfile: Dockerfile
       labels:
         arclytics.io: "development"
+        service: "dask-scheduler"
     image: neuraldev/arc_dask_scheduler:1.0
     hostname: dask-scheduler
     ports:
@@ -101,6 +215,7 @@ services:
       dockerfile: Dockerfile
       labels:
         arclytics.io: "development"
+        service: "dask-worker"
     image: neuraldev/arc_dask_worker:1.0
     # container_name: arc-dask-worker  # Cannot use for scaling
     hostname: dask-worker
@@ -134,87 +249,13 @@ services:
     networks:
       - host
 
-  redis:
-    build:
-      context: ./services/redis
-      dockerfile: Dockerfile
-      labels:
-        arclytics.io: "development"
-    image: neuraldev/arc_sim_redis:1.1
-    restart: always
-    ports:
-      - 6379:6379
-    expose:
-      - 6379
-    networks:
-      - host
-
-  mongodb:
-    build:
-      context: ./services/db
-      dockerfile: Dockerfile
-      labels:
-        arclytics.io: "development"
-    image: neuraldev/arc_sim_mongo:1.1
-    restart: always
-    volumes:
-      - ./services/db/test_data:/data/test
-    ports:
-      - 27017:27017
-    expose:
-      - 27017
-    environment:
-      - MONGO_DATA_DIR=/usr/data/db
-      - MONGO_LOG_DIR=/dev/null
-    networks:
-      - host
-
-  client:
-    build:
-      context: ./services/client
-      dockerfile: Dockerfile
-      labels:
-        arclytics.io: "development"
-    image: neuraldev/arc_sim_client:1.1
-    volumes:
-      - ./services/client:/usr/src/app
-      - /usr/src/app/node_modules
-    ports:
-      - 3000:3000
-    expose:
-      - 3000
-    environment:
-      - NODE_ENV=development
-      - REACT_APP_SIM_HOST=http://localhost
-      - REACT_APP_SIM_PORT=8000
-    depends_on:
-      - mongodb
-      - simcct
-    networks:
-      - host
-
-  nginx:
-    build:
-      context: ./services/nginx
-      dockerfile: Dockerfile
-    labels:
-      arclytics.io: "development"
-    image: neuraldev/arc_sim_nginx:1.0
-    restart: always
-    ports:
-      - 80:80
-    depends_on:
-      - simcct
-      - client
-    networks:
-      - host
-
   fluentd:
     build:
       context: ./services/fluentd
       dockerfile: Dockerfile
       labels:
         arclytics.io: "development"
+        service: "fluentd"
     image: neuraldev/arc_fluentd:0.9
     restart: always
     ports:
@@ -299,6 +340,7 @@ services:
       dockerfile: Dockerfile
       labels:
         arclytics.io: "development"
+        service: "swagger"
     image: neuraldev/arc_sim_swagger:1.0
     ports:
       - 3001:8080  # expose ports - HOST:CONTAINER

@@ -248,7 +248,7 @@ class ShareSimulationEmail(Resource):
 
         # Send email/emails to the email address/addresses provided in the
         # request with the link to the shared simulation.
-        from tasks import send_email
+        from sim_api.email_service import send_email
         send_email(
             to=valid_email_list,
             subject_suffix=(
@@ -293,7 +293,7 @@ def request_shared_simulation(token):
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f'{protocol}://{client_host}:{client_port}'
 
-    return redirect(f'{redirect_url}/share/simulation/{token}')
+    return redirect(f'{redirect_url}/share/simulation/token={token}')
 
     # # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
     # client_host = os.environ.get('CLIENT_HOST')

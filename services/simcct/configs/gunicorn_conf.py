@@ -3,8 +3,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # gunicorn_conf.py
-# 
-# Attributions: 
+#
+# Attributions:
 # [1]
 # https://medium.com/google-cloud/a-guide-to-deploy-flask-app-on-google-
 # kubernetes-engine-bfbbee5c6fb
@@ -18,7 +18,6 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.09.10'
-
 """gunicorn_conf.py: 
 
 Configuration file for Gunicorn to be used in Production Environment.

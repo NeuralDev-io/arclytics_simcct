@@ -1,3 +1,17 @@
+/**
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Redux implementation of the snackbar from 'notistack'.
+ * This Toaster component watches for any notification that is added to
+ * the Redux store and create a Snackbar using the 'notistack' package,
+ * then remove this notification from the Redux store.
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
+
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -60,7 +74,12 @@ Toaster.propTypes = {
   closeSnackbar: PropTypes.func.isRequired,
   // from connect
   removeFlashToastConnect: PropTypes.func.isRequired,
-  notifications: PropTypes.arrayOf(PropTypes.number).isRequired,
+  notifications: PropTypes.arrayOf(PropTypes.shape({
+    message: PropTypes.string,
+    options: PropTypes.shape({}),
+    key: PropTypes.number,
+    dismissable: PropTypes.bool,
+  })).isRequired,
 }
 
 const mapStateToProps = state => ({

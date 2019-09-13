@@ -41,7 +41,7 @@ class CompSidebar extends Component {
           </Button>
         </header>
         <div style={{ display: showSettings ? 'block' : 'none' }}>
-          <CompForm />
+          <CompForm isAuthenticated={isAuthenticated} />
         </div>
         <div className={styles.table}>
           <CompTable

@@ -15,19 +15,6 @@ spec:
       - name: celery-worker
         image: gcr.io/arclytics-sim/arc_sim_celery:1.0
         imagePullPolicy: Always
-        livenessProbe:
-          exec:
-            command:
-            - "/usr/src/app/celery_status.sh"
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
-          failureThreshold: 6
-        readinessProbe:
-          exec:
-            command:
-            - "/usr/src/app/celery_status.sh"
-          initialDelaySeconds: 5
-          timeoutSeconds: 3
         ports:
           - containerPort: 5555
         env:

@@ -39,14 +39,14 @@ spec:
           imagePullPolicy: Always
           ports:
           - containerPort: 8000
-          #readinessProbe:  -- Not Working
-          #  httpGet:
-          #    path: /healthy/
-          #    port: 8000
-          #  periodSeconds: 10
-          #  timeoutSeconds: 5
-          #  successThreshold: 1
-          #  failureThreshold: 2
+          readinessProbe:  # -- Not Working
+            httpGet:
+              path: /healthy
+              port: 8000
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 2
           env:
           - name: FLASK_APP
             value: "sim_api/app.py"
@@ -89,25 +89,6 @@ spec:
               secretKeyRef:
                 name: credentials
                 key: redis_password
-          - name: MAIL_SERVER
-            valueFrom:
-              secretKeyRef:
-                name: credentials
-                key: mail_server
-          - name: MAIL_PORT
-            value: "587"
-          - name: MAIL_USE_TLS
-            value: "True"
-          - name: MAIL_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: credentials
-                key: mail_username
-          - name: MAIL_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: credentials
-                key: mail_password
           - name: CLIENT_PROTOCOL
             value: "http"
           - name: CLIENT_HOST

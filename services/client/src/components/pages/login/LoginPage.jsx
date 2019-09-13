@@ -55,8 +55,8 @@ class LoginPage extends Component {
 
   handleExpiredToken = () => {
     const { match } = this.props
-    console.log(match.params.token)
-    console.log(match.params.token === 'true')
+    // console.log(match.params.token)
+    // console.log(match.params.token === 'true')
     if (match.params.token === 'true') {
       return (
         <Modal shown={true}>

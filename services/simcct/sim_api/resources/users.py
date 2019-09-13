@@ -58,7 +58,7 @@ class HealthTest(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self) -> Tuple[dict, int]:
-        return {'message': 'Healthy'}, 200
+        return {}, 200
 
 
 class UserList(Resource):
@@ -286,7 +286,7 @@ class UserProfiles(Resource):
 
 
 api.add_resource(PingTest, '/api/v1/sim/ping')
-api.add_resource(HealthTest, '/healthy/')
+api.add_resource(HealthTest, '/healthy')
 api.add_resource(UserList, '/api/v1/sim/users')
 api.add_resource(Users, '/api/v1/sim/user')
 api.add_resource(UserProfiles, '/api/v1/sim/user/profile')

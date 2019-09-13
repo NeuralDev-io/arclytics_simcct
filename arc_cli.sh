@@ -1184,19 +1184,19 @@ while [[ "$1" != "" ]] ; do
                           build )
                             # Prune to avoid collisions of names:tags output
                             docker system prune -af --volumes --filter 'label=service=celery-worker'
-                            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
+                            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build celery-worker
                             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
                             docker push gcr.io/arclytics-sim/arc_sim_celery:"${TAG}"
                             ;;
                           create )
-                            #kubectl create -f "${WORKDIR}/kubernetes/celery-gke-service.yaml"
+                            kubectl create -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide
                             fi
                             ;;
                           delete )
-                            #kubectl delete -f "${WORKDIR}/kubernetes/celery-gke-service.yaml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide

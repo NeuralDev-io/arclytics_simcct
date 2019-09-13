@@ -32,7 +32,12 @@ export class PrivateRoute extends React.Component {
     const { isAuthenticated, isLoading, isAdmin } = this.state
     if (isLoading) return <div />
     if (!isAuthenticated) return <Redirect to="/signin" />
-    return <Route {...rest} render={props => <Component {...props} isAdmin={isAdmin} />} />
+    return (
+      <Route
+        {...rest}
+        render={props => <Component {...props} isAdmin={isAdmin} isAuthenticated />}
+      />
+    )
   }
 }
 
@@ -70,7 +75,7 @@ export class AdminRoute extends React.Component {
     if (isLoading) return <div />
     if (!isAuthenticated) return <Redirect to="/signin" />
     if (!isAdmin) return <Redirect to="/" />
-    return <Route {...rest} render={props => <Component {...props} isAdmin={isAdmin} />} />
+    return <Route {...rest} render={props => <Component {...props} isAdmin />} />
   }
 }
 
@@ -84,7 +89,6 @@ export class DemoRoute extends React.Component {
     this.state = {
       isLoading: true,
       isAuthenticated: false,
-      isAdmin: false,
     }
   }
 
@@ -95,7 +99,6 @@ export class DemoRoute extends React.Component {
           this.setState({
             isLoading: false,
             isAuthenticated: true,
-            isAdmin: res.admin,
           })
         }
         this.setState({ isLoading: false })
@@ -104,13 +107,13 @@ export class DemoRoute extends React.Component {
 
   render() {
     const { component: Component, ...rest } = this.props
-    const { isAuthenticated, isLoading, isAdmin } = this.state
+    const { isAuthenticated, isLoading } = this.state
     if (isLoading) return <div />
     return (
       <Route
         {...rest}
         render={props => (
-          <Component {...props} isAdmin={isAdmin} isAuthenticated={isAuthenticated} />
+          <Component {...props} isAdmin={false} isAuthenticated={isAuthenticated} />
         )}
       />
     )

@@ -24,7 +24,6 @@ import os
 import json
 import unittest
 from pathlib import Path
-import settings
 
 from tests.test_api_base import BaseTestCase
 from logger.arc_logger import AppLogger
@@ -34,7 +33,8 @@ from tests.test_utilities import test_login
 
 logger = AppLogger(__name__)
 
-_TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'tests' / 'feedback.json'
+BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'feedback.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     _TEST_JSON = json.load(f)
 
@@ -80,7 +80,8 @@ class TestRatingsService(BaseTestCase):
                 'email': 'plokoon@arclytics.io',
                 'first_name': 'Plo',
                 'last_name': 'Koon'
-            })
+            }
+        )
         plo.set_password('WhenYouAskForTrouble')
         plo.save()
 
@@ -103,7 +104,8 @@ class TestRatingsService(BaseTestCase):
                 'email': 'jhonny@arclytics.io',
                 'first_name': 'Jhonny',
                 'last_name': 'Koon'
-            })
+            }
+        )
         jhonny.set_password('WhenYouAskForTrouble')
         jhonny.save()
 
@@ -460,7 +462,7 @@ class TestRatingsService(BaseTestCase):
     #                     'offset': data_2['next_offset']
     #                 }
     #             ),
-    #             content_type='application/json'   
+    #             content_type='application/json'
     #         )
     #
     #         data_4 = json.loads(resp_4.data.decode())

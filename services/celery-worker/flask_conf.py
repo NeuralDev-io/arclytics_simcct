@@ -21,37 +21,28 @@ Just some configuration settings.
 """
 
 import os
-from sim_api.extensions.utilities import JSONEncoder
 
 
 class BaseConfig:
     """Base configuration"""
     TESTING = False
-    SECRET_KEY = os.environ.get('SECRET_KEY', None)
-    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', None)
+    SECRET_KEY = os.environ.get('SECRET_KEY', '')
+    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', '')
 
-    # Bcrypt and Token encoding
-    BCRYPT_LOG_ROUNDS = 13
-    RESTFUL_JSON = {'cls': JSONEncoder}
-    TOKEN_EXPIRATION_DAYS = 30
-    TOKEN_EXPIRATION_SECONDS = 0
+    # Flask Email
+    MAIL_SUBJECT_PREFIX = '[Arclytics]'
+    MAIL_DEFAULT_SENDER = 'Arclytics Team <admin@arclytics.io>'
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', None)
+    MAIL_PORT = os.environ.get('MAIL_PORT', None)
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
+    # Unset this to see the debug messages to logs
+    MAIL_DEBUG = False
 
-    # Session variables for Flask
-    SESSION_COOKIE_NAME = 'session'
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_PERMANENT = True
-    SESSION_TYPE = 'redis'
-    SESSION_USE_SIGNER = True
 
-    # Redis Queue
-    redis_host = os.environ.get('REDIS_HOST', '')
-    redis_port = os.environ.get('REDIS_PORT', '')
-    REDIS_URL = f'redis://{redis_host}:{redis_port}/14'
-    REDIS_HOST = os.environ.get('REDIS_HOST', None)
-    REDIS_PORT = os.environ.get('REDIS_PORT', None)
-    QUEUES = ['default', 'low']
-    REDIS_DB = 0
-
+class DevelopmentConfig(BaseConfig):
+    """Development configuration"""
     # CELERY REDIS
     REDIS_HOST = os.environ.get('REDIS_HOST', None)
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
@@ -59,23 +50,16 @@ class BaseConfig:
     CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'
 
 
-class DevelopmentConfig(BaseConfig):
-    """Development configuration"""
-    MONGO_DBNAME = 'arc_dev'
-    BCRYPT_LOG_ROUNDS = 4
-
-
 class TestingConfig(BaseConfig):
     """Testing configuration"""
     TESTING = True
-    MONGO_DBNAME = 'arc_test'
-    BCRYPT_LOG_ROUNDS = 4
-    TOKEN_EXPIRATION_DAYS = 0
-    TOKEN_EXPIRATION_SECONDS = 5
-    PRESERVE_CONTEXT_ON_EXCEPTION = False
-
     SESSION_PERMANENT = False
-    REDIS_DB = 2
+
+    # CELERY REDIS
+    REDIS_HOST = os.environ.get('REDIS_HOST', None)
+    REDIS_PORT = os.environ.get('REDIS_PORT', None)
+    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/5'
+    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'
 
 
 class ProductionConfig(BaseConfig):
@@ -89,5 +73,6 @@ class ProductionConfig(BaseConfig):
     REDIS_HOST = os.environ.get('REDIS_HOST', None)
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
+    # TODO(andrew@neuraldev.io): Change this with Kubernetes URL
     CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/5'
     CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'

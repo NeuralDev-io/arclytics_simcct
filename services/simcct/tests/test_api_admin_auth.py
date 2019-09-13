@@ -255,9 +255,11 @@ class TestAdminCreateService(BaseTestCase):
             print(f'User.active: {user["active"]}')
 
             self.assertEquals(resp.status_code, 302)
-            self.assertTrue(resp.headers['Location'])
-            redirect_url = 'http://localhost:3000/'
-            self.assertRedirects(resp, redirect_url)
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(resp, f'{redirect_url}/')
 
             # The following assertion will cause an error as the context of the
             # database changes during the test for some reason. In order to
@@ -306,13 +308,13 @@ class TestAdminCreateService(BaseTestCase):
 
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
-            self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/disable/user/confirm?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEqual(resp.status_code, 400)
-            # self.assertEqual(data['status'], 'fail')
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(
+                resp, f'{redirect_url}/disable/user/confirm?tokenexpired=true'
+            )
 
     def test_confirm_disable_account_user_dne(self):
         kylo = User(
@@ -336,14 +338,13 @@ class TestAdminCreateService(BaseTestCase):
 
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
-            self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/disable/user/confirm?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEqual(resp.status_code, 400)
-            # self.assertEqual(data['status'], 'fail')
-            # self.assertEqual(data['message'], 'User does not exist.')
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(
+                resp, f'{redirect_url}/disable/user/confirm?tokenexpired=true'
+            )
 
     def test_create_admin_success(self):
         """Test create admin is successful"""
@@ -352,7 +353,7 @@ class TestAdminCreateService(BaseTestCase):
                 'first_name': 'Qui-Gon',
                 'last_name': 'Jinn',
                 # 'email': 'davidmatthews1004@gmail.com'
-                'email': 'quigon@arclytics.io'
+                'email': 'quigon@arclytics.com'
             }
         )
         # quigon.is_admin = True
@@ -372,7 +373,7 @@ class TestAdminCreateService(BaseTestCase):
                 'first_name': 'Obi-Wan',
                 'last_name': 'Kenobi',
                 # 'email': 'brickmatic479@gmail.com'
-                'email': 'obiwan@arclytics.io'
+                'email': 'obiwan@arclytics.com'
             }
         )
         obiwan.verified = True
@@ -386,7 +387,7 @@ class TestAdminCreateService(BaseTestCase):
                 '/api/v1/sim/admin/create',
                 data=json.dumps(
                     {
-                        'email': 'obiwan@arclytics.io',
+                        'email': 'obiwan@arclytics.com',
                         # 'email': 'brickmatic479@gmail.com',
                         'position': 'Jedi Knight.'
                     }
@@ -454,7 +455,7 @@ class TestAdminCreateService(BaseTestCase):
             **{
                 'first_name': 'Admiral',
                 'last_name': 'Ackbar',
-                'email': 'admiralackbar@arlytics.io'
+                'email': 'admiralackbar@arlytics.com'
             }
         )
         ackbar.set_password('ITSATRAP')
@@ -473,7 +474,7 @@ class TestAdminCreateService(BaseTestCase):
             **{
                 'first_name': 'Jyn',
                 'last_name': 'Erso',
-                'email': 'ersoj@arclytics.io'
+                'email': 'ersoj@arclytics.com'
             }
         )
         jyn.set_password('RebellionsAreBuiltOnHope')
@@ -486,7 +487,7 @@ class TestAdminCreateService(BaseTestCase):
                 '/api/v1/sim/admin/create',
                 data=json.dumps(
                     {
-                        'email': 'ersoj@arclytics.io',
+                        'email': 'ersoj@arclytics.com',
                         'position': 'Rogue Leader'
                     }
                 ),
@@ -680,7 +681,7 @@ class TestAdminCreateService(BaseTestCase):
             **{
                 'first_name': 'Qui-Gon',
                 'last_name': 'Jinn',
-                'email': "quigonjinn@arclytics.io"
+                'email': "quigonjinn@arclytics.com"
             }
         )
         # quigon.is_admin = True
@@ -702,7 +703,7 @@ class TestAdminCreateService(BaseTestCase):
                 '/api/v1/sim/admin/create',
                 data=json.dumps(
                     {
-                        'email': 'noobmaster69@arclytics.io',
+                        'email': 'noobmaster69@arclytics.com',
                         'position': 'Invisible.'
                     }
                 ),
@@ -752,8 +753,11 @@ class TestAdminCreateService(BaseTestCase):
 
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            redirect_url = 'http://localhost:3000/signin'
-            self.assertRedirects(resp, redirect_url)
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(resp, f'{redirect_url}/signin')
 
             updated_user = User.objects.get(email=user.email)
             self.assertTrue(not updated_user.is_admin)
@@ -769,12 +773,13 @@ class TestAdminCreateService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/admin/create/cancel?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEquals(resp.status_code, 400)
-            # self.assertEqual(data['message'], 'Invalid Token.')
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(
+                resp, f'{redirect_url}/admin/create/cancel?tokenexpired=true'
+            )
 
     def test_cancel_promotion_invalid_token_list(self):
         token = generate_promotion_confirmation_token(
@@ -789,12 +794,13 @@ class TestAdminCreateService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/admin/create/cancel?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEquals(resp.status_code, 400)
-            # self.assertEqual(data['message'], 'Missing information in Token.')
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(
+                resp, f'{redirect_url}/admin/create/cancel?tokenexpired=true'
+            )
 
     def test_cancel_promotion_token_list_missing_data(self):
         serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
@@ -812,12 +818,13 @@ class TestAdminCreateService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/admin/create/cancel?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEquals(resp.status_code, 400)
-            # self.assertEqual(data['message'], 'Invalid data in Token.')
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(
+                resp, f'{redirect_url}/admin/create/cancel?tokenexpired=true'
+            )
 
     def test_cancel_promotion_promoter_not_admin(self):
         admin = User(
@@ -851,15 +858,13 @@ class TestAdminCreateService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/admin/create/cancel?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEquals(resp.status_code, 401)
-            # self.assertEqual(
-            #     data['message'],
-            #     'User is not authorised to promote other users.'
-            # )
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(
+                resp, f'{redirect_url}/admin/create/cancel?tokenexpired=true'
+            )
 
     def test_cancel_promotion_admin_dne(self):
         token = generate_promotion_confirmation_token(
@@ -873,12 +878,13 @@ class TestAdminCreateService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/admin/create/cancel?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEquals(resp.status_code, 400)
-            # self.assertEqual(data['message'], 'Administrator does not exist.')
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(
+                resp, f'{redirect_url}/admin/create/cancel?tokenexpired=true'
+            )
 
     def test_cancel_promotion_user_dne(self):
         test_admin = User(
@@ -901,12 +907,13 @@ class TestAdminCreateService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/admin/create/cancel?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEquals(resp.status_code, 400)
-            # self.assertEqual(data['message'], 'Target User does not exist.')
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(
+                resp, f'{redirect_url}/admin/create/cancel?tokenexpired=true'
+            )
 
     # This test should work 30 days after the 25th of August 2019 as it uses a
     # token generated on that day.
@@ -1000,9 +1007,11 @@ class TestAdminCreateService(BaseTestCase):
             resp = client.get(url, content_type='application/json')
 
             self.assertEquals(resp.status_code, 302)
-            self.assertTrue(resp.headers['Location'])
-            redirect_url = 'http://localhost:3000/signin'
-            self.assertRedirects(resp, redirect_url)
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(resp, f'{redirect_url}/signin')
 
             updated_user = User.objects.get(email=user.email)
             self.assertTrue(updated_user.is_admin)
@@ -1021,13 +1030,13 @@ class TestAdminCreateService(BaseTestCase):
 
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
-            self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/admin/verify?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEquals(resp.status_code, 400)
-            # self.assertEqual(data['message'], 'User does not exist.')
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(
+                resp, f'{redirect_url}/admin/verify?tokenexpired=true'
+            )
 
     def test_verify_promotion_user_not_verified(self):
         test_user = User(
@@ -1048,13 +1057,13 @@ class TestAdminCreateService(BaseTestCase):
 
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
-            self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/admin/verify?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEquals(resp.status_code, 400)
-            # self.assertEqual(data['message'], 'User is not verified.')
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(
+                resp, f'{redirect_url}/admin/verify?tokenexpired=true'
+            )
 
     def test_verify_promotion_user_is_not_admin(self):
         test_user = User(
@@ -1076,13 +1085,13 @@ class TestAdminCreateService(BaseTestCase):
 
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
-            self.assertTrue(resp.headers['Location'])
-            redirect_url = \
-                f'http://{client_host}/admin/verify?tokenexpired=true'
-            self.assertRedirects(resp, redirect_url)
-            # data = json.loads(resp.data.decode())
-            # self.assertEquals(resp.status_code, 400)
-            # self.assertEqual(data['message'], 'User is not an Admin.')
+            protocol = os.environ.get('CLIENT_PROTOCOL')
+            client_host = os.environ.get('CLIENT_HOST')
+            client_port = os.environ.get('CLIENT_PORT')
+            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            self.assertRedirects(
+                resp, f'{redirect_url}/admin/verify?tokenexpired=true'
+            )
 
     # FIXME(davidmatthews1004@gmail.com) Pleas fix
     # def test_verify_promotion_token_expired(self):

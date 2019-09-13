@@ -20,16 +20,12 @@ __date__ = '2019.07.09'
 This script is to our CLI script tool to manage the application.
 """
 
-import os
-import json
 import sys
 import unittest
-from pathlib import Path
 
 import coverage
 from flask.cli import FlaskGroup
 
-import settings
 from arc_api.app import create_app
 
 COV = coverage.coverage(

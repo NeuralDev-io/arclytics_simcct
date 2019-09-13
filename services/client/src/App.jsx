@@ -39,7 +39,7 @@ function App() {
                 path="/signup"
                 render={props => <SignupPage {...props} />}
               />
-              <DemoRoute
+              <PrivateRoute
                 exact
                 path="/"
                 component={SimulationPage}
@@ -70,9 +70,13 @@ function App() {
                 path="/password/reset=:token"
                 render={props => <PasswordResetPage {...props} />}
               />
-              <Route
+              <DemoRoute
                 path="/share/simulation/:token"
-                render={props => <SharePage {...props} />}
+                component={SharePage}
+              />
+              <DemoRoute
+                path="/demo"
+                component={SimulationPage}
               />
             </Switch>
           </div>

@@ -44,7 +44,10 @@ class CompSidebar extends Component {
           <CompForm />
         </div>
         <div className={styles.table}>
-          <CompTable />
+          <CompTable
+            sessionIsInitialised={sessionIsInitialised}
+            isAuthenticated={isAuthenticated}
+          />
         </div>
         <Button
           onClick={runSimConnect}

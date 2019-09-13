@@ -293,7 +293,7 @@ def request_shared_simulation(token):
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f'{protocol}://{client_host}:{client_port}'
 
-    return redirect(f'{redirect_url}/share/simulation/token={token}')
+    return redirect(f'{redirect_url}/share/simulation/{token}')
 
     # # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
     # client_host = os.environ.get('CLIENT_HOST')

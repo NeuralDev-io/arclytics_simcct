@@ -34,7 +34,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "simcct"
-    image: gcr.io/arclytics-sim/arc_sim_service:1.1.4
+    image: gcr.io/arclytics-sim/arc_sim_service:1.1.5
     ports:
       - 8000:8000
     expose:

@@ -126,9 +126,9 @@ services:
     build:
       context: ./services/celery-worker
       dockerfile: Dockerfile
-    labels:
-      arclytics.io: "development"
-      service: "celery-worker"
+      labels:
+        arclytics.io: "development"
+        service: "celery-worker"
     image: neuraldev/arc_sim_celery:1.0
     volumes:
       - ./services/celery-worker:/usr/src/app

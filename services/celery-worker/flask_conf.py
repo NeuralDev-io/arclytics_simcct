@@ -73,6 +73,6 @@ class ProductionConfig(BaseConfig):
     REDIS_HOST = os.environ.get('REDIS_HOST', None)
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
-    # TODO(andrew@neuraldev.io): Change this with Kubernetes URL
-    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/5'
-    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'
+    redis_uri = f'redis://user:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}'
+    CELERY_BROKER_URL = f'{redis_uri}/5'
+    CELERY_RESULT_BACKEND = f'{redis_uri}/6'

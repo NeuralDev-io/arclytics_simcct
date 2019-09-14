@@ -211,15 +211,14 @@ services:
 
   dask-worker:
     build:
-      context: ./services/dask
-      dockerfile: Dockerfile
+      context: ./services/simcct
+      dockerfile: Dockerfile-worker
       labels:
         arclytics.io: "development"
         service: "dask-worker"
     image: neuraldev/arc_dask_worker:1.0
-    # container_name: arc-dask-worker  # Cannot use for scaling
     hostname: dask-worker
-    command: ['dask-worker', 'tcp://dask-scheduler:8786']
+    command: ['dask-worker', 'tcp://dask-scheduler:8786', '--no-nanny']
     networks:
       - host
 

@@ -21,7 +21,6 @@ all it's atomic number, symbols, names, and atomic weight.
 """
 
 import enum
-
 import prettytable
 
 

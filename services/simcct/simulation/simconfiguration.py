@@ -20,20 +20,13 @@ __package__ = 'simulation'
 {Description}
 """
 
-import os
-import json
-from pathlib import Path
-from typing import Union
-
 import numpy as np
+from typing import Union
 from prettytable import PrettyTable
 
-from simulation.utilities import Method, ConfigurationError
-from simulation.ae3_utilities import ae3_single_carbon, ae3_multi_carbon
-from simulation.periodic import PeriodicTable
-
-BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
-_TEST_CONFIGS = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+from .utilities import Method, ConfigurationError
+from .ae3_utilities import ae3_single_carbon, ae3_multi_carbon
+from .periodic import PeriodicTable
 
 
 class SimConfiguration(object):
@@ -44,19 +37,7 @@ class SimConfiguration(object):
     by Dr. Bendeich.
     """
 
-    def __init__(
-        self,
-        configs: dict = None,
-        compositions: list = None,
-        debug: bool = False
-    ):
-
-        if debug:
-            with open(_TEST_CONFIGS) as config_f:
-                sim_configs = json.load(config_f, parse_float=np.float32)
-            configs = sim_configs['configurations']
-            compositions = sim_configs['compositions']
-
+    def __init__(self, configs: dict = None, compositions: list = None):
         if compositions is not None:
             self.comp = self.get_compositions(compositions)
             if self.comp is False:
@@ -131,7 +112,7 @@ class SimConfiguration(object):
             A structured numpy.ndarray with the weights and names.
         """
         comp = np.zeros(
-            len(comp_list), dtype=[('symbol', 'U2'), ('weight', np.float32)]
+            len(comp_list), dtype=[('symbol', 'U2'), ('weight', np.float16)]
         )
 
         # 2019-08-04: Update by andrew@neuraldev.io
@@ -293,7 +274,6 @@ class SimConfiguration(object):
         ae3 = ae3_single_carbon(comp.copy(), c)
         return ae1, ae3 - 273
 
-    # TODO: Confirm with Dr. Bendeich if cf = 0.012 is the number he wants.
     @staticmethod
     def xfe_method2(
         comp: np.ndarray = None, ae1: np.float = None, cf: np.float = 0.012

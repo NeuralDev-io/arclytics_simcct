@@ -582,6 +582,8 @@ changeContainerGroup() {
         CONTAINER_ARGS="simcct celery-worker redis mongodb"
     elif [[ "${CONTAINER_GROUP}" == "server-dask" ]]; then
         CONTAINER_ARGS="simcct celery-worker redis mongodb dask-scheduler dask-worker"
+    elif [[ "${CONTAINER_GROUP}" == "client-dask" ]]; then
+        CONTAINER_ARGS="client simcct celery-worker redis mongodb dask-scheduler dask-worker"
     elif [[ "${CONTAINER_GROUP}" == "client" ]]; then
         CONTAINER_ARGS="client nginx"
     elif [[ "${CONTAINER_GROUP}" == "fluentd" ]]; then
@@ -780,31 +782,41 @@ while [[ "$1" != "" ]] ; do
                         changeContainerGroup
 
                         while [[ "$3" != "" ]]; do
-                            case $3 in
-                                -b | --build )
-                                    BUILD_FLAG=1
-                                    ;;
-                                -d | --detach )
-                                    DETACH_FLAG=1
-                                    ;;
-                                -s | --seed_db )
-                                    SEED_DB_FLAG=1
-                                    ;;
-                                help )
-                                    groupUsage
-                                    exit 0
-                                    ;;
-                                esac
-                                shift
-                            done
-                        # We run from here and as will only accept the flags above
-                        run
-                        exit 0
-                        ;;
+                          case $3 in
+                            -b | --build )
+                              BUILD_FLAG=1
+                              ;;
+                            -d | --detach )
+                              DETACH_FLAG=1
+                              ;;
+                            -s | --seed_db )
+                              SEED_DB_FLAG=1
+                              ;;
+                            --scale )
+                              SCALE_FLAG=1
+                              # Shift to the arg after --scale
+                              shift
+                              # Get the first argument after --SCALE_FLAG flag
+                              # TODO(andrew@neuraldev.io): Currently only taking one
+                              scale_service=$3
+                              # scale_num="$(cut -d'=' -f2 <<< "${scale_service}" )"
+                              shift
+                              ;;
+                            help )
+                              groupUsage
+                              exit 0
+                              ;;
+                            esac
+                            shift
+                          done
+                      # We run from here and as will only accept the flags above
+                      run
+                      exit 0
+                      ;;
                     -h | --help )
-                        upUsage
-                        exit 0
-                        ;;
+                      upUsage
+                      exit 0
+                      ;;
                     * )
                         CONTAINER_ARGS=$2
                         while [[ "$3" != "" ]] ; do

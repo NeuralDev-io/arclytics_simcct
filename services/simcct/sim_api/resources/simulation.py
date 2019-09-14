@@ -160,7 +160,7 @@ class Simulation(Resource):
 
         logger.debug('Total Simulation Time: {}'.format(finish - start))
 
-        logger.debug(data['CCT'])
+        logger.debug(data['USER']['user_phase_fraction_data'])
 
         # If a valid simulation has been run, the configurations are now valid.
         # session_store['configurations']['is_valid'] = True

@@ -55,7 +55,7 @@ def to_plot_dict(array) -> dict:
 
 
 def to_trimmed_list(array) -> list:
-    return np.trim_zeros(array).tolist()
+    return np.trim_zeros(array)
 
 
 class Phase(enum.Enum):
@@ -437,7 +437,7 @@ class PhaseSimulation(object):
         n_rows = 1000
         user_cool_mat = np.zeros(shape=(n_rows, 2), dtype=np.float32)
         # Count will set the array ID for each increment during cooling
-        count = 0
+        row_idx = 0
         # Get the requested cooling rate
         cooling_rate = self.configs.cct_cooling_rate
         if cooling_rate < 0:
@@ -506,11 +506,11 @@ class PhaseSimulation(object):
         # note: temp_curr is cooling, i.e. going down from temp_peak
         while temp_curr > 20:
             # record current temperature and time in storage array
-            user_cool_mat[count, 0] = time
-            user_cool_mat[count, 1] = temp_curr
+            user_cool_mat[row_idx, 0] = time
+            user_cool_mat[row_idx, 1] = temp_curr
 
             # This is the Phase transformation bit
-            if count > 0:
+            if row_idx > 0:
                 # first time through everything is at zero and pre set for
                 # this point
                 self._transform_inc(
@@ -520,16 +520,16 @@ class PhaseSimulation(object):
                     phase_c_ratio=phase_complete_ratio,
                     phase_frac=phase_frac_mat,
                     phase_vol=phase_vol,
-                    row_idx=count
+                    row_idx=row_idx
                 )
 
-            count = count + 1
+            row_idx = row_idx + 1
             # Find the new temperature for the next iteration of this loop
             temp_curr = self._next_temp(temp_curr, cooling_rate, increm_time)
             time = time + increm_time
 
         # Trim the user cool curve to the max count it reaches
-        n_max = count - 1
+        n_max = row_idx - 1
         user_cool_mat = user_cool_mat[:n_max, :]
         # Store the data in a Results Object
         # phase_vol: 0=Austenite, 1=Ferrite, 2=Pearlite, 3=Bainite, 4=Martensite
@@ -538,11 +538,11 @@ class PhaseSimulation(object):
         return {
             'user_cooling_curve': to_plot_dict(user_cool_mat),
             'user_phase_fraction_data': {
-                'austenite': to_trimmed_list(phase_vol[:n_max, 0]),
-                'ferrite': to_trimmed_list(phase_vol[:n_max, 1]),
-                'pearlite': to_trimmed_list(phase_vol[:n_max, 2]),
-                'bainite': to_trimmed_list(phase_vol[:n_max, 3]),
-                'martensite': to_trimmed_list(phase_vol[:n_max, 4]),
+                'austenite': to_trimmed_list(phase_vol[:, 0]),
+                'ferrite': to_trimmed_list(phase_vol[:, 1]),
+                'pearlite': to_trimmed_list(phase_vol[:, 2]),
+                'bainite': to_trimmed_list(phase_vol[:, 3]),
+                'martensite': to_trimmed_list(phase_vol[:, 4]),
             },
             'slider_time_field': float(user_cool_mat[-1, 0]),
             'slider_temp_field': float(user_cool_mat[-1, 1]),
@@ -1252,7 +1252,7 @@ class PhaseSimulation(object):
                 and stop_b
             ):
                 # Transformation time for bainite start
-                torr_b = self._torr_calc2(phase=Phase.B, tcurr=tcurr, integral_idx=1)
+                torr_b = self._torr_calc2(Phase.B, tcurr, integral_idx=1)
 
                 # Add up the cumulative fraction of Austenite converted towards
                 # the nucleation point
@@ -1265,7 +1265,7 @@ class PhaseSimulation(object):
                 and not stop_b_end
             ):
                 # Transformation time for bainite finish
-                torr_b_end = self._torr_calc2(phase=Phase.B, tcurr=tcurr, integral_idx=2)
+                torr_b_end = self._torr_calc2(Phase.B, tcurr, integral_idx=2)
 
                 # Add up the cumulative fraction of austenite converted toward
                 # the nucleation point
@@ -1294,8 +1294,8 @@ class PhaseSimulation(object):
                 stop_f_end, stop_p_end = True, True
 
                 # Transformation time for bainite start and finish
-                torr_b = self._torr_calc2(phase=Phase.B, tcurr=tcurr, integral_idx=1)
-                torr_b_end = self._torr_calc2(phase=Phase.B, tcurr=tcurr, integral_idx=2)
+                torr_b = self._torr_calc2(Phase.B, tcurr, integral_idx=1)
+                torr_b_end = self._torr_calc2(Phase.B, tcurr, integral_idx=2)
 
                 delta_t = torr_b_end - torr_b
                 phase_frac[row_idx, 3] = (
@@ -1358,7 +1358,7 @@ class PhaseSimulation(object):
                 and not stop_p
             ):
                 # Transformation time for pearlite start
-                torr_p = self._torr_calc2(phase=Phase.P, tcurr=tcurr, integral_idx=1)
+                torr_p = self._torr_calc2(Phase.P, tcurr, integral_idx=1)
                 # Add up the cumulative fraction of Pearlite converted
                 # toward the nucleation point
                 phase_n_ratio[row_idx, 2] = (
@@ -1370,7 +1370,7 @@ class PhaseSimulation(object):
                 and not stop_p_end
             ):
                 # Transformation time for pearlite finish
-                torr_p_end = self._torr_calc2(phase=Phase.P, tcurr=tcurr, integral_idx=2)
+                torr_p_end = self._torr_calc2(Phase.P, tcurr, integral_idx=2)
                 # Add up the cumulative fraction of Pearlite converted toward
                 # the nucleation point
                 phase_c_ratio[row_idx, 2] = (
@@ -1388,8 +1388,8 @@ class PhaseSimulation(object):
                 phase_frac[row_idx, 1] = phase_frac[row_idx - 1, 1]
                 stop_f, stop_f_end = True, True
 
-                torr_p = self._torr_calc2(phase=Phase.P, tcurr=tcurr, integral_idx=1)
-                torr_p_end = self._torr_calc2(phase=Phase.P, tcurr=tcurr, integral_idx=2)
+                torr_p = self._torr_calc2(Phase.P, tcurr, integral_idx=1)
+                torr_p_end = self._torr_calc2(Phase.P, tcurr, integral_idx=2)
 
                 delta_t = torr_p_end - torr_p
                 phase_frac[row_idx, 2] = (
@@ -1450,7 +1450,7 @@ class PhaseSimulation(object):
                 and not stop_f
             ):
                 # Transformation time for ferrite start
-                torr_f = self._torr_calc2(phase=Phase.F, tcurr=tcurr, integral_idx=1)
+                torr_f = self._torr_calc2(Phase.F, tcurr, integral_idx=1)
 
                 phase_n_ratio[row_idx, 1] = (
                     phase_n_ratio[row_idx - 1, 1] + (inc_time / torr_f)
@@ -1465,7 +1465,7 @@ class PhaseSimulation(object):
                 and not stop_f_end
             ):
                 # Transformation time for ferrite finish
-                torr_f_end = self._torr_calc2(phase=Phase.F, tcurr=tcurr, integral_idx=2)
+                torr_f_end = self._torr_calc2(Phase.F, tcurr, integral_idx=2)
                 # Add up the cumulative fraction of austenite converted toward
                 # 100% (note this is % of equilibrium phase fraction, Xfe)
                 phase_n_ratio[row_idx, 1] = (

@@ -55,8 +55,8 @@ class Simulation(Resource):
             response['message'] = session_store
             return response, 500
 
-        logger.debug('Session Store')
-        logger.pprint(session_store['configurations'])
+        # logger.debug('Session Store')
+        # logger.pprint(session_store['configurations'])
 
         session_configs = session_store.get('configurations')
         if not session_configs:
@@ -124,31 +124,37 @@ class Simulation(Resource):
             # TIMER START
             start = time.time()
             # Running these in parallel with threading
-            ttt_process = Thread(target=sim.ttt)
-            cct_process = Thread(target=sim.cct)
-            user_cooling_process = Thread(target=sim.user_cooling_profile)
+            # ttt_process = Thread(target=sim.ttt)
+            # cct_process = Thread(target=sim.cct)
+            # user_cooling_process = Thread(target=sim.user_cooling_profile)
             # Starting CCT first because it takes longer.
-            cct_process.start()
-            user_cooling_process.start()
-            ttt_process.start()
+            # cct_process.start()
+            # user_cooling_process.start()
+            # ttt_process.start()
+
+            # TODO(andrew@neuraldev.io): TESTING TTT
+            # ttt_time_taken = time_func(sim.ttt)
+            ttt_results = sim.ttt()
+            # user_time_taken = time_func(sim.user_cooling_profile)
+            # sim.ttt.compute()
 
             # Now we stop the main thread to wait for them to finish.
             # user_time_taken = time_func(sim.user_cooling_profile)
-            user_time_taken = time_func(user_cooling_process.join)
+            # user_time_taken = time_func(user_cooling_process.join)
             # ttt_time_taken = time_func(sim.ttt)
-            ttt_time_taken = time_func(ttt_process.join)
+            # ttt_time_taken = time_func(ttt_process.join)
             # cct_time_taken = time_func(sim.cct)
-            cct_time_taken = time_func(cct_process.join)
+            # cct_time_taken = time_func(cct_process.join)
             finish = time.time()
 
             # TODO(andrew@neuraldev.io): We need to store the results in the
             #  Session store at some point as well.
 
-            logger.debug(
-                f'User Cooling Curve Simulation Time: {user_time_taken}'
-            )
-            logger.debug(f'TTT Simulation Time: {ttt_time_taken}')
-            logger.debug(f'CCT Simulation Time: {cct_time_taken}')
+            # logger.debug(
+            #     f'User Cooling Curve Simulation Time: {user_time_taken}'
+            # )
+            # logger.debug(f'TTT Simulation Time: {ttt_time_taken}')
+            # logger.debug(f'CCT Simulation Time: {cct_time_taken}')
             logger.debug('Total Simulation Time: {}'.format(finish - start))
         except ZeroDivisionError as e:
             response['errors'] = str(e)
@@ -165,9 +171,29 @@ class Simulation(Resource):
         # AssertionError if the shape of the ndarray is not correct.
         try:
             data = {
-                'TTT': sim.plots_data.get_ttt_plot_data(),
-                'CCT': sim.plots_data.get_cct_plot_data(),
-                'USER': sim.plots_data.get_user_plot_data()
+                'TTT': ttt_results,
+                'CCT': {
+                    'ferrite_nucleation': {},
+                    'ferrite_completion': {},
+                    'pearlite_nucleation': {},
+                    'pearlite_completion': {},
+                    'bainite_nucleation': {},
+                    'bainite_completion': {},
+                    'martensite': {}
+                },
+                'USER': {
+                    'user_cooling_curve': {},
+                    'user_phase_fraction_data': {
+                        'austenite': {},
+                        'ferrite': {},
+                        'pearlite': {},
+                        'bainite': {},
+                        'martensite': {},
+                    },
+                    'slider_time_field': 100,
+                    'slider_temp_field': 10,
+                    'slider_max': 0
+                }
             }
         except AssertionError as e:
             response['errors'] = str(e)
@@ -175,9 +201,9 @@ class Simulation(Resource):
             return response, 500
 
         # If a valid simulation has been run, the configurations are now valid.
-        session_store['configurations']['is_valid'] = True
-        session_store['results'] = data
-        SimSessionService().save_session(session_store)
+        # session_store['configurations']['is_valid'] = True
+        # session_store['results'] = data
+        # SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response['data'] = data

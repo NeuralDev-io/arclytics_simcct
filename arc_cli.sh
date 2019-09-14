@@ -1014,7 +1014,7 @@ while [[ "$1" != "" ]] ; do
                 gcloud container clusters describe ${CLUSTER_NAME} --region ${REGION}
                 gcloud confit set project ${PROJECT_ID}
                 gcloud confit set compute/zone ${ZONE}
-                gcloud confit set compute/region ${REGION}
+                #gcloud confit set compute/region ${REGION}
                 gcloud components update
                 #gcloud compute project-info add-metadata --metadata google-compute-default-region=australia-southeast1,google-compute-default-zone=australia-southeast1-a
                 ;;
@@ -1083,12 +1083,13 @@ while [[ "$1" != "" ]] ; do
                       # Create new GKE Kubernetes cluster (using host node VM images based on Ubuntu
                       # rather than ChromiumOS default & also use slightly larger VMs than default)
                       # Alternative --machine-type = [n1-standard-]
+                      generalMessage "Creating cluster [${CLUSTER_NAME}] with version [${LATEST}] in region [${REGION}]"
                       gcloud container clusters create ${CLUSTER_NAME} \
                           --cluster-version=${LATEST} \
-                          --zone ${ZONE} \
-                          --num-nodes=2 \
-                          --min-nodes=2 \
-                          --max-nodes=8 \
+                          --region ${REGION} \
+                          --num-nodes=3 \
+                          --min-nodes=3 \
+                          --max-nodes=9 \
                           --image-type=${IMAGE_TYPE} \
                           --machine-type=n1-standard-2 \
                           --disk-type=pd-standard \
@@ -1111,7 +1112,7 @@ while [[ "$1" != "" ]] ; do
                       ;;
                     delete )
                       gcloud container clusters list
-                      gcloud container clusters delete ${CLUSTER_NAME}
+                      gcloud container clusters delete ${CLUSTER_NAME} --region ${REGION}
                       ;;
                   esac
                   shift
@@ -1142,7 +1143,7 @@ while [[ "$1" != "" ]] ; do
                 while [[ "$3" != "" ]]; do
                   case $3 in
                     create )
-                      gcloud compute disks create --size 30GB --type pd-ssd redis-ssd-disk --zone ${ZONE}
+                      gcloud compute disks create --size 30GB --type pd-ssd redis-ssd-disk --region ${REGION}
                       kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
                       kubectl create -f "${WORKDIR}/kubernetes/redis-gke-service.yaml" --validate=false
 
@@ -1155,7 +1156,7 @@ while [[ "$1" != "" ]] ; do
                       kubectl delete pvc redis-pvc-redis-0
                       kubectl delete pv redis-pv
                       sleep 15
-                      gcloud compute disks delete redis-ssd-disk --zone ${ZONE}
+                      gcloud compute disks delete redis-ssd-disk --region ${REGION}
 
                       if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                         kubectl get all -o wide
@@ -1184,7 +1185,7 @@ while [[ "$1" != "" ]] ; do
                       echo "Creating GCE disks"
                       for i in 1 2 3
                       do
-                          gcloud compute disks create --size 30GB --type pd-standard pd-standard-disk-$i --zone ${ZONE}
+                          gcloud compute disks create --size 30GB --type pd-standard pd-standard-disk-$i --region ${REGION}
                       done
                       sleep 3
 
@@ -1245,9 +1246,9 @@ while [[ "$1" != "" ]] ; do
 
                       sleep 15
                       # Wait till the PV and PVC are deleted first
-                      gcloud compute disks delete pd-standard-disk-1 --zone ${ZONE}
-                      gcloud compute disks delete pd-standard-disk-2 --zone ${ZONE}
-                      gcloud compute disks delete pd-standard-disk-3 --zone ${ZONE}
+                      gcloud compute disks delete pd-standard-disk-1 --region ${REGION}
+                      gcloud compute disks delete pd-standard-disk-2 --region ${REGION}
+                      gcloud compute disks delete pd-standard-disk-3 --region ${REGION}
 
                       if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                         kubectl get all -o wide

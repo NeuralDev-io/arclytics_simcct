@@ -4,7 +4,12 @@
   align-items: flex-start;
   margin-bottom: 2rem;
 
+  h6 {
+    position:relative;
+  }
+
   &>div:first-of-type {
+    position: relative;
     margin-right: 8rem;
   }
 
@@ -43,6 +48,7 @@
     & > div {
       margin-right: 8rem;
       margin-bottom: 1.5rem;
+      position: relative;
     }
 
     & > div > h6 {
@@ -73,6 +79,10 @@
 
   & > h5 {
     margin-bottom: .75rem;
+    position:relative;
+    .infoTipContainer{
+      left: 21.85rem;
+    }
   }
 
   .configGroup {
@@ -93,4 +103,17 @@
 
 .shortCheckbox {
   width: 3rem;
+}
+
+.infoIcon {
+  width: 1rem;
+  color: var(--arc500);
+}
+
+.infoTipContainer{
+  position: absolute;
+  left: calc(100% - 1rem);
+  div{
+    width: fit-content;
+  }
 }

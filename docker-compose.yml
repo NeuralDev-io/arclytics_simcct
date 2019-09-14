@@ -212,7 +212,7 @@ services:
   dask-worker:
     build:
       context: ./services/dask
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-worker
       labels:
         arclytics.io: "development"
         service: "dask-worker"

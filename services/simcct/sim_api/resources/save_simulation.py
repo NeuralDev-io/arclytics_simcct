@@ -129,6 +129,10 @@ class SaveSimulationList(Resource):
             response['error'] = str(e)
             response['message'] = 'Model schema validation error.'
             return response, 400
+        except OverflowError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Overflow error, will be fixed soon.'
+            return response, 400
 
         response.pop('message')
         response['status'] = 'success'

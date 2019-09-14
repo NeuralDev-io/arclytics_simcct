@@ -117,6 +117,10 @@ class ShareSimulationLink(Resource):
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
             return response, 400
+        except OverflowError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Overflow error, will be fixed soon.'
+            return response, 400
 
         # Create a token that contains the ObjectId for the shared simulation
         # and put it in a link/url that can be sent back to the frontend.
@@ -235,6 +239,10 @@ class ShareSimulationEmail(Resource):
         except ValidationError as e:
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
+            return response, 400
+        except OverflowError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Overflow error, will be fixed soon.'
             return response, 400
 
         # Create a token that contains the ObjectId for the shared simulation

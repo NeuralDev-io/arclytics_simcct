@@ -9,3 +9,4 @@ from .ae3_utilities import (
     R, ae3_single_carbon, ae3_multi_carbon, ae3_set_carbon, ai_eqn3,
     convert_wt_2_mol, tzero2, dg_fit, dgi22, dh_fit, eta2li96
 )
+from .dynamic_ndarray import DynamicNdarray

@@ -24,17 +24,17 @@ a Python scientific programming style..
 """
 
 import enum
+import numpy as np
 from typing import Any
 from math import pow, sqrt, log, exp, atan
-import numpy as np
 
+import dask
+from dask.distributed import Client, as_completed
 from .utilities import Method, sort_ccr, ConfigurationError, SimulationError
 from .simconfiguration import SimConfiguration
 from .dynamic_ndarray import DynamicNdarray
 # noinspection PyPep8Naming
 from .periodic import PeriodicTable as PT
-import dask
-from dask.distributed import Client
 
 
 def to_plot_dict(array) -> dict:
@@ -63,10 +63,6 @@ class PhaseSimulation(object):
     """
 
     def __init__(self, sim_configs: SimConfiguration = None, debug=False):
-
-        # Connect to Dask Scheduler
-        self.dask_client = Client()
-
         if sim_configs is not None:
             if not sim_configs.ae_check:
                 raise ConfigurationError(
@@ -143,7 +139,7 @@ class PhaseSimulation(object):
         # ========= MARTENSITE ========= #
         # Martensite curve start
         temp_curr = self.ms
-        torr_m = self._torr_calc2(phase=Phase.M, tcurr=temp_curr, integral_idx=1)
+        torr_m = self._torr_calc2(Phase.M, tcurr=temp_curr, integral_idx=1)
         # Uses Bainite cutoff time. So uses the Bainite phase as the argument
 
         # Much faster to just use a static array since this is so small.
@@ -861,7 +857,9 @@ class PhaseSimulation(object):
 
         return integral_mat
 
-    def _torr_calc2(self, phase: Phase, tcurr: float, integral_idx: int) -> np.float32:
+    def _torr_calc2(
+            self, phase: Phase, tcurr: float, integral_idx: int
+    ) -> np.float32:
         r_gas = 1.985
 
         wt = self.comp
@@ -981,122 +979,112 @@ class PhaseSimulation(object):
 
         return np.float32(-1)
 
-    def _critical_cooling_rate(self) -> np.ndarray:
+    def get_ccr(
+            self, phase, start_temp, limit, integral_idx, results_idx, denom
+    ):
+        temp_curr = start_temp
+        time_interval = 1.0
+        torr, ccr, time_accumulate = 0.0, 0.0, 0.0
+        while temp_curr < limit:
+            # Get isothermal nucleation time at current temperature
+            torr = self._torr_calc2(
+                phase=phase,
+                tcurr=temp_curr,
+                integral_idx=integral_idx
+            )
+
+            # Bainite/Ferrite/Pearlite start. Accumulation ratio
+            ccr = ccr + (time_interval / torr)
+            temp_curr = temp_curr + 1
+            time_accumulate = time_accumulate + time_interval
+
+        return ccr, results_idx, time_accumulate, denom
+
+    def _critical_cooling_rate(self) -> Any:
         """Find the critical cooling rate for each phase."""
+        dask_client = Client()
         ccr_mat = np.zeros((3, 2), dtype=np.float32)
 
-        # ========================================================= #
-        # ==================== # BAINITE CCR # ==================== #
-        # ========================================================= #
-        torr_b, ccr_bcs, ccr_bcf = 0.0, 0.0, 0.0
-        time_accumulate = 0
-        # initialise the time interval for this loop
-        time_interval = 1.0
-        # Start at Martensite temperature and work up to Bainite limit
-        temp_curr = self.ms
+        tasks = [
+            # ==================== # BAINITE CCR # ==================== #
+            {
+                'phase': Phase.B,
+                # Start at Martensite temperature and work up to Bainite limit
+                'start_temp': self.ms,
+                'limit': self.bs,
+                'integral_idx': 1,
+                'results_idx': (2, 0),  # Position in `ccr_mat`
+                'denom': (self.bs - self.ms)
+            },
+            {
+                'phase': Phase.B,
+                # Start at Martensite temperature and work up to Bainite limit
+                'start_temp': self.ms,
+                'limit': self.bs,
+                'integral_idx': 2,
+                'results_idx': (2, 1),
+                'denom': (self.bs - self.ms)
+            },
+            # ==================== # PEARLITE CCR # ==================== #
+            {
+                'phase': Phase.P,
+                # Start at Martensite temperature and work up to Bainite limit
+                'start_temp': self.bs,
+                'limit': self.ae1,
+                'integral_idx': 1,
+                'results_idx': (1, 0),
+                'denom': (self.ae1 - self.bs)
+            },
+            {
+                'phase': Phase.P,
+                # Start at Martensite temperature and work up to Bainite limit
+                'start_temp': self.bs,
+                'limit': self.ae1,
+                'integral_idx': 2,
+                'results_idx': (1, 1),
+                'denom': (self.ae1 - self.bs)
+            },
+            # ==================== # FERRITE CCR # ==================== #
+            {
+                'phase': Phase.F,
+                # Start at Bainite temperature and work up to Bainite limit
+                'start_temp': self.bs,
+                'limit': self.ae3,
+                'integral_idx': 1,
+                'results_idx': (0, 0),
+                'denom': (self.ae3 - self.bs)
+            },
+            {
+                'phase': Phase.F,
+                # Start at Bainite temperature and work up to Bainite limit
+                'start_temp': self.bs,
+                'limit': self.ae3,
+                'integral_idx': 2,
+                'results_idx': (0, 1),
+                'denom': (self.ae3 - self.bs)
+            },
+        ]
 
-        # FIXME: This while loop can be put out to a helper function with:
-        #  - i.e. bs is limit
-        #  - return time_accumulate, ccr
-        while temp_curr < self.bs:
-            # Get isothermal nucleation time at current temperature
-            torr_b = self._torr_calc2(Phase.B, tcurr=temp_curr, integral_idx=1)
+        futures = []
+        # Submit the task to the Dask Scheduler each task defined in the
+        # tasks list with the parameters we need. We then store the futures
+        # instances returned by Dask into a list so we can iterate them later.
+        for task in tasks:
+            future = dask_client.submit(
+                self.get_ccr,
+                task['phase'],
+                task['start_temp'],
+                task['limit'],
+                task['integral_idx'],
+                task['results_idx'],
+                task['denom']
+            )
+            futures.append(future)
 
-            # Bainite start. Accumulation ratio
-            ccr_bcs = ccr_bcs + (time_interval / torr_b)
-            temp_curr = temp_curr + 1
-            time_accumulate = time_accumulate + time_interval
-
-        ccr_mat[2, 0] = ccr_bcs / (
-            (self.bs - self.ms) / (time_accumulate - time_interval)
-        )
-
-        # Reset and run to full transformation
-        time_accumulate = 0
-
-        # Start at Martensite temperature and work up to Bainite limit
-        temp_curr = self.ms
-
-        while temp_curr < self.bs:
-            # Get isothermal nucleation time at current temperature
-            torr_b = self._torr_calc2(Phase.B, tcurr=temp_curr, integral_idx=2)
-            # Bainite finish. Accumulation ratio
-            ccr_bcf = ccr_bcf + (time_interval / torr_b)
-            temp_curr = temp_curr + 1.0
-            time_accumulate = time_accumulate + time_interval
-
-        ccr_mat[2, 1] = ccr_bcf / (
-            (self.bs - self.ms) / (time_accumulate - time_interval)
-        )
-
-        # ========================================================== #
-        # ==================== # PEARLITE CCR # ==================== #
-        # ========================================================== #
-        torr_p, ccr_pcs, ccr_pcf = 0.0, 0.0, 0.0
-        time_accumulate = 0
-        temp_curr = self.bs
-
-        while temp_curr < self.ae1:
-            torr_p = self._torr_calc2(Phase.P, tcurr=temp_curr, integral_idx=1)
-            # Pearlite start. Accumulation ratio
-            ccr_pcs = ccr_pcs + (time_interval / torr_p)
-            temp_curr = temp_curr + 1.0
-            time_accumulate = time_accumulate + time_interval
-
-        ccr_mat[1, 0] = ccr_pcs / (
-            (self.ae1 - self.bs) / (time_accumulate - time_interval)
-        )
-
-        # Reset and run to full transformation
-        time_accumulate = 0
-        # Start at Martensite temperature and work up to Bainite limit
-        temp_curr = self.bs
-
-        while temp_curr < self.ae1:
-            torr_p = self._torr_calc2(Phase.P, tcurr=temp_curr, integral_idx=1)
-            # Pearlite start. Accumulation ratio
-            ccr_pcf = ccr_pcf + (time_interval / torr_p)
-            temp_curr = temp_curr + 1
-            time_accumulate = time_accumulate + time_interval
-
-        ccr_mat[1, 1] = ccr_pcf / (
-            (self.ae1 - self.bs) / (time_accumulate - time_interval)
-        )
-
-        # ========================================================= #
-        # ==================== # FERRITE CCR # ==================== #
-        # ========================================================= #
-        torr_f, ccr_fcs, ccr_fcf = 0.0, 0.0, 0.0
-        time_accumulate = 0
-
-        # Start at Bainite temperature and work up to Bainite limit
-        temp_curr = self.bs
-
-        while temp_curr < self.ae3:
-            torr_f = self._torr_calc2(Phase.F, tcurr=temp_curr, integral_idx=1)
-            # Ferrite start. Accumulation ratio
-            ccr_fcs = ccr_fcs + (time_interval / torr_f)
-            temp_curr = temp_curr + 1
-            time_accumulate = time_accumulate + time_interval
-
-        ccr_mat[0, 0] = ccr_fcs / (
-            (self.ae3 - self.bs) / (time_accumulate - time_interval)
-        )
-
-        # Reset and run to full transformation
-        time_accumulate = 0
-        # Start at Martensite temperature and work up to Bainite limit
-        temp_curr = self.bs
-
-        while temp_curr < self.ae3:
-            torr_f = self._torr_calc2(Phase.F, tcurr=temp_curr, integral_idx=1)
-            ccr_fcf = ccr_fcf + (time_interval / torr_f)
-            temp_curr = temp_curr + 1
-            time_accumulate = time_accumulate + time_interval
-
-        ccr_mat[0, 1] = ccr_fcf / (
-            (self.ae3 - self.bs) / (time_accumulate - time_interval)
-        )
+        # Retrieve our tasks as they are completed and store them
+        for future, result in as_completed(futures, with_results=True):
+            ccr, results_idx, time_accumulate, denom = result
+            ccr_mat[results_idx] = ccr / (denom / (time_accumulate - 1.0))
 
         return ccr_mat
 
@@ -1474,8 +1462,8 @@ class PhaseSimulation(object):
                 tcurr < self.ae3 and phase_n_ratio[row_idx - 1, 1] > 1.0 >
                 phase_c_ratio[row_idx - 1, 1] and not stop_f_end
             ):
-                torr_f = self._torr_calc2(phase=Phase.F, tcurr=tcurr, integral_idx=1)
-                torr_f_end = self._torr_calc2(phase=Phase.F, tcurr=tcurr, integral_idx=2)
+                torr_f = self._torr_calc2(Phase.F, tcurr, integral_idx=1)
+                torr_f_end = self._torr_calc2(Phase.F, tcurr, integral_idx=2)
 
                 # Find the total time expected between nucleation and
                 # completion <<<< AT THE CURRENT TEMPERATURE >>>

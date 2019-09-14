@@ -1007,7 +1007,7 @@ while [[ "$1" != "" ]] ; do
               auth )
                 gcloud container clusters get-credentials ${CLUSTER_NAME} \
                     --project=${PROJECT_ID} \
-                    --region=${REGION}
+                    --zone=${ZONE}
                 ;;
               config )
                 gcloud compute project-info describe --project ${PROJECT_ID}

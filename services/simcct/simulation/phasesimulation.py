@@ -26,6 +26,7 @@ a Python scientific programming style..
 import enum
 import numpy as np
 from typing import Any
+from os import environ as env
 from math import pow, sqrt, log, exp, atan
 
 import dask
@@ -43,7 +44,7 @@ def to_plot_dict(array) -> dict:
     time = np.trim_zeros(array[:, 0])
     temp = np.trim_zeros(array[:, 1])
 
-    time_intermed = np.delete(time, np.argwhere(time > 10000))
+    time_intermed = np.delete(time, np.argwhere(time > 100000))
     time_len = len(time_intermed)
     temp_intermed = temp[:time_len]
 
@@ -309,7 +310,7 @@ class PhaseSimulation(object):
 
                 # =============== # Look for FERRITE START # =============== #
                 if not stop_f:
-                    torr_f = self._torr_calc2(phase=Phase.F, tcurr=temp, integral_idx=1)
+                    torr_f = self._torr_calc2(Phase.F, temp, integral_idx=1)
                     # Add up the cumulative fraction of ferrite converted
                     # toward the nucleation point
                     nuc_frac_ferrite = (
@@ -326,7 +327,7 @@ class PhaseSimulation(object):
 
                 # =============== # Look for FERRITE FINISH # =============== #
                 if not stop_f_end:
-                    torr_f_end = self._torr_calc2(Phase.F, tcurr=temp, integral_idx=2)
+                    torr_f_end = self._torr_calc2(Phase.F, temp, integral_idx=2)
                     nuc_frac_ferrite_end = nuc_frac_ferrite_end + (
                         increm_time / torr_f_end
                     )
@@ -340,7 +341,7 @@ class PhaseSimulation(object):
 
                 # =============== # Look for PEARLITE START # =============== #
                 if not stop_p and temp < self.ae1:
-                    torr_p = self._torr_calc2(Phase.P, tcurr=temp, integral_idx=1)
+                    torr_p = self._torr_calc2(Phase.P, temp, integral_idx=1)
                     # Add up the cumulative fraction of pearlite converted
                     # toward the nucleation point
                     nuc_frac_pearlite = nuc_frac_pearlite + (
@@ -357,7 +358,7 @@ class PhaseSimulation(object):
 
                 # =============== # Look for PEARLITE FINISH # =============== #
                 if not stop_p_end and temp < self.ae1:
-                    torr_p_end = self._torr_calc2(Phase.P, tcurr=temp, integral_idx=2)
+                    torr_p_end = self._torr_calc2(Phase.P, temp, integral_idx=2)
                     nuc_frac_pearlite_end = nuc_frac_pearlite_end + (
                         increm_time / torr_p_end
                     )
@@ -370,7 +371,7 @@ class PhaseSimulation(object):
 
                 # =============== # Look for BAINITE START # =============== #
                 if not stop_b and temp < self.bs:
-                    torr_b = self._torr_calc2(Phase.B, tcurr=temp, integral_idx=1)
+                    torr_b = self._torr_calc2(Phase.B, temp, integral_idx=1)
                     # Add up the cumulative fraction of bainite converted
                     # toward the nucleation point
                     nuc_frac_bainite = nuc_frac_bainite + (
@@ -385,7 +386,7 @@ class PhaseSimulation(object):
 
                 # =============== # Look for BAINITE FINISH # =============== #
                 if not stop_b_end and temp < self.bs:
-                    torr_b_end = self._torr_calc2(Phase.B, tcurr=temp, integral_idx=2)
+                    torr_b_end = self._torr_calc2(Phase.B, temp, integral_idx=2)
                     nuc_frac_bainite_end = nuc_frac_bainite_end + (
                         increm_time / torr_b_end
                     )
@@ -431,7 +432,6 @@ class PhaseSimulation(object):
 
     @dask.delayed
     def user_cooling_profile(self) -> Any:
-
         # We first start by doing some setup
         # Define array to hold time and temperature data
         n_rows = 1000
@@ -552,12 +552,12 @@ class PhaseSimulation(object):
     @dask.delayed
     def _ttt_phase_sim(self, phase, init_temp_curr, upper_limit):
         # NOTE!!!!!
-        #  `integral_idx` must always be 1 or 2 because of `integral_mat` positions are
-        #  static with the integral denominator reliant by other methods
-        #  downstream such as _torr_calc2. Upstream, it is created and element
-        #  arranged by `self._vol_phantom_frac2`.
+        #  `integral_idx` must always be 1 or 2 because of `integral_mat`
+        #  positions are static with the integral denominator reliant by
+        #  other methods downstream such as _torr_calc2. Upstream, it is
+        #  created and element arranged by `self._vol_phantom_frac2`.
         # Curve start and finish
-        n_rows = 1000
+        n_rows = 2000
         start_mat = DynamicNdarray(shape=(n_rows, 2))
         finish_mat = DynamicNdarray(shape=(n_rows, 2))
 
@@ -565,7 +565,7 @@ class PhaseSimulation(object):
             temp_curr = init_temp_curr
             idx_fn = 0
             while temp_curr < upper_limit:
-                torr = self._torr_calc2(phase=phase, tcurr=temp_curr, integral_idx=i)
+                torr = self._torr_calc2(phase, temp_curr, integral_idx=i)
 
                 if i == 1:
                     start_mat[idx_fn, 0] = torr
@@ -988,9 +988,15 @@ class PhaseSimulation(object):
         return np.float32(-1)
 
     def get_ccr(
-            self, phase, start_temp, limit, integral_idx, results_idx, denom
+            self,
+            phase,
+            init_start_temp,
+            limit,
+            integral_idx,
+            results_idx,
+            denom
     ):
-        temp_curr = start_temp
+        temp_curr = init_start_temp
         time_interval = 1.0
         torr, ccr, time_accumulate = 0.0, 0.0, 0.0
         while temp_curr < limit:
@@ -1010,15 +1016,17 @@ class PhaseSimulation(object):
 
     def _critical_cooling_rate(self) -> Any:
         """Find the critical cooling rate for each phase."""
-        dask_client = Client()
         ccr_mat = np.zeros((3, 2), dtype=np.float32)
+        dask_client = Client(
+            address=env.get('DASK_SCHEDULER_ADDRESS'), processes=False
+        )
 
         tasks = [
             # ==================== # BAINITE CCR # ==================== #
             {
                 'phase': Phase.B,
                 # Start at Martensite temperature and work up to Bainite limit
-                'start_temp': self.ms,
+                'init_start_temp': self.ms,
                 'limit': self.bs,
                 'integral_idx': 1,
                 'results_idx': (2, 0),  # Position in `ccr_mat`
@@ -1027,7 +1035,7 @@ class PhaseSimulation(object):
             {
                 'phase': Phase.B,
                 # Start at Martensite temperature and work up to Bainite limit
-                'start_temp': self.ms,
+                'init_start_temp': self.ms,
                 'limit': self.bs,
                 'integral_idx': 2,
                 'results_idx': (2, 1),
@@ -1037,7 +1045,7 @@ class PhaseSimulation(object):
             {
                 'phase': Phase.P,
                 # Start at Martensite temperature and work up to Bainite limit
-                'start_temp': self.bs,
+                'init_start_temp': self.bs,
                 'limit': self.ae1,
                 'integral_idx': 1,
                 'results_idx': (1, 0),
@@ -1046,7 +1054,7 @@ class PhaseSimulation(object):
             {
                 'phase': Phase.P,
                 # Start at Martensite temperature and work up to Bainite limit
-                'start_temp': self.bs,
+                'init_start_temp': self.bs,
                 'limit': self.ae1,
                 'integral_idx': 2,
                 'results_idx': (1, 1),
@@ -1056,7 +1064,7 @@ class PhaseSimulation(object):
             {
                 'phase': Phase.F,
                 # Start at Bainite temperature and work up to Bainite limit
-                'start_temp': self.bs,
+                'init_start_temp': self.bs,
                 'limit': self.ae3,
                 'integral_idx': 1,
                 'results_idx': (0, 0),
@@ -1065,7 +1073,7 @@ class PhaseSimulation(object):
             {
                 'phase': Phase.F,
                 # Start at Bainite temperature and work up to Bainite limit
-                'start_temp': self.bs,
+                'init_start_temp': self.bs,
                 'limit': self.ae3,
                 'integral_idx': 2,
                 'results_idx': (0, 1),
@@ -1081,7 +1089,7 @@ class PhaseSimulation(object):
             future = dask_client.submit(
                 self.get_ccr,
                 task['phase'],
-                task['start_temp'],
+                task['init_start_temp'],
                 task['limit'],
                 task['integral_idx'],
                 task['results_idx'],

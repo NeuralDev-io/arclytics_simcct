@@ -218,7 +218,7 @@ services:
         service: "dask-worker"
     image: neuraldev/arc_dask_worker:1.0
     hostname: dask-worker
-    command: ['dask-worker', 'tcp://dask-scheduler:8786']
+    command: ['dask-worker', 'tcp://dask-scheduler:8786', '--no-nanny']
     networks:
       - host
 

@@ -1006,7 +1006,7 @@ while [[ "$1" != "" ]] ; do
             case $2 in
               auth )
                 gcloud container clusters get-credentials ${CLUSTER_NAME} \
-                    --project=${PROJECT} \
+                    --project=${PROJECT_ID} \
                     --region=${REGION}
                 ;;
               config )

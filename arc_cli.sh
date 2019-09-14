@@ -1142,6 +1142,13 @@ while [[ "$1" != "" ]] ; do
               redis )
                 while [[ "$3" != "" ]]; do
                   case $3 in
+                    build )
+                      # Prune to avoid collisions of names:tags output
+                      docker system prune -af --volumes --filter 'label=service=redis'
+                      docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build redis
+                      TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=redis")
+                      docker push gcr.io/arclytics-sim/arc_sim_redis:${TAG}
+                      ;;
                     create )
                       gcloud compute disks create --size 30GB --type pd-ssd redis-ssd-disk --zone ${ZONE}
                       kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
@@ -1182,7 +1189,7 @@ while [[ "$1" != "" ]] ; do
                       kubectl apply -f "${WORKDIR}/kubernetes/hostvm-node-configurer-daemonset.yaml"
 
                       # Register GCE Fast SSD persistent disks and then create the persistent disks
-                      echo "Creating GCE disks"
+                      generalMessage "Creating GCE disks"
                       for i in 1 2 3
                       do
                           gcloud compute disks create --size 30GB --type pd-standard pd-standard-disk-$i --zone ${ZONE}
@@ -1190,7 +1197,7 @@ while [[ "$1" != "" ]] ; do
                       sleep 3
 
                       # Create persistent volumes using disks created above
-                      echo "Creating GKE Persistent Volumes"
+                      generalMessage "Creating GKE Persistent Volumes"
                       for i in 1 2 3
                       do
                           sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/mongo-gke-xfs-standard-pv.yaml" > /tmp/xfs-gke-pv.yaml
@@ -1206,34 +1213,32 @@ while [[ "$1" != "" ]] ; do
                       # rm $TMPFILE
 
                       # Create mongodb service with mongod stateful-set
-                      kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-service.yaml"
-                      echo
+                      kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-service.yaml" --validate=false
+                      echoSpace
 
                       # Wait until the final (2nd) mongod has started properly
-                      echo "Waiting for the 2 containers to come up $(date)..."
-                      echo " (IGNORE any reported not found & connection errors)"
+                      generalMessage "Waiting for the 2 containers to come up $(date)..."
+                      generalMessage " (IGNORE any reported not found & connection errors)"
                       sleep 30
-                      echo -n "  "
+                      generalMessage -n "  "
                       until kubectl --v=0 exec mongo-2 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
                           sleep 5
-                          echo -n "  "
+                          generalMessage -n "  "
                       done
-                      echo "...mongo containers are now running $(date)"
+                      generalMessage "...mongo containers are now running $(date)"
                       echo
 
                       # Pods and Containers should be running now
-                      read -p "Are all the mongodb-n containers ready? " -n 1 -r
-                      echo    # (optional) move to a new line
+                      #read -p "Are all the mongodb-n containers ready? " -n 1 -r
+                      echoSpace    # (optional) move to a new line
 
-                      if [[ $REPLY =~ ^[Yy]$ ]]
-                      then
-                        # shellcheck disable=SC1090
-                        . ${WORKDIR}/kubernetes/scripts/configure_repset_auth.sh
-                      fi
-
-                      if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                        kubectl get all -o wide
-                      fi
+                      #if [[ $REPLY =~ ^[Yy]$ ]]
+                      #then
+                      #  . ${WORKDIR}/kubernetes/scripts/configure_repset_auth.sh
+                      #fi
+                      sleep 10
+                      # shellcheck disable=SC1090
+                      . ${WORKDIR}/kubernetes/scripts/configure_repset_auth.sh
                       ;;
                     delete )
                       kubectl delete -f "${WORKDIR}/kubernetes/mongo-minikube-service.yml"

@@ -11,7 +11,7 @@ spec:
     targetPort: 27017
   clusterIP: None
   selector:
-    role: mongo
+    role: mongo-persistence
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
@@ -19,11 +19,14 @@ metadata:
   name: mongo
 spec:
   serviceName: mongo-service
+  selector:
+    matchLabels:
+    role: mongo-persistence
   replicas: 3
   template:
     metadata:
       labels:
-        role: mongo
+        role: mongo-persistence
         environment: production
         replicaset: MainRepSet
     spec:

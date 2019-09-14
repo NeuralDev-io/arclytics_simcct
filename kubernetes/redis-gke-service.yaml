@@ -8,6 +8,7 @@ spec:
   ports:
   - port: 6379
     targetPort: 6379
+  clusterIP: None
   selector:
     role: redis-persistence
 ---
@@ -18,15 +19,17 @@ metadata:
   labels:
     name: database
 spec:
+  serviceName: redis-service
   selector:
     matchLabels:
       role: redis-persistence
-  serviceName: redis
   replicas: 1
   template:
     metadata:
       labels:
         role: redis-persistence
+        environment: production
+        replicaset: RedisRepSet
     spec:
       containers:
         - name: redis-container

@@ -35,8 +35,14 @@ RUN conda install --yes --freeze-installed -q \
     && rm -rf /opt/conda/pkgs
 
 RUN mkdir /opt/app
+WORKDIR /opt/app
 
-COPY ./simulation /opt/app/
+COPY ./simulation /opt/app/simulation
+COPY ./setup.py /opt/app/
+
+RUN cd /opt/app
+RUN python setup.py install
+
 
 # The prepare.sh script allows you to add additional dependencies.
 # If needed, also install tini==0.18.0.

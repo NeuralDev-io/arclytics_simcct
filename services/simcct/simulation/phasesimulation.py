@@ -39,9 +39,17 @@ from .periodic import PeriodicTable as PT
 
 def to_plot_dict(array) -> dict:
     assert array.shape[1] == 2, 'Plot Dictionary Array shape must be (n, 2).'
+
+    time = np.trim_zeros(array[:, 0])
+    temp = np.trim_zeros(array[:, 1])
+
+    time_intermed = np.delete(time, np.argwhere(time > 10000))
+    time_len = len(time_intermed)
+    temp_intermed = temp[:time_len]
+
     return {
-        'time': np.trim_zeros(array[:, 0]).tolist(),
-        'temp': np.trim_zeros(array[:, 1]).tolist()
+        'time': np.around(time_intermed, 4).tolist(),
+        'temp': np.around(temp_intermed, 4).tolist()
     }
 
 

@@ -14,6 +14,7 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.06.25'
+__package__ = 'simulation'
 """ae3_utilities.py: 
 
 This package combines in one file all the subroutines to calculate Ae3 and 
@@ -24,8 +25,8 @@ ortho-equilibrium methods.
 import math
 import numpy as np
 
-from simulation.utilities import linear_fit
-from simulation.periodic import PeriodicTable as PT
+from .utilities import linear_fit
+from .periodic import PeriodicTable as PT
 
 # ========== # CONSTANTS # ========== #
 R = np.float32(1.9858)
@@ -742,13 +743,17 @@ def ai_eqn3(
     return np.float32(num_3 / den_3)
 
 
-def ae3_multi_carbon(wt: np.ndarray,
-                     results: np.ndarray) -> (np.ndarray, np.ndarray):
-    """
-    Range of composition for Carbon.
-    :param wt:
-    :param results:
-    :return:
+def ae3_multi_carbon(
+        wt: np.ndarray, results: np.ndarray
+) -> (np.ndarray, np.ndarray):
+    """Range of composition for Carbon.
+
+    Args:
+        wt:
+        results:
+
+    Returns:
+
     """
     # (includes wt%Fe, AC(20), by difference)
 

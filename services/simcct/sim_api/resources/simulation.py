@@ -33,7 +33,6 @@ from simulation.phasesimulation import PhaseSimulation
 from simulation.utilities import ConfigurationError, SimulationError
 from sim_api.schemas import ConfigurationsSchema, AlloyStoreSchema
 from logger.arc_logger import AppLogger
-from simulation.timer import time_func
 
 logger = AppLogger(__name__)
 
@@ -123,82 +122,42 @@ class Simulation(Resource):
         try:
             # TIMER START
             start = time.time()
-            # Running these in parallel with threading
-            # ttt_process = Thread(target=sim.ttt)
-            # cct_process = Thread(target=sim.cct)
-            # user_cooling_process = Thread(target=sim.user_cooling_profile)
-            # Starting CCT first because it takes longer.
-            # cct_process.start()
-            # user_cooling_process.start()
-            # ttt_process.start()
 
-            # TODO(andrew@neuraldev.io): TESTING TTT
-            # ttt_time_taken = time_func(sim.ttt)
             ttt_results = sim.ttt()
-            # user_time_taken = time_func(sim.user_cooling_profile)
-            # sim.ttt.compute()
-
-            # Now we stop the main thread to wait for them to finish.
-            # user_time_taken = time_func(sim.user_cooling_profile)
-            # user_time_taken = time_func(user_cooling_process.join)
-            # ttt_time_taken = time_func(sim.ttt)
-            # ttt_time_taken = time_func(ttt_process.join)
-            # cct_time_taken = time_func(sim.cct)
-            # cct_time_taken = time_func(cct_process.join)
-            finish = time.time()
-
-            # TODO(andrew@neuraldev.io): We need to store the results in the
-            #  Session store at some point as well.
-
-            # logger.debug(
-            #     f'User Cooling Curve Simulation Time: {user_time_taken}'
-            # )
-            # logger.debug(f'TTT Simulation Time: {ttt_time_taken}')
-            # logger.debug(f'CCT Simulation Time: {cct_time_taken}')
-            logger.debug('Total Simulation Time: {}'.format(finish - start))
+            user_cooling_curve_results = sim.user_cooling_profile()
         except ZeroDivisionError as e:
             response['errors'] = str(e)
             response['message'] = 'Zero Division Error.'
             response['configs'] = sim.configs.__dict__
             return response, 500
-        except Exception as e:
-            response['errors'] = str(e)
-            response['message'] = 'Exception.'
-            response['configs'] = sim.configs.__dict__
-            return response, 500
+        # except Exception as e:
+        #     response['errors'] = str(e)
+        #     response['message'] = 'Exception.'
+        #     response['configs'] = sim.configs.__dict__
+        #     return response, 500
 
+        cct_results = sim.cct()
         # Converting the TTT and CCT `numpy.ndarray` will raise an
         # AssertionError if the shape of the ndarray is not correct.
         try:
             data = {
-                'TTT': ttt_results,
-                'CCT': {
-                    'ferrite_nucleation': {},
-                    'ferrite_completion': {},
-                    'pearlite_nucleation': {},
-                    'pearlite_completion': {},
-                    'bainite_nucleation': {},
-                    'bainite_completion': {},
-                    'martensite': {}
-                },
-                'USER': {
-                    'user_cooling_curve': {},
-                    'user_phase_fraction_data': {
-                        'austenite': {},
-                        'ferrite': {},
-                        'pearlite': {},
-                        'bainite': {},
-                        'martensite': {},
-                    },
-                    'slider_time_field': 100,
-                    'slider_temp_field': 10,
-                    'slider_max': 0
-                }
+                'TTT': ttt_results.compute(),
+                'CCT': cct_results,
+                'USER': user_cooling_curve_results.compute()
             }
         except AssertionError as e:
             response['errors'] = str(e)
             response['message'] = 'Assertion error building response data.'
             return response, 500
+
+        finish = time.time()
+
+        # TODO(andrew@neuraldev.io): We need to store the results in the
+        #  Session store at some point as well.
+
+        logger.debug('Total Simulation Time: {}'.format(finish - start))
+
+        logger.debug(cct_results)
 
         # If a valid simulation has been run, the configurations are now valid.
         # session_store['configurations']['is_valid'] = True

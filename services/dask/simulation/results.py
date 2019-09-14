@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# results.py
+# dynamic_ndarray.py
 #
 # Attributions:
 # [1]
@@ -14,7 +14,7 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.01'
-"""results.py: 
+"""dynamic_ndarray.py: 
 
 This module defines two types of objects. The DynamicNdarray is a wrapper class
 on the `numpy.ndarray` filled with zeros. This class can only ever be 2 columns
@@ -29,12 +29,11 @@ accomplish some simple File IO tasks such as saving to CSV, JSON, or pickle.
 import math
 import numpy as np
 from typing import Union, Tuple, Optional
-
 import dask
 
-from logger.arc_logger import AppLogger
+# from logger.arc_logger import AppLogger
 
-logger = AppLogger(__name__)
+# logger = AppLogger(__name__)
 
 
 class DynamicNdarray(object):
@@ -53,7 +52,7 @@ class DynamicNdarray(object):
     def __init__(
         self,
         shape: Union[Tuple[int, int], int],
-        dtype: Optional[object] = np.float32
+        dtype: Optional[object] = np.float16
     ):
         """Initialise the internal `numpy.ndarray` object with the shape passed
         in from the rows with a default of 2 columns.

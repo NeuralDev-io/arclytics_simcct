@@ -13,6 +13,7 @@ import AlertCircleIcon from 'react-feather/dist/icons/alert-circle'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { signup } from '../../../api/AuthenticationHelper'
 import { signupValidation } from '../../../utils/ValidationHelper'
+import { buttonize } from '../../../utils/accessibility'
 
 import Button from '../../elements/button'
 import TextField from '../../elements/textfield'
@@ -41,11 +42,10 @@ class SignupPage extends Component {
         <div className={styles.form}>
           <div className={styles.logoContainer}>
             <Logo className={styles.logo} />
-            <h3> ARCLYTICS </h3>
-
+            <h3>ARCLYTICS</h3>
           </div>
           <div className={styles.header}>
-            <h3> Sign up </h3>
+            <h3>Sign up</h3>
           </div>
           <Formik
             initialValues={{
@@ -97,7 +97,8 @@ class SignupPage extends Component {
               setFieldValue,
               isSubmitting,
             }) => (
-              <form onSubmit={handleSubmit}>
+              <div>
+                <form onSubmit={handleSubmit}>
                 <div>
                   <div className={styles.name}>
                     <div className={styles.firstName}>
@@ -148,7 +149,6 @@ class SignupPage extends Component {
                       error={errors.password && touched.password && errors.password}
                     />
                   </div>
-
                   <div className={styles.passwordConfirmed}>
                     <TextField
                       type="password"
@@ -164,7 +164,6 @@ class SignupPage extends Component {
                       }
                     />
                   </div>
-
                   <div className={styles.signUpButton}>
                     <Button
                       name="SIGN UP"
@@ -178,38 +177,45 @@ class SignupPage extends Component {
                   </div>
                 </div>
               </form>
+                <Modal
+                  className={styles.cnfrmModal}
+                  // show={showCnfrmModal}
+                  show
+                >
+
+                  <AlertCircleIcon className={styles.alertCircleIcon} />
+                  <h5> Your account has been successfully registered. Verify your account. </h5>
+                  <sub>
+                    So that you are able to use the full services of the Arclytics Sim application
+                    and to be able to personalise your account.
+                  </sub>
+                  <span>
+                    We have sent an email to &nbsp;
+                    <span className={styles.email}>
+                      arvy.au@gmail.com
+                    </span>
+                  </span>
+                  <h6>Already verified?</h6>
+                  <div className={styles.buttons}>
+                    <Button
+                      appearance="default"
+                      className={styles.goToSignIn}
+                      onClick={() => history.push('/signin')}
+                    >
+                      Take me to sign in
+                    </Button>
+                  </div>
+                  <span>
+                    Didn&apos;t receive an email? Click&nbsp;
+                    <span className={styles.resendEmail} {...buttonize()}>
+                      here&nbsp;
+                    </span>
+                    to resend.
+                  </span>
+                </Modal>
+              </div>
             )}
           </Formik>
-          <Modal
-            className={styles.cnfrmModal}
-            show={showCnfrmModal}
-          >
-            <AlertCircleIcon className={styles.alertCircleIcon} />
-            <h5> Your account has been successfully registered. Verify your account. </h5>
-            <span>
-              So that you are able to use the full services of the Arclytics Sim application
-              and to be able to personalise your account.
-            </span>
-            <span>
-              Please verify your account.
-            </span>
-            <div className={styles.buttons}>
-              <Button
-                isDisabled={true}
-                className={styles.resendEmail}
-              >
-                I did not receive an email. Resend.
-              </Button>
-              <Button
-                appearance="outline"
-                className={styles.goToSignIn}
-                onClick={() => history.push('/signin')}
-              >
-                I have verified. Go to login
-              </Button>
-            </div>
-
-          </Modal>
           <div>
             <h6>
               Already have an account?&nbsp;

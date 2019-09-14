@@ -19,11 +19,12 @@ __date__ = '2019.07.17'
 This module defines and implements the endpoints for CCT and TTT simulations.
 """
 
-import time
-from threading import Thread
 
+import time
+from os import environ as env
 from flask import Blueprint
 from flask_restful import Resource
+from dask.distributed import Client
 
 from sim_api.extensions import api
 from sim_api.middleware import authenticate_user_cookie_restful
@@ -33,7 +34,6 @@ from simulation.phasesimulation import PhaseSimulation
 from simulation.utilities import ConfigurationError, SimulationError
 from sim_api.schemas import ConfigurationsSchema, AlloyStoreSchema
 from logger.arc_logger import AppLogger
-from simulation.timer import time_func
 
 logger = AppLogger(__name__)
 
@@ -55,8 +55,8 @@ class Simulation(Resource):
             response['message'] = session_store
             return response, 500
 
-        logger.debug('Session Store')
-        logger.pprint(session_store['configurations'])
+        # logger.debug('Session Store')
+        # logger.pprint(session_store['configurations'])
 
         session_configs = session_store.get('configurations')
         if not session_configs:
@@ -121,63 +121,51 @@ class Simulation(Resource):
 
         # Now we do the simulation part but catch all exceptions and return it
         try:
+            dask_client = Client(
+                address=env.get('DASK_SCHEDULER_ADDRESS'), processes=False
+            )
             # TIMER START
             start = time.time()
-            # Running these in parallel with threading
-            ttt_process = Thread(target=sim.ttt)
-            cct_process = Thread(target=sim.cct)
-            user_cooling_process = Thread(target=sim.user_cooling_profile)
-            # Starting CCT first because it takes longer.
-            cct_process.start()
-            user_cooling_process.start()
-            ttt_process.start()
-
-            # Now we stop the main thread to wait for them to finish.
-            # user_time_taken = time_func(sim.user_cooling_profile)
-            user_time_taken = time_func(user_cooling_process.join)
-            # ttt_time_taken = time_func(sim.ttt)
-            ttt_time_taken = time_func(ttt_process.join)
-            # cct_time_taken = time_func(sim.cct)
-            cct_time_taken = time_func(cct_process.join)
-            finish = time.time()
-
-            # TODO(andrew@neuraldev.io): We need to store the results in the
-            #  Session store at some point as well.
-
-            logger.debug(
-                f'User Cooling Curve Simulation Time: {user_time_taken}'
-            )
-            logger.debug(f'TTT Simulation Time: {ttt_time_taken}')
-            logger.debug(f'CCT Simulation Time: {cct_time_taken}')
-            logger.debug('Total Simulation Time: {}'.format(finish - start))
+            cct_future = dask_client.submit(sim.cct)
+            ttt_results = sim.ttt()
+            user_cooling_curve_results = sim.user_cooling_profile()
         except ZeroDivisionError as e:
             response['errors'] = str(e)
             response['message'] = 'Zero Division Error.'
             response['configs'] = sim.configs.__dict__
             return response, 500
-        except Exception as e:
-            response['errors'] = str(e)
-            response['message'] = 'Exception.'
-            response['configs'] = sim.configs.__dict__
-            return response, 500
+        # except Exception as e:
+        #     response['errors'] = str(e)
+        #     response['message'] = 'Exception.'
+        #     response['configs'] = sim.configs.__dict__
+        #     return response, 500
 
         # Converting the TTT and CCT `numpy.ndarray` will raise an
         # AssertionError if the shape of the ndarray is not correct.
         try:
             data = {
-                'TTT': sim.plots_data.get_ttt_plot_data(),
-                'CCT': sim.plots_data.get_cct_plot_data(),
-                'USER': sim.plots_data.get_user_plot_data()
+                'TTT': ttt_results.compute(),
+                'CCT': cct_future.result(),
+                'USER': user_cooling_curve_results.compute()
             }
         except AssertionError as e:
             response['errors'] = str(e)
             response['message'] = 'Assertion error building response data.'
             return response, 500
 
+        finish = time.time()
+
+        # TODO(andrew@neuraldev.io): We need to store the results in the
+        #  Session store at some point as well.
+
+        logger.debug('Total Simulation Time: {}'.format(finish - start))
+
+        logger.debug(data['USER']['user_phase_fraction_data'])
+
         # If a valid simulation has been run, the configurations are now valid.
-        session_store['configurations']['is_valid'] = True
-        session_store['results'] = data
-        SimSessionService().save_session(session_store)
+        # session_store['configurations']['is_valid'] = True
+        # session_store['results'] = data
+        # SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response['data'] = data

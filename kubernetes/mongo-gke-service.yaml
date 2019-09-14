@@ -19,7 +19,7 @@ metadata:
   name: mongo
 spec:
   serviceName: mongo-service
-  replicas: 2
+  replicas: 3
   template:
     metadata:
       labels:
@@ -68,8 +68,8 @@ spec:
             - "authenticationMechanisms=SCRAM-SHA-1"
           resources:
             requests:
-              cpu: 1
-              memory: 2Gi
+              cpu: 500m
+              memory: 1Gi
           ports:
             - containerPort: 27017
           env:
@@ -99,7 +99,7 @@ spec:
   - metadata:
       name: mongo-pvc
       annotations:
-        volume.beta.kubernetes.io/storage-class: "fast"
+        volume.beta.kubernetes.io/storage-class: "standard"
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:

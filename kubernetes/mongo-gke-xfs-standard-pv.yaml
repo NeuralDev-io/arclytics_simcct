@@ -11,5 +11,5 @@ spec:
   storageClassName: standard
   gcePersistentDisk:
     fsType: xfs
-    pdName: pd-ssd-disk-INST
+    pdName: pd-standard-disk-INST
 

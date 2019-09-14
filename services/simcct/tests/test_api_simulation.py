@@ -260,7 +260,7 @@ class TestSimulationService(BaseTestCase):
                 '/api/v1/sim/simulate', content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            logger.debug(data)
+            # logger.debug(data)
 
 if __name__ == '__main__':
     unittest.main()

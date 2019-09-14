@@ -217,7 +217,6 @@ services:
         arclytics.io: "development"
         service: "dask-worker"
     image: neuraldev/arc_dask_worker:1.0
-    # container_name: arc-dask-worker  # Cannot use for scaling
     hostname: dask-worker
     command: ['dask-worker', 'tcp://dask-scheduler:8786']
     networks:

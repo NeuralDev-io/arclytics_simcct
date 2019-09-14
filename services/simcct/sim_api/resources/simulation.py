@@ -19,11 +19,12 @@ __date__ = '2019.07.17'
 This module defines and implements the endpoints for CCT and TTT simulations.
 """
 
-import time
-from threading import Thread
 
+import time
+from os import environ as env
 from flask import Blueprint
 from flask_restful import Resource
+from dask.distributed import Client
 
 from sim_api.extensions import api
 from sim_api.middleware import authenticate_user_cookie_restful
@@ -120,9 +121,12 @@ class Simulation(Resource):
 
         # Now we do the simulation part but catch all exceptions and return it
         try:
+            dask_client = Client(
+                address=env.get('DASK_SCHEDULER_ADDRESS'), processes=False
+            )
             # TIMER START
             start = time.time()
-
+            cct_future = dask_client.submit(sim.cct)
             ttt_results = sim.ttt()
             user_cooling_curve_results = sim.user_cooling_profile()
         except ZeroDivisionError as e:
@@ -136,13 +140,12 @@ class Simulation(Resource):
         #     response['configs'] = sim.configs.__dict__
         #     return response, 500
 
-        cct_results = sim.cct()
         # Converting the TTT and CCT `numpy.ndarray` will raise an
         # AssertionError if the shape of the ndarray is not correct.
         try:
             data = {
                 'TTT': ttt_results.compute(),
-                'CCT': cct_results,
+                'CCT': cct_future.result(),
                 'USER': user_cooling_curve_results.compute()
             }
         except AssertionError as e:
@@ -157,7 +160,7 @@ class Simulation(Resource):
 
         logger.debug('Total Simulation Time: {}'.format(finish - start))
 
-        logger.debug(cct_results)
+        logger.debug(data['CCT'])
 
         # If a valid simulation has been run, the configurations are now valid.
         # session_store['configurations']['is_valid'] = True

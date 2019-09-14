@@ -26,7 +26,7 @@ import setuptools
 
 setuptools.setup(
     name='simulation',
-    version='0.1',
+    version='0.2',
     author="Andrew Che",
     author_email="andrew@neuraldev.io",
     description="SimCCT Simulation package.",

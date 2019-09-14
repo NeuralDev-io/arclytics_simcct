@@ -24,9 +24,6 @@ RUN conda install --yes --freeze-installed -q \
     nomkl \
     numpy==1.16.4 \
     pandas==0.25.0 \
-    tini==0.18.0 \
-    plotly::plotly==4.1.0 \
-    plotly::chart-studio==1.0.0 \
     && conda clean -tipsy \
     && find /opt/conda/ -type f,l -name '*.a' -delete \
     && find /opt/conda/ -type f,l -name '*.pyc' -delete \

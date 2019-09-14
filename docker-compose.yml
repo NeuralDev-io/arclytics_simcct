@@ -211,7 +211,7 @@ services:
 
   dask-worker:
     build:
-      context: ./services/dask
+      context: ./services/simcct
       dockerfile: Dockerfile-worker
       labels:
         arclytics.io: "development"

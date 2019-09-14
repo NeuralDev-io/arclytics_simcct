@@ -582,6 +582,8 @@ changeContainerGroup() {
         CONTAINER_ARGS="simcct celery-worker redis mongodb"
     elif [[ "${CONTAINER_GROUP}" == "server-dask" ]]; then
         CONTAINER_ARGS="simcct celery-worker redis mongodb dask-scheduler dask-worker"
+    elif [[ "${CONTAINER_GROUP}" == "client-dask" ]]; then
+        CONTAINER_ARGS="client simcct celery-worker redis mongodb dask-scheduler dask-worker"
     elif [[ "${CONTAINER_GROUP}" == "client" ]]; then
         CONTAINER_ARGS="client nginx"
     elif [[ "${CONTAINER_GROUP}" == "fluentd" ]]; then

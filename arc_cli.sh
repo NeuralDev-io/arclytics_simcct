@@ -1012,9 +1012,9 @@ while [[ "$1" != "" ]] ; do
               config )
                 gcloud compute project-info describe --project ${PROJECT_ID}
                 gcloud container clusters describe ${CLUSTER_NAME} --zone ${ZONE}
-                gcloud confit set project ${PROJECT_ID}
+                gcloud config set project ${PROJECT_ID}
                 #gcloud confit set compute/zone ${ZONE}
-                gcloud confit set compute/region ${REGION}
+                gcloud config set compute/region ${REGION}
                 gcloud components update
                 #gcloud compute project-info add-metadata --metadata google-compute-default-region=australia-southeast1,google-compute-default-zone=australia-southeast1-a
                 ;;

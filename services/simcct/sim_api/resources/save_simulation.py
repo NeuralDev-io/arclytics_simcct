@@ -34,12 +34,12 @@ from sim_api.extensions.utilities import (
     DuplicateElementError
 )
 from sim_api.models import (
-    User, Configuration, AlloyStore, SavedSimulation, SimulationResults
+    Configuration, AlloyStore, SavedSimulation, SimulationResults
 )
 
 save_sim_blueprint = Blueprint('user_save_simulation', __name__)
 
-# NOTE: An is_valid = False Configuration instance means it has not been run.
+# Note: An is_valid = False Configuration instance means it has not been run.
 
 
 class SaveSimulationList(Resource):
@@ -146,7 +146,7 @@ class SaveSimulationList(Resource):
         from the saved_simulation collection.
 
         Args:
-            user_id: a valid user ObjectId passed from the middleware.
+            user: a valid `sim_api.models.User` object passed from middleware.
 
         Returns:
             A valid HTTP Response with a dict and a HTTP status code.

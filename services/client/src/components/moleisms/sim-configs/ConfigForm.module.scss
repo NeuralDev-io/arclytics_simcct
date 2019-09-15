@@ -113,7 +113,8 @@
 .infoTipContainer{
   position: absolute;
   left: calc(100% - 1rem);
-  div{
-    width: fit-content;
+  .infoTip{
+    font-weight: normal;
+    width:max-content;
   }
 }

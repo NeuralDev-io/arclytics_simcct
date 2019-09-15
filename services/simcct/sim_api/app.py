@@ -21,8 +21,7 @@ __date__ = '2019.06.04'
 This is the entrypoint to our Arclytics Flask API server.
 """
 
-import os
-
+from os import environ as env
 from flask import Flask
 from flask_cors import CORS
 from mongoengine import connect
@@ -35,7 +34,7 @@ from sim_api.extensions import MongoSingleton
 from sim_api.extensions import api, bcrypt, redis_session
 
 # Instantiate the Mongo object to store a connection
-app_settings = os.getenv('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')
+app_settings = env.get('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')
 _mongo_client = None
 
 
@@ -54,12 +53,12 @@ def init_db(
         port = int(app.config['MONGO_PORT'])
         testing = app.config['TESTING']
 
-    if os.environ.get('FLASK_ENV') == 'production':
-        _db_name = str(os.environ.get('MONGO_APP_DB'))
-        _host = os.environ.get('MONGO_HOST')
-        _port = os.environ.get('MONGO_PORT')
-        _username = os.environ.get('MONGO_APP_USER')
-        _password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+    if env.get('FLASK_ENV') == 'production':
+        _db_name = str(env.get('MONGO_APP_DB'))
+        _host = env.get('MONGO_HOST')
+        _port = env.get('MONGO_PORT')
+        _username = env.get('MONGO_APP_USER')
+        _password = str(env.get('MONGO_APP_USER_PASSWORD'))
         mongo_uri = (
             f'mongodb://{_username}:{_password}@{_host}:{_port}'
             f'/?authSource=admin'
@@ -117,28 +116,29 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
 
     # Setup the configuration for Flask
     app.config.from_object(configs_path)
-    app.secret_key = os.environ.get('SECRET_KEY')
+    app.secret_key = env.get('SECRET_KEY')
+    prod_environment = env.get('FLASK_ENV', 'development') == 'production'
 
     # ========== # CONNECT TO DATABASES # ========== #
-    if os.environ.get('FLASK_ENV', 'development') == 'production':
+    if prod_environment:
         redis = Redis(
-            host=os.environ.get('REDIS_HOST'),
-            port=int(os.environ.get('REDIS_PORT')),
-            password=os.environ.get('REDIS_PASSWORD'),
+            host=env.get('REDIS_HOST'),
+            port=int(env.get('REDIS_PORT')),
+            password=env.get('REDIS_PASSWORD'),
             db=1,
         )
     else:
         redis = Redis(
-            host=os.environ.get('REDIS_HOST'),
-            port=int(os.environ.get('REDIS_PORT')),
+            host=env.get('REDIS_HOST'),
+            port=int(env.get('REDIS_PORT')),
             db=1,
         )
 
     # Mongo Client interface with MongoEngine as Object Document Mapper (ODM)
     app.config.update(
         dict(
-            MONGO_HOST=os.environ.get('MONGO_HOST', ''),
-            MONGO_PORT=os.environ.get('MONGO_PORT', 27017),
+            MONGO_HOST=env.get('MONGO_HOST', ''),
+            MONGO_PORT=env.get('MONGO_PORT', 27017),
             SESSION_REDIS=redis
         )
     )
@@ -181,8 +181,22 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     #     across
     #     domains.
     #     Note:	This option cannot be used in conjunction with a ‘*’ origin
+    
+    origins = []
+    if prod_environment:
+        origins.append('app.arclytics.io')
+        origins.append('www.app.arclytics.io')
+        origins.append('https://app.arclytics.io')
+        origins.append('https://www.app.arclytics.io')
+        origins.append('http://app.arclytics.io')
+        origins.append('http://www.app.arclytics.io')
+    else:
+        origins.append('localhost')
+        origins.append('127.0.0.1')
+
     CORS(
         app=app,
+        origins=origins,
         headers=['Content-Type'],
         expose_headers=[
             'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials',

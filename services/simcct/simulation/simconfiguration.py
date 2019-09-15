@@ -70,7 +70,9 @@ class SimConfiguration(object):
             # We need Xfe in simulation calculations and we have defined a cf
             # that is set to 0.012 because that's what Dr. Bendeich thinks works
 
-            self.xfe, self.eutectic_comp = self.xfe_method2(self.comp, self.ae1)
+            self.xfe, self.eutectic_comp = self.xfe_method2(
+                compositions, self.ae1
+            )
 
         if self.ae1 < 0.0 or self.ae3 < 0.0:
             raise ConfigurationError('Ae1 and Ae3 temperatures not yet set.')
@@ -273,9 +275,9 @@ class SimConfiguration(object):
         ae3 = ae3_single_carbon(comp.copy(), c)
         return ae1, ae3 - 273
 
-    @staticmethod
     def xfe_method2(
-            comp: np.ndarray = None,
+            self,
+            comp_list: list = None,
             ae1: np.float = None,
             cf: np.float = 0.012,
             plot: bool = False
@@ -292,7 +294,7 @@ class SimConfiguration(object):
 
         """
         # Just to keep the name shorter.
-        wt = comp
+        wt = self.get_compositions(comp_list)
         # store results of each iteration of Carbon
 
         results_mat = np.zeros((1000, 22), dtype=np.float32)

@@ -697,9 +697,6 @@ def logout(_) -> Tuple[dict, int]:
 
     # Remove the data from the user's current session.
     session.clear()
-
-    logger.info(f'Session logout: {session}')
-
     response = {'status': 'success', 'message': 'Successfully logged out.'}
     return jsonify(response), 202
 

@@ -24,18 +24,16 @@ a Python scientific programming style..
 """
 
 import enum
-import numpy as np
+from math import atan, exp, log, pow, sqrt
 from typing import Any, Iterable
-from os import environ as env
-from math import pow, sqrt, log, exp, atan
 
-import dask
-from dask.distributed import Client, as_completed
-from .utilities import Method, sort_ccr, ConfigurationError, SimulationError
-from .simconfiguration import SimConfiguration
+import numpy as np
+
 from .dynamic_ndarray import DynamicNdarray
 # noinspection PyPep8Naming
 from .periodic import PeriodicTable as PT
+from .simconfiguration import SimConfiguration
+from .utilities import ConfigurationError, Method, SimulationError, sort_ccr
 
 
 def to_plot_dict(array) -> dict:

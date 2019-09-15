@@ -28,12 +28,12 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
-from sim_api.models import (User, UserProfile)
+from logger import AppLogger
+from sim_api.extensions import api
 from sim_api.middleware import (
     authenticate_user_cookie_restful, authorize_admin_cookie_restful
 )
-from sim_api.extensions import api
-from logger.arc_logger import AppLogger
+from sim_api.models import (User, UserProfile)
 
 users_blueprint = Blueprint('users', __name__)
 

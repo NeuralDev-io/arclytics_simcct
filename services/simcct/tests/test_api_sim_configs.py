@@ -25,7 +25,7 @@ from tests.test_utilities import test_login
 from sim_api.models import User, AlloyStore, Configuration
 from sim_api.extensions.SimSession import SimSessionService
 from sim_api.schemas import ConfigurationsSchema, AlloyStoreSchema
-from logger.arc_logger import AppLogger
+from logger import AppLogger
 
 logger = AppLogger(__name__)
 

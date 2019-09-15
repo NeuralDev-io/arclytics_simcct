@@ -12,6 +12,7 @@ __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.13'
 
+import os
 import unittest
 from copy import deepcopy
 from pathlib import Path
@@ -21,14 +22,14 @@ from flask import json
 from flask import current_app as app
 from mongoengine import DoesNotExist, get_db
 
-import settings
 from tests.test_api_base import BaseTestCase
 from sim_api.models import (
     User, Configuration, AlloyStore, SavedSimulation, UserProfile, AdminProfile
 )
 from tests.test_utilities import test_login
 
-_TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'tests' / 'sim_configs.json'
+BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'sim_configs.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     _TEST_JSON = json.load(f)
 

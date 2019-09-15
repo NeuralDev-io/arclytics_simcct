@@ -31,7 +31,7 @@ from mongoengine.connection import (
 )
 from redis import Redis
 
-from sim_api.extensions import bcrypt, api, mail, redis_session
+from sim_api.extensions import bcrypt, api, redis_session
 from sim_api.extensions import MongoSingleton
 from sim_api.extensions import JSONEncoder
 
@@ -61,8 +61,10 @@ def init_db(
         _port = os.environ.get('MONGO_PORT')
         _username = os.environ.get('MONGO_APP_USER')
         _password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
-        mongo_uri = (f'mongodb://{_username}:{_password}@{_host}:{_port}'
-                     f'/?authSource=admin')
+        mongo_uri = (
+            f'mongodb://{_username}:{_password}@{_host}:{_port}'
+            f'/?authSource=admin'
+        )
         mongo_client = connect(
             _db_name,
             host=mongo_uri,
@@ -184,8 +186,7 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
         app=app,
         headers=['Content-Type'],
         expose_headers=[
-            'Access-Control-Allow-Origin',
-            'Access-Control-Allow-Credentials',
+            'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials',
             'Content-Type'
         ],
         supports_credentials=True
@@ -220,7 +221,6 @@ def extensions(app) -> None:
     """
     bcrypt.init_app(app)
     api.init_app(app)
-    mail.init_app(app)
     redis_session.init_app(app)
     # talisman.init_app(app, force_https_permanent=False, force_https=False)
 

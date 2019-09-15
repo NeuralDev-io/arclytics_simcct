@@ -33,11 +33,9 @@ from flask.cli import FlaskGroup
 from prettytable import PrettyTable
 from pymongo import MongoClient
 from mongoengine.connection import get_db, disconnect_all, connect
-from rq import Connection, Worker
 
 from sim_api.app import create_app
 from sim_api.models import User, AdminProfile, UserProfile
-
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(BASE_DIR)
@@ -52,7 +50,6 @@ if os.path.isfile(DEFAULT_CONFIGS):
         APP_CONFIGS = json.load(config_file)
 else:
     raise FileNotFoundError('Cannot find app.json')
-
 
 COV = coverage.coverage(
     branch=True,
@@ -79,14 +76,6 @@ COV.start()
 
 app = create_app()
 cli = FlaskGroup(create_app=create_app)
-
-
-@cli.command('run_worker')
-def run_worker():
-    redis_url = app.config['REDIS_URL']
-    with Connection(redis.from_url(redis_url)):
-        worker = Worker(app.config['QUEUES'])
-        worker.work()
 
 
 @cli.command('flush')
@@ -146,8 +135,10 @@ def test_data_conn():
         _port = os.environ.get('MONGO_PORT')
         _username = os.environ.get('MONGO_APP_USER')
         _password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
-        mongo_uri = (f'mongodb://{_username}:{_password}@{_host}:{_port}'
-                     f'/?authSource=admin')
+        mongo_uri = (
+            f'mongodb://{_username}:{_password}@{_host}:{_port}'
+            f'/?authSource=admin'
+        )
         client = connect(
             db=_db_name,
             host=mongo_uri,
@@ -167,7 +158,8 @@ def test_data_conn():
     else:
         print(
             f'This CLI command is only used for Production\nCurrent Flask ENV: '
-            f'{os.environ.get("FLASK_ENV")}', file=sys.stderr
+            f'{os.environ.get("FLASK_ENV")}',
+            file=sys.stderr
         )
 
 

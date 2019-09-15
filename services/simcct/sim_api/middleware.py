@@ -327,4 +327,3 @@ def authenticate(f):
         return f(resp, *args, **kwargs)
 
     return decorated_func
-

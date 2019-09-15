@@ -110,7 +110,10 @@ class UserFeedback(Resource):
 
         try:
             feedback = Feedback(
-                user=user.id, category=category, rating=rating, comment=comment
+                user=user.id,
+                category=category,
+                rating=rating,
+                comment=comment
             )
             feedback.save()
         except ValidationError as e:

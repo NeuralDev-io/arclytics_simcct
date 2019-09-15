@@ -4,6 +4,7 @@ import { Route, Switch } from 'react-router-dom'
 import { SnackbarProvider } from 'notistack'
 import store from './state/store'
 import { PrivateRoute, AdminRoute, DemoRoute } from './components/moleisms/routers'
+import Toaster from './components/moleisms/toaster'
 import ErrorBoundary from './components/pages/error-boundary/ErrorBoundary'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
@@ -29,6 +30,7 @@ function App() {
         }}
       >
         <Provider store={store}>
+          <Toaster />
           <div className="App">
             <Switch>
               <Route
@@ -39,7 +41,7 @@ function App() {
                 path="/signup"
                 render={props => <SignupPage {...props} />}
               />
-              <DemoRoute
+              <PrivateRoute
                 exact
                 path="/"
                 component={SimulationPage}
@@ -70,9 +72,13 @@ function App() {
                 path="/password/reset=:token"
                 render={props => <PasswordResetPage {...props} />}
               />
-              <Route
+              <DemoRoute
                 path="/share/simulation/:token"
-                render={props => <SharePage {...props} />}
+                component={SharePage}
+              />
+              <DemoRoute
+                path="/demo"
+                component={SimulationPage}
               />
             </Switch>
           </div>

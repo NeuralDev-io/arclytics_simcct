@@ -24,7 +24,6 @@ import os
 import json
 import unittest
 from pathlib import Path
-import settings
 from mongoengine import get_db
 from copy import deepcopy
 
@@ -37,7 +36,8 @@ from tests.test_utilities import test_login
 
 logger = AppLogger(__name__)
 
-_TEST_CONFIGS_PATH = Path(settings.BASE_DIR) / 'tests' / 'share_sim_data.json'
+BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'share_sim_data.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     _TEST_JSON = json.load(f)
 
@@ -65,6 +65,7 @@ class TestShareService(BaseTestCase):
         assert db.name == 'arc_test'
         db.users.drop()
         SharedSimulation.objects.delete()
+
     #
     # @staticmethod
     # def login(
@@ -231,7 +232,6 @@ class TestShareService(BaseTestCase):
                         'simulation_results': SIMULATION_RESULTS
                     }
                 ),
-
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
@@ -272,7 +272,6 @@ class TestShareService(BaseTestCase):
                         'simulation_results': SIMULATION_RESULTS
                     }
                 ),
-
                 content_type='application/json'
             )
 
@@ -319,7 +318,6 @@ class TestShareService(BaseTestCase):
                         'simulation_results': SIMULATION_RESULTS
                     }
                 ),
-
                 content_type='application/json'
             )
 
@@ -360,7 +358,6 @@ class TestShareService(BaseTestCase):
                         'simulation_results': SIMULATION_RESULTS
                     }
                 ),
-
                 content_type='application/json'
             )
 
@@ -501,7 +498,6 @@ class TestShareService(BaseTestCase):
                         'simulation_results': SIMULATION_RESULTS
                     }
                 ),
-
                 content_type='application/json'
             )
 
@@ -539,7 +535,6 @@ class TestShareService(BaseTestCase):
                         'simulation_results': SIMULATION_RESULTS
                     }
                 ),
-
                 content_type='application/json'
             )
 
@@ -579,7 +574,6 @@ class TestShareService(BaseTestCase):
                         'simulation_results': SIMULATION_RESULTS
                     }
                 ),
-
                 content_type='application/json'
             )
 
@@ -612,13 +606,12 @@ class TestShareService(BaseTestCase):
                 data=json.dumps(
                     {
                         'emails':
-                            ['invalidemail@com', 'brickmatic479@gmail.com'],
+                        ['invalidemail@com', 'brickmatic479@gmail.com'],
                         'configurations': CONFIGS,
                         'alloy_store': ALLOY_STORE,
                         'simulation_results': SIMULATION_RESULTS
                     }
                 ),
-
                 content_type='application/json'
             )
 
@@ -655,7 +648,6 @@ class TestShareService(BaseTestCase):
                         'simulation_results': SIMULATION_RESULTS
                     }
                 ),
-
                 content_type='application/json'
             )
             data_1 = json.loads(resp_create_link.data.decode())
@@ -673,7 +665,8 @@ class TestShareService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = (
-                f'{protocol}://{client_host}:{client_port}/token={token}'
+                f'{protocol}://{client_host}:{client_port}/share/simulation/'
+                f'token={token}'
             )
             self.assertRedirects(resp_request_simulation, redirect_url)
 
@@ -704,7 +697,6 @@ class TestShareService(BaseTestCase):
                         'simulation_results': SIMULATION_RESULTS
                     }
                 ),
-
                 content_type='application/json'
             )
 
@@ -815,7 +807,6 @@ class TestShareService(BaseTestCase):
                         'simulation_results': SIMULATION_RESULTS
                     }
                 ),
-
                 content_type='application/json'
             )
 
@@ -823,9 +814,7 @@ class TestShareService(BaseTestCase):
             sim_token = generate_shared_simulation_token(str(shared_sim.id))
             sim_url = generate_url('share.view_shared_simulation', sim_token)
             shared_sim.delete()
-            resp_view = client.get(
-                sim_url, content_type='application/json'
-            )
+            resp_view = client.get(sim_url, content_type='application/json')
 
             data = json.loads(resp_view.data.decode())
             self.assertEqual(resp_view.status_code, 404)
@@ -857,7 +846,7 @@ class TestShareService(BaseTestCase):
                     }
                 ),
                 content_type='application/json',
-                environ_base = {'REMOTE_ADDR': '127.0.0.12'}
+                environ_base={'REMOTE_ADDR': '127.0.0.12'}
             )
 
             data = json.loads(resp.data.decode())

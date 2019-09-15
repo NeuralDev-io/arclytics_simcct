@@ -101,9 +101,9 @@ class Simulation(Resource):
         if alloy_store.get('alloy_option') == 'single':
             alloy = alloy_store['alloys']['parent']
 
-        dask_client = Client(
-            address=env.get('DASK_SCHEDULER_ADDRESS'), processes=False
-        )
+        # dask_client = Client(
+        #     address=env.get('DASK_SCHEDULER_ADDRESS'), processes=False
+        # )
 
         # TIMER START
         start = time.time()
@@ -132,14 +132,15 @@ class Simulation(Resource):
 
         # Now we do the simulation part but catch all exceptions and return it
         try:
-            # ttt_results = sim.ttt()
-            # user_cooling_curve_results = sim.user_cooling_profile()
+            ttt_results = sim.ttt()
+            user_cooling_curve_results = sim.user_cooling_profile()
+            cct_results = sim.cct()
 
             # We send the three simulation functions off to a Dask Worker to
             # compute as a background thread.
-            cct_future = dask_client.submit(sim.cct)
-            ttt_future = dask_client.submit(sim.ttt)
-            user_cc_future = dask_client.submit(sim.user_cooling_profile)
+            # cct_future = dask_client.submit(sim.cct)
+            # ttt_future = dask_client.submit(sim.ttt)
+            # user_cc_future = dask_client.submit(sim.user_cooling_profile)
         except ZeroDivisionError as e:
             response['errors'] = str(e)
             response['message'] = 'Zero Division Error.'
@@ -154,10 +155,15 @@ class Simulation(Resource):
         # Converting the TTT and CCT `numpy.ndarray` will raise an
         # AssertionError if the shape of the ndarray is not correct.
         try:
+            # data = {
+            #     'TTT': ttt_future.result(),
+            #     'CCT': cct_future.result(),
+            #     'USER': user_cc_future.result()
+            # }
             data = {
-                'TTT': ttt_future.result(),
-                'CCT': cct_future.result(),
-                'USER': user_cc_future.result()
+                'TTT': ttt_results,
+                'CCT': cct_results,
+                'USER': user_cooling_curve_results
             }
         except AssertionError as e:
             response['errors'] = str(e)

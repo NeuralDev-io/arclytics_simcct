@@ -22,8 +22,6 @@ __package__ = 'simulation'
 
 import numpy as np
 from typing import Union
-from prettytable import PrettyTable
-
 from .utilities import Method, ConfigurationError
 from .ae3_utilities import ae3_single_carbon, ae3_multi_carbon
 from .periodic import PeriodicTable
@@ -303,7 +301,6 @@ class SimConfiguration(object):
         wt_c = wt['weight'][wt['symbol'] == PeriodicTable.C.name][0]
 
         # Find Ae3 for array of Carbon contents form 0.00 to 0.96 wt%
-        # UPDATE wt, Results to CALL Ae3MultiC(wt, Results)
         ae3_multi_carbon(wt, results_mat)
 
         # TODO(andrew@neuraldev.io): Figure out a way to get the `results_mat`
@@ -319,10 +316,11 @@ class SimConfiguration(object):
         eutectic_composition_carbon = 0.0
         # Find the Ae3-Ae1 intercept Carbon content (Eutectic composition)
         if ae1 > 0:
-            for i in range(1000):
-                if results_mat[i, 1] <= ae1:
-                    eutectic_composition_carbon = results_mat[i, 0]
-                    break
+            # Go through the matrix and find where in column 1 that the value
+            # is less or equal to ae1. Return the first value as a float.
+            eutectic_composition_carbon = (
+                results_mat[np.where(results_mat[:, 1] <= ae1)][0]
+            )[0]
 
         # Now calculate the important bit the Xfe equilibrium phase fraction
         # of Ferrite

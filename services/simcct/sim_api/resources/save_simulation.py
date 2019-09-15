@@ -131,8 +131,8 @@ class SaveSimulationList(Resource):
             return response, 400
         except OverflowError as e:
             response['errors'] = str(e)
-            response['message'] = 'Overflow error, will be fixed soon.'
-            return response, 400
+            response['message'] = 'Overflow error.'
+            return response, 500
 
         response.pop('message')
         response['status'] = 'success'

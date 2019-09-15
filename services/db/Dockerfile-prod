@@ -3,12 +3,13 @@ FROM mongo:4.0.11
 LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
 
 # make a directory to store scripts
-RUN mkdir -p /data/backups
 RUN mkdir -p /data/db/scripts
-RUN mkdir -p /data/test
-WORKDIR /data/test
+WORKDIR /data/db/scripts
+COPY ./scripts /data/db/scripts
 
-COPY ./test_data /data/test
+RUN mkdir -p /data/backups
+WORKDIR /data/backups
+COPY ./production_data /data/backups/
 
 # Any script in this initdb.d will run at the start
 COPY ./entrypoint.sh /docker-entrypoint-initdb.d/

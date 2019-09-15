@@ -226,3 +226,5 @@ services/server/htmlcov/
 \.vscode/
 .DS_Store
 certs/
+
+services/simcct/production_data/*.json

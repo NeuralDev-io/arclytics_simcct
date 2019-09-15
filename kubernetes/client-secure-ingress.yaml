@@ -1,13 +1,12 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: arc-secure-ingress
+  name: client-secure-ingress
   annotations:
     kubernetes.io/ingress.global-static-ip-name: arc-ip
 spec:
   tls:
     - secretName: client-https-secret
-    - secretName: server-https-secret
   rules:
   - host: app.arclytics.io
     http:
@@ -15,9 +14,3 @@ spec:
       - backend:
           serviceName: client-service
           servicePort: 8080
-  - host: api.arclytics.io
-    http:
-      paths:
-      - backend:
-          serviceName: simcct-service
-          servicePort: 8000

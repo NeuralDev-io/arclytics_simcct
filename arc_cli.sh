@@ -1137,15 +1137,18 @@ while [[ "$1" != "" ]] ; do
                 /usr/bin/openssl rand -base64 741 > ${TMPFILE}
                 kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth-mongodb-keyfile=${TMPFILE}
                 rm ${TMPFILE}
+
+                kubectl create secret tls client-https-secret --cert "${WORKDIR}/certs/arc-ingress.crt" --key "${WORKDIR}/certs/arc-ingress.key"
+                kubectl create secret tls server-https-secret --cert "${WORKDIR}/certs/arc-server.crt" --key "${WORKDIR}/certs/arc-server.key"
                 ;;
               ingress )
                 while [[ "$3" != "" ]]; do
                   case $3 in
                     create )
-                      kubectl apply -f "${WORKDIR}/kubernetes/client-ingress.yaml"
+                      kubectl apply -f "${WORKDIR}/kubernetes/client-secure-ingress.yaml"
                       ;;
                     delete )
-                      kubectl delete -f "${WORKDIR}/kubernetes/client-ingress.yaml"
+                      kubectl delete -f "${WORKDIR}/kubernetes/client-secure-ingress.yaml"
                       ;;
                   esac
                   shift
@@ -1176,10 +1179,6 @@ while [[ "$1" != "" ]] ; do
                       kubectl delete pv redis-pv
                       sleep 15
                       gcloud compute disks delete redis-ssd-disk --zone ${ZONE}
-
-                      if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                        kubectl get all -o wide
-                      fi
                       ;;
                   esac
                   shift
@@ -1266,10 +1265,6 @@ while [[ "$1" != "" ]] ; do
                       gcloud compute disks delete pd-standard-disk-1 --zone ${ZONE}
                       gcloud compute disks delete pd-standard-disk-2 --zone ${ZONE}
                       gcloud compute disks delete pd-standard-disk-3 --zone ${ZONE}
-
-                      if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                        kubectl get all -o wide
-                      fi
                       ;;
                     * )
                       exit 0
@@ -1290,21 +1285,10 @@ while [[ "$1" != "" ]] ; do
                       ;;
                     create )
                       # eval $(minikube docker-env)  <-- If using Docker and self-built images
-                      kubectl create -f "${WORKDIR}/kubernetes/simcct-gke-service.yaml"
-
-                      if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                        kubectl get all -o wide
-                      fi
+                      kubectl create -f "${WORKDIR}/kubernetes/simcct-gke-loadbalanced-service.yaml"
                       ;;
                     delete )
-                      kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-service.yaml"
-
-                      if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                        kubectl get all -o wide
-                      fi
-                      ;;
-                    * )
-                      exit 0
+                      kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-loadbalanced-service.yaml"
                       ;;
                   esac
                   shift
@@ -1322,17 +1306,9 @@ while [[ "$1" != "" ]] ; do
                       ;;
                     create )
                       kubectl create -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
-
-                      if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                        kubectl get all -o wide
-                      fi
                       ;;
                     delete )
                       kubectl delete -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
-
-                      if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                        kubectl get all -o wide
-                      fi
                       ;;
                     * )
                       exit 0
@@ -1354,17 +1330,9 @@ while [[ "$1" != "" ]] ; do
                     create )
                       # eval $(minikube docker-env)
                       kubectl create -f "${WORKDIR}/kubernetes/client-gke-service.yaml"
-
-                      if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                        kubectl get all -o wide
-                      fi
                       ;;
                     delete )
                       kubectl delete -f "${WORKDIR}/kubernetes/client-gke-service.yaml"
-
-                      if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                        kubectl get all -o wide
-                      fi
                       ;;
                     * )
                       exit 0
@@ -1393,7 +1361,7 @@ while [[ "$1" != "" ]] ; do
                 echoLine
                 generalMessage "StatefulSets"
                 echoLine
-                kubectl get statefulset -o wide
+                kubectl get statefulsets -o wide
                 echoLine
                 generalMessage "ReplicaSets"
                 echoLine
@@ -1405,7 +1373,7 @@ while [[ "$1" != "" ]] ; do
                 echoLine
                 generalMessage "Pods"
                 echoLine
-                kubectl get pods -o wide
+                kubectl get pods
                 echoLine
                 generalMessage "Services"
                 echoLine
@@ -1413,7 +1381,7 @@ while [[ "$1" != "" ]] ; do
                 echoLine
                 generalMessage "Ingress"
                 echoLine
-                kubectl get ingresses -o wide
+                kubectl get ingresses
                 echoLine
                 completeMessage
                 echoSpace

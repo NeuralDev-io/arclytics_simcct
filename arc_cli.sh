@@ -1320,6 +1320,10 @@ while [[ "$1" != "" ]] ; do
               client )
                 while [[ "$3" != "" ]]; do
                   case $3 in
+                    cert | certificate )
+                      gcloud compute ssl-certificates create client-https-cert --certificate certs/arclytics.crt --private-key certs/arclytics.key
+                      kubectl create secret tls client-https-secret --key certs/arclytics.key --cert certs/arclytics.crt
+                      ;;
                     build )
                       # Prune to avoid collisions of names:tags output
                       docker system prune -af --volumes --filter 'label=service=client'
@@ -1329,10 +1333,10 @@ while [[ "$1" != "" ]] ; do
                       ;;
                     create )
                       # eval $(minikube docker-env)
-                      kubectl create -f "${WORKDIR}/kubernetes/client-gke-service.yaml"
+                      kubectl create -f "${WORKDIR}/kubernetes/client-gke-secure-service.yaml"
                       ;;
                     delete )
-                      kubectl delete -f "${WORKDIR}/kubernetes/client-gke-service.yaml"
+                      kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-service.yaml"
                       ;;
                     * )
                       exit 0

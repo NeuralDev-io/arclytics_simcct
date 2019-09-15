@@ -126,27 +126,32 @@ class Simulation(Resource):
             )
             # TIMER START
             start = time.time()
+            # ttt_results = sim.ttt()
+            # user_cooling_curve_results = sim.user_cooling_profile()
+
+            # We send the three simulation functions off to a Dask Worker to
+            # compute as a background thread.
             cct_future = dask_client.submit(sim.cct)
-            ttt_results = sim.ttt()
-            user_cooling_curve_results = sim.user_cooling_profile()
+            ttt_future = dask_client.submit(sim.ttt)
+            user_cc_future = dask_client.submit(sim.user_cooling_profile)
         except ZeroDivisionError as e:
             response['errors'] = str(e)
             response['message'] = 'Zero Division Error.'
             response['configs'] = sim.configs.__dict__
             return response, 500
-        # except Exception as e:
-        #     response['errors'] = str(e)
-        #     response['message'] = 'Exception.'
-        #     response['configs'] = sim.configs.__dict__
-        #     return response, 500
+        except Exception as e:
+            response['errors'] = str(e)
+            response['message'] = 'Exception.'
+            response['configs'] = sim.configs.__dict__
+            return response, 500
 
         # Converting the TTT and CCT `numpy.ndarray` will raise an
         # AssertionError if the shape of the ndarray is not correct.
         try:
             data = {
-                'TTT': ttt_results.compute(),
+                'TTT': ttt_future.result(),
                 'CCT': cct_future.result(),
-                'USER': user_cooling_curve_results.compute()
+                'USER': user_cc_future.result()
             }
         except AssertionError as e:
             response['errors'] = str(e)
@@ -155,17 +160,12 @@ class Simulation(Resource):
 
         finish = time.time()
 
-        # TODO(andrew@neuraldev.io): We need to store the results in the
-        #  Session store at some point as well.
-
         logger.debug('Total Simulation Time: {}'.format(finish - start))
 
-        logger.debug(data['USER']['user_phase_fraction_data'])
-
         # If a valid simulation has been run, the configurations are now valid.
-        # session_store['configurations']['is_valid'] = True
-        # session_store['results'] = data
-        # SimSessionService().save_session(session_store)
+        session_store['configurations']['is_valid'] = True
+        session_store['results'] = data
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
         response['data'] = data

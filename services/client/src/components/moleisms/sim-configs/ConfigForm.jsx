@@ -110,8 +110,8 @@ class ConfigForm extends Component {
       <React.Fragment>
         <div className={styles.first}>
           <div className="input-col">
-            <h6>CCT/TTT method</h6>
-            <div className={styles.infoTipContainer}>
+            <div className={styles.headerContainer}>
+              <h6>CCT/TTT method</h6>
               <Tooltip className={styles.infoTip} position="bottom">
                 <InfoIcon className={styles.infoIcon} />
                 <p>
@@ -144,7 +144,8 @@ class ConfigForm extends Component {
             />
           </div>
           <div className="input-col">
-            <h6>
+            <div className={styles.headerContainer}>
+              <h6>Grain size</h6>
               <div className={styles.infoTipContainer}>
                 <Tooltip className={styles.infoTip} position="bottom">
                   <InfoIcon className={styles.infoIcon} />
@@ -163,8 +164,7 @@ class ConfigForm extends Component {
                   </p>
                 </Tooltip>
               </div>
-              Grain size
-            </h6>
+            </div>
             <div className={styles.grainSize}>
               <div className="input-row">
                 <span>ASTM</span>
@@ -197,16 +197,18 @@ class ConfigForm extends Component {
           <h5>Transformation limits</h5>
           <div className={styles.configRow}>
             <div>
-              <div className={styles.infoTipContainer}>
-                <Tooltip className={styles.infoTip} position="bottom">
-                  <InfoIcon className={styles.infoIcon} />
-                  <p>
-                    Ae3 = temperature below austenite to ferrite transformation becomes
-                    thermodynamically possible.
-                  </p>
-                </Tooltip>
+              <div className={styles.headerContainer}>
+                <h6>Ferrite/Pearlite</h6>
+                <div className={styles.infoTipContainer}>
+                  <Tooltip className={styles.infoTip} position="bottom">
+                    <InfoIcon className={styles.infoIcon} />
+                    <p>
+                      Ae3 = temperature below austenite to ferrite transformation becomes
+                      thermodynamically possible.
+                    </p>
+                  </Tooltip>
+                </div>
               </div>
-              <h6>Ferrite/Pearlite</h6>
               <div className={styles.configGroup}>
                 <div className="input-row">
                   <span>
@@ -248,15 +250,17 @@ class ConfigForm extends Component {
               />
             </div>
             <div>
-              <div className={styles.infoTipContainer}>
-                <Tooltip className={styles.infoTip} position="bottom">
-                  <InfoIcon className={styles.infoIcon} />
-                  <p>
-                    Bainite transformation temperature (C)
-                  </p>
-                </Tooltip>
+              <div className={styles.headerContainer}>
+                <h6>Bainite</h6>
+                <div className={styles.infoTipContainer}>
+                  <Tooltip className={styles.infoTip} position="bottom">
+                    <InfoIcon className={styles.infoIcon} />
+                    <p>
+                      Bainite transformation temperature (C)
+                    </p>
+                  </Tooltip>
+                </div>
               </div>
-              <h6>Bainite</h6>
               <div className={`${styles.configGroup} ${styles.bainite}`}>
                 <div className="input-row">
                   <span>
@@ -283,18 +287,20 @@ class ConfigForm extends Component {
               />
             </div>
             <div>
-              <div className={styles.infoTipContainer}>
-                <Tooltip className={styles.infoTip} position="bottom">
-                  <InfoIcon className={styles.infoIcon} />
-                  <p>
-                    Martensite transformation temperature (C)
-                    <br />
-                    <br />
-                    Martensite under cool temperature (C)
-                  </p>
-                </Tooltip>
+              <div className={styles.headerContainer}>
+                <h6>Martensite</h6>
+                <div className={styles.infoTipContainer}>
+                  <Tooltip className={styles.infoTip} position="bottom">
+                    <InfoIcon className={styles.infoIcon} />
+                    <p>
+                      Martensite transformation temperature (C)
+                      <br />
+                      <br />
+                      Martensite under cool temperature (C)
+                    </p>
+                  </Tooltip>
+                </div>
               </div>
-              <h6>Martensite</h6>
               <div className={styles.configGroup}>
                 <div className="input-row">
                   <span>
@@ -339,6 +345,8 @@ class ConfigForm extends Component {
         </div>
         <div className={styles.third}>
           <div>
+          <div className={styles.headerContainer}>
+            <h5>Nucleation parameters</h5>
             <div className={styles.infoTipContainer}>
               <Tooltip className={styles.infoTip} position="bottom">
                 <InfoIcon className={styles.infoIcon} />
@@ -355,10 +363,8 @@ class ConfigForm extends Component {
                 </p>
               </Tooltip>
             </div>
+            </div>
           </div>
-          <h5>
-            Nucleation parameters
-          </h5>
           <div className={styles.configGroup}>
             <div className="input-row">
               <span>Start</span>

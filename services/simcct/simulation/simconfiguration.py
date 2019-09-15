@@ -70,7 +70,7 @@ class SimConfiguration(object):
             # We need Xfe in simulation calculations and we have defined a cf
             # that is set to 0.012 because that's what Dr. Bendeich thinks works
 
-            self.xfe, self.ceut = self.xfe_method2(self.comp, self.ae1)
+            self.xfe, self.eutectic_comp = self.xfe_method2(self.comp, self.ae1)
 
         if self.ae1 < 0.0 or self.ae3 < 0.0:
             raise ConfigurationError('Ae1 and Ae3 temperatures not yet set.')
@@ -128,7 +128,6 @@ class SimConfiguration(object):
         c_weight = None
         fe_weight = None
 
-        # TODO(andrew@neuraldev.io): Need to deal with TypeError and KeyError
         # Use a special exterior index to ensure we don't add an empty space
         # when we skip enumerated numbers (if using enumerate()) which, when
         # skipping by
@@ -276,7 +275,10 @@ class SimConfiguration(object):
 
     @staticmethod
     def xfe_method2(
-        comp: np.ndarray = None, ae1: np.float = None, cf: np.float = 0.012
+            comp: np.ndarray = None,
+            ae1: np.float = None,
+            cf: np.float = 0.012,
+            plot: bool = False
     ) -> (np.float, np.float):
         """Second method for estimating Xfe using parra-equilibrium methodology
         to predict  the Ae3 values with increasing carbon content. To find
@@ -289,10 +291,8 @@ class SimConfiguration(object):
         Returns:
 
         """
-        wt = comp.copy()
-
-        # now let's get onto the main routine
-
+        # Just to keep the name shorter.
+        wt = comp
         # store results of each iteration of Carbon
 
         results_mat = np.zeros((1000, 22), dtype=np.float32)
@@ -304,27 +304,32 @@ class SimConfiguration(object):
         # UPDATE wt, Results to CALL Ae3MultiC(wt, Results)
         ae3_multi_carbon(wt, results_mat)
 
-        # TODO(andrew@neuraldev.io): We may or may not implement the Ae3
-        #  plot but we can if we want
-        #    to. -- WE ARE GOING TO DO PLOT
+        # TODO(andrew@neuraldev.io): Figure out a way to get the `results_mat`
+        #  to the View method so that it can be returned to plot.
         # We can view the Ae3 plot with a call to the following
         # CALL Ae3Plot(results_mat, self.ae1, wt_c)
+        if plot:
+            # TODO(andrew@neuraldev.io): Should probably consider returning
+            #  this as a dict with the graph lines consistent with the other
+            #  simulation methods.
+            return results_mat
 
-        ceut = 0.0
-        # Find the Ae3-Ae1 intercept Carbon content (Eutectic composition
+        eutectic_composition_carbon = 0.0
+        # Find the Ae3-Ae1 intercept Carbon content (Eutectic composition)
         if ae1 > 0:
             for i in range(1000):
                 if results_mat[i, 1] <= ae1:
-                    ceut = results_mat[i, 0]
+                    eutectic_composition_carbon = results_mat[i, 0]
                     break
 
         # Now calculate the important bit the Xfe equilibrium phase fraction
         # of Ferrite
-        tie_length = ceut - cf
+        tie_length = eutectic_composition_carbon - cf
         lever1 = tie_length - wt_c
-        xfe = lever1 / tie_length
+        ferrite_phase_frac = lever1 / tie_length
 
-        return xfe, ceut
+        # Note shorthands are: `xfe` and `eutectic_comp`
+        return ferrite_phase_frac, eutectic_composition_carbon
 
     @staticmethod
     def _pretty_str_tables(comp: np.ndarray) -> PrettyTable:

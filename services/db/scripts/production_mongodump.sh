@@ -4,19 +4,20 @@
 # [3] https://docs.mongodb.com/manual/reference/program/mongorestore/
 
 # Connect to mongodb container
-# kubectl exec -it mongo-0 bash
+# docker exec -it arc_mongodb_1 bash
 
-# kubectl cp ./services/db/production_data/dump_data mongo-0:/data/backups/dump_data
-
-mongorestore --host localhost \
+kubectl exec mongo-0 -c mongo-container -- mongodump --host localhost \
     --port 27017 \
     -u "${MONGO_ROOT_USER}" \
     -p "${MONGO_ROOT_PASSWORD}" \
     --authenticationDatabase admin \
-    /data/backups/dump_data
+    --db "${MONGO_APP_DB}" \
+    --out /data/backups/dump_data
+
+kubectl cp mongo-0:/data/backups/dump_data ./services/db/production_data/dump_data
 
 #mongo --host localhost \
 #    --port 27017 \
 #    -u "${MONGO_ROOT_USER}" \
 #    -p "${MONGO_ROOT_PASSWORD}" \
-#    --authenticationDatabase admin
+#    --authenticationDatabase admin \

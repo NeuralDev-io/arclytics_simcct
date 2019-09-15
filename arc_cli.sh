@@ -1252,7 +1252,7 @@ while [[ "$1" != "" ]] ; do
                       . ${WORKDIR}/kubernetes/scripts/configure_repset_auth.sh
                       ;;
                     delete )
-                      kubectl delete -f "${WORKDIR}/kubernetes/mongo-minikube-service.yml"
+                      kubectl delete -f "${WORKDIR}/kubernetes/mongo-gke-service.yml"
                       kubectl delete pvc mongo-pvc-mongo-0
                       kubectl delete pvc mongo-pvc-mongo-1
                       kubectl delete pvc mongo-pvc-mongo-2

@@ -21,7 +21,7 @@ spec:
   serviceName: mongo-service
   selector:
     matchLabels:
-    role: mongo-persistence
+      role: mongo-persistence
   replicas: 3
   template:
     metadata:
@@ -80,8 +80,11 @@ spec:
               value: "mongo-0.mongo-service.default.svc.cluster.local"
             - name: MONGO_PORT
               value: "27017"
-            - name: MONOGO_APP_DB
-              value: "arclytics"
+            - name: MONGO_APP_DB
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: mongo_app_db
             - name: MONGO_APP_USER
               valueFrom:
                 secretKeyRef:

@@ -1168,10 +1168,6 @@ while [[ "$1" != "" ]] ; do
                       gcloud compute disks create --size 30GB --type pd-ssd redis-ssd-disk --zone ${ZONE}
                       kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
                       kubectl create -f "${WORKDIR}/kubernetes/redis-gke-service.yaml" --validate=false
-
-                      if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                        kubectl get all -o wide
-                      fi
                       ;;
                     delete )
                       kubectl delete -f "${WORKDIR}/kubernetes/redis-gke-service.yaml"
@@ -1266,9 +1262,6 @@ while [[ "$1" != "" ]] ; do
                       gcloud compute disks delete pd-standard-disk-2 --zone ${ZONE}
                       gcloud compute disks delete pd-standard-disk-3 --zone ${ZONE}
                       ;;
-                    * )
-                      exit 0
-                      ;;
                   esac
                   shift
                 done
@@ -1310,9 +1303,6 @@ while [[ "$1" != "" ]] ; do
                     delete )
                       kubectl delete -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
                       ;;
-                    * )
-                      exit 0
-                      ;;
                   esac
                   shift
                 done
@@ -1337,9 +1327,6 @@ while [[ "$1" != "" ]] ; do
                       ;;
                     delete )
                       kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-service.yaml"
-                      ;;
-                    * )
-                      exit 0
                       ;;
                   esac
                   shift

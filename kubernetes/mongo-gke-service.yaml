@@ -21,7 +21,7 @@ spec:
   serviceName: mongo-service
   selector:
     matchLabels:
-    role: mongo-persistence
+      role: mongo-persistence
   replicas: 3
   template:
     metadata:

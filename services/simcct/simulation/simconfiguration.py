@@ -331,21 +331,7 @@ class SimConfiguration(object):
         # Note shorthands are: `xfe` and `eutectic_comp`
         return ferrite_phase_frac, eutectic_composition_carbon
 
-    @staticmethod
-    def _pretty_str_tables(comp: np.ndarray) -> PrettyTable:
-        """Simply gives us a prettier table for compositions."""
-        table = PrettyTable(comp.dtype.names)
-        table.float_format['weight'] = '.3'
-        for row in comp:
-            table.add_row(row)
-        table.align['symbol'] = 'l'
-        table.align['weight'] = 'r'
-
-        return table
-
     def __str__(self) -> str:
-        comp_ = self._pretty_str_tables(self.comp)
-
         return """
 -------------------------------------------------
 PHASE SIMULATION CONFIGURATIONS
@@ -366,9 +352,6 @@ Austenite Limits:
   {:28}{:.4f}
   {:28}{:.4f}
 
-Alloy Composition:
-Parent: 
-{}
 -------------------------------------------------
         """.format(
             'Method:', self.method.name, 'Nucleation Start:', self.nuc_start,
@@ -376,5 +359,5 @@ Parent:
             'Auto Calculate:', self.auto_calc_ms, 'MS Temperature:',
             self.ms_temp, 'Auto Calculate:', self.auto_calc_bs,
             'BS Temperature: ', self.bs_temp, 'Auto Calculate:',
-            self.auto_calc_ae, 'Ae1:', self.ae1, 'Ae3:', self.ae3, comp_
+            self.auto_calc_ae, 'Ae1:', self.ae1, 'Ae3:', self.ae3
         )

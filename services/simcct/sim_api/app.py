@@ -26,14 +26,13 @@ import os
 from flask import Flask
 from flask_cors import CORS
 from mongoengine import connect
-from mongoengine.connection import (
-    disconnect_all, get_connection, get_db, MongoEngineConnectionError
-)
+from mongoengine.connection import (MongoEngineConnectionError, disconnect_all,
+                                    get_connection, get_db)
 from redis import Redis
 
-from sim_api.extensions import bcrypt, api, redis_session
-from sim_api.extensions import MongoSingleton
 from sim_api.extensions import JSONEncoder
+from sim_api.extensions import MongoSingleton
+from sim_api.extensions import api, bcrypt, redis_session
 
 # Instantiate the Mongo object to store a connection
 app_settings = os.getenv('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')
@@ -61,8 +60,10 @@ def init_db(
         _port = os.environ.get('MONGO_PORT')
         _username = os.environ.get('MONGO_APP_USER')
         _password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
-        mongo_uri = (f'mongodb://{_username}:{_password}@{_host}:{_port}'
-                     f'/?authSource=admin')
+        mongo_uri = (
+            f'mongodb://{_username}:{_password}@{_host}:{_port}'
+            f'/?authSource=admin'
+        )
         mongo_client = connect(
             _db_name,
             host=mongo_uri,
@@ -184,8 +185,7 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
         app=app,
         headers=['Content-Type'],
         expose_headers=[
-            'Access-Control-Allow-Origin',
-            'Access-Control-Allow-Credentials',
+            'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials',
             'Content-Type'
         ],
         supports_credentials=True

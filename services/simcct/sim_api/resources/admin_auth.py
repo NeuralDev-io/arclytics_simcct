@@ -24,20 +24,18 @@ Sharing endpoints using the Flask Resource inheritance model.
 import os
 from datetime import datetime
 
-from email_validator import validate_email, EmailNotValidError
-from flask import Blueprint, request, render_template, redirect
-from flask import current_app as app
+from email_validator import EmailNotValidError, validate_email
+from flask import Blueprint, redirect, render_template, request
 from flask_restful import Resource
 
-from logger.arc_logger import AppLogger
-from sim_api.models import (User, AdminProfile)
-from sim_api.middleware import authorize_admin_cookie_restful
+from logger import AppLogger
 from sim_api.extensions import api
-from sim_api.token import (
-    generate_confirmation_token, generate_url, confirm_token, URLTokenError,
-    generate_promotion_confirmation_token
-)
 from sim_api.extensions.utilities import URLTokenExpired
+from sim_api.middleware import authorize_admin_cookie_restful
+from sim_api.models import (AdminProfile, User)
+from sim_api.token import (URLTokenError, confirm_token,
+                           generate_confirmation_token,
+                           generate_promotion_confirmation_token, generate_url)
 
 logger = AppLogger(__name__)
 
@@ -190,32 +188,27 @@ def cancel_promotion(token):
         email_list = confirm_token(token, 2592000)
     except URLTokenError as e:
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     except Exception as e:
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # If a list is not returned, we should get out of here.
     if not isinstance(email_list, list):
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Ensure both admin and user email is present in list
     if not len(email_list) == 2:
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Let's just be sure that we don't go out of index range
@@ -224,26 +217,22 @@ def cancel_promotion(token):
         user_email = email_list[1]
     except IndexError as e:
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     if not admin_email or not user_email:
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Ensure both users exist in the database
     if not User.objects(email=admin_email):
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     if not User.objects(email=user_email):
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Get Admin user object
@@ -254,8 +243,7 @@ def cancel_promotion(token):
         # response['message'] = 'User is not authorised to promote other users.'
         # return jsonify(response), 401
         return redirect(
-            f'{redirect_url}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Get target user object
@@ -448,25 +436,21 @@ def confirm_disable_account(token):
         email = confirm_token(token)
     except URLTokenError as e:
         return redirect(
-            f'{redirect_url}/disable/user/confirm?tokenexpired=true',
-            code=302
+            f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
         return redirect(
-            f'{redirect_url}/disable/user/confirm?tokenexpired=true',
-            code=302
+            f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
     except Exception as e:
         return redirect(
-            f'{redirect_url}/disable/user/confirm?tokenexpired=true',
-            code=302
+            f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
 
     # Ensure the user exists in the database
     if not User.objects(email=email):
         return redirect(
-            f'{redirect_url}/disable/user/confirm?tokenexpired=true',
-            code=302
+            f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
 
     # Get the user object

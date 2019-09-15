@@ -15,11 +15,13 @@ class CompForm extends Component {
       userAlloys,
       getGlobalAlloysConnect,
       getUserAlloysConnect,
+      isAuthenticated,
     } = this.props
-    if (!globalAlloys || globalAlloys.length === 0) {
+    // get alloys if user is authenticated
+    if (isAuthenticated && (!globalAlloys || globalAlloys.length === 0)) {
       getGlobalAlloysConnect()
     }
-    if (!userAlloys || userAlloys.length === 0) {
+    if (isAuthenticated && (!userAlloys || userAlloys.length === 0)) {
       getUserAlloysConnect()
     }
   }
@@ -141,6 +143,7 @@ class CompForm extends Component {
 }
 
 CompForm.propTypes = {
+  isAuthenticated: PropTypes.bool.isRequired,
   // props from connect()
   simAlloys: PropTypes.shape({
     alloyOption: PropTypes.string,

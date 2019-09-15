@@ -22,8 +22,6 @@ all it's atomic number, symbols, names, and atomic weight.
 
 import enum
 
-import prettytable
-
 
 class Element(object):
     """Simple element object to store as value in the Periodic Table enum."""
@@ -160,19 +158,3 @@ class PeriodicTable(enum.Enum):
     Lv = Element(116, 'Livermorium', 'Lv', 293.0)
     Ts = Element(117, 'Tennessinem', 'Ts', 294.0)
     Og = Element(118, 'Oganesson', 'Og', 294.0)
-
-
-if __name__ == '__main__':
-    # USAGE: Run Python periodic.py to see the full Periodic Table printed.
-    table = prettytable.PrettyTable(['Atom #', 'Name (Symbol)', 'Atomic Mass'])
-    for elem in PeriodicTable:
-        table.add_row(
-            [
-                elem.value.atomic_num,
-                elem.value.get_full_name(), elem.value.atomic_mass
-            ]
-        )
-    table.align['Atom #'] = 'c'
-    table.align['Name (Symbol)'] = 'l'
-    table.align['Atomic Mass'] = 'l'
-    print(table)

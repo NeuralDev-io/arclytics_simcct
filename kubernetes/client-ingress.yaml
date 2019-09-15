@@ -7,4 +7,4 @@ metadata:
 spec:
   backend:  # Default backend
     serviceName: client-service
-    servicePort: 80
+    servicePort: 8080

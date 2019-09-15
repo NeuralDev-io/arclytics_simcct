@@ -1,12 +1,12 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { withSnackbar } from 'notistack'
 import UploadIcon from 'react-feather/dist/icons/upload'
 import Button from '../../elements/button'
 import FileInput from '../../elements/file-input/FileInput'
 import { AttachModal } from '../../elements/modal'
 import { loadSim } from '../../../state/ducks/sim/actions'
+import { addFlashToast } from '../../../state/ducks/toast/actions'
 
 import styles from './LoadSimButton.module.scss'
 
@@ -24,23 +24,15 @@ class LoadSimButton extends Component {
   handleCloseModal = () => this.setState({ visible: false })
 
   handleFileInputChange = (e) => {
-    const { enqueueSnackbar, closeSnackbar, loadSimConnect } = this.props
+    const { loadSimConnect, addFlashToastConnect } = this.props
     const file = e.target.files[0]
 
     // check file size
-    if (file.size > 100000) {
-      enqueueSnackbar('File size too large', {
-        variant: 'error',
-        action: key => (
-          <Button
-            appearance="text"
-            className="snackbar__button"
-            onClick={() => closeSnackbar(key)}
-          >
-            Dismiss
-          </Button>
-        ),
-      })
+    if (file.size > 200000) {
+      addFlashToastConnect({
+        message: 'File size too large',
+        options: { variant: 'error' },
+      }, true)
       this.handleCloseModal()
       return
     }
@@ -52,19 +44,10 @@ class LoadSimButton extends Component {
         const fileText = e.target.result
         sim = JSON.parse(fileText)
       } catch (err) {
-        console.error(err)
-        enqueueSnackbar('Something went wrong', {
-          variant: 'error',
-          action: key => (
-            <Button
-              appearance="text"
-              className="snackbar__button"
-              onClick={() => closeSnackbar(key)}
-            >
-              Dismiss
-            </Button>
-          ),
-        })
+        addFlashToastConnect({
+          message: 'Something went wrong',
+          options: { variant: 'error' },
+        }, true)
         this.handleCloseModal()
         return
       }
@@ -74,18 +57,10 @@ class LoadSimButton extends Component {
       // load simulations
       loadSimConnect(sim)
       this.setState({ filename: file.name })
-      enqueueSnackbar('File imported successfully.', {
-        variant: 'success',
-        action: key => (
-          <Button
-            appearance="text"
-            className="snackbar__button"
-            onClick={() => closeSnackbar(key)}
-          >
-            Dismiss
-          </Button>
-        ),
-      })
+      addFlashToastConnect({
+        message: 'File imported successfully',
+        options: { variant: 'success' },
+      }, true)
       setTimeout(this.handleCloseModal, 500)
     }
 
@@ -125,14 +100,14 @@ class LoadSimButton extends Component {
 }
 
 LoadSimButton.propTypes = {
-  enqueueSnackbar: PropTypes.func.isRequired,
-  closeSnackbar: PropTypes.func.isRequired,
   // props from connect()
   loadSimConnect: PropTypes.func.isRequired,
+  addFlashToastConnect: PropTypes.func.isRequired,
 }
 
 const mapDispatchToProps = {
   loadSimConnect: loadSim,
+  addFlashToastConnect: addFlashToast,
 }
 
-export default withSnackbar(connect(null, mapDispatchToProps)(LoadSimButton))
+export default connect(null, mapDispatchToProps)(LoadSimButton)

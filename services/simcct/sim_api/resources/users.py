@@ -28,12 +28,12 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
-from sim_api.models import (User, UserProfile)
+from logger import AppLogger
+from sim_api.extensions import api
 from sim_api.middleware import (
     authenticate_user_cookie_restful, authorize_admin_cookie_restful
 )
-from sim_api.extensions import api
-from logger.arc_logger import AppLogger
+from sim_api.models import (User, UserProfile)
 
 users_blueprint = Blueprint('users', __name__)
 
@@ -58,7 +58,7 @@ class HealthTest(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self) -> Tuple[dict, int]:
-        return {'message': 'Healthy'}, 200
+        return {}, 200
 
 
 class UserList(Resource):
@@ -286,7 +286,7 @@ class UserProfiles(Resource):
 
 
 api.add_resource(PingTest, '/api/v1/sim/ping')
-api.add_resource(HealthTest, '/healthy/')
+api.add_resource(HealthTest, '/healthy')
 api.add_resource(UserList, '/api/v1/sim/users')
 api.add_resource(Users, '/api/v1/sim/user')
 api.add_resource(UserProfiles, '/api/v1/sim/user/profile')

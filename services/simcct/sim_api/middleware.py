@@ -21,13 +21,14 @@ __date__ = '2019.07.06'
 
 from functools import wraps
 from threading import Thread
+
 from bson import ObjectId
-from flask import request, jsonify, session
+from flask import jsonify, request, session
 from mongoengine import DoesNotExist
 
+from logger import AppLogger
 from sim_api.extensions.Session.redis_session import SESSION_COOKIE_NAME
 from sim_api.models import User
-from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
 
@@ -327,4 +328,3 @@ def authenticate(f):
         return f(resp, *args, **kwargs)
 
     return decorated_func
-

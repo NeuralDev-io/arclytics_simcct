@@ -23,23 +23,21 @@ simulation to the their personal Document.
 """
 
 from bson import ObjectId
-from flask import request, Blueprint, json
+from flask import Blueprint, json, request
 from flask_restful import Resource
-from mongoengine import ValidationError, FieldDoesNotExist, DoesNotExist
+from mongoengine import DoesNotExist, FieldDoesNotExist, ValidationError
 
 from sim_api.extensions import api
+from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
+                                          ElementSymbolInvalid,
+                                          MissingElementError)
 from sim_api.middleware import authenticate_user_cookie_restful
-from sim_api.extensions.utilities import (
-    ElementInvalid, ElementSymbolInvalid, MissingElementError,
-    DuplicateElementError
-)
-from sim_api.models import (
-    User, Configuration, AlloyStore, SavedSimulation, SimulationResults
-)
+from sim_api.models import (AlloyStore, Configuration, SavedSimulation,
+                            SimulationResults)
 
 save_sim_blueprint = Blueprint('user_save_simulation', __name__)
 
-# NOTE: An is_valid = False Configuration instance means it has not been run.
+# Note: An is_valid = False Configuration instance means it has not been run.
 
 
 class SaveSimulationList(Resource):
@@ -129,6 +127,10 @@ class SaveSimulationList(Resource):
             response['error'] = str(e)
             response['message'] = 'Model schema validation error.'
             return response, 400
+        except OverflowError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Overflow error.'
+            return response, 500
 
         response.pop('message')
         response['status'] = 'success'
@@ -142,7 +144,7 @@ class SaveSimulationList(Resource):
         from the saved_simulation collection.
 
         Args:
-            user_id: a valid user ObjectId passed from the middleware.
+            user: a valid `sim_api.models.User` object passed from middleware.
 
         Returns:
             A valid HTTP Response with a dict and a HTTP status code.

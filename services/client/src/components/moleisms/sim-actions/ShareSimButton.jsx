@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { withSnackbar } from 'notistack'
 import Share2Icon from 'react-feather/dist/icons/share-2'
 import Button from '../../elements/button'
 import { AttachModal } from '../../elements/modal'
@@ -10,6 +9,7 @@ import AccordionSection from '../../elements/accordion/AccordionSection'
 import TextField, { TextFieldEmail } from '../../elements/textfield'
 import TextArea from '../../elements/textarea'
 import { getShareUrlLink, sendShareEmail } from '../../../api/sim/SessionShareSim'
+import { addFlashToast } from '../../../state/ducks/toast/actions'
 
 import styles from './ShareSimButton.module.scss'
 
@@ -101,7 +101,7 @@ class ShareSimButton extends Component {
   }
 
   onEmailSubmit = () => {
-    const { enqueueSnackbar, closeSnackbar } = this.props
+    const { addFlashToastConnect } = this.props
     /**
      * The callback function for the generate button which makes the API call
      * and updates the state of `shareUrlLink` if the promise successfully returns
@@ -117,32 +117,16 @@ class ShareSimButton extends Component {
     sendShareEmail(
       emails, message, validConfigs, alloyStore, simResults,
     ).then(() => {
-      enqueueSnackbar('Simulation shared successfully', {
-        variant: 'success',
-        action: key => (
-          <Button
-            appearance="text"
-            className="snackbar__button"
-            onClick={() => closeSnackbar(key)}
-          >
-            Dismiss
-          </Button>
-        ),
-      })
+      addFlashToastConnect({
+        message: 'Simulation shared successfully',
+        options: { variant: 'success' },
+      }, true)
       setTimeout(this.handleCloseModal, 500)
     }).catch(() => {
-      enqueueSnackbar('Something went wrong', {
-        variant: 'error',
-        action: key => (
-          <Button
-            appearance="text"
-            className="snackbar__button"
-            onClick={() => closeSnackbar(key)}
-          >
-            Dismiss
-          </Button>
-        ),
-      })
+      addFlashToastConnect({
+        message: 'Something went wrong',
+        options: { variant: 'error' },
+      }, true)
     })
   }
 
@@ -321,8 +305,6 @@ const textFieldType = PropTypes.oneOfType([
 ])
 
 ShareSimButton.propTypes = {
-  enqueueSnackbar: PropTypes.func.isRequired,
-  closeSnackbar: PropTypes.func.isRequired,
   isSimulated: PropTypes.bool.isRequired,
   isAuthenticated: PropTypes.bool.isRequired,
   configurations: PropTypes.shape({
@@ -360,6 +342,7 @@ ShareSimButton.propTypes = {
     }),
   }).isRequired,
   results: PropTypes.shape({}).isRequired,
+  addFlashToastConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -368,4 +351,8 @@ const mapStateToProps = state => ({
   results: state.sim.results,
 })
 
-export default withSnackbar(connect(mapStateToProps, {})(ShareSimButton))
+const mapDispatchToProps = {
+  addFlashToastConnect: addFlashToast,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ShareSimButton)

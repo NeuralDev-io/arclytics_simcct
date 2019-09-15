@@ -45,15 +45,15 @@ def make_celery(app: Flask = None) -> Celery:
 
     # We make a new Celery subsystem instance with the configs using Redis
     # as the Message Queue broker and also to store results.
-    celery: Celery = Celery(
+    celery_beat: Celery = Celery(
         app.import_name,
         broker=app.config['CELERY_BROKER_URL'],
         backend=app.config['CELERY_RESULT_BACKEND']
     )
-    celery.conf.update(app.config)
+    celery_beat.conf.update(app.config)
 
     # We need to ensure that the tasks are called within the App context
-    TaskBase = celery.Task
+    TaskBase = celery_beat.Task
 
     class ContextTask(TaskBase):
         abstract = True
@@ -62,9 +62,9 @@ def make_celery(app: Flask = None) -> Celery:
             with app.app_context():
                 return TaskBase.__call__(self, *args, **kwargs)
 
-    celery.Task = ContextTask
+    celery_beat.Task = ContextTask
 
-    return celery
+    return celery_beat
 
 
 flask_app = create_app()

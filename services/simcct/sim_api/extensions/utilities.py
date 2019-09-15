@@ -19,14 +19,16 @@ __date__ = '2019.07.25'
 {Description}
 """
 
-import os
 import decimal
 import enum
 import json
+import os
+from datetime import datetime, timedelta, tzinfo
+from typing import Optional
+
 import numpy as np
 from bson import ObjectId
-from datetime import datetime, tzinfo, timedelta
-from typing import Optional
+
 from simulation.utilities import Method
 
 
@@ -46,12 +48,16 @@ def get_mongo_uri():
 # setting these headers as we defined them in `sim_api.app.py`. These headers
 # are crucially necessary for the Cookies and Server-Side Sessions to work.
 RESPONSE_HEADERS = {
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Headers':
+    'Content-Type',
+    'Content-Type':
+    'application/json',
+    'Access-Control-Allow-Credentials':
+    'true',
     'Access-Control-Expose-Headers':
-        ['Access-Control-Allow-Credentials', 'Access-Control-Allow-Origin'],
-    'Vary': 'Origin'
+    ['Access-Control-Allow-Credentials', 'Access-Control-Allow-Origin'],
+    'Vary':
+    'Origin'
     # 'Access-Control-Allow-Origin': '*',  # Don't set this because it fails
     # Reason being that allow from all origins with
     # `'Access-Control-Allow-Credentials': 'true'` will raise an error from

@@ -12,20 +12,20 @@ __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.13'
 
-import os
 import json
 import unittest
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 from mongoengine import get_db
 
+from logger import AppLogger
 from manage import BASE_DIR
+from sim_api.extensions.SimSession import SimSessionService
+from sim_api.models import AlloyStore, Configuration, User
+from sim_api.schemas import AlloyStoreSchema, ConfigurationsSchema
 from tests.test_api_base import BaseTestCase, app
 from tests.test_utilities import test_login
-from sim_api.models import User, AlloyStore, Configuration
-from sim_api.extensions.SimSession import SimSessionService
-from sim_api.schemas import ConfigurationsSchema, AlloyStoreSchema
-from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
 
@@ -238,8 +238,7 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res = client.get(
-                '/api/v1/sim/configs/ms',
-                content_type='application/json'
+                '/api/v1/sim/configs/ms', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             session_store = SimSessionService().load_session()
@@ -249,10 +248,10 @@ class TestSimConfigurations(BaseTestCase):
             self.assertTrue(sess_configs['auto_calculate_ms'])
             ms_temp = np.float32(data['data']['ms_temp'])
             ms_rate_param = np.float32(data['data']['ms_rate_param'])
-            self.assertAlmostEqual(sess_configs['ms_temp'], 464.1960, 4)
-            self.assertAlmostEqual(sess_configs['ms_rate_param'], 0.020691, 4)
-            self.assertAlmostEqual(ms_temp, 464.1960, 4)
-            self.assertAlmostEqual(ms_rate_param, 0.020691, 4)
+            self.assertAlmostEqual(sess_configs['ms_temp'], 464.1792, 2)
+            self.assertAlmostEqual(sess_configs['ms_rate_param'], 0.020691, 2)
+            self.assertAlmostEqual(ms_temp, 464.1792, 2)
+            self.assertAlmostEqual(ms_rate_param, 0.020691, 2)
 
     def test_auto_update_bs(self):
         """Ensure we get the correct calculations for BS given the alloy."""
@@ -260,8 +259,7 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res = client.get(
-                '/api/v1/sim/configs/bs',
-                content_type='application/json'
+                '/api/v1/sim/configs/bs', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             session_store = SimSessionService().load_session()
@@ -270,8 +268,8 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['status'], 'success')
             self.assertTrue(sess_configs['auto_calculate_bs'])
             ms_temp = np.float32(data['data']['bs_temp'])
-            self.assertAlmostEqual(sess_configs['bs_temp'], 563.2380, 4)
-            self.assertAlmostEqual(ms_temp, 563.2380, 4)
+            self.assertAlmostEqual(sess_configs['bs_temp'], 563.2208, 2)
+            self.assertAlmostEqual(ms_temp, 563.2208, 2)
 
     def test_auto_update_ae(self):
         """Ensure we get the correct calculations for Ae1 and Ae3 given the
@@ -293,10 +291,10 @@ class TestSimConfigurations(BaseTestCase):
             self.assertTrue(sess_configs['auto_calculate_ae'])
             ae1 = np.float64(data['data']['ae1_temp'])
             ae3 = np.float64(data['data']['ae3_temp'])
-            self.assertAlmostEqual(sess_configs['ae1_temp'], 700.90196, 4)
-            self.assertAlmostEqual(sess_configs['ae3_temp'], 845.83715, 4)
-            self.assertAlmostEqual(ae1, 700.90196, 4)
-            self.assertAlmostEqual(ae3, 845.83715, 4)
+            self.assertAlmostEqual(sess_configs['ae1_temp'], 700.8947, 2)
+            self.assertAlmostEqual(sess_configs['ae3_temp'], 845.8189, 2)
+            self.assertAlmostEqual(ae1, 700.8947, 2)
+            self.assertAlmostEqual(ae3, 845.8189, 2)
 
     def test_configurations_no_session(self):
         """Ensure it fails with no header."""
@@ -438,8 +436,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assert200(res_method_update)
 
             res = client.get(
-                '/api/v1/sim/configs/ms',
-                content_type='application/json'
+                '/api/v1/sim/configs/ms', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             session_store = SimSessionService().load_session()
@@ -449,10 +446,10 @@ class TestSimConfigurations(BaseTestCase):
             self.assertTrue(sess_configs['auto_calculate_ms'])
             ms_temp = np.float32(data['data']['ms_temp'])
             ms_rate_param = np.float32(data['data']['ms_rate_param'])
-            self.assertAlmostEqual(sess_configs['ms_temp'], 477.5940, 4)
-            self.assertAlmostEqual(sess_configs['ms_rate_param'], 0.02069, 4)
-            self.assertAlmostEqual(ms_temp, 477.5940, 4)
-            self.assertAlmostEqual(ms_rate_param, 0.02069, 4)
+            self.assertAlmostEqual(sess_configs['ms_temp'], 477.5753, 3)
+            self.assertAlmostEqual(sess_configs['ms_rate_param'], 0.02069, 2)
+            self.assertAlmostEqual(ms_temp, 477.5753, 2)
+            self.assertAlmostEqual(ms_rate_param, 0.02069, 2)
 
     def test_auto_update_bs_kirkaldy_method(self):
         """Ensure we get the correct calculations for BS given Kirkaldy83
@@ -469,8 +466,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assert200(res_method_update)
 
             res = client.get(
-                '/api/v1/sim/configs/bs',
-                content_type='application/json'
+                '/api/v1/sim/configs/bs', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             session_store = SimSessionService().load_session()
@@ -479,8 +475,8 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['status'], 'success')
             self.assertTrue(sess_configs['auto_calculate_bs'])
             bs_temp = np.float32(data['data']['bs_temp'])
-            self.assertAlmostEqual(sess_configs['bs_temp'], 565.738, 3)
-            self.assertAlmostEqual(bs_temp, 565.738, 4)
+            self.assertAlmostEqual(sess_configs['bs_temp'], 565.723, 2)
+            self.assertAlmostEqual(bs_temp, 565.723, 2)
 
     def test_on_configs_change(self):
         """Ensure that if we send new configurations we store it in session."""
@@ -626,11 +622,11 @@ class TestSimConfigurations(BaseTestCase):
             #  is set because otherwise opening a transaction will not use
             #  a standard HTTP request environ_base.
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ) as session:
                 session['simulation'] = None
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ):
                 # At this point the session transaction has been updated so
                 # we can check the session within the context
@@ -667,11 +663,11 @@ class TestSimConfigurations(BaseTestCase):
             #  is set because otherwise opening a transaction will not use
             #  a standard HTTP request environ_base.
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ) as session:
                 session['simulation'] = None
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ):
                 # At this point the session transaction has been updated so
                 # we can check the session within the context
@@ -737,7 +733,7 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure an empty payload does not pass."""
         with app.test_client() as client:
             self.login_client(client)
-            
+
             res = client.put(
                 '/api/v1/sim/configs/ae',
                 data=json.dumps({}),
@@ -795,11 +791,11 @@ class TestSimConfigurations(BaseTestCase):
             #  is set because otherwise opening a transaction will not use
             #  a standard HTTP request environ_base.
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ) as session:
                 session['simulation'] = None
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ):
                 # At this point the session transaction has been updated so
                 # we can check the session within the context

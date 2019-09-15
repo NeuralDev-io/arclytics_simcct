@@ -150,10 +150,10 @@ export const resetPassword = (resolve, reject, values, token) => {
     .then(res => res.json())
     .then((res) => {
       if (res.status === 'success') {
-        console.log(res.status, res.message)
+        // console.log(res.status, res.message)
         resolve(res)
       } else {
-        console.log(res.status, res.message)
+        // console.log(res.status, res.message)
         reject(res.message)
       }
     })

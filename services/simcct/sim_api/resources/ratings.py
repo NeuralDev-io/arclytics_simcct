@@ -23,14 +23,14 @@ Rating and Feedback endpoints using the Flask Resource inheritance model.
 
 from typing import Tuple
 
-from logger.arc_logger import AppLogger
 from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine import ValidationError
 
-from sim_api.middleware import authenticate_user_cookie_restful
+from logger import AppLogger
 from sim_api.extensions import api
-from sim_api.models import Rating, Feedback
+from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.models import Feedback, Rating
 
 logger = AppLogger(__name__)
 
@@ -110,7 +110,10 @@ class UserFeedback(Resource):
 
         try:
             feedback = Feedback(
-                user=user.id, category=category, rating=rating, comment=comment
+                user=user.id,
+                category=category,
+                rating=rating,
+                comment=comment
             )
             feedback.save()
         except ValidationError as e:

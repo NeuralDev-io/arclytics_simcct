@@ -7,8 +7,14 @@ class SharePage extends Component {
   componentDidMount = () => {
     const { match, loadSimFromLinkConnect, history } = this.props
     loadSimFromLinkConnect(match.params.token)
-      .then(() => history.push('/'))
-      .catch(err => console.log(err))
+      .then(() => {
+        const { isAuthenticated } = this.props
+        if (isAuthenticated) {
+          history.push('/')
+        } else {
+          history.push('/demo')
+        }
+      })
   }
 
   render() {
@@ -30,6 +36,7 @@ SharePage.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func,
   }).isRequired,
+  isAuthenticated: PropTypes.bool.isRequired,
 }
 
 const mapDispatchToProps = {

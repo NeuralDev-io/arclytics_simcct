@@ -22,10 +22,11 @@ features such as registration, sharing, and changing passwords.
 
 from typing import Union
 
-from flask import url_for
 from flask import current_app as app
+from flask import url_for
 from itsdangerous import URLSafeTimedSerializer
 from itsdangerous.exc import BadSignature, SignatureExpired
+
 from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
 
 

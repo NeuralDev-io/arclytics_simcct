@@ -28,7 +28,7 @@ from mongoengine import get_db
 from tests.test_api_base import BaseTestCase, app
 from sim_api.models import (User, UserProfile, AdminProfile)
 from tests.test_utilities import test_login
-from logger.arc_logger import AppLogger
+from logger import AppLogger
 
 logger = AppLogger(__name__)
 

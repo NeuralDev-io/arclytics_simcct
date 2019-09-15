@@ -3,9 +3,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # __init__.py.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 
 __author__ = 'Andrew Che <@codeninja55>'
@@ -16,14 +16,14 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.09.08'
-
 """__init__.py: 
 
 Simulation Session.
 """
 
-from .sim_session_service import SimSessionService
 from dataclasses import dataclass
+
+from .sim_session_service import SimSessionService
 
 
 @dataclass
@@ -51,4 +51,3 @@ class SimSession(object):
     #  - Gives us the opportunity to include internal error checking via
     #    decorators and other methods.
     #  - Can potentially use a Factory method to alloy serialization.
-

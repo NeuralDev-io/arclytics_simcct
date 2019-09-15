@@ -19,21 +19,22 @@ __date__ = '2019.07.17'
 This module defines and implements the endpoints for CCT and TTT simulations.
 """
 
-import time
-from threading import Thread
 
+import time
+from os import environ as env
+
+from dask.distributed import Client
 from flask import Blueprint
 from flask_restful import Resource
 
+from logger import AppLogger
 from sim_api.extensions import api
-from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.extensions.SimSession import SimSessionService
-from simulation.simconfiguration import SimConfiguration
+from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.schemas import AlloyStoreSchema, ConfigurationsSchema
 from simulation.phasesimulation import PhaseSimulation
+from simulation.simconfiguration import SimConfiguration
 from simulation.utilities import ConfigurationError, SimulationError
-from sim_api.schemas import ConfigurationsSchema, AlloyStoreSchema
-from logger.arc_logger import AppLogger
-from simulation.timer import time_func
 
 logger = AppLogger(__name__)
 
@@ -100,10 +101,20 @@ class Simulation(Resource):
         if alloy_store.get('alloy_option') == 'single':
             alloy = alloy_store['alloys']['parent']
 
+        dask_client = Client(
+            address=env.get('DASK_SCHEDULER_ADDRESS'), processes=False
+        )
+
+        # TIMER START
+        start = time.time()
+
         # No we can do the calculations for CCT and TTT
         sim_configs = SimConfiguration(
             configs=configs, compositions=alloy['compositions']
         )
+
+        # stop_configs_time = time.time()
+        # sim_configs_time = stop_configs_time - start
 
         try:
             sim = PhaseSimulation(sim_configs=sim_configs)
@@ -116,40 +127,19 @@ class Simulation(Resource):
             response['message'] = 'Simulation error.'
             return response, 400
 
-        logger.debug('PhaseSimulation Instance Configurations')
-        logger.pprint(sim.configs.__dict__)
+        # logger.debug('PhaseSimulation Instance Configurations')
+        # logger.pprint(sim.configs.__dict__)
 
         # Now we do the simulation part but catch all exceptions and return it
         try:
-            # TIMER START
-            start = time.time()
-            # Running these in parallel with threading
-            ttt_process = Thread(target=sim.ttt)
-            cct_process = Thread(target=sim.cct)
-            user_cooling_process = Thread(target=sim.user_cooling_profile)
-            # Starting CCT first because it takes longer.
-            cct_process.start()
-            user_cooling_process.start()
-            ttt_process.start()
+            # ttt_results = sim.ttt()
+            # user_cooling_curve_results = sim.user_cooling_profile()
 
-            # Now we stop the main thread to wait for them to finish.
-            # user_time_taken = time_func(sim.user_cooling_profile)
-            user_time_taken = time_func(user_cooling_process.join)
-            # ttt_time_taken = time_func(sim.ttt)
-            ttt_time_taken = time_func(ttt_process.join)
-            # cct_time_taken = time_func(sim.cct)
-            cct_time_taken = time_func(cct_process.join)
-            finish = time.time()
-
-            # TODO(andrew@neuraldev.io): We need to store the results in the
-            #  Session store at some point as well.
-
-            logger.debug(
-                f'User Cooling Curve Simulation Time: {user_time_taken}'
-            )
-            logger.debug(f'TTT Simulation Time: {ttt_time_taken}')
-            logger.debug(f'CCT Simulation Time: {cct_time_taken}')
-            logger.debug('Total Simulation Time: {}'.format(finish - start))
+            # We send the three simulation functions off to a Dask Worker to
+            # compute as a background thread.
+            cct_future = dask_client.submit(sim.cct)
+            ttt_future = dask_client.submit(sim.ttt)
+            user_cc_future = dask_client.submit(sim.user_cooling_profile)
         except ZeroDivisionError as e:
             response['errors'] = str(e)
             response['message'] = 'Zero Division Error.'
@@ -165,14 +155,22 @@ class Simulation(Resource):
         # AssertionError if the shape of the ndarray is not correct.
         try:
             data = {
-                'TTT': sim.plots_data.get_ttt_plot_data(),
-                'CCT': sim.plots_data.get_cct_plot_data(),
-                'USER': sim.plots_data.get_user_plot_data()
+                'TTT': ttt_future.result(),
+                'CCT': cct_future.result(),
+                'USER': user_cc_future.result()
             }
         except AssertionError as e:
             response['errors'] = str(e)
             response['message'] = 'Assertion error building response data.'
             return response, 500
+
+        finish = time.time()
+        # simulation_time = finish - stop_configs_time
+
+        # logger.debug(f'Configurations Setup Time: {sim_configs_time}')
+        # logger.debug(f'Integral Matrix Time: {integral_mat_time}')
+        # logger.debug(f'Total Simulation Time: {simulation_time}')
+        logger.debug('Total Time: {}'.format(finish - start))
 
         # If a valid simulation has been run, the configurations are now valid.
         session_store['configurations']['is_valid'] = True

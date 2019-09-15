@@ -11,7 +11,7 @@ spec:
     targetPort: 27017
   clusterIP: None
   selector:
-    role: mongo
+    role: mongo-persistence
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
@@ -19,11 +19,14 @@ metadata:
   name: mongo
 spec:
   serviceName: mongo-service
-  replicas: 2
+  selector:
+    matchLabels:
+    role: mongo-persistence
+  replicas: 3
   template:
     metadata:
       labels:
-        role: mongo
+        role: mongo-persistence
         environment: production
         replicaset: MainRepSet
     spec:
@@ -68,8 +71,8 @@ spec:
             - "authenticationMechanisms=SCRAM-SHA-1"
           resources:
             requests:
-              cpu: 1
-              memory: 2Gi
+              cpu: 500m
+              memory: 1Gi
           ports:
             - containerPort: 27017
           env:
@@ -99,7 +102,7 @@ spec:
   - metadata:
       name: mongo-pvc
       annotations:
-        volume.beta.kubernetes.io/storage-class: "fast"
+        volume.beta.kubernetes.io/storage-class: "standard"
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:

@@ -112,16 +112,20 @@ class ConfigForm extends Component {
           <div className="input-col">
             <h6>CCT/TTT method</h6>
             <div className={styles.infoTipContainer}>
-              <Tooltip position="bottom">
+              <Tooltip className={styles.infoTip} position="bottom">
                 <InfoIcon className={styles.infoIcon} />
                 <p>
-                  J.S. Krikaldy, et al., &quote;Prediction of microstructure and hardenability in
-                  low-alloy steels&quote;, in Phase Transformations in ferrous alloys 1983,
+                  J.S.Krikaldy, et al., &quot;Prediction of microstructure and hardenability in
+                  <br />
+                  low-alloy steels&quot;, in Phase Transformations in ferrous alloys 1983,
+                  <br />
                   p.125-148
                   <br />
                   <br />
-                  M. V. Li, et.al. &quote;A Computational Model for the Prediction of Steel
-                  Hardenability&quote;, Metallurgic and Materials Transactions, Vol29B, June 1998,
+                  M. V. Li, et.al. &quot;A Computational Model for the Prediction of Steel
+                  <br />
+                  Hardenability&quot;, Metallurgic and Materials Transactions, Vol29B, June
+                  <br />
                   p.661-672 The method has been implemented EXACTLY as stated in the paper.
                 </p>
               </Tooltip>
@@ -142,17 +146,20 @@ class ConfigForm extends Component {
           <div className="input-col">
             <h6>
               <div className={styles.infoTipContainer}>
-                <Tooltip position="bottom">
+                <Tooltip className={styles.infoTip} position="bottom">
                   <InfoIcon className={styles.infoIcon} />
                   <p>
-                    J.S. Krikaldy, et al., &quote;Prediction of microstructure and hardenability in
-                    low-alloy steels&quote;, in Phase Transformations in ferrous alloys 1983,
-                    p.125-148
+                    Plots a sigmoidal function distribution on a separate sheet.
+                    <br />
+                    This is for visualizing the various Sigmoidal distributions used:
                     <br />
                     <br />
-                    M. V. Li, et.al. &quote;A Computational Model for the Prediction of Steel
-                    Hardenability&quote;, Metallurgic and Materials Transactions, Vol29B, June 1998,
-                    p.661-672 The method has been implemented EXACTLY as stated in the paper.
+                    S(X) - Li98(Ferrite, Pearlite, Bianite)
+                    <br />
+                    I(X) - Krikaldy (Ferrite Pearlite)
+                    <br />
+                    I'(X) - Kirkaldy (Bainite)
+                    <br />
                   </p>
                 </Tooltip>
               </div>
@@ -191,7 +198,7 @@ class ConfigForm extends Component {
           <div className={styles.configRow}>
             <div>
               <div className={styles.infoTipContainer}>
-                <Tooltip position="bottom">
+                <Tooltip className={styles.infoTip} position="bottom">
                   <InfoIcon className={styles.infoIcon} />
                   <p>
                     Ae3 = temperature below austenite to ferrite transformation becomes
@@ -242,7 +249,7 @@ class ConfigForm extends Component {
             </div>
             <div>
               <div className={styles.infoTipContainer}>
-                <Tooltip position="bottom">
+                <Tooltip className={styles.infoTip} position="bottom">
                   <InfoIcon className={styles.infoIcon} />
                   <p>
                     Bainite transformation temperature (C)
@@ -277,7 +284,7 @@ class ConfigForm extends Component {
             </div>
             <div>
               <div className={styles.infoTipContainer}>
-                <Tooltip position="bottom">
+                <Tooltip className={styles.infoTip} position="bottom">
                   <InfoIcon className={styles.infoIcon} />
                   <p>
                     Martensite transformation temperature (C)
@@ -331,9 +338,9 @@ class ConfigForm extends Component {
           </div>
         </div>
         <div className={styles.third}>
-          <h5>
+          <div>
             <div className={styles.infoTipContainer}>
-              <Tooltip position="bottom">
+              <Tooltip className={styles.infoTip} position="bottom">
                 <InfoIcon className={styles.infoIcon} />
                 <p>
                   Plots a sigmoidal function distribution on a separate sheet This is for
@@ -348,6 +355,8 @@ class ConfigForm extends Component {
                 </p>
               </Tooltip>
             </div>
+          </div>
+          <h5>
             Nucleation parameters
           </h5>
           <div className={styles.configGroup}>

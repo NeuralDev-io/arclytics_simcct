@@ -25,7 +25,7 @@ a Python scientific programming style..
 
 import enum
 import numpy as np
-from typing import Any
+from typing import Any, Iterable
 from os import environ as env
 from math import pow, sqrt, log, exp, atan
 
@@ -54,8 +54,8 @@ def to_plot_dict(array) -> dict:
     }
 
 
-def to_trimmed_list(array) -> list:
-    return np.trim_zeros(array)
+def to_trunc_list(array) -> Iterable:
+    return np.around(array.astype('float'), 4).tolist()
 
 
 class Phase(enum.Enum):
@@ -439,7 +439,7 @@ class PhaseSimulation(object):
         # We first start by doing some setup
         # Define array to hold time and temperature data
         n_rows = 2000
-        user_cool_mat = np.zeros(shape=(n_rows, 2), dtype=np.float32)
+        user_cool_mat = DynamicNdarray(shape=(n_rows, 2))
         # Count will set the array ID for each increment during cooling
         row_idx = 0
         # Get the requested cooling rate
@@ -450,7 +450,7 @@ class PhaseSimulation(object):
         # ========== # Setup initial run parameters # ========== #
         time = 0.0
         # initialise temperature at the start point for curve
-        temp_curr = self.configs.temp_peak
+        temp = self.configs.temp_peak
 
         # If increment is set too high then the slow cooling rate calculations
         # start to deviate from reality
@@ -508,17 +508,17 @@ class PhaseSimulation(object):
         # Marburger)
         # MS - 20 : run down to current Martensite temp. (MS) - 20 deg.C
         # note: temp_curr is cooling, i.e. going down from temp_peak
-        while temp_curr > 20:
+        while temp > 20:
             # record current temperature and time in storage array
             user_cool_mat[row_idx, 0] = time
-            user_cool_mat[row_idx, 1] = temp_curr
+            user_cool_mat[row_idx, 1] = temp
 
             # This is the Phase transformation bit
             if row_idx > 0:
                 # first time through everything is at zero and pre set for
                 # this point
                 self._transform_inc(
-                    tcurr=temp_curr,
+                    tcurr=temp,
                     inc_time=increm_time,
                     phase_n_ratio=phase_nuc_ratio,
                     phase_c_ratio=phase_complete_ratio,
@@ -529,7 +529,7 @@ class PhaseSimulation(object):
 
             row_idx = row_idx + 1
             # Find the new temperature for the next iteration of this loop
-            temp_curr = self._next_temp(temp_curr, cooling_rate, increm_time)
+            temp = self._next_temp(temp, cooling_rate, increm_time)
             time = time + increm_time
 
         # Trim the user cool curve to the max count it reaches
@@ -542,14 +542,14 @@ class PhaseSimulation(object):
         return {
             'user_cooling_curve': to_plot_dict(user_cool_mat),
             'user_phase_fraction_data': {
-                'austenite': to_trimmed_list(phase_vol[:, 0]),
-                'ferrite': to_trimmed_list(phase_vol[:, 1]),
-                'pearlite': to_trimmed_list(phase_vol[:, 2]),
-                'bainite': to_trimmed_list(phase_vol[:, 3]),
-                'martensite': to_trimmed_list(phase_vol[:, 4]),
+                'austenite': to_trunc_list(phase_vol[:n_max, 0]),
+                'ferrite': to_trunc_list(phase_vol[:n_max, 1]),
+                'pearlite': to_trunc_list(phase_vol[:n_max, 2]),
+                'bainite': to_trunc_list(phase_vol[:n_max, 3]),
+                'martensite': to_trunc_list(phase_vol[:n_max, 4]),
             },
-            'slider_time_field': float(user_cool_mat[-1, 0]),
-            'slider_temp_field': float(user_cool_mat[-1, 1]),
+            'slider_time_field': float(user_cool_mat[0, 0]),
+            'slider_temp_field': float(user_cool_mat[0, 1]),
             'slider_max': (n_max - 1)
         }
 
@@ -1169,6 +1169,22 @@ class PhaseSimulation(object):
         phase_c_ratio: DynamicNdarray, phase_frac: DynamicNdarray,
         phase_vol: DynamicNdarray, row_idx: int
     ) -> None:
+        """The purpose of this routine is to input a temperature, increment
+        time and current transformation stage for each expected phase. We then
+        return an update over that time.
+
+        Args:
+            tcurr: current temperature.
+            inc_time: the time to increment by based on cooling rate.
+            phase_n_ratio: the matrix to hold the phase nucleation ratio.
+            phase_c_ratio: the matrix to hold the phase completion ratio.
+            phase_frac: the matrix to hold the phase fractions.
+            phase_vol: the matrix to hold the phase volumes.
+            row_idx: the row index to update the matrices.
+
+        Returns:
+            None
+        """
 
         # Stop counters
         # Start by setting them to Go
@@ -1280,7 +1296,6 @@ class PhaseSimulation(object):
             # When the total is 1.0 nucleation has occurred
 
             # 0=Austenite, 1=Ferrite, 2=Pearlite, 3=Bainite, 4=Martensite,
-            # 5=(spare)
 
             # =============== # LOOK FOR BAINITE (3) START # =============== #
             if (

@@ -67,8 +67,9 @@ class DynamicNdarray(object):
         # add the new attributes to the created instance
         self.shape = self.obj.shape
 
-    def __getitem__(self, index: Union[Tuple[int, int], int]
-                    ) -> Union[float, np.ndarray]:
+    def __getitem__(
+            self, index: Union[Tuple[int, int], int]
+    ) -> Union[float, np.ndarray]:
         """Using the `[]` operators, this will get you the element stored at
         the index passed in.
 
@@ -105,7 +106,7 @@ class DynamicNdarray(object):
         # If the key passed is a tuple, meaning indexing by (rows, cols),
         # we check if the rows is more than 75% of the number of rows we
         # currently have. If so, we double our number of rows by 2.
-        if idx >= math.floor(self.rows * 0.75):
+        if idx >= math.floor(self.rows * 0.85):
             new_rows = self.rows * 2
             # Sometimes row index can still be larger so we just double that
             if idx > new_rows:
@@ -137,6 +138,10 @@ class DynamicNdarray(object):
             raise Exception(f'New row size must be bigger than {self.rows}.')
         self.obj.resize((n_rows, self.cols), refcheck=True)
         self.shape = self.obj.shape
+
+    def astype(self, new_type):
+        self.obj = self.obj.astype(new_type)
+        return self.obj
 
     def __str__(self):
         return f'DynamicNdarray(\n{self.obj.__str__()}\n)'

@@ -20,11 +20,13 @@ __package__ = 'simulation'
 {Description}
 """
 
-import numpy as np
 from typing import Union
-from .utilities import Method, ConfigurationError
-from .ae3_utilities import ae3_single_carbon, ae3_multi_carbon
+
+import numpy as np
+
+from .ae3_utilities import ae3_multi_carbon, ae3_single_carbon
 from .periodic import PeriodicTable
+from .utilities import ConfigurationError, Method
 
 
 class SimConfiguration(object):

@@ -14,6 +14,9 @@ spec:
     port: 80
     targetPort: 8080
     protocol: TCP
+  - name: https
+    port: 443
+    protocol: TCP
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -38,9 +41,9 @@ spec:
           secretName: client-https-secret
       containers:
       - name: client-https-container
-        image: gcr.io/arclytics-sim/arc_sim_client:1.1.2
+        image: gcr.io/arclytics-sim/arc_sim_client:1.1.3
         ports:
-        - containerPort: 80
+        - containerPort: 8080
         - containerPort: 443
         env:
           - name: REACT_APP_SIM_HOST

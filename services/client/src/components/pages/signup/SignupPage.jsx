@@ -99,88 +99,87 @@ class SignupPage extends Component {
             }) => (
               <div>
                 <form onSubmit={handleSubmit}>
-                <div>
-                  <div className={styles.name}>
-                    <div className={styles.firstName}>
+                  <div>
+                    <div className={styles.name}>
+                      <div className={styles.firstName}>
+                        <TextField
+                          type="text"
+                          name="firstName"
+                          onChange={e => setFieldValue('firstName', e)}
+                          onBlur={handleBlur}
+                          value={values.firstName}
+                          placeholder="First Name"
+                          length="long"
+                          error={errors.firstName && touched.firstName && errors.firstName}
+                        />
+                      </div>
+                      <div className={styles.lastName}>
+                        <TextField
+                          type="text"
+                          name="lastName"
+                          onChange={e => setFieldValue('lastName', e)}
+                          onBlur={handleBlur}
+                          value={values.lastName}
+                          placeholder="Last Name"
+                          length="long"
+                          error={errors.lastName && touched.lastName && errors.lastName}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.emailPassword}>
                       <TextField
-                        type="text"
-                        name="firstName"
-                        onChange={e => setFieldValue('firstName', e)}
+                        type="email"
+                        name="email"
+                        onChange={e => setFieldValue('email', e)}
                         onBlur={handleBlur}
-                        value={values.firstName}
-                        placeholder="First Name"
-                        length="long"
-                        error={errors.firstName && touched.firstName && errors.firstName}
+                        value={values.email}
+                        placeholder="Email"
+                        length="stretch"
+                        error={errors.email && touched.email && errors.email}
                       />
                     </div>
-                    <div className={styles.lastName}>
+                    <div className={styles.emailPassword}>
                       <TextField
-                        type="text"
-                        name="lastName"
-                        onChange={e => setFieldValue('lastName', e)}
-                        onBlur={handleBlur}
-                        value={values.lastName}
-                        placeholder="Last Name"
-                        length="long"
-                        error={errors.lastName && touched.lastName && errors.lastName}
+                        type="password"
+                        name="password"
+                        onChange={e => setFieldValue('password', e)}
+                        value={values.password}
+                        placeholder="Password"
+                        length="stretch"
+                        error={errors.password && touched.password && errors.password}
                       />
                     </div>
+                    <div className={styles.passwordConfirmed}>
+                      <TextField
+                        type="password"
+                        name="passwordConfirmed"
+                        length="stretch"
+                        value={values.passwordConfirmed}
+                        onChange={e => setFieldValue('passwordConfirmed', e)}
+                        placeholder="Confirm password"
+                        error={
+                          errors.passwordConfirmed
+                          && touched.passwordConfirmed
+                          && errors.passwordConfirmed
+                        }
+                      />
+                    </div>
+                    <div className={styles.signUpButton}>
+                      <Button
+                        name="SIGN UP"
+                        appearance="default"
+                        type="submit"
+                        length="long"
+                        disabled={isSubmitting}
+                      >
+                        SIGN UP
+                      </Button>
+                    </div>
                   </div>
-                  <div className={styles.emailPassword}>
-                    <TextField
-                      type="email"
-                      name="email"
-                      onChange={e => setFieldValue('email', e)}
-                      onBlur={handleBlur}
-                      value={values.email}
-                      placeholder="Email"
-                      length="stretch"
-                      error={errors.email && touched.email && errors.email}
-                    />
-                  </div>
-                  <div className={styles.emailPassword}>
-                    <TextField
-                      type="password"
-                      name="password"
-                      onChange={e => setFieldValue('password', e)}
-                      value={values.password}
-                      placeholder="Password"
-                      length="stretch"
-                      error={errors.password && touched.password && errors.password}
-                    />
-                  </div>
-                  <div className={styles.passwordConfirmed}>
-                    <TextField
-                      type="password"
-                      name="passwordConfirmed"
-                      length="stretch"
-                      value={values.passwordConfirmed}
-                      onChange={e => setFieldValue('passwordConfirmed', e)}
-                      placeholder="Confirm password"
-                      error={
-                        errors.passwordConfirmed
-                        && touched.passwordConfirmed
-                        && errors.passwordConfirmed
-                      }
-                    />
-                  </div>
-                  <div className={styles.signUpButton}>
-                    <Button
-                      name="SIGN UP"
-                      appearance="default"
-                      type="submit"
-                      length="long"
-                      disabled={isSubmitting}
-                    >
-                      SIGN UP
-                    </Button>
-                  </div>
-                </div>
-              </form>
+                </form>
                 <Modal
                   className={styles.cnfrmModal}
-                  // show={showCnfrmModal}
-                  show
+                  show={showCnfrmModal}
                 >
 
                   <AlertCircleIcon className={styles.alertCircleIcon} />
@@ -192,7 +191,7 @@ class SignupPage extends Component {
                   <span>
                     We have sent an email to &nbsp;
                     <span className={styles.email}>
-                      arvy.au@gmail.com
+                      {values.email}
                     </span>
                   </span>
                   <h6>Already verified?</h6>

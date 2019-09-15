@@ -866,8 +866,24 @@ class PhaseSimulation(object):
         return integral_mat
 
     def _torr_calc2(
-            self, phase: Phase, tcurr: float, integral_idx: int
+        self, phase: Phase, tcurr: float, integral_idx: int
     ) -> np.float32:
+        """Calculate the transformation rate (torr) equations for all different
+        methods. All the iterative routines will be unified and held
+        elsewhere.
+
+        Args:
+            phase: the current phase being considered with the following key:
+            Phase.F = Ferrite; Phase.P = Pearlite; Phase.B = Bainite;
+            Phase.M = Martensite (considered the same as Phase.B).
+            tcurr:
+            integral_idx: the index to retrieve the integral value from
+            `integral_mat` with `integral_idx` of 1 being the starting
+            precipitation and 2 being the finishing precipitation.
+
+        Returns:
+            The transformation rate calculated.
+        """
         r_gas = 1.985
 
         wt = self.comp
@@ -893,7 +909,7 @@ class PhaseSimulation(object):
             sint_b = self.integral_mat[integral_idx + 1, 2]
 
             if phase == Phase.F:
-                fc = np.float32(
+                fc = float(
                     exp(
                         1.0 + (6.31 * c) + (1.78 * mn) + (0.31 * si) +
                         (1.12 * ni) + (2.7 * cr) + (4.06 * mo)
@@ -908,7 +924,7 @@ class PhaseSimulation(object):
                 )
 
             elif phase == Phase.P:
-                pc = np.float32(
+                pc = float(
                     exp(
                         -4.25 + (4.12 * c) + (4.36 * mn) + (0.44 * si) +
                         (1.71 * ni) + (3.33 * cr) + (5.19 * sqrt(mo))
@@ -923,7 +939,7 @@ class PhaseSimulation(object):
                 )
 
             elif phase == Phase.B or phase == Phase.M:
-                bc = np.float32(
+                bc = float(
                     exp(
                         -10.23 + (10.18 * c) + (0.85 * mn) + (0.55 * ni) +
                         (0.9 * cr) + (0.36 * mo)
@@ -943,14 +959,14 @@ class PhaseSimulation(object):
             iint_b = self.integral_mat[integral_idx - 1, 2]
 
             if phase == Phase.F:
-                fc = np.float32(
+                fc = float(
                     ((59.6 * mn) + (1.45 * ni) + (67.7 * cr) + (244 * mo))
                 )
 
                 return np.float32(
                     fc / (
-                        2**((self.g - 1) / 2) * ((self.ae3 - tcurr)**3) *
-                        exp(-23500 / (r_gas * (tcurr + 273)))
+                        pow(2, ((self.g - 1) / 2)) * pow((self.ae3 - tcurr), 3)
+                        * exp(-23500 / (r_gas * (tcurr + 273)))
                     ) * iint_f
                 )
 
@@ -958,43 +974,38 @@ class PhaseSimulation(object):
                 pc = float(1.79 + 5.42 * (cr + mo + 4 * mo * ni))
                 dinv = np.float32(
                     (1 / exp(-27500 / (r_gas * (tcurr + 273)))) + (
-                        (0.01 * cr + 0.52 * mo) /
+                        ((0.01 * cr) + (0.52 * mo)) /
                         exp(-37500 / (r_gas * (tcurr + 273)))
                     )
                 )
 
                 return np.float32(
                     pc / (
-                        (
-                            2**((self.g - 1) / 2) * ((self.ae1 - tcurr)**3) *
-                            (1 / dinv)
-                        ) * iint_p
+                            (
+                                    pow(2, ((self.g - 1) / 2))
+                                    * pow((self.ae1 - tcurr), 3)
+                                    * (1 / dinv)
+                            ) * iint_p
                     )
                 )
 
             elif phase == Phase.B or phase == Phase.M:
-                bc = np.float32(
+                bc = float(
                     (2.34 + (10.1 * c) + (3.8 * cr) + (19.0 * mo)) *
                     pow(10, -4)
                 )
 
                 return np.float32(
                     bc / (
-                        2**((self.g - 1) / 2) * ((self.bs - tcurr)**2) *
-                        exp(-27500 / (r_gas * (tcurr + 273)))
+                        pow(2, ((self.g - 1) / 2)) * pow((self.bs - tcurr), 2)
+                        * exp(-27500 / (r_gas * (tcurr + 273)))
                     ) * iint_b
                 )
 
         return np.float32(-1)
 
     def get_ccr(
-            self,
-            phase,
-            init_start_temp,
-            limit,
-            integral_idx,
-            results_idx,
-            denom
+        self, phase, init_start_temp, limit, integral_idx, results_idx, denom
     ):
         temp_curr = init_start_temp
         time_interval = 1.0

@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import InfoIcon from 'react-feather/dist/icons/info'
 import { connect } from 'react-redux'
+import Tooltip from '../../elements/tooltip'
 import Select from '../../elements/select'
 import TextField, { TextFieldExtra } from '../../elements/textfield'
 import Checkbox from '../../elements/checkbox'
@@ -108,7 +110,26 @@ class ConfigForm extends Component {
       <React.Fragment>
         <div className={styles.first}>
           <div className="input-col">
-            <h6>CCT/TTT method</h6>
+            <div className={styles.headerContainer}>
+              <h6>CCT/TTT method</h6>
+              <Tooltip className={styles.infoTip} position="bottom">
+                <InfoIcon className={styles.infoIcon} />
+                <p>
+                  J.S.Krikaldy, et al., &quot;Prediction of microstructure and hardenability in
+                  <br />
+                  low-alloy steels&quot;, in Phase Transformations in ferrous alloys 1983,
+                  <br />
+                  p.125-148
+                  <br />
+                  <br />
+                  M. V. Li, et.al. &quot;A Computational Model for the Prediction of Steel
+                  <br />
+                  Hardenability&quot;, Metallurgic and Materials Transactions, Vol29B, June
+                  <br />
+                  p.661-672 The method has been implemented EXACTLY as stated in the paper.
+                </p>
+              </Tooltip>
+            </div>
             <Select
               name="method"
               placeholder="Method"
@@ -123,7 +144,27 @@ class ConfigForm extends Component {
             />
           </div>
           <div className="input-col">
-            <h6>Grain size</h6>
+            <div className={styles.headerContainer}>
+              <h6>Grain size</h6>
+              <div className={styles.infoTipContainer}>
+                <Tooltip className={styles.infoTip} position="bottom">
+                  <InfoIcon className={styles.infoIcon} />
+                  <p>
+                    Plots a sigmoidal function distribution on a separate sheet.
+                    <br />
+                    This is for visualizing the various Sigmoidal distributions used:
+                    <br />
+                    <br />
+                    S(X) - Li98(Ferrite, Pearlite, Bianite)
+                    <br />
+                    I(X) - Krikaldy (Ferrite Pearlite)
+                    <br />
+                    I'(X) - Kirkaldy (Bainite)
+                    <br />
+                  </p>
+                </Tooltip>
+              </div>
+            </div>
             <div className={styles.grainSize}>
               <div className="input-row">
                 <span>ASTM</span>
@@ -156,7 +197,18 @@ class ConfigForm extends Component {
           <h5>Transformation limits</h5>
           <div className={styles.configRow}>
             <div>
-              <h6>Ferrite/Pearlite</h6>
+              <div className={styles.headerContainer}>
+                <h6>Ferrite/Pearlite</h6>
+                <div className={styles.infoTipContainer}>
+                  <Tooltip className={styles.infoTip} position="bottom">
+                    <InfoIcon className={styles.infoIcon} />
+                    <p>
+                      Ae3 = temperature below austenite to ferrite transformation becomes
+                      thermodynamically possible.
+                    </p>
+                  </Tooltip>
+                </div>
+              </div>
               <div className={styles.configGroup}>
                 <div className="input-row">
                   <span>
@@ -198,7 +250,17 @@ class ConfigForm extends Component {
               />
             </div>
             <div>
-              <h6>Bainite</h6>
+              <div className={styles.headerContainer}>
+                <h6>Bainite</h6>
+                <div className={styles.infoTipContainer}>
+                  <Tooltip className={styles.infoTip} position="bottom">
+                    <InfoIcon className={styles.infoIcon} />
+                    <p>
+                      Bainite transformation temperature (C)
+                    </p>
+                  </Tooltip>
+                </div>
+              </div>
               <div className={`${styles.configGroup} ${styles.bainite}`}>
                 <div className="input-row">
                   <span>
@@ -225,7 +287,20 @@ class ConfigForm extends Component {
               />
             </div>
             <div>
-              <h6>Martensite</h6>
+              <div className={styles.headerContainer}>
+                <h6>Martensite</h6>
+                <div className={styles.infoTipContainer}>
+                  <Tooltip className={styles.infoTip} position="bottom">
+                    <InfoIcon className={styles.infoIcon} />
+                    <p>
+                      Martensite transformation temperature (C)
+                      <br />
+                      <br />
+                      Martensite under cool temperature (C)
+                    </p>
+                  </Tooltip>
+                </div>
+              </div>
               <div className={styles.configGroup}>
                 <div className="input-row">
                   <span>
@@ -269,7 +344,27 @@ class ConfigForm extends Component {
           </div>
         </div>
         <div className={styles.third}>
-          <h5>Nucleation parameters</h5>
+          <div>
+          <div className={styles.headerContainer}>
+            <h5>Nucleation parameters</h5>
+            <div className={styles.infoTipContainer}>
+              <Tooltip className={styles.infoTip} position="bottom">
+                <InfoIcon className={styles.infoIcon} />
+                <p>
+                  Plots a sigmoidal function distribution on a separate sheet This is for
+                  visualizing the various Sigmoidal distributions used:
+                  <br />
+
+                  S(X) - Li98(Ferrite, Pearlite, Bianite)
+
+                  I(X) - Krikaldy (Ferrite Pearlite)
+
+                  I&apos;(X) - Kirkaldy (Bainite)
+                </p>
+              </Tooltip>
+            </div>
+            </div>
+          </div>
           <div className={styles.configGroup}>
             <div className="input-row">
               <span>Start</span>

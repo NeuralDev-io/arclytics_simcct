@@ -191,7 +191,7 @@ class PhaseSimulation(object):
         # was initialised and run at instantiation of this instance.
 
         # Number of rows to store results
-        n_rows = 1000
+        n_rows = 2000
 
         # ========== # TIME LOOP # ========== #
         # The time increments can be

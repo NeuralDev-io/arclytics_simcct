@@ -100,10 +100,20 @@ class Simulation(Resource):
         if alloy_store.get('alloy_option') == 'single':
             alloy = alloy_store['alloys']['parent']
 
+        dask_client = Client(
+            address=env.get('DASK_SCHEDULER_ADDRESS'), processes=False
+        )
+
+        # TIMER START
+        start = time.time()
+
         # No we can do the calculations for CCT and TTT
         sim_configs = SimConfiguration(
             configs=configs, compositions=alloy['compositions']
         )
+
+        # stop_configs_time = time.time()
+        # sim_configs_time = stop_configs_time - start
 
         try:
             sim = PhaseSimulation(sim_configs=sim_configs)
@@ -116,16 +126,11 @@ class Simulation(Resource):
             response['message'] = 'Simulation error.'
             return response, 400
 
-        logger.debug('PhaseSimulation Instance Configurations')
-        logger.pprint(sim.configs.__dict__)
+        # logger.debug('PhaseSimulation Instance Configurations')
+        # logger.pprint(sim.configs.__dict__)
 
         # Now we do the simulation part but catch all exceptions and return it
         try:
-            dask_client = Client(
-                address=env.get('DASK_SCHEDULER_ADDRESS'), processes=False
-            )
-            # TIMER START
-            start = time.time()
             # ttt_results = sim.ttt()
             # user_cooling_curve_results = sim.user_cooling_profile()
 
@@ -159,8 +164,12 @@ class Simulation(Resource):
             return response, 500
 
         finish = time.time()
+        # simulation_time = finish - stop_configs_time
 
-        logger.debug('Total Simulation Time: {}'.format(finish - start))
+        # logger.debug(f'Configurations Setup Time: {sim_configs_time}')
+        # logger.debug(f'Integral Matrix Time: {integral_mat_time}')
+        # logger.debug(f'Total Simulation Time: {simulation_time}')
+        logger.debug('Total Time: {}'.format(finish - start))
 
         # If a valid simulation has been run, the configurations are now valid.
         session_store['configurations']['is_valid'] = True

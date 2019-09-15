@@ -25,6 +25,7 @@ it is not tampered with at each request.
 
 import json
 import time
+from os import environ as env
 from datetime import datetime, timedelta, timezone
 from typing import Tuple, Union
 from uuid import uuid4
@@ -171,18 +172,23 @@ class RedisSessionInterface(SessionInterface):
                 itsdangerous.want_bytes(session_key)
             )
 
-        # FIXME(andrew@neuraldev.io): In development, don't do this.
-        # response.set_cookie(
-        #     SESSION_COOKIE_NAME, session_key, expires=expiry_date,
-        #     httponly=True, domain=self.get_cookie_domain(app), secure=True,
-        # )
-        response.set_cookie(
-            SESSION_COOKIE_NAME,
-            session_key,
-            expires=expiry_date,
-            httponly=True,
-            domain=self.get_cookie_domain(app)
-        )
+        if env.get('FLASK_ENV', 'production') == 'development':
+            response.set_cookie(
+                SESSION_COOKIE_NAME,
+                session_key,
+                expires=expiry_date,
+                httponly=True,
+                domain=self.get_cookie_domain(app)
+            )
+        else:
+            response.set_cookie(
+                SESSION_COOKIE_NAME,
+                session_key,
+                expires=expiry_date,
+                httponly=True,
+                secure=True,
+                domain=self.get_cookie_domain(app)
+            )
 
     @staticmethod
     def _new_session():

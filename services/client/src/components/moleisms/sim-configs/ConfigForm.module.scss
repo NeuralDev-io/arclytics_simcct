@@ -32,6 +32,7 @@
   margin-bottom: 1rem;
 
   & > h5 {
+    width:fit-content;
     margin-bottom: 1rem;
   }
 
@@ -71,8 +72,13 @@
 .third {
   margin-bottom: 2rem;
 
-  & > h5 {
+  //& > h5 {
+  //  margin-bottom: .75rem;
+  //}
+
+  .headerContainer{
     margin-bottom: .75rem;
+    width:max-content;
   }
 
   .configGroup {
@@ -93,4 +99,25 @@
 
 .shortCheckbox {
   width: 3rem;
+}
+
+.infoIcon {
+  width: 0.75rem;
+  color: var(--n900);
+}
+.infoIcon:hover{
+  color: var(--arc500);
+}
+
+.headerContainer{
+  display:flex;
+  flex-flow: row wrap;
+  justify-content: flex-start;
+  h5, h6{
+    margin-right: 1rem;
+  }
+}
+
+.infoTip{
+  width:max-content;
 }

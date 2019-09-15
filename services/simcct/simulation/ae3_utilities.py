@@ -26,6 +26,7 @@ import math
 import numpy as np
 
 from .utilities import linear_fit
+# noinspection PyPep8Naming
 from .periodic import PeriodicTable as PT
 
 # ========== # CONSTANTS # ========== #
@@ -52,7 +53,7 @@ def ae3_single_carbon(wt_comp: np.ndarray, wt_c: float) -> float:
 
 def ae3_set_carbon(
         ai_vect: np.array, wt_mat: np.ndarray, c: float
-) -> (np.float, np.float):
+) -> (float, float):
     """
     Calculate Ae3 for fixed value of carbon (C).
     Args:
@@ -83,11 +84,11 @@ def ae3_set_carbon(
     # y: # mole fractions of Fe (not used)
     x_vect, _ = convert_wt_2_mol(wt_mat)
 
-    fe_af = x_vect[-1]  # moles Fe - NOTE: Iron is always the last element, -1
+    fe_af = x_vect[-1]  # moles Fe - Note: Iron is always the last element, -1
     c_af = x_vect[0]  # moles C
 
     # Add all the other element moles
-    other_e_sum_af = np.sum(x_vect[1:-1], dtype=np.float32).astype(np.float32)
+    other_e_sum_af = np.sum(x_vect[1:-1])
 
     # Total of all moles added
     total_af = fe_af + c_af + other_e_sum_af
@@ -178,14 +179,13 @@ def ae3_set_carbon(
 
                 if m == 1:
                     # Data from Gilmour et.al., met. trans., 1972
-                    gi = np.float32(
-                        6.118 * temp - 7808.0
-                    )  # special set for Mn
+                    # special set for Mn
+                    gi = np.float32(6.118 * temp - 7808.0)
                 else:
                     gi = np.float32(
                         e_mat[m, 1] + (
                             e_mat[m, 2] + e_mat[m, 3] * temp +
-                            e_mat[m, 4] * math.log(temp)
+                            e_mat[m, 4] * np.log(temp)
                         ) * temp
                     )
 
@@ -225,7 +225,7 @@ def ae3_set_carbon(
 
         # Puts together all the terms to solve eqn (3) in "Sugden and
         # Bhadeshia, 1989, Mat Sci Tech, Vol.5 p.978"
-        delta_t = np.float32(_sum * R * math.pow(tzero, 2))
+        delta_t = _sum * R * tzero**2
         temp = tzero + delta_t
         z = tt - temp
         z = abs(z)
@@ -278,7 +278,7 @@ def convert_wt_2_mol(wt: np.ndarray) -> (np.ndarray, np.array):
     for i, el in enumerate(wt[1:-1], start=1):
         d_vect[i] = el['weight'].item() / PT[el['symbol']].value.atomic_mass
 
-    b1 = np.sum(d_vect).astype(np.float32).item()
+    b1 = np.sum(d_vect).item()
 
     # calculate mole fraction of each element with respect to the complete
     # alloy composition (all elements)
@@ -291,10 +291,10 @@ def convert_wt_2_mol(wt: np.ndarray) -> (np.ndarray, np.array):
     return c_vect, y_vect
 
 
-def tzero2(wt_c: float) -> np.float:
+def tzero2(wt_c: float) -> float:
     """Returns pure iron t0 value with specified carbon wt %."""
     # in C
-    return np.float32(1115 - 154 * wt_c + 17.5 * math.pow((1.2 - wt_c), 7.5))
+    return float(1115 - 154 * wt_c + 17.5 * (1.2 - wt_c)**7.5)
 
 
 def dg_fit(t: float) -> (float, float):
@@ -706,30 +706,30 @@ def ai_eqn3(
 
     """
     # ======================================================================= #
-    # Note: UP denotes the higher temp phase.
-    # Note: DOWN denotes the lower temp phase
+    # NOTE: UP denotes the higher temp phase.
+    # NOTE: DOWN denotes the lower temp phase
     # ======================================================================= #
 
     num_1 = math.exp((dg_c / (R * t0)) + eta11_up * x1_up)
-    den_1 = float(1 + eta11_down * x1_down * math.exp(dg_c / (R * t0)))
-    a10 = float(num_1 / den_1)  # for carbon only, 1
+    den_1 = np.float32(1 + eta11_down * x1_down * math.exp(dg_c / (R * t0)))
+    a10 = np.float32(num_1 / den_1)  # for carbon only, 1
 
     # logger.info("num_1: {}, den_1: {}, a10: {}".format(num_1, den_1, a10))
 
     num_2 = math.exp((dg_n / (R * t0)) + eta1n_up * x1_up)
-    den_2 = float(1 + eta1n_down * x1_down * math.exp(dg_c / (R * t0)))
-    an0 = float(num_2 / den_2)
+    den_2 = np.float32(1 + eta1n_down * x1_down * math.exp(dg_c / (R * t0)))
+    an0 = np.float32(num_2 / den_2)
 
-    b = float(
-        (dg_fe / (R * math.pow(t0, 2))) - (math.pow(x1_up, 2) / 2) *
-        (eta11_up - eta11_down * math.pow(a10, 2))
+    b = np.float32(
+        (dg_fe / (R * (t0**2))) - ((x1_up**2) / 2) *
+        (eta11_up - eta11_down * (a10)**2)
     )
 
-    num_3 = float(
+    num_3 = np.float32(
         an0 - (1 + x1_up * (1 - x1_up) *
                (eta1n_up - eta11_down * a10 * an0)) * math.exp(b)
     )
-    den_3 = float(
+    den_3 = np.float32(
         (x1_up * dh_c * a10 + (1 - x1_up) * dh_fe) * math.exp(b)
     )
 
@@ -755,7 +755,7 @@ def ae3_multi_carbon(
     # loop)
     # t0 = np.float32(0)  # Ae3 value without alloying elements (just Carbon)
     ai_vect = np.zeros(20, dtype=np.float32)
-    c = 0.0  # initiate carbon content as 0.00 %
+    c = np.float32(0.0)  # initiate carbon content as 0.00 %
 
     # reset wt% carbon in array to zero (this will be iterated below within
     # the main loop)
@@ -765,7 +765,7 @@ def ae3_multi_carbon(
     wt['weight'][wt['symbol'] == PT.Fe.name] = 0.0
 
     # ========= # MAIN LOOP - iterates Carbon from 0.00 to 0.96 wt% # ======== #
-    for m in range(0, 98):
+    for m in range(0, 97):
         # UPDATE Ae3, T0, AI, wt, C to CALL Ae3SetC(Ae3, T0, AI[], wt[], C)
         ae3, t0 = ae3_set_carbon(ai_vect, wt, c)
 

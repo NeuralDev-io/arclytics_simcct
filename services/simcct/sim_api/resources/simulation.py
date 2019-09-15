@@ -55,8 +55,8 @@ class Simulation(Resource):
             response['message'] = session_store
             return response, 500
 
-        # logger.debug('Session Store')
-        # logger.pprint(session_store['configurations'])
+        logger.debug('Session Store')
+        logger.pprint(session_store['configurations'])
 
         session_configs = session_store.get('configurations')
         if not session_configs:

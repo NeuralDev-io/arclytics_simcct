@@ -24,20 +24,18 @@ Sharing endpoints using the Flask Resource inheritance model.
 import os
 from datetime import datetime
 
-from email_validator import validate_email, EmailNotValidError
-from flask import Blueprint, request, render_template, redirect
-from flask import current_app as app
+from email_validator import EmailNotValidError, validate_email
+from flask import Blueprint, redirect, render_template, request
 from flask_restful import Resource
 
-from logger.arc_logger import AppLogger
-from sim_api.models import (User, AdminProfile)
-from sim_api.middleware import authorize_admin_cookie_restful
+from logger import AppLogger
 from sim_api.extensions import api
-from sim_api.token import (
-    generate_confirmation_token, generate_url, confirm_token, URLTokenError,
-    generate_promotion_confirmation_token
-)
 from sim_api.extensions.utilities import URLTokenExpired
+from sim_api.middleware import authorize_admin_cookie_restful
+from sim_api.models import (AdminProfile, User)
+from sim_api.token import (URLTokenError, confirm_token,
+                           generate_confirmation_token,
+                           generate_promotion_confirmation_token, generate_url)
 
 logger = AppLogger(__name__)
 

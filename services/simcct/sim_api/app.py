@@ -26,14 +26,13 @@ import os
 from flask import Flask
 from flask_cors import CORS
 from mongoengine import connect
-from mongoengine.connection import (
-    disconnect_all, get_connection, get_db, MongoEngineConnectionError
-)
+from mongoengine.connection import (MongoEngineConnectionError, disconnect_all,
+                                    get_connection, get_db)
 from redis import Redis
 
-from sim_api.extensions import bcrypt, api, redis_session
-from sim_api.extensions import MongoSingleton
 from sim_api.extensions import JSONEncoder
+from sim_api.extensions import MongoSingleton
+from sim_api.extensions import api, bcrypt, redis_session
 
 # Instantiate the Mongo object to store a connection
 app_settings = os.getenv('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')

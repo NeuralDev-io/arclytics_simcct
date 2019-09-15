@@ -29,7 +29,7 @@ from flask import current_app
 from itsdangerous import URLSafeTimedSerializer
 
 from tests.test_api_base import BaseTestCase
-from logger.arc_logger import AppLogger
+from logger import AppLogger
 from sim_api.models import (User, AdminProfile)
 from sim_api.token import (
     generate_confirmation_token, generate_url,

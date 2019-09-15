@@ -28,7 +28,7 @@ from mongoengine import get_db
 from copy import deepcopy
 
 from tests.test_api_base import BaseTestCase, app
-from logger.arc_logger import AppLogger
+from logger import AppLogger
 from sim_api.models import User, SharedSimulation
 from sim_api.token import (generate_shared_simulation_token, generate_url)
 from tests.test_api_users import log_test_user_in

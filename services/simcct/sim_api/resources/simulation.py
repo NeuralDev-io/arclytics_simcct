@@ -22,18 +22,19 @@ This module defines and implements the endpoints for CCT and TTT simulations.
 
 import time
 from os import environ as env
+
+from dask.distributed import Client
 from flask import Blueprint
 from flask_restful import Resource
-from dask.distributed import Client
 
+from logger import AppLogger
 from sim_api.extensions import api
-from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.extensions.SimSession import SimSessionService
-from simulation.simconfiguration import SimConfiguration
+from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.schemas import AlloyStoreSchema, ConfigurationsSchema
 from simulation.phasesimulation import PhaseSimulation
+from simulation.simconfiguration import SimConfiguration
 from simulation.utilities import ConfigurationError, SimulationError
-from sim_api.schemas import ConfigurationsSchema, AlloyStoreSchema
-from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
 

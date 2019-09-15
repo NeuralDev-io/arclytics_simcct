@@ -6,18 +6,18 @@ services:
   client:
     build:
       context: ./services/client
-      dockerfile: Dockerfile-prod
+      dockerfile: Dockerfile-https-prod
       args:
         - REACT_APP_SIM_HOST=http://api.arclytics.io
         - REACT_APP_SIM_PORT=8000
       labels:
         arclytics.io: "production"
         service: "client"
-    image: gcr.io/arclytics-sim/arc_sim_client:1.1.2
+    image: gcr.io/arclytics-sim/arc_sim_client:1.1.3
     ports:
-      - 8080:8080
+      - 80:80
     expose:
-      - 8080
+      - 80
     environment:
       - REACT_APP_SIM_HOST=http://api.arclytics.io
       - REACT_APP_SIM_PORT=8000

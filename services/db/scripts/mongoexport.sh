@@ -11,5 +11,15 @@ docker-compose -p arc exec mongodb \
     --collection users \
     --out /data/backups/production_user_data.json
 
+docker-compose -p arc exec mongodb \
+    mongoexport --host localhost \
+    --port 27017 \
+    --db arc_dev \
+    --collection alloys \
+    --out /data/backups/production_global_alloys.json
+
 docker cp arc_mongodb_1:/data/backups/production_user_data.json \
+    ./services/db/production_data/
+
+docker cp arc_mongodb_1:/data/backups/production_global_alloys.json \
     ./services/db/production_data/

@@ -67,10 +67,10 @@ class Simulation(Resource):
 
         # If the configs are considered valid, then they must have run a
         # previous Simulation successfully.
-        if configs.get('is_valid', False):
-            response['status'] = 'success'
-            response['data'] = session_store['simulation_results']
-            return response, 200
+        # if configs.get('is_valid', False):
+        #     response['status'] = 'success'
+        #     response['data'] = session_store['results']
+        #     return response, 200
 
         # By default, the session alloy store is single and parent but the
         # parent alloy is set to none.

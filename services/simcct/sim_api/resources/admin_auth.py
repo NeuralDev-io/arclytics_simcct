@@ -115,7 +115,7 @@ class AdminCreate(Resource):
             'admin.cancel_promotion', promotion_cancellation_token
         )
 
-        from tasks import send_email
+        from sim_api.email_service import send_email
         send_email(
             to=[admin.email],
             subject_suffix='You Promoted a User!',
@@ -177,54 +177,40 @@ def cancel_promotion(token):
     Allow an admin to cancel their promotion of another user
     """
 
-    response = {'status': 'fail', 'message': 'Invalid token.'}
-
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+    protocol = os.environ.get('CLIENT_PROTOCOL')
     client_host = os.environ.get('CLIENT_HOST')
+    client_port = os.environ.get('CLIENT_PORT')
+    redirect_url = f"{protocol}://{client_host}:{client_port}"
 
-    # Decode the token from the email to confirm it was the right one
     try:
         # The token was encoded with the admin and user email as a list so
         # we want a list back of emails.
         # Change expiration parameter to 30 days instead of 1 hour.
         email_list = confirm_token(token, 2592000)
     except URLTokenError as e:
-        # response['error'] = str(e)
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
-        # This redirect might need to be changed as it is very close to
-        # /admin/create/cancel/<token>
         return redirect(
-            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     except Exception as e:
-        # response['error'] = str(e)
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # If a list is not returned, we should get out of here.
     if not isinstance(email_list, list):
-        # response['message'] = 'Invalid Token.'
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Ensure both admin and user email is present in list
     if not len(email_list) == 2:
-        # response['message'] = 'Invalid data in Token.'
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Let's just be sure that we don't go out of index range
@@ -232,36 +218,23 @@ def cancel_promotion(token):
         admin_email = email_list[0]
         user_email = email_list[1]
     except IndexError as e:
-        # response['message'] = 'Invalid list from token.'
-        # response['error'] = str(e)
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     if not admin_email or not user_email:
-        # response['message'] = 'Missing information in Token.'
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Ensure both users exist in the database
     if not User.objects(email=admin_email):
-        # response['message'] = 'Administrator does not exist.'
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     if not User.objects(email=user_email):
-        # response['message'] = 'Target User does not exist.'
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Get Admin user object
@@ -272,8 +245,7 @@ def cancel_promotion(token):
         # response['message'] = 'User is not authorised to promote other users.'
         # return jsonify(response), 401
         return redirect(
-            f'http://{client_host}/admin/create/cancel?tokenexpired=true',
-            code=302
+            f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Get target user object
@@ -283,16 +255,12 @@ def cancel_promotion(token):
     target_user.admin_profile = None
     target_user.save()
 
-    # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
-    # We can make our own redirect response by doing the following
-    custom_redir_response = app.response_class(
-        status=302, mimetype='application/json'
-    )
+    logger.debug(client_host)
+    response['status'] = 'success'
+    response.pop('message')
     # TODO(davidmatthews1004@gmail.com): Redirect the Admin somewhere else,
     #  maybe the home screen or a confirmation page.
-    redirect_url = 'http://localhost:3000/signin'
-    custom_redir_response.headers['Location'] = redirect_url
-    return custom_redir_response
+    return redirect(f'{redirect_url}/signin', code=302)
 
 
 @admin_blueprint.route('/admin/create/verify/<token>', methods=['GET'])
@@ -302,36 +270,32 @@ def verify_promotion(token):
     status as an admin
     """
 
-    response = {'status': 'fail', 'message': 'Invalid token.'}
-
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+    protocol = os.environ.get('CLIENT_PROTOCOL')
     client_host = os.environ.get('CLIENT_HOST')
+    client_port = os.environ.get('CLIENT_PORT')
+    redirect_url = f"{protocol}://{client_host}:{client_port}"
 
     # Decode the token from the email to confirm it was the right one
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        # response['error'] = str(e)
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
+            f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
         return redirect(
-            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
+            f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
     except Exception as e:
-        # response['error'] = str(e)
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
+            f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
 
     # Ensure the user exists in the database
     if not User.objects(email=email):
-        # response['message'] = 'User does not exist.'
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
+            f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
 
     # Get the user object
@@ -340,25 +304,19 @@ def verify_promotion(token):
     # Ensure the user is verified, an admin and that they have a valid admin
     # profile
     if not user.verified:
-        # response['message'] = 'User is not verified.'
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
+            f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
     # The user's admin profile is created in the admin create endpoint. The
     # database clean method for user will set user.is_admin to true after the
     # admin profile is created.
     if not user.is_admin:
-        # response['message'] = 'User is not an Admin.'
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
+            f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
     if user.disable_admin:
-        # response['message'] = 'User is not an Admin.'
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/admin/verify?tokenexpired=true', code=302
+            f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
 
     # Verify user's admin status
@@ -370,7 +328,7 @@ def verify_promotion(token):
     promoter_id = user.admin_profile.promoted_by
     promoter = User.objects.get(id=promoter_id)
 
-    from tasks import send_email
+    from sim_api.email_service import send_email
     send_email(
         to=[promoter.email],
         subject_suffix='Promotion Verified',
@@ -388,16 +346,10 @@ def verify_promotion(token):
         )
     )
 
-    # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
-    # We can make our own redirect response by doing the following
-    custom_redir_response = app.response_class(
-        status=302, mimetype='application/json'
-    )
-    redirect_url = f'http://localhost:3000/signin'
-    custom_redir_response.headers['Location'] = redirect_url
-    # Additionally, if we need to, we can attach the JWT token in the header
-    # custom_redir_response.headers['Authorization'] = f'Bearer {jwt_token}'
-    return custom_redir_response
+    logger.debug(client_host)
+    response['status'] = 'success'
+    response.pop('message')
+    return redirect(f'{redirect_url}/signin', code=302)
 
 
 class DisableAccount(Resource):
@@ -446,7 +398,7 @@ class DisableAccount(Resource):
             'admin.confirm_disable_account', account_disable_token
         )
 
-        from tasks import send_email
+        from sim_api.email_service import send_email
         send_email(
             to=[admin.email],
             subject_suffix='Confirm disable account action',
@@ -475,40 +427,32 @@ def confirm_disable_account(token):
     Allow an Admin user to confirm that they want to disable a user's account
     via a confirmation link sent to them in an email.
     """
-    response = {'status': 'fail', 'message': 'Invalid token.'}
-
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+    protocol = os.environ.get('CLIENT_PROTOCOL')
     client_host = os.environ.get('CLIENT_HOST')
+    client_port = os.environ.get('CLIENT_PORT')
+    redirect_url = f"{protocol}://{client_host}:{client_port}"
 
     # Decode the token from the email to confirm it was the right one
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        # response['error'] = str(e)
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/disable/user/confirm?tokenexpired=true',
-            code=302
+            f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
         return redirect(
-            f'http://{client_host}/disable/user/confirm?tokenexpired=true',
-            code=302
+            f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
     except Exception as e:
-        # response['error'] = str(e)
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/disable/user/confirm?tokenexpired=true',
-            code=302
+            f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
 
     # Ensure the user exists in the database
     if not User.objects(email=email):
-        # response['message'] = 'User does not exist.'
-        # return jsonify(response), 400
         return redirect(
-            f'http://{client_host}/disable/user/confirm?tokenexpired=true',
-            code=302
+            f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
 
     # Get the user object
@@ -517,7 +461,7 @@ def confirm_disable_account(token):
     user.active = False
     user.save()
 
-    from tasks import send_email
+    from sim_api.email_service import send_email
     send_email(
         to=[user.email],
         subject_suffix='Your Account has been disabled.',
@@ -531,16 +475,10 @@ def confirm_disable_account(token):
         )
     )
 
-    # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
-    # We can make our own redirect response by doing the following
-    custom_redir_response = app.response_class(
-        status=302, mimetype='application/json'
-    )
-    redirect_url = f'http://localhost:3000/'
-    custom_redir_response.headers['Location'] = redirect_url
-    # Additionally, if we need to, we can attach the JWT token in the header
-    # custom_redir_response.headers['Authorization'] = f'Bearer {jwt_token}'
-    return custom_redir_response
+    logger.debug(client_host)
+    response['status'] = 'success'
+    response.pop('message')
+    return redirect(f'{redirect_url}/', code=302)
 
 
 api.add_resource(AdminCreate, '/api/v1/sim/admin/create')

@@ -17,7 +17,7 @@ import unittest
 from pathlib import Path
 from mongoengine import get_db
 
-import settings
+from manage import BASE_DIR
 from tests.test_api_base import BaseTestCase, app
 from tests.test_utilities import test_login
 from sim_api.schemas import (
@@ -26,9 +26,7 @@ from sim_api.schemas import (
 from sim_api.models import User, AlloyStore, Configuration
 from sim_api.extensions.SimSession import SimSessionService
 
-_TEST_CONFIGS_PATH = Path(
-    settings.BASE_DIR
-) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     test_json = json.load(f)
@@ -337,16 +335,13 @@ class TestSimAlloys(BaseTestCase):
 
             # We need to make auto_calculate true by using the endpoints
             client.get(
-                '/api/v1/sim/configs/ms',
-                content_type='application/json'
+                '/api/v1/sim/configs/ms', content_type='application/json'
             )
             client.get(
-                '/api/v1/sim/configs/ae',
-                content_type='application/json'
+                '/api/v1/sim/configs/ae', content_type='application/json'
             )
             client.get(
-                '/api/v1/sim/configs/bs',
-                content_type='application/json'
+                '/api/v1/sim/configs/bs', content_type='application/json'
             )
 
             session_store = SimSessionService().load_session()

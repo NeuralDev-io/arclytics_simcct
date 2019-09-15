@@ -21,7 +21,6 @@ import PhaseFractions from '../../moleisms/charts/PhaseFractions'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { SaveSimButton, ShareSimButton, LoadSimButton } from '../../moleisms/sim-actions'
 import { TTT, CCT } from '../../moleisms/charts'
-import { postSaveSimulation } from '../../../api/sim/SessionSaveSim'
 
 import styles from './SimulationPage.module.scss'
 
@@ -32,24 +31,6 @@ class SimulationPage extends Component {
       displayConfig: true,
       displayProfile: true,
     }
-  }
-
-  saveCurrentSimulation = () => {
-    const { configurations, alloys } = this.state
-    const alloyStore = {
-      alloy_option: alloys.alloyOption,
-      alloys: {
-        parent: alloys.parent,
-        weld: alloys.weld,
-        mix: alloys.mix,
-      },
-    }
-    const { grain_size_ASTM, grain_size_diameter, ...others } = configurations
-    const validConfigs = {
-      ...others,
-      grain_size: grain_size_ASTM,
-    }
-    postSaveSimulation(validConfigs, alloyStore)
   }
 
   render() {

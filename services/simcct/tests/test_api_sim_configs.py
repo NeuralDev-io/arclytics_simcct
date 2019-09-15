@@ -12,13 +12,14 @@ __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.13'
 
+import os
 import json
 import unittest
 import numpy as np
 from pathlib import Path
 from mongoengine import get_db
 
-import settings
+from manage import BASE_DIR
 from tests.test_api_base import BaseTestCase, app
 from tests.test_utilities import test_login
 from sim_api.models import User, AlloyStore, Configuration
@@ -28,10 +29,7 @@ from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
 
-_TEST_CONFIGS_PATH = Path(
-    settings.BASE_DIR
-) / 'simulation' / 'sim_configs.json'
-
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     test_json = json.load(f)
 
@@ -240,8 +238,7 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res = client.get(
-                '/api/v1/sim/configs/ms',
-                content_type='application/json'
+                '/api/v1/sim/configs/ms', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             session_store = SimSessionService().load_session()
@@ -262,8 +259,7 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res = client.get(
-                '/api/v1/sim/configs/bs',
-                content_type='application/json'
+                '/api/v1/sim/configs/bs', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             session_store = SimSessionService().load_session()
@@ -440,8 +436,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assert200(res_method_update)
 
             res = client.get(
-                '/api/v1/sim/configs/ms',
-                content_type='application/json'
+                '/api/v1/sim/configs/ms', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             session_store = SimSessionService().load_session()
@@ -471,8 +466,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assert200(res_method_update)
 
             res = client.get(
-                '/api/v1/sim/configs/bs',
-                content_type='application/json'
+                '/api/v1/sim/configs/bs', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             session_store = SimSessionService().load_session()
@@ -628,11 +622,11 @@ class TestSimConfigurations(BaseTestCase):
             #  is set because otherwise opening a transaction will not use
             #  a standard HTTP request environ_base.
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ) as session:
                 session['simulation'] = None
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ):
                 # At this point the session transaction has been updated so
                 # we can check the session within the context
@@ -669,11 +663,11 @@ class TestSimConfigurations(BaseTestCase):
             #  is set because otherwise opening a transaction will not use
             #  a standard HTTP request environ_base.
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ) as session:
                 session['simulation'] = None
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ):
                 # At this point the session transaction has been updated so
                 # we can check the session within the context
@@ -739,7 +733,7 @@ class TestSimConfigurations(BaseTestCase):
         """Ensure an empty payload does not pass."""
         with app.test_client() as client:
             self.login_client(client)
-            
+
             res = client.put(
                 '/api/v1/sim/configs/ae',
                 data=json.dumps({}),
@@ -797,11 +791,11 @@ class TestSimConfigurations(BaseTestCase):
             #  is set because otherwise opening a transaction will not use
             #  a standard HTTP request environ_base.
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ) as session:
                 session['simulation'] = None
             with client.session_transaction(
-                    environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
             ):
                 # At this point the session transaction has been updated so
                 # we can check the session within the context

@@ -13,7 +13,7 @@ WORKDIR=$(dirname "$(readlink -f "$0")")
 DOCKER_COMPOSE_PATH="${WORKDIR}/docker-compose.yml"
 ARGS=""
 CONTAINER_GROUP=""
-CONTAINER_ARGS="simcct client redis mongodb nginx"
+CONTAINER_ARGS="simcct client redis mongodb nginx celery-worker"
 CONTAINER_LOG=""
 LOGS_WATCH=0
 FLUSH_ALL=0
@@ -231,12 +231,15 @@ Optional Containers:
   -J, --jupyter         Run the Jupyter container with the cluster.
 
 Service (only one for \`logs\`; * default for \`up\`):
-  arclytics *
+  client *
+  nginx *
   simcct *
-  dask-scheduler *
-  dask-worker *
+  arclytics *
+  celery-worker *
   redis *
   mongodb *
+  dask-scheduler
+  dask-worker
   jupyter
   swagger
 ${reset}
@@ -347,12 +350,15 @@ Commands:
   help        Get the Usage information for this script and exit.
 
 Service (only one for \`logs\`; * default for \`up\`):
-  arclytics *
+  client *
+  nginx *
   simcct *
-  dask-scheduler *
-  dask-worker *
+  arclytics *
+  celery-worker *
   redis *
   mongodb *
+  dask-scheduler
+  dask-worker
   jupyter
   swagger
 
@@ -573,21 +579,21 @@ changeContainerGroup() {
         SWAGGER_FLAG=0
         JUPYTER_FLAG=0
     elif [[ "${CONTAINER_GROUP}" == "server" ]]; then
-        CONTAINER_ARGS="simcct redis mongodb"
+        CONTAINER_ARGS="simcct celery-worker redis mongodb"
     elif [[ "${CONTAINER_GROUP}" == "server-dask" ]]; then
-        CONTAINER_ARGS="simcct redis mongodb dask-scheduler dask-worker"
+        CONTAINER_ARGS="simcct celery-worker redis mongodb dask-scheduler dask-worker"
     elif [[ "${CONTAINER_GROUP}" == "client" ]]; then
-        CONTAINER_ARGS="client"
+        CONTAINER_ARGS="client nginx"
     elif [[ "${CONTAINER_GROUP}" == "fluentd" ]]; then
         CONTAINER_ARGS="fluentd elasticsearch kibana"
     elif [[ "${CONTAINER_GROUP}" == "fluentd-test" ]]; then
         CONTAINER_ARGS="fluentd fluent-python fluent-react elasticsearch kibana"
     elif [[ "${CONTAINER_GROUP}" == "swagger-test" ]]; then
-        CONTAINER_ARGS="simcct redis mongodb swagger"
+        CONTAINER_ARGS="simcct redis celery-worker mongodb swagger"
     elif [[ "${CONTAINER_GROUP}" == "dask" ]]; then
         CONTAINER_ARGS="dask-scheduler dask-worker jupyter"
     elif [[ "${CONTAINER_GROUP}" == "e2e" ]]; then
-            CONTAINER_ARGS="client simcct redis mongodb"
+            CONTAINER_ARGS="client simcct nginx celery-worker redis mongodb"
     fi
 }
 
@@ -769,7 +775,6 @@ while [[ "$1" != "" ]] ; do
                         shift
                         ;;
                     -G | --group )
-                        # TODO(andrew@neuraldev.io): Add grouping for container services.
                         shift
                         CONTAINER_GROUP=$2
                         changeContainerGroup
@@ -918,6 +923,35 @@ while [[ "$1" != "" ]] ; do
             generalMessage "Arclytics Sim Project Root Directory"
             echo "${WORKDIR}"
             ;;
+        style )
+          while [[ "$2" != "" ]] ; do
+            case $2 in
+              python )
+                headerMessage "ARC CLI STYLING PYTHON"
+                CONFIG="${WORKDIR}/.yapf.cfg"
+                ARC_DIR="${WORKDIR}/services/simcct"
+                CELERY_DIR="${WORKDIR}/services/celery-worker"
+                EXCLUDE_DIR="${WORKDIR}/services/client"
+                echo "Running yapf formatter"
+                echo "Current Directory: ${WORKDIR}"
+                echo "Configuration used: ${CONFIG}"
+                echo "Exclude directory: ${EXCLUDE_DIR}"
+                yapf -ri --verbose --style=${CONFIG} --exclude=${EXCLUDE_DIR} ${ARC_DIR} ${CELERY_DIR}
+                completeMessage
+                exit 0
+                ;;
+              #eslint | js | client )
+              #  headerMessage "ARC CLI STYLING PYTHON"
+              #  CLIENT_DIR="${WORKDIR}/services/client"
+              #  npm run lint-fix
+              #  completeMessage
+              #  exit 0
+              #  ;;
+            esac
+            shift
+            done
+
+          ;;
         minikube | mk )
             headerMessage "MINIKUBE CLI"
             while [[ "$2" != "" ]] ; do
@@ -975,10 +1009,10 @@ while [[ "$1" != "" ]] ; do
                       while [[ "$3" != "" ]]; do
                         case $3 in
                           create )
-                            kubectl apply -f "${WORKDIR}/kubernetes/gke-ingress.yaml"
+                            kubectl apply -f "${WORKDIR}/kubernetes/client-ingress.yaml"
                             ;;
                           delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/gke-ingress.yaml"
+                            kubectl delete -f "${WORKDIR}/kubernetes/client-ingress.yaml"
                             ;;
                           * )
                             exit 0
@@ -1132,6 +1166,37 @@ while [[ "$1" != "" ]] ; do
                             ;;
                           delete )
                             kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-service.yaml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              kubectl get all -o wide
+                            fi
+                            ;;
+                          * )
+                            exit 0
+                            ;;
+                        esac
+                        shift
+                      done
+                      ;;
+                    celery )
+                      while [[ "$3" != "" ]]; do
+                        case $3 in
+                          build )
+                            # Prune to avoid collisions of names:tags output
+                            docker system prune -af --volumes --filter 'label=service=celery-worker'
+                            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
+                            TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
+                            docker push gcr.io/arclytics-sim/arc_sim_celery:"${TAG}"
+                            ;;
+                          create )
+                            #kubectl create -f "${WORKDIR}/kubernetes/celery-gke-service.yaml"
+
+                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
+                              kubectl get all -o wide
+                            fi
+                            ;;
+                          delete )
+                            #kubectl delete -f "${WORKDIR}/kubernetes/celery-gke-service.yaml"
 
                             if [[ $4 == "-v" || $4 = "--verbose" ]]; then
                               kubectl get all -o wide

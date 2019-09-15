@@ -108,5 +108,24 @@ with app.app_context():
 
             new_user.admin_profile = admin_profile
 
+        if user.get('saved_alloys', False):
+            for alloy_name in user['saved_alloys']:
+                # LOAD THE ALLOY FROM ANOTHER DICTIONARY OR ARRAY BASHED ON NAME
+                pass
+
+
         # SAVE
         new_user.save()
+
+
+# ALLOYS NEED REQUIRED ELEMENTS
+# Carbon
+# Manganese
+# Nickel
+# Chromium
+# Molybdenum
+# Silicon
+# Cobalt
+# Tungsten
+# Arsenic
+# Iron

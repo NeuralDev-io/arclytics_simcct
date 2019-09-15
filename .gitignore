@@ -228,3 +228,5 @@ services/server/htmlcov/
 certs/
 
 services/simcct/production_data/*.json
+services/db/production_data/*.json
+services/db/production_data/*

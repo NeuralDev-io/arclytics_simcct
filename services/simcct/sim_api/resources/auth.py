@@ -168,7 +168,7 @@ def confirm_email_resend_after_registration() -> Tuple[dict, int]:
     confirmation_token = generate_confirmation_token(user.email)
     confirm_url = generate_url('auth.confirm_email', confirmation_token)
 
-    from tasks import send_email
+    from sim_api.email_service import send_email
     send_email(
         to=[user.email],
         subject_suffix='Please Confirm Your Email',

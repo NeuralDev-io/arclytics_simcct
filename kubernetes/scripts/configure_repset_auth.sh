@@ -14,8 +14,7 @@ echo "Configuring the MongoDB Replica Set"
 kubectl exec mongo-0 -c mongo-container -- mongo --eval 'rs.initiate({_id: "MainRepSet", version: 1,
     members: [
         {_id: 0, host: "mongo-0.mongo-service.default.svc.cluster.local:27017"},
-        {_id: 1, host: "mongo-1.mongo-service.default.svc.cluster.local:27017"},
-        {_id: 2, host: "mongo-2.mongo-service.default.svc.cluster.local:27017"}
+        {_id: 1, host: "mongo-1.mongo-service.default.svc.cluster.local:27017"}
     ]});'
 
 # Wait for the MongoDB Replica Set to have a primary ready

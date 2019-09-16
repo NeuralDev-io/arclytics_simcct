@@ -25,6 +25,7 @@ import {
   UPDATE_USER_ALLOY,
   DELETE_USER_ALLOY,
 } from './types'
+import { addFlashToast } from '../toast/actions'
 
 // Change the ports for which server
 
@@ -49,7 +50,10 @@ const getAlloys = type => (dispatch) => {
       'Content-Type': 'application/json',
     },
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 200) throw new Error('Couldn\'t retrieve alloy list')
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -59,7 +63,10 @@ const getAlloys = type => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 const createAlloy = (type, alloy) => (dispatch) => {
@@ -85,7 +92,10 @@ const createAlloy = (type, alloy) => (dispatch) => {
     },
     body: JSON.stringify(alloy),
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 201) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -98,7 +108,10 @@ const createAlloy = (type, alloy) => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 const updateAlloy = (type, alloy) => (dispatch) => {
@@ -113,7 +126,10 @@ const updateAlloy = (type, alloy) => (dispatch) => {
       compositions: alloy.compositions,
     }),
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 200) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -123,7 +139,10 @@ const updateAlloy = (type, alloy) => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 const deleteAlloy = (type, alloyId) => (dispatch) => {
@@ -148,7 +167,10 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
       'Content-Type': 'application/json',
     },
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 202) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -158,7 +180,10 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 export const getGlobalAlloys = () => getAlloys('global')

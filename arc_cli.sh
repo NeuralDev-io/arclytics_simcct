@@ -1138,8 +1138,8 @@ while [[ "$1" != "" ]] ; do
                 kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth-mongodb-keyfile=${TMPFILE}
                 rm ${TMPFILE}
 
-                kubectl create secret tls client-https-secret --cert "${WORKDIR}/certs/arc-ingress.crt" --key "${WORKDIR}/certs/arc-ingress.key"
-                kubectl create secret tls server-https-secret --cert "${WORKDIR}/certs/arc-server.crt" --key "${WORKDIR}/certs/arc-server.key"
+                kubectl create secret tls client-https-secret --cert "${WORKDIR}/certs/arc-comodo.crt" --key "${WORKDIR}/certs/arc-comodo.key"
+                # kubectl create secret tls server-https-secret --cert "${WORKDIR}/certs/arc-server.crt" --key "${WORKDIR}/certs/arc-server.key"
                 ;;
               ingress )
                 while [[ "$3" != "" ]]; do
@@ -1311,8 +1311,8 @@ while [[ "$1" != "" ]] ; do
                 while [[ "$3" != "" ]]; do
                   case $3 in
                     cert | certificate )
-                      gcloud compute ssl-certificates create client-https-cert --certificate certs/arclytics.crt --private-key certs/arclytics.key
-                      kubectl create secret tls client-https-secret --key certs/arclytics.key --cert certs/arclytics.crt
+                      gcloud compute ssl-certificates create client-https-cert --certificate certs/arc-comodo.crt --private-key certs/arc-comodo.key
+                      kubectl create secret tls client-https-secret --key certs/arc-comodo.key --cert certs/arc-comodo.crt
                       ;;
                     build )
                       # Prune to avoid collisions of names:tags output

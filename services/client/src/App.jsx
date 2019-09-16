@@ -2,6 +2,7 @@ import React from 'react'
 import { Provider } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
 import { SnackbarProvider } from 'notistack'
+import { makeStyles } from '@material-ui/core/styles'
 import store from './state/store'
 import { PrivateRoute, AdminRoute, DemoRoute } from './components/moleisms/routers'
 import Toaster from './components/moleisms/toaster'
@@ -19,7 +20,14 @@ import SharePage from './components/pages/share'
 
 import './App.scss'
 
+const useStyles = makeStyles({
+  root: {
+    zIndex: 9999,
+  },
+})
+
 function App() {
+  const classes = useStyles()
   return (
     <ErrorBoundary>
       <SnackbarProvider
@@ -27,6 +35,9 @@ function App() {
         anchorOrigin={{
           vertical: 'top',
           horizontal: 'center',
+        }}
+        classes={{
+          root: classes.root,
         }}
       >
         <Provider store={store}>

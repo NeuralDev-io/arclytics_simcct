@@ -10,3 +10,4 @@ from .sim_configurations import configs_blueprint
 from .simulation import sim_blueprint
 from .user_alloys import user_alloys_blueprint
 from .users import users_blueprint
+from .root import root_blueprint

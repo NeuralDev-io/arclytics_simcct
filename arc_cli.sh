@@ -1013,6 +1013,8 @@ while [[ "$1" != "" ]] ; do
           REGION="australia-southeast1"
           ZONE="australia-southeast1-a"
           IMAGE_TYPE="UBUNTU"
+          SSL_NAME="client-app-https-cert"
+          HTTPS_TLS_NAME="client-app-https-secret"
 
           while [[ "$2" != "" ]] ; do
             case $2 in
@@ -1095,11 +1097,11 @@ while [[ "$1" != "" ]] ; do
                       # Create new GKE Kubernetes cluster (using host node VM images based on Ubuntu
                       # rather than ChromiumOS default & also use slightly larger VMs than default)
                       # Alternative --machine-type = [n1-standard-]
-                      generalMessage "Creating cluster [${CLUSTER_NAME}] with version [${LATEST}] in region [${REGION}]"
+                      generalMessage "Creating cluster [${CLUSTER_NAME}] with version [${LATEST}] in region [${REGION}] and zone [${ZONE}]"
                       gcloud container clusters create ${CLUSTER_NAME} \
                           --cluster-version=${LATEST} \
                           --zone ${ZONE} \
-                          --num-nodes=8 \
+                          --num-nodes=2 \
                           --min-nodes=2 \
                           --max-nodes=8 \
                           --image-type=${IMAGE_TYPE} \
@@ -1119,8 +1121,7 @@ while [[ "$1" != "" ]] ; do
                           --project=${PROJECT_ID} \
                           --zone=${ZONE}
 
-                      google-chrome \
-                          console.cloud.google.com/kubernetes/list?project=${PROJECT_ID}
+                      # google-chrome console.cloud.google.com/kubernetes/list?project=${PROJECT_ID}
                       ;;
                     delete )
                       gcloud container clusters list
@@ -1132,14 +1133,19 @@ while [[ "$1" != "" ]] ; do
                 ;;
               secrets )
                 kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml"
-                kubectl apply -f "${WORKDIR}/kubernetes/nginxsecret.yaml"
+
+                # For MONGO REPLICASET
                 TMPFILE=$(mktemp)
                 /usr/bin/openssl rand -base64 741 > ${TMPFILE}
                 kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth-mongodb-keyfile=${TMPFILE}
                 rm ${TMPFILE}
 
-                kubectl create secret tls client-https-secret --cert "${WORKDIR}/certs/arc-comodo.crt" --key "${WORKDIR}/certs/arc-comodo.key"
-                # kubectl create secret tls server-https-secret --cert "${WORKDIR}/certs/arc-server.crt" --key "${WORKDIR}/certs/arc-server.key"
+                gcloud compute ssl-certificates create ${SSL_NAME} \
+                    --certificate certs/io.arclytics.app.crt \
+                    --private-key certs/io.arclytics.app.key
+               kubectl create secret tls ${HTTPS_TLS_NAME} \
+                   --cert "${WORKDIR}/certs/io.arclytics.app.crt" \
+                   --key "${WORKDIR}/certs/io.arclytics.app.key"
                 ;;
               ingress )
                 while [[ "$3" != "" ]]; do
@@ -1311,8 +1317,10 @@ while [[ "$1" != "" ]] ; do
                 while [[ "$3" != "" ]]; do
                   case $3 in
                     cert | certificate )
-                      gcloud compute ssl-certificates create client-https-cert --certificate certs/arc-comodo.crt --private-key certs/arc-comodo.key
-                      kubectl create secret tls client-https-secret --key certs/arc-comodo.key --cert certs/arc-comodo.crt
+                      # gcloud compute ssl-certificates create client-https-cert --certificate certs/arc-comodo.crt --private-key certs/arc-comodo.key
+                      gcloud compute ssl-certificates create client-app-https-cert --certificate certs/io.arclytics.app.crt --private-key certs/io.arclytics.app.key
+                      # kubectl create secret tls client-https-secret --key certs/arc-comodo.key --cert certs/arc-comodo.crt
+                      kubectl create secret tls client-app-https-secret --key certs/io.arclytics.app.key --cert certs/io.arclytics.app.crt
                       ;;
                     build )
                       # Prune to avoid collisions of names:tags output

@@ -3,12 +3,10 @@ kind: Ingress
 metadata:
   name: client-secure-ingress
   annotations:
-    kubernetes.io/ingress.class: "gce"
-    kubernetes.io/ingress.global-static-ip-name: "arclytics-ip"
-    kubernetes.io/ingress.allow-http: "false"
+    ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.global-static-ip-name: arclytics-ip
+    networking.gke.io/managed-certificates: arclytics-cert
 spec:
-  tls:
-    - secretName: client-https-secret
   backend:
     serviceName: client-service
     servicePort: 8080

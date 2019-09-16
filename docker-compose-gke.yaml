@@ -9,18 +9,18 @@ services:
       dockerfile: Dockerfile-prod
       args:
         - REACT_APP_SIM_HOST=https://api.arclytics.io
-        - REACT_APP_SIM_PORT=8000
+        - REACT_APP_SIM_PORT=443
       labels:
         arclytics.io: "production"
         service: "client"
-    image: gcr.io/arclytics-sim/arc_sim_client:1.1.4
+    image: asia.gcr.io/arc-sim/arc_sim_client:1.1.4
     ports:
       - 8080:8080
     expose:
       - 8080
     environment:
       - REACT_APP_SIM_HOST=https://api.arclytics.io
-      - REACT_APP_SIM_PORT=8000
+      - REACT_APP_SIM_PORT=443
     depends_on:
       - simcct
       - mongodb
@@ -34,7 +34,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "simcct"
-    image: gcr.io/arclytics-sim/arc_sim_service:1.1.5
+    image: asia.gcr.io/arc-sim/arc_sim_service:1.1.5
     ports:
       - 8000:8000
     expose:
@@ -72,7 +72,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "celery-worker"
-    image: gcr.io/arclytics-sim/arc_sim_celery:1.0
+    image: asia.gcr.io/arc-sim/arc_sim_celery:1.0
     ports:
       - 5555:5555
     expose:
@@ -100,7 +100,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "redis"
-    image: gcr.io/arclytics-sim/arc_sim_redis:1.1.0
+    image: asia.gcr.io/arc-sim/arc_sim_redis:1.1.0
     restart: always
     command: redis-server --requirepass ${REDIS_PASSWORD}
     ports:
@@ -117,7 +117,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "mongodb"
-    image: gcr.io/arclytics-sim/arc_sim_mongo:1.1.0
+    image: asia.gcr.io/arc-sim/arc_sim_mongo:1.1.0
     restart: always
     volumes:
       - mongo-volume-mount:/data/db

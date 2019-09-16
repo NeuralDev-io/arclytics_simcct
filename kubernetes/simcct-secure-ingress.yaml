@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: simcct-secure-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.global-static-ip-name: simcct-ip
+    networking.gke.io/managed-certificates: simcct-cert
+spec:
+  backend:
+    serviceName: simcct-service
+    servicePort: 8000

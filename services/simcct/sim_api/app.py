@@ -147,6 +147,9 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     db = init_db(app)
     set_flask_mongo(db)
 
+    from sim_api.resources import root_blueprint
+    app.register_blueprint(root_blueprint)
+
     # Set up the Flask App Context
     with app.app_context():
         from sim_api.resources import (

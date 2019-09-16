@@ -13,7 +13,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "client"
-    image: gcr.io/arclytics-sim/arc_sim_client:1.1.3
+    image: gcr.io/arclytics-sim/arc_sim_client:1.1.4
     ports:
       - 80:80
     expose:

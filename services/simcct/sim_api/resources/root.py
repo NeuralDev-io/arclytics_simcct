@@ -32,7 +32,8 @@ root_blueprint = Blueprint('root', __name__)
 def index():
     resp_string = f'Container: {os.uname()[1]}'
     response = Response(resp_string)
-    response.headers['Connection'] = 'close'
+    response.headers['Connection'] = 'Close'
+    response.headers['Keep-Alive'] = 'timeout=0'
     response.status_code = 200
     return response
 
@@ -56,6 +57,7 @@ def readiness_probe():
     # confirmed by Google Kubernetes Engine team.
     # [1] https://medium.com/google-cloud/ingress-load-balancing-issues-on-
     # googles-gke-f54c7e194dd5
-    response.headers['Connection'] = 'close'
+    response.headers['Connection'] = 'Close'
+    response.headers['Keep-Alive'] = 'timeout=0'
     response.status_code = 200
     return response

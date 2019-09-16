@@ -9,13 +9,12 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 __author__ = 'Andrew Che <@codeninja55>'
-__copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
 __credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
+__license__ = 'TBA'
+__version__ = '1.0.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = '{dev_status}'
+__status__ = 'production'
 __date__ = '2019.09.16'
 
 """root.py: 

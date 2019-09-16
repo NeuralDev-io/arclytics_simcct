@@ -28,12 +28,11 @@ spec:
     metadata:
       labels:
         role: redis-persistence
-        environment: production
         replicaset: RedisRepSet
     spec:
       containers:
         - name: redis-container
-          image: gcr.io/arclytics-sim/arc_sim_redis:1.1.0
+          image: asia.gcr.io/arc-sim/arc_sim_redis:1.1.0
           resources:
             requests:
               cpu: 250m
@@ -60,4 +59,4 @@ spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 30Gi
+            storage: 50Gi

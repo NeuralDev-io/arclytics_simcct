@@ -27,7 +27,6 @@ spec:
     metadata:
       labels:
         role: mongo-persistence
-        environment: production
         replicaset: MainRepSet
     spec:
       affinity:
@@ -50,7 +49,7 @@ spec:
             defaultMode: 256
       containers:
         - name: mongo-container
-          image: gcr.io/arclytics-sim/arc_sim_mongo:1.1.0
+          image: asia.gcr.io/arc-sim/arc_sim_mongo:1.1.0
           imagePullPolicy: Always
           command:
             - "numactl"

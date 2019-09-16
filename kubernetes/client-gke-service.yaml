@@ -5,8 +5,6 @@ metadata:
   labels:
     app: client
 spec:
-#  type: LoadBalancer
-#  loadBalancerIP: 35.197.160.183
   type: NodePort
   selector:
     app: client
@@ -31,11 +29,10 @@ spec:
     metadata:
       labels:
         app: client
-        environment: production
     spec:
       containers:
       - name: client-container
-        image: gcr.io/arclytics-sim/arc_sim_client:1.1.2
+        image: asia.gcr.io/arc-sim/arc_sim_client:1.1.2
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

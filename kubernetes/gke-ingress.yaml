@@ -9,10 +9,14 @@ metadata:
 spec:
   tls:
     - secretName: client-https-secret
-  backend:
-    serviceName: client-service
-    servicePort: 8080
   rules:
+  - host: app.arclytics.io
+    http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: client-service
+          servicePort: 8080
   - host: api.arclytics.io
     http:
       paths:

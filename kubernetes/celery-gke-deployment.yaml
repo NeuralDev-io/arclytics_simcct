@@ -8,10 +8,11 @@ spec:
     metadata:
       labels:
          app: celery
+         replicaset: CeleryRepSet
     spec:
       containers:
       - name: celery-worker-container
-        image: gcr.io/arclytics-sim/arc_sim_celery:1.0
+        image: asia.gcr.io/arc-sim/arc_sim_celery:1.0
         imagePullPolicy: Always
         ports:
           - containerPort: 5555

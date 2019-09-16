@@ -5,7 +5,7 @@ metadata:
   labels:
     app: client-https
 spec:
-  type: NodePort
+  type: LoadBalancer
   # Zone IP (australia-southeast1) -- 35.197.160.183
   # Global IP -- 35.190.121.132
   # loadBalancerIP: 35.197.160.183
@@ -43,7 +43,7 @@ spec:
           secretName: client-app-https-secret
       containers:
       - name: client-https-container
-        image: gcr.io/arclytics-sim/arc_sim_client:1.1.4
+        image: asia.gcr.io/arc-sim/arc_sim_client:1.1.4
         imagePullPolicy: Always
         ports:
         - containerPort: 80

@@ -8,19 +8,21 @@ metadata:
     kubernetes.io/ingress.allow-http: "false"
 spec:
   tls:
-    - secretName: client-https-secret
+    - hosts:
+      - app.arclytics.io
+      secretName: client-app-https-secret
+  backend:
+    serviceName: client-service
+    servicePort: 8080
   rules:
   - host: app.arclytics.io
-    http:
-      paths:
-      - path: /*
-        backend:
-          serviceName: client-service
-          servicePort: 8080
-  - host: api.arclytics.io
     http:
       paths:
       - path: /api/*
         backend:
           serviceName: simcct-service
           servicePort: 8000
+      - path: /
+        backend:
+          serviceName: client-service
+          servicePort: 8080

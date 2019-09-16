@@ -30,12 +30,11 @@ spec:
     metadata:
       labels:
         app: simcct
-        role: api_server
-        environment: production
+        replicaset: SimRepSet
     spec:
       containers:
       - name: simcct-container
-        image: gcr.io/arclytics-sim/arc_sim_service:1.1.5
+        image: asia.gcr.io/arc-sim/arc_sim_service:1.1.5
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -43,13 +42,14 @@ spec:
           httpGet:
             path: /healthy
             port: 8000
-          periodSeconds: 10
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 2
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          timeoutSeconds: 15
+          successThreshold: 2
+          failureThreshold: 5
         resources:
           requests:
-            cpu: 1
+            cpu: 750m
             memory: 2Gi
         env:
         - name: FLASK_APP

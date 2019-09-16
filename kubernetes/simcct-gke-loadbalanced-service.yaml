@@ -73,7 +73,10 @@ spec:
         - name: MONGO_PORT
           value: "27017"
         - name: MONGO_APP_DB
-          value: "arclytics"
+          valueFrom:
+            secretKeyRef:
+              name: credentials
+              key: mongo_app_db
         - name: MONGO_APP_USER
           valueFrom:
             secretKeyRef:
@@ -94,10 +97,10 @@ spec:
               name: credentials
               key: redis_password
         - name: CLIENT_PROTOCOL
-          value: "http"
+          value: "https"
         - name: CLIENT_HOST
           value: "app.arclytics.io"
         - name: CLIENT_PORT
-          value: "80"
+          value: "443"
         - name: DASK_SCHEDULER_ADDRESS
           value: "tcp://dask-scheduler:8786"

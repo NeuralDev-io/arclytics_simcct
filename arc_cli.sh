@@ -1101,20 +1101,20 @@ while [[ "$1" != "" ]] ; do
                       gcloud container clusters create ${CLUSTER_NAME} \
                           --cluster-version=${LATEST} \
                           --zone ${ZONE} \
-                          --num-nodes=2 \
-                          --min-nodes=2 \
-                          --max-nodes=8 \
                           --image-type=${IMAGE_TYPE} \
                           --machine-type=n1-standard-2 \
-                          --disk-type=pd-standard \
-                          --disk-size=100GB \
-                          --enable-autorepair \
-                          --enable-autoscaling \
-                          --enable-autoupgrade \
-                          --enable-stackdriver-kubernetes \
-                          --addons=KubernetesDashboard \
-                          --addons=HttpLoadBalancing \
-                          --addons=HorizontalPodAutoscaling
+                          --num-nodes=8
+#                          --min-nodes=2 \
+#                          --max-nodes=8 \
+#                          --disk-type=pd-standard \
+#                          --disk-size=100GB \
+#                          --enable-autorepair \
+#                          --enable-autoscaling \
+#                          --enable-autoupgrade \
+#                          --enable-stackdriver-kubernetes \
+#                          --addons=KubernetesDashboard \
+#                          --addons=HttpLoadBalancing \
+#                          --addons=HorizontalPodAutoscaling
 
                       generalMessage "Getting Cluster Credentials for ${CLUSTER_NAME}"
                       gcloud container clusters get-credentials ${CLUSTER_NAME} \

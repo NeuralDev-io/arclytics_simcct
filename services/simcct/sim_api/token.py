@@ -63,13 +63,13 @@ def confirm_token(token: bytes, expiration: int = 3600) -> Union[bool, str]:
 
 
 def generate_url(endpoint, token):
-    if os.environ.get('FLASK_EVN', 'development') == 'production':
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
         return url_for(endpoint, token=token, _external=True, _scheme='https')
     return url_for(endpoint, token=token, _external=True)
 
 
 def generate_url_with_signature(endpoint, signature):
-    if os.environ.get('FLASK_EVN', 'development') == 'production':
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
         return url_for(
             endpoint, signature=signature, _external=True, _scheme='https'
         )

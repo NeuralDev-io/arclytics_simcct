@@ -1,0 +1,14 @@
+.checkbox {
+  margin-bottom: 1rem;
+}
+
+.config {
+  margin-bottom: .75rem;
+  & > span {
+    width: 8rem;
+  }
+}
+
+.textfield {
+  padding-right: 4rem;
+}

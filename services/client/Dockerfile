@@ -1,5 +1,5 @@
 # base image
-FROM node:10.15.3-alpine
+FROM node:10.16.2-alpine
 
 # set working directory
 WORKDIR /usr/src/app
@@ -10,7 +10,7 @@ ENV PATH /usr/src/app/node_modules/.bin:$PATH
 # install and cache app dependencies
 COPY package.json /usr/src/app/package.json
 COPY package-lock.json /usr/src/app/package-lock.json
-RUN npm ci
+RUN npm ci --silent
 
 # Seems to be an issue with Alpine based images using Pipelines and React 2 Node
 # Fix recommendation found here:
@@ -19,8 +19,20 @@ RUN npm ci
 # https://bitbucket.org/site/master/issues/16846/npm-error-eacces-permission-denied
 RUN npm config set unsafe-perm true
 
-RUN npm install react-scripts@2.1.8 -g --silent
+#RUN npm install react-scripts@3.1.0 -g --silent
 RUN npm run lint-fix-docker
+RUN which react-scripts
+
+# Set environment variables at BUILD TIME
+ARG REACT_APP_SIM_HOST
+ENV REACT_APP_SIM_HOST $REACT_APP_SIM_HOST
+ARG REACT_APP_SIM_PORT
+ENV REACT_APP_SIM_PORT $REACT_APP_SIM_PORT
+ARG NODE_ENV
+ENV NODE_ENV $NODE_ENV
+
+# Prevent NODE from running out of memory which by default is just 512
+RUN export NODE_OPTIONS=--max_old_space_size=2048
 
 # start app
 CMD ["npm", "start"]

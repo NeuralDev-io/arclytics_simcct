@@ -1,0 +1,106 @@
+.compSidebar {
+  width: 25vw;
+  height: 100vh;
+  margin-left: 4rem;
+  position: fixed;
+
+  @media screen and (max-width: 1720px) {
+    width: 420px;
+  }
+}
+
+.main {
+  margin-left: calc(4rem + 25vw);
+  width: calc(100vw - calc(4rem + 25vw));
+  padding: 2rem 2.5rem 2.5rem 2.5rem;
+
+  @media screen and (max-width: 1720px) {
+    margin-left: calc(4rem + 420px);
+    width: calc(100% - calc(4rem + 420px));
+  }
+
+  header {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 2rem;
+    justify-content: space-between;
+
+    h4 {
+      margin-right: 1rem;
+    }
+
+    .config {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: row;
+
+      Button {
+        margin-left: 0.5rem;
+      }
+    }
+  }
+
+  .configForm {
+    margin-bottom: 2.5rem;
+  }
+
+  .results {
+    margin-bottom: 2.5rem;
+
+    & > h4 {
+      margin-bottom: 1.5rem;
+    }
+    
+    .charts {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      align-items: center;
+
+      .line {
+        flex-basis: 45%;
+        min-height: 25rem;
+        max-height: 30rem;
+        z-index: 1001;
+        position: relative;
+        display: flex;
+        flex-flow: column;
+
+        & > h5 {
+          margin-bottom: .5rem;
+        }
+
+        & > div {
+          flex-grow: 1;
+        }
+      }
+    }
+  }
+
+  .custom {
+    & > header {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: center;
+      justify-content: flex-start;
+
+      & > h4 { margin-right: 1rem; }
+    }
+
+    & > div {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      .userConfig {
+        flex-basis: 30%;
+      }
+    }
+  }
+}

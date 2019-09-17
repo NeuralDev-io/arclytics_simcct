@@ -1,0 +1,68 @@
+
+$bg-img: url('../../../assets/background_img-min.png');
+@import '../../../styles/_typography.scss';
+
+.main {
+  width: 80%;
+  margin: auto;
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+}
+
+.main > h3 {
+  margin-bottom: 2.5rem;
+}
+
+.generalFields {
+  width: 35rem;
+  margin-bottom: 2.5rem;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+
+  .row {
+    margin-bottom: 1rem;
+    width: 100%;
+
+    & > span {
+      width: 7rem;
+    }
+  }
+}
+
+.about{
+  .questions {
+    display: flex;
+    flex-flow: column;
+    justify-content: space-between;
+
+    .question {
+      margin-bottom: 1.5rem;
+      width: 35rem;
+
+      .questionText {
+        display: block;
+        margin-bottom:1.25rem;
+      }
+    }
+  }
+}
+
+.editButtons{
+  display: flex;
+  flex-flow: row;
+  justify-content: flex-end;
+  width: 35rem;
+  margin-bottom: 1rem;
+  .cancel{
+    margin-left: 0.5rem;
+  }
+}
+
+.updateError{
+  width:35rem;
+  color: var(--r500);
+  text-align: right;
+  height: 1.25rem;
+}

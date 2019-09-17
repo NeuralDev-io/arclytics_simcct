@@ -1,0 +1,143 @@
+ $bg-img: url('../../../assets/login_register_bg.png');
+
+.outer{
+  width: 100vw;
+  height: 100vh;
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+  background: var(--n0) $bg-img no-repeat;
+  background-size: 100% 150%;
+  background-position: 40vw;
+  position:relative;
+  overflow-y: scroll;
+}
+
+.form{
+  height:100%;
+  margin-left: 11.25rem;
+  width: 23.75rem;
+  display:flex;
+  flex-flow: column;
+}
+
+.logoContainer{
+  margin-bottom: 7.624375rem;
+  height: 3.750625rem;
+  .logo{
+    height: 3.750625rem;
+    margin-right: 1.5rem;
+    float:left;
+  }
+  h3{
+    padding-top: 0.4rem;
+  }
+}
+
+.header{
+  margin-bottom: 2.3125rem;
+}
+
+.name{
+  height: 2.25rem;
+  margin-bottom: 1.8125rem;
+}
+
+.firstName{
+  float:left;
+}
+
+.lastName{
+  float:right;
+}
+
+.emailPassword{
+  height: 2.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.passwordConfirmed{
+  height: 2.25rem;
+  margin-bottom: 3.5rem;
+}
+
+.signUpButton{
+  margin-bottom: 1rem;
+}
+
+.signIn{
+  color: var(--arc500);
+  text-decoration: none;
+}
+
+.errors{
+  color: var(--r400);
+}
+
+.cnfrmModal{
+  width: 30rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .alertCircleIcon{
+    height: 4rem;
+    width: 4rem;
+    margin-bottom: 1rem;
+    color: var(--n500);
+  }
+  .email{
+    font-weight: bold;
+    color: var(--arc500)
+  }
+  .buttons{
+    width: 100%;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-flow: row;
+    justify-content: center;
+    button{
+      width: 45%;
+    }
+  }
+  sub{
+    text-align: center;
+    margin-bottom: 1.25rem;
+    width:20rem;
+    color: var(--n500);
+  }
+
+  h5{
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  h6{
+    margin-bottom: 1rem;
+  }
+
+  span{
+    text-align: center;
+    color: var(--n500);
+    margin-bottom: 1rem;
+  }
+
+  .resendEmail{
+    color: var(--arc500);
+    font-weight: bold;
+  }
+}
+
+//smaller
+@media only screen and (max-height: 830px) {
+  .logoContainer{
+    margin-bottom: 2.8125rem
+  }
+  .name{
+    margin-bottom: 1.8125rem;
+    height:2.25rem;
+  }
+  .passwordConfirmed{
+    margin-bottom: 3rem;
+  }
+}
+

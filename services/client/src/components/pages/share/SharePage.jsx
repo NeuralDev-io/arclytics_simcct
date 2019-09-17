@@ -15,7 +15,6 @@ class SharePage extends Component {
           history.push('/demo')
         }
       })
-      .catch(err => console.log(err))
   }
 
   render() {

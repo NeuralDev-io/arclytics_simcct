@@ -104,3 +104,8 @@
   max-height: 5.5rem;
   overflow-y: auto;
 }
+
+.emailError {
+  display: block;
+  color: var(--r500);
+}

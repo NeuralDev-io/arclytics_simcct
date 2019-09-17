@@ -38,6 +38,7 @@ class TextFieldEmail extends Component {
     if (error) {
       const { onChange } = this.props
       onChange('', error)
+      return false
     }
     return true
   }
@@ -79,7 +80,11 @@ class TextFieldEmail extends Component {
   // Triggered when the delete button next to an email is pressed
   handleDelete = (toBeRemoved) => {
     const { onRemove } = this.props
-    onRemove(toBeRemoved)
+    // TODO: Add animation for removing an email
+    setTimeout(() => {
+      onRemove(toBeRemoved)
+    }, 100)
+    // onRemove(toBeRemoved)
   }
 
   /**
@@ -145,7 +150,7 @@ class TextFieldEmail extends Component {
           onPaste={e => this.handlePaste(e)}
           disabled={isDisabled}
         />
-        <span className="emailError">{error}</span>
+        <span className={styles.emailError}>{error}</span>
       </div>
     )
   }

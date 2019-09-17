@@ -1,0 +1,4 @@
+[submodule "services/simcct/arc_simulation"]
+	path = services/simcct/arc_simulation
+	url = git@bitbucket.org:neuraldev/arc_simulation.git
+	branch = develop

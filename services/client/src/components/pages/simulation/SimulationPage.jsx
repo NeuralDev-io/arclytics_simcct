@@ -19,6 +19,7 @@ import Modal from '../../elements/modal'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
 import PhaseFractions from '../../moleisms/charts/PhaseFractions'
+import { SaveAlloyModal } from '../../moleisms/user-alloys'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { SaveSimButton, ShareSimButton, LoadSimButton } from '../../moleisms/sim-actions'
 import { TTT, CCT } from '../../moleisms/charts'
@@ -140,7 +141,7 @@ class SimulationPage extends Component {
           </div>
         </div>
         <Modal show={displaySaveModal} clicked={this.handleCloseModal}>
-          something
+          <SaveAlloyModal handleClose={this.handleCloseModal} />
         </Modal>
       </React.Fragment>
     )

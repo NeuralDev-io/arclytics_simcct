@@ -69,7 +69,7 @@ const getAlloys = type => (dispatch) => {
     }, true)(dispatch))
 }
 
-const createAlloy = (type, alloy) => (dispatch) => {
+const createAlloy = (type, alloy) => dispatch => (
   /**
    * API call to `users` or `simcct` server to create a new alloy which is stored
    * in the Global database or User's Document. The Users are identified by the
@@ -112,7 +112,7 @@ const createAlloy = (type, alloy) => (dispatch) => {
       message: err.message,
       options: { variant: 'error' },
     }, true)(dispatch))
-}
+)
 
 const updateAlloy = (type, alloy) => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys/${alloy._id}`, { // eslint-disable-line

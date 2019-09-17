@@ -4,7 +4,7 @@ metadata:
   name: mongo-pv-INST
 spec:
   capacity:
-    storage: 30Gi
+    storage: 200Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain

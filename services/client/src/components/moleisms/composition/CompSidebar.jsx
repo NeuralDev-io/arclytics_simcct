@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
-import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
+// import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
+// import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
 import CompForm from './CompForm'
 import CompTable from './CompTable'
 import Button from '../../elements/button'
@@ -19,14 +19,19 @@ class CompSidebar extends Component {
   }
 
   render() {
-    const { runSimConnect, sessionIsInitialised, isAuthenticated } = this.props
+    const {
+      runSimConnect,
+      sessionIsInitialised,
+      isAuthenticated,
+      onSaveButtonClick,
+    } = this.props
     const { showSettings } = this.state
 
     return (
       <div className={styles.sidebar}>
         <header>
           <h4>Composition</h4>
-          <Button
+          {/* <Button
             appearance="text"
             onClick={() => this.setState(prevState => ({
               showSettings: !prevState.showSettings,
@@ -38,7 +43,7 @@ class CompSidebar extends Component {
             isDisabled={!isAuthenticated}
           >
             {showSettings ? 'Collapse' : 'Expand'}
-          </Button>
+          </Button> */}
         </header>
         <div style={{ display: showSettings ? 'block' : 'none' }}>
           <CompForm isAuthenticated={isAuthenticated} />
@@ -47,6 +52,7 @@ class CompSidebar extends Component {
           <CompTable
             sessionIsInitialised={sessionIsInitialised}
             isAuthenticated={isAuthenticated}
+            onSaveButtonClick={onSaveButtonClick}
           />
         </div>
         <Button
@@ -63,6 +69,7 @@ class CompSidebar extends Component {
 }
 
 CompSidebar.propTypes = {
+  onSaveButtonClick: PropTypes.func.isRequired,
   runSimConnect: PropTypes.func.isRequired,
   sessionIsInitialised: PropTypes.bool.isRequired,
   isAuthenticated: PropTypes.bool.isRequired,

@@ -7,6 +7,7 @@ import {
   SAVE_SIM,
   GET_SIM,
 } from './types'
+import { addFlashToast } from '../toast/actions'
 
 export const getUserProfile = () => (dispatch) => { // eslint-disable-line
   return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user`, {
@@ -16,7 +17,10 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
       'Content-Type': 'application/json',
     },
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 200) throw new Error('Couldn\'t retrieve user profile')
+      return res.json()
+    })
     .then((data) => {
       if (data.status === 'fail') throw new Error(data.message)
       if (data.status === 'success') {
@@ -26,7 +30,10 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 export const createUserProfile = values => (dispatch) => {
@@ -39,7 +46,10 @@ export const createUserProfile = values => (dispatch) => {
     },
     body: JSON.stringify(values),
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 201) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((data) => {
       if (data.status === 'fail') throw new Error(data.message)
       if (data.status === 'success') {
@@ -49,7 +59,10 @@ export const createUserProfile = values => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 export const updateUserProfile = values => (dispatch) => {
@@ -62,7 +75,10 @@ export const updateUserProfile = values => (dispatch) => {
     },
     body: JSON.stringify(values),
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 200) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((data) => {
       if (data.status === 'fail') throw new Error(data.message)
       if (data.status === 'success') {
@@ -72,7 +88,10 @@ export const updateUserProfile = values => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 export const updateEmail = values => (dispatch) => {
@@ -85,7 +104,10 @@ export const updateEmail = values => (dispatch) => {
     },
     body: JSON.stringify(values),
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 200) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((data) => {
       if (data.status === 'fail') throw new Error(data.message)
       if (data.status === 'success') {
@@ -95,7 +117,10 @@ export const updateEmail = values => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 export const changePassword = values => (dispatch) => {
@@ -108,7 +133,10 @@ export const changePassword = values => (dispatch) => {
     },
     body: JSON.stringify(values),
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 200) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((data) => {
       if (data.status === 'fail') throw new Error(data.message)
       if (data.status === 'success') {
@@ -118,7 +146,10 @@ export const changePassword = values => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 /**
@@ -150,7 +181,7 @@ export const saveSimulation = () => (dispatch, getState) => {
     grain_size: grain_size_ASTM,
   }
 
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
+  return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -161,7 +192,10 @@ export const saveSimulation = () => (dispatch, getState) => {
       alloy_store: alloyStore,
       simulation_results: simResults,
     }),
-  }).then(res => res.json())
+  }).then((res) => {
+    if (res.status !== 201) throw new Error('Something went wrong')
+    return res.json()
+  })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -171,8 +205,10 @@ export const saveSimulation = () => (dispatch, getState) => {
         })
       }
     })
-    // eslint-disable-next-line no-console
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 /**
@@ -196,7 +232,11 @@ export const getSavedSimulations = () => (dispatch) => {
     headers: {
       'Content-Type': 'application/json',
     },
-  }).then(res => res.json())
+  }).then((res) => {
+    if (res.status === 404) throw new Error('No saved simulations found')
+    if (res.status !== 200) throw new Error('Something went wrong')
+    return res.json()
+  })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -206,6 +246,8 @@ export const getSavedSimulations = () => (dispatch) => {
         })
       }
     })
-    // eslint-disable-next-line no-console
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }

@@ -101,7 +101,7 @@ class CompTable extends Component {
         Header: 'Elements',
         accessor: 'symbol',
         Cell: ({ value }) => (<span className={styles.symbol}>{value}</span>),
-        width: 120,
+        width: 100,
         // width: 80,
         Footer: () => tableData.length !== 0 && 'Total',
       },

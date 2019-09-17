@@ -1011,13 +1011,16 @@ while [[ "$1" != "" ]] ; do
           PROJECT_ID="arc-sim"
           CLUSTER_NAME="arc-sim-aust"
           KUBERNETES_MASTER_VERSION="1.13.7-gke.8"
-          KUBERNETES_NODE_VERSION="1.13.7-gke.8"
+          KUBERNETES_NODE_VERSION=${KUBERNETES_MASTER_VERSION}
           # Note: Only use one of ZONE/REGION but generally ZONE because
           # in GCP Trial account they only allow 8 CPUs and a REGION cluster
           # will deploy a node with at least 1 CPU in each Region zone.
           # There are 3 for Australia.
           REGION="australia-southeast1"
           ZONE="australia-southeast1-a"
+          LOCATION_COMMAND="--region=${REGION}"
+          REPLICA_ZONE_REDIS="--replica-zones=${ZONE},australia-southeast1-b"
+          REPLICA_ZONE_MONGO="--replica-zones=${ZONE},australia-southeast1-c"
           IMAGE_TYPE="UBUNTU"
           RESERVED_IP_NAME="arclytics-ip"
           CLIENT_SSL_NAME="client-app-https-cert"
@@ -1036,8 +1039,8 @@ while [[ "$1" != "" ]] ; do
                 gcloud compute project-info describe --project ${PROJECT_ID}
                 #gcloud container clusters describe ${CLUSTER_NAME} --zone ${ZONE}
                 gcloud config set project ${PROJECT_ID}
-                gcloud config set compute/zone ${ZONE}
-                #gcloud config set compute/region ${REGION}
+                #gcloud config set compute/zone ${ZONE}
+                gcloud config set compute/region ${REGION}
                 gcloud components update
                 #gcloud compute project-info add-metadata --metadata google-compute-default-region=australia-southeast1,google-compute-default-zone=australia-southeast1-a
                 ;;
@@ -1048,7 +1051,7 @@ while [[ "$1" != "" ]] ; do
                       # This uses `jq` package to get the latest GKE versions for Kubernetes Master and Nodes
                       LATEST=$(\
                         gcloud container get-server-config \
-                            --region=${REGION} \
+                            ${LOCATION_COMMAND} \
                             --project=${PROJECT_ID} \
                             --format="json" \
                             | jq --raw-output '
@@ -1108,12 +1111,12 @@ while [[ "$1" != "" ]] ; do
                       # Alternative --machine-type = [n1-standard-]
                       generalMessage "Creating cluster [${CLUSTER_NAME}] with version [${LATEST}] in region [${REGION}] and zone [${ZONE}]"
                       gcloud container clusters create ${CLUSTER_NAME} \
-                          --zone=${ZONE} \
+                          ${LOCATION_COMMAND} \
                           --image-type=${IMAGE_TYPE} \
                           --machine-type=n1-standard-2 \
                           --num-nodes=2 \
                           --min-nodes=1 \
-                          --max-nodes=8 \
+                          --max-nodes=2 \
                           --enable-autoscaling \
                           --cluster-version=${KUBERNETES_NODE_VERSION}
                           # This may have caused the Ingress not to work with latest version
@@ -1122,13 +1125,13 @@ while [[ "$1" != "" ]] ; do
                       generalMessage "Getting Cluster Credentials for ${CLUSTER_NAME}"
                       gcloud container clusters get-credentials ${CLUSTER_NAME} \
                           --project=${PROJECT_ID} \
-                          --zone=${ZONE}
+                          ${LOCATION_COMMAND}
 
                       # google-chrome console.cloud.google.com/kubernetes/list?project=${PROJECT_ID}
                       ;;
                     delete )
                       gcloud container clusters list
-                      gcloud container clusters delete ${CLUSTER_NAME} --zone ${ZONE}
+                      gcloud container clusters delete ${CLUSTER_NAME} --region ${REGION}
                       ;;
                   esac
                   shift
@@ -1144,12 +1147,12 @@ while [[ "$1" != "" ]] ; do
                 rm ${TMPFILE}
 
                 # Apply the SSL certificates to GCP management as well.
-                gcloud compute ssl-certificates create ${CLIENT_SSL_NAME} \
-                    --certificate "${WORKDIR}/certs/io.arclytics.app.crt" \
-                    --private-key "${WORKDIR}/certs/io.arclytics.app.key"
-                gcloud compute ssl-certificates create ${SIMCCT_SSL_NAME} \
-                    --certificate "${WORKDIR}/certs/io.arclytics.api.crt" \
-                    --private-key "${WORKDIR}/certs/io.arclytics.api.key"
+                # gcloud compute ssl-certificates create ${CLIENT_SSL_NAME} \
+                #    --certificate "${WORKDIR}/certs/io.arclytics.app.crt" \
+                #    --private-key "${WORKDIR}/certs/io.arclytics.app.key"
+                # gcloud compute ssl-certificates create ${SIMCCT_SSL_NAME} \
+                #    --certificate "${WORKDIR}/certs/io.arclytics.api.crt" \
+                #    --private-key "${WORKDIR}/certs/io.arclytics.api.key"
 
                 # Apply the certificates to Kubernetes Secrets which will be used
                 # by the Ingress controller.
@@ -1200,7 +1203,9 @@ while [[ "$1" != "" ]] ; do
                       docker push asia.gcr.io/${PROJECT_ID}/arc_sim_redis:${TAG}
                       ;;
                     create )
-                      gcloud compute disks create --size 30GB --type pd-ssd redis-ssd-disk --zone ${ZONE}
+                      gcloud compute disks create --size 50GB \
+                          --type pd-ssd redis-ssd-disk \
+                          ${LOCATION_COMMAND} ${REPLICA_ZONE_REDIS}
                       kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
                       kubectl create -f "${WORKDIR}/kubernetes/redis-gke-service.yaml" --validate=false
                       ;;
@@ -1209,7 +1214,7 @@ while [[ "$1" != "" ]] ; do
                       kubectl delete pvc redis-pvc-redis-0
                       kubectl delete pv redis-pv
                       sleep 15
-                      gcloud compute disks delete redis-ssd-disk --zone ${ZONE}
+                      gcloud compute disks delete redis-ssd-disk ${LOCATION_COMMAND}
                       ;;
                   esac
                   shift
@@ -1234,7 +1239,9 @@ while [[ "$1" != "" ]] ; do
                       generalMessage "Creating GCE disks"
                       for i in 1 2
                       do
-                          gcloud compute disks create --size 30GB --type pd-standard pd-standard-disk-$i --zone ${ZONE}
+                          gcloud compute disks create --size 200GB \
+                              --type pd-standard pd-standard-disk-$i \
+                              ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
                       done
                       sleep 3
 
@@ -1293,10 +1300,10 @@ while [[ "$1" != "" ]] ; do
 
                       sleep 15
                       # Wait till the PV and PVC are deleted first
-                      gcloud compute disks delete pd-standard-disk-1 --zone ${ZONE}
-                      gcloud compute disks delete pd-standard-disk-2 --zone ${ZONE}
+                      gcloud compute disks delete pd-standard-disk-1 ${LOCATION_COMMAND}
+                      gcloud compute disks delete pd-standard-disk-2 ${LOCATION_COMMAND}
                       # REMEMBER TO UPDATE scripts/configure_repset_auth.sh IF MOVING to 3
-                      # gcloud compute disks delete pd-standard-disk-3 --zone ${ZONE}
+                      # gcloud compute disks delete pd-standard-disk-3 ${LOCATION_COMMAND}
                       ;;
                   esac
                   shift
@@ -1444,3 +1451,7 @@ while [[ "$1" != "" ]] ; do
     esac
     shift
 done
+
+# Load all .env into current shell
+# export $(egrep -v '^#' .env | xargs)
+

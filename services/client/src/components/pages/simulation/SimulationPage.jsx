@@ -15,6 +15,7 @@ import { connect } from 'react-redux'
 import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
 import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
 import Button from '../../elements/button'
+import Modal from '../../elements/modal'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
 import PhaseFractions from '../../moleisms/charts/PhaseFractions'
@@ -30,14 +31,19 @@ class SimulationPage extends Component {
     this.state = {
       displayConfig: true,
       displayProfile: true,
+      displaySaveModal: false,
     }
   }
+
+  handleShowModal = () => this.setState({ displaySaveModal: true })
+
+  handleCloseModal = () => this.setState({ displaySaveModal: false })
 
   render() {
     const {
       displayConfig,
       displayProfile,
-      runSimConnect,
+      displaySaveModal,
     } = this.state
     const {
       history,
@@ -53,8 +59,8 @@ class SimulationPage extends Component {
         <div className={styles.compSidebar}>
           <CompSidebar
             sessionIsInitialised={isInitialised}
-            onSimulate={runSimConnect}
             isAuthenticated={isAuthenticated}
+            onSaveButtonClick={this.handleShowModal}
           />
         </div>
         <div className={styles.main}>
@@ -133,6 +139,9 @@ class SimulationPage extends Component {
             </div>
           </div>
         </div>
+        <Modal show={displaySaveModal} clicked={this.handleCloseModal}>
+          something
+        </Modal>
       </React.Fragment>
     )
   }

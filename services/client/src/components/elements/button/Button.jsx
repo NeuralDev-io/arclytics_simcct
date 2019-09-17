@@ -17,28 +17,38 @@ import { InlineSpinner } from '../spinner'
 
 import styles from './Button.module.scss'
 
-// TODO: Add styling support for buttons with icons
 const Button = (props) => {
   const {
     type = 'button',
     appearance = 'default',
-    length = 'default',
+    length = '',
+    color = '',
     isDisabled = false,
+    IconComponent = null,
     className,
     isLoading,
     onClick,
     children,
   } = props
-  const classname = `${styles[appearance]} ${styles[length]} ${isDisabled ? styles.disabled : ''} text--btn ${className || ''}`
+  const classname = `${(appearance === 'default' || appearance === 'text' || appearance === 'outline') && styles[appearance]}
+    ${(length === 'short' || length === 'long') && styles[length]}
+    ${(color === 'dangerous' || color === 'warning') && styles[color]} ${isDisabled ? styles.disabled : ''} text--btn ${className || ''}`
 
   return (
     // eslint-disable-next-line react/button-has-type
     <button className={classname} onClick={onClick} type={type} disabled={isDisabled}>
-      {
-        isLoading
-          ? <InlineSpinner />
-          : children
-      }
+      {(() => {
+        if (isLoading) return <InlineSpinner />
+        if (IconComponent !== null) {
+          return (
+            <React.Fragment>
+              <IconComponent className={styles.icon} />
+              {children}
+            </React.Fragment>
+          )
+        }
+        return children
+      })()}
     </button>
   )
 }
@@ -49,11 +59,14 @@ Button.propTypes = {
   className: PropTypes.string,
   isLoading: PropTypes.bool,
   isDisabled: PropTypes.bool,
-  /* appearance?: "default" | "outline" | "text" | "dangerous" | "warning"  */
+  /* appearance?: "default" | "outline" | "text" */
   appearance: PropTypes.string,
-  /* length?: "default" | "short" | "long" */
+  /* color?: "dangerous" | "warning" */
+  color: PropTypes.string,
+  /* length?: "short" | "long" */
   length: PropTypes.string,
   onClick: PropTypes.func.isRequired,
+  IconComponent: PropTypes.elementType,
 }
 
 Button.defaultProps = {
@@ -61,8 +74,10 @@ Button.defaultProps = {
   className: '',
   isLoading: false,
   appearance: 'default',
-  length: 'default',
+  length: '',
+  color: '',
   isDisabled: false,
+  IconComponent: null,
 }
 
 export default Button

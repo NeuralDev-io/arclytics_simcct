@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: arclytics-ingress
+  annotations:
+spec:
+  rules:
+  - host: staging.arclytics.io
+  - http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: client
+          servicePort: 80
+      - path: /api/v1/sim
+        backend:
+          serviceName: simcct
+          servicePort: 8000

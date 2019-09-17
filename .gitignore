@@ -219,6 +219,14 @@ typings/
 ### Arclytics Custom ###
 .idea/
 
+services/db/data/
 *.db
 services/server/htmlcov/
 !services/swagger/dist/
+\.vscode/
+.DS_Store
+certs/
+
+services/simcct/production_data/*.json
+services/db/production_data/*.json
+services/db/production_data/*

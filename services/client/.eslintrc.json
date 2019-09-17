@@ -4,7 +4,8 @@
         "es6": true
     },
     "extends": [
-        "airbnb"
+        "airbnb",
+        "plugin:react/recommended"
     ],
     "globals": {
         "Atomics": "readonly",
@@ -21,7 +22,8 @@
         "react"
     ],
     "rules": {
-        "semi": ["error", "never"]
+        "semi": ["error", "never"],
+        "camelcase": "off"
     },
     "parser": "babel-eslint"
 }

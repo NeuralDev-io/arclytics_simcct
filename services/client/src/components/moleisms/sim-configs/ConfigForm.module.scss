@@ -1,0 +1,127 @@
+.first {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+
+  &>div:first-of-type {
+    margin-right: 8rem;
+  }
+
+  .grainSize {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+
+    & > div:first-of-type {
+      margin-right: 1.5rem;
+    }
+
+    & > div:last-of-type {
+      margin-left: 1.5rem;
+    }
+
+    & > span {
+      font-size: 1.5rem;
+      color: var(--n500);
+    }
+  }
+}
+
+.second {
+  margin-bottom: 1rem;
+
+  & > h5 {
+    width:fit-content;
+    margin-bottom: 1rem;
+  }
+
+  .configRow {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+
+    & > div {
+      margin-right: 8rem;
+      margin-bottom: 1.5rem;
+    }
+
+    & > div > h6 {
+      margin-bottom: .75rem;
+    }
+
+    & > div > .configGroup {
+      display: flex;
+      flex-flow: column wrap;
+      align-items: flex-start;
+      margin-bottom: .75rem;
+
+      & > div {
+        margin-bottom: .5rem;
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    & > div > .bainite {
+      margin-bottom: 3.7rem;
+    }
+  }
+}
+
+.third {
+  margin-bottom: 2rem;
+
+  //& > h5 {
+  //  margin-bottom: .75rem;
+  //}
+
+  .headerContainer{
+    margin-bottom: .75rem;
+    width:max-content;
+  }
+
+  .configGroup {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    margin-bottom: .5rem;
+
+    & > div:first-of-type {
+      margin-right: 1.5rem;
+    }
+  }
+}
+
+.longPadInput {
+  padding-right: 3.5rem;
+}
+
+.shortCheckbox {
+  width: 3rem;
+}
+
+.infoIcon {
+  width: .75rem;
+  height: .75rem;
+  color: var(--n900);
+  cursor: pointer;
+
+  &:hover { color: var(--arc500); }
+}
+
+.headerContainer {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: .5rem;
+
+  h5, h6 {
+    margin-right: 1rem;
+  }
+}
+
+.infoTip {
+  width: max-content;
+}

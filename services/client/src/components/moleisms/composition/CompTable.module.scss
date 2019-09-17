@@ -1,0 +1,29 @@
+@import '../../../styles/typography';
+
+.symbol {
+  font-family: $font-secondary;
+  font-weight: 700;
+  color: var(--arc500);
+}
+
+.tableContainer {
+  position: relative;
+
+  .saveButton {
+    align-self: flex-start;
+    position: absolute;
+    bottom: -.1rem;
+
+    &:disabled {
+      display: none;
+    }
+  }
+}
+
+.footerText {
+  margin-left: .75rem;
+}
+
+.footerTextMix {
+  margin-left: .05rem;
+}

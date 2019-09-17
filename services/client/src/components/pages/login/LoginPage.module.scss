@@ -1,0 +1,167 @@
+$bg-img: url('../../../assets/login_register_bg.png');
+
+.outer{
+  height:100vh;
+  width:100vw;
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+  background: var(--n0) $bg-img no-repeat;
+  background-size: 100% 150%;
+  background-position: 40vw;
+  position: relative;
+  overflow-y: scroll;
+}
+
+.logoContainer{
+  margin-left: 11.25rem;
+  width: 23.75rem;
+  height: 3.750625rem;
+  margin-bottom: 7.624375rem;
+  .logo{
+    height: 3.750625rem;
+    margin-right: 1.5rem;
+    float:left;
+  }
+  h3{
+    padding-top: 0.4rem;
+  }
+}
+
+@media only screen and (max-height: 830px) {
+  .logoContainer{
+    margin-bottom: 2.8125rem
+  }
+}
+
+.help{
+  float:right;
+  cursor:pointer;
+  color:var(--arc500);
+  margin-bottom: 3rem;
+  margin-right: 0.774375rem;
+  outline: 0;
+}
+
+.loginForm{
+  position: absolute;
+  margin-left: 11.25rem;
+  width: 23.75rem;
+  .createAccount{
+    color:var(--arc500);
+    text-decoration: none;
+  }
+  .email{
+    margin-bottom: 3.84375rem;
+    height:2.25rem;
+  }
+  .password{
+    margin-bottom: 1.625rem;
+    height:2.25rem;
+  }
+  .signIn{
+    margin-bottom: 1rem;
+  }
+  .clear{
+    margin-top: 5.1825rem;
+  }
+}
+
+.fadeLeftOut{
+  pointer-events: none;
+  animation: fadeLeftOut 1s;
+  animation-fill-mode: forwards;
+}
+
+.fadeRightIn{
+  pointer-events: auto;
+  animation: fadeRightIn 1s;
+  animation-fill-mode: forwards
+}
+
+.forgotPwdForm{
+  margin-left: 11.25rem;
+  width: 23.75rem;
+  height: 35vh;
+  pointer-events: none;
+  opacity: 0;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+  span{
+    margin-bottom: 1rem;
+  }
+  .confirmation{
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--g500);
+  }
+  .errors{
+    color: var(--r400);
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .forgotSubmit{
+    margin-bottom: 1rem;
+  }
+}
+
+.fadeLeftIn{
+  pointer-events: auto;
+  animation: fadeLeftIn 1s;
+  animation-fill-mode: forwards;
+}
+.fadeRightOut{
+  pointer-events: none;
+  animation: fadeRightOut 1s;
+  animation-fill-mode: forwards;
+}
+
+
+@keyframes fadeLeftOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+}
+
+@keyframes fadeLeftIn{
+  from{
+    opacity: 0;
+    transform: translateX(120%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeRightOut{
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+}
+
+@keyframes fadeRightIn{
+  from {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.header{
+  margin-bottom: 4.375rem;
+}
+

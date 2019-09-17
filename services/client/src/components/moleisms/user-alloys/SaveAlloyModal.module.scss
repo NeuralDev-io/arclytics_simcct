@@ -1,0 +1,19 @@
+.form {
+  width: 21rem;
+}
+
+.inputContainer {
+  margin-top: .5rem;
+  margin-bottom: 1.5rem;
+}
+
+.buttons {
+  width: 100%;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+
+  Button:first-of-type {
+    margin-right: .5rem;
+  }
+}

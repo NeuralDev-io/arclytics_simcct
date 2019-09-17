@@ -3,44 +3,45 @@ kind: Service
 metadata:
   name: client-service
   labels:
-    app: client
+    app: client-https
 spec:
-  type: LoadBalancer
-  loadBalancerIP: 35.197.160.183
+  type: NodePort
   selector:
-    app: client
+    app: client-https
   ports:
   - name: http
-    port: 80
+    port: 8080
     targetPort: 8080
+    protocol: TCP
+  - name: https
+    port: 443
     protocol: TCP
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: client
+  name: client-https
   labels:
-    app: client
+    app: client-https
 spec:
   selector:
     matchLabels:
-      app: client
+      app: client-https
   replicas: 1
   template:
     metadata:
       labels:
-        app: client
+        app: client-https
         environment: production
     spec:
       containers:
-      - name: client-container
-        image: gcr.io/arclytics-sim/arc_sim_client:1.1.2
+      - name: client-https-container
+        image: asia.gcr.io/arc-sim/arc_sim_client:1.1.5
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:
-          - name: NODE_ENV
-            value: "production"
           - name: REACT_APP_SIM_HOST
-            value: "app.arclytics.io"
+            value: "https://api.arclytics.io"
           - name: REACT_APP_SIM_PORT
-            value: "80"
+            value: "8000"

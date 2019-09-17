@@ -21,8 +21,9 @@ __date__ = '2019.09.08'
 Simulation Session.
 """
 
-from .sim_session_service import SimSessionService
 from dataclasses import dataclass
+
+from .sim_session_service import SimSessionService
 
 
 @dataclass

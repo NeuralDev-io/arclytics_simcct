@@ -25,18 +25,19 @@ it is not tampered with at each request.
 
 import json
 import time
-import itsdangerous
-from datetime import timedelta, datetime, timezone
+from os import environ as env
+from datetime import datetime, timedelta, timezone
 from typing import Tuple, Union
 from uuid import uuid4
 
-from flask.sessions import SessionMixin, SessionInterface
+import itsdangerous
+from flask.sessions import SessionInterface, SessionMixin
 from itsdangerous import BadSignature, SignatureExpired
 from redis import ReadOnlyError
 from werkzeug.datastructures import CallbackDict
 
-from sim_api.extensions import JSONEncoder
-from logger.arc_logger import AppLogger
+from logger import AppLogger
+from sim_api.extensions.utilities import JSONEncoder
 
 logger = AppLogger(__name__)
 
@@ -80,7 +81,7 @@ class RedisSessionInterface(SessionInterface):
             with the data from the Redis data store.
         """
         session_key = request.cookies.get(SESSION_COOKIE_NAME)
-        ip_address: str = request.remote_addr
+        # ip_address: str = request.remote_addr
 
         # We always generate a new RedisSession is the request does not have
         # the session key.
@@ -118,13 +119,13 @@ class RedisSessionInterface(SessionInterface):
 
         data = json.loads(redis_value.decode())
 
-        if str(ip_address) != data.get('ip_address', ''):
-            logger.debug(
-                f'Some idiot tried to access from a different IP.\n'
-                f'Session IP: {data["ip_address"]}\n'
-                f'Request IP: {ip_address}'
-            )
-            return self._new_session()
+        # if str(ip_address) != data.get('ip_address', ''):
+        #     logger.debug(
+        #         f'Some idiot tried to access from a different IP.\n'
+        #         f'Session IP: {data["ip_address"]}\n'
+        #         f'Request IP: {ip_address}'
+        #     )
+        #     return self._new_session()
 
         # TODO(andrew@neuraldev.io): Add a check for User-Agent
 
@@ -171,18 +172,23 @@ class RedisSessionInterface(SessionInterface):
                 itsdangerous.want_bytes(session_key)
             )
 
-        # FIXME(andrew@neuraldev.io): In development, don't do this.
-        # response.set_cookie(
-        #     SESSION_COOKIE_NAME, session_key, expires=expiry_date,
-        #     httponly=True, domain=self.get_cookie_domain(app), secure=True,
-        # )
-        response.set_cookie(
-            SESSION_COOKIE_NAME,
-            session_key,
-            expires=expiry_date,
-            httponly=True,
-            domain=self.get_cookie_domain(app)
-        )
+        if env.get('FLASK_ENV', 'production') == 'development':
+            response.set_cookie(
+                SESSION_COOKIE_NAME,
+                session_key,
+                expires=expiry_date,
+                httponly=True,
+                domain=self.get_cookie_domain(app)
+            )
+        else:
+            response.set_cookie(
+                SESSION_COOKIE_NAME,
+                session_key,
+                expires=expiry_date,
+                httponly=True,
+                secure=True,
+                domain=self.get_cookie_domain(app)
+            )
 
     @staticmethod
     def _new_session():

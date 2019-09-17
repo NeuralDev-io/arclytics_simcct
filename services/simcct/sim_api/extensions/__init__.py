@@ -19,18 +19,18 @@ __date__ = '2019.07.25'
 This module just defines extensions for Flask that can be used across the
 context of the app.
 """
-from .utilities import (
-    get_mongo_uri, JSONEncoder, PasswordValidationError, URLTokenError,
-    URLTokenExpired, ElementSymbolInvalid, ElementInvalid, MissingElementError,
-    DuplicateElementError, SimpleUTC, PeriodicTable, RESPONSE_HEADERS
-)
-
-from .mongo import MongoAlloys
-from .mongodb import MongoSingleton
 from flask_bcrypt import Bcrypt
 from flask_restful import Api
+
 # from flask_talisman import Talisman
 from .Session import FlaskRedisSession
+from .mongo import MongoAlloys
+from .mongodb import MongoSingleton
+from .utilities import (DuplicateElementError, ElementInvalid,
+                        ElementSymbolInvalid, JSONEncoder, MissingElementError,
+                        PasswordValidationError, PeriodicTable,
+                        RESPONSE_HEADERS, SimpleUTC, URLTokenError,
+                        URLTokenExpired, get_mongo_uri)
 
 # Some other extensions to Flask
 bcrypt = Bcrypt()

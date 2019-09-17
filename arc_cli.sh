@@ -1445,7 +1445,7 @@ while [[ "$1" != "" ]] ; do
                 while [[ "$3" != "" ]]; do
                   case $3 in
                     upload )
-                      gsutil cp -r ${WORKDIR}/services/simcct/sim_api/static/* gs://${CLOUD_STORAGE_BUCKET}/assets
+                      gsutil cp -r ${WORKDIR}/services/simcct/sim_api/static/* gs://${CLOUD_STORAGE_BUCKET}/assets/
                       ;;
                     list | ls )
                       gsutil ls gs://${CLOUD_STORAGE_BUCKET}/assets/**
@@ -1454,7 +1454,10 @@ while [[ "$1" != "" ]] ; do
                       gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/assets/imgs/email_footer_logo.png
                       ;;
                     address )
-                      echo https://storage.googleapis.com/asia.artifacts.arc-sim.appspot.com/assets/imgs/email_footer_logo.png
+                      echo https://storage.cloud.google.com/asia.artifacts.arc-sim.appspot.com/assets/imgs/email_footer_logo.png
+                      ;;
+                    go )
+                      google-chrome https://storage.cloud.google.com/asia.artifacts.arc-sim.appspot.com/assets/imgs/email_footer_logo.png
                       ;;
                   esac
                   shift

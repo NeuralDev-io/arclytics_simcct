@@ -7,13 +7,11 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
 import { Formik } from 'formik'
 import { Link } from 'react-router-dom'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
-import { login } from '../../../api/AuthenticationHelper'
+import { login, checkAuthStatus } from '../../../api/AuthenticationHelper'
 import { loginValidation } from '../../../utils/ValidationHelper'
-import { getPersistUserStatus } from '../../../state/ducks/persist/actions'
 import ForgotPassword from '../../moleisms/forgot-password'
 import TextField from '../../elements/textfield'
 import Modal from '../../elements/modal'
@@ -40,18 +38,12 @@ class LoginPage extends Component {
   }
 
   componentDidMount = () => {
-    if (localStorage.getItem('token')) {
-      const {
-        history,
-        getUserStatusConnect,
-      } = this.props
-
-      // Check the profile if the user has a token and direct them to write page
-      getUserStatusConnect().then(() => {
-        const { userStatus } = this.props
-        history.push(userStatus.isProfile ? '/' : '/profileQuestions')
-      })
-    }
+    const { history } = this.props
+    checkAuthStatus().then((res) => {
+      if (res.status === 'success') {
+        history.push('/')
+      }
+    })
   }
 
   handleExpiredToken = () => {
@@ -114,12 +106,13 @@ class LoginPage extends Component {
               })
               promise.then(() => {
                 // If response is successful
-                const { history, getUserStatusConnect } = this.props
+                const { history } = this.props
                 // Wait for promise from fetch if the user has a profile
-                getUserStatusConnect().then(() => {
-                  const { userStatus } = this.props
-                  history.push(userStatus.isProfile ? '/' : '/profileQuestions')
+                checkAuthStatus().then((res) => {
                   setSubmitting(true)
+                  if (res.status === 'successful') {
+                    if (!res.isProfile) history.push('/profileQuestions')
+                  } else history.push('/')
                 })
               })
                 .catch(() => {
@@ -208,13 +201,7 @@ class LoginPage extends Component {
 }
 
 LoginPage.propTypes = {
-  getUserStatusConnect: PropTypes.func.isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
-  userStatus: PropTypes.shape({
-    isProfile: PropTypes.object,
-    verified: PropTypes.bool,
-    admin: PropTypes.bool,
-  }).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       token: PropTypes.string,
@@ -222,12 +209,4 @@ LoginPage.propTypes = {
   }).isRequired,
 }
 
-const mapDispatchToProps = {
-  getUserStatusConnect: getPersistUserStatus,
-}
-
-const mapStateToProps = state => ({
-  userStatus: state.persist.userStatus,
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(LoginPage)
+export default LoginPage

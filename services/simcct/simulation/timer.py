@@ -59,7 +59,7 @@ __date__ = '2018.12.18'
 """
 
 import time
-from logger.arc_logger import AppLogger
+from logger import AppLogger
 
 start: float = 0.0
 
@@ -80,6 +80,7 @@ def timeit(method):
     Returns:
         A float as the time taken for the execution of the method.
     """
+
     def timed(*args, **kwargs):
         ts = time.time()
         result = method(*args, **kwargs)

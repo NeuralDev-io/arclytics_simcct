@@ -1,4 +1,4 @@
-import colours from '../../../../styles/_colors_light.scss'
+import { getColor } from '../../../../utils/theming'
 
 export const layout = (height, width) => ({
   width,
@@ -6,23 +6,50 @@ export const layout = (height, width) => ({
   showlegend: true,
   legend: {
     x: 0,
-    y: -0.25,
+    y: -0.3,
     orientation: 'h',
     font: {
       family: 'Open Sans',
-      color: colours.n900,
+      color: getColor('--n900'),
     },
   },
-  plot_bgcolor: colours.n0,
-  paper_bgcolor: colours.n0,
+  plot_bgcolor: getColor('--n0'),
+  paper_bgcolor: getColor('--n0'),
   margin: {
     t: 32,
-    l: 36,
+    l: 54,
     r: 0,
     pad: 12,
   },
   padding: {
     r: 0,
+  },
+  xaxis: {
+    titlefont: {
+      family: 'Open Sans',
+      size: 14,
+      color: getColor('--n500'),
+    },
+    tickfont: {
+      family: 'Open Sans',
+      size: 11,
+      weight: 600,
+      color: getColor('--n500'),
+    },
+  },
+  yaxis: {
+    titlefont: {
+      family: 'Open Sans',
+      size: 14,
+      color: getColor('--n500'),
+    },
+    tickfont: {
+      family: 'Open Sans',
+      size: 11,
+      weight: 600,
+      color: getColor('--n500'),
+    },
+    position: -0.1,
   },
 })
 

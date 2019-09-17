@@ -5,6 +5,7 @@
 #
 # Attributions:
 # [1] https://github.com/mattkohl/docker-flask-celery-redis
+# [2] https://github.com/kubernetes-for-developers/kfd-celery
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['']
@@ -17,23 +18,19 @@ __date__ = '2019.07.25'
 """celery_worker.py: 
 
 This module defines a one off instantiation of a Flask App instance and a Celery
-instance that connects to the Redis container.
+instance that connects to the Redis datastore for polling of tasks to run and 
+storage of the results.
 """
 
 import os
 import sys
 
 from celery import Celery
-from dotenv import load_dotenv
 from flask import Flask
 from flask_mail import Mail
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
-
-ENV_CONFIGS = os.path.join(BASE_DIR, '.env')
-if os.path.isfile(ENV_CONFIGS):
-    load_dotenv(ENV_CONFIGS)
 
 # Define the modules that contain Celery tasks
 CELERY_TASK_LIST = [

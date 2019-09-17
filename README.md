@@ -46,6 +46,7 @@ Arclytics Sim will use the following technologies and tools:
 * [Docker-Compose](https://docs.docker.com/compose/overview/)
 * [Docker-Machine](https://docs.docker.com/machine/overview/)
 * [Kubernetes](https://kubernetes.io/docs/home/)
+* [Dask](https://dask.org/)
 * [Flask](http://flask.pocoo.org/)
 * [NodeJS](https://nodejs.org/en/)
 * [npm](https://www.npmjs.com/)
@@ -79,7 +80,7 @@ Once installed, if you are using Linux/macOS, open the terminal to create a virt
 
 To get the containers running, install Docker from [here](https://www.docker.com/get-started). From here, select **Download for Windows** or **Download for Mac**. It will ask you to login or create an account before you can download. Once you have create an account, please select **Get Docker Desktop for Windows (stable)**. During installation, **DO NOT** select the option for Windows containers.
 
-If you're using **Linux** (Ubuntu/Cent OS), you can also follow [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04) to install Docker from the terminal.
+If you're using **Linux** (Ubuntu/Cent OS), you can also follow [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04) for Ubuntu 18.04 and this [one](https://medium.com/@Grigorkh/how-to-install-docker-on-ubuntu-19-04-7ccfeda5935) for 19.04 to install Docker from the terminal. To find out which version you are on, use `lsb_release -rs` if you are using Ubuntu. 
 
 Optionally, you can download and use the Docker GUI by downloading Kitematic from [here](https://docs.docker.com/toolbox/toolbox_install_windows/) for Windows.
 
@@ -107,6 +108,15 @@ Some handy Docker commands:
 * `-d` (optional): run the containers in detached mode without `stdout` and `stderr` to the terminal.
 * `--build` (optional): will build the images from the `Dockerfile` or rebuild from the Docker cache.
 
+**Starting some specific containers**
+
+```powershell
+> docker-compose up -d --build client users simcct
+```
+
+* `client users simcct`: will only run the containers with these service names as defined in `docker-compose.yml`. 
+* Note: Because `users` and `simcct` have a list of other services set as `depends_on` in `docker-compose.yml` you will find those additional services will also be run (i.e. the `users` service requires `mongodb` so it will also be run even without explicit commands telling it to run).
+
 **Stopping the containers**
 
 ```powershell
@@ -123,7 +133,6 @@ deba49685ca4        arc_sim_client:1.0           "docker-entrypoint.s…"   Abou
 30d29a1eeee9        arc_sim_users_service:1.0    "/docker-entrypoint.…"   About a minute ago   Up About a minute   0.0.0.0:8000->8000/tcp                     arc-users
 c34f86790ad8        arc_simcct_service:1.0       "/docker-entrypoint.…"   About an hour ago    Up About an hour    0.0.0.0:8001->8001/tcp                     arc-simcct
 b9e0c572a505        arc_sim_swagger:1.0          "sh /usr/share/nginx…"   3 days ago           Up 8 hours          80/tcp, 3001/tcp, 0.0.0.0:3001->8080/tcp   swagger-ui
-2f2edc1b1ef7        arc_sim_celery_service:1.0   "/bin/sh -c 'celery …"   4 days ago           Up 8 hours          0.0.0.0:5555->5555/tcp                     arc-celery
 ae1cc5ab4e68        arc_sim_mongo:1.0            "docker-entrypoint.s…"   5 days ago           Up 11 hours         0.0.0.0:27017->27017/tcp                   arc-mongo
 dab8694ce845        arc_sim_redis:1.0            "docker-entrypoint.s…"   5 days ago           Up 11 hours         0.0.0.0:6379->6379/tcp                     arc-redis
 ```
@@ -138,7 +147,6 @@ deba49685ca4        arc_sim_client:1.0           "docker-entrypoint.s…"   Abou
 30d29a1eeee9        arc_sim_users_service:1.0    "/docker-entrypoint.…"   About a minute ago   Up About a minute   0.0.0.0:8000->8000/tcp                     arc-users
 c34f86790ad8        arc_simcct_service:1.0       "/docker-entrypoint.…"   About an hour ago    Up About an hour    0.0.0.0:8001->8001/tcp                     arc-simcct
 b9e0c572a505        arc_sim_swagger:1.0          "sh /usr/share/nginx…"   3 days ago           Up 8 hours          80/tcp, 3001/tcp, 0.0.0.0:3001->8080/tcp   swagger-ui
-2f2edc1b1ef7        arc_sim_celery_service:1.0   "/bin/sh -c 'celery …"   4 days ago           Up 8 hours          0.0.0.0:5555->5555/tcp                     arc-celery
 ae1cc5ab4e68        arc_sim_mongo:1.0            "docker-entrypoint.s…"   5 days ago           Up 11 hours         0.0.0.0:27017->27017/tcp                   arc-mongo
 dab8694ce845        arc_sim_redis:1.0            "docker-entrypoint.s…"   5 days ago           Up 11 hours         0.0.0.0:6379->6379/tcp                     arc-redis
 ```
@@ -157,7 +165,6 @@ deba49685ca4        arc_sim_client:1.0           "docker-entrypoint.s…"   2 mi
 30d29a1eeee9        arc_sim_users_service:1.0    "/docker-entrypoint.…"   2 minutes ago       Exited (137) 20 seconds ago                                              arc-users
 c34f86790ad8        arc_simcct_service:1.0       "/docker-entrypoint.…"   About an hour ago   Up About an hour              0.0.0.0:8001->8001/tcp                     arc-simcct
 b9e0c572a505        arc_sim_swagger:1.0          "sh /usr/share/nginx…"   3 days ago          Up 8 hours                    80/tcp, 3001/tcp, 0.0.0.0:3001->8080/tcp   swagger-ui
-2f2edc1b1ef7        arc_sim_celery_service:1.0   "/bin/sh -c 'celery …"   4 days ago          Up 8 hours                    0.0.0.0:5555->5555/tcp                     arc-celery
 ae1cc5ab4e68        arc_sim_mongo:1.0            "docker-entrypoint.s…"   5 days ago          Up 11 hours                   0.0.0.0:27017->27017/tcp                   arc-mongo
 dab8694ce845        arc_sim_redis:1.0            "docker-entrypoint.s…"   5 days ago          Up 11 hours                   0.0.0.0:6379->6379/tcp                     arc-redis
 
@@ -175,7 +182,6 @@ arc_sim_swagger          1.0                 a947b052fd96        2 minutes ago  
 arc_sim_client           1.0                 9d7dc017c538        2 minutes ago       895MB
 arc_sim_users_service    1.0                 379664ae171b        3 minutes ago       437MB
 arc_sim_mongo            1.0                 bba28f4d4781        4 minutes ago       413MB
-arc_sim_celery_service   1.0                 bd19e8562da4        4 minutes ago       113MB
 arc_simcct_service       1.0                 fb648c779cd3        5 minutes ago       618MB
 arc_sim_redis            1.0                 e2e646c03358        7 minutes ago       98.2MB
 redis                    5.0.5               f7302e4ab3a8        3 days ago          98.2MB
@@ -199,7 +205,6 @@ redis                    5.0.5               f7302e4ab3a8        3 days ago     
 arc_sim_swagger          1.0                 aa9244f9f297        4 days ago           51.9MB
 arc_sim_client           1.0                 c6d1f45bc149        4 days ago           895MB
 arc_sim_mongo            1.0                 d24defd62cde        5 days ago           413MB
-arc_sim_celery_service   1.0                 4e73c62a6fef        5 days ago           114MB
 <none>                   <none>              c13142733b7c        5 days ago           98.2MB
 node                     10.16.2-alpine      4f877c96a193        8 days ago           76.4MB
 mongo                    4.0.11              f7adfc4dbcf5        2 weeks ago          413MB
@@ -228,22 +233,43 @@ Deleted: sha256:bdede403bfe892437f9612de019c52af60b552c200073e40f62ac175e242d522
 Deleted: sha256:d9346bd1a028a61ba23007ddd284b844f4f03c1495fc90415ddac212d6e1a100
 ```
 
-**Pruning Stopped Containers, Images, Networks, and Dependencies**
+**Pruning Stopped Containers, Images, System-wide, and Dependencies Respectively**
 
 ```powershell
-> docker container prune -f
+> docker container prune -f  # Stopped containers only
 
-> docker image prune -f
+> docker image prune -f  # Stopped images only
 
-> docker system prune -f 
-
-> docker system prune -af
+> docker system prune -af  # All containers, images, networks, caches
 ```
 
 **Using Docker Logs**
 
 ```powershell
 > docker logs arc-users
+
+Waiting for Mongo...
+Mongo started.
+Arclytics Sim Users Service Flask Server Information for e038fe5bd85d
+Started on 08/17/19 03:41:01 PM UTC by 
+ENVIRONMENT VARIABLES:
+FLASK_APP: Arclytics Sim Users Service
+FLASK_ENV: development
+APP_SETTINGS: configs.flask_conf.DevelopmentConfig
+Starting Flask server...
+
+ * Environment: development
+ * Debug mode: on
+ * Running on http://0.0.0.0:8000/ (Press CTRL+C to quit)
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 285-812-959
+```
+
+Alternatively, a simpler way is to use the name of the service defined in `docker-compose.yml`:
+
+```powershell
+> docker-compose logs users 
 
 Waiting for Mongo...
 Mongo started.
@@ -276,7 +302,140 @@ P.S. If you want to learn more about Docker click [here](https://docs.docker.com
 **IMPORTANT!!!** You must start the Docker container with this command every time you run.
 
 ```bash
-$ docker-compose up -d
+$ docker-compose -p arc up -d client users simcct
+```
+
+#### Using the Arclytics CLI script
+
+To make certain environmental variables and other commands simpler. A shell script `arclytics.sh` has been created which provides an intuitive use of different CLI commands for Docker and Docker Compose.
+
+To use it to start the server:
+
+```bash
+$ ./arclytics.sh -d up
+```
+
+To view what commands and options are available:
+
+```bash
+$ ./arclytics.sh --help
+
+ARCLYTICS CLI SCRIPT
+
+The Arclytics CLI script for running `docker` and `docker-compose` commands on the
+Arclytics Sim Docker orchestration.
+
+Usage:
+arclytics.sh build [SERVICE ARGS...]
+arclytics.sh up [options] [SERVICE ARGS...]
+arclytics.sh up --scale [SERVICE=NUM]
+arclytics.sh logs [SERVICE]
+arclytics.sh test [options] [TEST TYPE]
+arclytics.sh down [options]
+arclytics.sh scale [SERVICE=NUM...]
+arclytics.sh [COMMAND]
+
+Options:
+  -b, --build           Build the Docker containers before running.
+  -d, --detach          Run Docker Engine logs in a detached shell mode.
+  -s, --seed_db         Seed the MongoDB database with test data.
+  -f, --file            Set the path of the docker-compose YAML file to use.
+  -h, --help            Get the Usage information for this script.
+
+  Up Options:
+  --scale SERVICE=NUM   Scale the a single container when running the cluster.
+  -S, --swagger         Run the Swagger container with the cluster.
+  -J, --jupyter         Run the Jupyter container with the cluster.
+
+  Test Options:
+  -b, --build           Build the Docker containers before running tests.
+  -t, --tty             Attach a pseudo-TTY to the tests.
+  -c, --coverage        Run the unit tests with coverage.
+
+  Down Options:
+  -D, --docker          Stop the containers using the Docker PS stat.
+
+Commands:
+  build       Build the Docker images from docker-compose.yml only (passing services
+              to build specific ones or leave empty to build all).
+  up          Run the main containers in docker-compose.yml or provide a list of
+              arguments to run only those provided.
+  logs        Get the logs of the container.
+  ps          List the running containers.
+  stats       Display a live stream of container(s) resource usage statistics.
+  flush       Flush both Redis datastore and MongoDB database only.
+  seed        Seed the microservices with test data and flush both Redis
+              datastore and MongoDB database.
+  test        Run unit tests on the microservices.
+  down        Stop all containers.
+  prune       Prune all stopped images, containers, and networks.
+  pwd         Get the full path directory of the Arclytics CLI script.
+  scale       Set number of containers to run for a service. Numbers are specified
+              in the form `service=num` as arguments.
+
+Optional Containers:
+  -S, --swagger    Run the Swagger container with the cluster.
+  -J, --jupyter    Run the Jupyter container with the cluster.
+
+Service (only one for logs):
+  users
+  simcct
+  dask-scheduler
+  dask-worker
+  redis
+  mongodb
+  jupyter
+  swagger
+
+Test Types (one only):
+  all         Run all unit tests for Arclytics Sim
+  server      Run the server-side unit tests.
+  client      Run the client-side unit tests.
+  users       Run only the users tests.
+  simcct      Run only the simcct tests.
+
+```
+
+#### Additional Scripts for Flask Microservices
+
+These commands will flush the MongoDB and Redis databases for both `users` and `simcct` servers.
+
+```bash
+$ docker-compose exec users python manage.py flush
+$ docker-compose exec simcct python manage.py flush
+```
+
+These commands will seed or load the development database into MongoDB (note: ensure you flush if you get index constraint conflicts).
+
+```bash
+$ docker-compose exec users python manage.py seed_db
+$ docker-compose exec simcct python manage.py seed_db
+```
+
+You can also use the Arclytics CLI script to help with this to flush:
+
+```bash
+$ ./arclytics.sh flush
+```
+
+To flush and seed:
+
+```bash
+$ ./arclytics.sh seed
+```
+
+#### Advanced Use (with caution)
+
+To scale the Dask scheduling distributed containers, do the following on running the containers.
+
+```bash
+$ docker-compose up -d --scale dask-worker=2 client users simcct
+```
+
+To scale after the containers are already running:
+
+```bash
+$ docker-compose scale dask-worker=2
 ```
 
 
@@ -300,41 +459,120 @@ This will run the tests with coverage:
 > docker-compose exec simcct python manage.py test_coverage
 ```
 
-
-
-To use the shell script (you must have a UNIX shell):
+You can also use the Arclytics CLI script to do the above:
 
 ```bash
-$ ./run_tests.sh --help
+$ ./arclytics.sh test all
+```
 
-Usage: run_tests.sh [OPTIONS] COMMAND
+To view the the options for the `test` command with Arclytics CLI script.
 
-A CLI script for running unit tests on the Arclytics Sim Docker Orchestration.
+```bash
+$ ./arclytics.sh test --help
+
+ARCLYTICS CLI SCRIPT
+
+Usage: arclytics.sh test [OPTIONS] [TEST TYPE]
+
+The Arclytics CLI command to run Unit Tests.
 
 Options:
   -b, --build      Build the Docker containers before running tests.
   -t, --tty        Attach a pseudo-TTY to the tests.
   -c, --coverage   Run the unit tests with coverage.
 
-Commands:
+Test Types (one only):
   all         Run all unit tests for Arclytics Sim
   server      Run the server-side unit tests.
   client      Run the client-side unit tests.
   users       Run only the users tests.
   simcct      Run only the simcct tests.
+
 ```
 
 For example, this will run the tests for the Flask back-ends only with coverage:
 
 ```shell
-$ ./run_tests.sh -c server
+$ ./arclytics.sh -c server
 ```
 
 
 
 ## Deployment
 
-* TBC
+### Prerequisites
+
+#### Install VirtualBox
+
+You must ensure you have `VirtualBox` installed with at least version `> 6.0.0`. You can download the link from [here](https://www.virtualbox.org/wiki/Downloads) or alternatively use the Ubuntu package manager.
+
+```bash
+$ sudo apt update && sudo apt install virtualbox virtualbox-ext-pack virtualbox-guest-additions-iso
+```
+
+If you have an issue with installing and starting `minikube`, you may want to consider removing `VirtualBox` and reinstalling. You may need to then add your user to the `vboxusers` group to ensure proper permissions by doing: `sudo usermod -aG vboxusers $USER`.
+
+#### Install `minikube` and `kubectl` tools
+
+[minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) is a tool which allows developers to use and run a Kubernetes cluster locally. Installing minikube will also install:
+
+* A [HyperVisor](https://kubernetes.io/docs/tasks/tools/install-minikube/#install-a-hypervisor).
+* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+
+To install Minikube manually on Windows using [Windows Installer](https://docs.microsoft.com/en-us/windows/desktop/msi/windows-installer-portal), download [`minikube-installer.exe`](https://github.com/kubernetes/minikube/releases/latest/download/minikube-installer.exe) and execute the installer. To install Minikube manually on Windows, download [`minikube-windows-amd64`](https://github.com/kubernetes/minikube/releases/latest), rename it to `minikube.exe`, and add it to your path.
+
+On Linux, you can install via direct download:
+
+```bash
+$ curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube
+$ sudo install minikube /usr/local/bin
+```
+
+To run, do the following:
+
+```bash
+$ minikube start --vm-driver=virtualbox
+```
+
+Note: If you are using Windows, you must use the `minikube start --vm-driver=hyperkit`.
+
+If asked, you will also need to install `kubectl` in your `PATH` by doing the following:
+
+```bash
+$ curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+$ chmod +x ./kubectl
+$ sudo mv ./kubectl /usr/local/bin/kubectl
+$ kubectl version
+
+Client Version: version.Info{Major:"1", Minor:"15", GitVersion:"v1.15.3", GitCommit:"2d3c76f9091b6bec110a5e63777c332469e0cba2", GitTreeState:"clean", BuildDate:"2019-08-19T11:13:54Z", GoVersion:"go1.12.9", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"15", GitVersion:"v1.15.2", GitCommit:"f6278300bebbb750328ac16ee6dd3aa7d3549568", GitTreeState:"clean", BuildDate:"2019-08-05T09:15:22Z", GoVersion:"go1.12.5", Compiler:"gc", Platform:"linux/amd64"}
+```
+
+You can now start using `minikube` tool via your browser with the dashboard.
+
+```bash
+$ minikube dashboard
+```
+
+Your should see this:
+
+![minikube dashboard](./docs/assets/minikube_dashboard.png)
+
+##### Advanced Configurations for `minikube` (use with caution!)
+
+By default, `minikube` allocates only 2GB of RAM for every node. You can increase it with the following:
+
+```bash
+$ minikube config set memory 4096
+```
+
+Ditto with CPUs for the virtual machine which you can set with:
+
+```bash
+$ minikube config set cpus 4
+```
+
+
 
 
 
@@ -380,7 +618,6 @@ We thank the following organisations, departments, and individuals for their kin
 * Australian Nuclear Science and Technology Organisation (ANSTO)
     * Dr. Ondrej Muransky <omz@ansto.gov.au\>
     * Dr. Philip Bendeich <pbx@ansto.gov.au\>
-    * Dr. Luiz Bortolan <luizb@ansto.gov.au\>
 * University of Wollongong, Faculty of Engineering and Information Sciences, School of Computing and Information Technology
     * Dr. Lei Ye <lei@uow.edu.au\> 
     * Dr. Fenghui Ren <fren@uow.edu.au\>

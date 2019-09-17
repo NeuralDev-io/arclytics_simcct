@@ -33,7 +33,7 @@ class ShareSimButton extends Component {
       this.setState({ emailError: error })
       return
     }
-    this.setState({ currentEmail: email })
+    this.setState({ currentEmail: email, emailError: '' })
   }
 
   handleEmailAdded = (emails) => {
@@ -87,7 +87,12 @@ class ShareSimButton extends Component {
      * and updates the state of `shareUrlLink` if the promise successfully returns
      * the response from the `users` server that we expect.
      */
-    const { configurations, alloys, results } = this.props
+    const {
+      configurations,
+      alloys,
+      results,
+      addFlashToastConnect,
+    } = this.props
     const alloyStore = this.cleanAlloyStore(alloys)
     const validConfigs = this.cleanConfigurations(configurations)
     const simResults = this.cleanResults(results)
@@ -97,17 +102,26 @@ class ShareSimButton extends Component {
       .then((res) => {
         this.setState({ shareUrlLink: res.link, linkCopyDisabled: false })
       })
-      .catch(err => console.log(err))
+      .catch(() => {
+        addFlashToastConnect({
+          message: 'Something went wrong',
+          options: { variant: 'error' },
+        }, true)
+      })
   }
 
   onEmailSubmit = () => {
-    const { addFlashToastConnect } = this.props
     /**
      * The callback function for the generate button which makes the API call
      * and updates the state of `shareUrlLink` if the promise successfully returns
      * the response from the `users` server that we expect.
      */
-    const { configurations, alloys, results } = this.props
+    const {
+      configurations,
+      alloys,
+      results,
+      addFlashToastConnect,
+    } = this.props
     const { emails, message } = this.state
 
     const alloyStore = this.cleanAlloyStore(alloys)
@@ -117,11 +131,17 @@ class ShareSimButton extends Component {
     sendShareEmail(
       emails, message, validConfigs, alloyStore, simResults,
     ).then(() => {
-      addFlashToastConnect({
+      setTimeout(this.handleCloseModal, 200)
+      setTimeout(() => addFlashToastConnect({
         message: 'Simulation shared successfully',
         options: { variant: 'success' },
-      }, true)
-      setTimeout(this.handleCloseModal, 500)
+      }, true), 500)
+      this.setState({
+        emails: [],
+        currentEmail: '',
+        message: '',
+        emailError: '',
+      })
     }).catch(() => {
       addFlashToastConnect({
         message: 'Something went wrong',
@@ -178,7 +198,7 @@ class ShareSimButton extends Component {
           type="button"
           onClick={() => {}}
           IconComponent={props => <Share2Icon {...props} />}
-          isDisabled={!isSimulated || !isAuthenticated}
+          // isDisabled={!isSimulated || !isAuthenticated}
         >
           SHARE
         </Button>

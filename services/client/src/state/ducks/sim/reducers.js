@@ -162,6 +162,7 @@ const reducer = (state = initialState, action) => {
         results: {
           ...state.results,
           ...action.payload,
+          cctIndex: 0,
         },
       }
     case UPDATE_CCT_INDEX:
@@ -191,7 +192,7 @@ const reducer = (state = initialState, action) => {
           mix: [],
         },
         results: {
-          cctIndex: -1,
+          cctIndex: 0,
           ...results,
         },
       }

@@ -117,7 +117,7 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     # Setup the configuration for Flask
     app.config.from_object(configs_path)
     app.secret_key = env.get('SECRET_KEY')
-    prod_environment = app.config('ENV', 'development') == 'production'
+    prod_environment = app.config.get('ENV', 'development') == 'production'
 
     # ========== # CONNECT TO DATABASES # ========== #
     if not prod_environment:

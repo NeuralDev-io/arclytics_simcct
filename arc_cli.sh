@@ -1117,7 +1117,8 @@ while [[ "$1" != "" ]] ; do
                           --machine-type=n1-standard-2 \
                           --num-nodes=2 \
                           --min-nodes=1 \
-                          --max-nodes=2 \
+                          --max-nodes=3 \
+                          --max-nodes-per-pool=3 \  # australia-southeast1 has 3 ZONES so 9 is more than we're allowed but ensure 8 is possible
                           --enable-autoscaling \
                           --cluster-version=${KUBERNETES_NODE_VERSION}
                           # This may have caused the Ingress not to work with latest version

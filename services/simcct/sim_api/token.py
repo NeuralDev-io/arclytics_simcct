@@ -20,12 +20,14 @@ This module defines some helper methods to generate email tokens to be used in
 features such as registration, sharing, and changing passwords.
 """
 
+import os
 from typing import Union
 
-from flask import url_for
 from flask import current_app as app
+from flask import url_for
 from itsdangerous import URLSafeTimedSerializer
 from itsdangerous.exc import BadSignature, SignatureExpired
+
 from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
 
 
@@ -62,10 +64,16 @@ def confirm_token(token: bytes, expiration: int = 3600) -> Union[bool, str]:
 
 
 def generate_url(endpoint, token):
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        return url_for(endpoint, token=token, _external=True, _scheme='https')
     return url_for(endpoint, token=token, _external=True)
 
 
 def generate_url_with_signature(endpoint, signature):
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        return url_for(
+            endpoint, signature=signature, _external=True, _scheme='https'
+        )
     return url_for(endpoint, signature=signature, _external=True)
 
 

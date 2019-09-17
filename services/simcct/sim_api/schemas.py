@@ -22,11 +22,12 @@ be used to validate the post data is correct before adding to any DB.
 """
 
 from bson import ObjectId
-from marshmallow import Schema, fields, validates, ValidationError
+from marshmallow import Schema, ValidationError, fields, validates
 from marshmallow.validate import OneOf
+
+from logger import AppLogger
 from simulation.periodic import PeriodicTable
 from simulation.utilities import MissingElementError
-from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
 

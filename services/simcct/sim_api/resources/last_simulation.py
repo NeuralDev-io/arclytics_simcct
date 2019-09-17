@@ -21,17 +21,16 @@ simulation they ran with all the configurations, alloy, and results if it was
 successfully simulated.
 """
 
-from flask import request, Blueprint, json
+from flask import Blueprint, json, request
 from flask_restful import Resource
-from mongoengine import ValidationError, FieldDoesNotExist
+from mongoengine import FieldDoesNotExist, ValidationError
 
 from sim_api.extensions import api
+from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
+                                          ElementSymbolInvalid,
+                                          MissingElementError)
 from sim_api.middleware import authenticate_user_cookie_restful
-from sim_api.models import Configuration, AlloyStore, User, SimulationResults
-from sim_api.extensions.utilities import (
-    ElementInvalid, ElementSymbolInvalid, MissingElementError,
-    DuplicateElementError
-)
+from sim_api.models import AlloyStore, Configuration, SimulationResults
 
 last_sim_blueprint = Blueprint('user_last_simulation', __name__)
 

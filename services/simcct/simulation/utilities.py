@@ -22,9 +22,6 @@ Some utilities that are used by SimCCT routines.
 
 import enum
 import numpy as np
-from typing import Tuple
-
-from marshmallow import ValidationError
 
 
 class Method(enum.Enum):

@@ -17,7 +17,7 @@ import PropTypes from 'prop-types'
 import ReactSelect from 'react-select'
 
 import styles from './Select.module.scss'
-import colours from '../../../styles/_colors_light.scss'
+import { getColor } from '../../../utils/theming'
 
 // TODO: include validation
 const Select = (props) => {
@@ -31,6 +31,7 @@ const Select = (props) => {
     defaultValue,
     value,
     onChange,
+    ...other
   } = props
   const classname = `${styles.select} ${length === 'default' ? '' : styles[length]} ${className || ''}`
 
@@ -38,7 +39,7 @@ const Select = (props) => {
     container: provided => ({
       ...provided,
       width: (() => {
-        if (length === 'short') return '6.5rem'
+        if (length === 'short') return '7rem'
         if (length === 'long') return '10rem'
         if (length === 'stretch') return '100%'
         return '7.5rem'
@@ -46,31 +47,39 @@ const Select = (props) => {
     }),
     control: (provided, state) => ({
       ...provided,
-      backgroundColor: colours.n10,
+      backgroundColor: getColor('--n10'),
       borderRadius: 6,
-      borderColor: colours.n10,
+      borderColor: getColor('--n10'),
       borderWidth: 1,
       padding: '0 .25rem 0 .55rem',
-      height: '2.5rem',
+      height: '2.25rem',
+      minHeight: 'initial',
       cursor: state.isDisabled ? 'not-allowed' : 'pointer',
 
       '&:hover': {
-        backgroundColor: colours.n20,
-        borderColor: colours.n20,
+        backgroundColor: getColor('--n20'),
+        borderColor: getColor('--n20'),
       },
     }),
     valueContainer: () => ({
       padding: 0,
     }),
-    indicatorContainer: () => ({
-      padding: 0,
+    dropdownIndicator: provided => ({
+      ...provided,
+      height: '1.25rem',
+      padding: '0 .5rem',
+    }),
+    clearIndicator: provided => ({
+      ...provided,
+      height: '1.25rem',
+      padding: '0 .5rem',
     }),
     singleValue: (provided, state) => ({
       ...provided,
       color: (() => {
-        if (state.isDisabled) return colours.n300
-        if (state.hasValue) return colours.n900
-        return colours.n600
+        if (state.isDisabled) return getColor('--n300')
+        if (state.hasValue) return getColor('--n900')
+        return getColor('--n600')
       })(),
     }),
     option: provided => ({
@@ -79,7 +88,7 @@ const Select = (props) => {
     }),
     placeholder: (provided, state) => ({
       ...provided,
-      color: state.isDisabled ? colours.n300 : colours.n600,
+      color: state.isDisabled ? getColor('--n300') : getColor('--n600'),
     }),
   }
 
@@ -87,7 +96,6 @@ const Select = (props) => {
     <ReactSelect
       className={classname}
       name={name}
-      isClearable
       placeholder={placeholder}
       options={options}
       defaultValue={defaultValue}
@@ -100,10 +108,11 @@ const Select = (props) => {
         ...theme,
         colors: {
           ...theme.colors,
-          primary: colours.ag500,
-          primary25: colours.ag50,
+          primary: getColor('--arc500'),
+          primary25: getColor('--arc50'),
         },
       })}
+      {...other}
     />
   )
 }

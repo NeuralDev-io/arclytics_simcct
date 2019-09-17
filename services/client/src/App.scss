@@ -1,4 +1,10 @@
 .App {
   height: 100%;
   width: 100%;
+  background-color: var(--n0);
+  overflow-x: hidden;
+}
+
+.snackbar__button {
+  color: var(--n0);
 }

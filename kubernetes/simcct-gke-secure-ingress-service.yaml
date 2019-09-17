@@ -27,7 +27,7 @@ spec:
   selector:
     matchLabels:
       app: simcct
-  replicas: 2
+  replicas: 4
   template:
     metadata:
       labels:
@@ -36,7 +36,7 @@ spec:
     spec:
       containers:
       - name: simcct-container
-        image: asia.gcr.io/arc-sim/arc_sim_service:1.1.5
+        image: asia.gcr.io/arc-sim/arc_sim_service:1.1.6
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -53,6 +53,9 @@ spec:
         resources:
           requests:
             cpu: 750m
+            memory: 1Gi
+          limits:
+            cpu: 1
             memory: 2Gi
         env:
         - name: FLASK_APP

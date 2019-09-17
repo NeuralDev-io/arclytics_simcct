@@ -5,3 +5,4 @@
 [submodule "arclytics.io"]
 	path = arclytics.io
 	url = git@bitbucket.org:neuraldev/arclytics.io.git
+        branch = develop

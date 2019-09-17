@@ -9,7 +9,7 @@ import {
 
 const sliderStyle = {
   position: 'relative',
-  height: '400px',
+  height: '22rem',
   marginLeft: '45%',
   touchAction: 'none',
 }
@@ -24,7 +24,6 @@ const VerticalSlider = ({
 }) => (
   <div style={{ height: '100%', width: '100%' }}>
     <Slider
-      reversed
       vertical
       mode={2}
       rootStyle={sliderStyle}

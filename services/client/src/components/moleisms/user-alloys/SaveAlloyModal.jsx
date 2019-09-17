@@ -33,6 +33,7 @@ class SaveAlloyModal extends Component {
     })
       .then(() => {
         handleClose()
+        this.setState({ savedAlloy: '' })
         addFlashToastConnect({
           message: 'Alloy saved',
           options: { variant: 'success' },

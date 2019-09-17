@@ -1463,6 +1463,29 @@ while [[ "$1" != "" ]] ; do
                   shift
                 done
                 ;;
+              swagger )
+                while [[ "$3" != "" ]]; do
+                  case $3 in
+                    upload )
+                      gsutil cp -r ${WORKDIR}/services/swagger/swagger.yaml gs://${CLOUD_STORAGE_BUCKET}/assets/
+                      ;;
+                    list | ls )
+                      gsutil ls gs://${CLOUD_STORAGE_BUCKET}/assets/**
+                      ;;
+                    public )
+                      # TODO(andrew@neuraldev.io): Find a better way to access this from Swagger as this is not secure.
+                      # gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/assets/swagger.yaml
+                      ;;
+                    address )
+                      echo https://storage.cloud.google.com/asia.artifacts.arc-sim.appspot.com/assets/swagger.yaml
+                      ;;
+                    go )
+                      google-chrome https://storage.cloud.google.com/asia.artifacts.arc-sim.appspot.com/assets/swagger.yaml
+                      ;;
+                  esac
+                  shift
+                done
+                ;;
               # TODO(andrew@neuraldev.io) POD_NAME=$(kubectl get pod -l service=postgres -o jsonpath="{.items[0].metadata.name}")
             esac
             shift

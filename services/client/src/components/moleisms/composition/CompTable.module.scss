@@ -9,39 +9,14 @@
 .tableContainer {
   position: relative;
 
-  .saveBtn {
+  .saveButton {
     align-self: flex-start;
     position: absolute;
     bottom: -.1rem;
 
-    &.disabled {
+    &:disabled {
       display: none;
     }
-  }
-}
-
-.optionList {
-  padding: .5rem 0;
-}
-
-.option {
-  width: 7.5rem;
-  padding: .5rem 1rem;
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  cursor: pointer;
-
-  &:hover {
-    background-color: var(--n10);
-    color: var(--arc500);
-  }
-
-  &.disabled {
-    color: var(--n100);
-    cursor: not-allowed;
-
-    &:hover { background-color: transparent; }
   }
 }
 

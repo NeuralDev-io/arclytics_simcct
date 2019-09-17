@@ -6,12 +6,12 @@
  * @github Xaraox
  */
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
+import PropTypes from 'prop-types'
 import { Formik } from 'formik'
 import { Link } from 'react-router-dom'
 import AlertCircleIcon from 'react-feather/dist/icons/alert-circle'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
-import { signup } from '../../../api/AuthenticationHelper'
+import { signup, checkAuthStatus } from '../../../api/AuthenticationHelper'
 import { signupValidation } from '../../../utils/ValidationHelper'
 import { buttonize } from '../../../utils/accessibility'
 
@@ -31,7 +31,11 @@ class SignupPage extends Component {
 
   componentDidMount = () => {
     const { history } = this.props
-    if (localStorage.getItem('token')) history.push('/')
+    checkAuthStatus().then((res) => {
+      if (res.status === 'success') {
+        history.push('/')
+      }
+    })
   }
 
   render() {
@@ -227,12 +231,10 @@ class SignupPage extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-
-})
-
-const mapDispatchToProps = {
-
+SignupPage.propTypes = {
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SignupPage)
+export default SignupPage

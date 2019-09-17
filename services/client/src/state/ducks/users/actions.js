@@ -1,6 +1,7 @@
 import {
   GET_USERS,
 } from './types'
+import { addFlashToast } from '../toast/actions'
 
 export const getUsers = () => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/users`, {
@@ -10,7 +11,10 @@ export const getUsers = () => (dispatch) => {
       'Content-Type': 'application/json',
     },
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 200) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -20,7 +24,10 @@ export const getUsers = () => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 export const updateUser = () => (dispatch) => {

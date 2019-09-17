@@ -9,6 +9,7 @@ import Button from '../../elements/button'
 import { AttachModal } from '../../elements/modal'
 import { buttonize } from '../../../utils/accessibility'
 import { saveSimulation } from '../../../state/ducks/self/actions'
+import { addFlashToast } from '../../../state/ducks/toast/actions'
 
 import styles from './SaveSimButton.module.scss'
 
@@ -25,9 +26,15 @@ class SaveSimButton extends Component {
   handleCloseModal = () => this.setState({ visible: false })
 
   saveSim = () => {
-    const { saveSimulationConnect } = this.props
-    this.handleCloseModal()
+    const { saveSimulationConnect, addFlashToastConnect } = this.props
     saveSimulationConnect()
+      .then(() => {
+        this.handleCloseModal()
+        addFlashToastConnect({
+          message: 'Simulation saved',
+          options: { variant: 'success' },
+        }, true)
+      })
   }
 
   saveSimAsFile = () => {
@@ -107,6 +114,7 @@ SaveSimButton.propTypes = {
       mix: PropTypes.array,
     }),
   }).isRequired,
+  addFlashToastConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -119,6 +127,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   saveSimulationConnect: saveSimulation,
+  addFlashToastConnect: addFlashToast,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(SaveSimButton)

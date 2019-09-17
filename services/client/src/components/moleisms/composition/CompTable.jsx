@@ -3,27 +3,14 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import SaveIcon from 'react-feather/dist/icons/save'
-import { AttachModal } from '../../elements/modal'
 import Button from '../../elements/button'
 import Table from '../../elements/table'
 import { SelfControlledTextField } from '../../elements/textfield'
-import { buttonize } from '../../../utils/accessibility'
 import { updateComp } from '../../../state/ducks/sim/actions'
 
 import styles from './CompTable.module.scss'
 
 class CompTable extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      visible: false,
-    }
-  }
-
-  handleShowModal = () => this.setState({ visible: true })
-
-  handleCloseModal = () => this.setState({ visible: false })
-
   handleChangeComp = (type, symbol, value) => {
     const { data, updateCompConnect } = this.props
     const alloy = { ...data[type] }
@@ -43,8 +30,12 @@ class CompTable extends Component {
   }
 
   render() {
-    const { data, sessionIsInitialised, isAuthenticated } = this.props
-    const { visible } = this.state
+    const {
+      data,
+      sessionIsInitialised,
+      isAuthenticated,
+      onSaveButtonClick,
+    } = this.props
     const {
       alloyOption,
       parent,
@@ -178,41 +169,15 @@ class CompTable extends Component {
                 condensed
                 loading={data.isLoading}
               />
-              <AttachModal
-                className={`${styles.saveBtn} ${tableData.length === 0 && styles.disabled}`}
-                visible={visible}
-                handleClose={this.handleCloseModal}
-                handleShow={this.handleShowModal}
-                position="topLeft"
-                overlap
+              <Button
+                onClick={onSaveButtonClick}
+                className={styles.saveButton}
+                isDisabled={!sessionIsInitialised || !isAuthenticated}
+                appearance="text"
+                IconComponent={props => <SaveIcon {...props} />}
               >
-                <Button
-                  onClick={() => {}}
-                  style={{ display: tableData.length !== 0 ? 'flex' : 'none' }}
-                  isDisabled={!sessionIsInitialised || !isAuthenticated}
-                  appearance="text"
-                  IconComponent={props => <SaveIcon {...props} />}
-                >
-                  Save alloy
-                </Button>
-                <div className={styles.optionList}>
-                  <div className={styles.option} {...buttonize(() => console.log('Saved alloy 1'))}>
-                    <span>Alloy 1</span>
-                  </div>
-                  <div
-                    className={`${styles.option} ${alloyOption !== 'mix' && styles.disabled}`}
-                    {...buttonize(() => console.log('Saved alloy 2'))}
-                  >
-                    <span>Alloy 2</span>
-                  </div>
-                  <div
-                    className={`${styles.option} ${alloyOption !== 'mix' && styles.disabled}`}
-                    {...buttonize(() => console.log('Saved mix'))}
-                  >
-                    <span>Mix</span>
-                  </div>
-                </div>
-              </AttachModal>
+                Save alloy
+              </Button>
             </div>
           )
         }}
@@ -224,6 +189,7 @@ class CompTable extends Component {
 CompTable.propTypes = {
   sessionIsInitialised: PropTypes.bool.isRequired,
   isAuthenticated: PropTypes.bool.isRequired,
+  onSaveButtonClick: PropTypes.func.isRequired,
   data: PropTypes.shape({
     isLoading: PropTypes.bool.isRequired,
     alloyOption: PropTypes.string,

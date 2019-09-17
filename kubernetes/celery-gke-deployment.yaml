@@ -16,6 +16,13 @@ spec:
         imagePullPolicy: Always
         ports:
           - containerPort: 5555
+        resources:
+          requests:
+            cpu: 250m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
         env:
         - name: FLASK_ENV
           value: "production"

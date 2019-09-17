@@ -13,7 +13,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "client"
-    image: asia.gcr.io/arc-sim/arc_sim_client:1.1.4
+    image: asia.gcr.io/arc-sim/arc_sim_client:1.1.5
     ports:
       - 8080:8080
     expose:
@@ -34,7 +34,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "simcct"
-    image: asia.gcr.io/arc-sim/arc_sim_service:1.1.5
+    image: asia.gcr.io/arc-sim/arc_sim_service:1.1.6
     ports:
       - 8000:8000
     expose:
@@ -43,8 +43,6 @@ services:
       - FLASK_APP=sim_api/app.py
       - FLASK_ENV=production
       - APP_SETTINGS=configs.flask_conf.ProductionConfig
-      - SIMCCT_HOST=api.arclytics.io
-      - SIMCCT_PORT=8000
       - SECRET_KEY=${SECRET_KEY}
       - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
       - MONGO_HOST=mongodb

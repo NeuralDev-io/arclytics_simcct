@@ -198,7 +198,7 @@ class ShareSimButton extends Component {
           type="button"
           onClick={() => {}}
           IconComponent={props => <Share2Icon {...props} />}
-          // isDisabled={!isSimulated || !isAuthenticated}
+          isDisabled={!isSimulated || !isAuthenticated}
         >
           SHARE
         </Button>

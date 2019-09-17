@@ -24,13 +24,12 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from marshmallow import ValidationError
 
+from logger import AppLogger
 from sim_api.extensions import api
+from sim_api.middleware import (authenticate_user_cookie_restful,
+                                authorize_admin_cookie_restful)
 from sim_api.schemas import AlloySchema
-from sim_api.middleware import (
-    authorize_admin_cookie_restful, authenticate_user_cookie_restful
-)
 from simulation.utilities import MissingElementError
-from logger.arc_logger import AppLogger
 
 logger = AppLogger(__name__)
 

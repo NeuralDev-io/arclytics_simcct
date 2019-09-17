@@ -14,4 +14,4 @@ docker-compose -p arc exec mongodb \
 
 # shellcheck disable=SC1101
 docker cp arc_mongodb_1:/data/backups/dump_data \
-    ./services/db/production_data/
+    ./services/db/test_data/

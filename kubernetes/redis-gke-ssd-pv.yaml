@@ -1,0 +1,13 @@
+apiVersion: "v1"
+kind: "PersistentVolume"
+metadata:
+  name: redis-pv
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: fast
+  gcePersistentDisk:
+    pdName: redis-ssd-disk  # Make sure you use the SSD name created in `gcloud`

@@ -59,7 +59,7 @@ Button.propTypes = {
   className: PropTypes.string,
   isLoading: PropTypes.bool,
   isDisabled: PropTypes.bool,
-  /* appearance?: "default" | "outline" | "text"  */
+  /* appearance?: "default" | "outline" | "text" */
   appearance: PropTypes.string,
   /* color?: "dangerous" | "warning" */
   color: PropTypes.string,

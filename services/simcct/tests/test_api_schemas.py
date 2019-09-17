@@ -19,13 +19,11 @@ from pathlib import Path
 from flask import json
 from marshmallow import ValidationError
 
-import settings
+from manage import BASE_DIR
 from tests.test_api_base import BaseTestCase
-from sim_app.schemas import (AlloySchema, ConfigurationsSchema)
+from sim_api.schemas import (AlloySchema, ConfigurationsSchema)
 
-_TEST_CONFIGS_PATH = Path(
-    settings.BASE_DIR
-) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 
 
 class TestSchemas(BaseTestCase):

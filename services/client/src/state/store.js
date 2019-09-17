@@ -8,7 +8,7 @@ import * as reducers from './ducks'
 import myPersistReducer from './ducks/persist/reducers'
 
 const persistConfig = {
-  key: 'userPersist',
+  key: 'userStatus',
   storage,
 }
 

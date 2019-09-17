@@ -18,250 +18,209 @@ __date__ = '2019.07.17'
 
 {Description}
 """
-
 import os
-import requests
 import unittest
 from pathlib import Path
 
-from bson import ObjectId
-from flask import current_app as app
 from flask import json
-from pymongo import MongoClient
+from mongoengine import get_db
 
-from tests.test_api_base import BaseTestCase
-from sim_app.sim_session import SimSessionService
-from sim_app.schemas import AlloySchema, ConfigurationsSchema, AlloyStoreSchema
-from settings import BASE_DIR
+from logger import AppLogger
+from sim_api.extensions.SimSession import SimSessionService
+from sim_api.models import AlloyStore, Configuration, User
+from sim_api.schemas import AlloyStoreSchema, ConfigurationsSchema
+from tests.test_api_base import BaseTestCase, app
+from tests.test_utilities import test_login
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+logger = AppLogger(__name__)
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'sim_configs.json'
+
+with open(_TEST_CONFIGS_PATH, 'r') as f:
+    test_json = json.load(f)
 
 
 class TestSimulationService(BaseTestCase):
-    users_host = os.environ.get('USERS_HOST')
-    base_url = f'http://{users_host}'
-    _id = None
+    _email = None
+    _user_pw = 'IMissThor!!!'
+    mongo = None
 
     @classmethod
     def setUpClass(cls) -> None:
-        resp = requests.post(
-            url=f'{cls.base_url}/auth/register',
-            json={
+        assert app.config['TESTING'] is True
+
+        cls.user = User(
+            **{
                 'email': 'jane@culver.edu.us',
                 'first_name': 'Jane',
                 'last_name': 'Foster',
-                'password': 'IMissThor!!!'
             }
         )
-        data = resp.json()
-        cls.token = data.get('token')
-
-        user_resp = requests.get(
-            f'{cls.base_url}/auth/status',
-            headers={
-                'Content-type': 'application/json',
-                'Authorization': f'Bearer {cls.token}'
-            }
-        )
-        data = user_resp.json()
-        cls._id = data.get('data')['_id']
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        """On finishing, we should delete Jane so she's not registered again."""
-        # We make a conn to Mongo
-        mongo = MongoClient(
-            host=os.environ.get('MONGO_HOST'),
-            port=int(os.environ.get('MONGO_PORT'))
-        )
-        # user = mongo['arc_dev'].users.find_one({'_id': ObjectId(cls._id)})
-        # print(user)
-        # And just delete Jane from the db
-        mongo.arc_dev.users.delete_one({'_id': ObjectId(cls._id)})
-
-    def login_client(self, client):
-        with open(_TEST_CONFIGS_PATH, 'r') as f:
-            test_json = json.load(f)
+        cls.user.set_password(cls._user_pw)
+        cls.user.verified = True
 
         configs = ConfigurationsSchema().load(test_json['configurations'])
-
-        alloy = AlloySchema().load(
-            {
-                'name': 'Arc_Stark',
-                'compositions': test_json['compositions']
-            }
-        )
-        store = {
+        store_dict = {
             'alloy_option': 'single',
             'alloys': {
-                'parent': alloy,
+                'parent': {
+                    'name': 'Arc_Stark',
+                    'compositions': test_json['compositions']
+                },
                 'weld': None,
                 'mix': None
             }
         }
-        alloy_store = AlloyStoreSchema().load(store)
+        alloy_store = AlloyStoreSchema().load(store_dict)
 
-        sess_res = client.post(
-            '/session/login',
-            data=json.dumps(
-                {
-                    '_id': self._id,
-                    'is_admin': False,
-                    'last_configurations': configs,
-                    'last_alloy_store': alloy_store
-                }
-            ),
-            headers={'Authorization': f'Bearer {self.token}'},
-            content_type='application/json'
-        )
-        data = json.loads(sess_res.data.decode())
-        self.session_key = data['session_key']
-        _, session_store = SimSessionService().load_session(self.session_key)
-        session_alloy = session_store.get('alloy_store')
-        self.assertEqual(data['status'], 'success')
-        self.assertTrue(sess_res.status_code == 201)
-        self.assertEqual(
-            alloy_store['alloys']['parent'], session_alloy['alloys']['parent']
-        )
+        cls.user.last_alloy_store = AlloyStore(**alloy_store)
+        cls.user.last_configuration = Configuration(**configs)
 
-    def test_simulate_no_prev_configs(self):
-        """Ensure that if they have no previous configurations set it fails."""
-        with app.test_client() as client:
+        cls.user.save()
+        cls._email = cls.user.email
 
-            res = client.get(
-                '/simulate',
-                headers={
-                    'Authorization': f'Bearer {self.token}',
-                    'Session': 'SessionKey!'
-                },
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'], 'Unable to load session from Redis.'
-            )
-            self.assertEqual(data['status'], 'fail')
-            self.assert401(res)
+        mongo = get_db('default')
+        user = mongo.users.find_one({'email': 'jane@culver.edu.us'})
+        assert user is not None
 
-    def test_simulate_no_prev_alloy(self):
-        """Ensure that if the user does not have a previous alloy it fails."""
-        with open(_TEST_CONFIGS_PATH, 'r') as f:
-            test_json = json.load(f)
-        configs = ConfigurationsSchema().load(test_json['configurations'])
-        with app.test_client() as client:
-            sess_res = client.post(
-                '/session/login',
-                data=json.dumps(
-                    {
-                        '_id': self._id,
-                        'is_admin': False,
-                        'last_configurations': configs,
-                        'last_alloy_store': {}
-                    }
-                ),
-                headers={'Authorization': f'Bearer {self.token}'},
-                content_type='application/json'
-            )
-            data = json.loads(sess_res.data.decode())
-            session_key = data['session_key']
-            sid, session_store = SimSessionService().load_session(session_key)
-            session_configs = session_store.get('configurations')
-            self.assertEqual(data['status'], 'success')
-            self.assertTrue(sess_res.status_code == 201)
-            self.assertEqual(configs, session_configs)
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """On finishing, we should delete users collection so no conflict."""
+        db = get_db('default')
+        assert db.name == 'arc_test'
+        db.users.drop()
 
-            res = client.get(
-                '/simulate',
-                headers={
-                    'Authorization': f'Bearer {self.token}',
-                    'Session': session_key
-                },
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'], 'No previous session alloy was set.'
-            )
-            self.assert404(res)
-            self.assertEqual(data['status'], 'fail')
+    def login_client(self, client):
+        """Set up a User for the simulation."""
+        test_login(client, self._email, self._user_pw)
 
-    def test_simulate_with_login(self):
-        """Ensure there is a successful simulation get request."""
-        with app.test_client() as client:
-            self.login_client(client)
+        session_store: dict = SimSessionService().load_session()
+        configs: dict = session_store['configurations']
+        alloy_store: dict = session_store['alloy_store']
 
-            # MUST have AE and MS/BS > 0.0 before we can run simulate
-            res = client.get(
-                '/configs/ae',
-                headers={
-                    'Authorization': f'Bearer {self.token}',
-                    'Session': self.session_key
-                },
-                content_type='application/json'
-            )
-            self.assert200(res)
+        return configs, alloy_store
 
-            res = client.get(
-                '/configs/ms',
-                headers={
-                    'Authorization': f'Bearer {self.token}',
-                    'Session': self.session_key
-                },
-                content_type='application/json'
-            )
-            self.assert200(res)
-            res = client.get(
-                '/configs/bs',
-                headers={
-                    'Authorization': f'Bearer {self.token}',
-                    'Session': self.session_key
-                },
-                content_type='application/json'
-            )
-            self.assert200(res)
+    # def test_simulate_no_prev_configs(self):
+    #     """Ensure that if they have no previous configurations set it fails."""
+    #     with app.test_client() as client:
+    #         # We login to get a cookie
+    #         _, _ = self.login_client(client)
+    #
+    #         # We change the session by making a transaction on it within context
+    #         # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
+    #         #  is set because otherwise opening a transaction will not use
+    #         #  a standard HTTP request environ_base.
+    #         with client.session_transaction(
+    #             environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+    #         ) as session:
+    #             session['simulation'] = None
+    #         with client.session_transaction(
+    #             environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+    #         ):
+    #             # At this point the session transaction has been updated so
+    #             # we can check the session within the context
+    #             session_store = SimSessionService().load_session()
+    #             self.assertIsInstance(session_store, str)
+    #             self.assertEqual(session_store, 'Session is empty.')
+    #
+    #         res = client.get(
+    #             '/api/v1/sim/simulate', content_type='application/json'
+    #         )
+    #         data = json.loads(res.data.decode())
+    #         self.assertEqual(
+    #             data['message'], 'Cannot retrieve data from Session store.'
+    #         )
+    #         self.assertEqual(data['status'], 'fail')
+    #         self.assertStatus(res, 500)
 
-            # Now we can run
-            res = client.get(
-                '/simulate',
-                headers={
-                    'Authorization': f'Bearer {self.token}',
-                    'Session': self.session_key
-                },
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertFalse(data.get('message', None))
-            self.assert200(res)
-            self.assertEqual(data['status'], 'success')
-            self.assertTrue(data['data'])
-            self.assertEqual(
-                len(data['data']['CCT']['ferrite_nucleation']['time']),
-                len(data['data']['CCT']['ferrite_nucleation']['temp'])
-            )
-            self.assertEqual(
-                len(data['data']['CCT']['ferrite_completion']['time']),
-                len(data['data']['CCT']['ferrite_completion']['temp'])
-            )
-            self.assertEqual(
-                len(data['data']['CCT']['pearlite_nucleation']['time']),
-                len(data['data']['CCT']['pearlite_nucleation']['temp'])
-            )
-            self.assertEqual(
-                len(data['data']['CCT']['pearlite_completion']['time']),
-                len(data['data']['CCT']['pearlite_completion']['temp'])
-            )
-            self.assertEqual(
-                len(data['data']['CCT']['bainite_nucleation']['time']),
-                len(data['data']['CCT']['bainite_nucleation']['temp'])
-            )
-            self.assertEqual(
-                len(data['data']['CCT']['bainite_completion']['time']),
-                len(data['data']['CCT']['bainite_completion']['temp'])
-            )
-            self.assertEqual(
-                len(data['data']['CCT']['martensite']['time']),
-                len(data['data']['CCT']['martensite']['temp'])
-            )
+    # def test_simulate_no_prev_alloy(self):
+    #     """Ensure that if the user does not have a previous alloy it fails."""
+    #     # configs = ConfigurationsSchema().load(test_json['configurations'])
+    #     with app.test_client() as client:
+    #         # We login to get a cookie
+    #         _, _ = self.login_client(client)
+    #
+    #         # We change the session by making a transaction on it within context
+    #         # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
+    #         #  is set because otherwise opening a transaction will not use
+    #         #  a standard HTTP request environ_base.
+    #         with client.session_transaction(
+    #             environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+    #         ) as session:
+    #             session_store = json.loads(session['simulation'])
+    #             session_store['alloy_store']['alloys']['parent'] = None
+    #             ser_session_data = json.dumps(session_store)
+    #             prefix = SimSessionService.SESSION_PREFIX
+    #             session[prefix] = ser_session_data
+    #
+    #         res = client.get(
+    #             '/api/v1/sim/simulate', content_type='application/json'
+    #         )
+    #         data = json.loads(res.data.decode())
+    #         self.assertEqual(
+    #             data['message'], 'No previous session alloy was set.'
+    #         )
+    #         self.assert404(res)
+    #         self.assertEqual(data['status'], 'fail')
+
+    # def test_simulate_with_login(self):
+    #     """Ensure there is a successful simulation get request."""
+    #     with app.test_client() as client:
+    #         self.login_client(client)
+    #
+    #         # MUST have AE and MS/BS > 0.0 before we can run simulate
+    #         res = client.get(
+    #             '/api/v1/sim/configs/ae', content_type='application/json'
+    #         )
+    #         self.assert200(res)
+    #
+    #         res = client.get(
+    #             '/api/v1/sim/configs/ms', content_type='application/json'
+    #         )
+    #         self.assert200(res)
+    #         res = client.get(
+    #             '/api/v1/sim/configs/bs', content_type='application/json'
+    #         )
+    #         self.assert200(res)
+    #
+    #         # Now we can run
+    #         res = client.get(
+    #             '/api/v1/sim/simulate', content_type='application/json'
+    #         )
+    #         data = json.loads(res.data.decode())
+    #         self.assertFalse(data.get('message', None))
+    #         self.assert200(res)
+    #         self.assertEqual(data['status'], 'success')
+    #         self.assertTrue(data['data'])
+    #         self.assertEqual(
+    #             len(data['data']['CCT']['ferrite_nucleation']['time']),
+    #             len(data['data']['CCT']['ferrite_nucleation']['temp'])
+    #         )
+    #         self.assertEqual(
+    #             len(data['data']['CCT']['ferrite_completion']['time']),
+    #             len(data['data']['CCT']['ferrite_completion']['temp'])
+    #         )
+    #         self.assertEqual(
+    #             len(data['data']['CCT']['pearlite_nucleation']['time']),
+    #             len(data['data']['CCT']['pearlite_nucleation']['temp'])
+    #         )
+    #         self.assertEqual(
+    #             len(data['data']['CCT']['pearlite_completion']['time']),
+    #             len(data['data']['CCT']['pearlite_completion']['temp'])
+    #         )
+    #         self.assertEqual(
+    #             len(data['data']['CCT']['bainite_nucleation']['time']),
+    #             len(data['data']['CCT']['bainite_nucleation']['temp'])
+    #         )
+    #         self.assertEqual(
+    #             len(data['data']['CCT']['bainite_completion']['time']),
+    #             len(data['data']['CCT']['bainite_completion']['temp'])
+    #         )
+    #         self.assertEqual(
+    #             len(data['data']['CCT']['martensite']['time']),
+    #             len(data['data']['CCT']['martensite']['temp'])
+    #         )
 
     # def test_simulate_plotting(self):
     #     with app.test_client() as client:
@@ -276,6 +235,32 @@ class TestSimulationService(BaseTestCase):
     #         self.assert200(res)
     #         self.assertTrue(data['data'])
 
+    def test_simulate_with_login(self):
+        """Testing Dask Arrays."""
+        with app.test_client() as client:
+            self.login_client(client)
+
+            # MUST have AE and MS/BS > 0.0 before we can run simulate
+            res = client.get(
+                '/api/v1/sim/configs/ae', content_type='application/json'
+            )
+            self.assert200(res)
+
+            res = client.get(
+                '/api/v1/sim/configs/ms', content_type='application/json'
+            )
+            self.assert200(res)
+            res = client.get(
+                '/api/v1/sim/configs/bs', content_type='application/json'
+            )
+            self.assert200(res)
+
+            # Now we can run
+            res = client.get(
+                '/api/v1/sim/simulate', content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            # logger.debug(data)
 
 if __name__ == '__main__':
     unittest.main()

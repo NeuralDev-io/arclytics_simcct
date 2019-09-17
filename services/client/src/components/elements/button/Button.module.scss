@@ -1,5 +1,3 @@
-@import '../../../styles/colors_light';
-
 .base {
   border: none;
   outline: none;
@@ -19,21 +17,21 @@
 .default {
   @extend .base;
   // default buton style
-  background-color: $arc500;
-  border: 2px solid $arc500;
-  color: $n0;
-  box-shadow: $base-shadow;
+  background-color: var(--arc500);
+  border: 2px solid var(--arc500);
+  color: var(--n0);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, .25);
 
   &:hover {
-    background-color: adjust-color($color: $arc500, $saturation: 20%);
-    border-color: adjust-color($color: $arc500, $saturation: 20%);
-    box-shadow: $shadow-up;
+    background-color: var(--arc500);
+    border-color: var(--arc500);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, .25);
   }
 
   &.disabled {
-    background-color: $n300;
-    border-color: $n300;
-    color: $n50;
+    background-color: var(--n300);
+    border-color: var(--n300);
+    color: var(--n50);
   }
 
   & > .icon {
@@ -44,25 +42,25 @@
   }
 
   &.dangerous {
-    background-color: $r400;
-    border-color: $r400;
+    background-color: var(--r400);
+    border-color: var(--r400);
   
     &:hover {
-      background-color: adjust-color($color: $r400, $saturation: 20%);
-      border-color: adjust-color($color: $r400, $saturation: 20%);
-      box-shadow: $shadow-up;
+      background-color: var(--r400);
+      border-color: var(--r400);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, .25);
     }
   }
   
   &.warning {
-    background-color: $o400;
-    border-color: $o400;
-    color: $n900;
+    background-color: var(--o400);
+    border-color: var(--o400);
+    color: var(--n900);
   
     &:hover {
-      background-color: adjust-color($color: $o400, $saturation: 20%);
-      border-color: adjust-color($color: $o400, $saturation: 20%);
-      box-shadow: $shadow-up;
+      background-color: var(--o400);
+      border-color: var(--o400);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, .25);
     }
   }
 }
@@ -70,45 +68,45 @@
 .outline {
   @extend .base;
   background-color: transparent;
-  color: $arc500;
-  border: 2px solid $arc500;
+  color: var(--arc500);
+  border: 2px solid var(--arc500);
   box-shadow: none;
 
   &:hover {
-    background-color: adjust-color($color: $arc500, $saturation: 20%);
-    border-color: adjust-color($color: $arc500, $saturation: 20%);
+    background-color: var(--arc500);
+    border-color: var(--arc500);
     box-shadow: none;
-    color: $n0;
+    color: var(--n0);
   }
 
   &.dangerous {
-    border-color: $r400;
-    color: $r400;
+    border-color: var(--r400);
+    color: var(--r400);
   
     &:hover {
-      background-color: adjust-color($color: $r400, $saturation: 20%);
-      color: $n0;
-      border-color: adjust-color($color: $r400, $saturation: 20%);
+      background-color: var(--r400);
+      color: var(--n0);
+      border-color: var(--r400);
       box-shadow: none;
     }
   }
   
   &.warning {
-    border-color: $o400;
-    color: $n900;
+    border-color: var(--o400);
+    color: var(--n900);
   
     &:hover {
-      background-color: adjust-color($color: $o400, $saturation: 20%);
-      color: $n0;
-      border-color: adjust-color($color: $o400, $saturation: 20%);
+      background-color: var(--o400);
+      color: var(--n0);
+      border-color: var(--o400);
       box-shadow: none;
     }
   }
 
   &.disabled {
     background-color: transparent;
-    border-color: $n100;
-    color: $n100;
+    border-color: var(--n100);
+    color: var(--n100);
   }
 
   & > .icon {
@@ -122,38 +120,38 @@
 .text {
   @extend .base;
   background-color: transparent;
-  color: $arc500;
+  color: var(--arc500);
   border: none;
   box-shadow: none;
 
   &:hover {
-    background-color: $n50;
+    background-color: rgba(var(--n50-rgb), .5);
     box-shadow: none;
   }
 
   &.dangerous {
-    color: $r400;
+    color: var(--r400);
     background-color: transparent;
     border: none;
     box-shadow: none;
   
     &:hover {
-      background-color: rgba($color: $r500, $alpha: .1);
+      background-color: rgba(var(--r500-rgb), .1);
     }
   }
   
   &.warning {
-    color: $o400;
+    color: var(--o400);
   
     &:hover {
-      background-color: rgba($color: $o500, $alpha: .1);
+      background-color: rgba(var(--o500-rgb), .1);
     }
   }
 
   &.disabled {
     background-color: transparent;
     border: none;
-    color: $n100; 
+    color: var(--n100); 
 
     &:hover {
       background-color: transparent;

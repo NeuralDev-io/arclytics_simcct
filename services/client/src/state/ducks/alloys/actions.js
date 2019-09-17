@@ -27,7 +27,6 @@ import {
 } from './types'
 
 // Change the ports for which server
-const getPort = type => (type === 'global' ? 8001 : 8000)
 
 const getAlloys = type => (dispatch) => {
   /**
@@ -43,12 +42,11 @@ const getAlloys = type => (dispatch) => {
    *   "data": [{"_id": ..., "name": ..., "compositions": [...]}, {...}]
    * }
    */
-  fetch(`http://localhost:${getPort(type)}/${type}/alloys`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())
@@ -79,12 +77,11 @@ const createAlloy = (type, alloy) => (dispatch) => {
    *   "data": {"_id": ..., "name": ..., "compositions": [...]}
    * }
    */
-  fetch(`http://localhost:${getPort(type)}/${type}/alloys`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys`, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify(alloy),
   })
@@ -105,12 +102,11 @@ const createAlloy = (type, alloy) => (dispatch) => {
 }
 
 const updateAlloy = (type, alloy) => (dispatch) => {
-  fetch(`http://localhost:${getPort(type)}/${type}/alloys/${alloy._id}`, { // eslint-disable-line
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys/${alloy._id}`, { // eslint-disable-line
     method: 'PUT',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
     body: JSON.stringify({
       name: alloy.name,
@@ -145,12 +141,11 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
    *   "status": "success",
    * }
    */
-  fetch(`http://localhost:${getPort(type)}/${type}/alloys/${alloyId}`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys/${alloyId}`, {
     method: 'DELETE',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Session: localStorage.getItem('session'),
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   })
     .then(res => res.json())
@@ -167,9 +162,9 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
 }
 
 export const getGlobalAlloys = () => getAlloys('global')
-export const createGlobalAlloys = alloy => createAlloy('global', alloy)
-export const updateGlobalAlloys = alloy => updateAlloy('global', alloy)
-export const deleteGlobalAlloys = alloyId => deleteAlloy('global', alloyId)
+export const createGlobalAlloy = alloy => createAlloy('global', alloy)
+export const updateGlobalAlloy = alloy => updateAlloy('global', alloy)
+export const deleteGlobalAlloy = alloyId => deleteAlloy('global', alloyId)
 
 export const getUserAlloys = () => getAlloys('user')
 export const createUserAlloy = alloy => createAlloy('user', alloy)

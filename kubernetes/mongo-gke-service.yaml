@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+  labels:
+    name: mongo
+    role: mongo
+spec:
+  ports:
+  - port: 27017
+    targetPort: 27017
+  clusterIP: None
+  selector:
+    role: mongo-persistence
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: mongo
+spec:
+  serviceName: mongo-service
+  selector:
+    matchLabels:
+      role: mongo-persistence
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        role: mongo-persistence
+        replicaset: MainRepSet
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: replicaset
+                    operator: In
+                    values:
+                    - MainRepSet
+              topologyKey: kubernetes.io/hostname
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: secrets-volume
+          secret:
+            secretName: shared-bootstrap-secrets
+            defaultMode: 256
+      containers:
+        - name: mongo-container
+          image: asia.gcr.io/arc-sim/arc_sim_mongo:1.1.0
+          imagePullPolicy: Always
+          command:
+            - "numactl"
+            - "--interleave=all"
+            - "mongod"
+            - "--wiredTigerCacheSizeGB"
+            - "0.25"
+            - "--bind_ip"
+            - "0.0.0.0"
+            - "--replSet"
+            - "MainRepSet"
+            - "--auth"
+            - "--clusterAuthMode"
+            - "keyFile"
+            - "--keyFile"
+            - "/etc/secrets-volume/internal-auth-mongodb-keyfile"
+            - "--setParameter"
+            - "authenticationMechanisms=SCRAM-SHA-1"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_HOST
+              value: "mongo-0.mongo-service.default.svc.cluster.local"
+            - name: MONGO_PORT
+              value: "27017"
+            - name: MONGO_APP_DB
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: mongo_app_db
+            - name: MONGO_APP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: mongo_app_user
+            - name: MONGO_APP_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: mongo_app_user_password
+          volumeMounts:
+            - name: secrets-volume
+              readOnly: true
+              mountPath: /etc/secrets-volume
+            - name: mongo-pvc
+              mountPath: /data/db
+  volumeClaimTemplates:
+  - metadata:
+      name: mongo-pvc
+      annotations:
+        volume.beta.kubernetes.io/storage-class: "standard"
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 30Gi

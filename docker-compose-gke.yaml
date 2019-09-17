@@ -1,0 +1,151 @@
+
+version: '3.7'
+
+services:
+
+  client:
+    build:
+      context: ./services/client
+      dockerfile: Dockerfile-prod
+      args:
+        - REACT_APP_SIM_HOST=https://api.arclytics.io
+        - REACT_APP_SIM_PORT=443
+      labels:
+        arclytics.io: "production"
+        service: "client"
+    image: asia.gcr.io/arc-sim/arc_sim_client:1.1.4
+    ports:
+      - 8080:8080
+    expose:
+      - 8080
+    environment:
+      - REACT_APP_SIM_HOST=https://api.arclytics.io
+      - REACT_APP_SIM_PORT=443
+    depends_on:
+      - simcct
+      - mongodb
+    networks:
+      - host
+
+  simcct:
+    build:
+      context: ./services/simcct
+      dockerfile: Dockerfile-prod
+      labels:
+        arclytics.io: "production"
+        service: "simcct"
+    image: asia.gcr.io/arc-sim/arc_sim_service:1.1.5
+    ports:
+      - 8000:8000
+    expose:
+      - 8000
+    environment:
+      - FLASK_APP=sim_api/app.py
+      - FLASK_ENV=production
+      - APP_SETTINGS=configs.flask_conf.ProductionConfig
+      - SIMCCT_HOST=api.arclytics.io
+      - SIMCCT_PORT=8000
+      - SECRET_KEY=${SECRET_KEY}
+      - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - MONGO_APP_DB=${MONGO_APP_DB}
+      - MONGO_APP_USER=${MONGO_APP_USER}
+      - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - CLIENT_PROTOCOL=https
+      - CLIENT_HOST=app.arclytics.io
+      - CLIENT_PORT=443
+      - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - host
+
+  celery-worker:
+    build:
+      context: ./services/celery-worker
+      dockerfile: Dockerfile-prod
+      labels:
+        arclytics.io: "production"
+        service: "celery-worker"
+    image: asia.gcr.io/arc-sim/arc_sim_celery:1.0
+    ports:
+      - 5555:5555
+    expose:
+      - 5555
+    environment:
+      - FLASK_ENV=production
+      - APP_SETTINGS=flask_conf.ProductionConfig
+      - MAIL_SERVER=${MAIL_SERVER}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USE_TLS=${MAIL_USE_TLS}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    depends_on:
+      - redis
+    networks:
+      - host
+
+  redis:
+    build:
+      context: ./services/redis
+      dockerfile: Dockerfile
+      labels:
+        arclytics.io: "production"
+        service: "redis"
+    image: asia.gcr.io/arc-sim/arc_sim_redis:1.1.0
+    restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - 6379:6379
+    expose:
+      - 6379
+    networks:
+      - host
+
+  mongodb:
+    build:
+      context: ./services/db
+      dockerfile: Dockerfile-prod
+      labels:
+        arclytics.io: "production"
+        service: "mongodb"
+    image: asia.gcr.io/arc-sim/arc_sim_mongo:1.1.0
+    restart: always
+    volumes:
+      - mongo-volume-mount:/data/db
+    ports:
+      - 27017:27017
+    expose:
+      - 27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - MONGO_ROOT_USER=${MONGO_ROOT_USER}
+      - MONGO_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - MONGO_APP_DB=${MONGO_APP_DB}
+      - MONGO_APP_USER=${MONGO_APP_USER}
+      - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
+      - MONGO_DATA_DIR=/usr/data/db
+      - MONGO_LOG_DIR=/dev/null
+    networks:
+      - host
+
+networks:
+  host:
+    driver: bridge
+    labels:
+      arclytics.io: "production"
+
+# https://docs.docker.com/compose/compose-file/#volume-configuration-reference
+volumes:
+  mongo-volume-mount:
+    labels:
+      arclytics.io: "production"

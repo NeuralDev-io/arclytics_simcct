@@ -15,13 +15,24 @@
         padding: 0 .75rem;
         border-radius: 6px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, .25);
-        transition: ease-in-out .4s;
-        cursor: pointer;
 
+        -webkit-box-pack: center;
+        -moz-box-pack: center;
+        -ms-flex-pack: center;
+        -webkit-justify-content: center;
+        -webkit-align-items: center;
+        display: -webkit-box;
+        display: -moz-box;
+        display: -ms-flexbox;
+        display: -webkit-flex;
         display: flex;
         flex-direction: row;
         align-items: center;
         justify-content: center;
+
+        transition: ease-in-out .4s;
+        cursor: pointer;
+
       }
     </style>
   </head>
@@ -74,7 +85,7 @@
           <!-- EMAIL FOOTER GOES HERE -->
           <p>This message was sent by the team behind:</p>
           <br/>
-          <img src="http://www.uow.neuraldev.io/static/logo_text_light_100.png"
+          <img src="https://storage.googleapis.com/asia.artifacts.arc-sim.appspot.com/assets/imgs/email_footer_logo.png"
                alt="Arclytics Logo" width="50%" height="auto"/>
         </table>
       </td>

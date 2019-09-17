@@ -14,16 +14,13 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
 import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
-import Share2Icon from 'react-feather/dist/icons/share-2'
-import UploadIcon from 'react-feather/dist/icons/upload'
 import Button from '../../elements/button'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
-import ShareModal from '../../moleisms/share-modal'
+import PhaseFractions from '../../moleisms/charts/PhaseFractions'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
-import { SaveSimButton } from '../../moleisms/sim-actions'
+import { SaveSimButton, ShareSimButton, LoadSimButton } from '../../moleisms/sim-actions'
 import { TTT, CCT } from '../../moleisms/charts'
-import { postSaveSimulation } from '../../../api/sim/SessionSaveSim'
 
 import styles from './SimulationPage.module.scss'
 
@@ -33,56 +30,31 @@ class SimulationPage extends Component {
     this.state = {
       displayConfig: true,
       displayProfile: true,
-      shareModal: false,
     }
-  }
-
-  componentDidMount = () => {
-    if (!localStorage.getItem('token')) {
-      this.props.history.push('/signin') // eslint-disable-line
-    }
-  }
-
-  handleShowModal = type => this.setState({ [`${type}Modal`]: true })
-
-  handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
-
-  saveCurrentSimulation = () => {
-    const { configurations, alloys } = this.state
-    console.log(configurations)
-    const alloyStore = {
-      alloy_option: alloys.alloyOption,
-      alloys: {
-        parent: alloys.parent,
-        weld: alloys.weld,
-        mix: alloys.mix,
-      },
-    }
-    const { grain_size_ASTM, grain_size_diameter, ...others } = configurations
-    const validConfigs = {
-      ...others,
-      grain_size: grain_size_ASTM,
-    }
-    console.log(alloyStore)
-    postSaveSimulation(validConfigs, alloyStore)
   }
 
   render() {
     const {
       displayConfig,
       displayProfile,
-      shareModal,
       runSimConnect,
     } = this.state
-    const { history, isInitialised } = this.props
+    const {
+      history,
+      isInitialised,
+      isSimulated,
+      isAdmin,
+      isAuthenticated,
+    } = this.props
 
     return (
       <React.Fragment>
-        <AppBar active="sim" redirect={history.push} />
+        <AppBar active="sim" redirect={history.push} isAdmin={isAdmin} isAuthenticated={isAuthenticated} />
         <div className={styles.compSidebar}>
           <CompSidebar
             sessionIsInitialised={isInitialised}
             onSimulate={runSimConnect}
+            isAuthenticated={isAuthenticated}
           />
         </div>
         <div className={styles.main}>
@@ -103,27 +75,19 @@ class SimulationPage extends Component {
               </Button>
             </div>
             <div className={styles.actions}>
-              <Button
-                appearance="text"
-                onClick={() => this.handleShowModal('share')}
-                IconComponent={props => <Share2Icon {...props} />}
-                isDisabled={!isInitialised}
-              >
-                SHARE
-              </Button>
-              <SaveSimButton isSessionInitialised={isInitialised} />
-              <Button
-                appearance="outline"
-                type="button"
-                onClick={() => console.log('LOAD NOW')}
-                IconComponent={props => <UploadIcon {...props} />}
-              >
-                LOAD
-              </Button>
+              <ShareSimButton
+                isSimulated={isSimulated}
+                isAuthenticated={isAuthenticated}
+              />
+              <SaveSimButton
+                isSimulated={isSimulated}
+                isAuthenticated={isAuthenticated}
+              />
+              <LoadSimButton />
             </div>
           </header>
           <div className={styles.configForm} style={{ display: displayConfig ? 'block' : 'none' }}>
-            <ConfigForm />
+            <ConfigForm isAuthenticated={isAuthenticated} />
           </div>
           <div className={styles.results}>
             <h4>Results</h4>
@@ -145,34 +109,30 @@ class SimulationPage extends Component {
             </div>
           </div>
           <div className={styles.custom}>
-            <div>
-              <header className={styles.profile}>
-                <h4>User cooling profile</h4>
-                <Button
-                  appearance="text"
-                  onClick={() => this.setState(prevState => ({
-                    displayProfile: !prevState.displayProfile,
-                  }))}
-                  IconComponent={props => (
-                    displayProfile
-                      ? <ChevronUpIcon {...props} />
-                      : <ChevronDownIcon {...props} />
-                  )}
-                >
-                  {displayProfile ? 'Collapse' : 'Expand'}
-                </Button>
-              </header>
-              <div style={{ display: displayProfile ? 'block' : 'none' }}>
-                <UserProfileConfig />
+            <header>
+              <h4>User cooling profile</h4>
+              <Button
+                appearance="text"
+                onClick={() => this.setState(prevState => ({
+                  displayProfile: !prevState.displayProfile,
+                }))}
+                IconComponent={props => (
+                  displayProfile
+                    ? <ChevronUpIcon {...props} />
+                    : <ChevronDownIcon {...props} />
+                )}
+              >
+                {displayProfile ? 'Collapse' : 'Expand'}
+              </Button>
+            </header>
+            <div style={{ display: displayProfile ? 'flex' : 'none' }}>
+              <div className={styles.userConfig}>
+                <UserProfileConfig isAuthenticated={isAuthenticated} />
               </div>
+              <PhaseFractions />
             </div>
           </div>
         </div>
-
-        <ShareModal
-          show={shareModal}
-          onClose={() => this.handleCloseModal('share')}
-        />
       </React.Fragment>
     )
   }
@@ -192,11 +152,15 @@ SimulationPage.propTypes = {
   })).isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
   isInitialised: PropTypes.bool.isRequired,
+  isSimulated: PropTypes.bool.isRequired,
+  isAdmin: PropTypes.bool.isRequired,
+  isAuthenticated: PropTypes.bool.isRequired,
 }
 
 const mapStateToProps = state => ({
   globalAlloys: state.alloys.global,
   isInitialised: state.sim.isInitialised,
+  isSimulated: state.sim.isSimulated,
 })
 
 const mapDispatchToProps = {}

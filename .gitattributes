@@ -2,9 +2,7 @@
 deploy-prod.sh text eol=lf
 deploy-dev.sh text eol=lf
 style_python.sh text eol=lf
-run_tests.sh text eol=lf
-seed_db.sh text eol=lf
+arclytics.sh text eol=lf
 ./services/swagger/docker-run.sh text eol=lf
-./services/users/docker-entrypoint.sh text eol=lf
-./services/simcct/docker-entrypoint.sh text eol=lf
+./services/arclytics/docker-entrypoint.sh text eol=lf
 ./services/db/drop_all.sh text eol=lf

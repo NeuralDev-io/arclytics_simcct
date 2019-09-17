@@ -7,7 +7,7 @@
 
   & > div.pie {
     flex-basis: 65%;
-    height: 25rem;
+    height: 20rem;
     z-index: 1001;
     position: relative;
     display: flex;
@@ -20,7 +20,7 @@
     align-items: flex-start;
 
     & > .data {
-      height: 25rem;
+      height: 22rem;
       display: flex;
       flex-flow: column nowrap;
       align-items: flex-start;

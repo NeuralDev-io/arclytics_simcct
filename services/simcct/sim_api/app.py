@@ -117,20 +117,20 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     # Setup the configuration for Flask
     app.config.from_object(configs_path)
     app.secret_key = env.get('SECRET_KEY')
-    prod_environment = env.get('FLASK_ENV', 'development') == 'production'
+    prod_environment = app.config('ENV', 'development') == 'production'
 
     # ========== # CONNECT TO DATABASES # ========== #
-    if prod_environment:
+    if not prod_environment:
         redis = Redis(
             host=env.get('REDIS_HOST'),
             port=int(env.get('REDIS_PORT')),
-            password=env.get('REDIS_PASSWORD'),
             db=1,
         )
     else:
         redis = Redis(
             host=env.get('REDIS_HOST'),
             port=int(env.get('REDIS_PORT')),
+            password=env.get('REDIS_PASSWORD'),
             db=1,
         )
 
@@ -185,21 +185,8 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     #     domains.
     #     Note:	This option cannot be used in conjunction with a ‘*’ origin
     
-    # origins = []
-    # if prod_environment:
-    #     origins.append('app.arclytics.io')
-    #     origins.append('www.app.arclytics.io')
-    #     origins.append('https://app.arclytics.io')
-    #     origins.append('https://www.app.arclytics.io')
-    #     origins.append('http://app.arclytics.io')
-    #     origins.append('http://www.app.arclytics.io')
-    # else:
-    #     origins.append('localhost')
-    #     origins.append('127.0.0.1')
-
     CORS(
         app=app,
-        # origins=origins,
         headers=['Content-Type'],
         expose_headers=[
             'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials',

@@ -14,7 +14,7 @@
 
 .form{
   height:100%;
-  margin-left: 11.125rem;
+  margin-left: 11.25rem;
   width: 23.75rem;
   display:flex;
   flex-flow: column;
@@ -38,8 +38,8 @@
 }
 
 .name{
-  margin-bottom: 2.8125rem;
-  height:2.25rem;
+  height: 2.25rem;
+  margin-bottom: 1.8125rem;
 }
 
 .firstName{
@@ -52,7 +52,7 @@
 
 .emailPassword{
   height: 2.25rem;
-  margin-bottom: 3rem;
+  margin-bottom: 1.75rem;
 }
 
 .passwordConfirmed{
@@ -133,7 +133,7 @@
     margin-bottom: 2.8125rem
   }
   .name{
-    margin-bottom: 2.8125rem;
+    margin-bottom: 1.8125rem;
     height:2.25rem;
   }
   .passwordConfirmed{

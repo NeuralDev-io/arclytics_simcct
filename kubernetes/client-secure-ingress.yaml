@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: client-secure-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.global-static-ip-name: arclytics-ip
+    networking.gke.io/managed-certificates: arclytics-cert
+spec:
+  backend:
+    serviceName: client-service
+    servicePort: 8080

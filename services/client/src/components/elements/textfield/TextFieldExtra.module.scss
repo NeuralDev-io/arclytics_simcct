@@ -1,0 +1,40 @@
+.withPrefix {
+  padding-left: 2rem;
+}
+
+.withSuffix {
+  padding-right: 2rem;
+}
+
+.inputContainer {
+  position: relative;
+
+  &.default{
+    width: 7.5rem;
+  }
+  &.short {
+    width: 7rem;
+  }
+  &.long {
+    width: 10rem;
+  }
+  &.stretch {
+    width: 100%
+  }
+}
+
+.suffix {
+  position: absolute;
+  top: 50%;
+  right: .75rem;
+  transform: translateY(-50%);
+  color: var(--n600);
+}
+
+.prefix {
+  position: absolute;
+  top: 50%;
+  left: .75rem;
+  transform: translateY(-50%);
+  color: var(--n600);
+}

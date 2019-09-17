@@ -13,13 +13,44 @@
 
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import AlertCircle from 'react-feather/dist/icons/alert-circle'
 
 import styles from './TextField.module.scss'
 
 // TODO: include validation
 class TextField extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      err: '',
+    }
+  }
+
+  validate = (value) => {
+    const { validation } = this.props
+    // console.log(validation)
+    // console.log(value)
+    const BreakException = {}
+    try {
+      validation.forEach((valObj) => {
+        // console.log('start validation')
+        if (!valObj.constraint(value)) {
+          this.setState({ err: valObj.message })
+          // console.log('validation = false')
+          throw BreakException
+        } else {
+          this.setState({ err: '' })
+          // console.log('validation = true')
+        }
+      })
+    } catch (ex) {
+      if (ex !== BreakException) throw ex
+    }
+  }
+
   handleChange = (e) => {
     const { onChange } = this.props
+    // this.validate(e.target.value)
     onChange(e.target.value)
   }
 
@@ -32,19 +63,28 @@ class TextField extends Component {
       value = '',
       length = 'default',
       name,
+      error = '',
+      ...other
     } = this.props
-    const classname = `${styles.input} ${length === 'default' ? '' : styles[length]} ${className || ''}`
+    const { err } = this.state
+    const classname = `${styles.input} ${error !== '' && styles.error} ${className || ''}`
 
+    //Need to fix the iron kick
     return (
-      <input
-        type={type}
-        className={classname}
-        placeholder={placeholder}
-        name={name}
-        value={value}
-        onChange={e => this.handleChange(e)}
-        disabled={isDisabled}
-      />
+      <div className={`${styles.container} ${length === 'default' ? '' : styles[length]}`}>
+        <input
+          {...other}
+          type={type}
+          className={classname}
+          placeholder={placeholder}
+          name={name}
+          value={value}
+          onChange={e => this.handleChange(e)}
+          disabled={isDisabled}
+        />
+        {(error !== '')? <AlertCircle className={styles.errorIcon}/>: ('')}
+        {/* <span className="text--sub2">{err}</span> */}
+      </div>
     )
   }
 }
@@ -53,11 +93,16 @@ TextField.propTypes = {
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   length: PropTypes.string,
-  value: PropTypes.string,
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+  ]),
   type: PropTypes.string,
   placeholder: PropTypes.string,
   isDisabled: PropTypes.bool,
   className: PropTypes.string,
+  validation: PropTypes.string,
+
 }
 
 TextField.defaultProps = {
@@ -67,6 +112,7 @@ TextField.defaultProps = {
   isDisabled: false,
   className: '',
   value: '',
+  validation: '',
 }
 
 export default TextField

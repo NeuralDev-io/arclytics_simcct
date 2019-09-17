@@ -1,4 +1,14 @@
-@import './styles/colors_light';
 @import './styles/typography';
 @import './styles/animation';
 @import './styles/layout';
+@import './styles/form';
+@import './styles/colors.scss';
+
+html {
+  background-color: var(--n0);
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}

@@ -19,14 +19,16 @@ __date__ = '2019.07.25'
 {Description}
 """
 
-import os
 import decimal
 import enum
 import json
+import os
+from datetime import datetime, timedelta, tzinfo
+from typing import Optional
+
 import numpy as np
 from bson import ObjectId
-from datetime import datetime, tzinfo, timedelta
-from typing import Optional
+
 from simulation.utilities import Method
 
 

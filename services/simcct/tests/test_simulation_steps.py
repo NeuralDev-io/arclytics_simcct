@@ -272,7 +272,7 @@ class TestXfe(BaseConfigurationTest):
         self.assertAlmostEqual(self.results_mat[1, 5], 1, 4)
 
     def test_ceut(self):
-        # Test the XfeMethod2 section where self.ceut is changed.
+        # Test the XfeMethod2 section where self.eutectic_comp is changed.
         self.test_ae3_multi_carbon()
         if self.sim_inst.ae1 > 0:
             for i in range(1000):

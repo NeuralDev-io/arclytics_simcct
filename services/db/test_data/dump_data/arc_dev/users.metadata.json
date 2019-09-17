@@ -1,0 +1,1 @@
+{"options":{},"indexes":[{"v":2,"key":{"_id":1},"name":"_id_","ns":"arc_dev.users"},{"v":2,"unique":true,"key":{"email":1},"name":"email_1","ns":"arc_dev.users","background":false,"sparse":false}],"uuid":"8ad687ba69ca4124a09a1cf6e8778664"}

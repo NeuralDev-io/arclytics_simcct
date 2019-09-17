@@ -31,7 +31,7 @@ class BaseConfig:
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', None)
 
     # Bcrypt and Token encoding
-    BCRYPT_LOG_ROUNDS = 13
+    BCRYPT_LOG_ROUNDS = 12
     RESTFUL_JSON = {'cls': JSONEncoder}
     TOKEN_EXPIRATION_DAYS = 30
     TOKEN_EXPIRATION_SECONDS = 0
@@ -42,15 +42,6 @@ class BaseConfig:
     SESSION_PERMANENT = True
     SESSION_TYPE = 'redis'
     SESSION_USE_SIGNER = True
-
-    # Redis Queue
-    redis_host = os.environ.get('REDIS_HOST', '')
-    redis_port = os.environ.get('REDIS_PORT', '')
-    REDIS_URL = f'redis://{redis_host}:{redis_port}/14'
-    REDIS_HOST = os.environ.get('REDIS_HOST', None)
-    REDIS_PORT = os.environ.get('REDIS_PORT', None)
-    QUEUES = ['default', 'low']
-    REDIS_DB = 0
 
     # CELERY REDIS
     REDIS_HOST = os.environ.get('REDIS_HOST', None)
@@ -83,11 +74,12 @@ class ProductionConfig(BaseConfig):
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
     MONGO_DBNAME = os.environ.get('MONGO_APP_DB')
-    BCRYPT_LOG_ROUNDS = 13
+    BCRYPT_LOG_ROUNDS = 12
 
     # Production Celery
     REDIS_HOST = os.environ.get('REDIS_HOST', None)
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
-    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/5'
-    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'
+    redis_uri = f'redis://user:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}'
+    CELERY_BROKER_URL = f'{redis_uri}/5'
+    CELERY_RESULT_BACKEND = f'{redis_uri}/6'

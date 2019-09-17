@@ -1027,6 +1027,7 @@ while [[ "$1" != "" ]] ; do
           SIMCCT_SSL_NAME="simcct-app-https-cert"
           CLIENT_HTTPS_TLS_NAME="client-app-https-secret"
           SIMCCT_HTTPS_TLS_NAME="simcct-app-https-secret"
+          CLOUD_STORAGE_BUCKET="asia.artifacts.arc-sim.appspot.com"
 
           while [[ "$2" != "" ]] ; do
             case $2 in
@@ -1440,8 +1441,24 @@ while [[ "$1" != "" ]] ; do
                 echoSpace
                 exit 0
                 ;;
-              * )
-                exit 0
+              staticfiles )
+                while [[ "$3" != "" ]]; do
+                  case $3 in
+                    upload )
+                      gsutil cp -r ${WORKDIR}/services/simcct/sim_api/static/* gs://${CLOUD_STORAGE_BUCKET}/assets
+                      ;;
+                    list | ls )
+                      gsutil ls gs://${CLOUD_STORAGE_BUCKET}/assets/**
+                      ;;
+                    public )
+                      gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/assets/imgs/email_footer_logo.png
+                      ;;
+                    address )
+                      echo https://storage.googleapis.com/asia.artifacts.arc-sim.appspot.com/assets/imgs/email_footer_logo.png
+                      ;;
+                  esac
+                  shift
+                done
                 ;;
               # TODO(andrew@neuraldev.io) POD_NAME=$(kubectl get pod -l service=postgres -o jsonpath="{.items[0].metadata.name}")
             esac

@@ -5,7 +5,26 @@
   margin-bottom: 2rem;
 
   &>div:first-of-type {
-    margin-right: 3rem;
+    margin-right: 8rem;
+  }
+
+  .grainSize {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+
+    & > div:first-of-type {
+      margin-right: 1.5rem;
+    }
+
+    & > div:last-of-type {
+      margin-left: 1.5rem;
+    }
+
+    & > span {
+      font-size: 1.5rem;
+      color: var(--n500);
+    }
   }
 }
 
@@ -13,6 +32,7 @@
   margin-bottom: 1rem;
 
   & > h5 {
+    width:fit-content;
     margin-bottom: 1rem;
   }
 
@@ -22,7 +42,7 @@
     justify-content: flex-start;
 
     & > div {
-      margin-right: 5rem;
+      margin-right: 8rem;
       margin-bottom: 1.5rem;
     }
 
@@ -36,15 +56,15 @@
       align-items: flex-start;
       margin-bottom: .75rem;
 
-      & > div:nth-of-type(2) {
-        // margin-left: 1.5rem;
-      }
-
       & > div {
         margin-bottom: .5rem;
         width: 100%;
         justify-content: space-between;
       }
+    }
+
+    & > div > .bainite {
+      margin-bottom: 3.7rem;
     }
   }
 }
@@ -52,8 +72,13 @@
 .third {
   margin-bottom: 2rem;
 
-  & > h5 {
+  //& > h5 {
+  //  margin-bottom: .75rem;
+  //}
+
+  .headerContainer{
     margin-bottom: .75rem;
+    width:max-content;
   }
 
   .configGroup {
@@ -74,4 +99,25 @@
 
 .shortCheckbox {
   width: 3rem;
+}
+
+.infoIcon {
+  width: 0.75rem;
+  color: var(--n900);
+}
+.infoIcon:hover{
+  color: var(--arc500);
+}
+
+.headerContainer{
+  display:flex;
+  flex-flow: row wrap;
+  justify-content: flex-start;
+  h5, h6{
+    margin-right: 1rem;
+  }
+}
+
+.infoTip{
+  width:max-content;
 }

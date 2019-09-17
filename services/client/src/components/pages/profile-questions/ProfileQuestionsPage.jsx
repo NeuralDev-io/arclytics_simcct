@@ -7,7 +7,7 @@
  */
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { createUserProfile } from '../../../state/ducks/persist/actions'
+import { createUserProfile } from '../../../state/ducks/self/actions'
 
 import Select from '../../elements/select'
 import Button from '../../elements/button'

@@ -7,12 +7,30 @@ import {
   UPDATE_CONFIG_METHOD,
   UPDATE_CONFIG,
   UPDATE_DISPLAY_USER_CURVE,
+  UPDATE_CCT_INDEX,
+  LOAD_SIM,
 } from './types'
 
 const initialState = {
   isInitialised: false,
+  isSimulated: false,
   displayUserCurve: true,
-  results: {},
+  results: {
+    USER: {
+      user_cooling_curve: {
+        time: [],
+        temp: [],
+      },
+      user_phase_fraction_data: {
+        austenite: [],
+        ferrite: [],
+        pearlite: [],
+        bainite: [],
+        martensite: [],
+      },
+    },
+    cctIndex: -1,
+  },
   configurations: {
     method: 'Li98',
     grain_size_ASTM: 8.0,
@@ -34,7 +52,7 @@ const initialState = {
     isLoading: false,
     alloyOption: 'single',
     parent: {
-      id: '',
+      _id: '',
       name: '',
       compositions: [],
     },
@@ -140,8 +158,44 @@ const reducer = (state = initialState, action) => {
     case RUN_SIM:
       return {
         ...state,
-        results: action.payload,
+        isSimulated: true,
+        results: {
+          ...state.results,
+          ...action.payload,
+        },
       }
+    case UPDATE_CCT_INDEX:
+      return {
+        ...state,
+        results: {
+          ...state.results,
+          cctIndex: action.payload,
+        },
+      }
+    case LOAD_SIM: {
+      const { alloys, configurations, results } = action.payload
+      return {
+        isInitialised: true,
+        isSimulated: true,
+        displayUserCurve: true,
+        configurations,
+        alloys: {
+          isLoading: false,
+          dilution: 0,
+          ...alloys,
+          weld: {
+            _id: '',
+            name: '',
+            compositions: [],
+          },
+          mix: [],
+        },
+        results: {
+          cctIndex: -1,
+          ...results,
+        },
+      }
+    }
     default:
       return state
   }

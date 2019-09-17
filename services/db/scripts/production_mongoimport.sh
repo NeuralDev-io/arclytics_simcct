@@ -6,22 +6,24 @@
 
 # kubectl cp ./services/db/production_data/* mongo-0:/data/backups/
 
-mongoimport --host localhost \
-    --port 27017 \
-    -u "${MONGO_ROOT_USER}" \
-    -p "${MONGO_ROOT_PASSWORD}" \
-    --db "${MONGO_APP_DB}" \
-    --authenticationDatabase admin \
-    --collection users \
-    --drop \
-    --file /data/backups/production_user_data.json
+kubectl exec mongo-0 -c mongo-container -- \
+    mongoimport --host localhost \
+        --port 27017 \
+        -u "${MONGO_ROOT_USER}" \
+        -p "${MONGO_ROOT_PASSWORD}" \
+        --db "${MONGO_APP_DB}" \
+        --authenticationDatabase admin \
+        --collection users \
+        --drop \
+        --file /data/backups/production_user_data.json
 
-mongoimport --host localhost \
-    --port 27017 \
-    -u "${MONGO_ROOT_USER}" \
-    -p "${MONGO_ROOT_PASSWORD}" \
-    --db "${MONGO_APP_DB}" \
-    --authenticationDatabase admin \
-    --collection alloys \
-    --drop \
-    --file /data/backups/production_global_alloys.json
+kubectl exec mongo-0 -c mongo-container -- \
+    mongoimport --host localhost \
+        --port 27017 \
+        -u "${MONGO_ROOT_USER}" \
+        -p "${MONGO_ROOT_PASSWORD}" \
+        --db "${MONGO_APP_DB}" \
+        --authenticationDatabase admin \
+        --collection alloys \
+        --drop \
+        --file /data/backups/production_global_alloys.json

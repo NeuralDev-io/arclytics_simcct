@@ -2,12 +2,14 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Select from '../../elements/select'
-import { TextFieldExtra } from '../../elements/textfield'
+// import { TextFieldExtra } from '../../elements/textfield'
 import { getGlobalAlloys, getUserAlloys } from '../../../state/ducks/alloys/actions'
 import { updateAlloyOption, initSession, updateDilution } from '../../../state/ducks/sim/actions'
 
 import styles from './CompForm.module.scss'
 
+// Some UI elements were commented out because the client no longer
+// wants a composition mix feature.
 class CompForm extends Component {
   componentDidMount = () => {
     const {
@@ -15,11 +17,13 @@ class CompForm extends Component {
       userAlloys,
       getGlobalAlloysConnect,
       getUserAlloysConnect,
+      isAuthenticated,
     } = this.props
-    if (!globalAlloys || globalAlloys.length === 0) {
+    // get alloys if user is authenticated
+    if (isAuthenticated && (!globalAlloys || globalAlloys.length === 0)) {
       getGlobalAlloysConnect()
     }
-    if (!userAlloys || userAlloys.length === 0) {
+    if (isAuthenticated && (!userAlloys || userAlloys.length === 0)) {
       getUserAlloysConnect()
     }
   }
@@ -49,14 +53,14 @@ class CompForm extends Component {
       globalAlloys,
       userAlloys,
       simAlloys,
-      updateAlloyOptionConnect,
-      updateDilutionConnect,
+      // updateAlloyOptionConnect,
+      // updateDilutionConnect,
     } = this.props
 
-    const alloyOptions = [
-      { label: 'Single', value: 'single' },
-      { label: 'Diluted mix', value: 'mix' },
-    ]
+    // const alloyOptions = [
+    //   { label: 'Single', value: 'single' },
+    //   { label: 'Diluted mix', value: 'mix' },
+    // ]
 
     const globalOptions = globalAlloys.map(alloy => ({ label: alloy.name, value: alloy._id }))
     const userOptions = userAlloys.map(alloy => ({ label: alloy.name, value: alloy._id }))
@@ -73,7 +77,7 @@ class CompForm extends Component {
 
     return (
       <form className={styles.form}>
-        <div className="input-row">
+        {/* <div className="input-row">
           <h6>Alloy option</h6>
           <Select
             name="alloyOption"
@@ -86,9 +90,9 @@ class CompForm extends Component {
             length="long"
             onChange={val => updateAlloyOptionConnect(val.value)}
           />
-        </div>
-        <div className="input-col">
-          <h6>Alloy 1</h6>
+        </div> */}
+        <div className="input-row">
+          <h6>Alloy</h6>
           <Select
             name="parent"
             placeholder="Choose composition"
@@ -104,7 +108,7 @@ class CompForm extends Component {
             isSearchable
           />
         </div>
-        <div className="input-col">
+        {/* <div className="input-col">
           <h6 className={`${simAlloys.alloyOption === 'single' && 'text--disabled'}`}>Alloy 2</h6>
           <Select
             name="weld"
@@ -134,13 +138,14 @@ class CompForm extends Component {
             suffix="%"
             isDisabled={simAlloys.alloyOption === 'single'}
           />
-        </div>
+        </div> */}
       </form>
     )
   }
 }
 
 CompForm.propTypes = {
+  isAuthenticated: PropTypes.bool.isRequired,
   // props from connect()
   simAlloys: PropTypes.shape({
     alloyOption: PropTypes.string,
@@ -194,9 +199,9 @@ CompForm.propTypes = {
   })).isRequired,
   getGlobalAlloysConnect: PropTypes.func.isRequired,
   getUserAlloysConnect: PropTypes.func.isRequired,
-  updateAlloyOptionConnect: PropTypes.func.isRequired,
+  // updateAlloyOptionConnect: PropTypes.func.isRequired,
   initSessionConnect: PropTypes.func.isRequired,
-  updateDilutionConnect: PropTypes.func.isRequired,
+  // updateDilutionConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({

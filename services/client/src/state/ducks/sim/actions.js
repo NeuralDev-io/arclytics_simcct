@@ -11,6 +11,7 @@ import {
   LOAD_SIM,
 } from './types'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
+import { addFlashToast } from '../toast/actions'
 
 /**
  * Initialise a new sim session on the server, then update alloy in
@@ -47,7 +48,10 @@ export const initSession = (option, type, alloy) => (dispatch) => {
       },
     }),
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 201) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -65,7 +69,10 @@ export const initSession = (option, type, alloy) => (dispatch) => {
         type: INIT_SESSION,
         status: 'fail',
       })
-      console.log(err)
+      addFlashToast({
+        message: err.message,
+        options: { variant: 'error' },
+      }, true)(dispatch)
     })
 }
 
@@ -102,7 +109,10 @@ export const updateComp = (option, type, alloy) => (dispatch) => {
       alloy,
     }),
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 200) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -114,7 +124,10 @@ export const updateComp = (option, type, alloy) => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 export const updateDilution = val => (dispatch) => {
@@ -140,7 +153,10 @@ export const updateConfigMethod = value => (dispatch) => {
     },
     body: JSON.stringify({ method: value }),
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 200) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -150,7 +166,10 @@ export const updateConfigMethod = value => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 export const updateGrainSize = (unit, value) => (dispatch) => {
@@ -190,7 +209,10 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
       },
       body: JSON.stringify({ grain_size: grainSize }),
     })
-      .then(res => res.json())
+      .then((res) => {
+        if (res.status !== 202) throw new Error('Something went wrong')
+        return res.json()
+      })
       .then((res) => {
         if (res.status === 'fail') throw new Error(res.message)
         if (res.status === 'success') {
@@ -200,7 +222,10 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
           })
         }
       })
-      .catch(err => console.log(err))
+      .catch(err => addFlashToast({
+        message: err.message,
+        options: { variant: 'error' },
+      }, true)(dispatch))
   }
 }
 
@@ -213,7 +238,10 @@ export const updateMsBsAe = (name, reqBody) => (dispatch) => {
     },
     body: JSON.stringify(reqBody),
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 202) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -223,7 +251,10 @@ export const updateMsBsAe = (name, reqBody) => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 export const getMsBsAe = name => (dispatch) => {
@@ -234,7 +265,10 @@ export const getMsBsAe = name => (dispatch) => {
       'Content-Type': 'application/json',
     },
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 200) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -244,7 +278,10 @@ export const getMsBsAe = name => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 export const setAutoCalculate = (name, value) => (dispatch) => {
@@ -265,7 +302,10 @@ export const updateConfig = (name, value) => (dispatch) => {
     },
     body: JSON.stringify({ [name]: value }),
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 200) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -275,7 +315,10 @@ export const updateConfig = (name, value) => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 export const toggleDisplayUserCurve = value => (dispatch) => {
@@ -316,7 +359,10 @@ export const runSim = () => (dispatch, getState) => {
       'Content-Type': 'application/json',
     },
   })
-    .then(simRes => simRes.json())
+    .then((res) => {
+      if (res.status !== 200) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((simRes) => {
       if (simRes.status === 'fail') throw new Error(simRes.message)
       if (simRes.status === 'success') {
@@ -326,7 +372,10 @@ export const runSim = () => (dispatch, getState) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
 }
 
 export const updateCCTIndex = idx => (dispatch) => {
@@ -352,15 +401,18 @@ export const loadSim = sim => (dispatch) => {
   })
 }
 
-export const loadSimFromLink = token => (dispatch) => {
-  return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/share/simulation/view/${token}`, {
+export const loadSimFromLink = token => dispatch => (
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/share/simulation/view/${token}`, {
     method: 'GET',
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status !== 200) throw new Error('Something went wrong')
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'fail') throw new Error(res.message)
       if (res.status === 'success') {
@@ -395,8 +447,11 @@ export const loadSimFromLink = token => (dispatch) => {
         })
       }
     })
-    // .catch(err => console.log(err))
-}
+    .catch(err => addFlashToast({
+      message: err.message,
+      options: { variant: 'error' },
+    }, true)(dispatch))
+)
 
 export const loadSimFromAccount = ({
   alloy_store, configurations, simulation_results,

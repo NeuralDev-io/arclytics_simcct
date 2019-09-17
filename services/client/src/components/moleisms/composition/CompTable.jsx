@@ -3,27 +3,16 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import SaveIcon from 'react-feather/dist/icons/save'
-import { AttachModal } from '../../elements/modal'
 import Button from '../../elements/button'
 import Table from '../../elements/table'
 import { SelfControlledTextField } from '../../elements/textfield'
-import { buttonize } from '../../../utils/accessibility'
 import { updateComp } from '../../../state/ducks/sim/actions'
 
 import styles from './CompTable.module.scss'
 
+// Some UI elements for alloy 2 and mix composition were commented out
+// because the client no longer wants this feature
 class CompTable extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      visible: false,
-    }
-  }
-
-  handleShowModal = () => this.setState({ visible: true })
-
-  handleCloseModal = () => this.setState({ visible: false })
-
   handleChangeComp = (type, symbol, value) => {
     const { data, updateCompConnect } = this.props
     const alloy = { ...data[type] }
@@ -43,12 +32,16 @@ class CompTable extends Component {
   }
 
   render() {
-    const { data, sessionIsInitialised, isAuthenticated } = this.props
-    const { visible } = this.state
     const {
-      alloyOption,
+      data,
+      sessionIsInitialised,
+      isAuthenticated,
+      onSaveButtonClick,
+    } = this.props
+    const {
+      // alloyOption,
       parent,
-      weld,
+      // weld,
     } = data
 
     const tableData = parent.compositions.map(elem => ({
@@ -57,58 +50,59 @@ class CompTable extends Component {
       weld: undefined,
       mix: undefined,
     }))
-    if (alloyOption === 'mix') {
-      weld.compositions.forEach((elem) => {
-        const idx = tableData.findIndex(x => x.symbol === elem.symbol)
-        if (idx === -1) {
-          tableData.push({
-            symbol: elem.symbol,
-            parent: undefined,
-            weld: elem.weight,
-            mix: undefined,
-          })
-        } else {
-          tableData[idx] = {
-            ...tableData[idx],
-            weld: elem.weight,
-          }
-        }
-      })
-    }
-    if (alloyOption === 'mix') {
-      const dilution = parseFloat(data.dilution)
-      tableData.forEach((elem, idx) => {
-        const parentVal = elem.parent ? parseFloat(elem.parent) : 0
-        const weldVal = elem.weld ? parseFloat(elem.weld) : 0
-        // calculate mix composition and round to 2 decimals
-        const mixVal = Math.round((dilution / 100 * weldVal
-          + (100 - dilution) / 100 * parentVal) * 100) / 100
-        tableData[idx] = {
-          ...elem,
-          mix: mixVal,
-        }
-      })
-    }
+    // if (alloyOption === 'mix') {
+    //   weld.compositions.forEach((elem) => {
+    //     const idx = tableData.findIndex(x => x.symbol === elem.symbol)
+    //     if (idx === -1) {
+    //       tableData.push({
+    //         symbol: elem.symbol,
+    //         parent: undefined,
+    //         weld: elem.weight,
+    //         mix: undefined,
+    //       })
+    //     } else {
+    //       tableData[idx] = {
+    //         ...tableData[idx],
+    //         weld: elem.weight,
+    //       }
+    //     }
+    //   })
+    // }
+    // if (alloyOption === 'mix') {
+    //   const dilution = parseFloat(data.dilution)
+    //   tableData.forEach((elem, idx) => {
+    //     const parentVal = elem.parent ? parseFloat(elem.parent) : 0
+    //     const weldVal = elem.weld ? parseFloat(elem.weld) : 0
+    //     // calculate mix composition and round to 2 decimals
+    //     const mixVal = Math.round((dilution / 100 * weldVal
+    //       + (100 - dilution) / 100 * parentVal) * 100) / 100
+    //     tableData[idx] = {
+    //       ...elem,
+    //       mix: mixVal,
+    //     }
+    //   })
+    // }
 
     // calculate total weights
     let parentTotal = 0
-    let weldTotal = 0
-    let mixTotal = 0
+    // let weldTotal = 0
+    // let mixTotal = 0
     tableData.forEach((elem) => {
       if (elem.parent) parentTotal += parseFloat(elem.parent)
-      if (elem.weld) weldTotal += parseFloat(elem.weld)
-      if (elem.mix) mixTotal += parseFloat(elem.mix)
+      // if (elem.weld) weldTotal += parseFloat(elem.weld)
+      // if (elem.mix) mixTotal += parseFloat(elem.mix)
     })
     parentTotal = Math.round(parentTotal * 100) / 100
-    weldTotal = Math.round(weldTotal * 100) / 100
-    mixTotal = Math.round(mixTotal * 100) / 100
+    // weldTotal = Math.round(weldTotal * 100) / 100
+    // mixTotal = Math.round(mixTotal * 100) / 100
 
     const columns = [
       {
         Header: 'Elements',
         accessor: 'symbol',
         Cell: ({ value }) => (<span className={styles.symbol}>{value}</span>),
-        width: 80,
+        width: 120,
+        // width: 80,
         Footer: () => tableData.length !== 0 && 'Total',
       },
       {
@@ -128,34 +122,34 @@ class CompTable extends Component {
         Footer: () => tableData.length !== 0
           && <span className={styles.footerText}>{parentTotal}</span>,
       },
-      {
-        Header: 'Alloy 2',
-        accessor: 'weld',
-        Cell: ({ row, value }) => (
-          <SelfControlledTextField
-            type="text"
-            key={row.symbol}
-            name={`weld_${row.symbol}`}
-            onBlur={e => this.handleChangeComp('weld', row.symbol, e.target.value)}
-            defaultValue={value || '0.0'}
-            length="stretch"
-            isDisabled={value === undefined}
-          />
-        ),
-        Footer: () => tableData.length !== 0
-          && <span className={styles.footerText}>{weldTotal}</span>,
-      },
-      {
-        Header: 'Mix',
-        accessor: 'mix',
-        Cell: ({ value }) => {
-          if (value === undefined) return <span className="text--disabled">0.0</span>
-          return <span>{value}</span>
-        },
-        width: 40,
-        Footer: () => tableData.length !== 0
-          && <span className={styles.footerTextMix}>{mixTotal}</span>,
-      },
+      // {
+      //   Header: 'Alloy 2',
+      //   accessor: 'weld',
+      //   Cell: ({ row, value }) => (
+      //     <SelfControlledTextField
+      //       type="text"
+      //       key={row.symbol}
+      //       name={`weld_${row.symbol}`}
+      //       onBlur={e => this.handleChangeComp('weld', row.symbol, e.target.value)}
+      //       defaultValue={value || '0.0'}
+      //       length="stretch"
+      //       isDisabled={value === undefined}
+      //     />
+      //   ),
+      //   Footer: () => tableData.length !== 0
+      //     && <span className={styles.footerText}>{weldTotal}</span>,
+      // },
+      // {
+      //   Header: 'Mix',
+      //   accessor: 'mix',
+      //   Cell: ({ value }) => {
+      //     if (value === undefined) return <span className="text--disabled">0.0</span>
+      //     return <span>{value}</span>
+      //   },
+      //   width: 40,
+      //   Footer: () => tableData.length !== 0
+      //     && <span className={styles.footerTextMix}>{mixTotal}</span>,
+      // },
     ]
 
     return (
@@ -178,41 +172,15 @@ class CompTable extends Component {
                 condensed
                 loading={data.isLoading}
               />
-              <AttachModal
-                className={`${styles.saveBtn} ${tableData.length === 0 && styles.disabled}`}
-                visible={visible}
-                handleClose={this.handleCloseModal}
-                handleShow={this.handleShowModal}
-                position="topLeft"
-                overlap
+              <Button
+                onClick={onSaveButtonClick}
+                className={styles.saveButton}
+                isDisabled={!sessionIsInitialised || !isAuthenticated}
+                appearance="text"
+                IconComponent={props => <SaveIcon {...props} />}
               >
-                <Button
-                  onClick={() => {}}
-                  style={{ display: tableData.length !== 0 ? 'flex' : 'none' }}
-                  isDisabled={!sessionIsInitialised || !isAuthenticated}
-                  appearance="text"
-                  IconComponent={props => <SaveIcon {...props} />}
-                >
-                  Save alloy
-                </Button>
-                <div className={styles.optionList}>
-                  <div className={styles.option} {...buttonize(() => console.log('Saved alloy 1'))}>
-                    <span>Alloy 1</span>
-                  </div>
-                  <div
-                    className={`${styles.option} ${alloyOption !== 'mix' && styles.disabled}`}
-                    {...buttonize(() => console.log('Saved alloy 2'))}
-                  >
-                    <span>Alloy 2</span>
-                  </div>
-                  <div
-                    className={`${styles.option} ${alloyOption !== 'mix' && styles.disabled}`}
-                    {...buttonize(() => console.log('Saved mix'))}
-                  >
-                    <span>Mix</span>
-                  </div>
-                </div>
-              </AttachModal>
+                Save alloy
+              </Button>
             </div>
           )
         }}
@@ -224,6 +192,7 @@ class CompTable extends Component {
 CompTable.propTypes = {
   sessionIsInitialised: PropTypes.bool.isRequired,
   isAuthenticated: PropTypes.bool.isRequired,
+  onSaveButtonClick: PropTypes.func.isRequired,
   data: PropTypes.shape({
     isLoading: PropTypes.bool.isRequired,
     alloyOption: PropTypes.string,

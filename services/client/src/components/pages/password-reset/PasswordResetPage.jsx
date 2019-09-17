@@ -9,7 +9,7 @@
 import React, { Component } from 'react'
 import CheckCircleIcon from 'react-feather/dist/icons/check-circle'
 import PropTypes from 'prop-types'
-import { resetPassword } from '../../../api/AuthenticationHelper'
+import { resetPassword, checkAuthStatus } from '../../../api/AuthenticationHelper'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { passwordResetValidation } from '../../../utils/ValidationHelper'
 
@@ -32,6 +32,15 @@ class PasswordResetPage extends Component {
       status: '',
     }
     this.handleStatus = this.handleStatus.bind(this)
+  }
+
+  componentDidMount = () => {
+    const { history } = this.props
+    checkAuthStatus().then((res) => {
+      if (res.status === 'success') {
+        history.push('/')
+      }
+    })
   }
 
   handleStatus = () => {
@@ -149,11 +158,14 @@ class PasswordResetPage extends Component {
 }
 
 PasswordResetPage.propTypes = {
-   match: PropTypes.shape({
+  match: PropTypes.shape({
     params: PropTypes.shape({
       token: PropTypes.string,
     }),
-  }),
+  }).isRequired,
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
 }
 
-export default (PasswordResetPage)
+export default PasswordResetPage

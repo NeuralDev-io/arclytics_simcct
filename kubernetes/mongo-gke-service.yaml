@@ -22,7 +22,7 @@ spec:
   selector:
     matchLabels:
       role: mongo-persistence
-  replicas: 3
+  replicas: 2
   template:
     metadata:
       labels:

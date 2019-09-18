@@ -16,7 +16,7 @@ ARG REACT_APP_SIM_PORT
 ENV REACT_APP_SIM_PORT ${REACT_APP_SIM_PORT}
 
 COPY package.json /app/package.json
-RUN npm install --silent
+RUN npm install --silent --only=prod
 COPY . /app
 
 # Build the app using npm before we pass it to the production env

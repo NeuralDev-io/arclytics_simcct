@@ -303,7 +303,7 @@ export const updateConfig = (name, value) => (dispatch) => {
     body: JSON.stringify({ [name]: value }),
   })
     .then((res) => {
-      if (res.status !== 200) throw new Error('Something went wrong')
+      if (res.status !== 202) throw new Error('Something went wrong')
       return res.json()
     })
     .then((res) => {

@@ -31,7 +31,7 @@ from redis import Redis
 
 from sim_api.extensions import JSONEncoder
 from sim_api.extensions import MongoSingleton
-from sim_api.extensions import api, bcrypt, redis_session
+from sim_api.extensions import api, bcrypt, redis_session, cache
 
 # Instantiate the Mongo object to store a connection
 app_settings = env.get('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')
@@ -117,7 +117,7 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     # Setup the configuration for Flask
     app.config.from_object(configs_path)
     app.secret_key = env.get('SECRET_KEY')
-    prod_environment = app.config.get('ENV', 'development') == 'production'
+    prod_environment = app.env == 'production'
 
     # ========== # CONNECT TO DATABASES # ========== #
     if not prod_environment:
@@ -222,8 +222,9 @@ def extensions(app) -> None:
     Returns:
         None.
     """
-    bcrypt.init_app(app)
     api.init_app(app)
+    cache.init_app(app)
+    bcrypt.init_app(app)
     redis_session.init_app(app)
     # talisman.init_app(app, force_https_permanent=False, force_https=False)
 

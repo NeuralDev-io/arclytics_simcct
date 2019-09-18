@@ -21,6 +21,7 @@ context of the app.
 """
 from flask_bcrypt import Bcrypt
 from flask_restful import Api
+from flask_caching import Cache
 
 # from flask_talisman import Talisman
 from .Session import FlaskRedisSession
@@ -33,8 +34,9 @@ from .utilities import (DuplicateElementError, ElementInvalid,
                         URLTokenExpired, get_mongo_uri)
 
 # Some other extensions to Flask
-bcrypt = Bcrypt()
 api = Api()
+bcrypt = Bcrypt()
+cache = Cache()
 redis_session = FlaskRedisSession()
 # To use add flask-talisman==0.7.0 to requirements.txt
 # talisman = Talisman()

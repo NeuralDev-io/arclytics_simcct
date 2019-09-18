@@ -18,7 +18,10 @@ const TTT = ({ data }) => {
         name: 'Ferrite start',
         type: 'scatter',
         mode: 'lines',
-        line: { color: getColor('--o500') },
+        line: {
+          color: getColor('--o500'),
+          shape: 'spline',
+        },
       },
       {
         x: data.ferrite_completion.time,
@@ -26,7 +29,10 @@ const TTT = ({ data }) => {
         name: 'Ferrite finish',
         type: 'scatter',
         mode: 'lines',
-        line: { color: getColor('--r500') },
+        line: {
+          color: getColor('--r500'),
+          shape: 'spline',
+        },
       },
       {
         x: data.pearlite_nucleation.time,
@@ -34,7 +40,10 @@ const TTT = ({ data }) => {
         name: 'Pearlite start',
         type: 'scatter',
         mode: 'lines',
-        line: { color: getColor('--l500') },
+        line: {
+          color: getColor('--l500'),
+          shape: 'spline',
+        },
       },
       {
         x: data.pearlite_completion.time,
@@ -42,7 +51,10 @@ const TTT = ({ data }) => {
         name: 'Pearlite finish',
         type: 'scatter',
         mode: 'lines',
-        line: { color: getColor('--g500') },
+        line: {
+          color: getColor('--g500'),
+          shape: 'spline',
+        },
       },
       {
         x: data.bainite_nucleation.time,
@@ -50,7 +62,10 @@ const TTT = ({ data }) => {
         name: 'Bainite start',
         type: 'scatter',
         mode: 'lines',
-        line: { color: getColor('--m500') },
+        line: {
+          color: getColor('--m500'),
+          shape: 'spline',
+        },
       },
       {
         x: data.bainite_completion.time,
@@ -58,7 +73,10 @@ const TTT = ({ data }) => {
         name: 'Bainite finish',
         type: 'scatter',
         mode: 'lines',
-        line: { color: getColor('--v500') },
+        line: {
+          color: getColor('--v500'),
+          shape: 'spline',
+        },
       },
       {
         x: data.martensite.time,
@@ -66,7 +84,10 @@ const TTT = ({ data }) => {
         name: 'Martensite',
         type: 'scatter',
         mode: 'lines',
-        line: { color: getColor('--br500') },
+        line: {
+          color: getColor('--br500'),
+          shape: 'spline',
+        },
       },
     ]
   }

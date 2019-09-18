@@ -29,7 +29,7 @@ const AppBar = ({
         className={`${styles.navIcon} ${active === 'sim' && styles.active}`}
         href="/"
       >
-        <Tooltip className={styles.tooltip} position="right">
+        <Tooltip className={{ tooltip: styles.tooltip }} position="right">
           <SlidersIcon className={styles.icon} />
           <p>Simulation</p>
         </Tooltip>
@@ -39,7 +39,7 @@ const AppBar = ({
         className={`${styles.navIcon} ${active === 'savedSimulations' && styles.active} ${!isAuthenticated && styles.disabled}`}
         href={isAuthenticated ? '/user/simulations' : ''}
       >
-        <Tooltip className={styles.tooltip} position="right">
+        <Tooltip className={{ tooltip: styles.tooltip }} position="right">
           <HardDriveIcon className={styles.icon} />
           <p>Saved simulations</p>
         </Tooltip>
@@ -49,7 +49,7 @@ const AppBar = ({
         className={`${styles.navIcon} ${active === 'userAlloys' && styles.active} ${!isAuthenticated && styles.disabled}`}
         href={isAuthenticated ? '/user/alloys' : ''}
       >
-        <Tooltip className={styles.tooltip} position="right">
+        <Tooltip className={{ tooltip: styles.tooltip }} position="right">
           <DatabaseIcon className={styles.icon} />
           <p>Alloy database</p>
         </Tooltip>
@@ -59,7 +59,7 @@ const AppBar = ({
         className={`${styles.navIcon} ${active === 'edu' && styles.active} ${!isAuthenticated && styles.disabled}`}
         href={isAuthenticated ? '/' : ''}
       >
-        <Tooltip className={styles.tooltip} position="right">
+        <Tooltip className={{ tooltip: styles.tooltip }} position="right">
           <HelpIcon className={styles.icon} />
           <p>Help</p>
         </Tooltip>
@@ -70,7 +70,7 @@ const AppBar = ({
         style={{ display: isAdmin ? 'flex' : 'none' }}
         href="/admin/analytics"
       >
-        <Tooltip className={styles.tooltip} position="right">
+        <Tooltip className={{ tooltip: styles.tooltip }} position="right">
           <MonitorIcon className={styles.icon} />
           <p>Admin</p>
         </Tooltip>
@@ -82,7 +82,7 @@ const AppBar = ({
         className={`${styles.navIcon} ${active === 'user' && styles.active} ${!isAuthenticated && styles.disabled}`}
         href={isAuthenticated ? '/user/profile' : ''}
       >
-        <Tooltip className={styles.tooltip} position="right">
+        <Tooltip className={{ tooltip: styles.tooltip }} position="right">
           <UserIcon className={styles.icon} />
           <p>Account</p>
         </Tooltip>
@@ -95,7 +95,7 @@ const AppBar = ({
           return {}
         })()}
       >
-        <Tooltip className={styles.tooltip} position="right">
+        <Tooltip className={{ tooltip: styles.tooltip }} position="right">
           <LogOutIcon className={styles.icon} />
           <p>Logout</p>
         </Tooltip>

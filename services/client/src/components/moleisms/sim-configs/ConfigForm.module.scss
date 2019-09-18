@@ -106,6 +106,8 @@
   height: .75rem;
   color: var(--n900);
   cursor: pointer;
+  position: absolute;
+  top: 0;
 
   &:hover { color: var(--arc500); }
 }
@@ -124,4 +126,9 @@
 
 .infoTip {
   width: max-content;
+}
+
+.infoTipContainer {
+  width: .75rem;
+  height: .75rem;
 }

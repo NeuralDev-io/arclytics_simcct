@@ -50,7 +50,19 @@
           <br/>
           <!-- TODO(andrew@neuraldev.io): Make this a button. -->
           <a href="{{ confirm_url }}" style="text-decoration: none; text-decoration-color: #fafafa;">
-            <button onclick="window.location.href='{{ confirm_url }}';" class="default-button">
+            <button onclick="window.location.href='{{ confirm_url }}';" class="default-button"
+            style="font-style: normal;
+            background-color: #0076C2;
+            border: 2px solid #0076C2;
+            color: #fafafa;
+            width: 7.5rem;
+            height: 2.5rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, .25);
+            transition: ease-in-out .4s;
+            cursor: pointer;
+            text-align: center">
               Confirm Email
             </button>
           </a>

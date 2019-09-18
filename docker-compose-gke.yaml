@@ -18,6 +18,8 @@ services:
       - 8080:8080
     expose:
       - 8080
+    env_file:
+      - .env
     environment:
       - REACT_APP_SIM_HOST=https://api.arclytics.io
       - REACT_APP_SIM_PORT=443
@@ -39,6 +41,8 @@ services:
       - 8000:8000
     expose:
       - 8000
+    env_file:
+      - .env
     environment:
       - FLASK_APP=sim_api/app.py
       - FLASK_ENV=production
@@ -70,11 +74,13 @@ services:
       labels:
         arclytics.io: "production"
         service: "celery-worker"
-    image: asia.gcr.io/arc-sim/arc_sim_celery:1.0
+    image: asia.gcr.io/arc-sim/arc_sim_celery:1.0.0
     ports:
       - 5555:5555
     expose:
       - 5555
+    env_file:
+      - .env
     environment:
       - FLASK_ENV=production
       - APP_SETTINGS=flask_conf.ProductionConfig
@@ -105,6 +111,8 @@ services:
       - 6379:6379
     expose:
       - 6379
+    env_file:
+      - ./.env
     networks:
       - host
 
@@ -117,12 +125,12 @@ services:
         service: "mongodb"
     image: asia.gcr.io/arc-sim/arc_sim_mongo:1.1.0
     restart: always
-    volumes:
-      - mongo-volume-mount:/data/db
     ports:
       - 27017:27017
     expose:
       - 27017
+    env_file:
+      - .env
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
@@ -139,11 +147,5 @@ services:
 networks:
   host:
     driver: bridge
-    labels:
-      arclytics.io: "production"
-
-# https://docs.docker.com/compose/compose-file/#volume-configuration-reference
-volumes:
-  mongo-volume-mount:
     labels:
       arclytics.io: "production"

@@ -1,5 +1,6 @@
 # In this directory, run the following command to build this builder.
 # REFERENCE: [1] https://github.com/GoogleCloudPlatform/cloud-builders-community/blob/master/docker-compose/cloudbuild.yaml
+# $ gcloud config set app/cloud_build_timeout 1h30m
 # $ gcloud builds submit ${WORKDIR} \
 #                --config=${WORKDIR}/cloudbuild.yaml \
 #                --machine-type=n1-highcpu-32 \

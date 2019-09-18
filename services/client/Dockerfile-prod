@@ -8,7 +8,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 # https://vsupalov.com/docker-arg-env-variable-guide/
 # Get BUILD TIME ARGS to set ENV Variables
 # Note: ARGS defines expect from docker-compose.yml client.build.args
-ARG NODE_ENV=production
+ARG NODE_ENV
 ENV NODE_ENV ${NODE_ENV}
 ARG REACT_APP_SIM_HOST
 ENV REACT_APP_SIM_HOST ${REACT_APP_SIM_HOST}
@@ -16,7 +16,7 @@ ARG REACT_APP_SIM_PORT
 ENV REACT_APP_SIM_PORT ${REACT_APP_SIM_PORT}
 
 COPY package.json /app/package.json
-RUN npm install --silent --only=prod
+RUN npm install --only=prod
 COPY . /app
 
 # Build the app using npm before we pass it to the production env

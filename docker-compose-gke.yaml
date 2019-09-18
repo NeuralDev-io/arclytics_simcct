@@ -8,6 +8,7 @@ services:
       context: ./services/client
       dockerfile: Dockerfile-prod
       args:
+        - NODE_ENV=production
         - REACT_APP_SIM_HOST=https://api.arclytics.io
         - REACT_APP_SIM_PORT=443
       labels:

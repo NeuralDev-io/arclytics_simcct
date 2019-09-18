@@ -62,4 +62,10 @@ images:
 - 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.1.5'
 - 'asia.gcr.io/$PROJECT_ID/arc_sim_service:1.1.6'
 - 'asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.0.0'
+- 'asia.gcr.io/$PROJECT_ID/arc_sim_redis:1.1.0'
+- 'asia.gcr.io/$PROJECT_ID/arc_sim_mongo:1.1.0'
+
 tags: ['arclytics-sim', 'neuraldev']
+timeout: 9000s
+options:
+  machineType: N1_HIGHCPU_32

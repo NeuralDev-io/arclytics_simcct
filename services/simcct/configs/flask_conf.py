@@ -43,11 +43,18 @@ class BaseConfig:
     SESSION_TYPE = 'redis'
     SESSION_USE_SIGNER = True
 
+    # Redis Connection
+    redis_host = os.environ.get('REDIS_HOST', None)
+    redis_port = os.environ.get('REDIS_PORT', None)
+
+    # FLASK CACHING
+    CACHE_KEY_PREFIX = 'cache'
+    CACHE_REDIS_URL = f'redis://{redis_host}:{redis_port}/2'
+    CACHE_TYPE = 'redis'
+
     # CELERY REDIS
-    REDIS_HOST = os.environ.get('REDIS_HOST', None)
-    REDIS_PORT = os.environ.get('REDIS_PORT', None)
-    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/5'
-    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'
+    CELERY_BROKER_URL = f'redis://{redis_host}:{redis_port}/5'
+    CELERY_RESULT_BACKEND = f'redis://{redis_host}:{redis_port}/6'
 
 
 class DevelopmentConfig(BaseConfig):
@@ -65,6 +72,10 @@ class TestingConfig(BaseConfig):
     TOKEN_EXPIRATION_SECONDS = 5
     PRESERVE_CONTEXT_ON_EXCEPTION = False
 
+    # Ensure teh cache is null in testing because it cannot pickle
+    # Flask-Testing TestResponse objects.
+    CACHE_TYPE = 'null'
+
     SESSION_PERMANENT = False
     REDIS_DB = 2
 
@@ -76,10 +87,16 @@ class ProductionConfig(BaseConfig):
     MONGO_DBNAME = os.environ.get('MONGO_APP_DB')
     BCRYPT_LOG_ROUNDS = 12
 
-    # Production Celery
+    # Redis Connection
     REDIS_HOST = os.environ.get('REDIS_HOST', None)
     REDIS_PORT = os.environ.get('REDIS_PORT', None)
     REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
     redis_uri = f'redis://user:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}'
+
+    # Production Flask Cache
+    CACHE_REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
+    CACHE_REDIS_URL = f'{redis_uri}/2'
+
+    # Production Celery
     CELERY_BROKER_URL = f'{redis_uri}/5'
     CELERY_RESULT_BACKEND = f'{redis_uri}/6'

@@ -2,6 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: simcct-service
+  annotations:
+    cloud.google.com/app-protocols: '{"https-port":"HTTPS","http-port":"HTTP"}'
   labels:
     app: simcct
 spec:
@@ -9,13 +11,14 @@ spec:
   selector:
     app: simcct
   ports:
-  - name: http
+  - name: http-port
+    protocol: TCP
     port: 8000
     targetPort: 8000
+  - name: https-port
     protocol: TCP
-  - name: https
     port: 443
-    protocol: TCP
+    targetPort: 8000
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment

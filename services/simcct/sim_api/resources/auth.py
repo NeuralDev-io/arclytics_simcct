@@ -747,8 +747,8 @@ def logout(_) -> Tuple[dict, int]:
 
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
-@cache.cached(timeout=600, key_prefix='user_status')
 @authenticate_user_and_cookie_flask
+@cache.cached(timeout=600, key_prefix='user_status')
 def get_user_status(user) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     is_profile = True

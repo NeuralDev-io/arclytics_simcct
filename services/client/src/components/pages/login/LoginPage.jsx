@@ -112,7 +112,8 @@ class LoginPage extends Component {
                   setSubmitting(true)
                   if (res.status === 'success') {
                     if (!res.isProfile) history.push('/profileQuestions')
-                  } else history.push('/')
+                    else history.push('/')
+                  }
                 })
               })
                 .catch(() => {

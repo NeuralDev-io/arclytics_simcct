@@ -15,30 +15,30 @@ steps:
 #  - '--build-arg'
 #  - 'version=1.24.1'
 #  - '-t'
-#  - 'asia.gcr.io/arc-sim/docker-compose:latest'
+#  - 'asia.gcr.io/$PROJECT_ID/docker-compose:latest'
 #  - '-t'
-#  - 'asia.gcr.io/arc-sim/docker-compose:1.24.1'
+#  - 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
 #  - './services/cloud-builders-dc/'
-- name: 'asia.gcr.io/arc-sim/docker-compose:1.24.1'
+- name: 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
   args: ['--project-name', 'arc', '--file', 'docker-compose-gke.yaml', 'build']
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'asia.gcr.io/arc-sim/arc_sim_client:1.1.5']
+  args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.1.5']
 - name: 'gcr.io/cloud-builders/gke-deploy:stable'
   args:
   - 'run'
   - '--filename=./kubernetes/client-gke-secure-ingress-service.yaml'
-  - '--image=asia.gcr.io/arc-sim/arc_sim_client:1.1.5'
+  - '--image=asia.gcr.io/$PROJECT_ID/arc_sim_client:1.1.5'
   - '--location=australia-southeast1'
   - '--cluster=arc-sim-aust'
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'asia.gcr.io/arc-sim/arc_sim_service:1.1.6']
+  args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_service:1.1.6']
 
 - name: 'gcr.io/cloud-builders/gke-deploy:stable'
   args:
   - 'run'
   - '--filename=./kubernetes/simcct-gke-secure-ingress-service.yaml'
-  - '--image=asia.gcr.io/arc-sim/arc_sim_service:1.1.6'
+  - '--image=asia.gcr.io/$PROJECT_ID/arc_sim_service:1.1.6'
   - '--location=australia-southeast1'
   - '--cluster=arc-sim-aust'
 
@@ -46,19 +46,19 @@ steps:
   args: ['apply', '-f', './kubernetes/app-gke-secure-ingress.yaml']
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'asia.gcr.io/arc-sim/arc_sim_celery:1.0.0']
+  args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.0.0']
 - name: 'gcr.io/cloud-builders/gke-deploy:stable'
   args:
   - 'run'
   - '--filename=./kubernetes/celery-gke-deployment.yaml'
-  - '--image=asia.gcr.io/arc-sim/arc_sim_celery:1.0.0'
+  - '--image=asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.0.0'
   - '--location=australia-southeast1'
   - '--cluster=arc-sim-aust'
 
 images:
-#- 'asia.gcr.io/arc-sim/docker-compose:latest'
-#- 'asia.gcr.io/arc-sim/docker-compose:1.24.1'
-- 'asia.gcr.io/arc-sim/arc_sim_client:1.1.5'
-- 'asia.gcr.io/arc-sim/arc_sim_service:1.1.6'
-- 'asia.gcr.io/arc-sim/arc_sim_celery:1.0.0'
+#- 'asia.gcr.io/$PROJECT_ID/docker-compose:latest'
+#- 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
+- 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.1.5'
+- 'asia.gcr.io/$PROJECT_ID/arc_sim_service:1.1.6'
+- 'asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.0.0'
 tags: ['arclytics-sim', 'neuraldev']

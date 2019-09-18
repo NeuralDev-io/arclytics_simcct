@@ -4,5 +4,6 @@ build
 env
 htmlcov
 .dockerignore
+node_modules
 Dockerfile
 Dockerfile-prod

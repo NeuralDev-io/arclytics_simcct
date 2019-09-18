@@ -105,8 +105,6 @@ services:
       - 6379:6379
     expose:
       - 6379
-    env_file:
-      - ./.env
     networks:
       - host
 

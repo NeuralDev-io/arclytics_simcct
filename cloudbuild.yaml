@@ -27,7 +27,10 @@ steps:
   - 'arc'
   - '--file'
   - 'docker-compose-gke.yaml'
-  - 'build simcct client celery-worker'
+  - 'build'
+  - 'simcct'
+  - 'client'
+  - 'celery-worker'
 
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.1.5']

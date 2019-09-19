@@ -14,6 +14,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import AlertCircle from 'react-feather/dist/icons/alert-circle'
+import Tooltip from '../tooltip'
 
 import styles from './TextField.module.scss'
 
@@ -27,30 +28,26 @@ class TextField extends Component {
   }
 
   validate = (value) => {
-    const { validation } = this.props
-    // console.log(validation)
-    // console.log(value)
+    const { constraints } = this.props
+    let err = ''
     const BreakException = {}
     try {
-      validation.forEach((valObj) => {
-        // console.log('start validation')
-        if (!valObj.constraint(value)) {
-          this.setState({ err: valObj.message })
-          // console.log('validation = false')
+      constraints.forEach((constraint) => {
+        if (!constraint.check(value)) {
+          err = constraint.message
           throw BreakException
-        } else {
-          this.setState({ err: '' })
-          // console.log('validation = true')
         }
       })
     } catch (ex) {
       if (ex !== BreakException) throw ex
     }
+    return err
   }
 
   handleChange = (e) => {
     const { onChange } = this.props
-    // this.validate(e.target.value)
+    const err = this.validate(e.target.value)
+    if (err !== '') this.setState({ err })
     onChange(e.target.value)
   }
 
@@ -62,14 +59,19 @@ class TextField extends Component {
       className = '',
       value = '',
       length = 'default',
-      name,
       error = '',
+      errorTooltipPosition = 'right',
+      name,
       ...other
     } = this.props
     const { err } = this.state
-    const classname = `${styles.input} ${error !== '' && styles.error} ${className || ''}`
+    let displayedError = ''
+    if (error !== '') {
+      displayedError = error
+    } else displayedError = err
 
-    //Need to fix the iron kick
+    const classname = `${styles.input} ${displayedError !== '' && styles.error} ${className || ''}`
+
     return (
       <div className={`${styles.container} ${length === 'default' ? '' : styles[length]}`}>
         <input
@@ -82,8 +84,15 @@ class TextField extends Component {
           onChange={e => this.handleChange(e)}
           disabled={isDisabled}
         />
-        {(error !== '')? <AlertCircle className={styles.errorIcon}/>: ('')}
-        {/* <span className="text--sub2">{err}</span> */}
+        {(displayedError !== '') && (
+          <Tooltip
+            position={errorTooltipPosition}
+            className={{ container: styles.errorContainer, tooltip: `${styles.errorTooltip} ${styles[errorTooltipPosition]}` }}
+          >
+            <AlertCircle className={styles.icon} />
+            <span>{displayedError}</span>
+          </Tooltip>
+        )}
       </div>
     )
   }
@@ -101,8 +110,12 @@ TextField.propTypes = {
   placeholder: PropTypes.string,
   isDisabled: PropTypes.bool,
   className: PropTypes.string,
-  validation: PropTypes.string,
-
+  constraints: PropTypes.arrayOf(PropTypes.shape({
+    check: PropTypes.func,
+    message: PropTypes.string,
+  })),
+  error: PropTypes.string,
+  errorTooltipPosition: PropTypes.string,
 }
 
 TextField.defaultProps = {
@@ -112,7 +125,9 @@ TextField.defaultProps = {
   isDisabled: false,
   className: '',
   value: '',
-  validation: '',
+  constraints: [],
+  error: '',
+  errorTooltipPosition: 'right',
 }
 
 export default TextField

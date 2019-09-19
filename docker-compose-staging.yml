@@ -67,18 +67,17 @@ services:
     build:
       context: ./services/celery-worker
       dockerfile: Dockerfile-prod
-    labels:
-      arclytics.io: "development"
-      service: "celery-worker"
-    image: neuraldev/arc_sim_celery:1.0
+      labels:
+        arclytics.io: "production"
+        service: "celery-worker"
+    image: arclytics/arc_sim_celery:1.0
     volumes:
       - ./services/celery-worker:/usr/src/app
     ports:
-      - 5555:5555  # Flower Web GUI management of Celery
+      - 5555:5555
     expose:
       - 5555
     environment:
-      - C_FORCE_ROOT=true
       - FLASK_ENV=production
       - APP_SETTINGS=flask_conf.ProductionConfig
       - MAIL_SERVER=${MAIL_SERVER}

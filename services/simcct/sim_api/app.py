@@ -21,22 +21,20 @@ __date__ = '2019.06.04'
 This is the entrypoint to our Arclytics Flask API server.
 """
 
-import os
-
+from os import environ as env
 from flask import Flask
 from flask_cors import CORS
 from mongoengine import connect
-from mongoengine.connection import (
-    disconnect_all, get_connection, get_db, MongoEngineConnectionError
-)
+from mongoengine.connection import (MongoEngineConnectionError, disconnect_all,
+                                    get_connection, get_db)
 from redis import Redis
 
-from sim_api.extensions import bcrypt, api, redis_session
-from sim_api.extensions import MongoSingleton
 from sim_api.extensions import JSONEncoder
+from sim_api.extensions import MongoSingleton
+from sim_api.extensions import api, bcrypt, redis_session, cache
 
 # Instantiate the Mongo object to store a connection
-app_settings = os.getenv('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')
+app_settings = env.get('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')
 _mongo_client = None
 
 
@@ -55,12 +53,12 @@ def init_db(
         port = int(app.config['MONGO_PORT'])
         testing = app.config['TESTING']
 
-    if os.environ.get('FLASK_ENV') == 'production':
-        _db_name = str(os.environ.get('MONGO_APP_DB'))
-        _host = os.environ.get('MONGO_HOST')
-        _port = os.environ.get('MONGO_PORT')
-        _username = os.environ.get('MONGO_APP_USER')
-        _password = str(os.environ.get('MONGO_APP_USER_PASSWORD'))
+    if env.get('FLASK_ENV') == 'production':
+        _db_name = str(env.get('MONGO_APP_DB'))
+        _host = env.get('MONGO_HOST')
+        _port = env.get('MONGO_PORT')
+        _username = env.get('MONGO_APP_USER')
+        _password = str(env.get('MONGO_APP_USER_PASSWORD'))
         mongo_uri = (
             f'mongodb://{_username}:{_password}@{_host}:{_port}'
             f'/?authSource=admin'
@@ -118,28 +116,29 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
 
     # Setup the configuration for Flask
     app.config.from_object(configs_path)
-    app.secret_key = os.environ.get('SECRET_KEY')
+    app.secret_key = env.get('SECRET_KEY')
+    prod_environment = app.env == 'production'
 
     # ========== # CONNECT TO DATABASES # ========== #
-    if os.environ.get('FLASK_ENV', 'development') == 'production':
+    if not prod_environment:
         redis = Redis(
-            host=os.environ.get('REDIS_HOST'),
-            port=int(os.environ.get('REDIS_PORT')),
-            password=os.environ.get('REDIS_PASSWORD'),
+            host=env.get('REDIS_HOST'),
+            port=int(env.get('REDIS_PORT')),
             db=1,
         )
     else:
         redis = Redis(
-            host=os.environ.get('REDIS_HOST'),
-            port=int(os.environ.get('REDIS_PORT')),
+            host=env.get('REDIS_HOST'),
+            port=int(env.get('REDIS_PORT')),
+            password=env.get('REDIS_PASSWORD'),
             db=1,
         )
 
     # Mongo Client interface with MongoEngine as Object Document Mapper (ODM)
     app.config.update(
         dict(
-            MONGO_HOST=os.environ.get('MONGO_HOST', ''),
-            MONGO_PORT=os.environ.get('MONGO_PORT', 27017),
+            MONGO_HOST=env.get('MONGO_HOST', ''),
+            MONGO_PORT=env.get('MONGO_PORT', 27017),
             SESSION_REDIS=redis
         )
     )
@@ -147,6 +146,9 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     # Connect to the Mongo Client
     db = init_db(app)
     set_flask_mongo(db)
+
+    from sim_api.resources import root_blueprint
+    app.register_blueprint(root_blueprint)
 
     # Set up the Flask App Context
     with app.app_context():
@@ -182,6 +184,7 @@ def create_app(script_info=None, configs_path=app_settings) -> Flask:
     #     across
     #     domains.
     #     Note:	This option cannot be used in conjunction with a ‘*’ origin
+    
     CORS(
         app=app,
         headers=['Content-Type'],
@@ -219,8 +222,9 @@ def extensions(app) -> None:
     Returns:
         None.
     """
-    bcrypt.init_app(app)
     api.init_app(app)
+    cache.init_app(app)
+    bcrypt.init_app(app)
     redis_session.init_app(app)
     # talisman.init_app(app, force_https_permanent=False, force_https=False)
 

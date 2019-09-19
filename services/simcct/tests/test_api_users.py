@@ -28,7 +28,7 @@ from mongoengine import get_db
 from tests.test_api_base import BaseTestCase, app
 from sim_api.models import (User, UserProfile, AdminProfile)
 from tests.test_utilities import test_login
-from logger.arc_logger import AppLogger
+from logger import AppLogger
 
 logger = AppLogger(__name__)
 
@@ -111,7 +111,7 @@ class TestUserService(BaseTestCase):
 
     def test_ping(self):
         """Ensure the /ping route behaves correctly."""
-        res = self.client.get('/api/v1/sim/ping')
+        res = self.client.get('/ping')
         data = json.loads(res.data.decode())
         self.assertEqual(res.status_code, 200)
         self.assertIn('success', data['status'])

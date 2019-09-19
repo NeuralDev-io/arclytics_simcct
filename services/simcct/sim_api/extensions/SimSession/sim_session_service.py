@@ -25,9 +25,10 @@ import json
 from typing import Union
 
 from flask import session
-from sim_api.models import User
+
+from logger import AppLogger
 from sim_api.extensions import JSONEncoder
-from logger.arc_logger import AppLogger
+from sim_api.models import User
 
 logger = AppLogger(__name__)
 

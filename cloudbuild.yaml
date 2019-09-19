@@ -28,11 +28,17 @@ steps:
   args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.1.5']
 - name: 'gcr.io/cloud-builders/kubectl'
   args: ['apply', '-f', './kubernetes/client-gke-secure-ingress-service.yaml']
+  env:
+    - 'CLOUDSDK_CONTAINER_CLUSTER=arc-sim-aust'
+    - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'
 
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_service:1.1.6']
 - name: 'gcr.io/cloud-builders/kubectl'
   args: ['apply', '-f', './kubernetes/simcct-gke-secure-ingress-service.yaml']
+  env:
+    - 'CLOUDSDK_CONTAINER_CLUSTER=arc-sim-aust'
+    - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'
 
 - name: 'gcr.io/cloud-builders/kubectl'
   args: ['apply', '-f', './kubernetes/app-gke-secure-ingress.yaml']
@@ -41,6 +47,9 @@ steps:
   args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.0.0']
 - name: 'gcr.io/cloud-builders/kubectl'
   args: ['apply', '-f', './kubernetes/celery-gke-deployment.yaml']
+  env:
+    - 'CLOUDSDK_CONTAINER_CLUSTER=arc-sim-aust'
+    - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'
 
 images:
 #- 'asia.gcr.io/$PROJECT_ID/docker-compose:latest'
@@ -52,6 +61,6 @@ images:
 - 'asia.gcr.io/$PROJECT_ID/arc_sim_mongo:1.1.0'
 
 tags: ['arclytics-sim', 'neuraldev']
-timeout: 9000s
+timeout: '9000s'
 options:
-  machineType: N1_HIGHCPU_32
+  machineType: 'N1_HIGHCPU_32'

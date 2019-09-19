@@ -1,4 +1,4 @@
-import { PERSIST_SIM, RESET } from './types'
+import { PERSIST_SIM } from './types'
 
 const initialState = {
   lastSim: {},
@@ -11,8 +11,6 @@ const reducer = (state = initialState, action) => {
         ...state,
         lastSim: action.payload,
       }
-    case RESET:
-      return {}
     default:
       return state
   }

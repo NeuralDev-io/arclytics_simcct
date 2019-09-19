@@ -9,7 +9,7 @@ import Checkbox from '../../elements/checkbox'
 import {
   updateConfigMethod, updateGrainSize, updateMsBsAe, getMsBsAe, setAutoCalculate, updateConfig,
 } from '../../../state/ducks/sim/actions'
-import { validate } from '../../../utils/validator'
+import { validate, validateGroup } from '../../../utils/validator'
 import { constraints } from './utils/constraints'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 
@@ -133,11 +133,41 @@ class ConfigForm extends Component {
     }
   }
 
+  handleUpdateNucleationParams = (name, value) => {
+    const { updateConfigConnect, configurations } = this.props
+    const other = name === 'nucleation_start' ? 'nucleation_finish' : 'nucleation_start'
+    const data = {
+      nucleation_start: configurations.nucleation_start,
+      nucleation_finish: configurations.nucleation_finish,
+    }
+    data[name] = value
+
+    let err
+    if (name === 'nucleation_start') {
+      err = validate(value, constraints.nucleationStart)
+    } else if (name === 'nucleation_finish') {
+      err = validate(value, constraints.nucleationFinish)
+    }
+
+    if (err !== undefined) {
+      updateConfigConnect(name, value, { [name]: err })
+      updateConfigConnect(other, data[other], {})
+    } else {
+      err = validateGroup(data, constraints.nucleationParams)
+      if (err !== undefined) {
+        updateConfigConnect(name, value, { [name]: err })
+        updateConfigConnect(other, data[other], { [other]: err })
+      } else {
+        updateConfigConnect(name, value, {})
+        updateConfigConnect(other, data[other], {})
+      }
+    }
+  }
+
   render() {
     const {
       configurations,
       updateConfigMethodConnect,
-      updateConfigConnect,
       isAuthenticated,
     } = this.props
     const methodOptions = [
@@ -405,11 +435,12 @@ class ConfigForm extends Component {
               <TextFieldExtra
                 type="text"
                 name="nucleation_start"
-                onChange={val => updateConfigConnect('nucleation_start', val)}
+                onChange={val => this.handleUpdateNucleationParams('nucleation_start', val)}
                 value={configurations.nucleation_start}
                 length="short"
                 suffix="%"
                 isDisabled={!isAuthenticated}
+                error={configurations.error.nucleation_start}
               />
             </div>
             <div className="input-row">
@@ -417,11 +448,12 @@ class ConfigForm extends Component {
               <TextFieldExtra
                 type="text"
                 name="nucleation_finish"
-                onChange={val => updateConfigConnect('nucleation_finish', val)}
+                onChange={val => this.handleUpdateNucleationParams('nucleation_finish', val)}
                 value={configurations.nucleation_finish}
                 length="short"
                 suffix="%"
                 isDisabled={!isAuthenticated}
+                error={configurations.error.nucleation_finish}
               />
             </div>
           </div>

@@ -15,6 +15,48 @@ export const constraints = {
       message: 'Grain size must be a positive number',
     },
   ],
+  ms: [
+    {
+      check: val => val.trim() !== '',
+      message: 'This value can\'t be empty',
+    },
+    {
+      check: val => !isNaN(val),
+      message: 'This value must be a number',
+    },
+    {
+      check: val => parseFloat(val) > 0,
+      message: 'This value must be a positive number',
+    },
+  ],
+  bs: [
+    {
+      check: val => val.trim() !== '',
+      message: 'This value can\'t be empty',
+    },
+    {
+      check: val => !isNaN(val),
+      message: 'This value must be a number',
+    },
+    {
+      check: val => parseFloat(val) > 0,
+      message: 'This value must be a positive number',
+    },
+  ],
+  ae: [
+    {
+      check: val => val.trim() !== '',
+      message: 'This value can\'t be empty',
+    },
+    {
+      check: val => !isNaN(val),
+      message: 'This value must be a number',
+    },
+    {
+      check: val => parseFloat(val) > 0,
+      message: 'This value must be a positive number',
+    },
+  ],
 }
 
 export default constraints

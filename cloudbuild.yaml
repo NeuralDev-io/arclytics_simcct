@@ -1,0 +1,77 @@
+# In this directory, run the following command to build this builder.
+# REFERENCE:
+# [1] https://github.com/GoogleCloudPlatform/cloud-builders-community/blob/master/docker-compose/cloudbuild.yaml
+# $ gcloud config set app/cloud_build_timeout 1h30m
+# $ gcloud builds submit ${WORKDIR} \
+#                --config=${WORKDIR}/cloudbuild.yaml \
+#                --machine-type=n1-highcpu-32 \
+#                --ignore-file=${WORKDIR}/.gcloudignore \
+#                --gcs-source-staging-dir=gs://arc-sim_cloudbuild/source \
+#                --timeout=1h30m
+
+steps:
+# RUN THE BELOW ONCE TO ENSURE THERE IS A DOCKER-COMPOSE CLOUD BUILDER TO USE
+#- name: 'gcr.io/cloud-builders/docker'
+#  args:
+#  - 'build'
+#  - '--build-arg'
+#  - 'version=1.24.1'
+#  - '-t'
+#  - 'asia.gcr.io/$PROJECT_ID/docker-compose:latest'
+#  - '-t'
+#  - 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
+#  - './services/cloud-builders-dc/'
+- name: 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
+  args:
+  - '--project-name'
+  - 'arc'
+  - '--file'
+  - 'docker-compose-gke.yaml'
+  - 'build'
+  - 'simcct'
+  - 'client'
+  - 'celery-worker'
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.1.5']
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ['apply', '-f', './kubernetes/client-gke-secure-ingress-service.yaml']
+  env:
+    - 'CLOUDSDK_CONTAINER_CLUSTER=arc-sim-aust'
+    - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_service:1.1.6']
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ['apply', '-f', './kubernetes/simcct-gke-secure-ingress-service.yaml']
+  env:
+    - 'CLOUDSDK_CONTAINER_CLUSTER=arc-sim-aust'
+    - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'
+
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ['apply', '-f', './kubernetes/app-gke-secure-ingress.yaml']
+  env:
+    - 'CLOUDSDK_CONTAINER_CLUSTER=arc-sim-aust'
+    - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.0.0']
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ['apply', '-f', './kubernetes/celery-gke-deployment.yaml']
+  env:
+    - 'CLOUDSDK_CONTAINER_CLUSTER=arc-sim-aust'
+    - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'
+
+images:
+#- 'asia.gcr.io/$PROJECT_ID/docker-compose:latest'
+#- 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
+- 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.1.5'
+- 'asia.gcr.io/$PROJECT_ID/arc_sim_service:1.1.6'
+- 'asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.0.0'
+- 'asia.gcr.io/$PROJECT_ID/arc_sim_redis:1.1.0'
+- 'asia.gcr.io/$PROJECT_ID/arc_sim_mongo:1.1.0'
+
+tags: ['arclytics-sim', 'neuraldev']
+timeout: '9000s'
+options:
+  machineType: 'N1_HIGHCPU_32'

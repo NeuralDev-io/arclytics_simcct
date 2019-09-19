@@ -9,7 +9,6 @@ COPY ./scripts /data/db/scripts
 
 RUN mkdir -p /data/backups
 WORKDIR /data/backups
-COPY ./production_data /data/backups/
 
 # Any script in this initdb.d will run at the start
 COPY ./entrypoint.sh /docker-entrypoint-initdb.d/

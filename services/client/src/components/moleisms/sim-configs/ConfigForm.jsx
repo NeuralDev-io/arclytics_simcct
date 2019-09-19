@@ -10,10 +10,65 @@ import {
   updateConfigMethod, updateGrainSize, updateMsBsAe, getMsBsAe, setAutoCalculate, updateConfig,
 } from '../../../state/ducks/sim/actions'
 import { roundTo } from '../../../utils/math'
+import { validate } from '../../../utils/validator'
+import { constraints } from './utils/constraints'
+import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 
 import styles from './ConfigForm.module.scss'
 
 class ConfigForm extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      error: {},
+    }
+  }
+
+  handleUpdateGrainSize = (unit, value) => {
+    const { updateGrainSizeConnect } = this.props
+
+    // validate
+    const err = validate(value, constraints.grainSize)
+    if (err !== undefined) {
+      this.setState(state => ({
+        error: {
+          ...state.error,
+          [`${unit}GrainSize`]: err,
+          [`${unit === 'astm' ? 'dia' : 'astm'}GrainSize`]: 'Grain size can\'t be empty',
+        },
+      }))
+      if (unit === 'astm') updateGrainSizeConnect(value, '', false)
+      else updateGrainSizeConnect('', value, false)
+    } else {
+      // if value is valid, check if the converted value is valid
+      let converted
+      if (unit === 'astm') converted = ASTM2Dia(parseFloat(value))
+      else converted = dia2ASTM(parseFloat(value))
+      const convertedErr = validate(converted.toString(), constraints.grainSize)
+      if (convertedErr !== undefined) {
+        this.setState(state => ({
+          error: {
+            ...state.error,
+            [`${unit}GrainSize`]: '',
+            [`${unit === 'astm' ? 'dia' : 'astm'}GrainSize`]: convertedErr,
+          },
+        }))
+        if (unit === 'astm') updateGrainSizeConnect(value, converted, false)
+        else updateGrainSizeConnect(converted, value, false)
+      } else {
+        this.setState(state => ({
+          error: {
+            ...state.error,
+            [`${unit}GrainSize`]: '',
+            [`${unit === 'astm' ? 'dia' : 'astm'}GrainSize`]: '',
+          },
+        }))
+        if (unit === 'astm') updateGrainSizeConnect(value, converted, true)
+        else updateGrainSizeConnect(converted, value, true)
+      }
+    }
+  }
+
   handleUpdateMs = (name, value) => {
     const { configurations, updateMsBsAeConnect } = this.props
     const data = {
@@ -97,10 +152,10 @@ class ConfigForm extends Component {
     const {
       configurations,
       updateConfigMethodConnect,
-      updateGrainSizeConnect,
       updateConfigConnect,
       isAuthenticated,
     } = this.props
+    const { error } = this.state
     const methodOptions = [
       { label: 'Li (98)', value: 'Li98' },
       { label: 'Kirkaldy (83)', value: 'Kirkaldy83' },
@@ -169,10 +224,11 @@ class ConfigForm extends Component {
                 <TextField
                   type="text"
                   name="grain_size_ASTM"
-                  onChange={val => updateGrainSizeConnect('astm', val)}
+                  onChange={val => this.handleUpdateGrainSize('astm', val)}
                   value={configurations.grain_size_ASTM}
                   length="short"
                   isDisabled={!isAuthenticated}
+                  error={error.astmGrainSize}
                 />
               </div>
               <span> = </span>
@@ -181,12 +237,12 @@ class ConfigForm extends Component {
                 <TextFieldExtra
                   type="text"
                   name="grain_size_diameter"
-                  onChange={val => updateGrainSizeConnect('dia', val)}
+                  onChange={val => this.handleUpdateGrainSize('dia', val)}
                   value={configurations.grain_size_diameter}
                   length="short"
                   suffix="μm"
                   isDisabled={!isAuthenticated}
-                  error="oops i did it again"
+                  error={error.diaGrainSize}
                 />
               </div>
             </div>
@@ -395,6 +451,7 @@ ConfigForm.propTypes = {
   isAuthenticated: PropTypes.bool.isRequired,
   // props from connect()
   configurations: PropTypes.shape({
+    isValid: PropTypes.bool,
     method: PropTypes.string,
     grain_size_ASTM: textFieldType,
     grain_size_diameter: textFieldType,

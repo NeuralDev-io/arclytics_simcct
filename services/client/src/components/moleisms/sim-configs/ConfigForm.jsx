@@ -9,7 +9,6 @@ import Checkbox from '../../elements/checkbox'
 import {
   updateConfigMethod, updateGrainSize, updateMsBsAe, getMsBsAe, setAutoCalculate, updateConfig,
 } from '../../../state/ducks/sim/actions'
-import { roundTo } from '../../../utils/math'
 import { validate } from '../../../utils/validator'
 import { constraints } from './utils/constraints'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
@@ -46,10 +45,12 @@ class ConfigForm extends Component {
       ms_temp: configurations.ms_temp,
       ms_rate_param: configurations.ms_rate_param,
     }
+    data[name] = value
 
-    if (value === '') data[name] = 0
-    else data[name] = parseFloat(value)
-    updateMsBsAeConnect('ms', data)
+    const err = validate(value, constraints.ms)
+    if (err !== undefined) {
+      updateMsBsAeConnect('ms', name, data, { [name]: err })
+    } else updateMsBsAeConnect('ms', name, data, {})
   }
 
   toggleMsAutoCalc = (value) => {
@@ -59,12 +60,15 @@ class ConfigForm extends Component {
     setAutoCalculateConnect('auto_calculate_ms', value)
 
     if (value) {
+      // if autocalculate is turned on, get the data from backend
       getMsBsAeConnect('ms')
     } else {
-      updateMsBsAeConnect('ms', {
+      // if turn off, make an update request to the backend
+      // with the current data
+      updateMsBsAeConnect('ms', '', {
         ms_temp: configurations.ms_temp,
         ms_rate_param: configurations.ms_rate_param,
-      })
+      }, {})
     }
   }
 
@@ -74,10 +78,12 @@ class ConfigForm extends Component {
       ae1_temp: configurations.ae1_temp,
       ae3_temp: configurations.ae3_temp,
     }
+    data[name] = value
 
-    if (value === '') data[name] = 0
-    else data[name] = parseFloat(value)
-    updateMsBsAeConnect('ae', data)
+    const err = validate(value, constraints.ae)
+    if (err !== undefined) {
+      updateMsBsAeConnect('ae', name, data, { [name]: err })
+    } else updateMsBsAeConnect('ae', name, data, {})
   }
 
   toggleAeAutoCalc = (value) => {
@@ -87,21 +93,26 @@ class ConfigForm extends Component {
     setAutoCalculateConnect('auto_calculate_ae', value)
 
     if (value) {
+      // if autocalculate is turned on, get the data from backend
       getMsBsAeConnect('ae')
     } else {
-      updateMsBsAeConnect('ae', {
+      // if turn off, make an update request to the backend
+      // with the current data
+      updateMsBsAeConnect('ae', '', {
         ae1_temp: configurations.ae1_temp,
         ae3_temp: configurations.ae3_temp,
-      })
+      }, {})
     }
   }
 
   handleUpdateBs = (name, value) => {
     const { updateMsBsAeConnect } = this.props
-    const data = { [name]: parseFloat(value) }
+    const data = { [name]: value }
 
-    if (value === '') data[name] = 0
-    updateMsBsAeConnect('bs', data)
+    const err = validate(value, constraints.bs)
+    if (err !== undefined) {
+      updateMsBsAeConnect('bs', name, data, { [name]: err })
+    } else updateMsBsAeConnect('bs', name, data, {})
   }
 
   toggleBsAutoCalc = (value) => {
@@ -111,11 +122,14 @@ class ConfigForm extends Component {
     setAutoCalculateConnect('auto_calculate_bs', value)
 
     if (value) {
+      // if autocalculate is turned on, get the data from backend
       getMsBsAeConnect('bs')
     } else {
-      updateMsBsAeConnect('bs', {
+      // if turn off, make an update request to the backend
+      // with the current data
+      updateMsBsAeConnect('bs', '', {
         bs_temp: configurations.bs_temp,
-      })
+      }, {})
     }
   }
 
@@ -242,10 +256,11 @@ class ConfigForm extends Component {
                     type="text"
                     name="ae1_temp"
                     onChange={val => this.handleUpdateAe('ae1_temp', val)}
-                    value={roundTo(configurations.ae1_temp, 1)}
+                    value={configurations.ae1_temp}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae || !isAuthenticated}
+                    error={configurations.error.ae1_temp}
                   />
                 </div>
                 <div className="input-row">
@@ -257,10 +272,11 @@ class ConfigForm extends Component {
                     type="text"
                     name="ae3_temp"
                     onChange={val => this.handleUpdateAe('ae3_temp', val)}
-                    value={roundTo(configurations.ae3_temp, 1)}
+                    value={configurations.ae3_temp}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae || !isAuthenticated}
+                    error={configurations.error.ae3_temp}
                   />
                 </div>
               </div>
@@ -292,10 +308,11 @@ class ConfigForm extends Component {
                     type="text"
                     name="bs_temp"
                     onChange={val => this.handleUpdateBs('bs_temp', val)}
-                    value={roundTo(configurations.bs_temp, 1)}
+                    value={configurations.bs_temp}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_bs || !isAuthenticated}
+                    error={configurations.error.bs_temp}
                   />
                 </div>
               </div>
@@ -330,10 +347,11 @@ class ConfigForm extends Component {
                     type="text"
                     name="ms_temp"
                     onChange={val => this.handleUpdateMs('ms_temp', val)}
-                    value={roundTo(configurations.ms_temp, 1)}
+                    value={configurations.ms_temp}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ms || !isAuthenticated}
+                    error={configurations.error.ms_temp}
                   />
                 </div>
                 <div className="input-row">
@@ -346,9 +364,10 @@ class ConfigForm extends Component {
                     type="text"
                     name="ms_rate_param"
                     onChange={val => this.handleUpdateMs('ms_rate_param', val)}
-                    value={roundTo(configurations.ms_rate_param, 1)}
+                    value={configurations.ms_rate_param}
                     length="short"
                     isDisabled={configurations.auto_calculate_ms || !isAuthenticated}
+                    error={configurations.error.ms_rate_param}
                   />
                 </div>
               </div>

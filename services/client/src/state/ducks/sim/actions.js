@@ -217,35 +217,83 @@ export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getStat
   }
 }
 
-export const updateMsBsAe = (name, reqBody) => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
-    method: 'PUT',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(reqBody),
-  })
-    .then((res) => {
-      if (res.status !== 202) throw new Error('Something went wrong')
-      return res.json()
-    })
-    .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
-      if (res.status === 'success') {
-        dispatch({
-          type: UPDATE_CONFIG,
-          payload: reqBody,
-        })
+export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState) => {
+  const { error } = getState().sim.configurations
+
+  // parse values into floats
+  const reqBody = {}
+  Object.keys(data).forEach((key) => { reqBody[key] = parseFloat(data[key]) })
+
+  // remove error from store error
+  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
+    if (field === '') {
+      // if field is empty string, it means all values are updated with autocalculated data
+      // hence there should be no errors
+      if (name === 'ms') {
+        delete error.ms_temp
+        delete error.ms_rate_param
       }
+      if (name === 'bs') {
+        delete error.bs_temp
+      }
+      if (name === 'ae') {
+        delete error.ae1_temp
+        delete error.ae3_temp
+      }
+    } else delete error[field]
+  }
+
+  // update config in redux store
+  dispatch({
+    type: UPDATE_CONFIG,
+    payload: {
+      error: {
+        ...error,
+        ...valError,
+      },
+      ...data,
+    },
+  })
+
+  // only send update to server when there is no error
+  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
+    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reqBody),
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+      .then((res) => {
+        if (res.status !== 202) throw new Error('Something went wrong')
+        return res.json()
+      })
+      .then((res) => {
+        if (res.status === 'fail') throw new Error(res.message)
+      })
+      .catch(err => addFlashToast({
+        message: err.message,
+        options: { variant: 'error' },
+      }, true)(dispatch))
+  }
 }
 
-export const getMsBsAe = name => (dispatch) => {
+export const getMsBsAe = name => (dispatch, getState) => {
+  const { error } = getState().sim.configurations
+  // since data is autocalculated, there should be no input errors
+  if (name === 'ms') {
+    delete error.ms_temp
+    delete error.ms_rate_param
+  }
+  if (name === 'bs') {
+    delete error.bs_temp
+  }
+  if (name === 'ae') {
+    delete error.ae1_temp
+    delete error.ae3_temp
+  }
+
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
     method: 'GET',
     credentials: 'include',
@@ -262,7 +310,10 @@ export const getMsBsAe = name => (dispatch) => {
       if (res.status === 'success') {
         dispatch({
           type: UPDATE_CONFIG,
-          payload: res.data,
+          payload: {
+            ...res.data,
+            error,
+          },
         })
       }
     })

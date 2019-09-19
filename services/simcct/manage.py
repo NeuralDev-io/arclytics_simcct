@@ -21,8 +21,8 @@ __date__ = '2019.06.04'
 This script is to our CLI script tool to manage the application.
 """
 
-import os
 import json
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -30,12 +30,12 @@ from pathlib import Path
 import coverage
 import redis
 from flask.cli import FlaskGroup
+from mongoengine.connection import connect, disconnect_all, get_db
 from prettytable import PrettyTable
 from pymongo import MongoClient
-from mongoengine.connection import get_db, disconnect_all, connect
 
 from sim_api.app import create_app
-from sim_api.models import User, AdminProfile, UserProfile
+from sim_api.models import AdminProfile, User, UserProfile
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(BASE_DIR)

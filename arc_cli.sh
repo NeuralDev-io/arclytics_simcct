@@ -582,6 +582,8 @@ changeContainerGroup() {
         CONTAINER_ARGS="simcct celery-worker redis mongodb"
     elif [[ "${CONTAINER_GROUP}" == "server-dask" ]]; then
         CONTAINER_ARGS="simcct celery-worker redis mongodb dask-scheduler dask-worker"
+    elif [[ "${CONTAINER_GROUP}" == "client-dask" ]]; then
+        CONTAINER_ARGS="client simcct celery-worker redis mongodb dask-scheduler dask-worker"
     elif [[ "${CONTAINER_GROUP}" == "client" ]]; then
         CONTAINER_ARGS="client nginx"
     elif [[ "${CONTAINER_GROUP}" == "fluentd" ]]; then
@@ -780,31 +782,41 @@ while [[ "$1" != "" ]] ; do
                         changeContainerGroup
 
                         while [[ "$3" != "" ]]; do
-                            case $3 in
-                                -b | --build )
-                                    BUILD_FLAG=1
-                                    ;;
-                                -d | --detach )
-                                    DETACH_FLAG=1
-                                    ;;
-                                -s | --seed_db )
-                                    SEED_DB_FLAG=1
-                                    ;;
-                                help )
-                                    groupUsage
-                                    exit 0
-                                    ;;
-                                esac
-                                shift
-                            done
-                        # We run from here and as will only accept the flags above
-                        run
-                        exit 0
-                        ;;
+                          case $3 in
+                            -b | --build )
+                              BUILD_FLAG=1
+                              ;;
+                            -d | --detach )
+                              DETACH_FLAG=1
+                              ;;
+                            -s | --seed_db )
+                              SEED_DB_FLAG=1
+                              ;;
+                            --scale )
+                              SCALE_FLAG=1
+                              # Shift to the arg after --scale
+                              shift
+                              # Get the first argument after --SCALE_FLAG flag
+                              # TODO(andrew@neuraldev.io): Currently only taking one
+                              scale_service=$3
+                              # scale_num="$(cut -d'=' -f2 <<< "${scale_service}" )"
+                              shift
+                              ;;
+                            help )
+                              groupUsage
+                              exit 0
+                              ;;
+                            esac
+                            shift
+                          done
+                      # We run from here and as will only accept the flags above
+                      run
+                      exit 0
+                      ;;
                     -h | --help )
-                        upUsage
-                        exit 0
-                        ;;
+                      upUsage
+                      exit 0
+                      ;;
                     * )
                         CONTAINER_ARGS=$2
                         while [[ "$3" != "" ]] ; do
@@ -995,306 +1007,495 @@ while [[ "$1" != "" ]] ; do
             exit 0
             ;;
         deploy )
-            while [[ "$2" != "" ]] ; do
-                case $2 in
-                    secrets )
-                      kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml"
-                      kubectl apply -f "${WORKDIR}/kubernetes/nginxsecret.yaml"
-                      TMPFILE=$(mktemp)
-                      /usr/bin/openssl rand -base64 741 > $TMPFILE
-                      kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth-mongodb-keyfile=$TMPFILE
-                      rm $TMPFILE
+          # Some Defaults
+          PROJECT_ID="arc-sim"
+          CLUSTER_NAME="arc-sim-aust"
+          KUBERNETES_MASTER_VERSION="1.13.7-gke.8"
+          KUBERNETES_NODE_VERSION=${KUBERNETES_MASTER_VERSION}
+          # Note: Only use one of ZONE/REGION but generally ZONE because
+          # in GCP Trial account they only allow 8 CPUs and a REGION cluster
+          # will deploy a node with at least 1 CPU in each Region zone.
+          # There are 3 for Australia.
+          REGION="australia-southeast1"
+          ZONE="australia-southeast1-a"
+          LOCATION_COMMAND="--region=${REGION}"
+          REPLICA_ZONE_REDIS="--replica-zones=${ZONE},australia-southeast1-b"
+          REPLICA_ZONE_MONGO="--replica-zones=${ZONE},australia-southeast1-c"
+          IMAGE_TYPE="UBUNTU"
+          RESERVED_IP_NAME="arclytics-ip"
+          CLIENT_SSL_NAME="client-app-https-cert"
+          SIMCCT_SSL_NAME="simcct-app-https-cert"
+          CLIENT_HTTPS_TLS_NAME="client-app-https-secret"
+          SIMCCT_HTTPS_TLS_NAME="simcct-app-https-secret"
+          CLOUD_STORAGE_BUCKET="asia.artifacts.arc-sim.appspot.com"
+
+          while [[ "$2" != "" ]] ; do
+            case $2 in
+              auth )
+                gcloud container clusters get-credentials ${CLUSTER_NAME} \
+                    --project=${PROJECT_ID} \
+                    --zone=${ZONE}
+                ;;
+              config )
+                gcloud compute project-info describe --project ${PROJECT_ID}
+                #gcloud container clusters describe ${CLUSTER_NAME} --zone ${ZONE}
+                gcloud config set project ${PROJECT_ID}
+                #gcloud config set compute/zone ${ZONE}
+                gcloud config set compute/region ${REGION}
+                gcloud components update
+                #gcloud compute project-info add-metadata --metadata google-compute-default-region=australia-southeast1,google-compute-default-zone=australia-southeast1-a
+                ;;
+              cluster )
+                while [[ "$3" != "" ]]; do
+                  case $3 in
+                    create )
+                      # This uses `jq` package to get the latest GKE versions for Kubernetes Master and Nodes
+                      LATEST=$(\
+                        gcloud container get-server-config \
+                            ${LOCATION_COMMAND} \
+                            --project=${PROJECT_ID} \
+                            --format="json" \
+                            | jq --raw-output '
+                              def to_gke_semver(o):
+                                capture("(?<major>[0-9]*).(?<minor>[0-9]*).(?<patch>[0-9]*)-gke.(?<gke>[0-9]*)");
+                              def from_gke_semver(o):
+                                .major + "." + .minor + "." + .patch + "-gke." + .gke;
+                              reduce (
+                                .validMasterVersions[] | to_gke_semver(.)
+                              ) as $this (
+                              {
+                                "major":"0",
+                                "minor":"0",
+                                "patch": "0",
+                                "gke": "0"
+                              };
+                              if ($this.major|tonumber) > (.major|tonumber)
+                              then . = $this
+                              else (
+                                if ($this.major|tonumber) == (.major|tonumber)
+                                then (
+                                  if ($this.minor|tonumber) > (.minor|tonumber)
+                                  then . = $this
+                                  else (
+                                    if ($this.minor|tonumber) == (.minor|tonumber)
+                                    then (
+                                    if ($this.patch|tonumber) > (.patch|tonumber)
+                                      then . = $this
+                                        else (
+                                            if ($this.patch|tonumber) == (.patch|tonumber)
+                                            then (
+                                                if ($this.gke|tonumber) > (.gke|tonumber)
+                                                then . = $this
+                                                else .
+                                                end
+                                            )
+                                            else .
+                                            end
+                                        )
+                                        end
+                                    )
+                                    else .
+                                    end
+                                  )
+                                  end
+                                )
+                                else .
+                                end
+                              )
+                              end
+                              ) | from_gke_semver(.)
+                              ')
+                      # echo ${LATEST}
+
+                      # Create new GKE Kubernetes cluster (using host node VM images based on Ubuntu
+                      # rather than ChromiumOS default & also use slightly larger VMs than default)
+                      # Alternative --machine-type = [n1-standard-]
+                      generalMessage "Creating cluster [${CLUSTER_NAME}] with version [${LATEST}] in region [${REGION}] and zone [${ZONE}]"
+                      gcloud container clusters create ${CLUSTER_NAME} \
+                          ${LOCATION_COMMAND} \
+                          --image-type=${IMAGE_TYPE} \
+                          --machine-type=n1-standard-2 \
+                          --num-nodes=2 \
+                          --min-nodes=1 \
+                          --max-nodes=3 \
+                          --max-nodes-per-pool=3 \  # australia-southeast1 has 3 ZONES so 9 is more than we're allowed but ensure 8 is possible
+                          --enable-autoscaling \
+                          --cluster-version=${KUBERNETES_NODE_VERSION}
+                          # This may have caused the Ingress not to work with latest version
+                          # --cluster-version=${LATEST} \
+
+                      generalMessage "Getting Cluster Credentials for ${CLUSTER_NAME}"
+                      gcloud container clusters get-credentials ${CLUSTER_NAME} \
+                          --project=${PROJECT_ID} \
+                          ${LOCATION_COMMAND}
+
+                      # google-chrome console.cloud.google.com/kubernetes/list?project=${PROJECT_ID}
                       ;;
-                    ingress )
-                      while [[ "$3" != "" ]]; do
-                        case $3 in
-                          create )
-                            kubectl apply -f "${WORKDIR}/kubernetes/client-ingress.yaml"
-                            ;;
-                          delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/client-ingress.yaml"
-                            ;;
-                          * )
-                            exit 0
-                            ;;
-                        esac
-                        shift
+                    delete )
+                      gcloud container clusters list
+                      gcloud container clusters delete ${CLUSTER_NAME} --region ${REGION}
+                      ;;
+                  esac
+                  shift
+                done
+                ;;
+              secrets )
+                kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml"
+
+                # For MONGO REPLICASET
+                TMPFILE=$(mktemp)
+                /usr/bin/openssl rand -base64 741 > ${TMPFILE}
+                kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth-mongodb-keyfile=${TMPFILE}
+                rm ${TMPFILE}
+
+                # Apply the SSL certificates to GCP management as well.
+                # gcloud compute ssl-certificates create ${CLIENT_SSL_NAME} \
+                #    --certificate "${WORKDIR}/certs/io.arclytics.app.crt" \
+                #    --private-key "${WORKDIR}/certs/io.arclytics.app.key"
+                # gcloud compute ssl-certificates create ${SIMCCT_SSL_NAME} \
+                #    --certificate "${WORKDIR}/certs/io.arclytics.api.crt" \
+                #    --private-key "${WORKDIR}/certs/io.arclytics.api.key"
+
+                # Apply the certificates to Kubernetes Secrets which will be used
+                # by the Ingress controller.
+                kubectl create secret tls ${CLIENT_HTTPS_TLS_NAME} \
+                   --cert "${WORKDIR}/certs/io.arclytics.app.crt" \
+                   --key "${WORKDIR}/certs/io.arclytics.app.key"
+                kubectl create secret tls ${SIMCCT_HTTPS_TLS_NAME} \
+                   --cert "${WORKDIR}/certs/io.arclytics.api.crt" \
+                   --key "${WORKDIR}/certs/io.arclytics.api.key"
+                ;;
+              addresses )
+                while [[ "$3" != "" ]]; do
+                  case $3 in
+                    create )
+                      # Ensure you use a Global Address for an GCE Ingress.
+                      # For a Load Balancer type service, you will need Region-based.
+                      gcloud compute addresses create ${RESERVED_IP_NAME} --global
+                      ;;
+                    delete )
+                      gcloud compute addresses delete ${RESERVED_IP_NAME} --global
+                      ;;
+                  esac
+                  shift
+                done
+                ;;
+              ingress )
+                while [[ "$3" != "" ]]; do
+                  case $3 in
+                    create )
+                      # Ingress that uses Multiple SSL/TLS terminations with 2 different domains.
+                      kubectl apply -f "${WORKDIR}/kubernetes/app-gke-secure-ingress.yaml"
+                      ;;
+                    delete )
+                      kubectl delete -f "${WORKDIR}/kubernetes/app-gke-secure-ingress.yaml"
+                      ;;
+                  esac
+                  shift
+                done
+                ;;
+              redis )
+                while [[ "$3" != "" ]]; do
+                  case $3 in
+                    build )
+                      # Prune to avoid collisions of names:tags output
+                      docker system prune -af --volumes --filter 'label=service=redis'
+                      docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build redis
+                      TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=redis")
+                      docker push asia.gcr.io/${PROJECT_ID}/arc_sim_redis:${TAG}
+                      ;;
+                    create )
+                      gcloud compute disks create --size 50GB \
+                          --type pd-ssd redis-ssd-disk \
+                          ${LOCATION_COMMAND} ${REPLICA_ZONE_REDIS}
+                      kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
+                      kubectl create -f "${WORKDIR}/kubernetes/redis-gke-service.yaml" --validate=false
+                      ;;
+                    delete )
+                      kubectl delete -f "${WORKDIR}/kubernetes/redis-gke-service.yaml"
+                      kubectl delete pvc redis-pvc-redis-0
+                      kubectl delete pv redis-pv
+                      sleep 15
+                      gcloud compute disks delete redis-ssd-disk ${LOCATION_COMMAND}
+                      ;;
+                  esac
+                  shift
+                done
+                ;;
+              mongo )
+                while [[ "$3" != "" ]]; do
+                  case $3 in
+                    build )
+                      # Prune to avoid collisions of names:tags output
+                      docker system prune -af --volumes --filter 'label=service=mongodb'
+                      docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build mongodb
+                      TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=mongodb")
+                      docker push asia.gcr.io/${PROJECT_ID}/arc_sim_mongo:${TAG}
+                      ;;
+                    create )
+                      # shellcheck disable=SC1090
+                      # Configure host VM using daemonset to disable hugepages
+                      kubectl apply -f "${WORKDIR}/kubernetes/hostvm-node-configurer-daemonset.yaml"
+
+                      # Register GCE Fast SSD persistent disks and then create the persistent disks
+                      generalMessage "Creating GCE disks"
+                      for i in 1 2
+                      do
+                          gcloud compute disks create --size 200GB \
+                              --type pd-standard pd-standard-disk-$i \
+                              ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
                       done
-                      ;;
-                    mongo )
-                      while [[ "$3" != "" ]]; do
-                        case $3 in
-                          build )
-                            # Prune to avoid collisions of names:tags output
-                            docker system prune -af --volumes --filter 'label=service=mongodb'
-                            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build mongodb
-                            TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=mongodb")
-                            docker push gcr.io/arclytics-sim/arc_sim_mongo:${TAG}
-                            ;;
-                          create )
-                            # shellcheck disable=SC1090
-                            # Create new GKE Kubernetes cluster (using host node VM images based on Ubuntu
-                            # rather than ChromiumOS default & also use slightly larger VMs than default)
-                            #gcloud container clusters create "arclytics-sim-cluster" --image-type=UBUNTU --machine-type=n1-standard-2
+                      sleep 3
 
-                            # Configure host VM using daemonset to disable hugepages
-                            kubectl apply -f "${WORKDIR}/kubernetes/hostvm-node-configurer-daemonset.yaml"
-
-                            # Register GCE Fast SSD persistent disks and then create the persistent disks
-                            echo "Creating GCE disks"
-                            for i in 1 2
-                            do
-                                gcloud compute disks create --size 30GB --type pd-ssd pd-ssd-disk-$i
-                            done
-                            sleep 3
-
-                            # Create persistent volumes using disks created above
-                            echo "Creating GKE Persistent Volumes"
-                            for i in 1 2
-                            do
-                                sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/mongo-gke-xfs-ssd-pv.yaml" > /tmp/xfs-gke-ssd-pv.yaml
-                                kubectl apply -f /tmp/xfs-gke-ssd-pv.yaml
-                            done
-                            rm /tmp/xfs-gke-ssd-pv.yaml
-                            sleep 3
-
-                            # Create keyfile for the MongoD cluster as a Kubernetes shared secret
-                            # TMPFILE=$(mktemp)
-                            # /usr/bin/openssl rand -base64 741 > $TMPFILE
-                            # kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth-mongodb-keyfile=$TMPFILE
-                            # rm $TMPFILE
-
-                            # Create mongodb service with mongod stateful-set
-                            kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-service.yaml"
-                            echo
-
-                            # Wait until the final (2nd) mongod has started properly
-                            echo "Waiting for the 2 containers to come up $(date)..."
-                            echo " (IGNORE any reported not found & connection errors)"
-                            sleep 30
-                            echo -n "  "
-                            until kubectl --v=0 exec mongo-1 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
-                                sleep 5
-                                echo -n "  "
-                            done
-                            echo "...mongo containers are now running $(date)"
-                            echo
-
-                            # Pods and Containers should be running now
-                            read -p "Are all the mongodb-n containers ready? " -n 1 -r
-                            echo    # (optional) move to a new line
-
-                            if [[ $REPLY =~ ^[Yy]$ ]]
-                            then
-                              # shellcheck disable=SC1090
-                              . ${WORKDIR}/kubernetes/scripts/configure_repset_auth.sh
-                            fi
-
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/mongo-minikube-service.yml"
-                            kubectl delete pvc mongo-pvc-mongo-0
-                            kubectl delete pvc mongo-pvc-mongo-1
-                            kubectl delete pv mongo-pv-1
-                            kubectl delete pv mongo-pv-2
-
-                            sleep 5
-                            # Wait till the PV and PVC are deleted first
-                            gcloud compute disks delete pd-ssd-disk-1
-                            gcloud compute disks delete pd-ssd-disk-2
-
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          * )
-                            exit 0
-                            ;;
-                        esac
-                        shift
+                      # Create persistent volumes using disks created above
+                      generalMessage "Creating GKE Persistent Volumes"
+                      for i in 1 2
+                      do
+                          sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/mongo-gke-xfs-standard-pv.yaml" > /tmp/xfs-gke-pv.yaml
+                          kubectl apply -f /tmp/xfs-gke-pv.yaml
                       done
-                      ;;
-                    redis )
-                      while [[ "$3" != "" ]]; do
-                        case $3 in
-                          create )
-                            gcloud compute disks create --size 30GB --type pd-ssd redis-ssd-disk
-                            kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
-                            kubectl create -f "${WORKDIR}/kubernetes/redis-gke-service.yaml" --validate=false
+                      rm /tmp/xfs-gke-pv.yaml
+                      sleep 3
 
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/redis-gke-service.yaml"
-                            kubectl delete pvc redis-pvc-redis-0
-                            kubectl delete pv redis-pv
-                            gcloud compute disks delete redis-ssd-disk
+                      # Create keyfile for the MongoD cluster as a Kubernetes shared secret
+                      # TMPFILE=$(mktemp)
+                      # /usr/bin/openssl rand -base64 741 > $TMPFILE
+                      # kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth-mongodb-keyfile=$TMPFILE
+                      # rm $TMPFILE
 
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          * )
-                            exit 0
-                            ;;
-                        esac
-                        shift
-                      done
-                      ;;
-                    simcct )
-                      while [[ "$3" != "" ]]; do
-                        case $3 in
-                          build )
-                            # Prune to avoid collisions of names:tags output
-                            docker system prune -af --volumes --filter 'label=service=simcct'
-                            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
-                            TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
-                            docker push gcr.io/arclytics-sim/arc_sim_service:"${TAG}"
-                            ;;
-                          create )
-                            # eval $(minikube docker-env)  <-- If using Docker and self-built images
-                            kubectl create -f "${WORKDIR}/kubernetes/simcct-gke-service.yaml"
-
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-service.yaml"
-
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          * )
-                            exit 0
-                            ;;
-                        esac
-                        shift
-                      done
-                      ;;
-                    celery )
-                      while [[ "$3" != "" ]]; do
-                        case $3 in
-                          build )
-                            # Prune to avoid collisions of names:tags output
-                            docker system prune -af --volumes --filter 'label=service=celery-worker'
-                            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
-                            TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
-                            docker push gcr.io/arclytics-sim/arc_sim_celery:"${TAG}"
-                            ;;
-                          create )
-                            #kubectl create -f "${WORKDIR}/kubernetes/celery-gke-service.yaml"
-
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          delete )
-                            #kubectl delete -f "${WORKDIR}/kubernetes/celery-gke-service.yaml"
-
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          * )
-                            exit 0
-                            ;;
-                        esac
-                        shift
-                      done
-                      ;;
-                    client )
-                      while [[ "$3" != "" ]]; do
-                        case $3 in
-                          build )
-                            # Prune to avoid collisions of names:tags output
-                            docker system prune -af --volumes --filter 'label=service=client'
-                            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
-                            TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
-                            docker push gcr.io/arclytics-sim/arc_sim_client:${TAG}
-                            ;;
-                          create )
-                            # eval $(minikube docker-env)
-                            kubectl create -f "${WORKDIR}/kubernetes/client-gke-service.yaml"
-
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          delete )
-                            kubectl delete -f "${WORKDIR}/kubernetes/client-gke-service.yaml"
-
-                            if [[ $4 == "-v" || $4 = "--verbose" ]]; then
-                              kubectl get all -o wide
-                            fi
-                            ;;
-                          * )
-                            exit 0
-                            ;;
-                        esac
-                        shift
-                      done
-                      ;;
-                    watch )
-                      watch kubectl get all -o wide
-                      ;;
-                    ls | show | get )
+                      # Create mongodb service with mongod stateful-set
+                      kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-service.yaml" --validate=false
                       echoSpace
-                      headerMessage "ARCLYTICS SIM KUBERNETES ORCHESTRATION"
+
+                      # Wait until the final (2nd) mongod has started properly
+                      generalMessage "Waiting for the 2 containers to come up $(date)..."
+                      generalMessage " (IGNORE any reported not found & connection errors)"
+                      sleep 30
+                      generalMessage -n "  "
+                      until kubectl --v=0 exec mongo-1 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
+                          sleep 5
+                          generalMessage -n "  "
+                      done
+                      generalMessage "...mongo containers are now running $(date)"
                       echo
-                      kubectl cluster-info
-                      echo
-                      echoLine
-                      generalMessage "Persistent Volumes"
-                      echoLine
-                      kubectl get pv -o wide
-                      echoLine
-                      generalMessage "Persistent Volume Claims"
-                      echoLine
-                      kubectl get pvc -o wide
-                      echoLine
-                      generalMessage "StatefulSets"
-                      echoLine
-                      kubectl get statefulset -o wide
-                      echoLine
-                      generalMessage "ReplicaSets"
-                      echoLine
-                      kubectl get replicasets -o wide
-                      echoLine
-                      generalMessage "Deployments"
-                      echoLine
-                      kubectl get deployments -o wide
-                      echoLine
-                      generalMessage "Pods"
-                      echoLine
-                      kubectl get pods -o wide
-                      echoLine
-                      generalMessage "Services"
-                      echoLine
-                      kubectl get services -o wide
-                      echoLine
-                      generalMessage "Ingress"
-                      echoLine
-                      kubectl get ingresses -o wide
-                      echoLine
-                      completeMessage
-                      echoSpace
-                      exit 0
+
+                      # Pods and Containers should be running now
+                      #read -p "Are all the mongodb-n containers ready? " -n 1 -r
+                      echoSpace    # (optional) move to a new line
+
+                      #if [[ $REPLY =~ ^[Yy]$ ]]
+                      #then
+                      #  . ${WORKDIR}/kubernetes/scripts/configure_repset_auth.sh
+                      #fi
+                      sleep 10
+                      # shellcheck disable=SC1090
+                      . ${WORKDIR}/kubernetes/scripts/configure_repset_auth.sh
                       ;;
-                    * )
-                      exit 0
+                    delete )
+                      kubectl delete -f "${WORKDIR}/kubernetes/mongo-gke-service.yaml"
+                      kubectl delete pvc mongo-pvc-mongo-0
+                      kubectl delete pvc mongo-pvc-mongo-1
+                      # kubectl delete pvc mongo-pvc-mongo-2
+                      kubectl delete pv mongo-pv-1
+                      kubectl delete pv mongo-pv-2
+                      # kubectl delete pv mongo-pv-3
+
+                      sleep 15
+                      # Wait till the PV and PVC are deleted first
+                      gcloud compute disks delete pd-standard-disk-1 ${LOCATION_COMMAND}
+                      gcloud compute disks delete pd-standard-disk-2 ${LOCATION_COMMAND}
+                      # REMEMBER TO UPDATE scripts/configure_repset_auth.sh IF MOVING to 3
+                      # gcloud compute disks delete pd-standard-disk-3 ${LOCATION_COMMAND}
                       ;;
-                    # TODO(andrew@neuraldev.io) POD_NAME=$(kubectl get pod -l service=postgres -o jsonpath="{.items[0].metadata.name}")
-                esac
-                shift
-            done
-            ;;
+                  esac
+                  shift
+                done
+                ;;
+              simcct )
+                while [[ "$3" != "" ]]; do
+                  case $3 in
+                    build )
+                      # Prune to avoid collisions of names:tags output
+                      docker system prune -af --volumes --filter 'label=service=simcct'
+                      docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
+                      TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
+                      docker push asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                      ;;
+                    create )
+                      # eval $(minikube docker-env)  <-- If using Docker and self-built images
+                      kubectl create -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-service.yaml"
+                      ;;
+                    delete )
+                      kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-service.yaml"
+                      ;;
+                  esac
+                  shift
+                done
+                ;;
+              celery )
+                while [[ "$3" != "" ]]; do
+                  case $3 in
+                    build )
+                      # Prune to avoid collisions of names:tags output
+                      docker system prune -af --volumes --filter 'label=service=celery-worker'
+                      docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build celery-worker
+                      TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
+                      docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                      ;;
+                    create )
+                      kubectl create -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
+                      ;;
+                    delete )
+                      kubectl delete -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
+                      ;;
+                  esac
+                  shift
+                done
+                ;;
+              client )
+                while [[ "$3" != "" ]]; do
+                  case $3 in
+                    build )
+                      # Prune to avoid collisions of names:tags output
+                      docker system prune -af --volumes --filter 'label=service=client'
+                      docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
+                      TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
+                      docker push asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+                      ;;
+                    create )
+                      # eval $(minikube docker-env)
+                      kubectl create -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-service.yaml"
+                      ;;
+                    delete )
+                      kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-service.yaml"
+                      ;;
+                  esac
+                  shift
+                done
+                ;;
+              watch )
+                watch kubectl get all -o wide
+                ;;
+              build )
+                # Prune to avoid collisions of names:tags output
+                docker system prune -af --volumes --filter 'label=service=mongodb'
+                docker system prune -af --volumes --filter 'label=service=redis'
+                docker system prune -af --volumes --filter 'label=service=simcct'
+                docker system prune -af --volumes --filter 'label=service=client'
+                docker system prune -af --volumes --filter 'label=service=celery-worker'
+                docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build mongodb
+                TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=mongodb")
+                docker push asia.gcr.io/${PROJECT_ID}/arc_sim_mongo:${TAG}
+                docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build redis
+                TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=redis")
+                docker push asia.gcr.io/${PROJECT_ID}/arc_sim_redis:${TAG}
+                docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
+                TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
+                docker push asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build celery-worker
+                TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
+                docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
+                TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
+                docker push asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+                ;;
+              ls | show | get )
+                echoSpace
+                headerMessage "ARCLYTICS SIM KUBERNETES ORCHESTRATION"
+                echo
+                kubectl cluster-info
+                echo
+                echoLine
+                generalMessage "Persistent Volumes"
+                echoLine
+                kubectl get pv -o wide
+                echoLine
+                generalMessage "Persistent Volume Claims"
+                echoLine
+                kubectl get pvc -o wide
+                echoLine
+                generalMessage "StatefulSets"
+                echoLine
+                kubectl get statefulsets -o wide
+                echoLine
+                generalMessage "ReplicaSets"
+                echoLine
+                kubectl get replicasets -o wide
+                echoLine
+                generalMessage "Deployments"
+                echoLine
+                kubectl get deployments -o wide
+                echoLine
+                generalMessage "Pods"
+                echoLine
+                kubectl get pods
+                echoLine
+                generalMessage "Services"
+                echoLine
+                kubectl get services -o wide
+                echoLine
+                generalMessage "Ingress"
+                echoLine
+                kubectl get ingresses
+                echoLine
+                completeMessage
+                echoSpace
+                exit 0
+                ;;
+              staticfiles )
+                while [[ "$3" != "" ]]; do
+                  case $3 in
+                    upload )
+                      gsutil cp -r ${WORKDIR}/services/simcct/sim_api/static/* gs://${CLOUD_STORAGE_BUCKET}/assets/
+                      ;;
+                    list | ls )
+                      gsutil ls gs://${CLOUD_STORAGE_BUCKET}/assets/**
+                      ;;
+                    public )
+                      gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/assets/imgs/email_footer_logo.png
+                      ;;
+                    address )
+                      echo https://storage.cloud.google.com/asia.artifacts.arc-sim.appspot.com/assets/imgs/email_footer_logo.png
+                      ;;
+                    go )
+                      google-chrome https://storage.cloud.google.com/asia.artifacts.arc-sim.appspot.com/assets/imgs/email_footer_logo.png
+                      ;;
+                  esac
+                  shift
+                done
+                ;;
+              swagger )
+                while [[ "$3" != "" ]]; do
+                  case $3 in
+                    upload )
+                      gsutil cp -r ${WORKDIR}/services/swagger/swagger.yaml gs://${CLOUD_STORAGE_BUCKET}/assets/
+                      ;;
+                    list | ls )
+                      gsutil ls gs://${CLOUD_STORAGE_BUCKET}/assets/**
+                      ;;
+                    public )
+                      # TODO(andrew@neuraldev.io): Find a better way to access this from Swagger as this is not secure.
+                      # gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/assets/swagger.yaml
+                      ;;
+                    address )
+                      echo https://storage.cloud.google.com/asia.artifacts.arc-sim.appspot.com/assets/swagger.yaml
+                      ;;
+                    go )
+                      google-chrome https://storage.cloud.google.com/asia.artifacts.arc-sim.appspot.com/assets/swagger.yaml
+                      ;;
+                  esac
+                  shift
+                done
+                ;;
+              # TODO(andrew@neuraldev.io) POD_NAME=$(kubectl get pod -l service=postgres -o jsonpath="{.items[0].metadata.name}")
+            esac
+            shift
+          done
+          ;;
     esac
     shift
 done
+
+# Load all .env into current shell
+# export $(egrep -v '^#' .env | xargs)
+

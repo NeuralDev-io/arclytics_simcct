@@ -11,7 +11,7 @@ spec:
     targetPort: 27017
   clusterIP: None
   selector:
-    role: mongo
+    role: mongo-persistence
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
@@ -19,12 +19,14 @@ metadata:
   name: mongo
 spec:
   serviceName: mongo-service
+  selector:
+    matchLabels:
+      role: mongo-persistence
   replicas: 2
   template:
     metadata:
       labels:
-        role: mongo
-        environment: production
+        role: mongo-persistence
         replicaset: MainRepSet
     spec:
       affinity:
@@ -47,7 +49,7 @@ spec:
             defaultMode: 256
       containers:
         - name: mongo-container
-          image: gcr.io/arclytics-sim/arc_sim_mongo:1.1.0
+          image: asia.gcr.io/arc-sim/arc_sim_mongo:1.1.0
           imagePullPolicy: Always
           command:
             - "numactl"
@@ -68,8 +70,8 @@ spec:
             - "authenticationMechanisms=SCRAM-SHA-1"
           resources:
             requests:
-              cpu: 1
-              memory: 2Gi
+              cpu: 500m
+              memory: 1Gi
           ports:
             - containerPort: 27017
           env:
@@ -77,8 +79,11 @@ spec:
               value: "mongo-0.mongo-service.default.svc.cluster.local"
             - name: MONGO_PORT
               value: "27017"
-            - name: MONOGO_APP_DB
-              value: "arclytics"
+            - name: MONGO_APP_DB
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: mongo_app_db
             - name: MONGO_APP_USER
               valueFrom:
                 secretKeyRef:
@@ -99,9 +104,9 @@ spec:
   - metadata:
       name: mongo-pvc
       annotations:
-        volume.beta.kubernetes.io/storage-class: "fast"
+        volume.beta.kubernetes.io/storage-class: "standard"
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 30Gi
+          storage: 200Gi

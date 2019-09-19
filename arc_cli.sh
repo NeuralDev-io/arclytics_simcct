@@ -1421,6 +1421,30 @@ while [[ "$1" != "" ]] ; do
             kubectl cluster-info
             echo
             echoLine
+            generalMessage "Compute Engine Instances"
+            echoLine
+            gcloud compute instances list
+            echoLine
+            generalMessage "IP Addresses"
+            echoLine
+            gcloud compute addresses list
+            echoLine
+            generalMessage "Cloud Certificates"
+            echoLine
+            gcloud compute ssl-certificates list
+            echoLine
+            generalMessage "Cloud Builds (ongoing)"
+            echoLine
+            gcloud builds list --ongoing
+            echoLine
+            generalMessage "Kubernetes Engine Clusters"
+            echoLine
+            gcloud container clusters list
+            echoLine
+            generalMessage "Secrets"
+            echoLine
+            kubectl get secrets -o wide
+            echoLine
             generalMessage "Persistent Volumes"
             echoLine
             kubectl get pv -o wide

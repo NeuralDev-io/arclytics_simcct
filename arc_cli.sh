@@ -1164,12 +1164,12 @@ while [[ "$1" != "" ]] ; do
             rm ${TMPFILE}
 
             # Apply the SSL certificates to GCP management as well.
-            # gcloud compute ssl-certificates create ${CLIENT_SSL_NAME} \
-            #    --certificate "${WORKDIR}/certs/io.arclytics.app.crt" \
-            #    --private-key "${WORKDIR}/certs/io.arclytics.app.key"
-            # gcloud compute ssl-certificates create ${SIMCCT_SSL_NAME} \
-            #    --certificate "${WORKDIR}/certs/io.arclytics.api.crt" \
-            #    --private-key "${WORKDIR}/certs/io.arclytics.api.key"
+            gcloud compute ssl-certificates create ${CLIENT_SSL_NAME} \
+                --certificate "${WORKDIR}/certs/io.arclytics.app.crt" \
+                --private-key "${WORKDIR}/certs/io.arclytics.app.key"
+            gcloud compute ssl-certificates create ${SIMCCT_SSL_NAME} \
+                --certificate "${WORKDIR}/certs/io.arclytics.api.crt" \
+                --private-key "${WORKDIR}/certs/io.arclytics.api.key"
 
             # Apply the certificates to Kubernetes Secrets which will be used
             # by the Ingress controller.

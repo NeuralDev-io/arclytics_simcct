@@ -158,7 +158,7 @@ class ConfigForm extends Component {
                   <br />
                   I(X) - Krikaldy (Ferrite Pearlite)
                   <br />
-                  I'(X) - Kirkaldy (Bainite)
+                  I&apos;(X) - Kirkaldy (Bainite)
                   <br />
                 </p>
               </Tooltip>

@@ -1,7 +1,7 @@
-apiVersion: "v1"
-kind: "PersistentVolume"
+apiVersion: v1
+kind: PersistentVolume
 metadata:
-  name: mongo-pv-3
+  name: mongo-pv-INST
 spec:
   capacity:
     storage: 10Gi
@@ -10,4 +10,4 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: fast
   gcePersistentDisk:
-    pdName: pd-ssd-disk-3  # Make sure you use the SSD name created in `gcloud`
+    pdName: pd-ssd-disk-INST  # Make sure you use the SSD name created in `gcloud`

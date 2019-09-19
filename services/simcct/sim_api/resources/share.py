@@ -23,29 +23,23 @@ Sharing endpoints using the Flask Resource inheritance model.
 
 import os
 from datetime import datetime
-
 from typing import Tuple
 
-from email_validator import validate_email, EmailNotValidError
-from flask import Blueprint, jsonify, request, render_template, redirect
-from flask import current_app as app
+from email_validator import EmailNotValidError, validate_email
+from flask import Blueprint, jsonify, redirect, render_template, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
-from logger.arc_logger import AppLogger
-from sim_api.models import (
-    User, Configuration, SharedSimulation, AlloyStore, SimulationResults
-)
-from sim_api.middleware import authenticate_user_cookie_restful
+from logger import AppLogger
 from sim_api.extensions import api
-from sim_api.token import (
-    URLTokenError, generate_shared_simulation_token, generate_url,
-    confirm_simulation_token
-)
-from sim_api.extensions.utilities import (
-    ElementSymbolInvalid, ElementInvalid, MissingElementError,
-    DuplicateElementError
-)
+from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
+                                          ElementSymbolInvalid,
+                                          MissingElementError)
+from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.models import (AlloyStore, Configuration, SharedSimulation,
+                            SimulationResults)
+from sim_api.token import (URLTokenError, confirm_simulation_token,
+                           generate_shared_simulation_token, generate_url)
 
 logger = AppLogger(__name__)
 
@@ -117,6 +111,10 @@ class ShareSimulationLink(Resource):
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
             return response, 400
+        except OverflowError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Overflow error.'
+            return response, 500
 
         # Create a token that contains the ObjectId for the shared simulation
         # and put it in a link/url that can be sent back to the frontend.
@@ -236,6 +234,10 @@ class ShareSimulationEmail(Resource):
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
             return response, 400
+        except OverflowError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Overflow error.'
+            return response, 500
 
         # Create a token that contains the ObjectId for the shared simulation
         # and put it in a link/url that can be sent back to the frontend.

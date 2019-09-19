@@ -15,16 +15,16 @@ __date__ = '2019.07.13'
 import json
 import unittest
 from pathlib import Path
+
 from mongoengine import get_db
 
 from manage import BASE_DIR
+from sim_api.extensions.SimSession import SimSessionService
+from sim_api.models import AlloyStore, Configuration, User
+from sim_api.schemas import (AlloyStoreRequestSchema, AlloyStoreSchema,
+                             ConfigurationsSchema)
 from tests.test_api_base import BaseTestCase, app
 from tests.test_utilities import test_login
-from sim_api.schemas import (
-    AlloyStoreRequestSchema, ConfigurationsSchema, AlloyStoreSchema
-)
-from sim_api.models import User, AlloyStore, Configuration
-from sim_api.extensions.SimSession import SimSessionService
 
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
 
@@ -192,11 +192,11 @@ class TestSimAlloys(BaseTestCase):
             trans_temps = data['data']
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 201)
-            self.assertAlmostEqual(trans_temps['ms_temp'], 520.388, 3)
-            self.assertAlmostEqual(trans_temps['ms_rate_param'], 0.0219292, 3)
-            self.assertAlmostEqual(trans_temps['bs_temp'], 634.448, 3)
-            self.assertAlmostEqual(trans_temps['ae1_temp'], 719.259259259, 4)
-            self.assertAlmostEqual(trans_temps['ae3_temp'], 887.130506988, 4)
+            self.assertAlmostEqual(trans_temps['ms_temp'], 520.388, 2)
+            self.assertAlmostEqual(trans_temps['ms_rate_param'], 0.0219292, 2)
+            self.assertAlmostEqual(trans_temps['bs_temp'], 634.448, 2)
+            self.assertAlmostEqual(trans_temps['ae1_temp'], 719.259259259, 2)
+            self.assertAlmostEqual(trans_temps['ae3_temp'], 887.130506988, 2)
 
     def test_on_compositions_change(self):
         """Ensure if we update the compositions it changes in session store."""
@@ -346,11 +346,11 @@ class TestSimAlloys(BaseTestCase):
 
             session_store = SimSessionService().load_session()
             sess_configs = session_store.get('configurations')
-            self.assertAlmostEqual(sess_configs['ms_temp'], 464.1960, 4)
-            self.assertAlmostEqual(sess_configs['ms_rate_param'], 0.02069, 4)
-            self.assertAlmostEqual(sess_configs['bs_temp'], 563.2380, 4)
-            self.assertAlmostEqual(sess_configs['ae1_temp'], 700.90196, 4)
-            self.assertAlmostEqual(sess_configs['ae3_temp'], 845.83715, 4)
+            self.assertAlmostEqual(sess_configs['ms_temp'], 464.1792, 2)
+            self.assertAlmostEqual(sess_configs['ms_rate_param'], 0.02069, 2)
+            self.assertAlmostEqual(sess_configs['bs_temp'], 563.2208, 2)
+            self.assertAlmostEqual(sess_configs['ae1_temp'], 700.8947, 2)
+            self.assertAlmostEqual(sess_configs['ae3_temp'], 845.8189, 2)
 
             # Now we change the compositions and make sure it's all updated
             # with the composition change
@@ -380,28 +380,28 @@ class TestSimAlloys(BaseTestCase):
             self.assertTrue(data['data'])
 
             # ANSTO SimCCT results
-            ms_temp = 465.6100
+            ms_temp = 465.6272
             ms_rate_param = 0.02069
-            bs_temp = 567.44
+            bs_temp = 567.454
             ae1_temp = 702.7388
-            ae3_temp = 847.103836
+            ae3_temp = 847.1215
 
             self.assertAlmostEqual(data['data']['ms_temp'], ms_temp, 4)
             self.assertAlmostEqual(
                 data['data']['ms_rate_param'], ms_rate_param, 4
             )
             self.assertAlmostEqual(data['data']['bs_temp'], bs_temp, 2)
-            self.assertAlmostEqual(data['data']['ae1_temp'], ae1_temp, 4)
-            self.assertAlmostEqual(data['data']['ae3_temp'], ae3_temp, 4)
+            self.assertAlmostEqual(data['data']['ae1_temp'], ae1_temp, 2)
+            self.assertAlmostEqual(data['data']['ae3_temp'], ae3_temp, 2)
             session_store = SimSessionService().load_session()
             sess_configs = session_store.get('configurations')
-            self.assertAlmostEqual(sess_configs['ms_temp'], ms_temp, 4)
+            self.assertAlmostEqual(sess_configs['ms_temp'], ms_temp, 2)
             self.assertAlmostEqual(
-                sess_configs['ms_rate_param'], ms_rate_param, 4
+                sess_configs['ms_rate_param'], ms_rate_param, 2
             )
             self.assertAlmostEqual(sess_configs['bs_temp'], bs_temp, 2)
-            self.assertAlmostEqual(sess_configs['ae1_temp'], ae1_temp, 4)
-            self.assertAlmostEqual(sess_configs['ae3_temp'], ae3_temp, 4)
+            self.assertAlmostEqual(sess_configs['ae1_temp'], ae1_temp, 2)
+            self.assertAlmostEqual(sess_configs['ae3_temp'], ae3_temp, 2)
 
     def test_on_comp_change_bad_comp_payload(self):
         """Ensure if we send no compositions to update it fails."""

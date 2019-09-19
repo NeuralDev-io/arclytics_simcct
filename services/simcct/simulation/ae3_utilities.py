@@ -14,6 +14,7 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.06.25'
+__package__ = 'simulation'
 """ae3_utilities.py: 
 
 This package combines in one file all the subroutines to calculate Ae3 and 
@@ -24,8 +25,9 @@ ortho-equilibrium methods.
 import math
 import numpy as np
 
-from simulation.utilities import linear_fit
-from simulation.periodic import PeriodicTable as PT
+from .utilities import linear_fit
+# noinspection PyPep8Naming
+from .periodic import PeriodicTable as PT
 
 # ========== # CONSTANTS # ========== #
 R = np.float32(1.9858)
@@ -49,8 +51,9 @@ def ae3_single_carbon(wt_comp: np.ndarray, wt_c: float) -> float:
     return ae3
 
 
-def ae3_set_carbon(ai_vect: np.array, wt_mat: np.ndarray,
-                   c: float) -> (float, float, np.ndarray):
+def ae3_set_carbon(
+        ai_vect: np.array, wt_mat: np.ndarray, c: float
+) -> (float, float):
     """
     Calculate Ae3 for fixed value of carbon (C).
     Args:
@@ -67,7 +70,7 @@ def ae3_set_carbon(ai_vect: np.array, wt_mat: np.ndarray,
     # increment in the loop)
     # this is only for everything except carbon and iron but we already set
     # that to 0.0 previously
-    wt_pc = np.sum(wt_mat['weight'], dtype=np.float32).astype(np.float32)
+    wt_pc = np.sum(wt_mat['weight'])
 
     # add the current Carbon wt% to the total for this iteration
     wt_pc = wt_pc + c
@@ -76,20 +79,16 @@ def ae3_set_carbon(ai_vect: np.array, wt_mat: np.ndarray,
     wt_mat['weight'][wt_mat['symbol'] == PT.C.name] = c
 
     # Now convert to mole fraction for updated composition with this iteration
-    # TODO:
-    #  - Check that the _yy_vect is redundant and not used  -- YES
-    #  - Returning wt_mat also seems pretty redundant as it is not changed
-    #    -- YES
     # x_vect: mole fractions of all elements, with C as always index=0 and
     # Fe as always index=-1
     # y: # mole fractions of Fe (not used)
-    x_vect, y_vect = convert_wt_2_mol(wt_mat)
+    x_vect, _ = convert_wt_2_mol(wt_mat)
 
-    fe_af = x_vect[-1]  # moles Fe - NOTE: Iron is always the last element, -1
+    fe_af = x_vect[-1]  # moles Fe - Note: Iron is always the last element, -1
     c_af = x_vect[0]  # moles C
 
     # Add all the other element moles
-    other_e_sum_af = np.sum(x_vect[1:-1], dtype=np.float32).astype(np.float32)
+    other_e_sum_af = np.sum(x_vect[1:-1])
 
     # Total of all moles added
     total_af = fe_af + c_af + other_e_sum_af
@@ -111,9 +110,7 @@ def ae3_set_carbon(ai_vect: np.array, wt_mat: np.ndarray,
     ctr = 0
 
     # initialise some other variables
-    g_c = np.float32(0.0)
     g = np.float32(0.0)
-    h = np.float32(0.0)
     tt = np.float32(0.0)
 
     while z > 0.5:
@@ -160,8 +157,6 @@ def ae3_set_carbon(ai_vect: np.array, wt_mat: np.ndarray,
         # UPDATE E to CALL DGI22(E)
         e_mat = dgi22()
 
-        p, gi = np.float32(0.0), np.float32(0.0)
-
         # Loop ID's below (M) reset for SimCCT array definitions.
         # Note - M in the loop below has to be consistent between elements in
         # 1) mole fraction,
@@ -184,14 +179,13 @@ def ae3_set_carbon(ai_vect: np.array, wt_mat: np.ndarray,
 
                 if m == 1:
                     # Data from Gilmour et.al., met. trans., 1972
-                    gi = np.float32(
-                        6.118 * temp - 7808.0
-                    )  # special set for Mn
+                    # special set for Mn
+                    gi = np.float32(6.118 * temp - 7808.0)
                 else:
                     gi = np.float32(
                         e_mat[m, 1] + (
                             e_mat[m, 2] + e_mat[m, 3] * temp +
-                            e_mat[m, 4] * math.log(temp)
+                            e_mat[m, 4] * np.log(temp)
                         ) * temp
                     )
 
@@ -231,7 +225,7 @@ def ae3_set_carbon(ai_vect: np.array, wt_mat: np.ndarray,
 
         # Puts together all the terms to solve eqn (3) in "Sugden and
         # Bhadeshia, 1989, Mat Sci Tech, Vol.5 p.978"
-        delta_t = np.float32(_sum * R * math.pow(tzero, 2))
+        delta_t = _sum * R * tzero**2
         temp = tzero + delta_t
         z = tt - temp
         z = abs(z)
@@ -265,7 +259,7 @@ def convert_wt_2_mol(wt: np.ndarray) -> (np.ndarray, np.array):
     # We MUST ensure that 'C' is always first and 'Fe' is always last.
     # add all the wt% to find total wt% alloying elements
     # note: ensure last one with index -1 is Iron, Fe
-    d_vect[-1] = np.sum(wt['weight'][1:11]).astype(np.float32).item()
+    d_vect[-1] = np.sum(wt['weight'][1:11]).item()
     d_vect[-1] = 100.0 - d_vect[-1]  # find wt% Fe by difference
     d_vect[-1] = d_vect[-1] / 55.84  # Fe, calculate moles Fe if 100 g of alloy
 
@@ -284,7 +278,7 @@ def convert_wt_2_mol(wt: np.ndarray) -> (np.ndarray, np.array):
     for i, el in enumerate(wt[1:-1], start=1):
         d_vect[i] = el['weight'].item() / PT[el['symbol']].value.atomic_mass
 
-    b1 = np.sum(d_vect).astype(np.float32).item()
+    b1 = np.sum(d_vect).item()
 
     # calculate mole fraction of each element with respect to the complete
     # alloy composition (all elements)
@@ -297,10 +291,10 @@ def convert_wt_2_mol(wt: np.ndarray) -> (np.ndarray, np.array):
     return c_vect, y_vect
 
 
-def tzero2(wt_c: float) -> np.float32:
+def tzero2(wt_c: float) -> float:
     """Returns pure iron t0 value with specified carbon wt %."""
     # in C
-    return np.float32(1115 - 154 * wt_c + 17.5 * math.pow((1.2 - wt_c), 7.5))
+    return float(1115 - 154 * wt_c + 17.5 * (1.2 - wt_c)**7.5)
 
 
 def dg_fit(t: float) -> (float, float):
@@ -742,22 +736,26 @@ def ai_eqn3(
     return np.float32(num_3 / den_3)
 
 
-def ae3_multi_carbon(wt: np.ndarray,
-                     results: np.ndarray) -> (np.ndarray, np.ndarray):
-    """
-    Range of composition for Carbon.
-    :param wt:
-    :param results:
-    :return:
+def ae3_multi_carbon(
+        wt: np.ndarray, results: np.ndarray
+) -> (np.ndarray, np.ndarray):
+    """Range of composition for Carbon.
+
+    Args:
+        wt:
+        results:
+
+    Returns:
+
     """
     # (includes wt%Fe, AC(20), by difference)
 
     # Only passing in the original wt% alloys
     # (note: C and Fe will be overwritten below for each iteration of the main
     # loop)
-    t0 = np.float32(0)  # Ae3 value without alloying elements (just Carbon)
+    # t0 = np.float32(0)  # Ae3 value without alloying elements (just Carbon)
     ai_vect = np.zeros(20, dtype=np.float32)
-    c = np.float32(0)  # initiate carbon content as 0.00 %
+    c = np.float32(0.0)  # initiate carbon content as 0.00 %
 
     # reset wt% carbon in array to zero (this will be iterated below within
     # the main loop)

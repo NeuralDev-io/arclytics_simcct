@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-service
+  labels:
+    app: client-https
+spec:
+  type: LoadBalancer
+  # Zone IP (australia-southeast1) -- 35.197.160.183
+  # Global IP -- 35.190.121.132
+  # loadBalancerIP: 35.197.160.183
+  selector:
+    app: client-https
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  - name: https
+    port: 443
+    protocol: TCP
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: client-https
+  labels:
+    app: client-https
+spec:
+  selector:
+    matchLabels:
+      app: client-https
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: client-https
+        environment: production
+    spec:
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: client-app-https-secret
+      containers:
+      - name: client-https-container
+        image: asia.gcr.io/arc-sim/arc_sim_client:1.1.4
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        env:
+          - name: REACT_APP_SIM_HOST
+            value: "api.arclytics.io"
+          - name: REACT_APP_SIM_PORT
+            value: "8000"
+        volumeMounts:
+        - mountPath: /etc/nginx/ssl
+          name: secret-volume

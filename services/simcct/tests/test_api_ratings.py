@@ -26,7 +26,7 @@ import unittest
 from pathlib import Path
 
 from tests.test_api_base import BaseTestCase
-from logger.arc_logger import AppLogger
+from logger import AppLogger
 from sim_api.models import User, Feedback, AdminProfile
 from tests.test_api_users import log_test_user_in
 from tests.test_utilities import test_login
@@ -743,30 +743,6 @@ class TestRatingsService(BaseTestCase):
     #         self.assertEqual(data_3['limit'], 4)
     #         self.assertEqual(data_3['current_page'], 3)
     #         self.assertEqual(data_3['total_pages'], 3)
-
-    def test_different_IP_address(self):
-        rex = User(
-            **{
-                'email': 'reex@arclytics.io',
-                'first_name': 'Captain',
-                'last_name': 'Rex'
-            }
-        )
-        rex.set_password('ExperienceOutranksEverything')
-        rex.save()
-        with self.client as client:
-            test_login(client, rex.email, 'ExperienceOutranksEverything')
-            resp = client.post(
-                '/api/v1/sim/user/rating',
-                data=json.dumps({'rating': '5'}),
-                content_type='application/json',
-                environ_base={'REMOTE_ADDR': '127.0.0.12'}
-            )
-            data = json.loads(resp.data.decode())
-            self.assertEqual('fail', data['status'])
-            self.assertNotIn('data', data)
-            self.assertEqual('Session is invalid.', data['message'])
-            self.assertEqual(resp.status_code, 401)
 
 
 if __name__ == '__main__':

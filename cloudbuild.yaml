@@ -22,7 +22,13 @@ steps:
 #  - 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
 #  - './services/cloud-builders-dc/'
 - name: 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
-  args: ['--project-name', 'arc', '--file', 'docker-compose-gke.yaml', 'build']
+  args:
+    - '--project-name arc'
+    - '--file docker-compose-gke.yaml'
+    - 'build'
+    - 'simcct'
+    - 'celery-worker'
+    - 'client'
 
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.1.5']

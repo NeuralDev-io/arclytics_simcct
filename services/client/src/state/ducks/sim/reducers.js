@@ -32,7 +32,7 @@ const initialState = {
     cctIndex: -1,
   },
   configurations: {
-    isValid: true,
+    error: {},
     method: 'Li98',
     grain_size_ASTM: 8.0,
     grain_size_diameter: 0.202,
@@ -181,7 +181,7 @@ const reducer = (state = initialState, action) => {
         isSimulated: true,
         displayUserCurve: true,
         configurations: {
-          isValid: true,
+          error: {},
           ...configurations,
         },
         alloys: {

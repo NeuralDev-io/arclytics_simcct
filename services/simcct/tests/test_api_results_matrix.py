@@ -18,7 +18,7 @@ ndarray.
 """
 
 import unittest
-from simulation.results import DynamicNdarray
+from simulation.dynamic_ndarray import DynamicNdarray
 
 
 class MyTestCase(unittest.TestCase):

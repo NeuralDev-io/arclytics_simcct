@@ -21,22 +21,19 @@ This script will run all tests on the Admin create and account disable
 endpoints.
 """
 
-import os
 import json
+import os
 import unittest
 
 from flask import current_app
 from itsdangerous import URLSafeTimedSerializer
 
-from tests.test_api_base import BaseTestCase
-from logger.arc_logger import AppLogger
-from sim_api.models import (User, AdminProfile)
-from sim_api.token import (
-    generate_confirmation_token, generate_url,
-    generate_promotion_confirmation_token
-)
-from tests.test_api_users import log_test_user_in
+from logger import AppLogger
 from sim_api.extensions.utilities import get_mongo_uri
+from sim_api.models import (AdminProfile, User)
+from sim_api.token import (generate_confirmation_token,
+                           generate_promotion_confirmation_token, generate_url)
+from tests.test_api_base import BaseTestCase
 from tests.test_utilities import test_login
 
 logger = AppLogger(__name__)
@@ -48,7 +45,11 @@ class TestAdminCreateService(BaseTestCase):
     def test_disable_account(self):
         """Test disable account is successful"""
         user = User(
-            email='kyloren@gmail.com', first_name='Kylo', last_name='Ren'
+            **{
+               'email': 'kyloren@gmail.com',
+               'first_name': 'Kylo',
+               'last_name': 'Ren'
+            }
         )
         user.set_password('LetStarWarsDie')
         user.save()
@@ -74,6 +75,7 @@ class TestAdminCreateService(BaseTestCase):
         vader.save()
 
         with self.client as client:
+            # os.environ['FLASK_ENV'] = 'production'
             cookie = test_login(client, vader.email, 'AllTooEasy')
 
             resp_disable = client.put(
@@ -88,6 +90,7 @@ class TestAdminCreateService(BaseTestCase):
             self.assertEqual(
                 disable_data['message'], 'Confirmation email sent.'
             )
+            # os.environ['FLASK_ENV'] = 'development'
 
     def test_disable_account_no_data(self):
         """Test empty disable request is unsuccessful"""
@@ -136,10 +139,12 @@ class TestAdminCreateService(BaseTestCase):
         r2d2.set_password('Weeeeeew')
         # r2d2.is_admin = True
         r2d2.admin_profile = AdminProfile(
-            position='Position',
-            mobile_number=None,
-            verified=True,
-            promoted_by=None
+            **{
+                'position': 'Position',
+                'mobile_number': None,
+                'verified': True,
+                'promoted_by': None
+            }
         )
         r2d2.save()
 
@@ -235,10 +240,12 @@ class TestAdminCreateService(BaseTestCase):
         from pymongo import MongoClient
         with current_app.test_client() as client:
             piett = User(
-                # email='brickmatic479@gmail.com',
-                email='piett@arclytics.io',
-                first_name='Admiral',
-                last_name='Piett'
+                **{
+                    # 'email': 'brickmatic479@gmail.com',
+                    'email': 'piett@arclytics.io',
+                    'first_name': 'Admiral',
+                    'last_name': 'Piett'
+                }
             )
             piett.set_password('YesLordVader')
             piett.save()
@@ -381,6 +388,7 @@ class TestAdminCreateService(BaseTestCase):
         obiwan.save()
 
         with self.client as client:
+            # os.environ['FLASK_ENV'] = 'production'
             cookie = test_login(client, quigon.email, 'ShortNegotiations')
 
             resp = client.post(
@@ -397,6 +405,7 @@ class TestAdminCreateService(BaseTestCase):
             data = json.loads(resp.data.decode())
             self.assertEqual(data['status'], 'success')
             self.assertEqual(resp.status_code, 202)
+            # os.environ['FLASK_ENV'] = 'development'
 
     def test_create_admin_invalid_email(self):
         """Test create admin with invalid email is unsuccessful"""

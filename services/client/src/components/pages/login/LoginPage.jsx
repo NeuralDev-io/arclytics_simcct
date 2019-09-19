@@ -110,9 +110,10 @@ class LoginPage extends Component {
                 // Wait for promise from fetch if the user has a profile
                 checkAuthStatus().then((res) => {
                   setSubmitting(true)
-                  if (res.status === 'successful') {
+                  if (res.status === 'success') {
                     if (!res.isProfile) history.push('/profileQuestions')
-                  } else history.push('/')
+                    else history.push('/')
+                  }
                 })
               })
                 .catch(() => {

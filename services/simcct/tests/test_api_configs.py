@@ -76,7 +76,7 @@ class TestProductionConfig(TestCase):
         self.assertEqual(
             app.config['MONGO_DBNAME'], os.environ.get('MONGO_APP_DB')
         )
-        self.assertTrue(app.config['BCRYPT_LOG_ROUNDS'] == 13)
+        self.assertTrue(app.config['BCRYPT_LOG_ROUNDS'] == 12)
         self.assertTrue(app.config['TOKEN_EXPIRATION_DAYS'] == 30)
         self.assertTrue(app.config['TOKEN_EXPIRATION_SECONDS'] == 0)
 

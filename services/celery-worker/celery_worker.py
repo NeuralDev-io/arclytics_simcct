@@ -5,6 +5,7 @@
 #
 # Attributions:
 # [1] https://github.com/mattkohl/docker-flask-celery-redis
+# [2] https://github.com/kubernetes-for-developers/kfd-celery
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['']

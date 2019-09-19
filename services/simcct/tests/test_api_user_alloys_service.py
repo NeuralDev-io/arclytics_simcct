@@ -23,8 +23,8 @@ from bson import ObjectId
 from flask import current_app as app
 from flask import json
 
-from tests.test_api_base import BaseTestCase
 from sim_api.models import User
+from tests.test_api_base import BaseTestCase
 from tests.test_utilities import test_login
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
@@ -827,26 +827,6 @@ class TestUserAlloyService(BaseTestCase):
             self.assertEqual('fail', data['status'])
             self.assertNotIn('data', data)
             self.assertEqual('Session token is not valid.', data['message'])
-            self.assertEqual(res.status_code, 401)
-
-    def test_different_IP_address(self):
-        with app.test_client() as client:
-            self.login(client)
-
-            user = User.objects.get(email='morgan@starkindustries.com')
-            user.saved_alloys.create(**alloy_data)
-            user.save()
-            _id = str(user.saved_alloys[0].oid)
-
-            res = client.get(
-                f'/api/v1/sim/user/alloys/{_id}',
-                content_type='application/json',
-                environ_base={'REMOTE_ADDR': '127.0.0.12'}
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual('fail', data['status'])
-            self.assertNotIn('data', data)
-            self.assertEqual('Session is invalid.', data['message'])
             self.assertEqual(res.status_code, 401)
 
 

@@ -35,7 +35,7 @@ spec:
     spec:
       containers:
         - name: arclytics
-          image: gcr.io/arclytics-sim/arc_arclytics:1.0.0
+          image: asia.gcr.io/arc-sim/arc_arclytics:1.0.0
           ports:
             - containerPort: 8000
           env:

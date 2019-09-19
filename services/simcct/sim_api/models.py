@@ -20,25 +20,25 @@ This module stores the mongoengine.Document models for the Arclytics API Users
 microservice.
 """
 
-import jwt
 from datetime import datetime, timedelta
-from typing import Union, Tuple
+from typing import Tuple, Union
 
+import jwt
 from bson import ObjectId
-from mongoengine import (
-    Document, EmbeddedDocument, StringField, EmailField, BooleanField,
-    DateTimeField, EmbeddedDocumentField, IntField, FloatField, DO_NOTHING,
-    EmbeddedDocumentListField, queryset_manager, ObjectIdField, ReferenceField,
-    ValidationError, DictField
-)
 from flask import current_app, json
+from mongoengine import (BooleanField, DO_NOTHING, DateTimeField, DictField,
+                         Document, EmailField, EmbeddedDocument,
+                         EmbeddedDocumentField, EmbeddedDocumentListField,
+                         FloatField, IntField, ObjectIdField, ReferenceField,
+                         StringField, ValidationError, queryset_manager)
 
-from logger.arc_logger import AppLogger
+from logger import AppLogger
 from sim_api.extensions import bcrypt
-from sim_api.extensions.utilities import (
-    JSONEncoder, PeriodicTable, PasswordValidationError, ElementSymbolInvalid,
-    ElementInvalid, MissingElementError, DuplicateElementError
-)
+from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
+                                          ElementSymbolInvalid, JSONEncoder,
+                                          MissingElementError,
+                                          PasswordValidationError,
+                                          PeriodicTable)
 
 logger = AppLogger(__name__)
 

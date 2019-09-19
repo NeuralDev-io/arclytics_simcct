@@ -26,24 +26,23 @@ from datetime import datetime
 from typing import Tuple
 
 import geoip2
+import geoip2.database
 from email_validator import EmailNotValidError, validate_email
 from flask import (
     Blueprint, jsonify, redirect, render_template, request, session
 )
-from flask import current_app as app
-from mongoengine.errors import NotUniqueError, ValidationError
 from geoip2.errors import AddressNotFoundError
-import geoip2.database
+from mongoengine.errors import NotUniqueError, ValidationError
 
-from logger.arc_logger import AppLogger
-from sim_api.extensions import bcrypt
+from logger import AppLogger
+from sim_api.extensions import bcrypt, cache
+from sim_api.extensions.SimSession.sim_session_service import SimSessionService
+from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
 from sim_api.middleware import (authenticate_user_and_cookie_flask)
-from sim_api.models import User, LoginData
+from sim_api.models import LoginData, User
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
-from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
-from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 
 logger = AppLogger(__name__)
 
@@ -743,15 +742,13 @@ def logout(_) -> Tuple[dict, int]:
 
     # Remove the data from the user's current session.
     session.clear()
-
-    logger.info(f'Session logout: {session}')
-
     response = {'status': 'success', 'message': 'Successfully logged out.'}
     return jsonify(response), 202
 
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
 @authenticate_user_and_cookie_flask
+@cache.cached(timeout=600, key_prefix='user_status')
 def get_user_status(user) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     is_profile = True

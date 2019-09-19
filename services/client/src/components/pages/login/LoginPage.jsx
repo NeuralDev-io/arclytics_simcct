@@ -111,8 +111,11 @@ class LoginPage extends Component {
                 checkAuthStatus().then((res) => {
                   setSubmitting(true)
                   if (res.status === 'success') {
-                    if (!res.isProfile) history.push('/profileQuestions')
+                   if (!res.isProfile) history.push('/profileQuestions')
                     else history.push('/')
+                  } else {
+                    //TODO: something went wrong try again later.
+                    console.log(res)
                   }
                 })
               })

@@ -95,6 +95,34 @@ export const constraints = {
       message: 'Start temperature can\'t be greater than finish.',
     },
   ],
+  startTemp: [
+    {
+      check: val => val.trim() !== '',
+      message: 'This value can\'t be empty',
+    },
+    {
+      check: val => !isNaN(val),
+      message: 'This value must be a number',
+    },
+    {
+      check: val => parseFloat(val) > 0,
+      message: 'This value must be a positive number',
+    },
+  ],
+  cctRate: [
+    {
+      check: val => val.trim() !== '',
+      message: 'This value can\'t be empty',
+    },
+    {
+      check: val => !isNaN(val),
+      message: 'This value must be a number',
+    },
+    {
+      check: val => parseFloat(val) > 0,
+      message: 'This value must be a positive number',
+    },
+  ],
 }
 
 export default constraints

@@ -18,7 +18,6 @@ import Tooltip from '../tooltip'
 
 import styles from './TextField.module.scss'
 
-// TODO: include validation
 class TextField extends Component {
   constructor(props) {
     super(props)

@@ -186,6 +186,7 @@ class ConfigForm extends Component {
                   length="short"
                   suffix="μm"
                   isDisabled={!isAuthenticated}
+                  error="oops i did it again"
                 />
               </div>
             </div>

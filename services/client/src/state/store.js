@@ -1,25 +1,24 @@
 /**
  * Create Redux store
- * Perist store has been commented out because we no longer need it.
  */
 
 import {
   createStore, applyMiddleware, compose, combineReducers,
 } from 'redux'
 import thunk from 'redux-thunk'
-// import { persistStore, persistReducer } from 'redux-persist'
-// import storage from 'redux-persist/lib/storage'
+import { persistStore, persistReducer } from 'redux-persist'
+import storage from 'redux-persist/lib/storage'
 import * as reducers from './ducks'
-// import myPersistReducer from './ducks/persist/reducers'
+import myPersistReducer from './ducks/persist/reducers'
 
-// const persistConfig = {
-//   key: 'userStatus',
-//   storage,
-// }
+const persistConfig = {
+  key: 'userStatus',
+  storage,
+}
 
 const rootReducer = combineReducers({
   ...reducers,
-  // persist: persistReducer(persistConfig, myPersistReducer),
+  persist: persistReducer(persistConfig, myPersistReducer),
 })
 
 const initialState = {}
@@ -36,6 +35,6 @@ const store = createStore(
   ),
 )
 
-// export const persistor = persistStore(store)
+export const persistor = persistStore(store)
 
 export default store

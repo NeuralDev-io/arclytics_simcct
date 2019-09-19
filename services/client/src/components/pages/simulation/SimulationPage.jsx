@@ -23,6 +23,8 @@ import { SaveAlloyModal } from '../../moleisms/user-alloys'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { SaveSimButton, ShareSimButton, LoadSimButton } from '../../moleisms/sim-actions'
 import { TTT, CCT } from '../../moleisms/charts'
+import { loadPersistedSim } from '../../../state/ducks/sim/actions'
+import { persistSim } from '../../../state/ducks/persist/actions'
 
 import styles from './SimulationPage.module.scss'
 
@@ -34,6 +36,20 @@ class SimulationPage extends Component {
       displayProfile: true,
       displaySaveModal: false,
     }
+  }
+
+  componentDidMount = () => {
+    const { persistSimConnect, persistedSim, loadPersistedSimConnect } = this.props
+    window.addEventListener('beforeunload', persistSimConnect)
+    if (Object.keys(persistedSim).length !== 0) {
+      loadPersistedSimConnect()
+    }
+  }
+
+  componentWillUnmount = () => {
+    const { persistSimConnect } = this.props
+    persistSimConnect()
+    window.removeEventListener('beforeunload', persistSimConnect)
   }
 
   handleShowModal = () => this.setState({ displaySaveModal: true })
@@ -165,14 +181,21 @@ SimulationPage.propTypes = {
   isSimulated: PropTypes.bool.isRequired,
   isAdmin: PropTypes.bool.isRequired,
   isAuthenticated: PropTypes.bool.isRequired,
+  persistSimConnect: PropTypes.func.isRequired,
+  loadPersistedSimConnect: PropTypes.func.isRequired,
+  persistedSim: PropTypes.shape({}).isRequired,
 }
 
 const mapStateToProps = state => ({
   globalAlloys: state.alloys.global,
   isInitialised: state.sim.isInitialised,
   isSimulated: state.sim.isSimulated,
+  persistedSim: state.persist.lastSim,
 })
 
-const mapDispatchToProps = {}
+const mapDispatchToProps = {
+  persistSimConnect: persistSim,
+  loadPersistedSimConnect: loadPersistedSim,
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(SimulationPage)

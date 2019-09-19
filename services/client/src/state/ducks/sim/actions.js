@@ -9,6 +9,7 @@ import {
   UPDATE_DISPLAY_USER_CURVE,
   UPDATE_CCT_INDEX,
   LOAD_SIM,
+  LOAD_PERSISTED_SIM,
 } from './types'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
@@ -529,5 +530,13 @@ export const loadSimFromAccount = ({
       },
       results: simulation_results,
     },
+  })
+}
+
+export const loadPersistedSim = () => (dispatch, getState) => {
+  const { lastSim } = getState().persist
+  dispatch({
+    type: LOAD_PERSISTED_SIM,
+    payload: lastSim,
   })
 }

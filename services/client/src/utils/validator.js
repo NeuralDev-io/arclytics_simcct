@@ -21,4 +21,18 @@ export const validate = (value, constraints) => {
   return err
 }
 
-export default validate
+export const validateGroup = (values, constraints) => {
+  let err
+  const BreakException = {}
+  try {
+    constraints.forEach((constraint) => {
+      if (!constraint.check(values)) {
+        err = constraint.message
+        throw BreakException
+      }
+    })
+  } catch (ex) {
+    if (ex !== BreakException) throw ex
+  }
+  return err
+}

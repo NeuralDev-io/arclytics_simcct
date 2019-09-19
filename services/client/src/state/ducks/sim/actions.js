@@ -332,32 +332,46 @@ export const setAutoCalculate = (name, value) => (dispatch) => {
   })
 }
 
-export const updateConfig = (name, value) => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
-    method: 'PATCH',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
+export const updateConfig = (name, value, valError) => (dispatch, getState) => {
+  const { error } = getState().sim.configurations
+  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
+    delete error[name]
+  }
+
+  // update config in redux store
+  dispatch({
+    type: UPDATE_CONFIG,
+    payload: {
+      error: {
+        ...error,
+        ...valError,
+      },
+      [name]: value,
     },
-    body: JSON.stringify({ [name]: value }),
   })
-    .then((res) => {
-      if (res.status !== 202) throw new Error('Something went wrong')
-      return res.json()
+
+  // only make API request when there is no error
+  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
+    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ [name]: value }),
     })
-    .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
-      if (res.status === 'success') {
-        dispatch({
-          type: UPDATE_CONFIG,
-          payload: { [name]: value },
-        })
-      }
-    })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+      .then((res) => {
+        if (res.status !== 202) throw new Error('Something went wrong')
+        return res.json()
+      })
+      .then((res) => {
+        if (res.status === 'fail') throw new Error(res.message)
+      })
+      .catch(err => addFlashToast({
+        message: err.message,
+        options: { variant: 'error' },
+      }, true)(dispatch))
+  }
 }
 
 export const toggleDisplayUserCurve = value => (dispatch) => {

@@ -172,20 +172,29 @@ export const updateConfigMethod = value => (dispatch) => {
     }, true)(dispatch))
 }
 
-export const updateGrainSize = (astm, dia, isValid) => (dispatch) => {
+export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getState) => {
+  const { error } = getState().sim.configurations
   const newGrainSize = { grain_size_ASTM: astm, grain_size_diameter: dia }
+
+  if (Object.keys(grainSizeError).length === 0 && grainSizeError.constructor === Object) {
+    delete error.astm
+    delete error.dia
+  }
 
   // update grain size value in redux store
   dispatch({
     type: UPDATE_CONFIG,
     payload: {
-      isValid,
+      error: {
+        ...error,
+        ...grainSizeError,
+      },
       ...newGrainSize,
     },
   })
 
   // only update to server when the grain size is valid
-  if (isValid) {
+  if (Object.keys(grainSizeError).length === 0 && grainSizeError.constructor === Object) {
     fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
       method: 'PATCH',
       credentials: 'include',

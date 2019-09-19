@@ -14,7 +14,7 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.05'
-"""auth.py: 
+"""auth.py:
 
 This script describes the Users authentication endpoints for registration,
 login, and logout.
@@ -748,7 +748,6 @@ def logout(_) -> Tuple[dict, int]:
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
 @authenticate_user_and_cookie_flask
-@cache.cached(timeout=600, key_prefix='user_status')
 def get_user_status(user) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     is_profile = True

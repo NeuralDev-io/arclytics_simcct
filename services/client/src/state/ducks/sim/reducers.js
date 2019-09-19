@@ -9,6 +9,7 @@ import {
   UPDATE_DISPLAY_USER_CURVE,
   UPDATE_CCT_INDEX,
   LOAD_SIM,
+  LOAD_PERSISTED_SIM,
 } from './types'
 
 const initialState = {
@@ -201,6 +202,8 @@ const reducer = (state = initialState, action) => {
         },
       }
     }
+    case LOAD_PERSISTED_SIM:
+      return action.payload
     default:
       return state
   }

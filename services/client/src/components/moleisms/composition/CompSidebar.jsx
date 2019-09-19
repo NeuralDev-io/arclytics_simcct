@@ -24,6 +24,7 @@ class CompSidebar extends Component {
       sessionIsInitialised,
       isAuthenticated,
       onSaveButtonClick,
+      isConfigValid,
     } = this.props
     const { showSettings } = this.state
 
@@ -59,7 +60,7 @@ class CompSidebar extends Component {
           onClick={runSimConnect}
           length="long"
           className={styles.btn}
-          isDisabled={!sessionIsInitialised || !isAuthenticated}
+          isDisabled={!sessionIsInitialised || !isAuthenticated || !isConfigValid}
         >
           RUN
         </Button>
@@ -73,10 +74,15 @@ CompSidebar.propTypes = {
   runSimConnect: PropTypes.func.isRequired,
   sessionIsInitialised: PropTypes.bool.isRequired,
   isAuthenticated: PropTypes.bool.isRequired,
+  isConfigValid: PropTypes.bool.isRequired,
 }
+
+const mapStateToProps = state => ({
+  isConfigValid: state.sim.configurations.isValid,
+})
 
 const mapDispatchToProps = {
   runSimConnect: runSim,
 }
 
-export default connect(null, mapDispatchToProps)(CompSidebar)
+export default connect(mapStateToProps, mapDispatchToProps)(CompSidebar)

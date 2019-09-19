@@ -1,0 +1,15 @@
+apiVersion: skaffold/v1beta14
+kind: Config
+build:
+  artifacts:
+  - image: asia.gcr.io/arc-sim/arc_sim_service:1.1.6
+    docker:
+      dockerfile: ./services/simcct/Dockerfile-prod
+  - image: asia.gcr.io/arc-sim/arc_sim_client:1.1.5
+    docker:
+      dockerfile: ./services/client/Dockerfile-prod
+deploy:
+  kubectl:
+    manifests:
+    - ./kubernetes/simcct-gke-secure-ingress-service.yaml
+    - ./kubernetes/client-gke-secure-ingress-service.yaml

@@ -8,6 +8,7 @@ services:
       context: ./services/client
       dockerfile: Dockerfile-prod
       args:
+        - NODE_ENV=production
         - REACT_APP_SIM_HOST=https://api.arclytics.io
         - REACT_APP_SIM_PORT=443
       labels:
@@ -70,7 +71,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "celery-worker"
-    image: asia.gcr.io/arc-sim/arc_sim_celery:1.0
+    image: asia.gcr.io/arc-sim/arc_sim_celery:1.0.0
     ports:
       - 5555:5555
     expose:
@@ -117,8 +118,6 @@ services:
         service: "mongodb"
     image: asia.gcr.io/arc-sim/arc_sim_mongo:1.1.0
     restart: always
-    volumes:
-      - mongo-volume-mount:/data/db
     ports:
       - 27017:27017
     expose:
@@ -139,11 +138,5 @@ services:
 networks:
   host:
     driver: bridge
-    labels:
-      arclytics.io: "production"
-
-# https://docs.docker.com/compose/compose-file/#volume-configuration-reference
-volumes:
-  mongo-volume-mount:
     labels:
       arclytics.io: "production"

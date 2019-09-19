@@ -1,5 +1,6 @@
 # In this directory, run the following command to build this builder.
-# REFERENCE: [1] https://github.com/GoogleCloudPlatform/cloud-builders-community/blob/master/docker-compose/cloudbuild.yaml
+# REFERENCE:
+# [1] https://github.com/GoogleCloudPlatform/cloud-builders-community/blob/master/docker-compose/cloudbuild.yaml
 # $ gcloud config set app/cloud_build_timeout 1h30m
 # $ gcloud builds submit ${WORKDIR} \
 #                --config=${WORKDIR}/cloudbuild.yaml \
@@ -25,37 +26,21 @@ steps:
 
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.1.5']
-- name: 'gcr.io/cloud-builders/gke-deploy:stable'
-  args:
-  - 'run'
-  - '--filename=./kubernetes/client-gke-secure-ingress-service.yaml'
-  - '--image=asia.gcr.io/$PROJECT_ID/arc_sim_client:1.1.5'
-  - '--location=australia-southeast1'
-  - '--cluster=arc-sim-aust'
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ['apply', '-f', './kubernetes/client-gke-secure-ingress-service.yaml']
 
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_service:1.1.6']
-
-- name: 'gcr.io/cloud-builders/gke-deploy:stable'
-  args:
-  - 'run'
-  - '--filename=./kubernetes/simcct-gke-secure-ingress-service.yaml'
-  - '--image=asia.gcr.io/$PROJECT_ID/arc_sim_service:1.1.6'
-  - '--location=australia-southeast1'
-  - '--cluster=arc-sim-aust'
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ['apply', '-f', './kubernetes/simcct-gke-secure-ingress-service.yaml']
 
 - name: 'gcr.io/cloud-builders/kubectl'
   args: ['apply', '-f', './kubernetes/app-gke-secure-ingress.yaml']
 
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.0.0']
-- name: 'gcr.io/cloud-builders/gke-deploy:stable'
-  args:
-  - 'run'
-  - '--filename=./kubernetes/celery-gke-deployment.yaml'
-  - '--image=asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.0.0'
-  - '--location=australia-southeast1'
-  - '--cluster=arc-sim-aust'
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ['apply', '-f', './kubernetes/celery-gke-deployment.yaml']
 
 images:
 #- 'asia.gcr.io/$PROJECT_ID/docker-compose:latest'

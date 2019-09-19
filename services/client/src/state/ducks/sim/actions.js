@@ -172,34 +172,19 @@ export const updateConfigMethod = value => (dispatch) => {
     }, true)(dispatch))
 }
 
-export const updateGrainSize = (unit, value) => (dispatch) => {
-  let newGrainSize = { grain_size_ASTM: '', grain_size_diameter: '' }
-  let grainSize = parseFloat(value)
-  let isValid = false
+export const updateGrainSize = (astm, dia, isValid) => (dispatch) => {
+  const newGrainSize = { grain_size_ASTM: astm, grain_size_diameter: dia }
 
-  if (value === '') {
-    isValid = true
-    grainSize = 0
-  } else if (unit === 'astm') {
-    const converted = ASTM2Dia(grainSize)
-    if (!Number.isNaN(converted) && Number.isFinite(converted)) {
-      isValid = true
-      newGrainSize = {
-        grain_size_ASTM: grainSize,
-        grain_size_diameter: converted,
-      }
-    }
-  } else if (unit === 'dia') {
-    const converted = dia2ASTM(grainSize)
-    if (!Number.isNaN(converted) && Number.isFinite(converted)) {
-      isValid = true
-      newGrainSize = {
-        grain_size_ASTM: converted,
-        grain_size_diameter: grainSize,
-      }
-    }
-  }
+  // update grain size value in redux store
+  dispatch({
+    type: UPDATE_CONFIG,
+    payload: {
+      isValid,
+      ...newGrainSize,
+    },
+  })
 
+  // only update to server when the grain size is valid
   if (isValid) {
     fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
       method: 'PATCH',
@@ -207,7 +192,7 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ grain_size: grainSize }),
+      body: JSON.stringify({ grain_size: parseFloat(astm) }),
     })
       .then((res) => {
         if (res.status !== 202) throw new Error('Something went wrong')
@@ -215,12 +200,6 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
       })
       .then((res) => {
         if (res.status === 'fail') throw new Error(res.message)
-        if (res.status === 'success') {
-          dispatch({
-            type: UPDATE_CONFIG,
-            payload: newGrainSize,
-          })
-        }
       })
       .catch(err => addFlashToast({
         message: err.message,

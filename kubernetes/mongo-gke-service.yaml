@@ -104,7 +104,7 @@ spec:
   - metadata:
       name: mongo-pvc
       annotations:
-        volume.beta.kubernetes.io/storage-class: "standard"
+        volume.beta.kubernetes.io/storage-class: standard
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:

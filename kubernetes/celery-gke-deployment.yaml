@@ -2,6 +2,9 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: celery-worker
+  labels:
+    app: celery-worker
+    replicaset: CeleryRepSet
 spec:
   replicas: 2
   template:

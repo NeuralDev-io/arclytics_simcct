@@ -72,16 +72,16 @@ class SimSessionService(object):
                     'mix': None
                 }
             }
-        # if user.last_results is not None:
-        #     last_results = user.last_results
+        if user.last_simulation_results is not None:
+            last_results = user.last_simulation_results.to_dict()
+        else:
+            last_results = {}
 
         # This dict defines what we store in Redis for the session
         session_data_store = {
             'configurations': configs,
             'alloy_store': alloy_store,
-            # TODO(davidmatthews1004@gmail.com) Update this to get from last in
-            #  user doc
-            'results': None
+            'results': last_results
         }
 
         # The storage value dumped to JSON format. We use our custom JSON

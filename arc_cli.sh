@@ -1388,6 +1388,23 @@ while [[ "$1" != "" ]] ; do
               shift
             done
             ;;
+          efk )
+            while [[ "$3" != "" ]]; do
+              case $3 in
+                create )
+                  kubectl create -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"
+                  kubectl create -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
+                  KIBANA_POD_NAME=$(kc get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
+                  kubectl port-forward "${KIBANA_POD_NAME}" 5601:5601 --namespace default
+                  ;;
+                delete )
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
+                  ;;
+              esac
+              shift
+            done
+            ;;
           watch )
             watch kubectl get all -o wide
             ;;
@@ -1471,7 +1488,7 @@ while [[ "$1" != "" ]] ; do
             echoLine
             generalMessage "Pods"
             echoLine
-            kubectl get pods
+            kubectl get pods -o wide
             echoLine
             generalMessage "Services"
             echoLine

@@ -1445,6 +1445,10 @@ while [[ "$1" != "" ]] ; do
             echoLine
             kubectl get secrets -o wide
             echoLine
+            generalMessage "GCE Disks"
+            echoLine
+            gcloud compute disks list
+            echoLine
             generalMessage "Persistent Volumes"
             echoLine
             kubectl get pv -o wide

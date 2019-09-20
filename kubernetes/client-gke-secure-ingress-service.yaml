@@ -33,7 +33,7 @@ spec:
     metadata:
       labels:
         app: client-https
-        environment: production
+        replicaset: ClientRepSet
     spec:
       containers:
       - name: client-https-container

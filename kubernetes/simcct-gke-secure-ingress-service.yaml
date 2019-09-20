@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: simcct-service
   annotations:
-    cloud.google.com/app-protocols: '{"https-port":"HTTPS","http-port":"HTTP"}'
+    cloud.google.com/app-protocols: '{"https-port":"HTTPS", "http-port":"HTTP"}'
   labels:
     app: simcct
 spec:
@@ -55,11 +55,11 @@ spec:
           failureThreshold: 5
         resources:
           requests:
-            cpu: 750m
-            memory: 1Gi
+            cpu: 1000m
+            memory: 1.5Gi
           limits:
-            cpu: 1
-            memory: 2Gi
+            cpu: 1500m
+            memory: 4Gi
         env:
         - name: FLASK_APP
           value: "sim_api/app.py"
@@ -111,5 +111,3 @@ spec:
           value: "app.arclytics.io"
         - name: CLIENT_PORT
           value: "443"
-        - name: DASK_SCHEDULER_ADDRESS
-          value: "tcp://dask-scheduler:8786"

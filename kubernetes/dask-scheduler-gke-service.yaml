@@ -57,6 +57,3 @@ spec:
             requests:
               cpu: 750m
               memory: 2Gi
-      nodeSelector: {}
-      afinity: {}
-      tolerations: []

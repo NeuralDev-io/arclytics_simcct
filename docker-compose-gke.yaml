@@ -135,6 +135,65 @@ services:
     networks:
       - host
 
+  dask-scheduler:
+    build:
+      context: ./services/dask
+      dockerfile: Dockerfile
+      labels:
+        arclytics.io: "production"
+        service: "dask-scheduler"
+    image: asia.gcr.io/arc-sim/arc_dask_scheduler:latest
+    hostname: dask-scheduler
+    ports:
+      - 8786:8786
+      - 8787:8787
+    expose:
+      - 8786
+      - 8787
+    # Entrypoint command needs to be set here because Dockerfile shared with `dask-worker`
+    command: ['dask-scheduler']
+    networks:
+      - host
+
+  dask-worker:
+    build:
+      context: ./services/simcct
+      dockerfile: Dockerfile-worker
+      labels:
+        arclytics.io: "production"
+        service: "dask-worker"
+    image: asia.gcr.io/arc-sim/arc_dask_worker:latest
+    hostname: dask-worker
+    command: ['dask-worker', 'tcp://dask-scheduler:8786', '--no-nanny']
+    networks:
+      - host
+
+  jupyter:
+    build:
+      context: ./services/jupyter
+      dockerfile: Dockerfile
+      labels:
+        arclytics.io: "production"
+    image: asia.gcr.io/arc-sim/arc_dask_notebook:latest
+    domainname: io.arclytics.app
+    hostname: jupyter
+    volumes:
+      - type: bind
+        source: ./services/jupyter/notebooks
+        target: /home/arclytics/
+    ports:
+      - 8888:8888
+    expose:
+      - 8888
+    environment:
+      - NB_USER=arclytics
+      - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
+    depends_on:
+      - dask-scheduler
+      - dask-worker
+    networks:
+      - host
+
 networks:
   host:
     driver: bridge

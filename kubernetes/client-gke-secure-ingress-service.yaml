@@ -23,6 +23,7 @@ metadata:
   name: client-https
   labels:
     app: client-https
+    replicaset: ClientRepSet
 spec:
   selector:
     matchLabels:

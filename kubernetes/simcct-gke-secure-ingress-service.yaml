@@ -26,6 +26,7 @@ metadata:
   name: simcct
   labels:
     app: simcct
+    replicaset: SimRepSet
 spec:
   selector:
     matchLabels:

@@ -99,11 +99,43 @@ class Configurations(Resource):
 
         start_temp = patch_data.get('start_temp', None)
         if start_temp:
-            sess_configs['start_temp'] = int(start_temp)
+            try:
+                valid_start_temp = int(start_temp)
+            except ValueError as e:
+                # Save what we have validated so far
+                SimSessionService().save_session(session_store)
+                response['status'] = 'fail'
+                response['errors'] = str(e)
+                response['message'] = 'Invalid Starting Temperature.'
+                return response, 400
+            except Exception as e:
+                # Save what we have validated so far
+                SimSessionService().save_session(session_store)
+                response['status'] = 'fail'
+                response['errors'] = str(e)
+                response['message'] = 'Int conversion error.'
+                return response, 400
+            sess_configs['start_temp'] = valid_start_temp
 
         cct_cool_rate = patch_data.get('cct_cooling_rate', None)
         if cct_cool_rate:
-            sess_configs['cct_cooling_rate'] = int(cct_cool_rate)
+            try:
+                valid_cct_cool_rate = int(cct_cool_rate)
+            except ValueError as e:
+                # Save what we have validated so far
+                SimSessionService().save_session(session_store)
+                response['status'] = 'fail'
+                response['errors'] = str(e)
+                response['message'] = 'Invalid CCT Cooling Rate.'
+                return response, 400
+            except Exception as e:
+                # Save what we have validated so far
+                SimSessionService().save_session(session_store)
+                response['status'] = 'fail'
+                response['errors'] = str(e)
+                response['message'] = 'Int conversion error.'
+                return response, 400
+            sess_configs['cct_cooling_rate'] = valid_cct_cool_rate
 
         sess_configs['is_valid'] = False
 

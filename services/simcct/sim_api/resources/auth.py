@@ -35,7 +35,7 @@ from geoip2.errors import AddressNotFoundError
 from mongoengine.errors import NotUniqueError, ValidationError
 
 from logger import AppLogger
-from sim_api.extensions import bcrypt, cache
+from sim_api.extensions import bcrypt
 from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
 from sim_api.middleware import (authenticate_user_and_cookie_flask)

@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: elasticsearch-service
+  name: elasticsearch
   namespace: default
   labels:
     app: elasticsearch
@@ -10,16 +10,20 @@ spec:
     app: elasticsearch
   clusterIP: None
   ports:
-    - name: rest
+    - name: http
       port: 9200
+      protocol: TCP
     - name: inter-node
       port: 9300
+      protocol: TCP
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
   name: elasticsearch
   namespace: default
+  labels:
+    app: elasticsearch
 spec:
   serviceName: elasticsearch
   replicas: 3
@@ -33,7 +37,7 @@ spec:
     spec:
       containers:
         - name: elasticsearch-container
-          image: docker.elastic.co/elasticsearch/elasticsearch:7.3.1
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -42,26 +46,26 @@ spec:
               cpu: 100m
           ports:
             - containerPort: 9200
-              name: rest
+              name: http
               protocol: TCP
             - containerPort: 9300
               name: inter-node
               protocol: TCP
           env:
             - name: cluster.name
-              value: arc-logs
+              value: arc-sim-aust
             - name: node.name
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name  # Will resolve to elasticsearch-[0,1,2]
             - name: discovery.seed_hosts
-              value: 'elasticsearch-0.elasticsearch-service,elasticsearch-1.elasticsearch-service,elasticsearch-2.elasticsearch-service'
+              value: 'elasticsearch-0.elasticsearch,elasticsearch-1.elasticsearch,elasticsearch-2.elasticsearch'
             - name: cluster.initial_master_nodes
               value: 'elasticsearch-0,elasticsearch-1,elasticsearch-2'
             - name: ES_JAVA_OPTS
               value: '-Xms512m -Xmx512m'  # JVM to use a minimum and maximum heap size of 512 MB.
           volumeMounts:
-            - name: logging-data
+            - name: elasticsearch-pvc
               mountPath: /usr/share/elasticsearch/data
       initContainers:
         - name: fix-permissions
@@ -70,7 +74,7 @@ spec:
           securityContext:
             privileged: true
           volumeMounts:
-            - name: data
+            - name: elasticsearch-pvc
               mountPath: /usr/share/elasticsearch/data
         - name: increase-vm-max-map
           image: busybox
@@ -82,14 +86,9 @@ spec:
           command: ['sh', '-c', 'ulimit -n 65536']
           securityContext:
             privileged: true
-        - name: swap-off  # The Elasticsearch Notes for Production Use also mentions disabling swapping for performance reasons.
-          image: busybox
-          command: ['swapoff', '-a']
-          securityContext:
-            privileged: true
   volumeClaimTemplates:
   - metadata:
-      name: logging-data
+      name: elasticsearch-pvc
       labels:
         app: elasticsearch
       annotations:

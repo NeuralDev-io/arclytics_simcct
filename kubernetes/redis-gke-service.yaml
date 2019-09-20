@@ -37,8 +37,14 @@ spec:
             requests:
               cpu: 250m
               memory: 1Gi
-          args: ["--requirepass", "$(REDIS_PASSWORD)", "--appendonly", "yes",
-                 "--save", "900", "1"]
+          args:
+            - "--requirepass"
+            - "$(REDIS_PASSWORD)"
+            - "--appendonly"
+            - "yes"
+            - "--save"
+            - "900"
+            - "1"
           env:
             - name: REDIS_PASSWORD
               valueFrom:
@@ -54,7 +60,7 @@ spec:
     - metadata:
         name: redis-pvc
         annotations:
-          volume.beta.kubernetes.io/storage-class: "fast"
+          volume.beta.kubernetes.io/storage-class: fast
       spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:

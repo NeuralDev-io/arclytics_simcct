@@ -21,7 +21,6 @@ an Event emitted log to the fluentd microservice.
 """
 
 import os
-import sys
 
 from fluent import sender, event
 from flask import Flask, jsonify, request

@@ -22,6 +22,8 @@ This module defines and implements the endpoints for CCT and TTT simulations.
 
 import time
 from os import environ as env
+# import threading
+import concurrent.futures
 
 from dask.distributed import Client
 from flask import Blueprint
@@ -135,6 +137,10 @@ class Simulation(Resource):
             ttt_results = sim.ttt()
             user_cooling_curve_results = sim.user_cooling_profile()
             cct_results = sim.cct()
+            # with concurrent.futures.ThreadPoolExecutor() as executor:
+            #     ttt_future = executor.submit(sim.ttt)
+            #     user_future = executor.submit(sim.user_cooling_profile)
+            #     cct_future = executor.submit(sim.cct)
 
             # We send the three simulation functions off to a Dask Worker to
             # compute as a background thread.
@@ -155,16 +161,16 @@ class Simulation(Resource):
         # Converting the TTT and CCT `numpy.ndarray` will raise an
         # AssertionError if the shape of the ndarray is not correct.
         try:
-            # data = {
-            #     'TTT': ttt_future.result(),
-            #     'CCT': cct_future.result(),
-            #     'USER': user_cc_future.result()
-            # }
             data = {
                 'TTT': ttt_results,
                 'CCT': cct_results,
                 'USER': user_cooling_curve_results
             }
+            # data = {
+            #     'TTT': ttt_future.result(),
+            #     'CCT': cct_future.result(),
+            #     'USER': user_future.result()
+            # }
         except AssertionError as e:
             response['errors'] = str(e)
             response['message'] = 'Assertion error building response data.'
@@ -177,6 +183,7 @@ class Simulation(Resource):
         # logger.debug(f'Integral Matrix Time: {integral_mat_time}')
         # logger.debug(f'Total Simulation Time: {simulation_time}')
         logger.debug('Total Time: {}'.format(finish - start))
+        # logger.debug(data)
 
         # If a valid simulation has been run, the configurations are now valid.
         session_store['configurations']['is_valid'] = True

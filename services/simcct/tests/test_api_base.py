@@ -27,9 +27,9 @@ from flask_testing import TestCase
 from redis import Redis
 
 from tests.test_utilities import FlaskTestClientProxy
-from sim_api.app import set_flask_mongo, init_db
+from sim_api import set_flask_mongo, init_db
 from logger import AppLogger
-from sim_api.app import create_app
+from sim_api import create_app
 
 logger = AppLogger(__name__)
 

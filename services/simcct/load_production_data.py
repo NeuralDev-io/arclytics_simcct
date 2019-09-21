@@ -26,11 +26,11 @@ Script to load Production data into MongoDB container.
 import os
 import json
 import sys
-from sim_api.app import init_db, create_app
 from pathlib import Path
 from os import environ as env
 from sys import stderr
 from mongoengine import get_db, connect, disconnect_all, get_connection
+from sim_api import init_db, create_app
 from sim_api.models import User, UserProfile, AdminProfile
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

@@ -28,7 +28,7 @@ from mongoengine.connection import get_db, get_connection
 from flask import current_app as app
 from tests.test_api_base import BaseTestCase
 from sim_api.extensions import MongoSingleton
-from sim_api.app import get_flask_mongo, set_flask_mongo, init_db
+from sim_api import get_flask_mongo, set_flask_mongo, init_db
 
 
 class TestMongoSingleton(BaseTestCase):

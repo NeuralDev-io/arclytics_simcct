@@ -7,6 +7,6 @@
 	url = git@bitbucket.org:neuraldev/arclytics.io.git
     branch = develop
 [submodule "services/simcct/flask-fluentd-logger"]
-	path = arclytics.io
+	path = services/simcct/flask-fluentd-logger
 	url = git@github.com:codeninja55/flask-fluentd-logger.git
     branch = develop

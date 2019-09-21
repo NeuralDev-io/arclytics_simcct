@@ -34,7 +34,7 @@ from mongoengine.connection import connect, disconnect_all, get_db
 from prettytable import PrettyTable
 from pymongo import MongoClient
 
-from sim_api.app import create_app
+from sim_api import create_app
 from sim_api.models import AdminProfile, User, UserProfile
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))

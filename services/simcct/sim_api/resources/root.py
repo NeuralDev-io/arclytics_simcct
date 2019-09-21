@@ -23,9 +23,21 @@ Just a basic module to define some testing endpoints.
 """
 
 import os
-from flask import Blueprint, jsonify, Response
+from flask import Blueprint, jsonify, Response, g
+from sim_api.extensions import logger
 
 root_blueprint = Blueprint('root', __name__)
+
+
+@root_blueprint.before_app_request
+def before_app_request() -> None:
+    """Before the root blueprint is instantiated, and within the context of
+    the Flask app, we store the logger as a global variable.
+
+    Returns:
+        None
+    """
+    g.logger = logger
 
 
 @root_blueprint.route('/', methods=['GET'])
@@ -46,6 +58,7 @@ def ping():
         'message': 'pong',
         'container_id': os.uname()[1]
     }
+    g.logger.info(response)
     return jsonify(response), 200
 
 

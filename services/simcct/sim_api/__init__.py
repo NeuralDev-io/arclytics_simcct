@@ -14,7 +14,7 @@ __author__ = [
     'Dinol Shrestha <@dinolsth>'
 ]
 __license__ = 'MIT'
-__version__ = '0.1.0'
+__version__ = '1.1.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'production'
@@ -34,7 +34,9 @@ from redis import Redis
 
 from sim_api.extensions import JSONEncoder
 from sim_api.extensions import MongoSingleton
-from sim_api.extensions import api, bcrypt, redis_session, fluentd_logging
+from sim_api.extensions import (
+    api, bcrypt, redis_session, fluentd_logging, apm
+)
 
 # Instantiate the Mongo object to store a connection
 app_settings = env.get('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')
@@ -223,6 +225,7 @@ def extensions(app) -> None:
     Returns:
         None.
     """
+    apm.init_app(app)
     api.init_app(app)
     bcrypt.init_app(app)
     redis_session.init_app(app)

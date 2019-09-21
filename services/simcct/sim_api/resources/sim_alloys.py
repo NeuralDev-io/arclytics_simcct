@@ -11,11 +11,12 @@ __author__ = [
     'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
+__credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'MIT'
 __version__ = '0.1.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__status__ = 'production'
 __date__ = '2019.08.03'
 """sim_alloys.py: 
 

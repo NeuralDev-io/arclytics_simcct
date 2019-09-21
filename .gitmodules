@@ -8,5 +8,5 @@
     branch = develop
 [submodule "services/simcct/flask-fluentd-logger"]
 	path = arclytics.io
-	url = https://github.com/codeninja55/flask-fluentd-logger.git
+	url = git@github.com:codeninja55/flask-fluentd-logger.git
     branch = develop

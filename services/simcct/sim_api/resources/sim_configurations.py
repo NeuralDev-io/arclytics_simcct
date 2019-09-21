@@ -6,13 +6,17 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
+__author__ = [
+    'Andrew Che <@codeninja55>',
+    'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
-__license__ = 'TBA'
-__version__ = '0.3.0'
+__license__ = 'MIT'
+__version__ = '1.0.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__status__ = 'production'
 __date__ = '2019.07.13'
 """sim_configurations.py: 
 
@@ -22,15 +26,14 @@ configurations for the main simulations page.
 
 from flask import Blueprint, request
 from flask_restful import Resource
+from marshmallow import ValidationError
 
-from logger import AppLogger
-from sim_api.extensions import api
+from sim_api.extensions import api, logger
 from sim_api.extensions.SimSession import SimSessionService
 from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.schemas import ConfigurationsSchema
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method
-
-logger = AppLogger(__name__)
 
 configs_blueprint = Blueprint('sim_configurations', __name__)
 
@@ -103,14 +106,12 @@ class Configurations(Resource):
                 valid_start_temp = int(start_temp)
             except ValueError as e:
                 # Save what we have validated so far
-                SimSessionService().save_session(session_store)
                 response['status'] = 'fail'
                 response['errors'] = str(e)
                 response['message'] = 'Invalid Starting Temperature.'
                 return response, 400
             except Exception as e:
                 # Save what we have validated so far
-                SimSessionService().save_session(session_store)
                 response['status'] = 'fail'
                 response['errors'] = str(e)
                 response['message'] = 'Int conversion error.'
@@ -123,14 +124,12 @@ class Configurations(Resource):
                 valid_cct_cool_rate = int(cct_cool_rate)
             except ValueError as e:
                 # Save what we have validated so far
-                SimSessionService().save_session(session_store)
                 response['status'] = 'fail'
                 response['errors'] = str(e)
                 response['message'] = 'Invalid CCT Cooling Rate.'
                 return response, 400
             except Exception as e:
                 # Save what we have validated so far
-                SimSessionService().save_session(session_store)
                 response['status'] = 'fail'
                 response['errors'] = str(e)
                 response['message'] = 'Int conversion error.'
@@ -139,11 +138,15 @@ class Configurations(Resource):
 
         sess_configs['is_valid'] = False
 
-        logger.debug('Configurations.patch Session Configurations:')
-        logger.pprint(sess_configs)
+        try:
+            valid_configs = ConfigurationsSchema().load(sess_configs)
+        except ValidationError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Configurations not valid.'
+            logger.exception(response['message'], exc_info=True)
+            return response, 400
 
-        session_store['configurations'] = sess_configs
-
+        session_store['configurations'] = valid_configs
         SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
@@ -526,10 +529,16 @@ class Austenite(Resource):
             response['message'] = 'No previous session initiated.'
             return response, 400
 
-        # TODO(andrew@neuraldev.io): Implement the other options
         comp_list: list = []
         if sess_alloy_store['alloy_option'] == 'single':
             comp_list = sess_alloy_store['alloys']['parent']['compositions']
+        elif sess_alloy_store['alloy_option'] == 'mix':
+            # DECISION:
+            # We will not implement this as it adds too much complexity to
+            # the logical path of the system state. This was not a core
+            # requirement and Dr. Bendeich often said he did not want this
+            # implemented at all.
+            pass
 
         if comp_list is None:
             response['message'] = 'User has not set an Alloy.'

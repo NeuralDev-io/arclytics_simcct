@@ -228,7 +228,6 @@ services:
         arclytics.io: "development"
         service: "elasticsearch"
     image: neuraldev/arc_elasticsearch:latest
-    container_name: elasticsearch
     volumes:
       - ./services/elasticsearch/data:/usr/share/elasticsearch/data
     ports:

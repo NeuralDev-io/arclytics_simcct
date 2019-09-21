@@ -53,5 +53,12 @@ RUN ln -s /usr/src/app/entrypoint.sh /entrypoint.sh
 # add app
 COPY . /usr/src/app
 
+# install our flask-fluentd-logger
+WORKDIR /usr/src/app/flask-fluentd-logger
+RUN python setup.py install
+
+# go back to app source directory
+WORKDIR /usr/src/app
+
 # Start the container with entrypoint or comment to use manual below
 ENTRYPOINT ["/entrypoint.sh"]

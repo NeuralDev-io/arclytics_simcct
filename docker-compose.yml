@@ -120,11 +120,13 @@ services:
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
       - FLUENTD_HOST=fluentd
       - FLUENTD_PORT=24224
+      - ELASTIC_APM_SERVER_URL=http://apm-server:8200
     depends_on:
       - mongodb
       - redis
       - fluentd
       - elasticsearch
+      - apm-server
     networks:
       - host
 
@@ -228,13 +230,31 @@ services:
       - host
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
+    build:
+      context: ./services/elasticsearch
+      dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
+        service: "elasticsearch"
+    image: neuraldev/arc_elasticsearch:latest
+    container_name: elasticsearch
+    volumes:
+      - ./services/elasticsearch/data:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
+      - 9300:9300
     expose:
       - 9200
+      - 9300
     environment:
       - discovery.type=single-node
+      - cluster.name=arc-sim-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     networks:
       - host
 
@@ -251,7 +271,9 @@ services:
     expose:
       - 8200
     volumes:
-      - ./services/apm-server/apm-server.docker.yaml:/usr/share/apm-server/apm-server.yml
+      - ./services/apm-server/apm-server.docker.yml:/usr/share/apm-server/apm-server.yml
+    depends_on:
+      - elasticsearch
     networks:
       - host
 

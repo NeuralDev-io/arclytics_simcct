@@ -61,6 +61,14 @@ class BaseConfig:
     FLUENTD_SCHEME = 'http'
     FLUENTD_PREFIX_TAG = 'simcct.fluentd.logger'
 
+    # elastic application performance monitoring
+    ELASTIC_APM = {
+        'SERVER_URL': env.get('ELASTIC_APM_SERVER_URL', 'http://localhost:8200'),
+        'SERVICE_NAME': 'simcct',
+        'SECRET_TOKEN': SECRET_KEY,
+        'DEBUG': True
+    }
+
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
@@ -97,3 +105,10 @@ class ProductionConfig(BaseConfig):
     # Production Celery
     CELERY_BROKER_URL = f'{redis_uri}/5'
     CELERY_RESULT_BACKEND = f'{redis_uri}/6'
+
+    # production elastic application performance monitoring
+    ELASTIC_APM = {
+        'SERVICE_NAME': 'simcct',
+        'SECRET_TOKEN': env.get('SECRET_KEY'),
+        'DEBUG': False
+    }

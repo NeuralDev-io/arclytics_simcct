@@ -61,8 +61,8 @@ from pprint import pformat
 
 class ReportingFormats(Enum):
     """Enum for storing some handy log formats."""
-    FILE = "%(asctime)s : %(threadName)s : %(filename)s : %(name)s : %(funcName)s : %(lineno)s: " \
-           "%(levelname)s : %(message)s"
+    FILE = ("%(asctime)s : %(threadName)s : %(filename)s : %(name)s : "
+            "%(funcName)s : %(lineno)s: %(levelname)s : %(message)s")
     STDOUT = "[%(asctime)s--%(name)s] [%(levelname)s] : %(message)s"
     PROFILER = "[%(asctime)s] [%(name)s %(levelname)s] ==> %(message)s"
     SLACK_PRINT = '%(message).1000s'
@@ -71,7 +71,8 @@ class ReportingFormats(Enum):
 
 class AppLogger(object):
     """
-    A logger to be used as the default which extends the default logging module.
+    A logger to be used as the default which extends the default
+    logging module.
 
     Attributes:
         _config_mode: Check whether there is a config to parse.
@@ -325,10 +326,11 @@ class AppLogger(object):
         )
 
     def debug(self, msg: str, *args, **kwargs):
-        """
-        Log 'message % args' with severity DEBUG.
+        """Log 'message % args' with severity DEBUG.
 
-        To pass exception information, use the keyword arg exc_info with a true value.
+        To pass exception information, use the keyword arg exc_info with a true
+        value.
+
         Example:
             logger.debug("Houston, we have a %s", "thorny problem", exc_info=1)
 
@@ -338,8 +340,7 @@ class AppLogger(object):
         self.logger.debug(msg, *args, **kwargs)
 
     def info(self, msg: str, *args, **kwargs):
-        """
-        Log 'message'.format(*args) with severity INFO.
+        """Log 'message'.format(*args) with severity INFO.
 
         To pass exception information, use the keyword argument exc_info with
         a true value.
@@ -401,8 +402,7 @@ class AppLogger(object):
         self.logger.critical(msg, *args, **kwargs)
 
     def exception(self, msg: str, *args, exc_info=True, **kwargs):
-        """
-        Convenience method for logging an ERROR with exception information.
+        """Convenience method for logging an ERROR with exception information.
 
         Args:
             msg: the message to log.

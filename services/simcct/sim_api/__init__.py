@@ -31,7 +31,7 @@ from redis import Redis
 
 from sim_api.extensions import JSONEncoder
 from sim_api.extensions import MongoSingleton
-from sim_api.extensions import api, bcrypt, redis_session, logger
+from sim_api.extensions import api, bcrypt, redis_session, fluentd_logging
 
 # Instantiate the Mongo object to store a connection
 app_settings = env.get('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')
@@ -223,7 +223,7 @@ def extensions(app) -> None:
     api.init_app(app)
     bcrypt.init_app(app)
     redis_session.init_app(app)
-    logger.init_app(app)
+    fluentd_logging.init_app(app)
     # talisman.init_app(app, force_https_permanent=False, force_https=False)
 
     return None

@@ -38,8 +38,10 @@ from sim_api.extensions import (
     api, bcrypt, redis_session, fluentd_logging, apm
 )
 
-# Instantiate the Mongo object to store a connection
+# Environment Variable Flask Configurations object path to use or by default
+# use production configurations because it is the most secure and restrictive.
 app_settings = env.get('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')
+# Instantiate the Mongo object to store a connection
 _mongo_client = None
 
 
@@ -118,6 +120,7 @@ def create_app(configs_path=app_settings) -> Flask:
     # instantiate the application
     app = Flask('simcct_flask_server')
 
+    # ========== # CONFIGURATIONS # ========== #
     # Setup the configuration for Flask
     app.config.from_object(configs_path)
     app.secret_key = env.get('SECRET_KEY')

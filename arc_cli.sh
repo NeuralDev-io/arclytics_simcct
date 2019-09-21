@@ -1047,6 +1047,7 @@ while [[ "$1" != "" ]] ; do
       SIMCCT_SSL_NAME="simcct-app-https-cert"
       CLIENT_HTTPS_TLS_NAME="client-app-https-secret"
       SIMCCT_HTTPS_TLS_NAME="simcct-app-https-secret"
+      KIBANA_HTTPS_TLS_NAME="kibana-app-https-secret"
       CLOUD_STORAGE_BUCKET="asia.artifacts.arc-sim.appspot.com"
 
       while [[ "$2" != "" ]] ; do
@@ -1185,6 +1186,9 @@ while [[ "$1" != "" ]] ; do
             kubectl create secret tls ${SIMCCT_HTTPS_TLS_NAME} \
                --cert "${WORKDIR}/certs/io.arclytics.api.crt" \
                --key "${WORKDIR}/certs/io.arclytics.api.key"
+            kubectl create secret tls ${KIBANA_HTTPS_TLS_NAME} \
+               --cert "${WORKDIR}/certs/io.arclytics.kibana.crt.pem" \
+               --key "${WORKDIR}/certs/io.arclytics.kibana.key.pem"
             ;;
           addresses )
             while [[ "$3" != "" ]]; do

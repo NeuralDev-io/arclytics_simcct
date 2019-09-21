@@ -13,7 +13,7 @@ WORKDIR=$(dirname "$(readlink -f "$0")")
 DOCKER_COMPOSE_PATH="${WORKDIR}/docker-compose.yml"
 ARGS=""
 CONTAINER_GROUP=""
-CONTAINER_ARGS="simcct client redis mongodb nginx celery-worker fluentd elasticsearch kibana"
+CONTAINER_ARGS="simcct client redis mongodb nginx celery-worker fluentd elasticsearch kibana apm-server"
 CONTAINER_LOG=""
 LOGS_WATCH=0
 FLUSH_ALL=0
@@ -238,6 +238,9 @@ Service (only one for \`logs\`; * default for \`up\`):
   celery-worker *
   redis *
   mongodb *
+  elasticsearch *
+  apm-server *
+  kibana *
   dask-scheduler
   dask-worker
   jupyter
@@ -357,6 +360,9 @@ Service (only one for \`logs\`; * default for \`up\`):
   celery-worker *
   redis *
   mongodb *
+  elasticsearch *
+  apm-server *
+  kibana *
   dask-scheduler
   dask-worker
   jupyter
@@ -1388,14 +1394,29 @@ while [[ "$1" != "" ]] ; do
               shift
             done
             ;;
-          efk )
+          fluentd )
+            while [[ "$3" != "" ]]; do
+              case $3 in
+                create )
+                  kubectl apply -f "${WORKDIR}/kubernetes/efk-fluentd-gke-rbac.yaml"
+                  kubectl apply -f "${WORKDIR}/kubernetes/efk-fluentd-gke-daemonset.yaml"
+                  ;;
+                delete )
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-daemonset.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-rbac.yaml"
+                  ;;
+              esac
+              shift
+            done
+            ;;
+          elastic )
             while [[ "$3" != "" ]]; do
               case $3 in
                 create )
                   kubectl create -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"
                   kubectl create -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
-                  KIBANA_POD_NAME=$(kc get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
-                  kubectl port-forward "${KIBANA_POD_NAME}" 5601:5601 --namespace default
+                  # KIBANA_POD_NAME=$(kc get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
+                  # kubectl port-forward "${KIBANA_POD_NAME}" 5601:5601 --namespace default
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"

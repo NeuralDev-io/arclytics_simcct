@@ -6,8 +6,11 @@
 # Attributions:
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-
+__author__ = [
+    'Andrew Che <@codeninja55>',
+    'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
 __credits__ = ['']
 __license__ = 'TBA'
 __version__ = '0.1.0'
@@ -17,7 +20,8 @@ __status__ = 'development'
 __date__ = '2019.06.04'
 """flask_conf.py: 
 
-Just some configuration settings.
+These configurations define the way that a Flask application is create and 
+the context used for it.
 """
 
 from os import environ as env

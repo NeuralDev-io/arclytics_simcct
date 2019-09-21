@@ -38,6 +38,8 @@ WORKDIR /opt/app
 
 COPY ./simulation /opt/app/Simulation/simulation
 COPY ./logger /opt/app/Logger/logger
+COPY ./flask-fluentd-logger /opt/app/flask-fluentd-logger
+
 COPY ./setup.py /opt/app/Simulation/
 COPY ./setup_logger.py /opt/app/Logger/
 RUN mv /opt/app/Logger/setup_logger.py /opt/app/Logger/setup.py
@@ -45,8 +47,10 @@ RUN mv /opt/app/Logger/setup_logger.py /opt/app/Logger/setup.py
 WORKDIR /opt/app/Logger
 RUN python setup.py install
 WORKDIR /opt/app/Simulation
-RUN pwd
 RUN python setup.py install
+WORKDIR /opt/app/flask-fluentd-logger
+RUN python setup.py install
+
 WORKDIR /opt/app
 
 # The prepare.sh script allows you to add additional dependencies.

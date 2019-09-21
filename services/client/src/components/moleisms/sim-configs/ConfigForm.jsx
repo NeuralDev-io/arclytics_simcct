@@ -10,6 +10,7 @@ import {
   updateConfigMethod, updateGrainSize, updateMsBsAe, getMsBsAe, setAutoCalculate, updateConfig,
 } from '../../../state/ducks/sim/actions'
 import { validate, validateGroup } from '../../../utils/validator'
+import { roundTo } from '../../../utils/math'
 import { constraints } from './utils/constraints'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 
@@ -286,7 +287,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="ae1_temp"
                     onChange={val => this.handleUpdateAe('ae1_temp', val)}
-                    value={configurations.ae1_temp}
+                    value={roundTo(parseFloat(configurations.ae1_temp), 1)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae || !isAuthenticated}
@@ -302,7 +303,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="ae3_temp"
                     onChange={val => this.handleUpdateAe('ae3_temp', val)}
-                    value={configurations.ae3_temp}
+                    value={roundTo(parseFloat(configurations.ae3_temp), 1)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae || !isAuthenticated}
@@ -338,7 +339,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="bs_temp"
                     onChange={val => this.handleUpdateBs('bs_temp', val)}
-                    value={configurations.bs_temp}
+                    value={roundTo(parseFloat(configurations.bs_temp), 1)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_bs || !isAuthenticated}
@@ -377,7 +378,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="ms_temp"
                     onChange={val => this.handleUpdateMs('ms_temp', val)}
-                    value={configurations.ms_temp}
+                    value={roundTo(parseFloat(configurations.ms_temp), 1)}
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ms || !isAuthenticated}
@@ -394,7 +395,7 @@ class ConfigForm extends Component {
                     type="text"
                     name="ms_rate_param"
                     onChange={val => this.handleUpdateMs('ms_rate_param', val)}
-                    value={configurations.ms_rate_param}
+                    value={roundTo(parseFloat(configurations.ms_rate_param), 3)}
                     length="short"
                     isDisabled={configurations.auto_calculate_ms || !isAuthenticated}
                     error={configurations.error.ms_rate_param}

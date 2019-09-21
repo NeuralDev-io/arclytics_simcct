@@ -21,6 +21,7 @@ context of the app.
 """
 from flask_bcrypt import Bcrypt
 from flask_restful import Api
+from flask_fluentd_logger import FlaskFluentdLogger
 
 # from flask_talisman import Talisman
 from .Session import FlaskRedisSession
@@ -36,5 +37,6 @@ from .utilities import (DuplicateElementError, ElementInvalid,
 api = Api()
 bcrypt = Bcrypt()
 redis_session = FlaskRedisSession()
+logger = FlaskFluentdLogger()
 # To use add flask-talisman==0.7.0 to requirements.txt
 # talisman = Talisman()

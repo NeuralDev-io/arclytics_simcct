@@ -37,6 +37,7 @@ from .utilities import (DuplicateElementError, ElementInvalid,
 api = Api()
 bcrypt = Bcrypt()
 redis_session = FlaskRedisSession()
-logger = FlaskFluentdLogger()
+fluentd_logging = FlaskFluentdLogger()
+logger = fluentd_logging.get_logger()
 # To use add flask-talisman==0.7.0 to requirements.txt
 # talisman = Talisman()

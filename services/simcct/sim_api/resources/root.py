@@ -58,6 +58,7 @@ def ping():
         'message': 'pong',
         'container_id': os.uname()[1]
     }
+    # Use the new Flask-Fluentd-Logger as a global variable.
     g.logger.info(response)
     return jsonify(response), 200
 

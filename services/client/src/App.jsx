@@ -9,6 +9,7 @@ import Toaster from './components/moleisms/toaster'
 import ErrorBoundary from './components/pages/error-boundary/ErrorBoundary'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
+import NoMatchPage from './components/pages/no-match/NoMatchPage'
 import SimulationPage from './components/pages/simulation'
 import AdminPage from './components/pages/admin'
 import ProfileQuestionsPage from './components/pages/profile-questions'
@@ -29,11 +30,6 @@ const useStyles = makeStyles({
 function App() {
   const classes = useStyles()
 
-  const NoMatch = ({location}) => (
-    <div>
-      <h3>No match for <code>{location.pathname}</code></h3>
-    </div>
-  )
 
   return (
     <ErrorBoundary>
@@ -98,7 +94,7 @@ function App() {
                 path="/demo"
                 component={SimulationPage}
               />
-              <Route component={NoMatch}/>
+              <Route component={NoMatchPage} />
             </Switch>
           </div>
         </Provider>

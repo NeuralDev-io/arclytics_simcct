@@ -8,13 +8,16 @@
 # https://testdriven.io/courses/microservices-with-docker-flask-and-react/
 # part-one-microservices/
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__license__ = 'TBA'
+__author__ = [
+    'Andrew Che <@codeninja55>',
+    'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
+__license__ = 'MIT'
 __version__ = '0.1.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__status__ = 'production'
 __date__ = '2019.06.04'
 """__init__.py:
 
@@ -111,7 +114,7 @@ def create_app(configs_path=app_settings) -> Flask:
     """
 
     # instantiate the application
-    app = Flask(__name__)
+    app = Flask('simcct_flask_server')
 
     # Setup the configuration for Flask
     app.config.from_object(configs_path)

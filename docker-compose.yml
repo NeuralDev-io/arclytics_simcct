@@ -288,11 +288,18 @@ services:
       - host
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.3.1
+    build:
+      context: ./services/kibana
+      dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
+        service: "kibana"
     ports:
       - 5601:5601
-    links:
-      - elasticsearch
+    expose:
+      - 5601
+    volumes:
+      - ./services/kibana/kibana.yaml:/user/share/kibana/config/kibana.yaml
     networks:
       - host
 

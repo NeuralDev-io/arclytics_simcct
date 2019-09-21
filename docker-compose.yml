@@ -145,20 +145,11 @@ services:
     expose:
       - 8001
     environment:
-      - FLASK_APP=arc_api/app.py
+      - FLASK_APP=arc_api/__init__.py
       - FLASK_ENV=development
       - APP_SETTINGS=configs.flask_conf.DevelopmentConfig
       - SECRET_KEY=${SECRET_KEY}
       - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
-      - MONGO_HOST=mongodb
-      - MONGO_PORT=27017
-      - MONGO_APP_DB=arc_dev
-      - MONGO_APP_USER=${MONGO_APP_USER}
-      - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
-      - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
     networks:
       - host
 
@@ -373,12 +364,18 @@ services:
     networks:
       - host
 
+
+  # ============================== # TEST MICROSERVICES # ============================== #
+  # Both these services were created for testing purposes and a proof-of-concept for
+  # the use of `fluentd` as the logging driver for Docker. They are not to be used
+  # in any production environment as they are not configured at all.
+  # =================================================================================== #
   fluent-python:
     build:
       context: ./services/fluent-python
       dockerfile: Dockerfile
       labels:
-        arclytics.io: "development"
+        arclytics.io: "concept"
     image: neuraldev/arc_fluent_python:1.0
     ports:
       - 5005:5000
@@ -401,7 +398,7 @@ services:
       context: ./services/fluent-react
       dockerfile: Dockerfile
       labels:
-        arclytics.io: "development"
+        arclytics.io: "concept"
     image: neuraldev/arc_fluent_react:1.0
     ports:
       - 80:80
@@ -416,6 +413,7 @@ services:
       - fluentd
     networks:
       - host
+  # =================================================================================== #
 
 networks:
   host:
@@ -424,12 +422,14 @@ networks:
       arclytics.io: "development"
 
 # https://docs.docker.com/compose/compose-file/#volume-configuration-reference
+#  DECISION:
+#  This is not working as a dir needs to be created before binding the mount.
+#  Since Docker creates a Volume in /var/lib/docker/volumes/vol_name/_data
+#  which is an abstraction layer that gets bound to the Docker container.
+#  We prefer to use bind mounts in development so that we can easily destroy
+#  data quickly and bring up new ones using scripts for MongoDB and Redis.
 #
 #volumes:
-  # TODO(andrew@neuraldev.io):
-  #  This is not working as a dir needs to be created
-  #  since Docker creates a Volume in /var/lib/docker/volumes/vol_name/_data
-  #  which is an abstraction layer that gets bound to the Docker container.
 #  arclytics_dir:
 #    labels:
 #      arclytics.io: "development"

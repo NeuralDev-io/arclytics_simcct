@@ -3,6 +3,29 @@ version: '3.7'
 
 services:
 
+  fluentd:
+    build:
+      context: ./services/fluentd
+      dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
+        service: "fluentd"
+    image: neuraldev/arc_fluentd:1.0
+    restart: always
+    ports:
+      - 24224:24224
+      - 24224:24224/udp
+      - 9880:9880
+    expose:
+      - 24224
+      - 9880
+    volumes:
+      - ./services/fluentd/logs:/fluentd/log
+    depends_on:
+      - elasticsearch
+    networks:
+      - host
+
   client:
     build:
       context: ./services/client
@@ -14,6 +37,11 @@ services:
     volumes:
       - ./services/client:/usr/src/app
       - /usr/src/app/node_modules
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: client.docker.access
     ports:
       - 3000:3000
     expose:
@@ -25,6 +53,7 @@ services:
     depends_on:
       - mongodb
       - simcct
+      - fluentd
     networks:
       - host
 
@@ -94,6 +123,8 @@ services:
     depends_on:
       - mongodb
       - redis
+      - fluentd
+      - elasticsearch
     networks:
       - host
 
@@ -196,6 +227,71 @@ services:
     networks:
       - host
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.2
+    ports:
+      - 9200:9200
+    expose:
+      - 9200
+    environment:
+      - discovery.type=single-node
+    networks:
+      - host
+
+  apm-server:
+    build:
+      context: ./services/apm-server
+      dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
+        service: "apm-server"
+    image: neuraldev/arc_apm_server:latest
+    ports:
+      - 8200:8200
+    expose:
+      - 8200
+    volumes:
+      - ./services/apm-server/apm-server.docker.yaml:/usr/share/apm-server/apm-server.yml
+    networks:
+      - host
+
+  kibana:
+    build:
+      context: ./services/kibana
+      dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
+        service: "kibana"
+    image: neuraldev/arc_kibana:latest
+    ports:
+      - 5601:5601
+    expose:
+      - 5601
+    volumes:
+      - ./services/kibana/kibana.yaml:/user/share/kibana/config/kibana.yaml
+    depends_on:
+      - elasticsearch
+      - fluentd
+    networks:
+      - host
+
+  swagger:
+    build:
+      context: ./services/swagger
+      dockerfile: Dockerfile
+      labels:
+        arclytics.io: "development"
+        service: "swagger"
+    image: neuraldev/arc_sim_swagger:1.0
+    ports:
+      - 3001:8080  # expose ports - HOST:CONTAINER
+    expose:
+      - 3001
+    environment:
+      - URL=swagger.yaml
+    networks:
+      - host
+
   dask-scheduler:
     build:
       context: ./services/dask
@@ -255,54 +351,6 @@ services:
     networks:
       - host
 
-  fluentd:
-    build:
-      context: ./services/fluentd
-      dockerfile: Dockerfile
-      labels:
-        arclytics.io: "development"
-        service: "fluentd"
-    image: neuraldev/arc_fluentd:1.0
-    restart: always
-    ports:
-      - 24224:24224
-      - 24224:24224/udp
-      - 9880:9880
-    expose:
-      - 24224
-      - 9880
-    volumes:
-      - ./services/fluentd/logs:/fluentd/log
-    networks:
-      - host
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.1
-    ports:
-      - 9200:9200
-    expose:
-      - 9200
-    environment:
-      - discovery.type=single-node
-    networks:
-      - host
-
-  kibana:
-    build:
-      context: ./services/kibana
-      dockerfile: Dockerfile
-      labels:
-        arclytics.io: "development"
-        service: "kibana"
-    ports:
-      - 5601:5601
-    expose:
-      - 5601
-    volumes:
-      - ./services/kibana/kibana.yaml:/user/share/kibana/config/kibana.yaml
-    networks:
-      - host
-
   fluent-python:
     build:
       context: ./services/fluent-python
@@ -344,23 +392,6 @@ services:
         tag: fluent-react.access
     depends_on:
       - fluentd
-    networks:
-      - host
-
-  swagger:
-    build:
-      context: ./services/swagger
-      dockerfile: Dockerfile
-      labels:
-        arclytics.io: "development"
-        service: "swagger"
-    image: neuraldev/arc_sim_swagger:1.0
-    ports:
-      - 3001:8080  # expose ports - HOST:CONTAINER
-    expose:
-      - 3001
-    environment:
-      - URL=swagger.yaml
     networks:
       - host
 

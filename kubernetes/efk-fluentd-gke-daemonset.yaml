@@ -1,17 +1,13 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: fluentd-config
+  name: fluentd-daemon-config
   namespace: kube-system
   labels:
-    app: fluentd
+    app: fluentd-daemon
     service: fluentd-logging
 data:
   fluent.conf: |
-    <match fluent.**>
-        # this tells fluentd to not output its log on stdout
-        @type null
-    </match>
     # here we read the logs from Docker's containers and parse them
     <source>
       @type tail
@@ -26,47 +22,48 @@ data:
     </source>
     # we use kubernetes metadata plugin to add metadata to the log
     <filter kubernetes.**>
-        @type kubernetes_metadata
+      @type kubernetes_metadata
     </filter>
+    # ignore all kuber-system logs
     <match kubernetes.var.log.containers.**kube-system**.log>
-        @type null
+      @type null
     </match>
     # we send the logs to Elasticsearch
     <match kubernetes.**>
-        @type elasticsearch
-        include_tag_key true
-        host "#{ENV['FLUENT_ELASTICSEARCH_HOST']}"
-        port "#{ENV['FLUENT_ELASTICSEARCH_PORT']}"
-        scheme "#{ENV['FLUENT_ELASTICSEARCH_SCHEME'] || 'http'}"
-        ssl_verify "#{ENV['FLUENT_ELASTICSEARCH_SSL_VERIFY'] || 'true'}"
-        user "#{ENV['FLUENT_ELASTICSEARCH_USER']}" # remove these lines if not needed
-        password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}" # remove these lines if not needed
-        reload_connections true
-        logstash_prefix logstash
-        logstash_format true
-        <buffer>
-            flush_thread_count 8
-            flush_interval 5s
-            chunk_limit_size 2M
-            queue_limit_length 32
-            retry_max_interval 30
-            retry_forever true
-        </buffer>
+      @type elasticsearch
+      include_tag_key true
+      host "#{ENV['FLUENT_ELASTICSEARCH_HOST']}"
+      port "#{ENV['FLUENT_ELASTICSEARCH_PORT']}"
+      scheme "#{ENV['FLUENT_ELASTICSEARCH_SCHEME'] || 'http'}"
+      ssl_verify "#{ENV['FLUENT_ELASTICSEARCH_SSL_VERIFY'] || 'true'}"
+      user "#{ENV['FLUENT_ELASTICSEARCH_USER']}" # remove these lines if not needed
+      password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}" # remove these lines if not needed
+      reload_connections true
+      logstash_prefix logstash
+      logstash_format true
+      <buffer>
+        flush_thread_count 8
+        flush_interval 5s
+        chunk_limit_size 2M
+        queue_limit_length 32
+        retry_max_interval 30
+        retry_forever true
+      </buffer>
     </match>
 ---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: fluentd
+  name: fluentd-daemon
   namespace: kube-system
   labels:
-    app: fluentd
+    app: fluentd-daemon
     service: fluentd-logging
 spec:
   template:
     metadata:
       labels:
-        app: fluentd
+        app: fluentd-daemon
         service: fluentd-logging
     spec:
       serviceAccount: fluentd      # If RBAC is enabled -- it is: efk-fluentd-gke-rbac.yaml
@@ -75,15 +72,8 @@ spec:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
       containers:
-        - name: fluentd
+        - name: fluentd-daemon-container
           image: fluent/fluentd-kubernetes-daemonset:v1-debian-elasticsearch
-          ports:
-            - containerPort: 24224
-              hostPort: 24224
-              protocol: UDP
-            - containerPort: 24224
-              hostPort: 24224
-              protocol: TCP
           env:
             - name: FLUENT_ELASTICSEARCH_HOST
               value: elasticsearch
@@ -125,8 +115,8 @@ spec:
             - name: varlibdockercontainers
               mountPath: /var/lib/docker/containers
               readOnly: true
-            - name: fluentd-config
-              mountPath: /fluetnd/etc  # path of fluentd config file
+            - name: fluentd-daemon-config
+              mountPath: /fluentd/etc  # path of fluentd config file
       terminationGracePeriodSeconds: 30
       volumes:
         - name: varlog
@@ -135,6 +125,6 @@ spec:
         - name: varlibdockercontainers
           hostPath:
             path: /var/lib/docker/containers
-        - name: fluentd-config
+        - name: fluentd-daemon-config
           configMap:
-            name: fluentd-config
+            name: fluentd-daemon-config

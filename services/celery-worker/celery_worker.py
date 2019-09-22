@@ -28,6 +28,7 @@ import sys
 from celery import Celery
 from flask import Flask
 from flask_mail import Mail
+from elasticapm.contrib.flask import ElasticAPM
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
@@ -46,6 +47,7 @@ app.config.from_object(app_settings)
 
 # ========== # INIT FLASK EXTENSIONS # ========== #
 mail = Mail(app)
+apm = ElasticAPM(app, logging=True)
 
 # We make a new Celery subsystem instance with the configs using Redis
 # as the Message Queue broker and also to store results.

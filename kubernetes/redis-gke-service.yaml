@@ -2,41 +2,51 @@ apiVersion: v1
 kind: Service
 metadata:
   name: redis-service
+  namespace: arclytics
   labels:
-    name: redis
+    app: redis
+    service: redis-persistence
 spec:
   ports:
   - port: 6379
     targetPort: 6379
   clusterIP: None
   selector:
-    role: redis-persistence
+    app: redis
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
   name: redis
+  namespace: arclytics
   labels:
-    name: database
+    app: redis
+    service: redis-persistence
 spec:
   serviceName: redis-service
   selector:
     matchLabels:
-      role: redis-persistence
+      app: redis
   replicas: 1
   template:
     metadata:
       labels:
-        role: redis-persistence
+        app: redis
+        service: redis-persistence
         replicaset: RedisRepSet
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
         - name: redis-container
           image: asia.gcr.io/arc-sim/arc_sim_redis:1.1.0
+          imagePullPolicy: IfNotPresent
           resources:
             requests:
               cpu: 250m
-              memory: 1Gi
+              memory: 2Gi
+            limits:
+              cpu: 500m
+              memory: 4Gi
           args:
             - "--requirepass"
             - "$(REDIS_PASSWORD)"
@@ -45,20 +55,23 @@ spec:
             - "--save"
             - "900"
             - "1"
+          ports:
+            - containerPort: 6379
+              protocol: TCP
           env:
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: credentials
                   key: redis_password
-          ports:
-            - containerPort: 6379
           volumeMounts:
             - name: redis-pvc
               mountPath: /data
   volumeClaimTemplates:
     - metadata:
         name: redis-pvc
+        labels:
+          app: redis
         annotations:
           volume.beta.kubernetes.io/storage-class: fast
       spec:

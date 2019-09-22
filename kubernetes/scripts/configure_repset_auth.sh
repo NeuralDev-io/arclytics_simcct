@@ -13,8 +13,8 @@
 echo "Configuring the MongoDB Replica Set"
 kubectl exec mongo-0 -c mongo-container -- mongo --eval 'rs.initiate({_id: "MainRepSet", version: 1,
     members: [
-        {_id: 0, host: "mongo-0.mongo-service.default.svc.cluster.local:27017"},
-        {_id: 1, host: "mongo-1.mongo-service.default.svc.cluster.local:27017"}
+        {_id: 0, host: "mongo-0.mongo-service.arclytics.svc.cluster.local:27017"},
+        {_id: 1, host: "mongo-1.mongo-service.arclytics.svc.cluster.local:27017"}
     ]});'
 
 # Wait for the MongoDB Replica Set to have a primary ready
@@ -55,7 +55,7 @@ APP_USER_PW=$(<"${TEMPFILE_APP_USER_PW}")
 
 # Create an application user on the main Production Database
 kubectl exec mongo-0 -c mongo-container -- mongo -u "${ROOT_USER}" -p "${ROOT_PW}" --authenticationDatabase admin \
-        --eval "db.getSiblingDB(\"admin\").createUser({user: \"${APP_USER}\", pwd: \"${APP_USER_PW}\", roles:[{role: \"dbOwner\", db: \"${MONGO_APP_DB}\"}, {role: \"dbOwner\", db: \"arclytics-logs\"}]});"
+        --eval "db.getSiblingDB(\"admin\").createUser({user: \"${APP_USER}\", pwd: \"${APP_USER_PW}\", roles:[{role: \"dbOwner\", db: \"${MONGO_APP_DB}\"}]});"
 
 # Create an application user on the Development Database
 #kubectl exec mongo-0 -c mongo-container -- mongo -u "${ROOT_USER}" -p "${ROOT_PW}" --authenticationDatabase admin \

@@ -1385,11 +1385,20 @@ while [[ "$1" != "" ]] ; do
           fluentd )
             while [[ "$3" != "" ]]; do
               case $3 in
+                build )
+                  # Prune to avoid collisions of names:tags output
+                  docker system prune -af --volumes --filter 'label=service=fluentd'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build fluentd
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=fluentd")
+                  docker push asia.gcr.io/${PROJECT_ID}/arc_fluentd:latest
+                  ;;
                 create )
                   kubectl apply -f "${WORKDIR}/kubernetes/efk-fluentd-gke-rbac.yaml"
                   kubectl apply -f "${WORKDIR}/kubernetes/efk-fluentd-gke-daemonset.yaml"
+                  kubectl apply -f "${WORKDIR}/kubernetes/efk-fluentd-gke-ingress-svc.yaml"
                   ;;
                 delete )
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-ingress-svc.yaml"
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-daemonset.yaml"
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-rbac.yaml"
                   ;;

@@ -3,6 +3,25 @@ version: '3.7'
 
 services:
 
+  fluentd:
+    build:
+      context: ./services/fluentd
+      dockerfile: Dockerfile-prod
+      labels:
+        arclytics.io: "production"
+        service: "fluentd"
+    image: asia.gcr.io/arc-sim/arc_fluentd:latest
+    restart: always
+    ports:
+      - 24224:24224
+      - 24224:24224/udp
+      - 9880:9880
+    expose:
+      - 24224
+      - 9880
+    networks:
+      - host
+
   client:
     build:
       context: ./services/client

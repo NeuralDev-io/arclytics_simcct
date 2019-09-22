@@ -1278,7 +1278,7 @@ while [[ "$1" != "" ]] ; do
 
                   # Pods and Containers should be running now
                   #read -p "Are all the mongodb-n containers ready? " -n 1 -r
-                  echoSpace    # (optional) move to a new line
+                  #echoSpace    # (optional) move to a new line
 
                   #if [[ $REPLY =~ ^[Yy]$ ]]
                   #then
@@ -1341,14 +1341,14 @@ while [[ "$1" != "" ]] ; do
               case $3 in
                 create )
                   # Register GCE Fast SSD persistent disks and then create the persistent disks
-#                  generalMessage "Creating GCE disks for Elasticsearch"
-#                  for i in 1 2 3
-#                  do
-#                      gcloud compute disks create --size 200GB \
-#                          --type pd-standard es-standard-disk-$i \
-#                          ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
-#                  done
-#                  sleep 3
+                  generalMessage "Creating GCE disks for Elasticsearch"
+                  for i in 1 2 3
+                  do
+                      gcloud compute disks create --size 200GB \
+                          --type pd-standard es-standard-disk-$i \
+                          ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
+                  done
+                  sleep 3
 
                   # Create persistent volumes using disks created above
                   generalMessage "Creating GKE Persistent Volumes"
@@ -1374,9 +1374,9 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete pv elasticsearch-pv-2 --namespace=arclytics
                   kubectl delete pv elasticsearch-pv-3 --namespace=arclytics
                   sleep 15
-#                  gcloud compute disks delete es-standard-disk-1 ${LOCATION_COMMAND}
-#                  gcloud compute disks delete es-standard-disk-2 ${LOCATION_COMMAND}
-#                  gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
+                  gcloud compute disks delete es-standard-disk-1 ${LOCATION_COMMAND}
+                  gcloud compute disks delete es-standard-disk-2 ${LOCATION_COMMAND}
+                  gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
                   ;;
               esac
               shift
@@ -1646,7 +1646,6 @@ while [[ "$1" != "" ]] ; do
               shift
             done
             ;;
-          # TODO(andrew@neuraldev.io) POD_NAME=$(kubectl get pod -l service=postgres -o jsonpath="{.items[0].metadata.name}")
         esac
         shift
       done

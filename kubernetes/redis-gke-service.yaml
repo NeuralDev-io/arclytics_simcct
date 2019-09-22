@@ -70,6 +70,7 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: redis-pvc
+        namespace: arclytics
         labels:
           app: redis
         annotations:

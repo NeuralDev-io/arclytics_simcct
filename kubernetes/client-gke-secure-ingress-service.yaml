@@ -2,8 +2,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: client-service
+  namespace: arclytics
   labels:
     app: client-https
+    component: client
 spec:
   type: NodePort
   selector:
@@ -21,8 +23,10 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: client-https
+  namespace: arclytics
   labels:
     app: client-https
+    component: client
     replicaset: ClientRepSet
 spec:
   selector:
@@ -33,11 +37,12 @@ spec:
     metadata:
       labels:
         app: client-https
+        component: client
         replicaset: ClientRepSet
     spec:
       containers:
       - name: client-https-container
-        image: asia.gcr.io/arc-sim/arc_sim_client:1.1.5
+        image: asia.gcr.io/arc-sim/arc_sim_client:1.1.6
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

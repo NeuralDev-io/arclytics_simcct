@@ -1355,14 +1355,14 @@ while [[ "$1" != "" ]] ; do
               case $3 in
                 create )
                   # Register GCE Fast SSD persistent disks and then create the persistent disks
-                  generalMessage "Creating GCE disks for Elasticsearch"
-                  for i in 1 2 3
-                  do
-                      gcloud compute disks create --size 200GB \
-                          --type pd-standard es-standard-disk-$i \
-                          ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
-                  done
-                  sleep 3
+#                  generalMessage "Creating GCE disks for Elasticsearch"
+#                  for i in 1 2 3
+#                  do
+#                      gcloud compute disks create --size 200GB \
+#                          --type pd-standard es-standard-disk-$i \
+#                          ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
+#                  done
+#                  sleep 3
 
                   # Create persistent volumes using disks created above
                   generalMessage "Creating GKE Persistent Volumes"
@@ -1375,6 +1375,9 @@ while [[ "$1" != "" ]] ; do
                   sleep 3
 
                   kubectl create -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"
+                  kubectl rollout status sts/elasticsearch
+                  # To check cluster state
+                  # kubectl exec curl-hash-id -- curl http://elasticsearch-0.elasticsearch:9200/_cluster/state?pretty
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"
@@ -1385,9 +1388,9 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete pv elasticsearch-pv-2 --namespace=arclytics
                   kubectl delete pv elasticsearch-pv-3 --namespace=arclytics
                   sleep 15
-                  gcloud compute disks delete es-standard-disk-1 ${LOCATION_COMMAND}
-                  gcloud compute disks delete es-standard-disk-2 ${LOCATION_COMMAND}
-                  gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
+#                  gcloud compute disks delete es-standard-disk-1 ${LOCATION_COMMAND}
+#                  gcloud compute disks delete es-standard-disk-2 ${LOCATION_COMMAND}
+#                  gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
                   ;;
               esac
               shift

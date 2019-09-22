@@ -74,7 +74,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "celery-worker"
-    image: asia.gcr.io/arc-sim/arc_sim_celery:1.0.0
+    image: asia.gcr.io/arc-sim/arc_sim_celery:1.1.0
     ports:
       - 5555:5555
     expose:
@@ -90,6 +90,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - ELASTIC_APM_SERVER_URL=http://apm-server:8200
     depends_on:
       - redis
     networks:

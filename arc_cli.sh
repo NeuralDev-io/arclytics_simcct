@@ -1156,9 +1156,6 @@ while [[ "$1" != "" ]] ; do
                   # Production environment namespace
                   kubectl apply -f "${WORKDIR}/kubernetes/arclytics-gke-namespace.yaml"
 
-                  # Switch to activate namespace
-                  kubens arclytics
-
                   # google-chrome console.cloud.google.com/kubernetes/list?project=${PROJECT_ID}
                   ;;
                 delete )

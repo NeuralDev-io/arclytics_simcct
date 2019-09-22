@@ -9,6 +9,7 @@ import {
   UPDATE_DISPLAY_USER_CURVE,
   UPDATE_CCT_INDEX,
   LOAD_SIM,
+  LOAD_PERSISTED_SIM,
 } from './types'
 
 const initialState = {
@@ -32,6 +33,7 @@ const initialState = {
     cctIndex: -1,
   },
   configurations: {
+    error: {},
     method: 'Li98',
     grain_size_ASTM: 8.0,
     grain_size_diameter: 0.202,
@@ -179,7 +181,10 @@ const reducer = (state = initialState, action) => {
         isInitialised: true,
         isSimulated: true,
         displayUserCurve: true,
-        configurations,
+        configurations: {
+          error: {},
+          ...configurations,
+        },
         alloys: {
           isLoading: false,
           dilution: 0,
@@ -197,6 +202,8 @@ const reducer = (state = initialState, action) => {
         },
       }
     }
+    case LOAD_PERSISTED_SIM:
+      return action.payload
     default:
       return state
   }

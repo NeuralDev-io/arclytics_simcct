@@ -233,7 +233,7 @@ export const getSavedSimulations = () => (dispatch) => {
       'Content-Type': 'application/json',
     },
   }).then((res) => {
-    if (res.status === 404) throw new Error('No saved simulations found')
+    if (res.status === 404) { return { status: 'success', data: [] } }
     if (res.status !== 200) throw new Error('Something went wrong')
     return res.json()
   })

@@ -118,7 +118,7 @@ spec:
         - name: CLIENT_PORT
           value: "443"
         - name: FLUENTD_HOST
-          value: "localhost"
+          value: "fluentd-service.arclytics.svc.cluster.local"
         - name: FLUENTD_PORT
           value: "24224"
         - name: FLUENTD_SCHEME

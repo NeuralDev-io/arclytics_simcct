@@ -67,6 +67,11 @@ services:
     labels:
       arclytics.io: "development"
     image: neuraldev/arc_sim_nginx:1.0
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: nginx.docker.access
     restart: always
     ports:
       - 80:80
@@ -138,6 +143,11 @@ services:
         arclytics.io: "development"
         service: "arclytics"
     image: neuraldev/arclytics_service:1.3
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: arclytics.docker.access
     volumes:
       - ./services/arclytics:/usr/src/app
     ports:
@@ -161,6 +171,11 @@ services:
         arclytics.io: "development"
         service: "celery-worker"
     image: neuraldev/arc_sim_celery:1.0
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: celery.docker.access
     volumes:
       - ./services/celery-worker:/usr/src/app
     ports:
@@ -191,6 +206,11 @@ services:
         arclytics.io: "development"
         service: "redis"
     image: neuraldev/arc_sim_redis:1.1
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: redis.docker.access
     restart: always
     ports:
       - 6379:6379
@@ -207,6 +227,11 @@ services:
         arclytics.io: "development"
         service: "mongodb"
     image: neuraldev/arc_sim_mongo:1.1
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: mongodb.docker.access
     restart: always
     volumes:
       - ./services/db/test_data:/data/test

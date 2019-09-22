@@ -119,7 +119,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "mongodb"
-    image: asia.gcr.io/arc-sim/arc_sim_mongo:1.1.0
+    image: asia.gcr.io/arc-sim/arc_sim_mongo:1.1.1
     restart: always
     ports:
       - 27017:27017

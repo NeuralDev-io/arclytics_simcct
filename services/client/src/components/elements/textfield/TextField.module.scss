@@ -58,14 +58,31 @@
   width: 100%
 }
 
-.errorIcon{
-  color:var(--r400);
-  position:absolute;
+.errorContainer {
+  position: absolute;
   width: 1rem;
   height: 1rem;
   right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
+  cursor: pointer;
+
+  .icon {
+    stroke: var(--r400);
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.errorTooltip {
+  &.right { left: calc(100% + 1.25rem); }
+
+  &.bottom {
+    left: initial;
+    transform: initial;
+    right: -.75rem;
+    top: calc(100% + 1.25rem);
+  }
 }
 
 .error {

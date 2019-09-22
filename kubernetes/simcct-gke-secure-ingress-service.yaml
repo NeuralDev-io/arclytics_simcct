@@ -117,5 +117,11 @@ spec:
           value: "app.arclytics.io"
         - name: CLIENT_PORT
           value: "443"
+        - name: FLUENTD_HOST
+          value: "localhost"
+        - name: FLUENTD_PORT
+          value: "24224"
+        - name: FLUENTD_SCHEME
+          value: "http"
         - name: ELASTIC_APM_SERVER_URL
           value: http://apm-service.arclytics.svc.cluster.local:8200

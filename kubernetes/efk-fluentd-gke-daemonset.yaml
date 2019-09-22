@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: fluentd-config
-  namespace: arclytics
+  namespace: kube-system
   labels:
     app: fluentd
     service: fluentd-logging
@@ -58,7 +58,7 @@ apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: fluentd
-  namespace: arclytics
+  namespace: kube-system
   labels:
     app: fluentd
     service: fluentd-logging
@@ -77,6 +77,13 @@ spec:
       containers:
         - name: fluentd
           image: fluent/fluentd-kubernetes-daemonset:v1-debian-elasticsearch
+          ports:
+            - containerPort: 24224
+              hostPort: 24224
+              protocol: UDP
+            - containerPort: 24224
+              hostPort: 24224
+              protocol: TCP
           env:
             - name: FLUENT_ELASTICSEARCH_HOST
               value: elasticsearch
@@ -97,6 +104,15 @@ spec:
                 secretKeyRef:
                   name: credentials
                   key: elastic_password
+            # Logz.io Authentication
+            # ======================
+            - name: LOGZIO_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: secret_token
+            - name: LOGZIO_LOGTYPE
+              value: "kubernetes"
           resources:
             limits:
               memory: 200Mi

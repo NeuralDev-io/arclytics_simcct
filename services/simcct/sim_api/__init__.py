@@ -107,6 +107,26 @@ def get_flask_mongo() -> any:
     return _mongo_client
 
 
+def extensions(app) -> None:
+    """Registers 0 or more extensions for Flask and then mutates the app
+    instance passed in.
+
+    Args:
+        app: A Flask app instance.
+
+    Returns:
+        None.
+    """
+    apm.init_app(app)
+    api.init_app(app)
+    bcrypt.init_app(app)
+    redis_session.init_app(app)
+    fluentd_logging.init_app(app)
+    # talisman.init_app(app, force_https_permanent=False, force_https=False)
+
+    return None
+
+
 def create_app(configs_path=app_settings) -> Flask:
     """Create a Flask application using the app factory pattern.
 
@@ -216,23 +236,3 @@ def create_app(configs_path=app_settings) -> Flask:
         return {'app': app, 'mongo': db}
 
     return app
-
-
-def extensions(app) -> None:
-    """Registers 0 or more extensions for Flask and then mutates the app
-    instance passed in.
-
-    Args:
-        app: A Flask app instance.
-
-    Returns:
-        None.
-    """
-    apm.init_app(app)
-    api.init_app(app)
-    bcrypt.init_app(app)
-    redis_session.init_app(app)
-    fluentd_logging.init_app(app)
-    # talisman.init_app(app, force_https_permanent=False, force_https=False)
-
-    return None

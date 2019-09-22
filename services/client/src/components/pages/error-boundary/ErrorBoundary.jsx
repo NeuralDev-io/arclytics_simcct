@@ -1,6 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
+/*
+  If you are wondering why react still shows the react error
+  https://stackoverflow.com/questions/52096804/react-still-showing-errors-after-catching-with-errorboundary.
+*/
+
 // TODO: add an error screen and add logging function
 class ErrorBoundary extends React.Component {
   constructor(props) {

@@ -1,6 +1,6 @@
 # ======================== Elasticsearch Configuration =========================
 #
-# NOTE: Elasticsearch comes with reasonable defaults for most settings.
+# Note: Elasticsearch comes with reasonable defaults for most settings.
 #       Before you set out to tweak and tune the configuration, make sure you
 #       understand what are you trying to accomplish and the consequences.
 #
@@ -14,7 +14,7 @@
 #
 # Use a descriptive name for your cluster:
 #
-#cluster.name: my-application
+cluster.name: arc-sim-aust
 #
 # ------------------------------------ Node ------------------------------------
 #
@@ -40,7 +40,7 @@
 #
 # Lock the memory on startup:
 #
-#bootstrap.memory_lock: true
+bootstrap.memory_lock: false
 #
 # Make sure that the heap size is set to about half the memory available
 # on the system and that the owner of the process is allowed to use this
@@ -52,11 +52,11 @@
 #
 # Set the bind address to a specific IP (IPv4 or IPv6):
 #
-#network.host: 192.168.0.1
+network.host: "0.0.0.0"
 #
 # Set a custom port for HTTP:
 #
-#http.port: 9200
+http.port: 9200
 #
 # For more information, consult the network module documentation.
 #

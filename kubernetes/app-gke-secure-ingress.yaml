@@ -2,6 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: arc-secure-ingress
+  namespace: arclytics
   annotations:
     kubernetes.io/ingress.global-static-ip-name: "arclytics-ip"
     kubernetes.io/ingress.class: "gce"
@@ -10,6 +11,7 @@ spec:
   tls:
     - secretName: client-app-https-secret
     - secretName: simcct-app-https-secret
+    - secretName: kibana-app-https-secret
   backend:
     serviceName: client-service
     servicePort: 8080
@@ -26,3 +28,9 @@ spec:
       - backend:
           serviceName: client-service
           servicePort: 8080
+  - host: kibana.arclytics.io
+    http:
+      paths:
+        - backend:
+            serviceName: kibana-service
+            servicePort: 5601

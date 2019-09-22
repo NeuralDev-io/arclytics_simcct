@@ -6,6 +6,7 @@ metadata:
     cloud.google.com/app-protocols: '{"https-port":"HTTPS", "http-port":"HTTP"}'
   labels:
     app: simcct
+    component: simcct
 spec:
   type: NodePort
   selector:
@@ -26,6 +27,7 @@ metadata:
   name: simcct
   labels:
     app: simcct
+    component: simcct
     replicaset: SimRepSet
 spec:
   selector:
@@ -36,17 +38,19 @@ spec:
     metadata:
       labels:
         app: simcct
+        component: simcct
         replicaset: SimRepSet
     spec:
       containers:
       - name: simcct-container
-        image: asia.gcr.io/arc-sim/arc_sim_service:1.1.6
+        image: asia.gcr.io/arc-sim/arc_sim_service:1.2.0
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
         - containerPort: 443
         readinessProbe:
           httpGet:
+            scheme: HTTP
             path: /healthy
             port: 8000
           initialDelaySeconds: 15
@@ -63,7 +67,7 @@ spec:
             memory: 4Gi
         env:
         - name: FLASK_APP
-          value: "sim_api/app.py"
+          value: "sim_api/__init__.py"
         - name: FLASK_ENV
           value: "production"
         - name: APP_SETTINGS
@@ -112,3 +116,5 @@ spec:
           value: "app.arclytics.io"
         - name: CLIENT_PORT
           value: "443"
+        - name: ELASTIC_APM_SERVER_URL
+          value: http://apm-server:8200

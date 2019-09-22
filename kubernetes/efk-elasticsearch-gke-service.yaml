@@ -8,9 +8,7 @@ data:
     cluster.name: arc-sim-aust
     network.host: "0.0.0.0"
     http.port: "9200"
-    bootstrap.memory_lock: true
-    discovery.seed_hots: ["elasticsearch-0.elasticsearch.arclytics.svc.cluster.local", "elasticsearch-1.elasticsearch.arclytics.svc.cluster.local", "elasticsearch-2.elasticsearch.arclytics.svc.cluster.local"]
-    discovery.zen.ping.unicast.hosts: elasticsearch
+    bootstrap.memory_lock: false
     discovery.zen.minimum_master_nodes: 1
     xpack.security.enabled: false
     xpack.monitoring.enabled: false
@@ -57,7 +55,7 @@ spec:
     metadata:
       labels:
         app: elasticsearch
-        service: elasticsearch-persistence
+        component: elasticsearch-persistence
         replicaset: ESRepSet
     spec:
       affinity:
@@ -122,6 +120,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name  # Will resolve to elasticsearch-[0,1,2]
+            - name: discovery.seed_hosts
+              value: 'elasticsearch-0.elasticsearch,elasticsearch-1.elasticsearch,elasticsearch-2.elasticsearch'
             - name: cluster.initial_master_nodes
               value: 'elasticsearch-0,elasticsearch-1,elasticsearch-2'
             - name: ES_JAVA_OPTS
@@ -136,12 +136,9 @@ spec:
               mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
               subPath: elasticsearch.yml
       volumes:
-      - name: elasticsearch-config
-        configMap:
-          name: es-config
-          items:
-            - key: elasticsearch.yml
-              path: elasticsearch.yml
+        - name: elasticsearch-config
+          configMap:
+            name: es-config
   volumeClaimTemplates:
     - metadata:
         name: elasticsearch-pvc

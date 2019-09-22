@@ -112,6 +112,7 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: mongo-pvc
+        namespace: arclytics
         labels:
           app: mongodb
         annotations:

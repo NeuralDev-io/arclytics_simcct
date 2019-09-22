@@ -280,7 +280,7 @@ services:
     expose:
       - 5601
     volumes:
-      - ./services/kibana/kibana.yaml:/user/share/kibana/config/kibana.yaml
+      - ./services/kibana/kibana.yml:/user/share/kibana/config/kibana.yml
     depends_on:
       - elasticsearch
       - fluentd

@@ -63,7 +63,9 @@ class BaseConfig:
 
     # elastic application performance monitoring
     ELASTIC_APM = {
-        'SERVER_URL': env.get('ELASTIC_APM_SERVER_URL', 'http://localhost:8200'),
+        'SERVER_URL': env.get(
+            'ELASTIC_APM_SERVER_URL', 'http://localhost:8200'
+        ),
         'SERVICE_NAME': 'simcct',
         'SECRET_TOKEN': SECRET_KEY,
         'DEBUG': True
@@ -71,13 +73,13 @@ class BaseConfig:
 
 
 class DevelopmentConfig(BaseConfig):
-    """Development configuration"""
+    """Development configuration."""
     MONGO_DBNAME = 'arc_dev'
     BCRYPT_LOG_ROUNDS = 4
 
 
 class TestingConfig(BaseConfig):
-    """Testing configuration"""
+    """Testing configuration."""
     TESTING = True
     MONGO_DBNAME = 'arc_test'
     BCRYPT_LOG_ROUNDS = 4
@@ -90,7 +92,7 @@ class TestingConfig(BaseConfig):
 
 
 class ProductionConfig(BaseConfig):
-    """Production configuration"""
+    """Production configuration."""
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
     MONGO_DBNAME = env.get('MONGO_APP_DB')
@@ -108,6 +110,7 @@ class ProductionConfig(BaseConfig):
 
     # production elastic application performance monitoring
     ELASTIC_APM = {
+        'SERVER_URL': env.get('ELASTIC_APM_SERVER_URL', None),
         'SERVICE_NAME': 'simcct',
         'SECRET_TOKEN': env.get('SECRET_KEY'),
         'DEBUG': False

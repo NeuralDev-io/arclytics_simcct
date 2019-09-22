@@ -78,6 +78,7 @@ services:
     depends_on:
       - simcct
       - client
+      - fluentd
     networks:
       - host
 
@@ -160,6 +161,8 @@ services:
       - APP_SETTINGS=configs.flask_conf.DevelopmentConfig
       - SECRET_KEY=${SECRET_KEY}
       - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
+    depends_on:
+      - fluentd
     networks:
       - host
 
@@ -196,6 +199,7 @@ services:
       - ELASTIC_APM_SERVER_URL=http://apm-server:8200
     depends_on:
       - redis
+      - fluentd
     networks:
       - host
 
@@ -217,6 +221,8 @@ services:
       - 6379:6379
     expose:
       - 6379
+    depends_on:
+      - fluentd
     networks:
       - host
 
@@ -243,6 +249,8 @@ services:
     environment:
       - MONGO_DATA_DIR=/usr/data/db
       - MONGO_LOG_DIR=/dev/null
+    depends_on:
+      - fluentd
     networks:
       - host
 
@@ -265,7 +273,7 @@ services:
     environment:
       - discovery.type=single-node
       - cluster.name=arc-sim-cluster
-      - bootstrap.memory_lock=true
+      - bootstrap.memory_lock=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
       memlock:

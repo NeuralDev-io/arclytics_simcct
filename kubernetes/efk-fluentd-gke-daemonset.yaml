@@ -28,6 +28,9 @@ data:
     <filter kubernetes.**>
         @type kubernetes_metadata
     </filter>
+    <match kubernetes.var.log.containers.**kube-system**.log>
+        @type null
+    </match>
     # we send the logs to Elasticsearch
     <match kubernetes.**>
         @type elasticsearch
@@ -82,18 +85,18 @@ spec:
               value: "9200"
             - name: FLUENT_ELASTICSEARCH_SCHEME
               value: "http"
-            # X-Pack Authentication  -- not using
+            # X-Pack Authentication  -- required by fluentd even if not used
             # =====================
-            #- name: FLUENT_ELASTICSEARCH_USER
-            #  valueFrom:
-            #    secretKeyRef:
-            #      name: credentials
-            #      key: elastic_user
-            #- name: FLUENT_ELASTICSEARCH_PASSWORD
-            #  valueFrom:
-            #    secretKeyRef:
-            #      name: credentials
-            #      key: elastic_password
+            - name: FLUENT_ELASTICSEARCH_USER
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: elastic_user
+            - name: FLUENT_ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: elastic_password
           resources:
             limits:
               memory: 200Mi
@@ -106,9 +109,8 @@ spec:
             - name: varlibdockercontainers
               mountPath: /var/lib/docker/containers
               readOnly: true
-            # If we want to configure our own config file, which we are not.
-            #- name: fluentd-config
-            #  mountPath: /fluetnd/etc  # path of fluentd config file
+            - name: fluentd-config
+              mountPath: /fluetnd/etc  # path of fluentd config file
       terminationGracePeriodSeconds: 30
       volumes:
         - name: varlog
@@ -117,7 +119,6 @@ spec:
         - name: varlibdockercontainers
           hostPath:
             path: /var/lib/docker/containers
-        # Read comment in volumeMounts.
-        #- name: fluentd-config
-        #  configMap:
-        #    name: fluentd-config
+        - name: fluentd-config
+          configMap:
+            name: fluentd-config

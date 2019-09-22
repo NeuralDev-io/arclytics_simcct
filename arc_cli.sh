@@ -1219,20 +1219,6 @@ while [[ "$1" != "" ]] ; do
               shift
             done
             ;;
-          ingress )
-            while [[ "$3" != "" ]]; do
-              case $3 in
-                create )
-                  # Ingress that uses Multiple SSL/TLS terminations with 2 different domains.
-                  kubectl apply -f "${WORKDIR}/kubernetes/app-gke-secure-ingress.yaml"
-                  ;;
-                delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/app-gke-secure-ingress.yaml"
-                  ;;
-              esac
-              shift
-            done
-            ;;
           mongo )
             while [[ "$3" != "" ]]; do
               case $3 in
@@ -1416,8 +1402,8 @@ while [[ "$1" != "" ]] ; do
               case $3 in
                 create )
                   kubectl create -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
-                  # KIBANA_POD_NAME=$(kc get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
-                  # kubectl port-forward "${KIBANA_POD_NAME}" 5601:5601 --namespace default
+                  # KIBANA_POD_NAME=$(kubectl get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
+                  # kubectl port-forward "${KIBANA_POD_NAME}" 5601:5601 --namespace arclytics
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
@@ -1501,6 +1487,23 @@ while [[ "$1" != "" ]] ; do
               shift
             done
             ;;
+          ingress | ing )
+            while [[ "$3" != "" ]]; do
+              case $3 in
+                create )
+                  # Ingress that uses Multiple SSL/TLS terminations with 2 different domains.
+                  kubectl apply -f "${WORKDIR}/kubernetes/app-gke-secure-ingress.yaml"
+                  ;;
+                delete )
+                  kubectl delete -f "${WORKDIR}/kubernetes/app-gke-secure-ingress.yaml"
+                  ;;
+                describe )
+                  kubectl describe ingress arc-secure-ingress
+                  ;;
+              esac
+              shift
+            done
+            ;;
           watch )
             watch kubectl get all -o wide
             ;;
@@ -1538,14 +1541,14 @@ while [[ "$1" != "" ]] ; do
             echoLine
             gcloud compute instances list
             echoLine
-            generalMessage "IP Addresses"
-            echoLine
-            gcloud compute addresses list
-            echoLine
-            generalMessage "Cloud Certificates"
-            echoLine
-            gcloud compute ssl-certificates list
-            echoLine
+            #generalMessage "IP Addresses"
+            #echoLine
+            #gcloud compute addresses list
+            #echoLine
+            #generalMessage "Cloud Certificates"
+            #echoLine
+            #gcloud compute ssl-certificates list
+            #echoLine
             generalMessage "Cloud Builds (ongoing)"
             echoLine
             gcloud builds list --ongoing

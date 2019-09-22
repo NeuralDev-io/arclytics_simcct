@@ -41,7 +41,6 @@ spec:
       labels:
         app: simcct
         component: simcct
-        replicaset: SimRepSet
     spec:
       containers:
       - name: simcct-container

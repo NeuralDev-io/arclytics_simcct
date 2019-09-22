@@ -1045,6 +1045,7 @@ while [[ "$1" != "" ]] ; do
       RESERVED_IP_NAME="arclytics-ip"
       CLIENT_SSL_NAME="client-app-https-cert"
       SIMCCT_SSL_NAME="simcct-app-https-cert"
+      KIBANA_SSL_NAME="kibana-app-https-cert"
       CLIENT_HTTPS_TLS_NAME="client-app-https-secret"
       SIMCCT_HTTPS_TLS_NAME="simcct-app-https-secret"
       KIBANA_HTTPS_TLS_NAME="kibana-app-https-secret"
@@ -1064,6 +1065,7 @@ while [[ "$1" != "" ]] ; do
             #gcloud config set compute/zone ${ZONE}
             gcloud config set compute/region ${REGION}
             gcloud components update
+            kubectl config set-context --current --namespace=arclytics
             #gcloud compute project-info add-metadata --metadata google-compute-default-region=australia-southeast1,google-compute-default-zone=australia-southeast1-a
             ;;
           cluster )
@@ -1139,8 +1141,8 @@ while [[ "$1" != "" ]] ; do
                       --num-nodes=2 \
                       --min-nodes=1 \
                       --max-nodes=3 \
-                      --max-nodes-per-pool=3 \
                       --enable-autoscaling \
+                      --node-labels=component=arc-nodes \
                       --cluster-version=${KUBERNETES_NODE_VERSION}
                       # This may have caused the Ingress not to work with latest version
                       # --cluster-version=${LATEST} \
@@ -1150,6 +1152,12 @@ while [[ "$1" != "" ]] ; do
                   gcloud container clusters get-credentials ${CLUSTER_NAME} \
                       --project=${PROJECT_ID} \
                       ${LOCATION_COMMAND}
+
+                  # Production environment namespace
+                  kubectl apply -f "${WORKDIR}/kubernetes/arclytics-gke-namespace.yaml"
+
+                  # Switch to activate namespace
+                  kubens arclytics
 
                   # google-chrome console.cloud.google.com/kubernetes/list?project=${PROJECT_ID}
                   ;;
@@ -1162,12 +1170,15 @@ while [[ "$1" != "" ]] ; do
             done
             ;;
           secrets )
-            kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml"
+            kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml" \
+                --namespace=arclytics
 
             # For MONGO REPLICASET
             TMPFILE=$(mktemp)
             /usr/bin/openssl rand -base64 741 > ${TMPFILE}
-            kubectl create secret generic shared-bootstrap-secrets --from-file=internal-auth-mongodb-keyfile=${TMPFILE}
+            kubectl create secret generic shared-bootstrap-secrets \
+                --from-file=internal-auth-mongodb-keyfile=${TMPFILE} \
+                --namespace=arclytics
             rm ${TMPFILE}
 
             # Apply the SSL certificates to GCP management as well.
@@ -1177,18 +1188,24 @@ while [[ "$1" != "" ]] ; do
             gcloud compute ssl-certificates create ${SIMCCT_SSL_NAME} \
                 --certificate "${WORKDIR}/certs/io.arclytics.api.crt" \
                 --private-key "${WORKDIR}/certs/io.arclytics.api.key"
+            gcloud compute ssl-certificates create ${KIBANA_SSL_NAME} \
+                --certificate "${WORKDIR}/certs/io.arclytics.kibana.crt.pem" \
+                --private-key "${WORKDIR}/certs/io.arclytics.kibana.key.pem"
 
             # Apply the certificates to Kubernetes Secrets which will be used
             # by the Ingress controller.
             kubectl create secret tls ${CLIENT_HTTPS_TLS_NAME} \
                --cert "${WORKDIR}/certs/io.arclytics.app.crt" \
-               --key "${WORKDIR}/certs/io.arclytics.app.key"
+               --key "${WORKDIR}/certs/io.arclytics.app.key" \
+               --namespace=arclytics
             kubectl create secret tls ${SIMCCT_HTTPS_TLS_NAME} \
                --cert "${WORKDIR}/certs/io.arclytics.api.crt" \
-               --key "${WORKDIR}/certs/io.arclytics.api.key"
+               --key "${WORKDIR}/certs/io.arclytics.api.key" \
+               --namespace=arclytics
             kubectl create secret tls ${KIBANA_HTTPS_TLS_NAME} \
                --cert "${WORKDIR}/certs/io.arclytics.kibana.crt.pem" \
-               --key "${WORKDIR}/certs/io.arclytics.kibana.key.pem"
+               --key "${WORKDIR}/certs/io.arclytics.kibana.key.pem" \
+               --namespace=arclytics
             ;;
           addresses )
             while [[ "$3" != "" ]]; do
@@ -1214,34 +1231,6 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/app-gke-secure-ingress.yaml"
-                  ;;
-              esac
-              shift
-            done
-            ;;
-          redis )
-            while [[ "$3" != "" ]]; do
-              case $3 in
-                build )
-                  # Prune to avoid collisions of names:tags output
-                  docker system prune -af --volumes --filter 'label=service=redis'
-                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build redis
-                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=redis")
-                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_redis:${TAG}
-                  ;;
-                create )
-                  gcloud compute disks create --size 50GB \
-                      --type pd-ssd redis-ssd-disk \
-                      ${LOCATION_COMMAND} ${REPLICA_ZONE_REDIS}
-                  kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
-                  kubectl create -f "${WORKDIR}/kubernetes/redis-gke-service.yaml" --validate=false
-                  ;;
-                delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/redis-gke-service.yaml"
-                  kubectl delete pvc redis-pvc-redis-0
-                  kubectl delete pv redis-pv
-                  sleep 15
-                  gcloud compute disks delete redis-ssd-disk ${LOCATION_COMMAND}
                   ;;
               esac
               shift
@@ -1318,11 +1307,11 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/mongo-gke-service.yaml"
-                  kubectl delete pvc mongo-pvc-mongo-0
-                  kubectl delete pvc mongo-pvc-mongo-1
+                  kubectl delete pvc mongo-pvc-mongo-0 --namespace=arclytics
+                  kubectl delete pvc mongo-pvc-mongo-1 --namespace=arclytics
                   # kubectl delete pvc mongo-pvc-mongo-2
-                  kubectl delete pv mongo-pv-1
-                  kubectl delete pv mongo-pv-2
+                  kubectl delete pv mongo-pv-1 --namespace=arclytics
+                  kubectl delete pv mongo-pv-2 --namespace=arclytics
                   # kubectl delete pv mongo-pv-3
 
                   sleep 15
@@ -1331,6 +1320,120 @@ while [[ "$1" != "" ]] ; do
                   gcloud compute disks delete pd-standard-disk-2 ${LOCATION_COMMAND}
                   # REMEMBER TO UPDATE scripts/configure_repset_auth.sh IF MOVING to 3
                   # gcloud compute disks delete pd-standard-disk-3 ${LOCATION_COMMAND}
+                  ;;
+              esac
+              shift
+            done
+            ;;
+          redis )
+            while [[ "$3" != "" ]]; do
+              case $3 in
+                build )
+                  # Prune to avoid collisions of names:tags output
+                  docker system prune -af --volumes --filter 'label=service=redis'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build redis
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=redis")
+                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_redis:${TAG}
+                  ;;
+                create )
+                  gcloud compute disks create --size 50GB \
+                      --type pd-ssd redis-ssd-disk \
+                      ${LOCATION_COMMAND} ${REPLICA_ZONE_REDIS}
+                  kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
+                  kubectl create -f "${WORKDIR}/kubernetes/redis-gke-service.yaml" --validate=false
+                  ;;
+                delete )
+                  kubectl delete -f "${WORKDIR}/kubernetes/redis-gke-service.yaml"
+                  kubectl delete pvc redis-pvc-redis-0 --namespace=arclytics
+                  kubectl delete pv redis-pv --namespace=arclytics
+                  sleep 15
+                  gcloud compute disks delete redis-ssd-disk ${LOCATION_COMMAND}
+                  ;;
+              esac
+              shift
+            done
+            ;;
+          elasticsearch )
+            while [[ "$3" != "" ]]; do
+              case $3 in
+                create )
+                  # Register GCE Fast SSD persistent disks and then create the persistent disks
+                  generalMessage "Creating GCE disks for Elasticsearch"
+                  for i in 1 2 3
+                  do
+                      gcloud compute disks create --size 200GB \
+                          --type pd-standard es-standard-disk-$i \
+                          ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
+                  done
+                  sleep 3
+
+                  # Create persistent volumes using disks created above
+                  generalMessage "Creating GKE Persistent Volumes"
+                  for i in 1 2 3
+                  do
+                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/efk-elasticsearch-gke-standard-pv.yaml" > /tmp/es-gke-pv.yaml
+                      kubectl apply -f /tmp/es-gke-pv.yaml
+                  done
+                  rm /tmp/es-gke-pv.yaml
+                  sleep 3
+
+                  kubectl create -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"
+                  ;;
+                delete )
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"
+                  kubectl delete pvc elasticsearch-pvc-elasticsearch-0 --namespace=arclytics
+                  kubectl delete pvc elasticsearch-pvc-elasticsearch-1 --namespace=arclytics
+                  kubectl delete pvc elasticsearch-pvc-elasticsearch-2 --namespace=arclytics
+                  kubectl delete pv elasticsearch-pv-1 --namespace=arclytics
+                  kubectl delete pv elasticsearch-pv-2 --namespace=arclytics
+                  kubectl delete pv elasticsearch-pv-3 --namespace=arclytics
+                  sleep 15
+                  gcloud compute disks delete es-standard-disk-1 ${LOCATION_COMMAND}
+                  gcloud compute disks delete es-standard-disk-2 ${LOCATION_COMMAND}
+                  gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
+                  ;;
+              esac
+              shift
+            done
+            ;;
+          fluentd )
+            while [[ "$3" != "" ]]; do
+              case $3 in
+                create )
+                  kubectl apply -f "${WORKDIR}/kubernetes/efk-fluentd-gke-rbac.yaml"
+                  kubectl apply -f "${WORKDIR}/kubernetes/efk-fluentd-gke-daemonset.yaml"
+                  ;;
+                delete )
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-daemonset.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-rbac.yaml"
+                  ;;
+              esac
+              shift
+            done
+            ;;
+          kibana )
+            while [[ "$3" != "" ]]; do
+              case $3 in
+                create )
+                  kubectl create -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
+                  # KIBANA_POD_NAME=$(kc get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
+                  # kubectl port-forward "${KIBANA_POD_NAME}" 5601:5601 --namespace default
+                  ;;
+                delete )
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
+                  ;;
+              esac
+              shift
+            done
+            ;;
+          apm )
+            while [[ "$3" != "" ]]; do
+              case $3 in
+                create )
+                  kubectl apply -f "${WORKDIR}/kubernetes/efk-apm-gke-service.yaml"
+                  ;;
+                delete )
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-apm-gke-service.yaml"
                   ;;
               esac
               shift
@@ -1398,38 +1501,6 @@ while [[ "$1" != "" ]] ; do
               shift
             done
             ;;
-          fluentd )
-            while [[ "$3" != "" ]]; do
-              case $3 in
-                create )
-                  kubectl apply -f "${WORKDIR}/kubernetes/efk-fluentd-gke-rbac.yaml"
-                  kubectl apply -f "${WORKDIR}/kubernetes/efk-fluentd-gke-daemonset.yaml"
-                  ;;
-                delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-daemonset.yaml"
-                  kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-rbac.yaml"
-                  ;;
-              esac
-              shift
-            done
-            ;;
-          elastic )
-            while [[ "$3" != "" ]]; do
-              case $3 in
-                create )
-                  kubectl create -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"
-                  kubectl create -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
-                  # KIBANA_POD_NAME=$(kc get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
-                  # kubectl port-forward "${KIBANA_POD_NAME}" 5601:5601 --namespace default
-                  ;;
-                delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"
-                  kubectl delete -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
-                  ;;
-              esac
-              shift
-            done
-            ;;
           watch )
             watch kubectl get all -o wide
             ;;
@@ -1485,7 +1556,7 @@ while [[ "$1" != "" ]] ; do
             echoLine
             generalMessage "Secrets"
             echoLine
-            kubectl get secrets -o wide
+            kubectl get secrets -o wide --namespace arclytics
             echoLine
             generalMessage "GCE Disks"
             echoLine
@@ -1493,35 +1564,35 @@ while [[ "$1" != "" ]] ; do
             echoLine
             generalMessage "Persistent Volumes"
             echoLine
-            kubectl get pv -o wide
+            kubectl get pv -o wide --namespace arclytics
             echoLine
             generalMessage "Persistent Volume Claims"
             echoLine
-            kubectl get pvc -o wide
+            kubectl get pvc -o wide --namespace arclytics
             echoLine
             generalMessage "StatefulSets"
             echoLine
-            kubectl get statefulsets -o wide
+            kubectl get statefulsets -o wide --namespace arclytics
             echoLine
             generalMessage "ReplicaSets"
             echoLine
-            kubectl get replicasets -o wide
+            kubectl get replicasets -o wide --namespace arclytics
             echoLine
             generalMessage "Deployments"
             echoLine
-            kubectl get deployments -o wide
+            kubectl get deployments -o wide --namespace arclytics
             echoLine
             generalMessage "Pods"
             echoLine
-            kubectl get pods -o wide
+            kubectl get pods -o wide --namespace arclytics
             echoLine
             generalMessage "Services"
             echoLine
-            kubectl get services -o wide
+            kubectl get services -o wide --namespace arclytics
             echoLine
             generalMessage "Ingress"
             echoLine
-            kubectl get ingresses
+            kubectl get ingresses --namespace arclytics
             echoLine
             completeMessage
             echoSpace

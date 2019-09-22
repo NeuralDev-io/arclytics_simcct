@@ -1,16 +1,14 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: mongo-pv-INST
+  name: elasticsearch-pv-INST
   namespace: arclytics
 spec:
   capacity:
-    storage: 30Gi
+    storage: 200Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: standard
   gcePersistentDisk:
-    fsType: xfs
-    pdName: pd-ssd-disk-INST
-
+    pdName: es-standard-disk-INST  # Make sure you use the SSD name created in `gcloud`

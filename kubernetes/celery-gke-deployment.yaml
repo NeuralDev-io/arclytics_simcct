@@ -14,7 +14,6 @@ spec:
       labels:
          app: celery
          component: celery-worker
-         replicaset: CeleryRepSet
     spec:
       initContainers:
         - name: init-celery-broker

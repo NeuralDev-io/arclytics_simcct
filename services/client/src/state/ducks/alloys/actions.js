@@ -51,6 +51,7 @@ const getAlloys = type => (dispatch) => {
     },
   })
     .then((res) => {
+      if (res.status === 404) { return { status: 'success', data: [] } }
       if (res.status !== 200) throw new Error('Couldn\'t retrieve alloy list')
       return res.json()
     })

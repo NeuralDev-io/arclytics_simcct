@@ -9,6 +9,7 @@ import {
   UPDATE_DISPLAY_USER_CURVE,
   UPDATE_CCT_INDEX,
   LOAD_SIM,
+  LOAD_PERSISTED_SIM,
 } from './types'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
@@ -172,42 +173,36 @@ export const updateConfigMethod = value => (dispatch) => {
     }, true)(dispatch))
 }
 
-export const updateGrainSize = (unit, value) => (dispatch) => {
-  let newGrainSize = { grain_size_ASTM: '', grain_size_diameter: '' }
-  let grainSize = parseFloat(value)
-  let isValid = false
+export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getState) => {
+  const { error } = getState().sim.configurations
+  const newGrainSize = { grain_size_ASTM: astm, grain_size_diameter: dia }
 
-  if (value === '') {
-    isValid = true
-    grainSize = 0
-  } else if (unit === 'astm') {
-    const converted = ASTM2Dia(grainSize)
-    if (!Number.isNaN(converted) && Number.isFinite(converted)) {
-      isValid = true
-      newGrainSize = {
-        grain_size_ASTM: grainSize,
-        grain_size_diameter: converted,
-      }
-    }
-  } else if (unit === 'dia') {
-    const converted = dia2ASTM(grainSize)
-    if (!Number.isNaN(converted) && Number.isFinite(converted)) {
-      isValid = true
-      newGrainSize = {
-        grain_size_ASTM: converted,
-        grain_size_diameter: grainSize,
-      }
-    }
+  if (Object.keys(grainSizeError).length === 0 && grainSizeError.constructor === Object) {
+    delete error.astm
+    delete error.dia
   }
 
-  if (isValid) {
+  // update grain size value in redux store
+  dispatch({
+    type: UPDATE_CONFIG,
+    payload: {
+      error: {
+        ...error,
+        ...grainSizeError,
+      },
+      ...newGrainSize,
+    },
+  })
+
+  // only update to server when the grain size is valid
+  if (Object.keys(grainSizeError).length === 0 && grainSizeError.constructor === Object) {
     fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
       method: 'PATCH',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ grain_size: grainSize }),
+      body: JSON.stringify({ grain_size: parseFloat(astm) }),
     })
       .then((res) => {
         if (res.status !== 202) throw new Error('Something went wrong')
@@ -215,12 +210,6 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
       })
       .then((res) => {
         if (res.status === 'fail') throw new Error(res.message)
-        if (res.status === 'success') {
-          dispatch({
-            type: UPDATE_CONFIG,
-            payload: newGrainSize,
-          })
-        }
       })
       .catch(err => addFlashToast({
         message: err.message,
@@ -229,35 +218,83 @@ export const updateGrainSize = (unit, value) => (dispatch) => {
   }
 }
 
-export const updateMsBsAe = (name, reqBody) => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
-    method: 'PUT',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(reqBody),
-  })
-    .then((res) => {
-      if (res.status !== 202) throw new Error('Something went wrong')
-      return res.json()
-    })
-    .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
-      if (res.status === 'success') {
-        dispatch({
-          type: UPDATE_CONFIG,
-          payload: reqBody,
-        })
+export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState) => {
+  const { error } = getState().sim.configurations
+
+  // parse values into floats
+  const reqBody = {}
+  Object.keys(data).forEach((key) => { reqBody[key] = parseFloat(data[key]) })
+
+  // remove error from store error
+  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
+    if (field === '') {
+      // if field is empty string, it means all values are updated with autocalculated data
+      // hence there should be no errors
+      if (name === 'ms') {
+        delete error.ms_temp
+        delete error.ms_rate_param
       }
+      if (name === 'bs') {
+        delete error.bs_temp
+      }
+      if (name === 'ae') {
+        delete error.ae1_temp
+        delete error.ae3_temp
+      }
+    } else delete error[field]
+  }
+
+  // update config in redux store
+  dispatch({
+    type: UPDATE_CONFIG,
+    payload: {
+      error: {
+        ...error,
+        ...valError,
+      },
+      ...data,
+    },
+  })
+
+  // only send update to server when there is no error
+  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
+    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reqBody),
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+      .then((res) => {
+        if (res.status !== 202) throw new Error('Something went wrong')
+        return res.json()
+      })
+      .then((res) => {
+        if (res.status === 'fail') throw new Error(res.message)
+      })
+      .catch(err => addFlashToast({
+        message: err.message,
+        options: { variant: 'error' },
+      }, true)(dispatch))
+  }
 }
 
-export const getMsBsAe = name => (dispatch) => {
+export const getMsBsAe = name => (dispatch, getState) => {
+  const { error } = getState().sim.configurations
+  // since data is autocalculated, there should be no input errors
+  if (name === 'ms') {
+    delete error.ms_temp
+    delete error.ms_rate_param
+  }
+  if (name === 'bs') {
+    delete error.bs_temp
+  }
+  if (name === 'ae') {
+    delete error.ae1_temp
+    delete error.ae3_temp
+  }
+
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
     method: 'GET',
     credentials: 'include',
@@ -274,7 +311,10 @@ export const getMsBsAe = name => (dispatch) => {
       if (res.status === 'success') {
         dispatch({
           type: UPDATE_CONFIG,
-          payload: res.data,
+          payload: {
+            ...res.data,
+            error,
+          },
         })
       }
     })
@@ -293,32 +333,46 @@ export const setAutoCalculate = (name, value) => (dispatch) => {
   })
 }
 
-export const updateConfig = (name, value) => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
-    method: 'PATCH',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
+export const updateConfig = (name, value, valError) => (dispatch, getState) => {
+  const { error } = getState().sim.configurations
+  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
+    delete error[name]
+  }
+
+  // update config in redux store
+  dispatch({
+    type: UPDATE_CONFIG,
+    payload: {
+      error: {
+        ...error,
+        ...valError,
+      },
+      [name]: value,
     },
-    body: JSON.stringify({ [name]: value }),
   })
-    .then((res) => {
-      if (res.status !== 202) throw new Error('Something went wrong')
-      return res.json()
+
+  // only make API request when there is no error
+  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
+    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ [name]: value }),
     })
-    .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
-      if (res.status === 'success') {
-        dispatch({
-          type: UPDATE_CONFIG,
-          payload: { [name]: value },
-        })
-      }
-    })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+      .then((res) => {
+        if (res.status !== 202) throw new Error('Something went wrong')
+        return res.json()
+      })
+      .then((res) => {
+        if (res.status === 'fail') throw new Error(res.message)
+      })
+      .catch(err => addFlashToast({
+        message: err.message,
+        options: { variant: 'error' },
+      }, true)(dispatch))
+  }
 }
 
 export const toggleDisplayUserCurve = value => (dispatch) => {
@@ -476,5 +530,13 @@ export const loadSimFromAccount = ({
       },
       results: simulation_results,
     },
+  })
+}
+
+export const loadPersistedSim = () => (dispatch, getState) => {
+  const { lastSim } = getState().persist
+  dispatch({
+    type: LOAD_PERSISTED_SIM,
+    payload: lastSim,
   })
 }

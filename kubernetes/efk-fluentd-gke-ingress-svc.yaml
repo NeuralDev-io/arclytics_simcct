@@ -1,0 +1,135 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-config
+  namespace: arclytics
+  labels:
+    app: fluentd-logging
+    service: fluentd-logging
+data:
+  fluent.conf: |
+    # take anything that is sent directly to port 24224 like Python
+    <source>
+      @type forward
+      port 24224
+      bind 0.0.0.0
+    </source>
+    # take anything sent to http port
+    <source>
+      @type http
+      port 9880
+      bind 0.0.0.0
+      body_size_limit 32m
+      keepalive_timeout 10s
+      # ensure we only accept from our client host
+      cors_allow_origins ["app.arclytics.io"]
+    </source>
+    # we send logs to elasticsearch inside cluster
+    <match *.**>
+      @type copy
+      <store>
+        @type elasticsearch
+        include_tag_key true
+        host "#{ENV['FLUENT_ELASTICSEARCH_HOST']}"
+        port "#{ENV['FLUENT_ELASTICSEARCH_PORT']}"
+        scheme "#{ENV['FLUENT_ELASTICSEARCH_SCHEME'] || 'http'}"
+        ssl_verify 'false'
+        user "#{ENV['FLUENT_ELASTICSEARCH_USER']}" # remove these lines if not needed
+        password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}" # remove these lines if not needed
+        reload_connections true
+        logstash_prefix logstash
+        logstash_format true
+        <buffer>
+          flush_thread_count 8
+          flush_interval 5s
+          chunk_limit_size 2M
+          queue_limit_length 32
+          retry_max_interval 30
+          retry_forever true
+        </buffer>
+      </store>
+    </match>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fluentd-service
+  namespace: arclytics
+  labels:
+    app: fluentd-logging
+    service: fluentd-logging
+spec:
+  type: NodePort
+  selector:
+    app: fluentd-logging
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9880
+      targetPort: 9880
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fluentd-logging
+  namespace: arclytics
+  labels:
+    app: fluentd-logging
+    service: fluentd-logging
+spec:
+  selector:
+    matchLabels:
+      app: fluentd-logging
+  template:
+    metadata:
+      labels:
+        app: fluentd-logging
+        service: fluentd-logging
+    spec:
+      containers:
+        - name: fluentd
+          image: asia.gcr.io/arc-sim/arc_fluentd:latest
+          ports:
+            - containerPort: 24224
+              hostPort: 24224
+              protocol: UDP
+            - containerPort: 24224
+              hostPort: 24224
+              protocol: TCP
+            - containerPort: 9880
+              hostPort: 9880
+              name: http
+              protocol: TCP
+          env:
+            - name: FLUENT_ELASTICSEARCH_HOST
+              value: "elasticsearch.arclytics.svc.cluster.local"
+            - name: FLUENT_ELASTICSEARCH_PORT
+              value: "9200"
+            - name: FLUENT_ELASTICSEARCH_SCHEME
+              value: "http"
+            # X-Pack Authentication  -- required by fluentd even if not used
+            # =====================
+            - name: FLUENT_ELASTICSEARCH_USER
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: elastic_user
+            - name: FLUENT_ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: elastic_password
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          volumeMounts:
+            - name: fluentd-config
+              mountPath: /fluentd/etc  # path of fluentd config file
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: fluentd-config
+          configMap:
+            name: fluentd-config

@@ -11,7 +11,6 @@ spec:
   tls:
     - secretName: client-app-https-secret
     - secretName: simcct-app-https-secret
-    - secretName: kibana-app-https-secret
   backend:
     serviceName: client-service
     servicePort: 8080
@@ -28,9 +27,3 @@ spec:
       - backend:
           serviceName: client-service
           servicePort: 8080
-  - host: kibana.arclytics.io
-    http:
-      paths:
-        - backend:
-            serviceName: kibana-service
-            servicePort: 5601

@@ -25,6 +25,7 @@ spec:
   ports:
   - name: http
     port: 5601
+    targetPort: 5601
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment

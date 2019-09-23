@@ -22,7 +22,7 @@ spec:
       containers:
       - name: celery-worker-container
         image: asia.gcr.io/arc-sim/arc_sim_celery:1.1.0
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
           - containerPort: 5555
         resources:

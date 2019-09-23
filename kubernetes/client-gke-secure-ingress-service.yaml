@@ -27,7 +27,6 @@ metadata:
   labels:
     app: client-https
     component: client
-    replicaset: ClientRepSet
 spec:
   selector:
     matchLabels:
@@ -38,7 +37,6 @@ spec:
       labels:
         app: client-https
         component: client
-        replicaset: ClientRepSet
     spec:
       containers:
       - name: client-https-container
@@ -46,6 +44,21 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            port: 8080
+            path: /healthy
+          initialDelaySeconds: 5
+          periodSeconds: 15
+          timeoutSeconds: 2
+          successThreshold: 2
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /healthy
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 30
         env:
           - name: REACT_APP_SIM_HOST
             value: "https://api.arclytics.io"

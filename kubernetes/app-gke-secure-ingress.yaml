@@ -27,9 +27,9 @@ spec:
         - backend:
             serviceName: client-service
             servicePort: 8080
-  - host: logs.arclytics.io
-    http:
-      paths:
-        - backend:
-            serviceName: fluentd-service
-            servicePort: 9880
+#  - host: logs.arclytics.io
+#    http:
+#      paths:
+#        - backend:
+#            serviceName: fluentd-service
+#            servicePort: 9880

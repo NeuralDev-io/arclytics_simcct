@@ -176,6 +176,28 @@ def create_app(configs_path=app_settings) -> Flask:
 
     # Set up the Flask App Context
     with app.app_context():
+        from sim_api.resources import (
+            users_blueprint, auth_blueprint, user_alloys_blueprint,
+            admin_blueprint, share_blueprint, last_sim_blueprint,
+            save_sim_blueprint, ratings_blueprint, configs_blueprint,
+            alloys_blueprint, sim_blueprint, sim_alloys_blueprint,
+            root_blueprint
+        )
+        # ========== # FLASK BLUEPRINTS # ========== #
+        app.register_blueprint(root_blueprint)
+        app.register_blueprint(users_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(auth_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(user_alloys_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(admin_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(share_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(last_sim_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(save_sim_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(ratings_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(configs_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(alloys_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(sim_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(sim_alloys_blueprint, url_prefix='/api/v1/sim')
+
         # ========== # INIT FLASK EXTENSIONS # ========== #
         # Notes:
         #  - `headers` will inject the Content-Type in all responses.
@@ -204,27 +226,6 @@ def create_app(configs_path=app_settings) -> Flask:
         # Set up Flask extensions
         extensions(app)
 
-        from sim_api.resources import (
-            users_blueprint, auth_blueprint, user_alloys_blueprint,
-            admin_blueprint, share_blueprint, last_sim_blueprint,
-            save_sim_blueprint, ratings_blueprint, configs_blueprint,
-            alloys_blueprint, sim_blueprint, sim_alloys_blueprint,
-            root_blueprint
-        )
-        # ========== # FLASK BLUEPRINTS # ========== #
-        app.register_blueprint(root_blueprint)
-        app.register_blueprint(users_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(auth_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(user_alloys_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(admin_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(share_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(last_sim_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(save_sim_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(ratings_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(configs_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(alloys_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(sim_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(sim_alloys_blueprint, url_prefix='/api/v1/sim')
 
     # Use the modified JSON encoder to handle serializing ObjectId, sets, and
     # datetime objects

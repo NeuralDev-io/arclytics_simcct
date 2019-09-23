@@ -118,7 +118,9 @@ spec:
         - name: CLIENT_PORT
           value: "443"
         - name: FLUENTD_HOST
-          value: "fluentd-service.arclytics.svc.cluster.local"
+          value: "fluentd-service"
+        - name: FLUENTD_PREFIX_TAG
+          value: "simcct"
         - name: FLUENTD_PORT
           value: "24224"
         - name: FLUENTD_SCHEME

@@ -5,9 +5,72 @@ metadata:
   namespace: kube-system
   labels:
     app: fluentd-daemon
-    service: fluentd-logging
+    service: fluentd-daemon
 data:
   fluent.conf: |
+    # nginx access logs
+    <source>
+      @type tail
+      format nginx
+      tag nginx.access
+      path /var/log/nginx/access.log
+    </source>
+    # nginx error logs
+    <source>
+      @type tail
+      tag nginx.error
+      path /var/log/nginx/error.log
+
+      format multiline
+      format_firstline /^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[\w+\] (?<pid>\d+).(?<tid>\d+): /
+      format1 /^(?<time>\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}) \[(?<log_level>\w+)\] (?<pid>\d+).(?<tid>\d+): (?<message>.*)/
+      multiline_flush_interval 3s
+    </source>
+    <source>
+      @type systemd
+      @id in_systemd_kubelet
+      matches [{"_SYSTEMD_UNIT":"kubelet.service"}]
+      read_from_head true
+      tag "kubelet"
+      <storage>
+        @type "local"
+        persistent true
+        path "/var/log/fluentd-journald-kubelet-cursor.json"
+      </storage>
+      <entry>
+        fields_strip_underscores true
+      </entry>
+    </source>
+    <source>
+      @type systemd
+      @id in_systemd_docker
+      matches [{"_SYSTEMD_UNIT":"docker.service"}]
+      read_from_head true
+      tag "docker.systemd"
+      <storage>
+        @type "local"
+        persistent true
+        path "/var/log/fluentd-journald-docker-cursor.json"
+      </storage>
+      <entry>
+        fields_strip_underscores true
+      </entry>
+    </source>
+    <source>
+      @type systemd
+      @id in_systemd_bootkube
+      matches [{"_SYSTEMD_UNIT":"bootkube.service"}]
+      read_from_head true
+      tag "bootkube"
+      <storage>
+        @type "local"
+        persistent true
+        path "/var/log/fluentd-journald-bootkube-cursor.json"
+      </storage>
+      <entry>
+        fields_strip_underscores true
+      </entry>
+    </source>
     <source>
       @type prometheus
       bind "0.0.0.0"
@@ -17,20 +80,181 @@ data:
     <source>
       @type prometheus_output_monitor
     </source>
-    # ignore from fluent
     <match fluent.**>
       @type null
     </match>
-    # here we read the logs from Docker's containers and parse them
     <source>
       @type tail
-      path /var/log/containers/*.log
-      pos_file /var/log/fluentd-containers.log.pos
-      tag kubernetes.*
+      @id in_tail_container_logs
+      path "/var/log/containers/*.log"
+      pos_file "/var/log/fluentd-containers.log.pos"
+      tag "kubernetes.*"
       read_from_head true
       <parse>
-        @type json
-        time_format %Y-%m-%dT%H:%M:%S.%NZ
+        @type "json"
+        time_format "%Y-%m-%dT%H:%M:%S.%NZ"
+        time_type string
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id in_tail_minion
+      path "/var/log/salt/minion"
+      pos_file "/var/log/fluentd-salt.pos"
+      tag "salt"
+      <parse>
+        @type "regexp"
+        expression /^(?<time>[^ ]* [^ ,]*)[^\[]*\[[^\]]*\]\[(?<severity>[^ \]]*) *\] (?<message>.*)$/
+        time_format "%Y-%m-%d %H:%M:%S"
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id in_tail_startupscript
+      path "/var/log/startupscript.log"
+      pos_file "/var/log/fluentd-startupscript.log.pos"
+      tag "startupscript"
+      <parse>
+        @type "syslog"
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id in_tail_docker
+      path "/var/log/docker.log"
+      pos_file "/var/log/fluentd-docker.log.pos"
+      tag "docker"
+      <parse>
+        @type "regexp"
+        expression /^time="(?<time>[^)]*)" level=(?<severity>[^ ]*) msg="(?<message>[^"]*)"( err="(?<error>[^"]*)")?( statusCode=($<status_code>\d+))?/
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id in_tail_etcd
+      path "/var/log/etcd.log"
+      pos_file "/var/log/fluentd-etcd.log.pos"
+      tag "etcd"
+      <parse>
+        @type "none"
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id in_tail_kubelet
+      multiline_flush_interval 5s
+      path "/var/log/kubelet.log"
+      pos_file "/var/log/fluentd-kubelet.log.pos"
+      tag "kubelet"
+      <parse>
+        @type "kubernetes"
+        expression /^(?<severity>\w)(?<time>\d{4} [^\s]*)\s+(?<pid>\d+)\s+(?<source>[^ \]]+)\] (?<message>.*)/m
+        time_format "%m%d %H:%M:%S.%N"
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id in_tail_kube_proxy
+      multiline_flush_interval 5s
+      path "/var/log/kube-proxy.log"
+      pos_file "/var/log/fluentd-kube-proxy.log.pos"
+      tag "kube-proxy"
+      <parse>
+        @type "kubernetes"
+        expression /^(?<severity>\w)(?<time>\d{4} [^\s]*)\s+(?<pid>\d+)\s+(?<source>[^ \]]+)\] (?<message>.*)/m
+        time_format "%m%d %H:%M:%S.%N"
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id in_tail_kube_apiserver
+      multiline_flush_interval 5s
+      path "/var/log/kube-apiserver.log"
+      pos_file "/var/log/fluentd-kube-apiserver.log.pos"
+      tag "kube-apiserver"
+      <parse>
+        @type "kubernetes"
+        expression /^(?<severity>\w)(?<time>\d{4} [^\s]*)\s+(?<pid>\d+)\s+(?<source>[^ \]]+)\] (?<message>.*)/m
+        time_format "%m%d %H:%M:%S.%N"
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id in_tail_kube_controller_manager
+      multiline_flush_interval 5s
+      path "/var/log/kube-controller-manager.log"
+      pos_file "/var/log/fluentd-kube-controller-manager.log.pos"
+      tag "kube-controller-manager"
+      <parse>
+        @type "kubernetes"
+        expression /^(?<severity>\w)(?<time>\d{4} [^\s]*)\s+(?<pid>\d+)\s+(?<source>[^ \]]+)\] (?<message>.*)/m
+        time_format "%m%d %H:%M:%S.%N"
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id in_tail_kube_scheduler
+      multiline_flush_interval 5s
+      path "/var/log/kube-scheduler.log"
+      pos_file "/var/log/fluentd-kube-scheduler.log.pos"
+      tag "kube-scheduler"
+      <parse>
+        @type "kubernetes"
+        expression /^(?<severity>\w)(?<time>\d{4} [^\s]*)\s+(?<pid>\d+)\s+(?<source>[^ \]]+)\] (?<message>.*)/m
+        time_format "%m%d %H:%M:%S.%N"
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id in_tail_rescheduler
+      multiline_flush_interval 5s
+      path "/var/log/rescheduler.log"
+      pos_file "/var/log/fluentd-rescheduler.log.pos"
+      tag "rescheduler"
+      <parse>
+        @type "kubernetes"
+        expression /^(?<severity>\w)(?<time>\d{4} [^\s]*)\s+(?<pid>\d+)\s+(?<source>[^ \]]+)\] (?<message>.*)/m
+        time_format "%m%d %H:%M:%S.%N"
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id in_tail_glbc
+      multiline_flush_interval 5s
+      path "/var/log/glbc.log"
+      pos_file "/var/log/fluentd-glbc.log.pos"
+      tag "glbc"
+      <parse>
+        @type "kubernetes"
+        expression /^(?<severity>\w)(?<time>\d{4} [^\s]*)\s+(?<pid>\d+)\s+(?<source>[^ \]]+)\] (?<message>.*)/m
+        time_format "%m%d %H:%M:%S.%N"
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id in_tail_cluster_autoscaler
+      multiline_flush_interval 5s
+      path "/var/log/cluster-autoscaler.log"
+      pos_file "/var/log/fluentd-cluster-autoscaler.log.pos"
+      tag "cluster-autoscaler"
+      <parse>
+        @type "kubernetes"
+        expression /^(?<severity>\w)(?<time>\d{4} [^\s]*)\s+(?<pid>\d+)\s+(?<source>[^ \]]+)\] (?<message>.*)/m
+        time_format "%m%d %H:%M:%S.%N"
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id in_tail_kube_apiserver_audit
+      multiline_flush_interval 5s
+      path "/var/log/kubernetes/kube-apiserver-audit.log"
+      pos_file "/var/log/kube-apiserver-audit.log.pos"
+      tag "kube-apiserver-audit"
+      <parse>
+        @type "multiline"
+        format_firstline "/^\\S+\\s+AUDIT:/"
+        format1 /^(?<time>\S+) AUDIT:(?: (?:id="(?<id>(?:[^"\\]|\\.)*)"|ip="(?<ip>(?:[^"\\]|\\.)*)"|method="(?<method>(?:[^"\\]|\\.)*)"|user="(?<user>(?:[^"\\]|\\.)*)"|groups="(?<groups>(?:[^"\\]|\\.)*)"|as="(?<as>(?:[^"\\]|\\.)*)"|asgroups="(?<asgroups>(?:[^"\\]|\\.)*)"|namespace="(?<namespace>(?:[^"\\]|\\.)*)"|uri="(?<uri>(?:[^"\\]|\\.)*)"|response="(?<response>(?:[^"\\]|\\.)*)"|\w+="(?:[^"\\]|\\.)*"))*/
+        time_format "%Y-%m-%dT%T.%L%Z"
       </parse>
     </source>
     # we use kubernetes metadata plugin to add metadata to the log
@@ -42,27 +266,29 @@ data:
       @type null
     </match>
     # we send the logs to Elasticsearch
-    <match **>
+    <match kubernetes.**>
       @type elasticsearch
+      @id out_es
       @log_level "info"
       include_tag_key true
       scheme "#{ENV['FLUENT_ELASTICSEARCH_SCHEME'] || 'http'}"
       host "#{ENV['FLUENT_ELASTICSEARCH_HOST']}"
       port "#{ENV['FLUENT_ELASTICSEARCH_PORT']}"
       ssl_verify "#{ENV['FLUENT_ELASTICSEARCH_SSL_VERIFY'] || 'true'}"
-      #user "#{ENV['FLUENT_ELASTICSEARCH_USER']}" # remove these lines if not needed
-      #password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}" # remove these lines if not needed
+      user "#{ENV['FLUENT_ELASTICSEARCH_USER']}" # remove these lines if not needed
+      password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}" # remove these lines if not needed
       reload_connections true
       reconnect_on_error true
       reload_on_failure true
       logstash_prefix logstash
       logstash_format true
-      type_name "fluentd"
+      index_name "logstash"
+      type_name "fluentd-daemon"
       <buffer>
         flush_thread_count 8
         flush_interval 5s
         chunk_limit_size 2M
-        queue_limit_length 32
+        queue_limit_length 128
         retry_max_interval 30
         retry_forever true
       </buffer>
@@ -75,13 +301,13 @@ metadata:
   namespace: kube-system
   labels:
     app: fluentd-daemon
-    service: fluentd-logging
+    service: fluentd-daemon
 spec:
   template:
     metadata:
       labels:
         app: fluentd-daemon
-        service: fluentd-logging
+        service: fluentd-daemon
     spec:
       serviceAccount: fluentd      # If RBAC is enabled -- it is: efk-fluentd-gke-rbac.yaml
       serviceAccountName: fluentd  # If RBAC is enabled -- it is: efk-fluentd-gke-rbac.yaml
@@ -93,8 +319,7 @@ spec:
           image: fluent/fluentd-kubernetes-daemonset:v1-debian-elasticsearch
           env:
             - name: FLUENT_ELASTICSEARCH_HOST
-              #value: elasticsearch
-              value: "elasticsearch.arclytics.svc.cluster.local"
+              value: elasticsearch.arclytics.svc.cluster.local
             - name: FLUENT_ELASTICSEARCH_PORT
               value: "9200"
             - name: FLUENT_ELASTICSEARCH_SCHEME
@@ -132,8 +357,8 @@ spec:
             - name: varlibdockercontainers
               mountPath: /var/lib/docker/containers
               readOnly: true
-            - name: fluentd-daemon-config
-              mountPath: /fluentd/etc  # path of fluentd config file
+#            - name: fluentd-daemon-config
+#              mountPath: /fluentd/etc  # path of fluentd config file
       terminationGracePeriodSeconds: 30
       volumes:
         - name: varlog
@@ -142,6 +367,6 @@ spec:
         - name: varlibdockercontainers
           hostPath:
             path: /var/lib/docker/containers
-        - name: fluentd-daemon-config
-          configMap:
-            name: fluentd-daemon-config
+#        - name: fluentd-daemon-config
+#          configMap:
+#            name: fluentd-daemon-config

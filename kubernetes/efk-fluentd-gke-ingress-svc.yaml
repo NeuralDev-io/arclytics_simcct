@@ -12,6 +12,7 @@ data:
     <source>
       @type forward
       port 24224
+      bind 0.0.0.0
     </source>
     # take anything sent to http port
     <source>
@@ -23,8 +24,12 @@ data:
       # ensure we only accept from our client host
       cors_allow_origins ["*"]
       # tag is part of the URL, e.g.,
-      # curl -X POST -d 'json={"message":"Hello world!"}' http://localhost:8888/tag.here
+      # curl -X POST -d 'json={"message":"Hello world!"}' http://fluentd-service.arclytics.svc.cluster.local:9880/tag.here
     </source>
+    # Do not collect fluentd's own logs to avoid infinite loops.
+    <match fluent.**>
+      @type null
+    </match>
     # we send logs to elasticsearch inside cluster
     <match **>
       @type copy
@@ -38,13 +43,13 @@ data:
         ssl_verify "#{ENV['FLUENT_ELASTICSEARCH_SSL_VERIFY'] || 'true'}"
         user "#{ENV['FLUENT_ELASTICSEARCH_USER']}" # remove these lines if not needed
         password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}" # remove these lines if not needed
-        reload_connections true
+        reload_connections false
         reconnect_on_error true
         reload_on_failure true
-        logstash_prefix logstash
+        logstash_prefix fluentd
         logstash_format true
         index_name "fluentd"
-        type_name "fluentd-logger"
+        type_name "access_log"
         <buffer>
           flush_thread_count 8
           flush_interval 5s
@@ -73,6 +78,12 @@ spec:
       protocol: TCP
       port: 9880
       targetPort: 9880
+    - name: forwarding-tcp
+      protocol: TCP
+      port: 24224
+    - name: forwarding-udp
+      protocol: UDP
+      port: 24224
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment

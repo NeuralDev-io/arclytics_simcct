@@ -20,7 +20,6 @@ data:
       @type tail
       tag nginx.error
       path /var/log/nginx/error.log
-
       format multiline
       format_firstline /^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} \[\w+\] (?<pid>\d+).(?<tid>\d+): /
       format1 /^(?<time>\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}) \[(?<log_level>\w+)\] (?<pid>\d+).(?<tid>\d+): (?<message>.*)/
@@ -260,13 +259,14 @@ data:
     # we use kubernetes metadata plugin to add metadata to the log
     <filter kubernetes.**>
       @type kubernetes_metadata
+      @id filter_kube_metadata
     </filter>
     # ignore all kube-system logs
     <match kubernetes.var.log.containers.**kube-system**.log>
       @type null
     </match>
     # we send the logs to Elasticsearch
-    <match kubernetes.**>
+    <match **>
       @type elasticsearch
       @id out_es
       @log_level "info"
@@ -274,6 +274,7 @@ data:
       scheme "#{ENV['FLUENT_ELASTICSEARCH_SCHEME'] || 'http'}"
       host "#{ENV['FLUENT_ELASTICSEARCH_HOST']}"
       port "#{ENV['FLUENT_ELASTICSEARCH_PORT']}"
+      path ""
       ssl_verify "#{ENV['FLUENT_ELASTICSEARCH_SSL_VERIFY'] || 'true'}"
       user "#{ENV['FLUENT_ELASTICSEARCH_USER']}" # remove these lines if not needed
       password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}" # remove these lines if not needed
@@ -283,7 +284,7 @@ data:
       logstash_prefix logstash
       logstash_format true
       index_name "logstash"
-      type_name "fluentd-daemon"
+      type_name "fluentd"
       <buffer>
         flush_thread_count 8
         flush_interval 5s
@@ -357,8 +358,8 @@ spec:
             - name: varlibdockercontainers
               mountPath: /var/lib/docker/containers
               readOnly: true
-#            - name: fluentd-daemon-config
-#              mountPath: /fluentd/etc  # path of fluentd config file
+            - name: fluentd-daemon-config
+              mountPath: /fluentd/etc  # path of fluentd config file
       terminationGracePeriodSeconds: 30
       volumes:
         - name: varlog
@@ -367,6 +368,6 @@ spec:
         - name: varlibdockercontainers
           hostPath:
             path: /var/lib/docker/containers
-#        - name: fluentd-daemon-config
-#          configMap:
-#            name: fluentd-daemon-config
+        - name: fluentd-daemon-config
+          configMap:
+            name: fluentd-daemon-config

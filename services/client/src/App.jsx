@@ -17,6 +17,7 @@ import UserSimulationPage from './components/pages/user-sim'
 import UserAlloyPage from './components/pages/user-alloys'
 import PasswordResetPage from './components/pages/password-reset'
 import SharePage from './components/pages/share'
+import Healthy from './components/moleisms/healthy/Healthy'
 
 import './App.scss'
 
@@ -44,6 +45,10 @@ function App() {
           <Toaster />
           <div className="App">
             <Switch>
+              <Route
+                path="/healthy"
+                Component={Healthy}
+              />
               <Route
                 path="/signin"
                 render={props => <LoginPage {...props} />}

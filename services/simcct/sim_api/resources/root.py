@@ -69,10 +69,19 @@ def log():
         'message': 'fluentd logging',
         'container_id': os.uname()[1]
     }
+    from fluent import sender
+    s = sender.FluentSender(
+        'simcct',
+        host='fluentd-service.arclytics.svc.cluster.local',
+        port=24224
+    )
+
+    s.emit('log', {'message': 'Hello world!', 'log': 'fluent-logger-python'})
     # Use the APM logger
-    apm.capture_message('APM logging')
+    # apm.capture_message('APM logging')
     # Use the new Flask-Fluentd-Logger as a global variable.
-    g.logger.info(response)
+    logger.info(response)
+    response['sent'] = s.last_error
     return jsonify(response), 200
 
 

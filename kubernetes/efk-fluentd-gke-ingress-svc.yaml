@@ -12,38 +12,44 @@ data:
     <source>
       @type forward
       port 24224
-      bind 0.0.0.0
     </source>
     # take anything sent to http port
     <source>
       @type http
       port 9880
       bind 0.0.0.0
-      body_size_limit 32m
+      body_size_limit 128m
       keepalive_timeout 10s
       # ensure we only accept from our client host
-      cors_allow_origins ["app.arclytics.io"]
+      cors_allow_origins ["*"]
+      # tag is part of the URL, e.g.,
+      # curl -X POST -d 'json={"message":"Hello world!"}' http://localhost:8888/tag.here
     </source>
     # we send logs to elasticsearch inside cluster
-    <match *.**>
+    <match **>
       @type copy
       <store>
         @type elasticsearch
+        @log_level "info"
         include_tag_key true
-        host "#{ENV['FLUENT_ELASTICSEARCH_HOST']}"
-        port "#{ENV['FLUENT_ELASTICSEARCH_PORT']}"
-        scheme "#{ENV['FLUENT_ELASTICSEARCH_SCHEME'] || 'http'}"
-        ssl_verify 'false'
+        scheme "#{ ENV['FLUENT_ELASTICSEARCH_SCHEME'] || 'http' }"
+        host "#{ ENV['FLUENT_ELASTICSEARCH_HOST'] || 'elasticsearch' }"
+        port "#{ ENV['FLUENT_ELASTICSEARCH_PORT'] || 9200 }"
+        ssl_verify "#{ENV['FLUENT_ELASTICSEARCH_SSL_VERIFY'] || 'true'}"
         user "#{ENV['FLUENT_ELASTICSEARCH_USER']}" # remove these lines if not needed
         password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}" # remove these lines if not needed
         reload_connections true
+        reconnect_on_error true
+        reload_on_failure true
         logstash_prefix logstash
         logstash_format true
+        index_name "fluentd"
+        type_name "fluentd-logger"
         <buffer>
           flush_thread_count 8
           flush_interval 5s
           chunk_limit_size 2M
-          queue_limit_length 32
+          queue_limit_length 64
           retry_max_interval 30
           retry_forever true
         </buffer>
@@ -87,7 +93,7 @@ spec:
         service: fluentd-logging
     spec:
       containers:
-        - name: fluentd
+        - name: fluentd-container
           image: asia.gcr.io/arc-sim/arc_fluentd:latest
           ports:
             - containerPort: 24224
@@ -97,12 +103,11 @@ spec:
               hostPort: 24224
               protocol: TCP
             - containerPort: 9880
-              hostPort: 9880
               name: http
               protocol: TCP
           env:
             - name: FLUENT_ELASTICSEARCH_HOST
-              value: "elasticsearch.arclytics.svc.cluster.local"
+              value: elasticsearch.arclytics.svc.cluster.local
             - name: FLUENT_ELASTICSEARCH_PORT
               value: "9200"
             - name: FLUENT_ELASTICSEARCH_SCHEME

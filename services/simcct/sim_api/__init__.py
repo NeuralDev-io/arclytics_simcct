@@ -117,7 +117,8 @@ def extensions(app) -> None:
     Returns:
         None.
     """
-    apm.init_app(app)
+    log_level = logging.ERROR if app.env == 'production' else True
+    apm.init_app(app, logging=log_level)
     api.init_app(app)
     bcrypt.init_app(app)
     redis_session.init_app(app)

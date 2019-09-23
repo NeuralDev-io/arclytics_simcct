@@ -34,10 +34,6 @@ services:
         arclytics.io: "production"
         service: "client"
     image: asia.gcr.io/arc-sim/arc_sim_client:1.1.7
-    logging:
-      driver: fluentd
-      options:
-        tag: client.access
     ports:
       - 8080:8080
     expose:
@@ -59,10 +55,6 @@ services:
         arclytics.io: "production"
         service: "simcct"
     image: asia.gcr.io/arc-sim/arc_sim_service:1.2.0
-    logging:
-      driver: fluentd
-      options:
-        tag: simcct.access
     ports:
       - 8000:8000
     expose:
@@ -102,10 +94,6 @@ services:
         arclytics.io: "production"
         service: "celery-worker"
     image: asia.gcr.io/arc-sim/arc_sim_celery:1.1.0
-    logging:
-      driver: fluentd
-      options:
-        tag: celery.access
     ports:
       - 5555:5555
     expose:

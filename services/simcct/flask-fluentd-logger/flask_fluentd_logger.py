@@ -51,7 +51,7 @@ from logging import Handler
 
 import msgpack
 from flask import Flask, _app_ctx_stack
-from fluent import asynchandler as fluent_handler
+from fluent import handler as fluent_handler
 
 # Following the predefined Levels used in `logging` library
 CRITICAL = 50
@@ -146,6 +146,8 @@ class FlaskFluentdLogger(object):
     """
     DEFAULT_LOGGER = logging.getLogger('NULL')
     DEFAULT_LOGGER.addHandler(logging.NullHandler())
+    log_info = []
+    log_handlers = []
 
     def __init__(self, app: Flask = None):
         self.app: Flask = app
@@ -154,11 +156,7 @@ class FlaskFluentdLogger(object):
             self.init_app(app)
 
         # Default level should be DEBUG for development
-        self.level = _check_level('DEBUG')
         self.logger = self.DEFAULT_LOGGER
-
-        self.log_info = []
-        self.log_handlers = []
 
     # noinspection PyAttributeOutsideInit
     def init_app(self, app: Flask):
@@ -169,7 +167,7 @@ class FlaskFluentdLogger(object):
         app.config.setdefault('FLUENTD_SCHEME', 'http')
         app.config.setdefault('FLUENTD_PREFIX_TAG', app.name)
 
-        self.tag = app.config.get('FLUENTD_PREFIX_TAG', app.name)
+        self.tag = app.config.get('FLUENTD_PREFIX_TAG', 'test.simcct')
         self.host = app.config.get('FLUENTD_HOST', 'localhost')
         self.port = int(app.config.get('FLUENTD_PORT', 24225))
 
@@ -178,7 +176,11 @@ class FlaskFluentdLogger(object):
 
         # Ensure that in production we always use 'INFO' to avoid debug msgs
         self.debug = app.env == 'development'
-        log_level = 'DEBUG' if app.env == 'development' else 'INFO'
+        log_level = (
+            _check_level('DEBUG')
+            if app.env == 'development'
+            else _check_level('INFO')
+        )
 
         # A remote handler
         self.fluentd_handler = fluent_handler.FluentHandler(
@@ -261,7 +263,7 @@ class FlaskFluentdLogger(object):
             )
 
         # Add the handler and the formatter to the logger
-        fluent_fmt = fluent_handler.handler.FluentRecordFormatter(
+        fluent_fmt = fluent_handler.FluentRecordFormatter(
             ReportingFormats.FLUENT.value
         )
 

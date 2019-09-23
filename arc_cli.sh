@@ -1411,11 +1411,13 @@ while [[ "$1" != "" ]] ; do
               case $3 in
                 create )
                   kubectl create -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
-                  # KIBANA_POD_NAME=$(kubectl get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
-                  # kubectl port-forward "${KIBANA_POD_NAME}" 5601:5601 --namespace arclytics
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
+                  ;;
+                port-forward )
+                  KIBANA_POD_NAME=$(kubectl get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
+                  kubectl port-forward "${KIBANA_POD_NAME}" 5601:5601 --namespace arclytics
                   ;;
               esac
               shift
@@ -1446,10 +1448,10 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 create )
                   # eval $(minikube docker-env)  <-- If using Docker and self-built images
-                  kubectl create -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-service.yaml"
+                  kubectl create -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
                   ;;
               esac
               shift

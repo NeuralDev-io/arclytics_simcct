@@ -24,7 +24,7 @@ storage of the results.
 
 import os
 import sys
-
+import logging
 from celery import Celery
 from flask import Flask
 from flask_mail import Mail
@@ -47,7 +47,7 @@ app.config.from_object(app_settings)
 
 # ========== # INIT FLASK EXTENSIONS # ========== #
 mail = Mail(app)
-apm = ElasticAPM(app, logging=True)
+apm = ElasticAPM(app, logging=logging.ERROR)
 
 # We make a new Celery subsystem instance with the configs using Redis
 # as the Message Queue broker and also to store results.

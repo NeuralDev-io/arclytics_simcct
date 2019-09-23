@@ -24,7 +24,7 @@ Just a basic module to define some testing endpoints.
 
 import os
 from flask import Blueprint, jsonify, Response, g
-from sim_api.extensions import logger
+from sim_api.extensions import logger, apm
 
 root_blueprint = Blueprint('root', __name__)
 
@@ -69,6 +69,8 @@ def log():
         'message': 'fluentd logging',
         'container_id': os.uname()[1]
     }
+    # Use the APM logger
+    apm.capture_message('APM logging')
     # Use the new Flask-Fluentd-Logger as a global variable.
     g.logger.info(response)
     return jsonify(response), 200

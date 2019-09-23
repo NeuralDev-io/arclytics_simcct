@@ -49,8 +49,8 @@ class LastSimulation(Resource):
         `last_configurations` and `last_alloy_store`.
 
         Args:
-            user_id: a valid user_id verified and passed by the
-                     `sim_api.middleware.authenticate` method.
+            user: a valid `models.User` object verified and passed by the
+            `sim_api.middleware.authenticate` method.
 
         Returns:
             A HTTP Flask Restful Response.
@@ -128,7 +128,6 @@ class LastSimulation(Resource):
         user.last_configuration = valid_configs
         user.last_alloy_store = valid_store
         user.last_simulation_results = valid_results
-        # TODO(andrew@neuraldev.io): Add the last_results
         user.save()
 
         response['status'] = 'success'
@@ -146,8 +145,8 @@ class LastSimulation(Resource):
         storage from the `sim_api.models.User` document.
 
         Args:
-            user_id: a valid user_id verified and passed by the
-                     `sim_api.middleware.authenticate` method.
+            user: a valid `models.User` object verified and passed by the
+            `sim_api.middleware.authenticate` method.
 
         Returns:
             A HTTP Flask Restful Response.
@@ -162,8 +161,6 @@ class LastSimulation(Resource):
         if not user.last_alloy_store:
             response['message'] = 'User does not have a last alloy stored.'
             return response, 404
-
-        # TODO(andrew@neuraldev.io): Add the last_results also
 
         response['status'] = 'success'
         response['data'] = {

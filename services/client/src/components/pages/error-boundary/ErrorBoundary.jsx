@@ -30,6 +30,10 @@ class ErrorBoundary extends React.Component {
     // Log error messages to logger here
   }
 
+  handleRefereshPage = () => {
+    window.location.reload()
+  }
+
   render() {
     const { error, errorInfo } = this.state
     const { children } = this.props

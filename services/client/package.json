@@ -23,7 +23,8 @@
     "react-virtualized-auto-sizer": "^1.0.2",
     "redux": "^4.0.1",
     "redux-persist": "^5.10.0",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "validate.js": "^0.13.1"
   },
   "scripts": {
     "start": "react-scripts --max_old_space_size=2048 start",

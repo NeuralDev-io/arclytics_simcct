@@ -30,8 +30,12 @@ from typing import Union
 
 from flask import session
 
-from sim_api.extensions import JSONEncoder, logger
+from sim_api.extensions import JSONEncoder
 from sim_api.models import User
+
+from logger import AppLogger
+
+logger = AppLogger(__name__)
 
 
 class SimSessionService(object):

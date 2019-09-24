@@ -88,25 +88,45 @@ def validate_comp_elements(alloy_comp: list) -> Tuple[bool, list]:
 
 
 def not_negative(val):
-    if val < 0.0:
-        raise ValidationError('Cannot be a negative number.')
+    try:
+        if float(val) < 0.0:
+            raise ValidationError('Cannot be a negative number.')
+    except ValueError:
+        raise ValidationError('Value Error.')
+    except TypeError:
+        raise ValidationError('Type Error.')
 
 
 def greater_than_zero(val):
-    if val < 0.0 or val == 0:
-        raise ValidationError('Must be more than 0.0.')
+    try:
+        if float(val) < 0.0 or float(val) == 0:
+            raise ValidationError('Must be more than 0.0.')
+    except ValueError:
+        raise ValidationError('Value Error.')
+    except TypeError:
+        raise ValidationError('Type Error.')
 
 
 def not_over_100(val):
-    if val > 100.0:
-        raise ValidationError('Must be less than 100.0.')
+    try:
+        if float(val) > 100.0:
+            raise ValidationError('Must be less than 100.0.')
+    except ValueError:
+        raise ValidationError('Value Error.')
+    except TypeError:
+        raise ValidationError('Type Error.')
 
 
 def within_percentage_bounds(val):
-    if val > 100.0:
-        raise ValidationError('Must be less than 100.0.')
-    if val < 0.0:
-        raise ValidationError('Must be more than 0.0.')
+    try:
+        if float(val) > 100.0:
+            raise ValidationError('Must be less than 100.0.')
+        if float(val) < 0.0:
+            raise ValidationError('Must be more than 0.0.')
+    except ValueError:
+        raise ValidationError('Value Error.')
+    except TypeError:
+        raise ValidationError('Type Error.')
 
 
 def validate_no_duplicate_elements(alloy_comp: list) -> Tuple[bool, set]:

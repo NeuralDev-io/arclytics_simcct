@@ -5,9 +5,9 @@
   transform: translate(-50%, -50%);
   display: flex;
   flex-flow: column nowrap;
+  justify-content: center;
   align-items: center;
   padding: 1.5rem;
-  height: 90vh;
 }
 
 .refreshButton, h2, span {

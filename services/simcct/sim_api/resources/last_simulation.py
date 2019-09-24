@@ -219,7 +219,7 @@ class LastSimulation(Resource):
 
         if user.last_simulation_invalid_fields:
             response['data']['last_simulation_invalid_fields'] = (
-                user.last_simulation_invalid_fields.to_dict()
+                user.last_simulation_invalid_fields
             )
 
         SimSessionService().save_session(session_store)

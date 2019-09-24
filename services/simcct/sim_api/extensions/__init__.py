@@ -24,7 +24,6 @@ context of the app.
 """
 from flask_bcrypt import Bcrypt
 from flask_restful import Api
-from flask_fluentd_logger import FlaskFluentdLogger
 from elasticapm.contrib.flask import ElasticAPM
 
 # from flask_talisman import Talisman
@@ -42,7 +41,5 @@ apm = ElasticAPM()
 api = Api()
 bcrypt = Bcrypt()
 redis_session = FlaskRedisSession()
-fluentd_logging = FlaskFluentdLogger()
-logger = fluentd_logging.get_logger()
 # To use add flask-talisman==0.7.0 to requirements.txt
 # talisman = Talisman()

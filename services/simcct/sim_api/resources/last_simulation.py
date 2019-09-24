@@ -31,6 +31,15 @@ from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
                                           MissingElementError)
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import AlloyStore, Configuration, SimulationResults
+from sim_api.extensions.SimSession.sim_session_service import SimSessionService
+from sim_api.schemas import (
+    AlloySchema, AlloyStoreSchema, ConfigurationsSchema
+)
+from simulation.utilities import Method
+from simulation.simconfiguration import SimConfiguration as SimConfig
+from logger import AppLogger
+
+logger = AppLogger(__name__)
 
 last_sim_blueprint = Blueprint('user_last_simulation', __name__)
 
@@ -66,30 +75,28 @@ class LastSimulation(Resource):
         post_configs = post_data.get('configurations', None)
         post_alloy_store = post_data.get('alloy_store', None)
         post_results = post_data.get('simulation_results', None)
+        post_invalid_fields = post_data.get('invalid_fields', None)
 
-        if not post_configs:
-            response['message'] = 'Missing Configurations in payload.'
+        if (not post_configs and not post_alloy_store and not post_results
+                and not post_invalid_fields):
             return response, 400
 
-        if not post_alloy_store:
-            response['message'] = 'Missing Alloy Store in payload.'
-            return response, 400
+        valid_configs = None
+        valid_store = None
+        valid_results = None
 
-        if not post_results:
-            response['message'] = 'Missing Simulation results in payload.'
-            return response, 400
-
-        # The following `mongoengine.EmbeddedDocument` models have in-built
-        # custom validation that will be passed down.
         try:
-            valid_configs = Configuration.from_json(json.dumps(post_configs))
-            valid_configs.validate(clean=True)
-            valid_store = AlloyStore.from_json(json.dumps(post_alloy_store))
-            valid_store.validate(clean=True)
-            valid_results = SimulationResults.from_json(
-                json.dumps(post_results)
-            )
-            valid_results.validate(clean=True)
+            if post_configs:
+                valid_configs = Configuration.from_json(json.dumps(post_configs))
+                valid_configs.validate(clean=True)
+            if post_alloy_store:
+                valid_store = AlloyStore.from_json(json.dumps(post_alloy_store))
+                valid_store.validate(clean=True)
+            if post_results:
+                valid_results = SimulationResults.from_json(
+                    json.dumps(post_results)
+                )
+                valid_results.validate(clean=True)
         except FieldDoesNotExist as e:
             # In case the request has fields we do not expect.
             response['error'] = str(e)
@@ -124,20 +131,44 @@ class LastSimulation(Resource):
             response['message'] = 'Model schema validation error.'
             return response, 400
 
+        response['data'] = {}
         # Passing all the validations built into the models so we can save
-        user.last_configuration = valid_configs
-        user.last_alloy_store = valid_store
-        user.last_simulation_results = valid_results
-        # TODO(andrew@neuraldev.io): Add the last_results
+        if post_configs and valid_configs:
+            user.last_configuration = valid_configs
+            response['data']['last_configuration'] = (
+                user.last_configuration.to_dict()
+            )
+        else:
+            user.last_configuration = None
+
+        if post_alloy_store and valid_store:
+            user.last_alloy_store = valid_store
+            response['data']['last_alloy_store'] = (
+                user.last_alloy_store.to_dict()
+            )
+        else:
+            user.last_alloy_store = None
+
+        if post_results and valid_results:
+            user.last_simulation_results = valid_results
+            response['data']['last_simulation_results'] = (
+                user.last_simulation_results.to_dict()
+            )
+        else:
+            user.last_simulation_results = None
+
+        if post_invalid_fields:
+            user.last_simulation_invalid_fields = post_invalid_fields
+            response['data']['last_simulation_invalid_fields'] = (
+                user.last_simulation_invalid_fields
+            )
+        else:
+            user.last_simulation_invalid_fields = None
+
         user.save()
 
         response['status'] = 'success'
-        response['message'] = 'Saved Alloy Store, Configurations and Results.'
-        response['data'] = {
-            'last_configuration': user.last_configuration.to_dict(),
-            'last_alloy_store': user.last_alloy_store.to_dict(),
-            'last_simulation_results': user.last_simulation_results.to_dict()
-        }
+        response['message'] = 'Saved Last Simulation Data.'
         return response, 201
 
     # noinspection PyMethodMayBeStatic
@@ -154,22 +185,46 @@ class LastSimulation(Resource):
         """
         response = {'status': 'fail'}
 
-        # We need to check there's something to return first.
-        if not user.last_configuration:
-            response['message'] = 'User does not have a last configurations.'
+        if not user.last_configuration and not user.last_alloy_store:
+            response['message'] = (
+                'User does not have a last configurations or alloy store.'
+            )
             return response, 404
 
-        if not user.last_alloy_store:
-            response['message'] = 'User does not have a last alloy stored.'
-            return response, 404
+        response['data'] = {}
 
-        # TODO(andrew@neuraldev.io): Add the last_results also
+        session_store = SimSessionService().load_session()
+
+        if user.last_configuration:
+            session_store['configurations'] = user.last_configuration.to_dict()
+            response['data']['last_configurations'] = (
+                user.last_configuration.to_dict()
+            )
+        else:
+            session_store['configurations'] = None
+
+        if user.last_alloy_store:
+            session_store['alloy_store'] = user.last_alloy_store.to_dict()
+            response['data']['last_alloy_store'] = user.last_alloy_store.to_dict()
+        else:
+            session_store['alloy_store'] = None
+
+        if user.last_simulation_results:
+            session_store['simulation_results'] = (
+                user.last_simulation_results.to_dict()
+            )
+            response['data']['last_simulation_results'] = (
+                user.last_simulation_results.to_dict()
+            )
+
+        if user.last_simulation_invalid_fields:
+            response['data']['last_simulation_invalid_fields'] = (
+                user.last_simulation_invalid_fields.to_dict()
+            )
+
+        SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
-        response['data'] = {
-            'last_configurations': user.last_configuration.to_dict(),
-            'last_alloy_store': user.last_alloy_store.to_dict(),
-        }
         return response, 200
 
 

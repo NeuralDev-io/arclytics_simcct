@@ -42,7 +42,7 @@ class AppBar extends React.Component {
     return (
       <nav className={styles.navContainer}>
         <div>
-          <AnstoLogo className={styles.logo} />
+          <AnstoLogo className={styles.anstoLogo} />
           <a
             id="sim"
             className={`${styles.navIcon} ${active === 'sim' && styles.active}`}
@@ -73,7 +73,7 @@ class AppBar extends React.Component {
               <p>Alloy database</p>
             </Tooltip>
           </a>
-          <a
+          {/* <a
             id="help"
             className={`${styles.navIcon} ${active === 'edu' && styles.active} ${!isAuthenticated && styles.disabled}`}
             href={isAuthenticated ? '/' : ''}
@@ -82,7 +82,7 @@ class AppBar extends React.Component {
               <HelpIcon className={styles.icon} />
               <p>Help</p>
             </Tooltip>
-          </a>
+          </a> */}
           <a
             id="admin"
             className={`${styles.navIcon} ${active === 'admin' && styles.active}`}

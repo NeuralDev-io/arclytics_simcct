@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { ReactComponent as WarningImage } from '../../../assets/undraw_warning_cyit.svg'
 
 /*
   If you are wondering why react still shows the react error
@@ -35,7 +36,7 @@ class ErrorBoundary extends React.Component {
       return (
         <div>
           <h2>Something went wrong.</h2>
-          <details style={{ whiteSpace: 'pre-wrap' }}>
+            <WarningImage className={styles.warningImage} />
             {error && error.toString()}
             <br />
             {errorInfo.componentStack}

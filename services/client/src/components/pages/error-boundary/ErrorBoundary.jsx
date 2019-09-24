@@ -43,7 +43,7 @@ class ErrorBoundary extends React.Component {
         <div>
           <div className={styles.container}>
             <WarningImage className={styles.warningImage} />
-            <h2>Oops!! something went wrong</h2>
+            <h2>Oops!! Something went wrong.</h2>
             <span>
               Wait till we get the error fixed or you can
               try reloading the page or contacting us.

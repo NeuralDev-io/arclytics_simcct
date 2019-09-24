@@ -5,10 +5,22 @@ import TextField from '../../elements/textfield'
 import PeriodicTable from '../../elements/periodic-table'
 import { PERIODIC_TABLE_DATA } from '../../../utils/alloys'
 import Button from '../../elements/button'
+import { validate } from '../../../utils/validator'
+import { constraints } from './utils/constraints'
 
 import styles from './AlloyModal.module.scss'
 
 class AlloyModal extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      error: {
+        name: '',
+        compositions: {},
+      },
+    }
+  }
+
   handleToggleElement = (number, newElements) => {
     // find data of this element
     const element = PERIODIC_TABLE_DATA.find(elem => elem.number === number)
@@ -39,12 +51,32 @@ class AlloyModal extends Component {
 
   handleCompWeightChange = (symbol, value) => {
     const { alloy, onChange } = this.props
+    const { error: { compositions } } = this.state
+
     const newComp = [...alloy.compositions]
     const idx = newComp.findIndex(elem => elem.symbol === symbol)
     newComp[idx] = {
       ...newComp[idx],
       weight: value,
     }
+
+    const err = validate(value, constraints.weight)
+    if (err !== undefined) {
+      this.setState(state => ({
+        error: {
+          ...state.error,
+          compositions: {
+            ...state.error.compositions,
+            [symbol]: err,
+          },
+        },
+      }))
+    } else {
+      const newCompError = { ...compositions }
+      delete newCompError[symbol]
+      this.setState(state => ({ error: { ...state.error, compositions: newCompError } }))
+    }
+
     onChange({
       ...alloy,
       compositions: newComp,
@@ -53,6 +85,23 @@ class AlloyModal extends Component {
 
   handleNameChange = (value) => {
     const { alloy, onChange } = this.props
+    const err = validate(value, constraints.name)
+    if (err !== undefined) {
+      this.setState(state => ({
+        error: {
+          ...state.error,
+          name: err,
+        },
+      }))
+    } else {
+      this.setState(state => ({
+        error: {
+          ...state.error,
+          name: '',
+        },
+      }))
+    }
+
     onChange({
       ...alloy,
       name: value,
@@ -74,6 +123,7 @@ class AlloyModal extends Component {
 
   renderElements = () => {
     const { alloy } = this.props
+    const { error } = this.state
 
     if (alloy.compositions.length === 0) {
       return <span className={styles.info}>Choose an element to start</span>
@@ -88,6 +138,8 @@ class AlloyModal extends Component {
             value={weight}
             length="short"
             onChange={val => this.handleCompWeightChange(element.symbol, val)}
+            error={error.compositions[element.symbol]}
+            errorTooltipPosition="left"
           />
         </div>
       )
@@ -96,6 +148,7 @@ class AlloyModal extends Component {
 
   render() {
     const { show, onClose, alloy } = this.props
+    const { error } = this.state
 
     // get compositions from props and add fundamental elements if compositions is empty
     const { compositions = [] } = alloy
@@ -122,6 +175,8 @@ class AlloyModal extends Component {
                 placeholder="Alloy name..."
                 length="stretch"
                 value={alloy.name}
+                error={error.name}
+                errorTooltipPosition="left"
               />
             </div>
             <div className={styles.elementContainer}>
@@ -133,6 +188,7 @@ class AlloyModal extends Component {
             onClick={this.handleSaveAlloy}
             className={styles.saveButton}
             length="long"
+            isDisabled={alloy.name === '' || error.name !== '' || Object.keys(error.compositions).length !== 0}
           >
             SAVE
           </Button>

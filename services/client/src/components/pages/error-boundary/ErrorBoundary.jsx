@@ -49,14 +49,6 @@ class ErrorBoundary extends React.Component {
               try reloading the page or contacting us.
             </span>
             <Button className={styles.refreshButton} onClick={ this.handleRefereshPage } length="long">Refresh page</Button>
-            <details style={{ whiteSpace: 'pre-wrap' }}>
-              <summary> More details </summary>
-              <h6>{error && error.toString()}</h6>
-              <div className={styles.errorStack}>
-                 Something went wrong:
-                {errorInfo.componentStack}
-              </div>
-            </details>
           </div>
         </div>
       )

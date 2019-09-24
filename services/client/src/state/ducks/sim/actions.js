@@ -105,48 +105,51 @@ export const updateAlloyOption = option => (dispatch) => {
  * @param {string} type 'parent' | 'weld'
  * @param {object} alloy alloy to be updated
  */
-export const updateComp = (option, type, alloy) => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
-    method: 'PATCH',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      alloy_option: option,
-      alloy_type: type,
-      alloy,
-    }),
+export const updateComp = (option, type, alloy, error) => (dispatch) => {
+  dispatch({
+    type: UPDATE_COMP,
+    config: {},
+    alloyType: type,
+    alloy,
+    parentError: error,
   })
-    .then((res) => {
-      if (res.status !== 200) {
-        return {
-          status: 'fail',
-          message: 'Something went wrong',
+
+  // only make API request if error free
+  if (Object.keys(error).length === 0) {
+    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        alloy_option: option,
+        alloy_type: type,
+        alloy,
+      }),
+    })
+      .then((res) => {
+        if (res.status !== 200) {
+          return {
+            status: 'fail',
+            message: 'Something went wrong',
+          }
         }
-      }
-      return res.json()
-    })
-    .then((res) => {
-      if (res.status === 'fail') {
-        addFlashToast({
-          message: res.message,
-          options: { variant: 'error' },
-        }, true)(dispatch)
-      }
-      if (res.status === 'success') {
-        dispatch({
-          type: UPDATE_COMP,
-          config: res.data,
-          alloyType: type,
-          alloy,
-        })
-      }
-    })
-    .catch((err) => {
-      // log to fluentd
-      console.log(err)
-    })
+        return res.json()
+      })
+      .then((res) => {
+        if (res.status === 'fail') {
+          addFlashToast({
+            message: res.message,
+            options: { variant: 'error' },
+          }, true)(dispatch)
+        }
+      })
+      .catch((err) => {
+        // log to fluentd
+        console.log(err)
+      })
+  }
 }
 
 export const updateDilution = val => (dispatch) => {

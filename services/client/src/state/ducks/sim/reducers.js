@@ -51,6 +51,7 @@ const initialState = {
     cct_cooling_rate: 10,
   },
   alloys: {
+    parentError: {},
     isLoading: false,
     alloyOption: 'single',
     parent: {
@@ -121,6 +122,7 @@ const reducer = (state = initialState, action) => {
         ...state,
         alloys: {
           ...state.alloys,
+          parentError: action.parentError,
           [action.alloyType]: action.alloy,
         },
         configurations: {

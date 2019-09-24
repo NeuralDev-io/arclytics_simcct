@@ -49,7 +49,7 @@ data:
         logstash_prefix fluentd
         logstash_format true
         index_name "fluentd"
-        type_name "access_log"
+        type_name "application_log"
         <buffer>
           flush_thread_count 8
           flush_interval 5s

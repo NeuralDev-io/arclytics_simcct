@@ -24,7 +24,7 @@ import time
 from flask import Blueprint, json
 from flask_restful import Resource
 
-from sim_api.extensions import api, logger
+from sim_api.extensions import api
 from sim_api.extensions.SimSession import SimSessionService
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.schemas import AlloyStoreSchema, ConfigurationsSchema
@@ -32,6 +32,9 @@ from simulation.phasesimulation import PhaseSimulation
 from simulation.simconfiguration import SimConfiguration
 from simulation.utilities import ConfigurationError, SimulationError
 
+from logger import AppLogger
+
+logger = AppLogger(__name__)
 
 sim_blueprint = Blueprint('simulation', __name__)
 

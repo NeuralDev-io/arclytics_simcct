@@ -54,7 +54,7 @@ RUN ln -s /usr/src/app/entrypoint.sh /entrypoint.sh
 COPY . /usr/src/app
 
 # install our flask-fluentd-logger
-WORKDIR /usr/src/app/fluentd_logger
+WORKDIR /usr/src/app/fluentd_logging
 RUN python setup.py install
 
 # go back to app source directory

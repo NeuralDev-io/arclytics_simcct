@@ -25,6 +25,7 @@ class CompSidebar extends Component {
       isAuthenticated,
       onSaveButtonClick,
       configError,
+      parentError,
     } = this.props
     const { showSettings } = this.state
 
@@ -62,7 +63,8 @@ class CompSidebar extends Component {
           className={styles.btn}
           isDisabled={!sessionIsInitialised
             || !isAuthenticated
-            || !(Object.keys(configError).length === 0 && configError.constructor === Object)
+            || Object.keys(configError).length !== 0
+            || Object.keys(parentError).length !== 0
           }
         >
           RUN
@@ -78,10 +80,12 @@ CompSidebar.propTypes = {
   sessionIsInitialised: PropTypes.bool.isRequired,
   isAuthenticated: PropTypes.bool.isRequired,
   configError: PropTypes.shape({}).isRequired,
+  parentError: PropTypes.shape({}).isRequired,
 }
 
 const mapStateToProps = state => ({
   configError: state.sim.configurations.error,
+  parentError: state.sim.alloys.parentError,
 })
 
 const mapDispatchToProps = {

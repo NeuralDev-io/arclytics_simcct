@@ -4,6 +4,8 @@ import { connect } from 'react-redux'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import Table from '../../elements/table'
 import { SelfControlledTextField } from '../../elements/textfield'
+import { validate } from '../../../utils/validator'
+import { constraints } from './utils/constraints'
 import { updateComp } from '../../../state/ducks/sim/actions'
 
 import styles from './CompTable.module.scss'
@@ -23,15 +25,24 @@ class CompTable extends Component {
       }
     }
 
+    const err = validate(value, constraints.weight)
+    const error = { ...data.parentError }
+    if (err !== undefined) {
+      error[symbol] = err
+    } else {
+      delete error[symbol]
+    }
+
     updateCompConnect(data.alloyOption, type, {
       ...alloy,
       compositions: newComp,
-    })
+    }, error)
   }
 
   render() {
     const { data } = this.props
     const {
+      parentError,
       // alloyOption,
       parent,
       // weld,
@@ -112,6 +123,8 @@ class CompTable extends Component {
             defaultValue={value || '0.0'}
             length="stretch"
             isDisabled={value === undefined}
+            error={parentError[row.symbol]}
+            errorTooltipPosition="left"
           />
         ),
         ...(() => {
@@ -170,6 +183,7 @@ class CompTable extends Component {
                 hideDivider
                 condensed
                 loading={data.isLoading}
+                getTdProps={() => ({ style: { overflow: 'visible' } })}
               />
             </div>
           )
@@ -180,12 +194,10 @@ class CompTable extends Component {
 }
 
 CompTable.propTypes = {
-  sessionIsInitialised: PropTypes.bool.isRequired,
-  isAuthenticated: PropTypes.bool.isRequired,
-  onSaveButtonClick: PropTypes.func.isRequired,
   data: PropTypes.shape({
     isLoading: PropTypes.bool.isRequired,
     alloyOption: PropTypes.string,
+    parentError: PropTypes.shape({}).isRequired,
     parent: PropTypes.shape({
       name: PropTypes.string,
       compositions: PropTypes.arrayOf(PropTypes.shape({

@@ -8,31 +8,23 @@
   .content {
     display: flex;
     flex-flow: column nowrap;
-    width: fit-content;
+    min-width: 22rem;
 
-    .textDisplay {
-      align-self: flex-start;
-    }
+    .header {
+      margin-bottom: 1.5rem;
 
-    .passwordConfirm {
-      width: max-content;
-      margin-top: 1rem;
-      align-self: flex-start;
+      h6 {
+        margin-bottom: .5rem;
+      }
     }
 
     .buttonGroup {
+      width: 100%;
       display: flex;
       flex-flow: row nowrap;
-      margin-top: 2rem;
+      margin: 2.5rem 0 .5rem 0;
       align-self: flex-end;
-
-      Button {
-        margin-right: 0.75rem;
-      }
-
-      Button:last-of-type {
-        margin-right: 0;
-      }
+      justify-content: space-between;
     }
   }
 }

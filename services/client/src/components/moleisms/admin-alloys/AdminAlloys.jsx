@@ -93,7 +93,7 @@ class AdminAlloys extends Component {
 
   handleAlloyChange = alloy => this.setState({ currentAlloy: alloy })
 
-  handleLoadAlloy = alloy => {
+  handleLoadAlloy = (alloy) => {
     const {
       initSessionConnect,
       history,
@@ -130,9 +130,12 @@ class AdminAlloys extends Component {
       addModal,
       deleteModal,
       editModal,
+      error,
     } = this.state
 
-    const tableData = globalAlloys.filter(a => a.name.includes(searchName))
+    const tableData = globalAlloys.filter(
+      a => a.name.toLowerCase().includes(searchName.toLowerCase()),
+    )
 
     const columns = [
       {

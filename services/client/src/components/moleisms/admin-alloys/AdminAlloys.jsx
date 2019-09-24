@@ -132,7 +132,9 @@ class AdminAlloys extends Component {
       editModal,
     } = this.state
 
-    const tableData = globalAlloys.filter(a => a.name.includes(searchName))
+    const tableData = globalAlloys.filter(
+      a => a.name.toLowerCase().includes(searchName.toLowerCase()),
+    )
 
     const columns = [
       {

@@ -369,7 +369,7 @@
   background: transparent;
   transition: all 0.3s ease;
   pointer-events: none;
-  padding: 20px;
+  padding: 20px 10px;
   color: rgba(0, 0, 0, 0.5);
 }
 .ReactTable .-loading {
@@ -467,6 +467,7 @@
     .rt-tr {
       padding: .5rem 1rem;
       margin-top: .5rem;
+      border-top: 1px solid var(--n50);
 
       & > .rt-td:first-of-type { padding-left: 0; }
       & > .rt-td:last-of-type { padding-right: 0; }

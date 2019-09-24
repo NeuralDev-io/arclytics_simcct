@@ -1417,7 +1417,7 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 port-forward )
                   KIBANA_POD_NAME=$(kubectl get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
-                  kubectl port-forward "${KIBANA_POD_NAME}" 5601:5601 --namespace arclytics
+                  kubectl port-forward "${KIBANA_POD_NAME}" 5600:5601 --namespace arclytics
                   ;;
               esac
               shift

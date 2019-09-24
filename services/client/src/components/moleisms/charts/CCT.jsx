@@ -94,33 +94,40 @@ const CCT = ({
           shape: 'spline',
         },
       },
-      displayUserCurve && {
-        x: userData.user_cooling_curve.time,
-        y: userData.user_cooling_curve.temp,
-        name: 'User cooling curve',
-        type: 'scatter',
-        mode: 'lines',
-        line: {
-          color: getColor('--t500'),
-          shape: 'spline',
-          width: 3,
-        },
-      },
-      displayUserCurve && {
-        x: cctIndex !== -1
-          ? [userData.user_cooling_curve.time[cctIndex]]
-          : [userData.user_cooling_curve.time[userData.slider_max]],
-        y: cctIndex !== -1
-          ? [userData.user_cooling_curve.temp[cctIndex]]
-          : [userData.user_cooling_curve.temp[userData.slider_max]],
-        name: 'CCT',
-        mode: 'markers',
-        type: 'scatter',
-        marker: {
-          color: getColor('--g500'),
-          width: 50,
-        },
-      },
+      ...(() => {
+        if (displayUserCurve) {
+          return [
+            {
+              x: userData.user_cooling_curve.time,
+              y: userData.user_cooling_curve.temp,
+              name: 'User cooling curve',
+              type: 'scatter',
+              mode: 'lines',
+              line: {
+                color: getColor('--t500'),
+                shape: 'spline',
+                width: 3,
+              },
+            },
+            {
+              x: cctIndex !== -1
+                ? [userData.user_cooling_curve.time[cctIndex]]
+                : [userData.user_cooling_curve.time[userData.slider_max]],
+              y: cctIndex !== -1
+                ? [userData.user_cooling_curve.temp[cctIndex]]
+                : [userData.user_cooling_curve.temp[userData.slider_max]],
+              name: 'CCT',
+              mode: 'markers',
+              type: 'scatter',
+              marker: {
+                color: getColor('--g500'),
+                width: 50,
+              },
+            },
+          ]
+        }
+        return []
+      })(),
     ]
   }
 

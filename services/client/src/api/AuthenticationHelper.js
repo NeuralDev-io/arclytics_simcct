@@ -112,6 +112,29 @@ export const checkAuthStatus = async () => {
   return auth
 }
 
+export const checkPassword = async (password) => {
+  let isPasswordValid = false
+  try {
+    isPasswordValid = await fetch(`${ARC_URL}/auth/password/check`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password }),
+    })
+      .then((res) => {
+        if (res.status !== 200) {
+          throw new Error('Unauthorised')
+        }
+        return true
+      })
+  } catch (err) {
+    isPasswordValid = false
+  }
+  return isPasswordValid
+}
+
 export const forgotPassword = (resolve, reject, email) => {
   fetch(`${ARC_URL}/reset/password`, {
     method: 'POST',

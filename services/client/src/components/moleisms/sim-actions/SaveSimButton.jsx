@@ -26,15 +26,16 @@ class SaveSimButton extends Component {
   handleCloseModal = () => this.setState({ visible: false })
 
   saveSim = () => {
-    const { saveSimulationConnect, addFlashToastConnect } = this.props
-    saveSimulationConnect()
-      .then(() => {
-        this.handleCloseModal()
-        addFlashToastConnect({
-          message: 'Simulation saved',
-          options: { variant: 'success' },
-        }, true)
-      })
+    const { saveSimulationConnect, addFlashToastConnect, sim: { configurations } } = this.props
+    if (Object.keys(configurations.error).length !== 0) {
+      addFlashToastConnect({
+        message: 'Cannot save invalid configurations',
+        options: { variant: 'error' },
+      }, true)
+    } else {
+      saveSimulationConnect()
+    }
+    this.handleCloseModal()
   }
 
   saveSimAsFile = () => {

@@ -10,7 +10,7 @@ import styles from './TTT.module.scss'
 
 const TTT = ({ data }) => {
   let chartData = []
-  if (data !== undefined) {
+  if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
     chartData = [
       {
         x: data.ferrite_nucleation.time,

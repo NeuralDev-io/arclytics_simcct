@@ -34,9 +34,11 @@ class BaseConfig:
     SECRET_KEY = env.get('SECRET_KEY', None)
     SECURITY_PASSWORD_SALT = env.get('SECURITY_PASSWORD_SALT', None)
 
+    # Flask-RESTful JSON encoder change
+    RESTFUL_JSON = {'cls': JSONEncoder}
+
     # Bcrypt and Token encoding
     BCRYPT_LOG_ROUNDS = 12
-    RESTFUL_JSON = {'cls': JSONEncoder}
     TOKEN_EXPIRATION_DAYS = 30
     TOKEN_EXPIRATION_SECONDS = 0
 

@@ -6,5 +6,6 @@ export const persistSim = () => (dispatch, getState) => {
   dispatch({
     type: PERSIST_SIM,
     payload: sim,
+    time: new Date().toISOString(),
   })
 }

@@ -2,8 +2,6 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import AutoSizer from 'react-virtualized-auto-sizer'
-import SaveIcon from 'react-feather/dist/icons/save'
-import Button from '../../elements/button'
 import Table from '../../elements/table'
 import { SelfControlledTextField } from '../../elements/textfield'
 import { updateComp } from '../../../state/ducks/sim/actions'
@@ -32,12 +30,7 @@ class CompTable extends Component {
   }
 
   render() {
-    const {
-      data,
-      sessionIsInitialised,
-      isAuthenticated,
-      onSaveButtonClick,
-    } = this.props
+    const { data } = this.props
     const {
       // alloyOption,
       parent,
@@ -101,9 +94,11 @@ class CompTable extends Component {
         Header: 'Elements',
         accessor: 'symbol',
         Cell: ({ value }) => (<span className={styles.symbol}>{value}</span>),
-        width: 100,
-        // width: 80,
-        Footer: () => tableData.length !== 0 && 'Total',
+        width: 80,
+        ...(() => {
+          if (tableData.length !== 0) return { Footer: 'Total' }
+          return {}
+        })(),
       },
       {
         Header: 'Weight',
@@ -119,8 +114,12 @@ class CompTable extends Component {
             isDisabled={value === undefined}
           />
         ),
-        Footer: () => tableData.length !== 0
-          && <span className={styles.footerText}>{parentTotal}</span>,
+        ...(() => {
+          if (tableData.length !== 0) {
+            return { Footer: () => <span className={styles.footerText}>{parentTotal}</span> }
+          }
+          return {}
+        })(),
       },
       // {
       //   Header: 'Alloy 2',
@@ -172,15 +171,6 @@ class CompTable extends Component {
                 condensed
                 loading={data.isLoading}
               />
-              <Button
-                onClick={onSaveButtonClick}
-                className={styles.saveButton}
-                isDisabled={!sessionIsInitialised || !isAuthenticated}
-                appearance="text"
-                IconComponent={props => <SaveIcon {...props} />}
-              >
-                Save alloy
-              </Button>
             </div>
           )
         }}

@@ -47,14 +47,14 @@ class CompSidebar extends Component {
           </Button> */}
         </header>
         <div style={{ display: showSettings ? 'block' : 'none' }}>
-          <CompForm isAuthenticated={isAuthenticated} />
-        </div>
-        <div className={styles.table}>
-          <CompTable
+          <CompForm
             sessionIsInitialised={sessionIsInitialised}
             isAuthenticated={isAuthenticated}
             onSaveButtonClick={onSaveButtonClick}
           />
+        </div>
+        <div className={styles.table}>
+          <CompTable />
         </div>
         <Button
           onClick={runSimConnect}

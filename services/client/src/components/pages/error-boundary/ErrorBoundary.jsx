@@ -1,9 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import Button from '../../elements/button'
 import { ReactComponent as WarningImage } from '../../../assets/undraw_warning_cyit.svg'
+import styles from './ErrorBoundary.module.scss'
 
 /*
-  If you are wondering why react still shows the react error
+  If you are wondering why react still shows the react error in production
   https://stackoverflow.com/questions/52096804/react-still-showing-errors-after-catching-with-errorboundary.
 */
 
@@ -35,12 +37,23 @@ class ErrorBoundary extends React.Component {
       // Error path
       return (
         <div>
-          <h2>Something went wrong.</h2>
+          <div className={styles.container}>
             <WarningImage className={styles.warningImage} />
-            {error && error.toString()}
-            <br />
-            {errorInfo.componentStack}
-          </details>
+            <h2>Oops!! something went wrong</h2>
+            <span>
+              Wait till we get the error fixed or you can
+              try reloading the page or contacting us.
+            </span>
+            <Button className={styles.refreshButton} onClick={ this.handleRefereshPage } length="long">Refresh page</Button>
+            <details style={{ whiteSpace: 'pre-wrap' }}>
+              <summary> More details </summary>
+              <h6>{error && error.toString()}</h6>
+              <div className={styles.errorStack}>
+                 Something went wrong:
+                {errorInfo.componentStack}
+              </div>
+            </details>
+          </div>
         </div>
       )
     }

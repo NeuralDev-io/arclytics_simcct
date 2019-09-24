@@ -286,31 +286,6 @@ class ShareSimButton extends Component {
                 <span>{copyLinkSuccess}</span>
               </div>
             </AccordionSection>
-            {/* Export */}
-            <AccordionSection
-              title="By exporting to file"
-              id="export"
-            >
-              <TextField
-                type="text"
-                name="filename"
-                onChange={() => console.log('Export typed')}
-                placeholder="File name"
-                length="stretch"
-              />
-
-              <div className={styles.exportButtonContainer}>
-                <Button
-                  onClick={() => console.log('Export Link')}
-                  name="exportFileSubmit"
-                  type="button"
-                  appearance="outline"
-                  length="long"
-                >
-                  EXPORT
-                </Button>
-              </div>
-            </AccordionSection>
 
           </Accordion>
         </div>

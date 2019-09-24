@@ -10,6 +10,7 @@ import {
   UPDATE_CCT_INDEX,
   LOAD_SIM,
   LOAD_PERSISTED_SIM,
+  LOAD_LAST_SIM,
 } from './types'
 import { ASTM2Dia } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
@@ -629,5 +630,22 @@ export const loadPersistedSim = () => (dispatch, getState) => {
   dispatch({
     type: LOAD_PERSISTED_SIM,
     payload: lastSim,
+  })
+}
+
+export const loadLastSim = () => (dispatch, getState) => {
+  const { lastSim } = getState().self
+  const { last_configurations: { grain_size, is_valid, ...otherConfig } } = lastSim
+  const convertedConfig = {
+    ...otherConfig,
+    grain_size_ASTM: grain_size,
+    grain_size_diameter: ASTM2Dia(parseFloat(grain_size)),
+  }
+  dispatch({
+    type: LOAD_LAST_SIM,
+    payload: {
+      ...lastSim,
+      last_configurations: convertedConfig,
+    },
   })
 }

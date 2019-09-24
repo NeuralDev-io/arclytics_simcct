@@ -1,5 +1,5 @@
 """
-Flask-Fluentd-Logger
+fluentd_logger
 -------------
 
 This library is made to be used as a wrapper with Python's logging library and
@@ -9,22 +9,19 @@ from setuptools import setup
 
 
 setup(
-    name='flask_fluentd_logger',
-    version='0.1',
-    url='https://github.com/codeninja55/flask-fluentd-logger',
+    name='fluentd_logger',
+    version='0.3',
+    url='',
     license='MIT',
     author='Andrew Che',
     author_email='andrew@codeninja55.me',
-    description='Flask fluentd logging with stdout stream.',
+    description='Fluentd logging with stdout stream.',
     long_description=__doc__,
-    py_modules=['flask_fluentd_logger'],
+    py_modules=['fluentd_logger'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',
-    install_requires=[
-        'Flask',
-        'fluent-logger',
-    ],
+    install_requires=['fluent-logger'],
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',

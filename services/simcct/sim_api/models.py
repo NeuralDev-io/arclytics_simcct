@@ -11,16 +11,15 @@ __author__ = [
     'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
-__credits__ = ['']
 __license__ = 'MIT'
-__version__ = '0.3.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__version__ = '1.3.0'
 __status__ = 'production'
 __date__ = '2019.07.03'
 """models.py: 
 
-This module stores the mongoengine.Document models for the Arclytics API Users
+This module defines the Object Document Model and schemas for the Arclytics
+Sim database using MongoDB. Here we define the `mongoengine.Document` and 
+`mongoengine.EmbeddedDocument` models for the Arclytics SimCCT API 
 microservice.
 """
 
@@ -36,12 +35,15 @@ from mongoengine import (BooleanField, DO_NOTHING, DateTimeField, DictField,
                          FloatField, IntField, ObjectIdField, ReferenceField,
                          StringField, ValidationError, queryset_manager)
 
-from sim_api.extensions import bcrypt, logger
+from sim_api.extensions import bcrypt
 from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
                                           ElementSymbolInvalid, JSONEncoder,
                                           MissingElementError,
                                           PasswordValidationError,
                                           PeriodicTable)
+from logger import AppLogger
+
+logger = AppLogger(__name__)
 
 
 # ========== # FIELD CUSTOM VALIDATION # ========== #

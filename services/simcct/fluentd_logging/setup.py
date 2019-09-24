@@ -9,15 +9,15 @@ from setuptools import setup
 
 
 setup(
-    name='fluentd_logger',
-    version='0.3',
+    name='fluentd_logging',
+    version='0.8',
     url='',
     license='MIT',
     author='Andrew Che',
     author_email='andrew@codeninja55.me',
     description='Fluentd logging with stdout stream.',
     long_description=__doc__,
-    py_modules=['fluentd_logger'],
+    py_modules=['fluentd_logging'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',

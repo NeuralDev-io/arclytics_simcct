@@ -439,6 +439,8 @@ class User(Document):
         document_type=SimulationResults, default=None
     )
 
+    last_simulation_invalid_fields = DictField(default=None)
+
     saved_alloys = EmbeddedDocumentListField(document_type=Alloy)
 
     # Some rather useful metadata information that's not core to the

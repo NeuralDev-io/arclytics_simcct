@@ -6,6 +6,7 @@ import {
   CHANGE_PASSWORD,
   SAVE_SIM,
   GET_SIM,
+  GET_LAST_SIM,
 } from './types'
 import { addFlashToast } from '../toast/actions'
 
@@ -361,7 +362,7 @@ export const saveLastSim = () => (dispatch, getState) => {
     grain_size: grain_size_ASTM,
   }
 
-  const alloyError = alloys.error
+  const alloyError = alloys.parentError
   const configError = configurations.error
 
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/last/simulation`, {
@@ -386,7 +387,7 @@ export const saveLastSim = () => (dispatch, getState) => {
     })
 }
 
-export const getLastSim = () => (dispatch) => {
+export const getLastSim = () => dispatch => (
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/last/simulation`, {
     method: 'GET',
     credentials: 'include',
@@ -396,10 +397,15 @@ export const getLastSim = () => (dispatch) => {
   })
     .then(res => res.json())
     .then((res) => {
-      console.log(res)
+      if (res.status === 'success') {
+        dispatch({
+          type: GET_LAST_SIM,
+          payload: res.data,
+        })
+      }
     })
     .catch((err) => {
       // log to fluentd
       console.log(err)
     })
-}
+)

@@ -330,3 +330,76 @@ export const getSavedSimulations = () => (dispatch) => {
       console.log(err)
     })
 }
+
+export const saveLastSim = () => (dispatch, getState) => {
+  // first, get sim alloys and configs from state
+  const { configurations, alloys, results } = getState().sim
+  const alloyStore = {
+    alloy_option: alloys.alloyOption,
+    alloys: {
+      parent: alloys.parent,
+      // TODO(daltonle): Change this when weld and mix are added 
+      weld: alloys.parent,
+      mix: alloys.parent,
+    },
+  }
+  const simResults = {
+    USER: results.USER,
+    CCT: results.CCT,
+    TTT: results.TTT,
+  }
+
+  // eslint-disable-next-line camelcase
+  const {
+    grain_size_ASTM,
+    grain_size_diameter,
+    error,
+    ...others
+  } = configurations
+  const validConfigs = {
+    ...others,
+    grain_size: grain_size_ASTM,
+  }
+
+  const alloyError = alloys.error
+  const configError = configurations.error
+
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/last/simulation`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      configurations: validConfigs,
+      alloy_store: alloyStore,
+      simulation_results: simResults,
+      invalid_fields: {
+        invalid_alloy_store: alloyError,
+        invalid_configs: configError,
+      },
+    }),
+  })
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
+}
+
+export const getLastSim = () => (dispatch) => {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/last/simulation`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then(res => res.json())
+    .then((res) => {
+      console.log(res)
+    })
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
+}

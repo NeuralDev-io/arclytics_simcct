@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import HardDriveIcon from 'react-feather/dist/icons/hard-drive'
-import HelpIcon from 'react-feather/dist/icons/help-circle'
+// import HelpIcon from 'react-feather/dist/icons/help-circle'
 import MonitorIcon from 'react-feather/dist/icons/monitor'
 import UserIcon from 'react-feather/dist/icons/user'
 import LogOutIcon from 'react-feather/dist/icons/log-out'
@@ -14,13 +14,15 @@ import Tooltip from '../../elements/tooltip'
 import store from '../../../state/store'
 import { logout } from '../../../api/AuthenticationHelper'
 import { buttonize } from '../../../utils/accessibility'
+import { saveLastSim } from '../../../state/ducks/self/actions'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
 
 import styles from './AppBar.module.scss'
 
 class AppBar extends React.Component {
   handleLogout = () => {
-    const { addFlashToastConnect, redirect } = this.props
+    const { addFlashToastConnect, saveLastSimConnect, redirect } = this.props
+    saveLastSimConnect()
     logout()
       .then(() => {
         redirect('/signin')
@@ -133,10 +135,12 @@ AppBar.propTypes = {
   isAuthenticated: PropTypes.bool.isRequired,
   // from connect
   addFlashToastConnect: PropTypes.func.isRequired,
+  saveLastSimConnect: PropTypes.func.isRequired,
 }
 
 const mapDispatchToProps = {
   addFlashToastConnect: addFlashToast,
+  saveLastSimConnect: saveLastSim,
 }
 
 export default connect(null, mapDispatchToProps)(AppBar)

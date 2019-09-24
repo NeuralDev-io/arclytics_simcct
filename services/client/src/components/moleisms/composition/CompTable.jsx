@@ -106,7 +106,7 @@ class CompTable extends Component {
         Footer: () => tableData.length !== 0 && 'Total',
       },
       {
-        Header: 'Alloy 1',
+        Header: 'Weight',
         accessor: 'parent',
         Cell: ({ row, value }) => (
           <SelfControlledTextField

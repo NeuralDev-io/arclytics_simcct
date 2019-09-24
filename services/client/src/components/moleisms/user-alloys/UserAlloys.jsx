@@ -130,7 +130,9 @@ class UserAlloys extends Component {
       editModal,
     } = this.state
 
-    const tableData = userAlloys.filter(a => a.name.includes(searchName))
+    const tableData = userAlloys.filter(
+      a => a.name.toLowerCase().includes(searchName.toLowerCase()),
+    )
 
     const columns = [
       {

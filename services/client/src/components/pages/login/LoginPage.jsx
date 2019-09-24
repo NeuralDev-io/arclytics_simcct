@@ -7,6 +7,7 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import { Formik } from 'formik'
 import { Link } from 'react-router-dom'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
@@ -17,6 +18,7 @@ import TextField from '../../elements/textfield'
 import Modal from '../../elements/modal'
 import Button from '../../elements/button'
 import { buttonize } from '../../../utils/accessibility'
+import { getLastSim } from '../../../state/ducks/self/actions'
 
 import styles from './LoginPage.module.scss'
 
@@ -77,6 +79,7 @@ class LoginPage extends Component {
     const {
       hasForgotPwd,
     } = this.state
+    const { getLastSimConnect } = this.props
 
     let fadeForgot = ('')
     let fadeLogin = ('')
@@ -111,6 +114,7 @@ class LoginPage extends Component {
                 checkAuthStatus().then((res) => {
                   setSubmitting(true)
                   if (res.status === 'success') {
+                    getLastSimConnect()
                     if (!res.isProfile) history.push('/profileQuestions')
                     else history.push('/')
                   }
@@ -208,6 +212,11 @@ LoginPage.propTypes = {
       token: PropTypes.string,
     }),
   }).isRequired,
+  getLastSimConnect: PropTypes.func.isRequired,
 }
 
-export default LoginPage
+const mapDispatchToProps = {
+  getLastSimConnect: getLastSim,
+}
+
+export default connect(null, mapDispatchToProps)(LoginPage)

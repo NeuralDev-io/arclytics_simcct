@@ -430,7 +430,8 @@ class FluentdHandler(Handler):
             if not self.__stream.emit(record.level_str(), record.data_dict()):
                 self.handle_errors(record)
                 self.__stream.clear_last_error()
-                self.__stream.close()
+                # reraise the exception so we can handle it
+                raise
         except Exception:
             self.handle_errors(record)
 

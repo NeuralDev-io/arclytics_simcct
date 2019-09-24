@@ -28,7 +28,7 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from marshmallow import ValidationError
 
-from sim_api.extensions import api, logger
+from sim_api.extensions import api
 from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.schemas import (
@@ -36,6 +36,10 @@ from sim_api.schemas import (
 )
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, MissingElementError
+
+from logger import AppLogger
+
+logger = AppLogger(__name__)
 
 sim_alloys_blueprint = Blueprint('sim_alloys', __name__)
 

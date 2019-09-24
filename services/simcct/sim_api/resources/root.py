@@ -8,12 +8,13 @@
 # [1] 
 # ----------------------------------------------------------------------------------------------------------------------
 
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
+__author__ = [
+    'Andrew Che <@codeninja55>',
+    'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
+__license__ = 'MIT'
 __version__ = '1.0.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'production'
 __date__ = '2019.09.16'
 
@@ -23,21 +24,14 @@ Just a basic module to define some testing endpoints.
 """
 
 import os
-from flask import Blueprint, jsonify, Response, g
-from sim_api.extensions import logger, apm
+
+from flask import Blueprint, Response, jsonify
+
+from fluentd_logging import FluentdLogging
+
+logger = FluentdLogging(__name__)
 
 root_blueprint = Blueprint('root', __name__)
-
-
-@root_blueprint.before_app_request
-def before_app_request() -> None:
-    """Before the root blueprint is instantiated, and within the context of
-    the Flask app, we store the logger as a global variable.
-
-    Returns:
-        None
-    """
-    g.logger = logger
 
 
 @root_blueprint.route('/', methods=['GET'])
@@ -69,26 +63,17 @@ def log():
         'message': 'fluentd logging',
         'container_id': os.uname()[1]
     }
-    from fluent import sender
-    s = sender.FluentSender(
-        'simcct',
-        host='fluentd-service.arclytics.svc.cluster.local',
-        port=24224
-    )
-
-    s.emit('log', {'message': 'Hello world!', 'log': 'fluent-logger-python'})
     # Use the APM logger
     # apm.capture_message('APM logging')
     # Use the new Flask-Fluentd-Logger as a global variable.
     logger.info(response)
-    response['sent'] = s.last_error
     return jsonify(response), 200
 
 
 @root_blueprint.route('/healthy', methods=['GET'])
 def readiness_probe():
     """Readiness probe for GCP Ingress."""
-    response = Response("")
+    response = Response('')
     # Remove Connection: keep-alive as a work-around to readinessProbe issue
     # confirmed by Google Kubernetes Engine team.
     # [1] https://medium.com/google-cloud/ingress-load-balancing-issues-on-

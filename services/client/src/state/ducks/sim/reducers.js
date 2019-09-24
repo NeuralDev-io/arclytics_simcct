@@ -10,6 +10,7 @@ import {
   UPDATE_CCT_INDEX,
   LOAD_SIM,
   LOAD_PERSISTED_SIM,
+  LOAD_LAST_SIM,
 } from './types'
 
 const initialState = {
@@ -206,6 +207,32 @@ const reducer = (state = initialState, action) => {
     }
     case LOAD_PERSISTED_SIM:
       return action.payload
+    case LOAD_LAST_SIM: {
+      const {
+        last_alloy_store,
+        last_configurations,
+        last_simulation_invalid_fields,
+        last_simulation_results,
+      } = action.payload
+      return {
+        ...initialState,
+        configurations: {
+          ...initialState.configurations,
+          error: last_simulation_invalid_fields.invalid_configs,
+          ...last_configurations,
+        },
+        alloys: {
+          ...initialState.alloys,
+          parentError: last_simulation_invalid_fields.invalid_alloy_store,
+          parent: last_alloy_store.alloys.parent,
+          alloyOption: last_alloy_store.alloy_option,
+        },
+        results: {
+          ...initialState.results,
+          ...last_simulation_results,
+        },
+      }
+    }
     default:
       return state
   }

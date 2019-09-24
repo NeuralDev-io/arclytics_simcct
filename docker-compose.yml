@@ -76,8 +76,6 @@ services:
     ports:
       - 80:80
     depends_on:
-      - simcct
-      - client
       - fluentd
     networks:
       - host
@@ -126,10 +124,12 @@ services:
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
       - FLUENTD_HOST=fluentd
       - FLUENTD_PORT=24224
+      - FLUENTD_PREFIX_TAG=simcct
       - ELASTIC_APM_SERVER_URL=http://apm-server:8200
     depends_on:
       - mongodb
       - redis
+      - nginx
       - fluentd
       - elasticsearch
       - apm-server

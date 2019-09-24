@@ -77,8 +77,9 @@ services:
       - CLIENT_HOST=app.arclytics.io
       - CLIENT_PORT=443
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
-      - FLUENTD_HOST=fluentd
+      - FLUENTD_HOST=fluentd-service
       - FLUENTD_PORT=24224
+      - FLUENTD_PREFIX_TAG=simcct
       - ELASTIC_APM_SERVER_URL=http://apm-server:8200
     depends_on:
       - mongodb

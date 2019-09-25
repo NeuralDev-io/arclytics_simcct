@@ -53,6 +53,12 @@ class FeedbackModal extends Component {
     }
   }
 
+  handleClose = () => {
+    const { closeFeedbackConnect } = this.props
+    localStorage.setItem('gotFeedback', true)
+    closeFeedbackConnect()
+  }
+
   handleSubmit = (e) => {
     e.preventDefault()
     const { submitFeedbackConnect } = this.props
@@ -93,7 +99,6 @@ class FeedbackModal extends Component {
         message,
       },
       updateFeedbackConnect,
-      closeFeedbackConnect,
     } = this.props
     const { categoryOptions } = this.state
 
@@ -101,7 +106,7 @@ class FeedbackModal extends Component {
       <React.Fragment>
         <div
           className={`${styles.backdrop} ${backdrop ? styles.show : ''}`}
-          {...buttonize(closeFeedbackConnect)}
+          {...buttonize(this.handleClose)}
         />
         <ToastModal show={feedbackVisible} className={`${styles.modal} ${givingFeedback ? styles.form : ''}`}>
           {
@@ -144,7 +149,7 @@ class FeedbackModal extends Component {
                       Submit
                     </Button>
                     <Button
-                      onClick={closeFeedbackConnect}
+                      onClick={this.handleClose}
                       length="long"
                       appearance="text"
                     >
@@ -163,7 +168,7 @@ class FeedbackModal extends Component {
                     Give feedback
                   </Button>
                   <Button
-                    onClick={closeFeedbackConnect}
+                    onClick={this.handleClose}
                     appearance="text"
                   >
                     No, thanks

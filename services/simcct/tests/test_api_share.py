@@ -28,7 +28,7 @@ from mongoengine import get_db
 from copy import deepcopy
 
 from tests.test_api_base import BaseTestCase, app
-from logger import AppLogger
+from arc_logging import AppLogger
 from sim_api.models import User, SharedSimulation
 from sim_api.token import (generate_shared_simulation_token, generate_url)
 from tests.test_api_users import log_test_user_in
@@ -661,7 +661,7 @@ class TestShareService(BaseTestCase):
             )
             self.assertEquals(resp_request_simulation.status_code, 302)
             token = resp_request_simulation.headers['Location'].split('/')[-1]
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = (

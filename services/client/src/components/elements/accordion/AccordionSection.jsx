@@ -29,11 +29,10 @@ class AccordionSection extends PureComponent {
           {...buttonize(onToggle)}
         >
           <h6>{title}</h6>
-          {expanded ? (
-            <ChevronUpIcon />
-          ) : (
-            <ChevronDownIcon />
-          ) }
+          <div className={styles.icons}>
+            <ChevronDownIcon className={`${styles.icon} ${expanded ? styles.hidden : ''}`} />
+            <ChevronUpIcon className={`${styles.icon} ${!expanded ? styles.hidden : ''}`} />
+          </div>
         </div>
         <div
           className={styles.childrenContainer}

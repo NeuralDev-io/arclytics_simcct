@@ -7,9 +7,11 @@
 # [1] https://gist.github.com/wushaobo/52be20bc801243dddf52a8be4c13179a
 # [2] https://github.com/mrichman/flask-redis
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
+__author__ = [
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
+__license__ = 'MIT'
 __version__ = '1.0.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
@@ -17,8 +19,9 @@ __status__ = 'development'
 __date__ = '2019.08.08'
 """sim_session_service.py: 
 
-This module defines the class to create a RedisSession instance and the
-interface to validate and operate on the Redis store of this session. 
+This module defines the class to create a session for simulation data that is 
+stored in the user's Flask Session instance. This service makes it simpler 
+to do the regular actions of `new_session`, `save_session`, and `load_session`.
 """
 
 import json
@@ -26,9 +29,10 @@ from typing import Union
 
 from flask import session
 
-from logger import AppLogger
 from sim_api.extensions import JSONEncoder
 from sim_api.models import User
+
+from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 
@@ -102,7 +106,9 @@ class SimSessionService(object):
         # We access the Session from Redis and get the Session data
         session_data_store = session.get(self.SESSION_PREFIX, None)
         if not session_data_store:
-            return 'Cannot retrieve data from Session store.'
+            message = 'Cannot retrieve data from Session store.'
+            logger.error(message, stack_info=True)
+            return message
 
         sess_data: dict = json.loads(session_data_store)
         # Return the data as a dict and the sid to be used later for saving

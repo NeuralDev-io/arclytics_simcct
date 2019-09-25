@@ -12,6 +12,21 @@
   justify-content: space-between;
   margin: 1.5rem 0;
   cursor: pointer;
+
+  .icons {
+    position: relative;
+
+    .icon {
+      position: absolute;
+      top: 0;
+      right: 0;
+      opacity: 1;
+
+      &.hidden {
+        opacity: 0;
+      }
+    }
+  }
 }
 
 .childrenContainer * {

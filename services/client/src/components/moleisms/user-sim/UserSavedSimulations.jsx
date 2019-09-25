@@ -22,7 +22,7 @@ class UserSavedSimulations extends Component {
   }
 
   componentDidMount = () => {
-    const { data, getSavedSimulationsConnect } = this.props
+    const { data = [], getSavedSimulationsConnect } = this.props
     if (data.length === 0) getSavedSimulationsConnect()
   }
 
@@ -55,7 +55,7 @@ class UserSavedSimulations extends Component {
 
   render() {
     const { showSideView, currentSim: { _id, ...currentSimContent } } = this.state
-    const { data } = this.props
+    const { data = [] } = this.props
     const columns = [
       {
         Header: 'ID',

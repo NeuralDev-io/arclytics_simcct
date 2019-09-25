@@ -219,7 +219,7 @@ class TestAuthEndpoints(BaseTestCase):
             print(f'User.verified: {user["verified"]}')
 
             self.assertEquals(resp.status_code, 302)
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -1184,11 +1184,7 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client as client:
             resp = client.put(
                 '/api/v1/sim/confirm/register/resend',
-                data=json.dumps(
-                    {
-                        'email': 'lordvader@arclytics.com'
-                    }
-                ),
+                data=json.dumps({'email': 'lordvader@arclytics.com'}),
                 content_type='application/json'
             )
 
@@ -1214,11 +1210,7 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client as client:
             resp = client.put(
                 '/api/v1/sim/confirm/register/resend',
-                data=json.dumps(
-                    {
-                        'email': 'kenobi@arclytics.io'
-                    }
-                ),
+                data=json.dumps({'email': 'kenobi@arclytics.io'}),
                 content_type='application/json'
             )
 
@@ -1243,11 +1235,7 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client as client:
             resp = client.put(
                 '/api/v1/sim/confirm/register/resend',
-                data=json.dumps(
-                    {
-                        'email': 'kenobi@arclytics.com'
-                    }
-                ),
+                data=json.dumps({'email': 'kenobi@arclytics.com'}),
                 content_type='application/json'
             )
 
@@ -1257,7 +1245,6 @@ class TestAuthEndpoints(BaseTestCase):
             # self.assertEqual(
             #     data['message'], 'Another confirmation email has been sent.'
             # )
-
 
 
 if __name__ == '__main__':

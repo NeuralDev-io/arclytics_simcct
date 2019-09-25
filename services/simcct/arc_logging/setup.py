@@ -9,15 +9,16 @@ from setuptools import setup
 
 
 setup(
-    name='fluentd_logging',
+    name='arc_logging',
     version='0.8',
     url='',
     license='MIT',
     author='Andrew Che',
     author_email='andrew@codeninja55.me',
-    description='Fluentd logging with stdout stream.',
+    description=('Arclytics Sim Application logging with '
+                 'fluentd and stdout stream.'),
     long_description=__doc__,
-    py_modules=['fluentd_logging'],
+    py_modules=['arc_logging'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',

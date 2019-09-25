@@ -21,6 +21,10 @@ class ErrorBoundary extends React.Component {
     return { error }
   }
 
+  handleRefereshPage = () => {
+    window.location.reload()
+  }
+
   componentDidCatch(error, errorInfo) {
     // Catch errors in any components below and re-render with error message
     this.setState({
@@ -30,12 +34,8 @@ class ErrorBoundary extends React.Component {
     // Log error messages to logger here
   }
 
-  handleRefereshPage = () => {
-    window.location.reload()
-  }
-
   render() {
-    const { error, errorInfo } = this.state
+    const { errorInfo } = this.state
     const { children } = this.props
     if (errorInfo) {
       // Error path

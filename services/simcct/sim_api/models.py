@@ -41,7 +41,7 @@ from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
                                           MissingElementError,
                                           PasswordValidationError,
                                           PeriodicTable)
-from logger import AppLogger
+from arc_logging import AppLoggerLogger
 
 logger = AppLogger(__name__)
 

@@ -528,7 +528,7 @@ class TestLastSimulation(BaseTestCase):
             user.last_configuration = Configuration(**CONFIGS)
             user.save()
 
-            cookie = test_login(client, user.email, 'Subatomic!')
+            test_login(client, user.email, 'Subatomic!')
 
             res = client.get(
                 '/api/v1/sim/user/last/simulation',
@@ -549,7 +549,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_get_detail_last_success(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            test_login(client, self.tony.email, self._tony_pw)
 
             post_res = client.post(
                 '/api/v1/sim/user/last/simulation',

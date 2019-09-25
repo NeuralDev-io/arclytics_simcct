@@ -28,7 +28,7 @@ import unittest
 from flask import current_app
 from itsdangerous import URLSafeTimedSerializer
 
-from logger import AppLogger
+from arc_logging import AppLogger
 from sim_api.extensions.utilities import get_mongo_uri
 from sim_api.models import (AdminProfile, User)
 from sim_api.token import (generate_confirmation_token,
@@ -765,7 +765,7 @@ class TestAdminCreateService(BaseTestCase):
             protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
-            redirect_url = f"{protocol}://{client_host}:{client_port}"
+            redirect_url = f'{protocol}://{client_host}:{client_port}'
             self.assertRedirects(resp, f'{redirect_url}/signin')
 
             updated_user = User.objects.get(email=user.email)

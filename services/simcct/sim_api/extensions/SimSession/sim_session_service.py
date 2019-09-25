@@ -33,7 +33,7 @@ from flask import session
 from sim_api.extensions import JSONEncoder
 from sim_api.models import User
 
-from logger import AppLogger
+from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 

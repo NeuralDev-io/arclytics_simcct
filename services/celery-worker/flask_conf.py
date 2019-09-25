@@ -6,46 +6,52 @@
 # Attributions:
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__author__ = [
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.06.04'
 """flask_conf.py: 
 
 Just some configuration settings.
 """
-
-import os
+from os import environ as env
 
 
 class BaseConfig:
     """Base configuration"""
     TESTING = False
-    SECRET_KEY = os.environ.get('SECRET_KEY', '')
-    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', '')
+    SECRET_KEY = env.get('SECRET_KEY', '')
+    SECURITY_PASSWORD_SALT = env.get('SECURITY_PASSWORD_SALT', '')
 
     # Flask Email
     MAIL_SUBJECT_PREFIX = '[Arclytics]'
     MAIL_DEFAULT_SENDER = 'Arclytics Team <admin@arclytics.io>'
-    MAIL_SERVER = os.environ.get('MAIL_SERVER', None)
-    MAIL_PORT = int(os.environ.get('MAIL_PORT', None))
+    MAIL_SERVER = env.get('MAIL_SERVER', None)
+    MAIL_PORT = int(env.get('MAIL_PORT', None))
     MAIL_USE_TLS = True
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
+    MAIL_USERNAME = env.get('MAIL_USERNAME', '')
+    MAIL_PASSWORD = env.get('MAIL_PASSWORD', '')
     # Unset this to see the debug messages to logs
     MAIL_DEBUG = False
+
+    # elastic application performance monitoring
+    ELASTIC_APM = {
+        'SERVER_URL': env.get('ELASTIC_APM_SERVER_URL', None),
+        'SERVICE_NAME': 'celery',
+        'SECRET_TOKEN': env.get('SECRET_KEY'),
+        'DEBUG': False
+    }
 
 
 class DevelopmentConfig(BaseConfig):
     """Development configuration"""
     # CELERY REDIS
-    REDIS_HOST = os.environ.get('REDIS_HOST', None)
-    REDIS_PORT = os.environ.get('REDIS_PORT', None)
+    REDIS_HOST = env.get('REDIS_HOST', None)
+    REDIS_PORT = env.get('REDIS_PORT', None)
     CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/5'
     CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'
 
@@ -56,8 +62,8 @@ class TestingConfig(BaseConfig):
     SESSION_PERMANENT = False
 
     # CELERY REDIS
-    REDIS_HOST = os.environ.get('REDIS_HOST', None)
-    REDIS_PORT = os.environ.get('REDIS_PORT', None)
+    REDIS_HOST = env.get('REDIS_HOST', None)
+    REDIS_PORT = env.get('REDIS_PORT', None)
     CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/5'
     CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'
 
@@ -65,9 +71,9 @@ class TestingConfig(BaseConfig):
 class ProductionConfig(BaseConfig):
     """Production configuration"""
     # CELERY REDIS
-    REDIS_HOST = os.environ.get('REDIS_HOST', None)
-    REDIS_PORT = os.environ.get('REDIS_PORT', None)
-    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
+    REDIS_HOST = env.get('REDIS_HOST', None)
+    REDIS_PORT = env.get('REDIS_PORT', None)
+    REDIS_PASSWORD = env.get('REDIS_PASSWORD', None)
     redis_uri = f'redis://user:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}'
     CELERY_BROKER_URL = f'{redis_uri}/5'
     CELERY_RESULT_BACKEND = f'{redis_uri}/6'

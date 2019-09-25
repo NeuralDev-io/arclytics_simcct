@@ -1,6 +1,7 @@
 bcrypt==3.1.7
 celery[redis]==4.3.0
 coverage==4.5.3
+elastic-apm[flask]==5.1.2
 email-validator==1.0.4
 Flask==1.0.2
 Flask-Bcrypt==0.7.1
@@ -9,6 +10,7 @@ Flask-Cors==3.0.7
 flask_marshmallow==0.10.1
 Flask-RESTful==0.3.7
 Flask-Testing==0.7.1
+fluent-logger==0.9.3
 geoip2==2.9.0
 gunicorn==19.9.0
 mongoengine==0.18.2

@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 from mongoengine import get_db
 
-from logger import AppLogger
+from arc_logging import AppLogger
 from manage import BASE_DIR
 from sim_api.extensions.SimSession import SimSessionService
 from sim_api.models import AlloyStore, Configuration, User

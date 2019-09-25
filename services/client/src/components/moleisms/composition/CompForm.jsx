@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import SaveIcon from 'react-feather/dist/icons/save'
 import Select from '../../elements/select'
+import Button from '../../elements/button'
 // import { TextFieldExtra } from '../../elements/textfield'
 import { getGlobalAlloys, getUserAlloys } from '../../../state/ducks/alloys/actions'
 import { updateAlloyOption, initSession, updateDilution } from '../../../state/ducks/sim/actions'
@@ -53,6 +55,9 @@ class CompForm extends Component {
       globalAlloys,
       userAlloys,
       simAlloys,
+      sessionIsInitialised,
+      isAuthenticated,
+      onSaveButtonClick,
       // updateAlloyOptionConnect,
       // updateDilutionConnect,
     } = this.props
@@ -91,8 +96,20 @@ class CompForm extends Component {
             onChange={val => updateAlloyOptionConnect(val.value)}
           />
         </div> */}
-        <div className="input-row">
-          <h6>Alloy</h6>
+        <div className="input-col">
+          <div className={styles.alloyHeader}>
+            <h6>Alloy</h6>
+            <Button
+              onClick={onSaveButtonClick}
+              className={styles.saveButton}
+              isDisabled={!sessionIsInitialised || !isAuthenticated}
+              appearance="text"
+              IconComponent={props => <SaveIcon {...props} />}
+            >
+              Save alloy
+            </Button>
+          </div>
+          {/* <h6>Alloy</h6> */}
           <Select
             name="parent"
             placeholder="Choose composition"

@@ -44,6 +44,12 @@ class FeedbackModal extends Component {
     }
   }
 
+  handleSubmit = (e) => {
+    e.preventDefault()
+    const { submitFeedbackConnect } = this.props
+    submitFeedbackConnect()
+  }
+
   renderRating = () => {
     const { feedback: { rate }, updateFeedbackConnect } = this.props
     const iconArray = [
@@ -79,7 +85,6 @@ class FeedbackModal extends Component {
       },
       updateFeedbackConnect,
       closeFeedbackConnect,
-      submitFeedbackConnect,
     } = this.props
     const { categoryOptions } = this.state
 
@@ -122,14 +127,14 @@ class FeedbackModal extends Component {
                   />
                   <div className={styles.buttonGroup}>
                     <Button
-                      onClick={submitFeedbackConnect}
+                      onClick={this.handleSubmit}
+                      type="submit"
                       length="long"
                       isDisabled={rate === -1 || category === ''}
                     >
                       Submit
                     </Button>
                     <Button
-                      type="submit"
                       onClick={closeFeedbackConnect}
                       length="long"
                       appearance="text"

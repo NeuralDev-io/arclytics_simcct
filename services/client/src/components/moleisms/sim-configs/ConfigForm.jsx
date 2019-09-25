@@ -67,8 +67,8 @@ class ConfigForm extends Component {
       // if turn off, make an update request to the backend
       // with the current data
       updateMsBsAeConnect('ms', '', {
-        ms_temp: configurations.ms_temp,
-        ms_rate_param: configurations.ms_rate_param,
+        ms_temp: roundTo(parseFloat(configurations.ms_temp), 1),
+        ms_rate_param: roundTo(parseFloat(configurations.ms_rate_param), 3),
       }, {})
     }
   }
@@ -100,8 +100,8 @@ class ConfigForm extends Component {
       // if turn off, make an update request to the backend
       // with the current data
       updateMsBsAeConnect('ae', '', {
-        ae1_temp: configurations.ae1_temp,
-        ae3_temp: configurations.ae3_temp,
+        ae1_temp: roundTo(parseFloat(configurations.ae1_temp), 1),
+        ae3_temp: roundTo(parseFloat(configurations.ae3_temp), 1),
       }, {})
     }
   }
@@ -129,7 +129,7 @@ class ConfigForm extends Component {
       // if turn off, make an update request to the backend
       // with the current data
       updateMsBsAeConnect('bs', '', {
-        bs_temp: configurations.bs_temp,
+        bs_temp: roundTo(parseFloat(configurations.bs_temp), 1),
       }, {})
     }
   }
@@ -287,7 +287,11 @@ class ConfigForm extends Component {
                     type="text"
                     name="ae1_temp"
                     onChange={val => this.handleUpdateAe('ae1_temp', val)}
-                    value={roundTo(parseFloat(configurations.ae1_temp), 1)}
+                    value={
+                      configurations.auto_calculate_ae
+                        ? roundTo(parseFloat(configurations.ae1_temp), 1)
+                        : configurations.ae1_temp
+                    }
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae || !isAuthenticated}
@@ -303,7 +307,11 @@ class ConfigForm extends Component {
                     type="text"
                     name="ae3_temp"
                     onChange={val => this.handleUpdateAe('ae3_temp', val)}
-                    value={roundTo(parseFloat(configurations.ae3_temp), 1)}
+                    value={
+                      configurations.auto_calculate_ae
+                        ? roundTo(parseFloat(configurations.ae3_temp), 1)
+                        : configurations.ae3_temp
+                    }
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae || !isAuthenticated}
@@ -339,7 +347,11 @@ class ConfigForm extends Component {
                     type="text"
                     name="bs_temp"
                     onChange={val => this.handleUpdateBs('bs_temp', val)}
-                    value={roundTo(parseFloat(configurations.bs_temp), 1)}
+                    value={
+                      configurations.auto_calculate_bs
+                        ? roundTo(parseFloat(configurations.bs_temp), 1)
+                        : configurations.bs_temp
+                    }
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_bs || !isAuthenticated}
@@ -378,7 +390,11 @@ class ConfigForm extends Component {
                     type="text"
                     name="ms_temp"
                     onChange={val => this.handleUpdateMs('ms_temp', val)}
-                    value={roundTo(parseFloat(configurations.ms_temp), 1)}
+                    value={
+                      configurations.auto_calculate_ms
+                        ? roundTo(parseFloat(configurations.ms_temp), 1)
+                        : configurations.ms_temp
+                    }
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ms || !isAuthenticated}
@@ -395,7 +411,11 @@ class ConfigForm extends Component {
                     type="text"
                     name="ms_rate_param"
                     onChange={val => this.handleUpdateMs('ms_rate_param', val)}
-                    value={roundTo(parseFloat(configurations.ms_rate_param), 3)}
+                    value={
+                      configurations.auto_calculate_ms
+                        ? roundTo(parseFloat(configurations.ms_rate_param), 3)
+                        : configurations.ms_rate_param
+                    }
                     length="short"
                     isDisabled={configurations.auto_calculate_ms || !isAuthenticated}
                     error={configurations.error.ms_rate_param}

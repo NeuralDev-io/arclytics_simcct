@@ -290,7 +290,7 @@ def request_shared_simulation(token):
     on the front end which will request the configuration data from the backend.
     """
 
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f'{protocol}://{client_host}:{client_port}'

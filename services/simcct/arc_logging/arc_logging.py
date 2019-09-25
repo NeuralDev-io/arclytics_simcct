@@ -811,13 +811,18 @@ class AppLogging(object):
 
         Usage:
             >>> logger = AppLogging(name=__name__, tag='logger')
-            >>> logger.info({'message': 'Houston we have an interesting prob.'})
+            >>> logger.info({'message':'Houston we have an interesting prob.'})
 
         Args:
             name: the name of the calling module.
         """
         self.name = name
         self.level = _check_level(level)
+
+        # Because this logger is specific to Arclytics Sim, we check what
+        # environment we are in and by default use development
+        _env = env.get('ENV', 'development')
+
         # By default we always use the `FluentdHandler` subclass
         self.handlers = [FluentdHandler()]
         self.propagate = False

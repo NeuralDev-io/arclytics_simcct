@@ -506,6 +506,23 @@ export const runSim = () => (dispatch, getState) => {
           type: RUN_SIM,
           payload: simRes.data,
         })
+        // update sim count in localStorage
+        const currentSimCount = localStorage.getItem('simCount')
+        if (currentSimCount === undefined) {
+          localStorage.setItem('simCount', 1)
+        } else {
+          let simCount
+          try {
+            simCount = parseFloat(currentSimCount) + 1
+          } catch (err) {
+            // do nothing
+          }
+          if (Number.isNaN(simCount)) {
+            simCount = 1
+          }
+          localStorage.setItem('simCount', simCount)
+          localStorage.setItem('gotFeedback', false)
+        }
       }
     })
     .catch((err) => {

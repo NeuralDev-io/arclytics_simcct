@@ -8,6 +8,10 @@ metadata:
     service: fluentd-logging
 data:
   fluent.conf: |
+    <system>
+      workers 2
+    </system>
+    # work on multi process workers. worker0 - worker1 run in_forward
     # take anything that is sent directly to port 24224 like Python
     <source>
       @type forward
@@ -58,6 +62,9 @@ data:
           retry_max_interval 30
           retry_forever true
         </buffer>
+      </store>
+      <store>
+        @type stdout
       </store>
     </match>
 ---

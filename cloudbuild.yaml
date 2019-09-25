@@ -35,7 +35,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.2.0']
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', './kubernetes/client-gke-secure-ingress-service.yaml']
+  args: ['apply', '-f', './kubernetes/client-gke-secure-ingress-svc.yaml']
   env:
     - 'CLOUDSDK_CONTAINER_CLUSTER=arc-sim-aust'
     - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'
@@ -43,7 +43,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_service:1.2.1']
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', './kubernetes/simcct-gke-secure-ingress-service.yaml']
+  args: ['apply', '-f', './kubernetes/simcct-gke-secure-ingress-svc.yaml']
   env:
     - 'CLOUDSDK_CONTAINER_CLUSTER=arc-sim-aust'
     - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'

@@ -7,7 +7,6 @@ to also send logs as events to fluentd with the fluentd-logger library.
 """
 from setuptools import setup
 
-
 setup(
     name='arc_logging',
     version='0.8',
@@ -15,8 +14,10 @@ setup(
     license='MIT',
     author='Andrew Che',
     author_email='andrew@codeninja55.me',
-    description=('Arclytics Sim Application logging with '
-                 'fluentd and stdout stream.'),
+    description=(
+        'Arclytics Sim Application logging with '
+        'fluentd and stdout stream.'
+    ),
     long_description=__doc__,
     py_modules=['arc_logging'],
     zip_safe=False,
@@ -24,10 +25,8 @@ setup(
     platforms='any',
     install_requires=['fluent-logger'],
     classifiers=[
-        'Environment :: Web Environment',
-        'Intended Audience :: Developers',
-        'License :: MIT',
-        'Operating System :: OS Independent',
+        'Environment :: Web Environment', 'Intended Audience :: Developers',
+        'License :: MIT', 'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Topic :: Internet :: WWW/HTTP :: Logging :: fluentd',
         'Topic :: Software Development :: Libraries :: Python Modules'

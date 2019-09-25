@@ -32,14 +32,18 @@ from mongoengine.errors import ValidationError
 
 from arc_logging import AppLoggerLogger
 from sim_api.extensions import api
-from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
-                                          ElementSymbolInvalid,
-                                          MissingElementError)
+from sim_api.extensions.utilities import (
+    DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
+    MissingElementError
+)
 from sim_api.middleware import authenticate_user_cookie_restful
-from sim_api.models import (AlloyStore, Configuration, SharedSimulation,
-                            SimulationResults)
-from sim_api.token import (URLTokenError, confirm_simulation_token,
-                           generate_shared_simulation_token, generate_url)
+from sim_api.models import (
+    AlloyStore, Configuration, SharedSimulation, SimulationResults
+)
+from sim_api.token import (
+    URLTokenError, confirm_simulation_token, generate_shared_simulation_token,
+    generate_url
+)
 
 logger = AppLogger(__name__)
 

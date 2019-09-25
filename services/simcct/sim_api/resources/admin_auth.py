@@ -31,10 +31,10 @@ from sim_api.extensions import api
 from sim_api.extensions.utilities import URLTokenExpired
 from sim_api.middleware import authorize_admin_cookie_restful
 from sim_api.models import (AdminProfile, User)
-from sim_api.token import (URLTokenError, confirm_token,
-                           generate_confirmation_token,
-                           generate_promotion_confirmation_token, generate_url)
-
+from sim_api.token import (
+    URLTokenError, confirm_token, generate_confirmation_token,
+    generate_promotion_confirmation_token, generate_url
+)
 
 logger = AppLogger(__name__)
 

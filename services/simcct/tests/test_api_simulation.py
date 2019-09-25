@@ -262,5 +262,6 @@ class TestSimulationService(BaseTestCase):
             data = json.loads(res.data.decode())
             # logger.debug(data)
 
+
 if __name__ == '__main__':
     unittest.main()

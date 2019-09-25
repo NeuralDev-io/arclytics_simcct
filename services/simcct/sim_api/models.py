@@ -7,8 +7,7 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = [
-    'Andrew Che <@codeninja55>',
-    'David Matthews <@tree1004>',
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
 __license__ = 'MIT'
@@ -29,18 +28,18 @@ from typing import Tuple, Union
 import jwt
 from bson import ObjectId
 from flask import current_app, json
-from mongoengine import (BooleanField, DO_NOTHING, DateTimeField, DictField,
-                         Document, EmailField, EmbeddedDocument,
-                         EmbeddedDocumentField, EmbeddedDocumentListField,
-                         FloatField, IntField, ObjectIdField, ReferenceField,
-                         StringField, ValidationError, queryset_manager)
+from mongoengine import (
+    BooleanField, DO_NOTHING, DateTimeField, DictField, Document, EmailField,
+    EmbeddedDocument, EmbeddedDocumentField, EmbeddedDocumentListField,
+    FloatField, IntField, ObjectIdField, ReferenceField, StringField,
+    ValidationError, queryset_manager
+)
 
 from sim_api.extensions import bcrypt
-from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
-                                          ElementSymbolInvalid, JSONEncoder,
-                                          MissingElementError,
-                                          PasswordValidationError,
-                                          PeriodicTable)
+from sim_api.extensions.utilities import (
+    DuplicateElementError, ElementInvalid, ElementSymbolInvalid, JSONEncoder,
+    MissingElementError, PasswordValidationError, PeriodicTable
+)
 from arc_logging import AppLoggerLogger
 
 logger = AppLogger(__name__)
@@ -132,9 +131,8 @@ def within_percentage_bounds(val):
         raise ValidationError('Type Error.')
 
 
-def validate_no_duplicate_elements(
-        alloy_comp: list
-) -> Tuple[bool, Union[set, None]]:
+def validate_no_duplicate_elements(alloy_comp: list
+                                   ) -> Tuple[bool, Union[set, None]]:
     elements = []
     for e in alloy_comp:
         elements.append(e['symbol'])

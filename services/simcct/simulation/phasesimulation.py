@@ -968,8 +968,9 @@ class PhaseSimulation(object):
 
                 return np.float32(
                     fc / (
-                        pow(2, ((self.g - 1) / 2)) * pow((self.ae3 - tcurr), 3)
-                        * exp(-23500 / (r_gas * (tcurr + 273)))
+                        pow(2,
+                            ((self.g - 1) / 2)) * pow((self.ae3 - tcurr), 3) *
+                        exp(-23500 / (r_gas * (tcurr + 273)))
                     ) * iint_f
                 )
 
@@ -977,18 +978,17 @@ class PhaseSimulation(object):
                 pc = float(1.79 + 5.42 * (cr + mo + 4 * mo * ni))
                 dinv = np.float32(
                     (1 / exp(-27500 / (r_gas * (tcurr + 273)))) + (
-                        ((0.01 * cr) + (0.52 * mo)) /
-                        exp(-37500 / (r_gas * (tcurr + 273)))
+                        ((0.01 * cr) +
+                         (0.52 * mo)) / exp(-37500 / (r_gas * (tcurr + 273)))
                     )
                 )
 
                 return np.float32(
                     pc / (
-                            (
-                                    pow(2, ((self.g - 1) / 2))
-                                    * pow((self.ae1 - tcurr), 3)
-                                    * (1 / dinv)
-                            ) * iint_p
+                        (
+                            pow(2, ((self.g - 1) / 2)) *
+                            pow((self.ae1 - tcurr), 3) * (1 / dinv)
+                        ) * iint_p
                     )
                 )
 
@@ -1000,8 +1000,9 @@ class PhaseSimulation(object):
 
                 return np.float32(
                     bc / (
-                        pow(2, ((self.g - 1) / 2)) * pow((self.bs - tcurr), 2)
-                        * exp(-27500 / (r_gas * (tcurr + 273)))
+                        pow(2,
+                            ((self.g - 1) / 2)) * pow((self.bs - tcurr), 2) *
+                        exp(-27500 / (r_gas * (tcurr + 273)))
                     ) * iint_b
                 )
 

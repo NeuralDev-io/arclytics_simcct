@@ -7,8 +7,7 @@
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = [
-    'Andrew Che <@codeninja55>',
-    'David Matthews <@tree1004>',
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
 __credits__ = ['']
@@ -65,9 +64,8 @@ class BaseConfig:
 
     # elastic application performance monitoring
     ELASTIC_APM = {
-        'SERVER_URL': env.get(
-            'ELASTIC_APM_SERVER_URL', 'http://localhost:8200'
-        ),
+        'SERVER_URL':
+        env.get('ELASTIC_APM_SERVER_URL', 'http://localhost:8200'),
         'SERVICE_NAME': 'simcct',
         'SECRET_TOKEN': SECRET_KEY,
         'DEBUG': True

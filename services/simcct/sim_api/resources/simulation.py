@@ -33,7 +33,6 @@ from simulation.phasesimulation import PhaseSimulation
 from simulation.simconfiguration import SimConfiguration
 from simulation.utilities import ConfigurationError, SimulationError
 
-
 logger = AppLogger(__name__)
 
 sim_blueprint = Blueprint('simulation', __name__)
@@ -54,10 +53,12 @@ class Simulation(Resource):
             response['message'] = session_store
             return response, 500
 
-        log_msg = json.dumps({
-            'message': 'Session Store',
-            **session_store['configurations']
-        })
+        log_msg = json.dumps(
+            {
+                'message': 'Session Store',
+                **session_store['configurations']
+            }
+        )
         logger.debug(log_msg)
 
         session_configs = session_store.get('configurations')
@@ -138,10 +139,12 @@ class Simulation(Resource):
             apm.capture_exception()
             return response, 400
 
-        log_msg = json.dumps({
-            'message': 'SimConfigs Instance',
-            **sim.configs.__dict__
-        })
+        log_msg = json.dumps(
+            {
+                'message': 'SimConfigs Instance',
+                **sim.configs.__dict__
+            }
+        )
         logger.debug(log_msg)
 
         # Now we do the simulation part but catch all exceptions and return it

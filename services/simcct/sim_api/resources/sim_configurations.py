@@ -7,8 +7,7 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = [
-    'Andrew Che <@codeninja55>',
-    'David Matthews <@tree1004>',
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
@@ -37,7 +36,6 @@ from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, ConfigurationError
 
 configs_blueprint = Blueprint('sim_configurations', __name__)
-
 
 logger = AppLogger(__name__)
 

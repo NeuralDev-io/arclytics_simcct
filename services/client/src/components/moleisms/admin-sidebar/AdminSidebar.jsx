@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
 import ActivityIcon from 'react-feather/dist/icons/activity'
 import DatabaseIcon from 'react-feather/dist/icons/database'
 import UsersIcon from 'react-feather/dist/icons/users'
@@ -19,30 +20,33 @@ class AdminSidebar extends Component {
     return (
       <div className={styles.sidebar}>
         <h4>Dashboard</h4>
-        <a
+        <Link
           id="analytics"
-          href="/admin/analytics"
+          to="/admin/analytics"
+          onClick={() => this.setState({ active: 'analytics' })}
           className={`${styles.item} ${active === 'analytics' && styles.active}`}
         >
           <ActivityIcon className={styles.icon} />
           <span>Analytics</span>
-        </a>
-        <a
+        </Link>
+        <Link
           id="alloys"
-          href="/admin/alloys"
+          to="/admin/alloys"
+          onClick={() => this.setState({ active: 'alloys' })}
           className={`${styles.item} ${active === 'alloys' && styles.active}`}
         >
           <DatabaseIcon className={styles.icon} />
           <span>Alloy database</span>
-        </a>
-        <a
+        </Link>
+        <Link
           id="users"
-          href="/admin/users"
+          to="/admin/users"
+          onClick={() => this.setState({ active: 'users' })}
           className={`${styles.item} ${active === 'users' && styles.active}`}
         >
           <UsersIcon className={styles.icon} />
           <span>Manage users</span>
-        </a>
+        </Link>
       </div>
     )
   }

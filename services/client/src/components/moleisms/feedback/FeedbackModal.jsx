@@ -10,24 +10,19 @@ import Button from '../../elements/button'
 import TextArea from '../../elements/textarea'
 import { ToastModal } from '../../elements/modal'
 import { buttonize } from '../../../utils/accessibility'
+import {
+  updateFeedback,
+  closeFeedback,
+  submitFeedback,
+} from '../../../state/ducks/feedback/actions'
 
 import styles from './FeedbackModal.module.scss'
 
 class FeedbackModal extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      visible: false,
-      backdrop: false,
-      givingFeedback: props.givingFeedback || false,
-      rate: -1,
-      message: '',
-    }
-  }
-
   componentDidMount = () => {
+    const { updateFeedbackConnect } = this.props
     // check here if it's turn to pop up feedback modal
-    this.setState({ visible: true })
+    updateFeedbackConnect({ visible: true })
   }
 
   handleSubmit = () => {
@@ -35,7 +30,7 @@ class FeedbackModal extends Component {
   }
 
   renderRating = () => {
-    const { rate } = this.state
+    const { feedback: { rate }, updateFeedbackConnect } = this.props
     const iconArray = [
       <Terrible key={1} className={`${styles.ratingIcon} ${styles.rate1} ${rate === 1 ? styles.active : ''}`} />,
       <Bad key={2} className={`${styles.ratingIcon} ${styles.rate2} ${rate === 2 ? styles.active : ''}`} />,
@@ -49,7 +44,7 @@ class FeedbackModal extends Component {
       <div
         key={point}
         className={styles.individualRate}
-        {...buttonize(() => this.setState({ rate: point }))}
+        {...buttonize(() => updateFeedbackConnect({ rate: point }))}
       >
         {iconArray[index]}
         <div className={styles.text}>{textArray[index]}</div>
@@ -59,17 +54,21 @@ class FeedbackModal extends Component {
 
   render() {
     const {
-      visible,
-      backdrop,
-      givingFeedback,
-      value,
-      message,
-    } = this.state
+      feedback: {
+        visible,
+        backdrop,
+        givingFeedback,
+        rate,
+        message,
+      },
+      updateFeedbackConnect,
+      closeFeedbackConnect,
+    } = this.props
     return (
       <React.Fragment>
         <div
           className={`${styles.backdrop} ${backdrop ? styles.show : ''}`}
-          {...buttonize(() => this.setState({ visible: false, backdrop: false }))}
+          {...buttonize(closeFeedbackConnect)}
         />
         <ToastModal show={visible} className={`${styles.modal} ${givingFeedback ? styles.form : ''}`}>
           {
@@ -85,7 +84,7 @@ class FeedbackModal extends Component {
                   <h6>Tell us more about your experience</h6>
                   <TextArea
                     name="message"
-                    onChange={val => this.setState({ message: val })}
+                    onChange={val => updateFeedbackConnect({ message: val })}
                     value={message}
                     placeholder="Message (optional)"
                     length="stretch"
@@ -94,12 +93,12 @@ class FeedbackModal extends Component {
                     <Button
                       onClick={this.handleSubmit}
                       length="long"
-                      isDisabled={value === -1}
+                      isDisabled={rate === -1}
                     >
                       Submit
                     </Button>
                     <Button
-                      onClick={() => this.setState({ visible: false, backdrop: false })}
+                      onClick={closeFeedbackConnect}
                       length="long"
                       appearance="text"
                     >
@@ -112,13 +111,13 @@ class FeedbackModal extends Component {
                 <div className={styles.asking}>
                   <h6>Help us improve your experience.</h6>
                   <Button
-                    onClick={() => this.setState({ backdrop: true, givingFeedback: true })}
+                    onClick={() => updateFeedbackConnect({ backdrop: true, givingFeedback: true })}
                     length="long"
                   >
                     Give feedback
                   </Button>
                   <Button
-                    onClick={() => this.setState({ visible: false })}
+                    onClick={() => updateFeedbackConnect({ visible: false })}
                     appearance="text"
                   >
                     No, thanks
@@ -133,19 +132,27 @@ class FeedbackModal extends Component {
 }
 
 FeedbackModal.propTypes = {
-  givingFeedback: PropTypes.bool,
+  // given by connect()
+  feedback: PropTypes.shape({
+    visible: PropTypes.bool,
+    backdrop: PropTypes.bool,
+    givingFeedback: PropTypes.bool,
+    rate: PropTypes.number,
+    message: PropTypes.string,
+  }).isRequired,
+  updateFeedbackConnect: PropTypes.func.isRequired,
+  closeFeedbackConnect: PropTypes.func.isRequired,
+  submitFeedbackConnect: PropTypes.func.isRequired,
 }
 
-FeedbackModal.defaultProps = {
-  givingFeedback: false,
-}
-
-const mapStateToProps = (state) => ({
-  
+const mapStateToProps = state => ({
+  feedback: state.feedback,
 })
 
 const mapDispatchToProps = {
-  
+  updateFeedbackConnect: updateFeedback,
+  closeFeedbackConnect: closeFeedback,
+  submitFeedbackConnect: submitFeedback,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(FeedbackModal)

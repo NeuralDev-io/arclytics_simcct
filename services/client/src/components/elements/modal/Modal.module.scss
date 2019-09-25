@@ -8,7 +8,7 @@
   opacity: 0;
   width: 100vw;
   height: 100vh;
-  transition: $ease-in-cubic all .4s;
+  transition: $ease-in-out-cubic all .4s;
 
   display: flex;
   flex-flow: column nowrap;
@@ -18,12 +18,18 @@
   &.show {
     opacity: 1;
     z-index: 9999;
+
+    .modalContainer {
+      top: 0;
+    }
   }
 }
 
 .modalContainer {
   z-index: 1;
   position: relative;
+  top: 1rem;
+  transition: $ease-in-out-cubic all .5s;
 
   .modal {
     background-color: var(--n0);

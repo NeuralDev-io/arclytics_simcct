@@ -38,4 +38,11 @@ RUN pip install --quiet --no-cache-dir -r requirements.txt
 COPY . /usr/src/app
 RUN rm -rf /usr/src/app/entrypoint.sh
 
+# install our flask-fluentd-logger
+WORKDIR /usr/src/app/fluentd_logging
+RUN python setup.py install
+
+# go back to app source directory
+WORKDIR /usr/src/app
+
 CMD ["gunicorn", "manage:app", "--keep-alive 15", "--config=configs/gunicorn_conf.py"]

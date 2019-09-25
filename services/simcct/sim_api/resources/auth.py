@@ -14,7 +14,7 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.05'
-"""auth.py: 
+"""auth.py:
 
 This script describes the Users authentication endpoints for registration,
 login, and logout.
@@ -35,7 +35,7 @@ from geoip2.errors import AddressNotFoundError
 from mongoengine.errors import NotUniqueError, ValidationError
 
 from logger import AppLogger
-from sim_api.extensions import bcrypt, cache
+from sim_api.extensions import bcrypt
 from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
 from sim_api.middleware import (authenticate_user_and_cookie_flask)
@@ -748,7 +748,6 @@ def logout(_) -> Tuple[dict, int]:
 
 @auth_blueprint.route('/auth/status', methods=['GET'])
 @authenticate_user_and_cookie_flask
-@cache.cached(timeout=600, key_prefix='user_status')
 def get_user_status(user) -> Tuple[dict, int]:
     """Get the current session status of the user."""
     is_profile = True

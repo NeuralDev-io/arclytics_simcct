@@ -53,11 +53,65 @@ import sys
 import threading
 import time
 import traceback
+import warnings
 import weakref
+from os import W_OK, access, makedirs, path
 from os import environ as env
+from pathlib import Path
 from typing import Any, Union
 
 from fluent import sender
+
+# ========================================================================= #
+#      LOGGER FILE PATH DATA
+# ========================================================================= #
+PWD = os.path.dirname(os.path.abspath(__file__))
+# should be arclytics_sim/services/simcct/
+BASE_DIR = os.path.abspath(os.path.join(PWD, os.pardir))
+PREFIX_LOG_PATH = Path(BASE_DIR) / 'logs'
+
+
+def check_logpath(log_path):
+    """
+    Tests if the logger has access to the the given path and sets up
+    directories.
+
+    Note:
+        Should always yield a valid path. May default log directory. Will throw
+        warnings.RuntimeWarning if permission do not allow file write at path.
+
+    Args:
+        log_path: A str with the path for desired log file. Abspath > relpath.
+        debug_mode: Way to make debug easier by forcing path to local.
+
+    Returns:
+        str: the path to log to.
+             If path exists or can be created, will return log_path else it
+             returns '.' as "local path only" response.
+    """
+
+    # Try to create path to log
+    if not path.exists(PREFIX_LOG_PATH.absolute()):
+        try:
+            makedirs(PREFIX_LOG_PATH.absolute(), exist_ok=True)
+        except PermissionError as e:
+            warning_msg = (
+                "Unable to create logging file path. Default to '.'\n" +
+                "\tLog Path: {}\n".format(log_path) +
+                "\tException: {}\n".format(e)
+            )
+            warnings.warn(warning_msg, RuntimeWarning)
+
+    if not access(PREFIX_LOG_PATH.absolute(), W_OK):
+        # Unable to write to log path
+        warning_msg = (
+            "Write permissions not allowed on path. Defaulting to '.'\n" +
+            "\tLog Path: {}".format(log_path)
+        )
+        warnings.warn(warning_msg, RuntimeWarning)
+        return '.'
+
+    return log_path
 
 # ========================================================================= #
 #      MISCELLANEOUS MODULE DATA
@@ -218,22 +272,7 @@ def _release_lock():
 # ========================================================================= #
 #      LOGGING RECORD
 # ========================================================================= #
-
-class EventRecord(object):
-    """
-    A EventRecord instance represents an event being logged.
-
-    EventRecord instances are created every time something is logged. They
-    contain all the information pertinent to the event being logged. The
-    main information passed in is in msg to create the message field of the
-    record. The record also includes information such as when the record was
-    created, the source line where the logging call was made, and any exception
-    information to be logged.
-
-    The EventRecord instances are then converted to a dictionary as per the
-    requirement for the `fluentd` Event object.
-    """
-
+class LogRecord(object):
     def __init__(
             self,
             name: str,
@@ -280,6 +319,53 @@ class EventRecord(object):
             self.thread = None
             self.threadName = None
 
+    def __str__(self):
+        return '<LogRecord {}, {}, {}, {}, {}, {}>'.format(
+            self.name,
+            self.level_num,
+            self.pathname,
+            self.module,
+            self.funcName,
+            str(self.msg)
+        )
+
+    def get_log_formatted(self):
+        return '{asctime} : {hostname} : {name} : {level_name} : {message}'.format(
+            asctime=format_time(self),
+            hostname=self.hostname,
+            name=self.name,
+            level_name=self.level_name,
+            message=str(self.msg)
+        )
+
+    __repr__ = __str__
+
+    def get_message(self):
+        """Return the message for this LogRecord."""
+        return str(self.msg)
+
+
+class EventRecord(LogRecord):
+    """
+    A EventRecord instance represents an event being logged.
+
+    EventRecord instances are created every time something is logged. They
+    contain all the information pertinent to the event being logged. The
+    main information passed in is in msg to create the message field of the
+    record. The record also includes information such as when the record was
+    created, the source line where the logging call was made, and any exception
+    information to be logged.
+
+    The EventRecord instances are then converted to a dictionary as per the
+    requirement for the `fluentd` Event object.
+    """
+
+    def __init__(self, name: str, level: Union[int, str], pathname, lineno, msg,
+                 exc_info, func=None, stack_info=None):
+        super(EventRecord, self).__init__(
+            name, level, pathname, lineno, msg, exc_info, func, stack_info
+        )
+
     def level_str(self):
         return str(self.level_name).lower()
 
@@ -287,12 +373,7 @@ class EventRecord(object):
         # TODO(andrew@neuraldev.io): Check for other types.
         # For the log, we want to print the whole stringified msg object
         # sent to us rather than just the message alone.
-        log = '{timestamp} : {name} : {level_name} : {message}'.format(
-            timestamp=self.created,
-            name=self.name,
-            level_name=self.level_name,
-            message=str(self.msg)
-        )
+        log = self.get_log_formatted()
 
         data = {
             'timestamp': format_time(self),
@@ -342,16 +423,11 @@ class EventRecord(object):
 
     __repr__ = __str__
 
-    def get_message(self):
-        """Return the message for this EventRecord."""
-        return str(self.msg)
-
-
 #
 # Not using a Formatter from the `logging` module but we want to use the
 # same formatting for the dates so we will make it a module method.
 #
-CONVERTER = time.gmtime
+CONVERTER = time.localtime
 DEFAULT_TIME_FMT = '%Y-%m-%d %H:%M:%S'
 DEFAULT_MSEC_FMT = '%s,%03d'
 
@@ -519,7 +595,7 @@ class Handler(object):
             _release_lock()
 
     # noinspection PyBroadException,PyMethodMayBeStatic
-    def handle_errors(self, record: EventRecord):
+    def handle_errors(self, record: Union[EventRecord, LogRecord]):
         """
         Handle errors which occur during an emit() call.
 
@@ -578,6 +654,9 @@ class FluentdHandler(Handler):
     def __init__(self, tag: str = ''):
         """Initialize the `fluentd` handler.
 
+        There is no need for a level as we would like all messages to be
+        sent to the Handler.
+
         Args:
             tag: the prefix tag to be used for a `fluentd` event log.
         """
@@ -594,7 +673,7 @@ class FluentdHandler(Handler):
         self.__stream = sender.FluentSender(self.tag, host=host, port=port)
 
     # noinspection PyBroadException
-    def emit(self, record: EventRecord):
+    def emit(self, record: Union[LogRecord, EventRecord]):
         """Emit a record using the `fluentd-logger.sender.emit`. We also
         handle any exceptions that occurs from trying to send.
 
@@ -604,7 +683,16 @@ class FluentdHandler(Handler):
         try:
             # Ensure we send the logs and if it's not sent we handle the error
             # by printing to `sys.stderr` at a more low-level.
-            if not self.__stream.emit(record.level_str(), record.data_dict()):
+
+            ev_record = record
+            if isinstance(record, LogRecord):
+                import copy
+                ev_record = copy.copy(record)
+                ev_record.__class__ = EventRecord
+
+            if not self.__stream.emit(
+                    ev_record.level_str(), ev_record.data_dict()
+            ):
                 self.handle_errors(record)
                 self.__stream.clear_last_error()
                 # reraise the exception so we can handle it
@@ -667,7 +755,7 @@ class StreamHandler(Handler):
             msg = record
             stream = self.stream
             # issue 35046: merged two stream.writes into one.
-            stream.write(msg + self.terminator)
+            stream.write(msg.get_log_formatted() + self.terminator)
             self.flush()
         except Exception:
             self.handle_errors(record)
@@ -791,41 +879,77 @@ class _StderrHandler(StreamHandler):
         return sys.stderr
 
 
-_default_last_resort = _StderrHandler(WARNING)
-last_resort_handler = _default_last_resort
+_DEFAULT_LAST_RESORT = _StderrHandler(WARNING)
+LAST_RESORT_HANDLER = _DEFAULT_LAST_RESORT
 
 
 # ========================================================================= #
 #      LOGGER
 # ========================================================================= #
 
-class AppLogging(object):
+class AppLogger(object):
     """
     A Python `logging` library inspired logger that uses a EventRecord and logs
     a message to the `fluentd` driver in a specific format depending on the
     data type of the message.
     """
-    def __init__(self, name: str = '', level=NOTSET):
+    def __init__(self, name: str, level: int = NOTSET):
         """Instantiate the `FluentdLogger` instance with optional values
         passed in.
 
         Usage:
-            >>> logger = AppLogging(name=__name__, tag='logger')
+            >>> import arc_logging
+            >>> logger = AppLogger(name=__name__, level=arc_logging.DEBUG)
             >>> logger.info({'message':'Houston we have an interesting prob.'})
 
         Args:
-            name: the name of the calling module.
+            name: a required name of the calling module.
+            level: the level to set the logger to print messages.
         """
+        # The name is used to store loggers and define how a LogRecord is
+        # created for the logger.
         self.name = name
+        # Check the level is correctly passed
         self.level = _check_level(level)
+
+        self.handlers = []
+        self.propagate = False
+        # By default we always use the `FluentdHandler` subclass
+        self.handlers.append(FluentdHandler())
 
         # Because this logger is specific to Arclytics Sim, we check what
         # environment we are in and by default use development
-        _env = env.get('ENV', 'development')
+        _production = env.get('FLASK_ENV', 'development') == 'production'
 
-        # By default we always use the `FluentdHandler` subclass
-        self.handlers = [FluentdHandler()]
-        self.propagate = False
+        # If we are using development mode, we want to print to sys.stderr too
+        if not _production:
+            # Add a console handler that prints to `sys.stderr`
+            console_handler = StreamHandler(stream=sys.stderr)
+            console_handler.set_name('console_handler')
+            self.handlers.append(console_handler)
+
+            if not os.path.isdir(PREFIX_LOG_PATH):
+                try:
+                    os.makedirs(PREFIX_LOG_PATH)
+                except OSError as e:
+                    print(
+                        "Error: {} - {}.".format(e.filename, e.strerror),
+                        file=sys.stderr
+                    )
+            logfile_path = os.path.abspath(
+                os.path.join(PREFIX_LOG_PATH, (self.name + ".log"))
+            )
+            log_path = check_logpath(logfile_path)
+
+            self.handlers.append(FileHandler(log_path, delay=True))
+
+    def set_level(self, level):
+        """Set the logging level of this logger.
+
+        Args:
+            level: must be an int or a str.
+        """
+        self.level = _check_level(level)
 
     @staticmethod
     def find_caller(stack_info=False):
@@ -887,7 +1011,10 @@ class AppLogging(object):
                 exc_info = (type(exc_info), exc_info, exc_info.__traceback__)
             elif not isinstance(exc_info, tuple):
                 exc_info = sys.exc_info()
-        record = EventRecord(
+
+        # We always use the BASE superclass and then we use Python duck typing
+        # to cast it later to any Record we subclass with.
+        record = LogRecord(
             name=self.name,
             level=level,
             pathname=filename,
@@ -897,9 +1024,10 @@ class AppLogging(object):
             func=func,
             stack_info=_stack_info
         )
+
         self.handle(record)
 
-    def handle(self, record: EventRecord):
+    def handle(self, record: LogRecord):
         """Send the record to the `fluentd` driver."""
         self.call_handlers(record)
 
@@ -925,12 +1053,16 @@ class AppLogging(object):
         while c:
             for handler in c.handlers:
                 found = found + 1
+                # This checks the handler vs. logger levels and only calls
+                # the emit for the handlers required. We are not concerned
+                # here as we want to print everything for development.
+                # if record.levelno >= handler.level:
                 handler.handle(record)
             if not c.propagate:
                 c = None   # break out
         if found == 0:
-            if last_resort_handler:
-                last_resort_handler.handle(record)
+            if LAST_RESORT_HANDLER:
+                LAST_RESORT_HANDLER.handle(record)
 
     def debug(self, msg: Union[str, dict], **kwargs):
         """Log 'msg' with severity 'DEBUG'.

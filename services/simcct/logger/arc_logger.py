@@ -94,7 +94,7 @@ class AppLogger(object):
         values for 'debug', 'stdout', and 'profiler'.
     """
     PWD = os.path.dirname(os.path.abspath(__file__))
-    # should be arclytics_sim/services/users/
+    # should be arclytics_sim/services/simcct/
     BASE_DIR = os.path.abspath(os.path.join(PWD, os.pardir))
     PREFIX_LOG_PATH = Path(BASE_DIR) / 'logs'
     PREFIX_CONFIG_PATH = os.path.abspath(os.path.join(BASE_DIR, 'configs'))

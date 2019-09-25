@@ -1289,7 +1289,7 @@ while [[ "$1" != "" ]] ; do
                   . ${WORKDIR}/kubernetes/scripts/configure_repset_auth.sh
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/mongo-gke-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/mongo-gke-svc.yaml"
                   kubectl delete pvc mongo-pvc-mongo-0 --namespace=arclytics
                   kubectl delete pvc mongo-pvc-mongo-1 --namespace=arclytics
                   # kubectl delete pvc mongo-pvc-mongo-2
@@ -1323,10 +1323,10 @@ while [[ "$1" != "" ]] ; do
                       --type pd-ssd redis-ssd-disk \
                       ${LOCATION_COMMAND} ${REPLICA_ZONE_REDIS}
                   kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
-                  kubectl create -f "${WORKDIR}/kubernetes/redis-gke-service.yaml" --validate=false
+                  kubectl create -f "${WORKDIR}/kubernetes/redis-gke-svc.yaml" --validate=false
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/redis-gke-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/redis-gke-svc.yaml"
                   kubectl delete pvc redis-pvc-redis-0 --namespace=arclytics
                   kubectl delete pv redis-pv --namespace=arclytics
                   sleep 15
@@ -1360,13 +1360,13 @@ while [[ "$1" != "" ]] ; do
                   rm /tmp/es-gke-pv.yaml
                   sleep 3
 
-                  kubectl create -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"
+                  kubectl create -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-svc.yaml"
                   kubectl rollout status sts/elasticsearch
                   # To check cluster state
                   # kubectl exec curl-hash-id -- curl http://elasticsearch-0.elasticsearch:9200/_cluster/state?pretty
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-svc.yaml"
                   kubectl delete pvc elasticsearch-pvc-elasticsearch-0 --namespace=arclytics
                   kubectl delete pvc elasticsearch-pvc-elasticsearch-1 --namespace=arclytics
                   kubectl delete pvc elasticsearch-pvc-elasticsearch-2 --namespace=arclytics
@@ -1410,10 +1410,10 @@ while [[ "$1" != "" ]] ; do
             while [[ "$3" != "" ]]; do
               case $3 in
                 create )
-                  kubectl create -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
+                  kubectl create -f "${WORKDIR}/kubernetes/efk-kibana-gke-svc.yaml"
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-kibana-gke-svc.yaml"
                   ;;
                 port-forward )
                   KIBANA_POD_NAME=$(kubectl get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
@@ -1427,10 +1427,10 @@ while [[ "$1" != "" ]] ; do
             while [[ "$3" != "" ]]; do
               case $3 in
                 create )
-                  kubectl apply -f "${WORKDIR}/kubernetes/efk-apm-gke-service.yaml"
+                  kubectl apply -f "${WORKDIR}/kubernetes/efk-apm-gke-svc.yaml"
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/efk-apm-gke-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-apm-gke-svc.yaml"
                   ;;
               esac
               shift
@@ -1489,10 +1489,10 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 create )
                   # eval $(minikube docker-env)
-                  kubectl create -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-service.yaml"
+                  kubectl create -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
                   ;;
               esac
               shift

@@ -2,5 +2,11 @@ env
 .dockerignore
 Dockerfile
 Dockerfile-prod
+Dockerfile-worker
 /htmlcov/
 /logs/
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+README.md

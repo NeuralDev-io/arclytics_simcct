@@ -6,8 +6,11 @@
 # Attributions:
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-
+__author__ = [
+    'Andrew Che <@codeninja55>',
+    'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
 __credits__ = ['']
 __license__ = 'TBA'
 __version__ = '0.1.0'
@@ -17,22 +20,25 @@ __status__ = 'development'
 __date__ = '2019.06.04'
 """flask_conf.py: 
 
-Just some configuration settings.
+These configurations define the way that a Flask application is create and 
+the context used for it.
 """
 
-import os
+from os import environ as env
 from sim_api.extensions.utilities import JSONEncoder
 
 
 class BaseConfig:
     """Base configuration"""
     TESTING = False
-    SECRET_KEY = os.environ.get('SECRET_KEY', None)
-    SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT', None)
+    SECRET_KEY = env.get('SECRET_KEY', None)
+    SECURITY_PASSWORD_SALT = env.get('SECURITY_PASSWORD_SALT', None)
+
+    # Flask-RESTful JSON encoder change
+    RESTFUL_JSON = {'cls': JSONEncoder}
 
     # Bcrypt and Token encoding
     BCRYPT_LOG_ROUNDS = 12
-    RESTFUL_JSON = {'cls': JSONEncoder}
     TOKEN_EXPIRATION_DAYS = 30
     TOKEN_EXPIRATION_SECONDS = 0
 
@@ -44,27 +50,38 @@ class BaseConfig:
     SESSION_USE_SIGNER = True
 
     # Redis Connection
-    redis_host = os.environ.get('REDIS_HOST', None)
-    redis_port = os.environ.get('REDIS_PORT', None)
-
-    # FLASK CACHING
-    CACHE_KEY_PREFIX = 'cache'
-    CACHE_REDIS_URL = f'redis://{redis_host}:{redis_port}/2'
-    CACHE_TYPE = 'redis'
+    redis_host = env.get('REDIS_HOST', None)
+    redis_port = env.get('REDIS_PORT', None)
 
     # CELERY REDIS
     CELERY_BROKER_URL = f'redis://{redis_host}:{redis_port}/5'
     CELERY_RESULT_BACKEND = f'redis://{redis_host}:{redis_port}/6'
 
+    # fluentd
+    FLUENTD_HOST = env.get('FLUENTD_HOST', 'localhost')
+    FLUENTD_PORT = env.get('FLUENTD_PORT', 24224)
+    FLUENTD_SCHEME = 'http'
+    FLUENTD_PREFIX_TAG = 'simcct.fluentd.logger'
+
+    # elastic application performance monitoring
+    ELASTIC_APM = {
+        'SERVER_URL': env.get(
+            'ELASTIC_APM_SERVER_URL', 'http://localhost:8200'
+        ),
+        'SERVICE_NAME': 'simcct',
+        'SECRET_TOKEN': SECRET_KEY,
+        'DEBUG': True
+    }
+
 
 class DevelopmentConfig(BaseConfig):
-    """Development configuration"""
+    """Development configuration."""
     MONGO_DBNAME = 'arc_dev'
     BCRYPT_LOG_ROUNDS = 4
 
 
 class TestingConfig(BaseConfig):
-    """Testing configuration"""
+    """Testing configuration."""
     TESTING = True
     MONGO_DBNAME = 'arc_test'
     BCRYPT_LOG_ROUNDS = 4
@@ -72,31 +89,31 @@ class TestingConfig(BaseConfig):
     TOKEN_EXPIRATION_SECONDS = 5
     PRESERVE_CONTEXT_ON_EXCEPTION = False
 
-    # Ensure teh cache is null in testing because it cannot pickle
-    # Flask-Testing TestResponse objects.
-    CACHE_TYPE = 'null'
-
     SESSION_PERMANENT = False
     REDIS_DB = 2
 
 
 class ProductionConfig(BaseConfig):
-    """Production configuration"""
+    """Production configuration."""
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
-    MONGO_DBNAME = os.environ.get('MONGO_APP_DB')
+    MONGO_DBNAME = env.get('MONGO_APP_DB')
     BCRYPT_LOG_ROUNDS = 12
 
     # Redis Connection
-    REDIS_HOST = os.environ.get('REDIS_HOST', None)
-    REDIS_PORT = os.environ.get('REDIS_PORT', None)
-    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
+    REDIS_HOST = env.get('REDIS_HOST', None)
+    REDIS_PORT = env.get('REDIS_PORT', None)
+    REDIS_PASSWORD = env.get('REDIS_PASSWORD', None)
     redis_uri = f'redis://user:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}'
-
-    # Production Flask Cache
-    CACHE_REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', None)
-    CACHE_REDIS_URL = f'{redis_uri}/2'
 
     # Production Celery
     CELERY_BROKER_URL = f'{redis_uri}/5'
     CELERY_RESULT_BACKEND = f'{redis_uri}/6'
+
+    # production elastic application performance monitoring
+    ELASTIC_APM = {
+        'SERVER_URL': env.get('ELASTIC_APM_SERVER_URL', None),
+        'SERVICE_NAME': 'simcct',
+        'SECRET_TOKEN': env.get('SECRET_KEY'),
+        'DEBUG': False
+    }

@@ -58,8 +58,8 @@ class LastSimulation(Resource):
         `last_configurations` and `last_alloy_store`.
 
         Args:
-            user_id: a valid user_id verified and passed by the
-                     `sim_api.middleware.authenticate` method.
+            user: a valid `models.User` object verified and passed by the
+            `sim_api.middleware.authenticate` method.
 
         Returns:
             A HTTP Flask Restful Response.
@@ -177,8 +177,8 @@ class LastSimulation(Resource):
         storage from the `sim_api.models.User` document.
 
         Args:
-            user_id: a valid user_id verified and passed by the
-                     `sim_api.middleware.authenticate` method.
+            user: a valid `models.User` object verified and passed by the
+            `sim_api.middleware.authenticate` method.
 
         Returns:
             A HTTP Flask Restful Response.

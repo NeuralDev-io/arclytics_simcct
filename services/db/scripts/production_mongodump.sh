@@ -17,8 +17,8 @@ kubectl exec mongo-0 -c mongo-container -- mongodump --host localhost \
 kubectl cp mongo-0:/data/backups/dump_data \
     ./services/db/production_data/dump_data
 
-#mongo --host localhost \
-#    --port 27017 \
-#    -u "${MONGO_ROOT_USER}" \
-#    -p "${MONGO_ROOT_PASSWORD}" \
-#    --authenticationDatabase admin \
+# kubectl exec -it mongo-0 -c mongo-container -- mongo --host localhost \
+#     --port 27017 \
+#     -u "${MONGO_ROOT_USER}" \
+#     -p "${MONGO_ROOT_PASSWORD}" \
+#     --authenticationDatabase admin

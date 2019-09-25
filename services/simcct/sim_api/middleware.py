@@ -1,29 +1,34 @@
 # -*- coding: utf-8 -*-
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
-# auth_decorators.py
+# middleware.py
 #
 # Attributions:
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
+__author__ = [
+    'Andrew Che <@codeninja55>',
+    'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
 __license__ = 'TBA'
 __version__ = '0.1.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__status__ = 'production'
 __date__ = '2019.07.06'
-"""auth_decorators.py: 
+"""middleware.py: 
 
-{Description}
+This is the request middleware that ensures every single request is checked 
+for cookies and authentication or authorisation based on the endpoint View 
+methods used.
 """
 
 from functools import wraps
 from threading import Thread
 
 from bson import ObjectId
-from flask import jsonify, request, session
+from flask import jsonify, request, session, json
 from mongoengine import DoesNotExist
 
 from logger import AppLogger
@@ -93,6 +98,9 @@ def authenticate_user_and_cookie_flask(f):
 
         if not user.active:
             response['message'] = 'This user account has been disabled.'
+            logger.info(
+                json.dumps({"message": response['message'], "user": user.email})
+            )
             return jsonify(response), 403
 
         return f(user, *args, **kwargs)
@@ -148,14 +156,21 @@ def authorize_admin_cookie_flask(f):
         except DoesNotExist as e:
             response['errors'] = str(e)
             response['message'] = 'User does not exist.'
+            logger.exception(response['message'], exc_info=True)
             return jsonify(response), 404
 
         if not user.active:
             response['message'] = 'This user account has been disabled.'
+            logger.info(
+                json.dumps({"message": response['message'], "user": user.email})
+            )
             return jsonify(response), 403
 
         if not user.is_admin:
             response['message'] = 'Not authorized.'
+            logger.info(
+                json.dumps({"message": response['message'], "user": user.email})
+            )
             return jsonify(response), 403
 
         return f(user, *args, **kwargs)
@@ -214,6 +229,9 @@ def authenticate_user_cookie_restful(f):
 
         if not user.active:
             response['message'] = 'This user account has been disabled.'
+            logger.info(
+                json.dumps({"message": response['message'], "user": user.email})
+            )
             return response, 403
 
         return f(user, *args, **kwargs)
@@ -269,14 +287,21 @@ def authorize_admin_cookie_restful(f):
         except DoesNotExist as e:
             response['errors'] = str(e)
             response['message'] = 'User does not exist.'
+            logger.exception(response['message'], exc_info=True)
             return response, 404
 
         if not user.active:
             response['message'] = 'This user account has been disabled.'
+            logger.info(
+                json.dumps({"message": response['message'], "user": user.email})
+            )
             return response, 403
 
         if not user.is_admin:
             response['message'] = 'Not authorized.'
+            logger.info(
+                json.dumps({"message": response['message'], "user": user.email})
+            )
             return response, 403
 
         return f(user, *args, **kwargs)
@@ -318,11 +343,16 @@ def authenticate(f):
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
+            response['errors'] = str(e)
             response['message'] = 'User does not exist.'
+            logger.exception(response['message'], exc_info=True)
             return response, 404
 
         if not user.active:
             response['message'] = 'This user account has been disabled.'
+            logger.info(
+                json.dumps({"message": response["message"], "user": user.email})
+            )
             return response, 403
 
         return f(resp, *args, **kwargs)

@@ -83,6 +83,13 @@
     right: -.75rem;
     top: calc(100% + 1.25rem);
   }
+
+  &.left {
+    left: initial;
+    transform: initial;
+    right: 1.5rem;
+    top: -.6rem;
+  }
 }
 
 .error {
@@ -91,7 +98,7 @@
 
   &:hover {
     background-color: rgba(var(--r500-rgb), 0.2);
-    border-color: 1px solid var(--r500);
+    border: 1px solid var(--r500);
   }
   &:hover:not([disabled]) {
     background-color: rgba(var(--r500-rgb), 0.2);

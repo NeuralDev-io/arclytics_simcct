@@ -6,6 +6,7 @@ import {
   CHANGE_PASSWORD,
   SAVE_SIM,
   GET_SIM,
+  GET_LAST_SIM,
 } from './types'
 import { addFlashToast } from '../toast/actions'
 
@@ -18,11 +19,21 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
     },
   })
     .then((res) => {
-      if (res.status !== 200) throw new Error('Couldn\'t retrieve user profile')
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong. Couldn\'t load profile',
+        }
+      }
       return res.json()
     })
     .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'fail') {
+        addFlashToast({
+          message: data.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (data.status === 'success') {
         dispatch({
           type: GET_USER_PROFILE,
@@ -30,10 +41,10 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 export const createUserProfile = values => (dispatch) => {
@@ -47,11 +58,21 @@ export const createUserProfile = values => (dispatch) => {
     body: JSON.stringify(values),
   })
     .then((res) => {
-      if (res.status !== 201) throw new Error('Something went wrong')
+      if (res.status !== 201) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong. Profile was not saved',
+        }
+      }
       return res.json()
     })
     .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'fail') {
+        addFlashToast({
+          message: data.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (data.status === 'success') {
         dispatch({
           type: CREATE_USER_PROFILE,
@@ -59,10 +80,10 @@ export const createUserProfile = values => (dispatch) => {
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 export const updateUserProfile = values => (dispatch) => {
@@ -76,11 +97,21 @@ export const updateUserProfile = values => (dispatch) => {
     body: JSON.stringify(values),
   })
     .then((res) => {
-      if (res.status !== 200) throw new Error('Something went wrong')
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong. Profile was not saved',
+        }
+      }
       return res.json()
     })
     .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'fail') {
+        addFlashToast({
+          message: data.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (data.status === 'success') {
         dispatch({
           type: UPDATE_USER_PROFILE,
@@ -88,10 +119,10 @@ export const updateUserProfile = values => (dispatch) => {
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 export const updateEmail = values => (dispatch) => {
@@ -105,11 +136,21 @@ export const updateEmail = values => (dispatch) => {
     body: JSON.stringify(values),
   })
     .then((res) => {
-      if (res.status !== 200) throw new Error('Something went wrong')
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong. Email was not saved',
+        }
+      }
       return res.json()
     })
     .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'fail') {
+        addFlashToast({
+          message: data.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (data.status === 'success') {
         dispatch({
           type: UPDATE_EMAIL,
@@ -117,10 +158,10 @@ export const updateEmail = values => (dispatch) => {
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 export const changePassword = values => (dispatch) => {
@@ -134,11 +175,21 @@ export const changePassword = values => (dispatch) => {
     body: JSON.stringify(values),
   })
     .then((res) => {
-      if (res.status !== 200) throw new Error('Something went wrong')
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong. Password was not updated',
+        }
+      }
       return res.json()
     })
     .then((data) => {
-      if (data.status === 'fail') throw new Error(data.message)
+      if (data.status === 'fail') {
+        addFlashToast({
+          message: data.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (data.status === 'success') {
         dispatch({
           type: CHANGE_PASSWORD,
@@ -146,10 +197,10 @@ export const changePassword = values => (dispatch) => {
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 /**
@@ -175,13 +226,18 @@ export const saveSimulation = () => (dispatch, getState) => {
   }
 
   // eslint-disable-next-line camelcase
-  const { grain_size_ASTM, grain_size_diameter, ...others } = configurations
+  const {
+    grain_size_ASTM,
+    grain_size_diameter,
+    error,
+    ...others
+  } = configurations
   const validConfigs = {
     ...others,
     grain_size: grain_size_ASTM,
   }
 
-  return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -193,22 +249,36 @@ export const saveSimulation = () => (dispatch, getState) => {
       simulation_results: simResults,
     }),
   }).then((res) => {
-    if (res.status !== 201) throw new Error('Something went wrong')
+    if (res.status !== 201) {
+      return {
+        status: 'fail',
+        message: 'Something went wrong. Simulation was not saved',
+      }
+    }
     return res.json()
   })
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         dispatch({
           type: SAVE_SIM,
           payload: res.data,
         })
+        addFlashToast({
+          message: 'Simulation saved',
+          options: { variant: 'success' },
+        }, true)(dispatch)
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 /**
@@ -234,11 +304,21 @@ export const getSavedSimulations = () => (dispatch) => {
     },
   }).then((res) => {
     if (res.status === 404) { return { status: 'success', data: [] } }
-    if (res.status !== 200) throw new Error('Something went wrong')
+    if (res.status !== 200) {
+      return {
+        status: 'fail',
+        message: 'Couldn\'t retrieve saved simulations',
+      }
+    }
     return res.json()
   })
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         dispatch({
           type: GET_SIM,
@@ -246,8 +326,86 @@ export const getSavedSimulations = () => (dispatch) => {
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
+
+export const saveLastSim = () => (dispatch, getState) => {
+  // first, get sim alloys and configs from state
+  const { configurations, alloys, results } = getState().sim
+  const alloyStore = {
+    alloy_option: alloys.alloyOption,
+    alloys: {
+      parent: alloys.parent,
+      // TODO(daltonle): Change this when weld and mix are added 
+      weld: alloys.parent,
+      mix: alloys.parent,
+    },
+  }
+  const simResults = {
+    USER: results.USER,
+    CCT: results.CCT,
+    TTT: results.TTT,
+  }
+
+  // eslint-disable-next-line camelcase
+  const {
+    grain_size_ASTM,
+    grain_size_diameter,
+    error,
+    ...others
+  } = configurations
+  const validConfigs = {
+    ...others,
+    grain_size: grain_size_ASTM,
+  }
+
+  const alloyError = alloys.parentError
+  const configError = configurations.error
+
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/last/simulation`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      configurations: validConfigs,
+      alloy_store: alloyStore,
+      simulation_results: simResults,
+      invalid_fields: {
+        invalid_alloy_store: alloyError,
+        invalid_configs: configError,
+      },
+    }),
+  })
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
+}
+
+export const getLastSim = () => dispatch => (
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/last/simulation`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then(res => res.json())
+    .then((res) => {
+      if (res.status === 'success') {
+        dispatch({
+          type: GET_LAST_SIM,
+          payload: res.data,
+        })
+      }
+    })
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
+)

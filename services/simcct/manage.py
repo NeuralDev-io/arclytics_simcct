@@ -8,8 +8,7 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = [
-    'Andrew Che <@codeninja55>',
-    'David Matthews <@tree1004>',
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
 __license__ = 'MIT'
@@ -63,15 +62,9 @@ COV = coverage.coverage(
     ],
     omit=[
         'arc_api/__init__.py'
-        'configs/flask_conf.py',
-        'configs/gunicorn_conf.py',
-        'tests/*',
-        'configs/*',
-        'data/*',
-        'logger/*',
-        'logs/*',
-        'sim_api/extensions/Session/*',
-        'sim_api/extensions/SimSession/*',
+        'configs/flask_conf.py', 'configs/gunicorn_conf.py', 'tests/*',
+        'configs/*', 'data/*', 'logger/*', 'logs/*',
+        'sim_api/extensions/Session/*', 'sim_api/extensions/SimSession/*',
         'flask-fluentd-logger/*'
     ]
 )
@@ -103,8 +96,7 @@ def flush():
         port=int(os.environ.get('MONGO_PORT'))
     )
     redis_client = redis.Redis(
-        host=os.environ.get('REDIS_HOST'),
-        port=os.environ.get('REDIS_PORT')
+        host=os.environ.get('REDIS_HOST'), port=os.environ.get('REDIS_PORT')
     )
     print('Dropping <{}> database:'.format('arc_dev'), file=sys.stderr)
     client.drop_database('arc_dev')

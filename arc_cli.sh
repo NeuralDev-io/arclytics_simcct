@@ -1045,10 +1045,10 @@ while [[ "$1" != "" ]] ; do
       RESERVED_IP_NAME="arclytics-ip"
       CLIENT_SSL_NAME="client-app-https-cert"
       SIMCCT_SSL_NAME="simcct-app-https-cert"
-      KIBANA_SSL_NAME="kibana-app-https-cert"
+      WEBSITE_SSL_NAME="website-https-cert"
       CLIENT_HTTPS_TLS_NAME="client-app-https-secret"
       SIMCCT_HTTPS_TLS_NAME="simcct-app-https-secret"
-      KIBANA_HTTPS_TLS_NAME="kibana-app-https-secret"
+      WEBSITE_HTTPS_TLS_NAME="website-https-secret"
       CLOUD_STORAGE_BUCKET="asia.artifacts.arc-sim.appspot.com"
 
       while [[ "$2" != "" ]] ; do
@@ -1185,9 +1185,9 @@ while [[ "$1" != "" ]] ; do
             gcloud compute ssl-certificates create ${SIMCCT_SSL_NAME} \
                 --certificate "${WORKDIR}/certs/io.arclytics.api.crt" \
                 --private-key "${WORKDIR}/certs/io.arclytics.api.key"
-            gcloud compute ssl-certificates create ${KIBANA_SSL_NAME} \
-                --certificate "${WORKDIR}/certs/io.arclytics.kibana.crt.pem" \
-                --private-key "${WORKDIR}/certs/io.arclytics.kibana.key.pem"
+            gcloud compute ssl-certificates create ${WEBSITE_SSL_NAME} \
+                --certificate "${WORKDIR}/certs/io.arclytics.crt" \
+                --private-key "${WORKDIR}/certs/io.arclytics.key"
 
             # Apply the certificates to Kubernetes Secrets which will be used
             # by the Ingress controller.
@@ -1199,9 +1199,9 @@ while [[ "$1" != "" ]] ; do
                --cert "${WORKDIR}/certs/io.arclytics.api.crt" \
                --key "${WORKDIR}/certs/io.arclytics.api.key" \
                --namespace=arclytics
-            kubectl create secret tls ${KIBANA_HTTPS_TLS_NAME} \
-               --cert "${WORKDIR}/certs/io.arclytics.kibana.crt.pem" \
-               --key "${WORKDIR}/certs/io.arclytics.kibana.key.pem" \
+            kubectl create secret tls ${WEBSITE_HTTPS_TLS_NAME} \
+               --cert "${WORKDIR}/certs/io.arclytics.crt" \
+               --key "${WORKDIR}/certs/io.arclytics.key" \
                --namespace=arclytics
             ;;
           addresses )
@@ -1493,6 +1493,26 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-service.yaml"
+                  ;;
+              esac
+              shift
+            done
+            ;;
+          web )
+            while [[ "$3" != "" ]]; do
+              case $3 in
+                build )
+                  # Prune to avoid collisions of names:tags output
+                  docker system prune -af --volumes --filter 'label=service=website'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build website
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=website")
+                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_website:latest
+                  ;;
+                create )
+                  kubectl apply -f "${WORKDIR}/kubernetes/web-gke-secure-svc.yaml"
+                  ;;
+                delete )
+                  kubectl delete -f "${WORKDIR}/kubernetes/web-gke-secure-svc.yaml"
                   ;;
               esac
               shift

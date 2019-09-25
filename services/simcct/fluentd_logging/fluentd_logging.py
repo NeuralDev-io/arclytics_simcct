@@ -278,7 +278,7 @@ class EventRecord(object):
             self.pathname,
             self.module,
             self.funcName,
-            self.msg
+            str(self.msg)
         )
 
     __repr__ = __str__

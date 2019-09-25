@@ -6,13 +6,13 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__author__ = [
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.07.03'
 """users.py: 
 
@@ -20,7 +20,6 @@ This file defines all the API resource routes and controller definitions using
 the Flask Resource inheritance model.
 """
 
-import os
 from datetime import datetime
 from typing import Tuple
 
@@ -28,16 +27,15 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
-from logger import AppLogger
+from arc_logging import AppLogger
 from sim_api.extensions import api
 from sim_api.middleware import (
     authenticate_user_cookie_restful, authorize_admin_cookie_restful
 )
 from sim_api.models import (User, UserProfile)
 
-users_blueprint = Blueprint('users', __name__)
-
 logger = AppLogger(__name__)
+users_blueprint = Blueprint('users', __name__)
 
 
 class UserList(Resource):
@@ -202,6 +200,7 @@ class Users(Resource):
             response.pop('data')
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
+            logger.exception(response['message'], exc_info=True)
             return response, 418
 
         # Return response body.
@@ -249,6 +248,7 @@ class UserProfiles(Resource):
         except ValidationError as e:
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
+            logger.exception(response['message'], exc_info=True)
             return response, 400
 
         # Otherwise the save was successful and a response with the updated

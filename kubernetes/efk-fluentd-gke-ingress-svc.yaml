@@ -1,0 +1,177 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-config
+  namespace: arclytics
+  labels:
+    app: fluentd-logging
+    service: fluentd-logging
+data:
+  fluent.conf: |
+    <system>
+      workers 4
+    </system>
+    # work on multi process workers. worker0 - worker1 run in_forward
+    # take anything that is sent directly to port 24224 like Python
+    <source>
+      @type forward
+      port 24224
+      bind 0.0.0.0
+    </source>
+    # Do not collect fluentd's own logs to avoid infinite loops.
+    <match fluent.**>
+      @type null
+    </match>
+    # Do not collect healthy ReadinessProbe
+    <match healthy.**>
+      @type null
+    </match>
+    # we send logs to elasticsearch inside cluster
+    <match **>
+      @type copy
+      <store>
+        @type elasticsearch
+        @log_level "info"
+        include_tag_key true
+        scheme "#{ ENV['FLUENT_ELASTICSEARCH_SCHEME'] || 'http' }"
+        host "#{ ENV['FLUENT_ELASTICSEARCH_HOST'] || 'elasticsearch' }"
+        port "#{ ENV['FLUENT_ELASTICSEARCH_PORT'] || 9200 }"
+        ssl_verify "#{ENV['FLUENT_ELASTICSEARCH_SSL_VERIFY'] || 'true'}"
+        user "#{ENV['FLUENT_ELASTICSEARCH_USER']}" # remove these lines if not needed
+        password "#{ENV['FLUENT_ELASTICSEARCH_PASSWORD']}" # remove these lines if not needed
+        reload_connections false
+        reconnect_on_error true
+        reload_on_failure true
+        logstash_prefix fluentd
+        logstash_format true
+        index_name "fluentd"
+        type_name "application_log"
+        <buffer>
+          flush_thread_count 8
+          flush_interval 5s
+          chunk_limit_size 2M
+          queue_limit_length 64
+          retry_max_interval 30
+          retry_forever true
+        </buffer>
+      </store>
+      <store>
+        @type stdout
+      </store>
+    </match>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fluentd-service
+  namespace: arclytics
+  labels:
+    app: fluentd-logging
+    service: fluentd-logging
+spec:
+  type: NodePort
+  selector:
+    app: fluentd-logging
+  ports:
+    - name: forwarding-tcp
+      protocol: TCP
+      port: 24224
+    - name: forwarding-udp
+      protocol: UDP
+      port: 24224
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fluentd-logging
+  namespace: arclytics
+  labels:
+    app: fluentd-logging
+    service: fluentd-logging
+spec:
+  selector:
+    matchLabels:
+      app: fluentd-logging
+  template:
+    metadata:
+      labels:
+        app: fluentd-logging
+        service: fluentd-logging
+    spec:
+      initContainers:  # Create a healthy file in /tmp which can be probed
+        - name: create-probe-file
+          image: busybox
+          command:
+           - '/bin/sh'
+           - '-c'
+           - 'touch /tmp/healthy'
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: healthy-file-volume
+              mountPath: /tmp
+      containers:
+        - name: fluentd-container
+          image: asia.gcr.io/arc-sim/arc_fluentd:latest
+          ports:
+            - containerPort: 24224
+              hostPort: 24224
+              protocol: UDP
+            - containerPort: 24224
+              hostPort: 24224
+              protocol: TCP
+            - containerPort: 9880
+          readinessProbe:
+            exec:
+              command:
+                - cat
+                - /tmp/healthy
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            successThreshold: 2
+            failureThreshold: 5
+          livenessProbe:
+            exec:
+              command:
+                - cat
+                - /tmp/healthy
+            initialDelaySeconds: 15
+            periodSeconds: 60
+          env:
+            - name: FLUENT_ELASTICSEARCH_HOST
+              value: elasticsearch.arclytics.svc.cluster.local
+            - name: FLUENT_ELASTICSEARCH_PORT
+              value: "9200"
+            - name: FLUENT_ELASTICSEARCH_SCHEME
+              value: "http"
+            # X-Pack Authentication  -- required by fluentd even if not used
+            # =====================
+            - name: FLUENT_ELASTICSEARCH_USER
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: elastic_user
+            - name: FLUENT_ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: elastic_password
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          volumeMounts:
+            - name: healthy-file-volume
+              mountPath: /tmp
+            - name: fluentd-config
+              mountPath: /fluentd/etc  # path of fluentd config file
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: healthy-file-volume
+          emptyDir: {}
+        - name: fluentd-config
+          configMap:
+            name: fluentd-config

@@ -6,13 +6,16 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
+__author__ = [
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
-__license__ = 'TBA'
-__version__ = '0.3.0'
+__license__ = 'MIT'
+__version__ = '1.0.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__status__ = 'production'
 __date__ = '2019.07.13'
 """sim_configurations.py: 
 
@@ -22,17 +25,19 @@ configurations for the main simulations page.
 
 from flask import Blueprint, request
 from flask_restful import Resource
+from marshmallow import ValidationError
 
-from logger import AppLogger
-from sim_api.extensions import api
+from arc_logging import AppLogger
+from sim_api.extensions import api, apm
 from sim_api.extensions.SimSession import SimSessionService
 from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.schemas import ConfigurationsSchema
 from simulation.simconfiguration import SimConfiguration as SimConfig
-from simulation.utilities import Method
-
-logger = AppLogger(__name__)
+from simulation.utilities import Method, ConfigurationError
 
 configs_blueprint = Blueprint('sim_configurations', __name__)
+
+logger = AppLogger(__name__)
 
 
 class Configurations(Resource):
@@ -103,17 +108,19 @@ class Configurations(Resource):
                 valid_start_temp = int(start_temp)
             except ValueError as e:
                 # Save what we have validated so far
-                SimSessionService().save_session(session_store)
                 response['status'] = 'fail'
                 response['errors'] = str(e)
                 response['message'] = 'Invalid Starting Temperature.'
+                logger.exception(response['message'], exc_info=True)
+                apm.capture_exception()
                 return response, 400
             except Exception as e:
                 # Save what we have validated so far
-                SimSessionService().save_session(session_store)
                 response['status'] = 'fail'
                 response['errors'] = str(e)
                 response['message'] = 'Int conversion error.'
+                logger.exception(response['message'], exc_info=True)
+                apm.capture_exception()
                 return response, 400
             sess_configs['start_temp'] = valid_start_temp
 
@@ -123,27 +130,33 @@ class Configurations(Resource):
                 valid_cct_cool_rate = int(cct_cool_rate)
             except ValueError as e:
                 # Save what we have validated so far
-                SimSessionService().save_session(session_store)
                 response['status'] = 'fail'
                 response['errors'] = str(e)
                 response['message'] = 'Invalid CCT Cooling Rate.'
+                logger.exception(response['message'], exc_info=True)
+                apm.capture_exception()
                 return response, 400
             except Exception as e:
                 # Save what we have validated so far
-                SimSessionService().save_session(session_store)
                 response['status'] = 'fail'
                 response['errors'] = str(e)
                 response['message'] = 'Int conversion error.'
+                logger.exception(response['message'], exc_info=True)
                 return response, 400
             sess_configs['cct_cooling_rate'] = valid_cct_cool_rate
 
         sess_configs['is_valid'] = False
 
-        logger.debug('Configurations.patch Session Configurations:')
-        logger.pprint(sess_configs)
+        try:
+            valid_configs = ConfigurationsSchema().load(sess_configs)
+        except ValidationError as e:
+            response['errors'] = str(e)
+            response['message'] = 'Configurations not valid.'
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
+            return response, 400
 
-        session_store['configurations'] = sess_configs
-
+        session_store['configurations'] = valid_configs
         SimSessionService().save_session(session_store)
 
         response['status'] = 'success'
@@ -222,10 +235,10 @@ class MartensiteStart(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self, _):
-        """This GET endpoint auto calculates the `MS` and `MS Rate Param` as the
-        user has selected the auto calculate feature without the need for
-        sending
-        the compositions as they are already stored in the session store.
+        """This GET endpoint auto calculates the `MS` and `MS Rate Param` as
+        the user has selected the auto calculate feature without the need
+        for sending the compositions as they are already stored in the
+        session store.
 
         Args:
             _: a `sim_api.models.User` that is not used.
@@ -234,10 +247,6 @@ class MartensiteStart(Resource):
             A response object with appropriate status and message strings
             as well as the calculated MS temperature and MS Rate Parameter.
         """
-
-        # - If user has logged in first time, then this endpoint should not be
-        #   possible as they have no compositions.
-        #   * Need to do the validation checks for this.
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 
@@ -260,27 +269,40 @@ class MartensiteStart(Resource):
 
         session_configs['auto_calculate_ms'] = True
 
-        # TODO(andrew@neuraldev.io): Accessing "Alloy Compositions" would be by
-        #  the name of the alloy_type.
+        # DECISION:
+        # We will not implement this as it adds too much complexity to
+        # the logical path of the system state. This was not a core
+        # requirement and Dr. Bendeich often said he did not want this
+        # implemented at all.
         sess_alloy_store = session_store.get('alloy_store')
 
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
             return response, 400
 
-        # TODO(andrew@neuraldev.io): Implement the other options
+        # DECISION:
+        # We will not implement this as it adds too much complexity to
+        # the logical path of the system state. This was not a core
+        # requirement and Dr. Bendeich often said he did not want this
+        # implemented at all.
         comp_list: list = []
         if sess_alloy_store['alloy_option'] == 'single':
             comp_list = sess_alloy_store['alloys']['parent']['compositions']
+        else:
+            # Would normally find the `mix` option.
+            pass
 
         if comp_list is None:
             response['message'] = 'User has not set an Alloy.'
             return response, 400
 
-        comp_np_arr = SimConfig.get_compositions(comp_list)
-
-        if comp_np_arr is False:
-            response['message'] = 'Compositions conversion error.'
+        try:
+            comp_np_arr = SimConfig.get_compositions(comp_list)
+        except ConfigurationError as e:
+            response['errors'] = str(e)
+            response['message'] = str(e)
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 500
 
         ms_temp = SimConfig.get_ms(
@@ -333,6 +355,7 @@ class MartensiteStart(Resource):
 
         session_store = SimSessionService().load_session()
 
+        # If there is an error loading the session, we get an error message
         if isinstance(session_store, str):
             response['message'] = session_store
             return response, 500
@@ -405,19 +428,29 @@ class BainiteStart(Resource):
             response['message'] = 'No previous session initiated.'
             return response, 400
 
-        # TODO(andrew@neuraldev.io): Implement the other options
+        # DECISION:
+        # We will not implement this as it adds too much complexity to
+        # the logical path of the system state. This was not a core
+        # requirement and Dr. Bendeich often said he did not want this
+        # implemented at all.
         comp_list: list = []
         if sess_alloy_store['alloy_option'] == 'single':
             comp_list = sess_alloy_store['alloys']['parent']['compositions']
+        else:
+            # Would normally find the `mix` option.
+            pass
 
         if comp_list is None:
             response['message'] = 'User has not set an Alloy.'
             return response, 400
 
-        comp_np_arr = SimConfig.get_compositions(comp_list)
-
-        if comp_np_arr is False:
-            response['message'] = 'Compositions conversion error.'
+        try:
+            comp_np_arr = SimConfig.get_compositions(comp_list)
+        except ConfigurationError as e:
+            response['errors'] = str(e)
+            response['message'] = str(e)
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 500
 
         bs_temp = SimConfig.get_bs(
@@ -526,19 +559,28 @@ class Austenite(Resource):
             response['message'] = 'No previous session initiated.'
             return response, 400
 
-        # TODO(andrew@neuraldev.io): Implement the other options
         comp_list: list = []
         if sess_alloy_store['alloy_option'] == 'single':
             comp_list = sess_alloy_store['alloys']['parent']['compositions']
+        elif sess_alloy_store['alloy_option'] == 'mix':
+            # DECISION:
+            # We will not implement this as it adds too much complexity to
+            # the logical path of the system state. This was not a core
+            # requirement and Dr. Bendeich often said he did not want this
+            # implemented at all.
+            pass
 
         if comp_list is None:
             response['message'] = 'User has not set an Alloy.'
             return response, 400
 
-        comp_np_arr = SimConfig.get_compositions(comp_list)
-
-        if comp_np_arr is False:
-            response['message'] = 'Compositions conversion error.'
+        try:
+            comp_np_arr = SimConfig.get_compositions(comp_list)
+        except ConfigurationError as e:
+            response['errors'] = str(e)
+            response['message'] = str(e)
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 500
 
         ae1, ae3 = SimConfig.calc_ae1_ae3(comp_np_arr)

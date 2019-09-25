@@ -39,7 +39,7 @@ class UserAlloys extends Component {
   }
 
   componentDidMount = () => {
-    const { userAlloys, getUserAlloysConnect } = this.props
+    const { userAlloys = [], getUserAlloysConnect } = this.props
     if (!userAlloys || userAlloys.length === 0) getUserAlloysConnect()
   }
 
@@ -130,7 +130,9 @@ class UserAlloys extends Component {
       editModal,
     } = this.state
 
-    const tableData = userAlloys.filter(a => a.name.includes(searchName))
+    const tableData = userAlloys.filter(
+      a => a.name.toLowerCase().includes(searchName.toLowerCase()),
+    )
 
     const columns = [
       {

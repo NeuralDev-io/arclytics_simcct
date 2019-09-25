@@ -4,7 +4,8 @@
 # Connect to mongodb container
 # kubectl exec -it mongo-0 bash
 
-# kubectl cp ./services/db/production_data/* mongo-0:/data/backups/
+#kubectl cp ./services/db/production_data/* mongo-0:/data/backups/
+#export $(egrep -v '^#' .env | xargs)
 
 kubectl exec mongo-0 -c mongo-container -- \
     mongoimport --host localhost \

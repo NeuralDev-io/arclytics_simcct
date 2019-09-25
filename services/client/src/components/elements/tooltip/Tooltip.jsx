@@ -33,12 +33,15 @@ class Tooltip extends Component {
     const {
       children,
       position,
-      className,
+      className: {
+        container = '',
+        tooltip = '',
+      },
     } = this.props
     const { visible } = this.state
 
     return (
-      <div className={styles.container}>
+      <div className={`${styles.container} ${container}`}>
         {React.Children.map(children, (child, i) => {
           if (i === 0) {
             return React.cloneElement(child, {
@@ -47,7 +50,7 @@ class Tooltip extends Component {
             })
           }
           return (
-            <div className={`${styles.tooltip} ${visible && styles.visible} ${styles[position]} ${className}`}>
+            <div className={`${styles.tooltip} ${visible && styles.visible} ${styles[position]} ${tooltip}`}>
               {child}
             </div>
           )
@@ -68,12 +71,18 @@ Tooltip.propTypes = {
   // topLeft || topRight || bottomLeft || bottomRight
   position: PropTypes.string,
   // className prop to override scss styles
-  className: PropTypes.string,
+  className: PropTypes.shape({
+    container: PropTypes.string,
+    tooltip: PropTypes.string,
+  }),
 }
 
 Tooltip.defaultProps = {
   position: 'bottom',
-  className: '',
+  className: {
+    container: '',
+    tooltip: '',
+  },
 }
 
 export default Tooltip

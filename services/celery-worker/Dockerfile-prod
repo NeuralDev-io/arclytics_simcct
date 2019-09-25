@@ -18,4 +18,7 @@ COPY . /usr/src/app
 WORKDIR /usr/src/app/arc_logging
 RUN python setup.py install
 
+# Create a readiness file
+RUN touch /usr/src/app/healthy
+
 ENTRYPOINT celery worker -A celery_worker.celery -l info

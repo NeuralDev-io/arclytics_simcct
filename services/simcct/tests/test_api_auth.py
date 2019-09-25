@@ -219,7 +219,7 @@ class TestAuthEndpoints(BaseTestCase):
             print(f'User.verified: {user["verified"]}')
 
             self.assertEquals(resp.status_code, 302)
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"

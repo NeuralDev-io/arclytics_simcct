@@ -2,10 +2,10 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import AutoSizer from 'react-virtualized-auto-sizer'
-import SaveIcon from 'react-feather/dist/icons/save'
-import Button from '../../elements/button'
 import Table from '../../elements/table'
 import { SelfControlledTextField } from '../../elements/textfield'
+import { validate } from '../../../utils/validator'
+import { constraints } from './utils/constraints'
 import { updateComp } from '../../../state/ducks/sim/actions'
 
 import styles from './CompTable.module.scss'
@@ -25,20 +25,24 @@ class CompTable extends Component {
       }
     }
 
+    const err = validate(value, constraints.weight)
+    const error = { ...data.parentError }
+    if (err !== undefined) {
+      error[symbol] = err
+    } else {
+      delete error[symbol]
+    }
+
     updateCompConnect(data.alloyOption, type, {
       ...alloy,
       compositions: newComp,
-    })
+    }, error)
   }
 
   render() {
+    const { data } = this.props
     const {
-      data,
-      sessionIsInitialised,
-      isAuthenticated,
-      onSaveButtonClick,
-    } = this.props
-    const {
+      parentError,
       // alloyOption,
       parent,
       // weld,
@@ -101,12 +105,14 @@ class CompTable extends Component {
         Header: 'Elements',
         accessor: 'symbol',
         Cell: ({ value }) => (<span className={styles.symbol}>{value}</span>),
-        width: 100,
-        // width: 80,
-        Footer: () => tableData.length !== 0 && 'Total',
+        width: 80,
+        ...(() => {
+          if (tableData.length !== 0) return { Footer: 'Total' }
+          return {}
+        })(),
       },
       {
-        Header: 'Alloy 1',
+        Header: 'Weight',
         accessor: 'parent',
         Cell: ({ row, value }) => (
           <SelfControlledTextField
@@ -117,10 +123,16 @@ class CompTable extends Component {
             defaultValue={value || '0.0'}
             length="stretch"
             isDisabled={value === undefined}
+            error={parentError[row.symbol]}
+            errorTooltipPosition="left"
           />
         ),
-        Footer: () => tableData.length !== 0
-          && <span className={styles.footerText}>{parentTotal}</span>,
+        ...(() => {
+          if (tableData.length !== 0) {
+            return { Footer: () => <span className={styles.footerText}>{parentTotal}</span> }
+          }
+          return {}
+        })(),
       },
       // {
       //   Header: 'Alloy 2',
@@ -171,16 +183,8 @@ class CompTable extends Component {
                 hideDivider
                 condensed
                 loading={data.isLoading}
+                getTdProps={() => ({ style: { overflow: 'visible' } })}
               />
-              <Button
-                onClick={onSaveButtonClick}
-                className={styles.saveButton}
-                isDisabled={!sessionIsInitialised || !isAuthenticated}
-                appearance="text"
-                IconComponent={props => <SaveIcon {...props} />}
-              >
-                Save alloy
-              </Button>
             </div>
           )
         }}
@@ -190,12 +194,10 @@ class CompTable extends Component {
 }
 
 CompTable.propTypes = {
-  sessionIsInitialised: PropTypes.bool.isRequired,
-  isAuthenticated: PropTypes.bool.isRequired,
-  onSaveButtonClick: PropTypes.func.isRequired,
   data: PropTypes.shape({
     isLoading: PropTypes.bool.isRequired,
     alloyOption: PropTypes.string,
+    parentError: PropTypes.shape({}).isRequired,
     parent: PropTypes.shape({
       name: PropTypes.string,
       compositions: PropTypes.arrayOf(PropTypes.shape({

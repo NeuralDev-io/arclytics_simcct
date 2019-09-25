@@ -2,11 +2,13 @@ apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: hostvm-configurer
+  namespace: arclytics
   labels:
     app: startup-script
 spec:
   template:
     metadata:
+      namespace: arclytics
       labels:
         app: startup-script
     spec:

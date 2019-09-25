@@ -3,9 +3,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # load_production_data.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 
 __author__ = ['Andrew Che <@codeninja55>']
@@ -17,7 +17,6 @@ __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'production'
 __date__ = '2019.09.15'
-
 """load_production_data.py: 
 
 Script to load Production data into MongoDB container.
@@ -26,11 +25,11 @@ Script to load Production data into MongoDB container.
 import os
 import json
 import sys
-from sim_api.app import init_db, create_app
 from pathlib import Path
 from os import environ as env
 from sys import stderr
 from mongoengine import get_db, connect, disconnect_all, get_connection
+from sim_api import init_db, create_app
 from sim_api.models import User, UserProfile, AdminProfile
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -113,10 +112,8 @@ with app.app_context():
                 # LOAD THE ALLOY FROM ANOTHER DICTIONARY OR ARRAY BASHED ON NAME
                 pass
 
-
         # SAVE
         new_user.save()
-
 
 # ALLOYS NEED REQUIRED ELEMENTS
 # Carbon

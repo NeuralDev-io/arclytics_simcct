@@ -6,24 +6,28 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__license__ = 'TBA'
+__author__ = [
+    'Andrew Che <@codeninja55>',
+    'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
+__credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
+__license__ = 'MIT'
 __version__ = '0.1.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__status__ = 'production'
 __date__ = '2019.08.03'
 """sim_alloys.py: 
 
-{Description}
+This module defines the View methods for setting an Alloy in the frontend to
+be stored in the Flask Session object. 
 """
 
 from flask import Blueprint, request
 from flask_restful import Resource
 from marshmallow import ValidationError
 
-from logger import AppLogger
 from sim_api.extensions import api
 from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.middleware import authenticate_user_cookie_restful
@@ -32,6 +36,8 @@ from sim_api.schemas import (
 )
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, MissingElementError
+
+from logger import AppLogger
 
 logger = AppLogger(__name__)
 
@@ -125,10 +131,12 @@ class AlloyStore(Resource):
             valid_alloy = AlloySchema().load(alloy)
         except MissingElementError as e:
             response['message'] = str(e)
+            logger.exception(response['message'], exc_info=True)
             return response, 400
         except ValidationError as e:
             response['errors'] = str(e.messages)
             response['message'] = 'Alloy failed schema validation.'
+            logger.exception(response['message'], exc_info=True)
             return response, 400
 
         # Otherwise we have all the elements we need
@@ -152,11 +160,16 @@ class AlloyStore(Resource):
                 # Just quickly validate the alloy stored based on schema
                 valid_store = AlloyStoreSchema().load(session_alloy_store)
             elif alloy_option == 'mix':
-                # TODO(andrew@neuraldev.io): Implement this.
+                # DECISION:
+                # We will not implement this as it adds too much complexity to
+                # the logical path of the system state. This was not a core
+                # requirement and Dr. Bendeich often said he did not want this
+                # implemented at all.
                 pass
         except ValidationError as e:
             response['errors'] = e.messages
             response['message'] = 'Alloy failed schema validation.'
+            logger.exception(response['message'], exc_info=True)
             return response, 400
 
         session_store = SimSessionService().load_session()
@@ -170,16 +183,20 @@ class AlloyStore(Resource):
         session_configs = session_store['configurations']
 
         if not session_configs:
-            response['message'
-                     ] = 'Cannot retrieve configurations from session.'
+            response['message'] = (
+                'Cannot retrieve configurations from session.'
+            )
+            logger.error(response['message'], stack_info=True)
             return response, 500
 
         try:
             valid_configs = ConfigurationsSchema().load(session_configs)
         except ValidationError as e:
             response['errors'] = e.messages
-            response['message'
-                     ] = 'Validation error for session configurations.'
+            response['message'] = (
+                'Validation error for session configurations.'
+            )
+            logger.exception(response['message'], exc_info=True)
             return response, 500
 
         # Well, if we don't need to auto calc. anything, let's get out of here
@@ -202,7 +219,7 @@ class AlloyStore(Resource):
         if alloy_option == 'single':
             comp_list = valid_store['alloys']['parent']['compositions']
 
-        # TODO(andrew@neuraldev.io): Implement this.
+        # See Decision above.
         # else:
         # comp_list = (
         #     sess_alloy_store['mix']['compositions']
@@ -376,7 +393,11 @@ class AlloyStore(Resource):
                 # Just quickly validate the alloy stored based on schema
                 sess_alloy_store = AlloyStoreSchema().load(sess_alloy_store)
             else:
-                # TODO(andrew@neuraldev.io): Implement this.
+                # DECISION:
+                # We will not implement this as it adds too much complexity to
+                # the logical path of the system state. This was not a core
+                # requirement and Dr. Bendeich often said he did not want this
+                # implemented at all.
                 pass
         except ValidationError as e:
             response['errors'] = e.messages
@@ -409,7 +430,7 @@ class AlloyStore(Resource):
         if alloy_option == 'single':
             comp_list = sess_alloy_store['alloys']['parent']['compositions']
 
-        # TODO(andrew@neuraldev.io): Implement this.
+        # See above.
         # else:
         # comp_list = (
         #     sess_alloy_store['mix']['compositions']

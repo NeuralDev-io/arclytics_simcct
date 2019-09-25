@@ -27,7 +27,7 @@ can be used to make a worker by running
 from celery import Celery
 from flask import Flask
 
-from sim_api.app import create_app
+from sim_api import create_app
 
 
 def make_celery(app: Flask = None) -> Celery:

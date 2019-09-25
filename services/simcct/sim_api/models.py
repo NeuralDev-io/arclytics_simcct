@@ -6,17 +6,20 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.3.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__author__ = [
+    'Andrew Che <@codeninja55>',
+    'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
+__license__ = 'MIT'
+__version__ = '1.3.0'
+__status__ = 'production'
 __date__ = '2019.07.03'
 """models.py: 
 
-This module stores the mongoengine.Document models for the Arclytics API Users
+This module defines the Object Document Model and schemas for the Arclytics
+Sim database using MongoDB. Here we define the `mongoengine.Document` and 
+`mongoengine.EmbeddedDocument` models for the Arclytics SimCCT API 
 microservice.
 """
 
@@ -32,13 +35,13 @@ from mongoengine import (BooleanField, DO_NOTHING, DateTimeField, DictField,
                          FloatField, IntField, ObjectIdField, ReferenceField,
                          StringField, ValidationError, queryset_manager)
 
-from logger import AppLogger
 from sim_api.extensions import bcrypt
 from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
                                           ElementSymbolInvalid, JSONEncoder,
                                           MissingElementError,
                                           PasswordValidationError,
                                           PeriodicTable)
+from logger import AppLogger
 
 logger = AppLogger(__name__)
 
@@ -109,7 +112,9 @@ def within_percentage_bounds(val):
         raise ValidationError('Must be more than 0.0.')
 
 
-def validate_no_duplicate_elements(alloy_comp: list) -> Tuple[bool, set]:
+def validate_no_duplicate_elements(
+        alloy_comp: list
+) -> Tuple[bool, Union[set, None]]:
     elements = []
     for e in alloy_comp:
         elements.append(e['symbol'])
@@ -121,9 +126,11 @@ def validate_no_duplicate_elements(alloy_comp: list) -> Tuple[bool, set]:
 
 # ========== # EMBEDDED DOCUMENTS MODELS SCHEMA # ========== #
 class UserProfile(EmbeddedDocument):
-    # Not having this for now until we can figure out where to store the photos
-    # TODO(andrew@neuraldev.io): Uncomment Pillow dependencies Dockerfile to use
-    #  and install Pillow==6.1.0
+    # Decision:
+    # Not adding profile photos as not required however, we can easily do so
+    # by adding the following dependencies. Additionally, you must define a
+    # Cloud CDN to ensure the photos are not stored in this server as per
+    # best-practices and industry standards.
     # profile_photo = ImageField(
     #     required=False,
     #     size=(800, 600, True),
@@ -193,6 +200,7 @@ class SimulationResults(EmbeddedDocument):
     # Using DictField() because it requires no validation on the internal
     # nesting but we don't really need to validate this data.
 
+    # Comments are just to describe the schema of the data.
     # Both of these will have the following:
     # ferrite_nucleation: {"time": [], "temp": []}
     # ferrite_completion: {"time": [], "temp": []}
@@ -277,6 +285,7 @@ class Configuration(EmbeddedDocument):
             'cct_cooling_rate': self.cct_cooling_rate
         }
 
+    # noinspection PyMethodParameters
     @queryset_manager
     def as_dict(cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
@@ -319,9 +328,10 @@ class Element(EmbeddedDocument):
                 msg = 'Field is required: ["Element.weight"]'
                 raise ElementInvalid(message=msg)
 
+        # Make sure they are a valid Element symbol as per the `PeriodicTable`
         try:
             valid_symbol = PeriodicTable[self.symbol].name
-        except KeyError as e:
+        except KeyError:
             raise ElementSymbolInvalid()
         self.symbol = valid_symbol
 
@@ -561,11 +571,10 @@ class User(Document):
                 jwt=auth_token, key=current_app.config.get('SECRET_KEY', None)
             )
             return ObjectId(payload['sub'])
-        except jwt.ExpiredSignatureError as e:
-            # logger.error('Signature expired error.')
+        except jwt.ExpiredSignatureError:
             return 'Signature expired. Please login again.'
-        except jwt.InvalidTokenError as e:
-            # logger.error('Invalid token error.')
+        except jwt.InvalidTokenError:
+            logger.info('Invalid token error.')
             return 'Invalid token. Please log in again.'
 
     @staticmethod
@@ -579,6 +588,7 @@ class User(Document):
         Returns:
             A valid JWT token or None if there is any kind of generic exception.
         """
+        # noinspection PyBroadException
         try:
             payload = {
                 'exp': datetime.utcnow() + timedelta(minutes=30),
@@ -592,8 +602,10 @@ class User(Document):
                 algorithm='HS256',
                 json_encoder=JSONEncoder
             )
-        except Exception as e:
-            logger.error('Encode auth token error: {}'.format(e))
+        except Exception:
+            logger.exception(
+                'Encode authentication token error.', exc_info=True
+            )
             return None
 
     @staticmethod
@@ -611,11 +623,10 @@ class User(Document):
                 jwt=auth_token, key=current_app.config.get('SECRET_KEY', None)
             )
             return ObjectId(payload['sub'])
-        except jwt.ExpiredSignatureError as e:
-            # logger.error('Signature expired error.')
+        except jwt.ExpiredSignatureError:
             return 'Signature expired. Please get a new token.'
-        except jwt.InvalidTokenError as e:
-            # logger.error('Invalid token error.')
+        except jwt.InvalidTokenError:
+            logger.info('Invalid token error.')
             return 'Invalid token. Please get a new token.'
 
     # MongoEngine allows you to create custom cleaning rules for your documents
@@ -623,7 +634,16 @@ class User(Document):
     # any pre validation / data cleaning. This might be useful if you want to
     # ensure a default value based on other document values.
     def clean(self):
-        """Ensures a `password` has been stored before saving."""
+        """
+        Ensures a multitude of business logic is checked before we save the
+        User to the database. These include the following:
+          - Password must be set by calling `new_user.set_password(raw_pw)`
+          - Every time a User object is saved the `User.last_updated` datetime
+            is set to the current `utcnow()` datetime.
+          - Update the `User.is_admin` boolean based on other criteria.
+          - By default, if there is not `User.ratings` or `User.login_data`
+            we make a Python list as the default.
+        """
         if self.password is None:
             raise PasswordValidationError()
 
@@ -642,6 +662,7 @@ class User(Document):
         if not self.login_data:
             self.login_data = []
 
+    # noinspection PyMethodParameters
     @queryset_manager
     def as_dict(cls, queryset) -> list:
         """Adding an additional QuerySet context method to return a list of
@@ -703,8 +724,6 @@ class SharedSimulation(Document):
     simulation_results = EmbeddedDocumentField(
         document_type=SimulationResults, required=True, null=False
     )
-
-    # add views but dont send in dict
 
     def to_dict(self):
         return {

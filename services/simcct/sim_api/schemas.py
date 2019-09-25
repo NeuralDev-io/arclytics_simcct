@@ -25,11 +25,8 @@ from bson import ObjectId
 from marshmallow import Schema, ValidationError, fields, validates
 from marshmallow.validate import OneOf
 
-from logger import AppLogger
 from simulation.periodic import PeriodicTable
 from simulation.utilities import MissingElementError
-
-logger = AppLogger(__name__)
 
 Schema.TYPE_MAPPING[ObjectId] = fields.String
 
@@ -83,7 +80,7 @@ class ElementSchema(Schema):
         """The validate method for the symbol field."""
         try:
             PeriodicTable[value].name
-        except KeyError as e:
+        except KeyError:
             msg = (
                 'ValidationError (Element) (Field does not match a valid '
                 'element symbol in the Periodic Table: ["symbol"])'

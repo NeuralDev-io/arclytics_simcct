@@ -31,7 +31,7 @@ from arc_api.app import create_app
 COV = coverage.coverage(
     branch=True,
     include=[],
-    omit=['arc_api/app.py']
+    omit=['arc_api/__init__.py']
 )
 COV.start()
 

@@ -38,7 +38,7 @@ class FeedbackModal extends Component {
     if (simCount !== undefined) {
       // check if it's turn to pop up feedback modal
       const countToShow = ['3', '8', '13', '20']
-      if (countToShow.includes(simCount)) {
+      if (countToShow.includes(simCount) && localStorage.getItem('gotFeedback') !== 'true') {
         updateFeedbackConnect({ feedbackVisible: true })
       }
     }

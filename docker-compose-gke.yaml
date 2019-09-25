@@ -33,7 +33,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "client"
-    image: asia.gcr.io/arc-sim/arc_sim_client:1.1.7
+    image: asia.gcr.io/arc-sim/arc_sim_client:1.2.0
     ports:
       - 8080:8080
     expose:
@@ -54,7 +54,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "simcct"
-    image: asia.gcr.io/arc-sim/arc_sim_service:1.2.0
+    image: asia.gcr.io/arc-sim/arc_sim_service:1.2.1
     ports:
       - 8000:8000
     expose:
@@ -94,7 +94,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "celery-worker"
-    image: asia.gcr.io/arc-sim/arc_sim_celery:1.1.0
+    image: asia.gcr.io/arc-sim/arc_sim_celery:1.2.0
     ports:
       - 5555:5555
     expose:

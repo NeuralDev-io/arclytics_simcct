@@ -28,12 +28,14 @@ from flask_restful import Resource
 from mongoengine import DoesNotExist, FieldDoesNotExist, ValidationError
 
 from sim_api.extensions import api
-from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
-                                          ElementSymbolInvalid,
-                                          MissingElementError)
+from sim_api.extensions.utilities import (
+    DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
+    MissingElementError
+)
 from sim_api.middleware import authenticate_user_cookie_restful
-from sim_api.models import (AlloyStore, Configuration, SavedSimulation,
-                            SimulationResults)
+from sim_api.models import (
+    AlloyStore, Configuration, SavedSimulation, SimulationResults
+)
 
 save_sim_blueprint = Blueprint('user_save_simulation', __name__)
 

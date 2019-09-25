@@ -9,21 +9,49 @@ import Checkbox from '../../elements/checkbox'
 import {
   updateConfigMethod, updateGrainSize, updateMsBsAe, getMsBsAe, setAutoCalculate, updateConfig,
 } from '../../../state/ducks/sim/actions'
+import { validate, validateGroup } from '../../../utils/validator'
 import { roundTo } from '../../../utils/math'
+import { constraints } from './utils/constraints'
+import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
 
 import styles from './ConfigForm.module.scss'
 
 class ConfigForm extends Component {
+  handleUpdateGrainSize = (unit, value) => {
+    const { updateGrainSizeConnect } = this.props
+
+    // validate
+    const err = validate(value, constraints.grainSize)
+    if (err !== undefined) {
+      if (unit === 'astm') updateGrainSizeConnect(value, '', { astm: err, dia: 'Grain size can\'t be empty' })
+      else updateGrainSizeConnect('', value, { astm: 'Grain size can\'t be empty', dia: err })
+    } else {
+      // if value is valid, check if the converted value is valid
+      let converted
+      if (unit === 'astm') converted = ASTM2Dia(parseFloat(value))
+      else converted = dia2ASTM(parseFloat(value))
+
+      const convertedErr = validate(converted.toString(), constraints.grainSize)
+      if (convertedErr !== undefined) {
+        if (unit === 'astm') updateGrainSizeConnect(value, converted, { astm: '', dia: convertedErr })
+        else updateGrainSizeConnect(converted, value, { astm: convertedErr, dia: '' })
+      } else if (unit === 'astm') updateGrainSizeConnect(value, converted, {})
+      else updateGrainSizeConnect(converted, value, {})
+    }
+  }
+
   handleUpdateMs = (name, value) => {
     const { configurations, updateMsBsAeConnect } = this.props
     const data = {
       ms_temp: configurations.ms_temp,
       ms_rate_param: configurations.ms_rate_param,
     }
+    data[name] = value
 
-    if (value === '') data[name] = 0
-    else data[name] = parseFloat(value)
-    updateMsBsAeConnect('ms', data)
+    const err = validate(value, constraints.ms)
+    if (err !== undefined) {
+      updateMsBsAeConnect('ms', name, data, { [name]: err })
+    } else updateMsBsAeConnect('ms', name, data, {})
   }
 
   toggleMsAutoCalc = (value) => {
@@ -33,12 +61,15 @@ class ConfigForm extends Component {
     setAutoCalculateConnect('auto_calculate_ms', value)
 
     if (value) {
+      // if autocalculate is turned on, get the data from backend
       getMsBsAeConnect('ms')
     } else {
-      updateMsBsAeConnect('ms', {
-        ms_temp: configurations.ms_temp,
-        ms_rate_param: configurations.ms_rate_param,
-      })
+      // if turn off, make an update request to the backend
+      // with the current data
+      updateMsBsAeConnect('ms', '', {
+        ms_temp: roundTo(parseFloat(configurations.ms_temp), 1),
+        ms_rate_param: roundTo(parseFloat(configurations.ms_rate_param), 3),
+      }, {})
     }
   }
 
@@ -48,10 +79,12 @@ class ConfigForm extends Component {
       ae1_temp: configurations.ae1_temp,
       ae3_temp: configurations.ae3_temp,
     }
+    data[name] = value
 
-    if (value === '') data[name] = 0
-    else data[name] = parseFloat(value)
-    updateMsBsAeConnect('ae', data)
+    const err = validate(value, constraints.ae)
+    if (err !== undefined) {
+      updateMsBsAeConnect('ae', name, data, { [name]: err })
+    } else updateMsBsAeConnect('ae', name, data, {})
   }
 
   toggleAeAutoCalc = (value) => {
@@ -61,21 +94,26 @@ class ConfigForm extends Component {
     setAutoCalculateConnect('auto_calculate_ae', value)
 
     if (value) {
+      // if autocalculate is turned on, get the data from backend
       getMsBsAeConnect('ae')
     } else {
-      updateMsBsAeConnect('ae', {
-        ae1_temp: configurations.ae1_temp,
-        ae3_temp: configurations.ae3_temp,
-      })
+      // if turn off, make an update request to the backend
+      // with the current data
+      updateMsBsAeConnect('ae', '', {
+        ae1_temp: roundTo(parseFloat(configurations.ae1_temp), 1),
+        ae3_temp: roundTo(parseFloat(configurations.ae3_temp), 1),
+      }, {})
     }
   }
 
   handleUpdateBs = (name, value) => {
     const { updateMsBsAeConnect } = this.props
-    const data = { [name]: parseFloat(value) }
+    const data = { [name]: value }
 
-    if (value === '') data[name] = 0
-    updateMsBsAeConnect('bs', data)
+    const err = validate(value, constraints.bs)
+    if (err !== undefined) {
+      updateMsBsAeConnect('bs', name, data, { [name]: err })
+    } else updateMsBsAeConnect('bs', name, data, {})
   }
 
   toggleBsAutoCalc = (value) => {
@@ -85,11 +123,45 @@ class ConfigForm extends Component {
     setAutoCalculateConnect('auto_calculate_bs', value)
 
     if (value) {
+      // if autocalculate is turned on, get the data from backend
       getMsBsAeConnect('bs')
     } else {
-      updateMsBsAeConnect('bs', {
-        bs_temp: configurations.bs_temp,
-      })
+      // if turn off, make an update request to the backend
+      // with the current data
+      updateMsBsAeConnect('bs', '', {
+        bs_temp: roundTo(parseFloat(configurations.bs_temp), 1),
+      }, {})
+    }
+  }
+
+  handleUpdateNucleationParams = (name, value) => {
+    const { updateConfigConnect, configurations } = this.props
+    const other = name === 'nucleation_start' ? 'nucleation_finish' : 'nucleation_start'
+    const data = {
+      nucleation_start: configurations.nucleation_start,
+      nucleation_finish: configurations.nucleation_finish,
+    }
+    data[name] = value
+
+    let err
+    if (name === 'nucleation_start') {
+      err = validate(value, constraints.nucleationStart)
+    } else if (name === 'nucleation_finish') {
+      err = validate(value, constraints.nucleationFinish)
+    }
+
+    if (err !== undefined) {
+      updateConfigConnect(name, value, { [name]: err })
+      updateConfigConnect(other, data[other], {})
+    } else {
+      err = validateGroup(data, constraints.nucleationParams)
+      if (err !== undefined) {
+        updateConfigConnect(name, value, { [name]: err })
+        updateConfigConnect(other, data[other], { [other]: err })
+      } else {
+        updateConfigConnect(name, value, {})
+        updateConfigConnect(other, data[other], {})
+      }
     }
   }
 
@@ -97,8 +169,6 @@ class ConfigForm extends Component {
     const {
       configurations,
       updateConfigMethodConnect,
-      updateGrainSizeConnect,
-      updateConfigConnect,
       isAuthenticated,
     } = this.props
     const methodOptions = [
@@ -112,7 +182,7 @@ class ConfigForm extends Component {
           <div className="input-col">
             <div className={styles.headerContainer}>
               <h6>CCT/TTT method</h6>
-              <Tooltip className={styles.infoTip} position="bottom">
+              <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
                 <InfoIcon className={styles.infoIcon} />
                 <p>
                   J.S.Krikaldy, et al., &quot;Prediction of microstructure and hardenability in
@@ -146,7 +216,7 @@ class ConfigForm extends Component {
           <div className="input-col">
             <div className={styles.headerContainer}>
               <h6>Grain size</h6>
-              <Tooltip className={styles.infoTip} position="bottom">
+              <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
                 <InfoIcon className={styles.infoIcon} />
                 <p>
                   Plots a sigmoidal function distribution on a separate sheet.
@@ -158,7 +228,7 @@ class ConfigForm extends Component {
                   <br />
                   I(X) - Krikaldy (Ferrite Pearlite)
                   <br />
-                  I'(X) - Kirkaldy (Bainite)
+                  I&apos;(X) - Kirkaldy (Bainite)
                   <br />
                 </p>
               </Tooltip>
@@ -169,10 +239,11 @@ class ConfigForm extends Component {
                 <TextField
                   type="text"
                   name="grain_size_ASTM"
-                  onChange={val => updateGrainSizeConnect('astm', val)}
+                  onChange={val => this.handleUpdateGrainSize('astm', val)}
                   value={configurations.grain_size_ASTM}
                   length="short"
                   isDisabled={!isAuthenticated}
+                  error={configurations.error.astm}
                 />
               </div>
               <span> = </span>
@@ -181,11 +252,12 @@ class ConfigForm extends Component {
                 <TextFieldExtra
                   type="text"
                   name="grain_size_diameter"
-                  onChange={val => updateGrainSizeConnect('dia', val)}
+                  onChange={val => this.handleUpdateGrainSize('dia', val)}
                   value={configurations.grain_size_diameter}
                   length="short"
                   suffix="μm"
                   isDisabled={!isAuthenticated}
+                  error={configurations.error.dia}
                 />
               </div>
             </div>
@@ -197,7 +269,7 @@ class ConfigForm extends Component {
             <div>
               <div className={styles.headerContainer}>
                 <h6>Ferrite/Pearlite</h6>
-                <Tooltip className={styles.infoTip} position="bottom">
+                <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
                   <InfoIcon className={styles.infoIcon} />
                   <p>
                     Ae3 = temperature below austenite to ferrite transformation becomes
@@ -215,10 +287,15 @@ class ConfigForm extends Component {
                     type="text"
                     name="ae1_temp"
                     onChange={val => this.handleUpdateAe('ae1_temp', val)}
-                    value={roundTo(configurations.ae1_temp, 1)}
+                    value={
+                      configurations.auto_calculate_ae
+                        ? roundTo(parseFloat(configurations.ae1_temp), 1)
+                        : configurations.ae1_temp
+                    }
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae || !isAuthenticated}
+                    error={configurations.error.ae1_temp}
                   />
                 </div>
                 <div className="input-row">
@@ -230,10 +307,15 @@ class ConfigForm extends Component {
                     type="text"
                     name="ae3_temp"
                     onChange={val => this.handleUpdateAe('ae3_temp', val)}
-                    value={roundTo(configurations.ae3_temp, 1)}
+                    value={
+                      configurations.auto_calculate_ae
+                        ? roundTo(parseFloat(configurations.ae3_temp), 1)
+                        : configurations.ae3_temp
+                    }
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ae || !isAuthenticated}
+                    error={configurations.error.ae3_temp}
                   />
                 </div>
               </div>
@@ -248,7 +330,7 @@ class ConfigForm extends Component {
             <div>
               <div className={styles.headerContainer}>
                 <h6>Bainite</h6>
-                <Tooltip className={styles.infoTip} position="bottom">
+                <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
                   <InfoIcon className={styles.infoIcon} />
                   <p>
                     Bainite transformation temperature (C)
@@ -265,10 +347,15 @@ class ConfigForm extends Component {
                     type="text"
                     name="bs_temp"
                     onChange={val => this.handleUpdateBs('bs_temp', val)}
-                    value={roundTo(configurations.bs_temp, 1)}
+                    value={
+                      configurations.auto_calculate_bs
+                        ? roundTo(parseFloat(configurations.bs_temp), 1)
+                        : configurations.bs_temp
+                    }
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_bs || !isAuthenticated}
+                    error={configurations.error.bs_temp}
                   />
                 </div>
               </div>
@@ -283,7 +370,7 @@ class ConfigForm extends Component {
             <div>
               <div className={styles.headerContainer}>
                 <h6>Martensite</h6>
-                <Tooltip className={styles.infoTip} position="bottom">
+                <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
                   <InfoIcon className={styles.infoIcon} />
                   <p>
                     Martensite transformation temperature (C)
@@ -303,10 +390,15 @@ class ConfigForm extends Component {
                     type="text"
                     name="ms_temp"
                     onChange={val => this.handleUpdateMs('ms_temp', val)}
-                    value={roundTo(configurations.ms_temp, 1)}
+                    value={
+                      configurations.auto_calculate_ms
+                        ? roundTo(parseFloat(configurations.ms_temp), 1)
+                        : configurations.ms_temp
+                    }
                     length="short"
                     suffix="°C"
                     isDisabled={configurations.auto_calculate_ms || !isAuthenticated}
+                    error={configurations.error.ms_temp}
                   />
                 </div>
                 <div className="input-row">
@@ -319,9 +411,14 @@ class ConfigForm extends Component {
                     type="text"
                     name="ms_rate_param"
                     onChange={val => this.handleUpdateMs('ms_rate_param', val)}
-                    value={roundTo(configurations.ms_rate_param, 1)}
+                    value={
+                      configurations.auto_calculate_ms
+                        ? roundTo(parseFloat(configurations.ms_rate_param), 3)
+                        : configurations.ms_rate_param
+                    }
                     length="short"
                     isDisabled={configurations.auto_calculate_ms || !isAuthenticated}
+                    error={configurations.error.ms_rate_param}
                   />
                 </div>
               </div>
@@ -338,7 +435,7 @@ class ConfigForm extends Component {
         <div className={styles.third}>
           <div className={styles.headerContainer}>
             <h5>Nucleation parameters</h5>
-            <Tooltip className={styles.infoTip} position="bottom">
+            <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
               <InfoIcon className={styles.infoIcon} />
               <p>
                 Plots a sigmoidal function distribution on a separate sheet This is for
@@ -359,11 +456,12 @@ class ConfigForm extends Component {
               <TextFieldExtra
                 type="text"
                 name="nucleation_start"
-                onChange={val => updateConfigConnect('nucleation_start', val)}
+                onChange={val => this.handleUpdateNucleationParams('nucleation_start', val)}
                 value={configurations.nucleation_start}
                 length="short"
                 suffix="%"
                 isDisabled={!isAuthenticated}
+                error={configurations.error.nucleation_start}
               />
             </div>
             <div className="input-row">
@@ -371,11 +469,12 @@ class ConfigForm extends Component {
               <TextFieldExtra
                 type="text"
                 name="nucleation_finish"
-                onChange={val => updateConfigConnect('nucleation_finish', val)}
+                onChange={val => this.handleUpdateNucleationParams('nucleation_finish', val)}
                 value={configurations.nucleation_finish}
                 length="short"
                 suffix="%"
                 isDisabled={!isAuthenticated}
+                error={configurations.error.nucleation_finish}
               />
             </div>
           </div>
@@ -394,6 +493,7 @@ ConfigForm.propTypes = {
   isAuthenticated: PropTypes.bool.isRequired,
   // props from connect()
   configurations: PropTypes.shape({
+    error: PropTypes.shape({}),
     method: PropTypes.string,
     grain_size_ASTM: textFieldType,
     grain_size_diameter: textFieldType,

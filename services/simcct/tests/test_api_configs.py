@@ -24,7 +24,7 @@ import os
 import unittest
 from flask import current_app
 from flask_testing import TestCase
-from sim_api.app import create_app
+from sim_api import create_app
 
 app = create_app()
 

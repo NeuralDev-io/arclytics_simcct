@@ -12,11 +12,18 @@ export const getUsers = () => (dispatch) => {
     },
   })
     .then((res) => {
-      if (res.status !== 200) throw new Error('Something went wrong')
+      if (res.status !== 200) {
+        return { status: 'fail', message: 'Couldn\'t retrieve user list' }
+      }
       return res.json()
     })
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        })
+      }
       if (res.status === 'success') {
         dispatch({
           type: GET_USERS,
@@ -24,10 +31,10 @@ export const getUsers = () => (dispatch) => {
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 export const updateUser = () => (dispatch) => {

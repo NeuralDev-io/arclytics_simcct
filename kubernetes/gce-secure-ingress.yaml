@@ -1,7 +1,8 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: arc-secure-ingress
+  name: arc-gce-ingress
+  namespace: arclytics
   annotations:
     kubernetes.io/ingress.global-static-ip-name: "arclytics-ip"
     kubernetes.io/ingress.class: "gce"
@@ -17,12 +18,12 @@ spec:
   - host: api.arclytics.io
     http:
       paths:
-      - backend:
-          serviceName: simcct-service
-          servicePort: 8000
+        - backend:
+            serviceName: simcct-service
+            servicePort: 8000
   - host: app.arclytics.io
     http:
       paths:
-      - backend:
-          serviceName: client-service
-          servicePort: 8080
+        - backend:
+            serviceName: client-service
+            servicePort: 8080

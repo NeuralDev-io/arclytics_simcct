@@ -6,6 +6,7 @@ import {
   CHANGE_PASSWORD,
   SAVE_SIM,
   GET_SIM,
+  GET_LAST_SIM,
 } from './types'
 
 const initialState = {
@@ -19,6 +20,7 @@ const initialState = {
     },
   },
   savedSimulations: [],
+  lastSim: {},
 }
 
 const reducer = (state = initialState, action) => {
@@ -77,6 +79,11 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         savedSimulations: [...action.payload],
+      }
+    case GET_LAST_SIM:
+      return {
+        ...state,
+        lastSim: action.payload,
       }
     default:
       return state

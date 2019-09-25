@@ -1,0 +1,79 @@
+@import '../../../styles/animation';
+
+.getting {
+  // padding: 2.5rem 2.5rem;
+  width: 30rem;
+  margin: auto;
+
+  & > h4 {
+    margin-bottom: .5rem;
+  }
+
+  & > p {
+    margin-bottom: 2rem;
+  }
+
+  & > h6 {
+    margin-bottom: 1.25rem;
+    color: var(--n700);
+  }
+
+  & > .rating {
+    width: 100%;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    .individualRate {
+      display: flex;
+      flex-flow: column nowrap;
+      align-items: center;
+
+      .ratingIcon {
+        width: 2.5rem;
+        height: 2.5rem;
+        cursor: pointer;
+        transition: $ease-in-out-cubic all .2s;
+        margin-bottom: .5rem;
+      
+        &:hover, &.active {
+          transform: scale(1.1);
+
+          & ~.text {
+            opacity: 1;
+            top: 0;
+          }
+        }
+      }
+
+      .text {
+        position: relative;
+        opacity: 0;
+        top: -.5rem;
+        transition: $ease-in-out-cubic all .2s;
+      }
+    }
+  }
+}
+
+.rate1:hover, .rate1.active {
+  stroke: var(--r500);
+}
+
+.rate2:hover, .rate2.active {
+  stroke: var(--o500);
+}
+
+.rate3:hover, .rate3.active {
+  stroke: var(--arc500);
+}
+
+.rate4:hover, .rate4.active {
+  stroke: var(--t500);
+}
+
+.rate5:hover, .rate5.active {
+  stroke: var(--g500);
+}

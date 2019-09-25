@@ -139,7 +139,7 @@ def create_app(configs_path=app_settings) -> Flask:
     """
 
     # instantiate the application
-    app = Flask('simcct_flask_server')
+    app = Flask(__name__)
 
     # ========== # CONFIGURATIONS # ========== #
     # Setup the configuration for Flask

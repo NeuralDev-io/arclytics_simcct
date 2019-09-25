@@ -12,9 +12,8 @@ TEMPFILE_USER=$(mktemp)
 TEMPFILE_PW=$(mktemp)
 
 # Get the decoded values from the credentials secrets store.
-# shellcheck disable=SC2086
-kubectl get secret credentials -o jsonpath="{.data.mongo_root_user}" | base64 -d > ${TEMPFILE_USER}
-kubectl get secret credentials -o jsonpath="{.data.mongo_root_password}" | base64 -d > ${TEMPFILE_PW}
+kubectl get secret credentials -o jsonpath="{.data.mongo_root_user}" | base64 -d > "${TEMPFILE_USER}"
+kubectl get secret credentials -o jsonpath="{.data.mongo_root_password}" | base64 -d > "${TEMPFILE_PW}"
 
 # Get the decoded password back from the temp files.
 MONGO_ROOT_USER=$(<"${TEMPFILE_USER}")

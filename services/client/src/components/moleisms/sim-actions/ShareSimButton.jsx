@@ -57,7 +57,12 @@ class ShareSimButton extends Component {
      * server always expects to use and store the ASTM version so we put it back in
      * but we ensure we use the right request body key in the API request.
      */
-    const { grain_size_ASTM, grain_size_diameter, ...others } = configurations
+    const {
+      grain_size_ASTM,
+      grain_size_diameter,
+      error,
+      ...others
+    } = configurations
     return {
       ...others,
       grain_size: grain_size_ASTM,

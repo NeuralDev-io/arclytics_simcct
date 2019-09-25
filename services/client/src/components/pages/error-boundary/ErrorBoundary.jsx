@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Button from '../../elements/button'
-import { ReactComponent as WarningImage } from '../../../assets/undraw_warning_cyit.svg'
+import { ReactComponent as WarningImage } from '../../../assets/undraw_react_y7wq.svg'
 import styles from './ErrorBoundary.module.scss'
 
 /*
@@ -43,12 +43,13 @@ class ErrorBoundary extends React.Component {
         <div>
           <div className={styles.container}>
             <WarningImage className={styles.warningImage} />
-            <h2>Oops!! Something went wrong.</h2>
+            <h2>Oops something went wrong</h2>
             <span>
-              Wait till we get the error fixed or you can
-              try reloading the page or contacting us.
+              We might have lost a few electrons. We are working on it.
+              <br />
+              Meanwhile, try reloading the page or check your connection.
             </span>
-            <Button className={styles.refreshButton} onClick={ this.handleRefereshPage } length="long">Refresh page</Button>
+            <Button className={styles.refreshButton} onClick={this.handleRefereshPage} length="long">Refresh page</Button>
           </div>
         </div>
       )

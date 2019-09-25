@@ -59,7 +59,7 @@ __date__ = '2018.12.18'
 """
 
 import time
-from arc_logging import AppLoggerLogger
+from arc_logging import AppLogger
 
 start: float = 0.0
 

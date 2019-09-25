@@ -38,7 +38,7 @@ from sim_api.schemas import (
 )
 from simulation.utilities import Method
 from simulation.simconfiguration import SimConfiguration as SimConfig
-from arc_logging import AppLoggerLogger
+from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 

@@ -53,8 +53,8 @@ RUN ln -s /usr/src/app/entrypoint.sh /entrypoint.sh
 # add app
 COPY . /usr/src/app
 
-# install our flask-fluentd-logger
-WORKDIR /usr/src/app/fluentd_logging
+# install our arc_logging library
+WORKDIR /usr/src/app/arc_logging
 RUN python setup.py install
 
 # go back to app source directory

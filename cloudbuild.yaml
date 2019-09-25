@@ -33,7 +33,7 @@ steps:
   - 'celery-worker'
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.1.7']
+  args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.2.0']
 - name: 'gcr.io/cloud-builders/kubectl'
   args: ['apply', '-f', './kubernetes/client-gke-secure-ingress-service.yaml']
   env:
@@ -41,7 +41,7 @@ steps:
     - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_service:1.2.0']
+  args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_service:1.2.1']
 - name: 'gcr.io/cloud-builders/kubectl'
   args: ['apply', '-f', './kubernetes/simcct-gke-secure-ingress-service.yaml']
   env:
@@ -55,7 +55,7 @@ steps:
     - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.1.0']
+  args: ['push', 'asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.2.0']
 - name: 'gcr.io/cloud-builders/kubectl'
   args: ['apply', '-f', './kubernetes/celery-gke-deployment.yaml']
   env:
@@ -65,9 +65,9 @@ steps:
 images:
 #- 'asia.gcr.io/$PROJECT_ID/docker-compose:latest'
 #- 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
-- 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.1.5'
-- 'asia.gcr.io/$PROJECT_ID/arc_sim_service:1.1.6'
-- 'asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.1.0'
+- 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.2.0'
+- 'asia.gcr.io/$PROJECT_ID/arc_sim_service:1.2.1'
+- 'asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.2.0'
 
 tags: ['arclytics-sim', 'neuraldev']
 timeout: '9000s'

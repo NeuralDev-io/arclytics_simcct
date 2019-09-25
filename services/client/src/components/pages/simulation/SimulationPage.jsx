@@ -61,7 +61,11 @@ class SimulationPage extends Component {
       loadPersistedSimConnect()
     } else if (lastSim === undefined || Object.keys(lastSim).length === 0) {
       getLastSimConnect()
-        .then(() => loadLastSimConnect())
+        .then((res) => {
+          if (res.status === 'success') {
+            loadLastSimConnect()
+          }
+        })
     }
   }
 

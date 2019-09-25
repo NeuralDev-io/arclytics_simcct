@@ -7,8 +7,6 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
-
-__credits__ = ['']
 __license__ = 'TBA'
 __version__ = '0.1.0'
 __maintainer__ = 'Andrew Che'
@@ -28,7 +26,7 @@ from email_validator import EmailNotValidError, validate_email
 from flask import Blueprint, redirect, render_template, request
 from flask_restful import Resource
 
-from logger import AppLogger
+from arc_logging import AppLogger
 from sim_api.extensions import api
 from sim_api.extensions.utilities import URLTokenExpired
 from sim_api.middleware import authorize_admin_cookie_restful
@@ -36,6 +34,7 @@ from sim_api.models import (AdminProfile, User)
 from sim_api.token import (URLTokenError, confirm_token,
                            generate_confirmation_token,
                            generate_promotion_confirmation_token, generate_url)
+
 
 logger = AppLogger(__name__)
 

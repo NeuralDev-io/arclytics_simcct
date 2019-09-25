@@ -37,7 +37,7 @@ from sim_api.schemas import (
 )
 from simulation.utilities import Method
 from simulation.simconfiguration import SimConfiguration as SimConfig
-from logger import AppLogger
+from arc_logging import AppLoggerLogger
 
 logger = AppLogger(__name__)
 
@@ -213,6 +213,9 @@ class LastSimulation(Resource):
                 'last_alloy_store'] = user.last_alloy_store.to_dict()
 
         if not user.last_simulation_results:
+            # We don't need to do anything here so we can just keep going
+            pass
+        else:
             session_store['simulation_results'] = (
                 user.last_simulation_results.to_dict()
             )

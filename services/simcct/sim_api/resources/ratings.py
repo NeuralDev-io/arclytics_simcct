@@ -27,7 +27,7 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine import ValidationError
 
-from logger import AppLogger
+from arc_logging import AppLoggerLogger
 from sim_api.extensions import api
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import Feedback, Rating

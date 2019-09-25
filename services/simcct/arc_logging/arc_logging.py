@@ -1094,7 +1094,13 @@ class AppLogger(object):
         """
         self._log(WARNING, msg, **kwargs)
 
-    def error(self, msg: Union[str, dict], stack_info: bool = True, **kwargs):
+    def error(
+            self,
+            msg: Union[str, dict],
+            stack_info: bool = True,
+            exc_info: bool = False,
+            **kwargs
+    ):
         """Log 'msg' with severity 'ERROR'.
 
         To pass exception information, use the keyword argument exc_info with
@@ -1102,7 +1108,9 @@ class AppLogger(object):
 
         logger.error("Houston, we have a major problem", exc_info=True)
         """
-        self._log(ERROR, msg, stack_info=stack_info, **kwargs)
+        self._log(
+            ERROR, msg, stack_info=stack_info, exc_info=exc_info, **kwargs
+        )
 
     def critical(self, msg: Union[str, dict], **kwargs):
         """Log 'msg' with severity 'CRITICAL'.
@@ -1116,6 +1124,6 @@ class AppLogger(object):
 
     fatal = critical
 
-    def exception(self, msg: Union[str, dict], **kwargs):
+    def exception(self, msg: Union[str, dict], exc_info: bool = True, **kwargs):
         """Convenience method for logging an ERROR with exception info."""
-        self.error(msg, exc_info=True, stack_info=True, **kwargs)
+        self.error(msg, exc_info=exc_info, stack_info=True, **kwargs)

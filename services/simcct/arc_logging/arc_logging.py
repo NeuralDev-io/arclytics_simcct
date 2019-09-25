@@ -53,6 +53,7 @@ import sys
 import threading
 import time
 import traceback
+import weakref
 from os import environ as env
 from typing import Any, Union
 
@@ -382,6 +383,40 @@ def format_time(record, datefmt=None):
 # ========================================================================= #
 #      HANDLER CLASSES AND FUNCTIONS
 # ========================================================================= #
+# map of handler names to handlers
+_handlers = weakref.WeakValueDictionary()
+# added to allow handlers to be removed in reverse of order initialized
+_handler_list = []
+
+
+def _remove_handler_ref(wr):
+    """
+    Remove a handler reference from the internal cleanup list.
+    """
+    # This function can be called during module teardown, when globals are
+    # set to None. It can also be called from another thread. So we need to
+    # pre-emptively grab the necessary globals and check if they're None,
+    # to prevent race conditions and failures during interpreter shutdown.
+    acquire, release, handlers = _acquire_lock, _release_lock, _handler_list
+    if acquire and release and handlers:
+        acquire()
+        try:
+            if wr in handlers:
+                handlers.remove(wr)
+        finally:
+            release()
+
+
+def _add_handler_ref(handler):
+    """
+    Add a handler to the internal cleanup list using a weak reference.
+    """
+    _acquire_lock()
+    try:
+        _handler_list.append(weakref.ref(handler, _remove_handler_ref))
+    finally:
+        _release_lock()
+
 
 class Handler(object):
     """
@@ -397,14 +432,46 @@ class Handler(object):
         self._name = None
         self.level = _check_level(level)
 
+        # Add the handler to the global `_handler_list`
+        # (for cleanup on shutdown)
+        _add_handler_ref(self)
+        self.lock = self.create_lock()
+
     # Property encapsulation
     def get_name(self):
         return self._name
 
     def set_name(self, name):
-        self._name = name
+        _acquire_lock()
+        try:
+            # Look for the handlers by their weak reference in the global
+            # `_handlers` dict
+            if self._name in _handlers:
+                del _handlers[self._name]
+            self._name = name
+            if name:
+                _handlers[name] = self
+        finally:
+            _release_lock()
 
     name = property(get_name, set_name)
+
+    # noinspection PyMethodMayBeStatic
+    def create_lock(self):
+        """
+        Acquire a thread lock for serializing access to the underlying I/O.
+        """
+        return threading.RLock()
+
+    def acquire(self):
+        """Acquire the I/O thread lock."""
+        if self.lock:
+            self.lock.acquire()
+
+    def release(self):
+        """Release the I/O thread lock."""
+        if self.lock:
+            self.lock.release()
 
     def emit(self, record):
         """Do whatever it takes to actually log the specified logging record.
@@ -427,8 +494,29 @@ class Handler(object):
         """
         rv = record
         if rv:
-            self.emit(record)
+            self.acquire()
+            try:
+                self.emit(record)
+            finally:
+                self.release()
         return rv
+
+    def close(self):
+        """
+        Tidy up any resources used by the handler.
+
+        This version removes the handler from an internal map of handlers,
+        _handlers, which is used for handler lookup by name. Subclasses
+        should ensure that this gets called from overridden close()
+        methods.
+        """
+        # get the module data lock, as we're updating a shared structure.
+        _acquire_lock()
+        try:    # unlikely to raise an exception, but you never know...
+            if self._name and self._name in _handlers:
+                del _handlers[self._name]
+        finally:
+            _release_lock()
 
     # noinspection PyBroadException,PyMethodMayBeStatic
     def handle_errors(self, record: EventRecord):
@@ -487,7 +575,7 @@ class FluentdHandler(Handler):
     A handler class which writes logging records, appropriately formatted,
     to the `fluentd` driver using the `sender.emit` method.
     """
-    def __init__(self, stream=None, tag: str = ''):
+    def __init__(self, tag: str = ''):
         """Initialize the `fluentd` handler.
 
         Args:
@@ -502,10 +590,8 @@ class FluentdHandler(Handler):
 
         # A handler that logs to a remote instance of `elasticsearch`.
         # The values `FLUENTD_HOST` and `FLUENTD_PORT` must be in the ENV vars.
-        if stream is None:
-            host, port = get_remote_fluentd()
-            stream = sender.FluentSender(self.tag, host=host, port=port)
-        self.__stream = stream
+        host, port = get_remote_fluentd()
+        self.__stream = sender.FluentSender(self.tag, host=host, port=port)
 
     # noinspection PyBroadException
     def emit(self, record: EventRecord):
@@ -559,8 +645,12 @@ class StreamHandler(Handler):
 
     def flush(self):
         """Flushes the stream."""
-        if self.stream and hasattr(self.stream, "flush"):
-            self.stream.flush()
+        self.acquire()
+        try:
+            if self.stream and hasattr(self.stream, "flush"):
+                self.stream.flush()
+        finally:
+            self.release()
 
     def emit(self, record):
         """
@@ -594,16 +684,92 @@ class StreamHandler(Handler):
             result = None
         else:
             result = self.stream
-            self.flush()
-            self.stream = stream
+            self.acquire()
+            try:
+                self.flush()
+                self.stream = stream
+            finally:
+                self.release()
         return result
 
     def __str__(self):
-        # level = get_level_name(self.level)
+        level = get_level_name(self.level)
         name = getattr(self.stream, 'name', '')
         if name:
             name += ' '
-        return '<{} {}>'.format(self.__class__.__name__, name)
+        return '<{} {}({})>'.format(self.__class__.__name__, name, level)
+
+    __repr__ = __str__
+
+
+class FileHandler(StreamHandler):
+    """
+    A handler class which writes formatted logging records to disk files.
+    """
+    def __init__(self, filename, mode='a', encoding=None, delay=False):
+        """Open the specified file and use it as the stream for logging."""
+        # Issue #27493: add support for Path objects to be passed in
+        filename = os.fspath(filename)
+        # keep the absolute path, otherwise derived classes which use this
+        # may come a cropper when the current directory changes
+        self.base_filename = os.path.abspath(filename)
+        self.mode = mode
+        self.encoding = encoding
+        self.delay = delay
+        if delay:
+            # We don't open the stream, but we still need to call the
+            # Handler constructor to set level, formatter, lock etc.
+            Handler.__init__(self)
+            self.stream = None
+        else:
+            StreamHandler.__init__(self, self._open())
+
+    def close(self):
+        """
+        Closes the stream.
+        """
+        self.acquire()
+        try:
+            try:
+                if self.stream:
+                    try:
+                        self.flush()
+                    finally:
+                        stream = self.stream
+                        self.stream = None
+                        if hasattr(stream, "close"):
+                            stream.close()
+            finally:
+                # Issue #19523: call unconditionally to
+                # prevent a handler leak when delay is set
+                StreamHandler.close(self)
+        finally:
+            self.release()
+
+    def _open(self):
+        """
+        Open the current base file with the (original) mode and encoding.
+        Return the resulting stream.
+        """
+        return open(self.base_filename, self.mode, encoding=self.encoding)
+
+    def emit(self, record):
+        """
+        Emit a record.
+
+        If the stream was not opened because 'delay' was specified in the
+        constructor, open it before calling the superclass's emit.
+        """
+        if self.stream is None:
+            self.stream = self._open()
+        StreamHandler.emit(self, record)
+
+    def __str__(self):
+        # level = get_level_name(self.level)
+        level = get_level_name(self.level)
+        return '<{} {}({})>'.format(
+            self.__class__.__name__, self.base_filename,  level
+        )
 
     __repr__ = __str__
 
@@ -633,7 +799,7 @@ last_resort_handler = _default_last_resort
 #      LOGGER
 # ========================================================================= #
 
-class FluentdLogging(object):
+class AppLogging(object):
     """
     A Python `logging` library inspired logger that uses a EventRecord and logs
     a message to the `fluentd` driver in a specific format depending on the
@@ -644,8 +810,8 @@ class FluentdLogging(object):
         passed in.
 
         Usage:
-            >>> logger = FluentdLogging(name=__name__, tag='logger')
-            >>> logger.info({'message': 'Log Hello World'})
+            >>> logger = AppLogging(name=__name__, tag='logger')
+            >>> logger.info({'message': 'Houston we have an interesting prob.'})
 
         Args:
             name: the name of the calling module.

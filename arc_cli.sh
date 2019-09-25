@@ -1240,7 +1240,7 @@ while [[ "$1" != "" ]] ; do
                   for i in 1 2 3
                   do
                       gcloud compute disks create --size 200GB \
-                          --type pd-standard pd-standard-disk-$i \
+                          --type pd-ssd pd-standard-disk-$i \
                           ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
                   done
                   sleep 3
@@ -1265,14 +1265,16 @@ while [[ "$1" != "" ]] ; do
                   kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-svc.yaml" --validate=false
                   echoSpace
 
+                  kubectl rollout status sts/mongo --namespace arclytics
+
                   # Wait until the final (2nd) mongod has started properly
                   generalMessage "Waiting for the 2 containers to come up $(date)..."
                   generalMessage " (IGNORE any reported not found & connection errors)"
                   sleep 30
-                  generalMessage -n "  "
+                  generalMessage "  "
                   until kubectl --v=0 exec mongo-2 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
                       sleep 5
-                      generalMessage -n "  "
+                      generalMessage "  "
                   done
                   generalMessage "...mongo containers are now running $(date)"
                   echo
@@ -1290,7 +1292,7 @@ while [[ "$1" != "" ]] ; do
                   . ${WORKDIR}/kubernetes/scripts/configure_repset_auth.sh
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/mongo-gke-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/mongo-gke-svc.yaml"
                   kubectl delete pvc mongo-pvc-mongo-0 --namespace=arclytics
                   kubectl delete pvc mongo-pvc-mongo-1 --namespace=arclytics
                   kubectl delete pvc mongo-pvc-mongo-2 --namespace=arclytics
@@ -1320,7 +1322,7 @@ while [[ "$1" != "" ]] ; do
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_redis:${TAG}
                   ;;
                 create )
-                  gcloud compute disks create --size 50GB \
+                  gcloud compute disks create --size 30GB \
                       --type pd-ssd redis-ssd-disk \
                       ${LOCATION_COMMAND} ${REPLICA_ZONE_REDIS}
                   kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
@@ -1343,31 +1345,31 @@ while [[ "$1" != "" ]] ; do
                 create )
                   # Register GCE Fast SSD persistent disks and then create the persistent disks
                   generalMessage "Creating GCE disks for Elasticsearch"
-                  for i in 1 2
+                  for i in 1 2 3
                   do
-                      gcloud compute disks create --size 30GB \
-                          --type pd-standard es-ssd-disk-$i \
+                      gcloud compute disks create --size 20GB \
+                          --type pd-ssd es-ssd-disk-$i \
                           ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
                   done
                   sleep 3
 
                   # Create persistent volumes using disks created above
                   generalMessage "Creating GKE Persistent Volumes"
-                  for i in 1 2
+                  for i in 1 2 3
                   do
-                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/efk-elasticsearch-gke-standard-pv.yaml" > /tmp/es-gke-pv.yaml
+                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/efk-elasticsearch-gke-ssd-pv.yaml" > /tmp/es-gke-pv.yaml
                       kubectl apply -f /tmp/es-gke-pv.yaml
                   done
                   rm /tmp/es-gke-pv.yaml
                   sleep 3
 
-                  kubectl create -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"
-                  kubectl rollout status sts/elasticsearch
+                  kubectl create -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-svc.yaml"
+                  kubectl rollout status sts/elasticsearch --namespace arclytics
                   # To check cluster state
                   # kubectl exec curl-hash-id -- curl http://elasticsearch-0.elasticsearch:9200/_cluster/state?pretty
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-svc.yaml"
                   kubectl delete pvc elasticsearch-pvc-elasticsearch-0 --namespace=arclytics
                   kubectl delete pvc elasticsearch-pvc-elasticsearch-1 --namespace=arclytics
                   kubectl delete pvc elasticsearch-pvc-elasticsearch-2 --namespace=arclytics

@@ -189,6 +189,7 @@ const reducer = (state = initialState, action) => {
           ...configurations,
         },
         alloys: {
+          parentError: {},
           isLoading: false,
           dilution: 0,
           ...alloys,

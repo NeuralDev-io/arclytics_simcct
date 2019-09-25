@@ -12,5 +12,5 @@ spec:
   storageClassName: standard
   gcePersistentDisk:
     fsType: xfs
-    pdName: pd-standard-disk-INST
+    pdName: mongo-standard-disk-INST
 

@@ -1054,9 +1054,10 @@ while [[ "$1" != "" ]] ; do
       while [[ "$2" != "" ]] ; do
         case $2 in
           auth )
+            generalMessage "Getting Cluster Credentials for ${CLUSTER_NAME}"
             gcloud container clusters get-credentials ${CLUSTER_NAME} \
                 --project=${PROJECT_ID} \
-                --zone=${ZONE}
+                ${LOCATION_COMMAND}
             ;;
           config )
             gcloud compute project-info describe --project ${PROJECT_ID}
@@ -1128,7 +1129,7 @@ while [[ "$1" != "" ]] ; do
                           end
                           ) | from_gke_semver(.)
                           ')
-                  # echo ${LATEST}
+                   echo Kubernetes Version: ${LATEST}
 
                   # Create new GKE Kubernetes cluster (using host node VM images based on Ubuntu
                   # rather than ChromiumOS default & also use slightly larger VMs than default)
@@ -1143,9 +1144,9 @@ while [[ "$1" != "" ]] ; do
                       --max-nodes=3 \
                       --enable-autoscaling \
                       --node-labels=component=arc-nodes \
-                      --cluster-version=${KUBERNETES_NODE_VERSION}
+                      --cluster-version=${LATEST}
+                      #--cluster-version=${KUBERNETES_NODE_VERSION} \
                       # This may have caused the Ingress not to work with latest version
-                      # --cluster-version=${LATEST} \
                       # australia-southeast1 has 3 ZONES so 9 is more than we're allowed but ensure 8 is possible
 
                   generalMessage "Getting Cluster Credentials for ${CLUSTER_NAME}"
@@ -1236,7 +1237,7 @@ while [[ "$1" != "" ]] ; do
 
                   # Register GCE Fast SSD persistent disks and then create the persistent disks
                   generalMessage "Creating GCE disks"
-                  for i in 1 2
+                  for i in 1 2 3
                   do
                       gcloud compute disks create --size 200GB \
                           --type pd-standard pd-standard-disk-$i \
@@ -1246,9 +1247,9 @@ while [[ "$1" != "" ]] ; do
 
                   # Create persistent volumes using disks created above
                   generalMessage "Creating GKE Persistent Volumes"
-                  for i in 1 2
+                  for i in 1 2 3
                   do
-                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/mongo-gke-xfs-standard-pv.yaml" > /tmp/xfs-gke-pv.yaml
+                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/mongo-gke-xfs-ssd-pv.yaml" > /tmp/xfs-gke-pv.yaml
                       kubectl apply -f /tmp/xfs-gke-pv.yaml
                   done
                   rm /tmp/xfs-gke-pv.yaml
@@ -1261,7 +1262,7 @@ while [[ "$1" != "" ]] ; do
                   # rm $TMPFILE
 
                   # Create mongodb service with mongod stateful-set
-                  kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-service.yaml" --validate=false
+                  kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-svc.yaml" --validate=false
                   echoSpace
 
                   # Wait until the final (2nd) mongod has started properly
@@ -1269,7 +1270,7 @@ while [[ "$1" != "" ]] ; do
                   generalMessage " (IGNORE any reported not found & connection errors)"
                   sleep 30
                   generalMessage -n "  "
-                  until kubectl --v=0 exec mongo-1 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
+                  until kubectl --v=0 exec mongo-2 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
                       sleep 5
                       generalMessage -n "  "
                   done
@@ -1292,17 +1293,17 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete -f "${WORKDIR}/kubernetes/mongo-gke-service.yaml"
                   kubectl delete pvc mongo-pvc-mongo-0 --namespace=arclytics
                   kubectl delete pvc mongo-pvc-mongo-1 --namespace=arclytics
-                  # kubectl delete pvc mongo-pvc-mongo-2
+                  kubectl delete pvc mongo-pvc-mongo-2 --namespace=arclytics
                   kubectl delete pv mongo-pv-1 --namespace=arclytics
                   kubectl delete pv mongo-pv-2 --namespace=arclytics
-                  # kubectl delete pv mongo-pv-3
+                  kubectl delete pv mongo-pv-3 --namespace=arclytics
 
                   sleep 15
                   # Wait till the PV and PVC are deleted first
-                  gcloud compute disks delete pd-standard-disk-1 ${LOCATION_COMMAND}
-                  gcloud compute disks delete pd-standard-disk-2 ${LOCATION_COMMAND}
+                  gcloud compute disks delete pd-ssd-disk-1 ${LOCATION_COMMAND}
+                  gcloud compute disks delete pd-ssd-disk-2 ${LOCATION_COMMAND}
                   # REMEMBER TO UPDATE scripts/configure_repset_auth.sh IF MOVING to 3
-                  # gcloud compute disks delete pd-standard-disk-3 ${LOCATION_COMMAND}
+                   gcloud compute disks delete pd-ssd-disk-3 ${LOCATION_COMMAND}
                   ;;
               esac
               shift
@@ -1342,17 +1343,17 @@ while [[ "$1" != "" ]] ; do
                 create )
                   # Register GCE Fast SSD persistent disks and then create the persistent disks
                   generalMessage "Creating GCE disks for Elasticsearch"
-                  for i in 1 2 3
+                  for i in 1 2
                   do
-                      gcloud compute disks create --size 200GB \
-                          --type pd-standard es-standard-disk-$i \
+                      gcloud compute disks create --size 30GB \
+                          --type pd-standard es-ssd-disk-$i \
                           ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
                   done
                   sleep 3
 
                   # Create persistent volumes using disks created above
                   generalMessage "Creating GKE Persistent Volumes"
-                  for i in 1 2 3
+                  for i in 1 2
                   do
                       sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/efk-elasticsearch-gke-standard-pv.yaml" > /tmp/es-gke-pv.yaml
                       kubectl apply -f /tmp/es-gke-pv.yaml

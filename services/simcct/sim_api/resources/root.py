@@ -27,9 +27,9 @@ import os
 
 from flask import Blueprint, Response, jsonify
 
-from fluentd_logging import FluentdLogging
+from arc_logging import AppLogging
 
-logger = FluentdLogging(__name__)
+logger = AppLogging(__name__)
 
 root_blueprint = Blueprint('root', __name__)
 

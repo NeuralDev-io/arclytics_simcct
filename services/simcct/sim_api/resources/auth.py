@@ -83,7 +83,7 @@ def confirm_email(token):
     """
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -193,7 +193,7 @@ def confirm_email_resend_after_registration() -> Tuple[dict, int]:
 def confirm_email_admin(token):
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -496,7 +496,7 @@ def reset_password() -> Tuple[dict, int]:
 def confirm_reset_password(token):
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f"{protocol}://{client_host}:{client_port}"

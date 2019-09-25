@@ -39,8 +39,17 @@ class FeedbackModal extends Component {
       // check if it's turn to pop up feedback modal
       const countToShow = ['3', '8', '13', '20']
       if (countToShow.includes(simCount) && localStorage.getItem('gotFeedback') !== 'true') {
-        updateFeedbackConnect({ feedbackVisible: true, givingFeedback: false })
+        this.timer = setTimeout(() => {
+          updateFeedbackConnect({ feedbackVisible: true, givingFeedback: false })
+        }, 5000)
       }
+    }
+  }
+
+  componentWillUnmount = () => {
+    if (this.timer) {
+      clearTimeout(this.timer)
+      this.timer = 0
     }
   }
 

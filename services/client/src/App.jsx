@@ -6,6 +6,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import store from './state/store'
 import { PrivateRoute, AdminRoute, DemoRoute } from './components/moleisms/routers'
 import Toaster from './components/moleisms/toaster'
+import FeedbackModal, { RatingModal } from './components/moleisms/feedback'
 import ErrorBoundary from './components/pages/error-boundary/ErrorBoundary'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
@@ -48,6 +49,8 @@ function App() {
         <Provider store={store}>
           <Toaster />
           <div className="App">
+            <FeedbackModal />
+            <RatingModal />
             <Switch>
               <Route
                 path="/healthy"

@@ -26,13 +26,15 @@ from bson import ObjectId
 from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine import ValidationError
-from mongoengine.errors import (DoesNotExist, FieldDoesNotExist,
-                                MultipleObjectsReturned)
+from mongoengine.errors import (
+    DoesNotExist, FieldDoesNotExist, MultipleObjectsReturned
+)
 
 from sim_api.extensions import api
-from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
-                                          ElementSymbolInvalid,
-                                          MissingElementError)
+from sim_api.extensions.utilities import (
+    DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
+    MissingElementError
+)
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import Alloy, User
 

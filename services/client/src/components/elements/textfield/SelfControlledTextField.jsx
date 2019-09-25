@@ -15,7 +15,6 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import TextField from './TextField'
 
-// TODO: include validation
 class SelfControlledTextField extends Component {
   constructor(props) {
     super(props)

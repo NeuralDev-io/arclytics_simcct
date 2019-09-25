@@ -39,5 +39,9 @@ RUN ln -s /usr/src/app/entrypoint.sh /entrypoint.sh
 # add app
 COPY . /usr/src/app
 
+# install our arc_logging library
+WORKDIR /usr/src/app/arc_logging
+RUN python setup.py install
+
 # Start the container with entrypoint or comment to use manual below
 ENTRYPOINT ["/entrypoint.sh"]

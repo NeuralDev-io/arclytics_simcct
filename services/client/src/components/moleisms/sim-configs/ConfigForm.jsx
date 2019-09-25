@@ -67,8 +67,8 @@ class ConfigForm extends Component {
       // if turn off, make an update request to the backend
       // with the current data
       updateMsBsAeConnect('ms', '', {
-        ms_temp: configurations.ms_temp,
-        ms_rate_param: configurations.ms_rate_param,
+        ms_temp: roundTo(parseFloat(configurations.ms_temp), 1),
+        ms_rate_param: roundTo(parseFloat(configurations.ms_rate_param), 3),
       }, {})
     }
   }
@@ -100,8 +100,8 @@ class ConfigForm extends Component {
       // if turn off, make an update request to the backend
       // with the current data
       updateMsBsAeConnect('ae', '', {
-        ae1_temp: configurations.ae1_temp,
-        ae3_temp: configurations.ae3_temp,
+        ae1_temp: roundTo(parseFloat(configurations.ae1_temp), 1),
+        ae3_temp: roundTo(parseFloat(configurations.ae3_temp), 1),
       }, {})
     }
   }
@@ -129,7 +129,7 @@ class ConfigForm extends Component {
       // if turn off, make an update request to the backend
       // with the current data
       updateMsBsAeConnect('bs', '', {
-        bs_temp: configurations.bs_temp,
+        bs_temp: roundTo(parseFloat(configurations.bs_temp), 1),
       }, {})
     }
   }

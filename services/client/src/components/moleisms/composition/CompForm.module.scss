@@ -6,4 +6,11 @@
   & > div {
     margin-bottom: 1rem;
   }
+
+  .alloyHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }

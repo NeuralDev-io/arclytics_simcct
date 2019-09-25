@@ -52,11 +52,21 @@ const getAlloys = type => (dispatch) => {
   })
     .then((res) => {
       if (res.status === 404) { return { status: 'success', data: [] } }
-      if (res.status !== 200) throw new Error('Couldn\'t retrieve alloy list')
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Counld\'t retrieve alloy list',
+        }
+      }
       return res.json()
     })
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         dispatch({
           type: type === 'global' ? GET_GLOBAL_ALLOYS : GET_USER_ALLOYS,
@@ -64,10 +74,10 @@ const getAlloys = type => (dispatch) => {
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 const createAlloy = (type, alloy) => dispatch => (
@@ -94,11 +104,21 @@ const createAlloy = (type, alloy) => dispatch => (
     body: JSON.stringify(alloy),
   })
     .then((res) => {
-      if (res.status !== 201) throw new Error('Something went wrong')
+      if (res.status !== 201) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong',
+        }
+      }
       return res.json()
     })
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         dispatch({
           type: type === 'global' ? CREATE_GLOBAL_ALLOY : CREATE_USER_ALLOY,
@@ -109,10 +129,10 @@ const createAlloy = (type, alloy) => dispatch => (
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 )
 
 const updateAlloy = (type, alloy) => (dispatch) => {
@@ -128,11 +148,21 @@ const updateAlloy = (type, alloy) => (dispatch) => {
     }),
   })
     .then((res) => {
-      if (res.status !== 200) throw new Error('Something went wrong')
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong',
+        }
+      }
       return res.json()
     })
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         dispatch({
           type: type === 'global' ? UPDATE_GLOBAL_ALLOY : UPDATE_USER_ALLOY,
@@ -140,10 +170,10 @@ const updateAlloy = (type, alloy) => (dispatch) => {
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 const deleteAlloy = (type, alloyId) => (dispatch) => {
@@ -169,11 +199,21 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
     },
   })
     .then((res) => {
-      if (res.status !== 202) throw new Error('Something went wrong')
+      if (res.status !== 202) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong',
+        }
+      }
       return res.json()
     })
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         dispatch({
           type: type === 'global' ? DELETE_GLOBAL_ALLOY : DELETE_USER_ALLOY,
@@ -181,10 +221,10 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 export const getGlobalAlloys = () => getAlloys('global')

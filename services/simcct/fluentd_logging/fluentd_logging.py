@@ -46,17 +46,31 @@ to also send logs as events to fluentd with the `fluentd-logger` library
 handler.
 """
 
-import os
 import io
+import os
 import socket
 import sys
+import threading
+import time
 import traceback
-from datetime import datetime
 from os import environ as env
-from typing import Union, Any
+from typing import Any, Union
 
 from fluent import sender
 
+# ========================================================================= #
+#      MISCELLANEOUS MODULE DATA
+# ========================================================================= #
+
+#
+# _startTime is used as the base when calculating the relative time of events
+#
+_startTime = time.time()
+
+#
+# If you don't want threading information in the log, set this to zero
+#
+logThreads = True
 
 CRITICAL = 50
 FATAL = CRITICAL
@@ -168,6 +182,39 @@ def _check_level(level):
 
 
 # ========================================================================= #
+#      THREAD-RELATED STUFF
+# ========================================================================= #
+
+#
+# _lock is used to serialize access to shared data structures in this module.
+# This needs to be an RLock because fileConfig() creates and configures
+# Handlers, and so might arbitrary user threads. Since Handler code updates
+# the shared dictionary _handlers, it needs to acquire the lock. But if
+# configuring, the lock would already have been acquired - so we need an
+# RLock. The same argument applies to Loggers and Manager.loggerDict.
+#
+_lock = threading.RLock()
+
+
+def _acquire_lock():
+    """
+    Acquire the module-level lock for serializing access to shared data.
+
+    This should be released with _releaseLock().
+    """
+    if _lock:
+        _lock.acquire()
+
+
+def _release_lock():
+    """
+    Release the module-level lock acquired by calling _acquireLock().
+    """
+    if _lock:
+        _lock.release()
+
+
+# ========================================================================= #
 #      LOGGING RECORD
 # ========================================================================= #
 
@@ -197,7 +244,7 @@ class EventRecord(object):
             func=None,
             stack_info=None,
     ):
-        ct = datetime.utcnow()
+        ct = time.time()
         self.name = name
         self.msg = msg
         self.hostname = socket.gethostname()
@@ -206,12 +253,6 @@ class EventRecord(object):
         self.level_num = level
 
         self.pathname = pathname
-        try:
-            self.filename = os.path.basename(pathname)
-            self.module = os.path.splitext(self.filename)[0]
-        except (TypeError, ValueError, AttributeError):
-            self.filename = pathname
-            self.module = "Unknown module"
 
         self.exc_info = exc_info
         self.exc_text = None  # used to cache the traceback text
@@ -219,7 +260,24 @@ class EventRecord(object):
 
         self.funcName = func
         self.lineno = lineno
+
         self.created = ct
+        self.msecs = (ct - int(ct)) * 1000
+        self.relativeCreated = (self.created - _startTime) * 1000
+
+        try:
+            self.filename = os.path.basename(pathname)
+            self.module = os.path.splitext(self.filename)[0]
+        except (TypeError, ValueError, AttributeError):
+            self.filename = pathname
+            self.module = "Unknown module"
+
+        if logThreads:
+            self.thread = threading.get_ident()
+            self.threadName = threading.current_thread().name
+        else:  # pragma: no cover
+            self.thread = None
+            self.threadName = None
 
     def level_str(self):
         return str(self.level_name).lower()
@@ -236,7 +294,7 @@ class EventRecord(object):
         )
 
         data = {
-            'timestamp': self.created.isoformat(),
+            'timestamp': format_time(self),
             'hostname': self.hostname,
             'severity': self.level_name,
             'log': log,
@@ -286,6 +344,39 @@ class EventRecord(object):
     def get_message(self):
         """Return the message for this EventRecord."""
         return str(self.msg)
+
+
+#
+# Not using a Formatter from the `logging` module but we want to use the
+# same formatting for the dates so we will make it a module method.
+#
+CONVERTER = time.gmtime
+DEFAULT_TIME_FMT = '%Y-%m-%d %H:%M:%S'
+DEFAULT_MSEC_FMT = '%s,%03d'
+
+
+def format_time(record, datefmt=None):
+    """
+    Return the creation time of the specified EventRecord as formatted text.
+
+    The basic behaviour is as follows: if datefmt (a string) is specified,
+    it is used with time.strftime() to format the creation time of the
+    record. Otherwise, an ISO8601-like (or RFC 3339-like) format is used.
+    The resulting string is returned. This function uses a user-configurable
+    function to convert the creation time to a tuple. By default,
+    time.localtime() is used; to change this for a particular formatter
+    instance, set the 'converter' attribute to a function with the same
+    signature as time.localtime() or time.gmtime(). To change it for all
+    formatters, for example if you want all logging times to be shown in GMT,
+    set the 'converter' attribute in the Formatter class.
+    """
+    ct = CONVERTER(record.created)
+    if datefmt:
+        s = time.strftime(datefmt, ct)
+    else:
+        t = time.strftime(DEFAULT_TIME_FMT, ct)
+        s = '{},{:.03f}'.format(t, record.msecs)
+    return s
 
 
 # ========================================================================= #
@@ -391,7 +482,6 @@ class Handler(object):
     __repr__ = __str__
 
 
-# noinspection PyBroadException
 class FluentdHandler(Handler):
     """
     A handler class which writes logging records, appropriately formatted,
@@ -417,6 +507,7 @@ class FluentdHandler(Handler):
             stream = sender.FluentSender(self.tag, host=host, port=port)
         self.__stream = stream
 
+    # noinspection PyBroadException
     def emit(self, record: EventRecord):
         """Emit a record using the `fluentd-logger.sender.emit`. We also
         handle any exceptions that occurs from trying to send.
@@ -431,7 +522,7 @@ class FluentdHandler(Handler):
                 self.handle_errors(record)
                 self.__stream.clear_last_error()
                 # reraise the exception so we can handle it
-                raise
+                raise Exception
         except Exception:
             self.handle_errors(record)
 

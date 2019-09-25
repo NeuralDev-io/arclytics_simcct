@@ -34,8 +34,14 @@ class FeedbackModal extends Component {
 
   componentDidMount = () => {
     const { updateFeedbackConnect } = this.props
-    // check here if it's turn to pop up feedback modal
-    updateFeedbackConnect({ feedbackVisible: true })
+    const simCount = localStorage.getItem('simCount')
+    if (simCount !== undefined) {
+      // check if it's turn to pop up feedback modal
+      const countToShow = ['3', '8', '13', '20']
+      if (countToShow.includes(simCount)) {
+        updateFeedbackConnect({ feedbackVisible: true })
+      }
+    }
   }
 
   renderRating = () => {

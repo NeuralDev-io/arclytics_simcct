@@ -36,7 +36,7 @@ from itsdangerous import BadSignature, SignatureExpired
 from redis import ReadOnlyError
 from werkzeug.datastructures import CallbackDict
 
-from logger import AppLogger
+from arc_logging import AppLoggerLogger
 from sim_api.extensions.utilities import JSONEncoder
 
 logger = AppLogger(__name__)

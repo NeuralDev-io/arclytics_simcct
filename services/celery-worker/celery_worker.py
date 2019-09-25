@@ -7,13 +7,13 @@
 # [1] https://github.com/mattkohl/docker-flask-celery-redis
 # [2] https://github.com/kubernetes-for-developers/kfd-celery
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__license__ = 'TBA'
+__author__ = [
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
+__license__ = 'MIT'
 __version__ = '1.0.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__status__ = 'production'
 __date__ = '2019.07.25'
 """celery_worker.py: 
 
@@ -24,10 +24,11 @@ storage of the results.
 
 import os
 import sys
-
+import logging
 from celery import Celery
 from flask import Flask
 from flask_mail import Mail
+from elasticapm.contrib.flask import ElasticAPM
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
@@ -38,7 +39,7 @@ CELERY_TASK_LIST = [
 ]
 
 # instantiate the application
-app = Flask('Celery Worker')
+app = Flask(__name__)
 
 # Setup the configuration for Flask
 app_settings = os.getenv('APP_SETTINGS')
@@ -46,6 +47,7 @@ app.config.from_object(app_settings)
 
 # ========== # INIT FLASK EXTENSIONS # ========== #
 mail = Mail(app)
+apm = ElasticAPM(app, logging=logging.ERROR)
 
 # We make a new Celery subsystem instance with the configs using Redis
 # as the Message Queue broker and also to store results.
@@ -69,4 +71,5 @@ class ContextTask(TaskBase):
             return TaskBase.__call__(self, *args, **kwargs)
 
 
+# noinspection PyPropertyAccess
 celery.Task = ContextTask

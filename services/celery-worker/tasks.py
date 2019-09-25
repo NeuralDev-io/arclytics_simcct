@@ -8,14 +8,13 @@
 # https://medium.com/@taylorhughes/
 # three-quick-tips-from-two-years-with-celery-c05ff9d7f9eb
 # -----------------------------------------------------------------------------
-
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.5.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__author__ = [
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.07.25'
 """tasks.py: 
 
@@ -26,13 +25,18 @@ from typing import Tuple
 
 from celery.exceptions import MaxRetriesExceededError, CeleryError
 
-from celery_worker import mail, celery
+from celery_worker import mail, celery, apm
 from flask import current_app as app
 from flask_mail import Message
 from smtplib import (
     SMTPAuthenticationError, SMTPServerDisconnected, SMTPConnectError,
     SMTPException
 )
+
+from arc_logging import AppLogger
+
+
+logger = AppLogger(__name__)
 
 
 @celery.task()
@@ -41,6 +45,7 @@ def log(msg: str):
     return msg
 
 
+# noinspection PyUnusedLocal
 @celery.task(bind=True, soft_time_limit=20, max_retries=6)
 def send_email(
     self, to: list, subject_suffix: str, html_template, text_template, **kwargs
@@ -71,23 +76,42 @@ def send_email(
         return status, message
     except SMTPAuthenticationError as e:
         message = 'SMTP Authentication Error'
+        log_message = {'message': message, 'error': e}
+        logger.error(log_message)
+        apm.capture_exception()
         retry_email(self, e)
     except SMTPServerDisconnected as e:
         message = 'SMTP Server Disconnect'
+        log_message = {'message': message, 'error': e}
+        logger.error(log_message)
+        apm.capture_exception()
         retry_email(self, e)
     except SMTPConnectError as e:
         message = 'SMTP Connection Error'
+        log_message = {'message': message, 'error': e}
+        logger.error(log_message)
+        apm.capture_exception()
         retry_email(self, e)
     except SMTPException as e:
         message = 'Generic SMTP Exception Error'
+        log_message = {'message': message, 'error': e}
+        logger.error(log_message)
+        apm.capture_exception()
         retry_email(self, e)
     except MaxRetriesExceededError as e:
         message = 'Max Retries exceeded.'
+        log_message = {'message': message, 'error': e}
+        logger.error(log_message)
+        apm.capture_exception()
     except CeleryError as e:
         message = 'Generic Celery error.'
+        log_message = {'message': message, 'error': e}
+        logger.error(log_message)
         retry_email(self, e)
     except Exception as e:
         message = 'Number of retries exceeded.'
+        log_message = {'message': message, 'error': e}
+        logger.error(log_message)
         retry_email(self, e)
     return status, message
 
@@ -109,4 +133,7 @@ def retry_email(task, err) -> None:
     try:
         task.retry(countdown=seconds_to_wait, exc=err)
     except MaxRetriesExceededError as e:
+        message = 'Number of retries exceeded.'
+        log_message = {'message': message, 'error': e}
+        logger.error(log_message)
         raise MaxRetriesExceededError(e)

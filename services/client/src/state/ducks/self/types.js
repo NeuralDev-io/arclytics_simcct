@@ -6,3 +6,5 @@ export const CHANGE_PASSWORD = 'self/CHANGE_PASSWORD'
 
 export const SAVE_SIM = 'self/SAVE_SIM'
 export const GET_SIM = 'self/GET_SIM'
+
+export const GET_LAST_SIM = 'self/GET_LAST_SIM'

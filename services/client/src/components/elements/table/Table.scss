@@ -369,7 +369,7 @@
   background: transparent;
   transition: all 0.3s ease;
   pointer-events: none;
-  padding: 20px;
+  padding: 20px 10px;
   color: rgba(0, 0, 0, 0.5);
 }
 .ReactTable .-loading {
@@ -467,6 +467,7 @@
     .rt-tr {
       padding: .5rem 1rem;
       margin-top: .5rem;
+      border-top: 1px solid var(--n50);
 
       & > .rt-td:first-of-type { padding-left: 0; }
       & > .rt-td:last-of-type { padding-right: 0; }
@@ -497,5 +498,40 @@
   }
   .rt-thead {
     margin-bottom: .5rem;
+  }
+}
+
+.ReactTable .rt-thead .rt-th.-sort-asc,
+.ReactTable .rt-thead .rt-td.-sort-asc {
+  position: relative;
+
+  &:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: .75rem;
+    transform: translateY(-50%);
+    width: 0; 
+    height: 0; 
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 5px solid var(--n500);
+  }
+}
+.ReactTable .rt-thead .rt-th.-sort-desc,
+.ReactTable .rt-thead .rt-td.-sort-desc {
+  position: relative;
+
+  &:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: .75rem;
+    transform: translateY(-50%);
+    width: 0; 
+    height: 0; 
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--n500);
   }
 }

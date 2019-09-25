@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: dask-worker
+  labels:
+    app: dask-worker
+    component: worker
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: dask-worker
+      component: worker
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: dask-worker
+        component: worker
+    spec:
+      - name: dask-worker-container
+        image: asia.gcr.io/arc-sim/arc_dask_worker:latest
+        imagePullPolicy: IfNotPresent
+        args:
+          - 'dask-worker'
+          - 'dask-scheduler:8786'
+          - '--nthreads'
+          - '1'
+          - '--memory-limit'
+          - '2G'
+          - '--no-bokeh'
+          - '--no-nanny'
+          - '--death-timeout'
+          - '60'
+        ports:
+          - containerPorts: 8789
+        resources:
+          limits:
+            cpu: 1
+            memory: 2Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi

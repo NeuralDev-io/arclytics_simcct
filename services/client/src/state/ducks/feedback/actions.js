@@ -59,6 +59,50 @@ export const submitFeedback = () => (dispatch, getState) => {
           message: 'Thank you for your feedback.',
           options: { variant: 'success' },
         }, true)(dispatch)
+        localStorage.setItem('gotFeedback', true)
+      }
+    })
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
+}
+
+export const submitRating = rate => (dispatch, getState) => {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/rating`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      rating: rate,
+    }),
+  })
+    .then((res) => {
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong',
+        }
+      }
+      return res.json()
+    })
+    .then((res) => {
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
+      if (res.status === 'success') {
+        dispatch({ type: CLOSE_FEEDBACK })
+        setTimeout(() => dispatch({ type: RESET_FEEDBACK }), 500)
+        addFlashToast({
+          message: 'Thank you for your feedback.',
+          options: { variant: 'success' },
+        }, true)(dispatch)
+        localStorage.setItem('gotFeedback', true)
       }
     })
     .catch((err) => {

@@ -3,17 +3,37 @@ version: '3.7'
 
 services:
 
+  fluentd:
+    build:
+      context: ./services/fluentd
+      dockerfile: Dockerfile-prod
+      labels:
+        arclytics.io: "production"
+        service: "fluentd"
+    image: asia.gcr.io/arc-sim/arc_fluentd:latest
+    restart: always
+    ports:
+      - 24224:24224
+      - 24224:24224/udp
+      - 9880:9880
+    expose:
+      - 24224
+      - 9880
+    networks:
+      - host
+
   client:
     build:
       context: ./services/client
       dockerfile: Dockerfile-prod
       args:
+        - NODE_ENV=production
         - REACT_APP_SIM_HOST=https://api.arclytics.io
         - REACT_APP_SIM_PORT=443
       labels:
         arclytics.io: "production"
         service: "client"
-    image: asia.gcr.io/arc-sim/arc_sim_client:1.1.5
+    image: asia.gcr.io/arc-sim/arc_sim_client:1.1.7
     ports:
       - 8080:8080
     expose:
@@ -34,7 +54,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "simcct"
-    image: asia.gcr.io/arc-sim/arc_sim_service:1.1.6
+    image: asia.gcr.io/arc-sim/arc_sim_service:1.2.0
     ports:
       - 8000:8000
     expose:
@@ -57,6 +77,10 @@ services:
       - CLIENT_HOST=app.arclytics.io
       - CLIENT_PORT=443
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
+      - FLUENTD_HOST=fluentd-service
+      - FLUENTD_PORT=24224
+      - FLUENTD_PREFIX_TAG=simcct
+      - ELASTIC_APM_SERVER_URL=http://apm-server:8200
     depends_on:
       - mongodb
       - redis
@@ -70,7 +94,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "celery-worker"
-    image: asia.gcr.io/arc-sim/arc_sim_celery:1.0
+    image: asia.gcr.io/arc-sim/arc_sim_celery:1.1.0
     ports:
       - 5555:5555
     expose:
@@ -86,6 +110,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - ELASTIC_APM_SERVER_URL=http://apm-server:8200
     depends_on:
       - redis
     networks:
@@ -115,10 +140,8 @@ services:
       labels:
         arclytics.io: "production"
         service: "mongodb"
-    image: asia.gcr.io/arc-sim/arc_sim_mongo:1.1.0
+    image: asia.gcr.io/arc-sim/arc_sim_mongo:1.1.1
     restart: always
-    volumes:
-      - mongo-volume-mount:/data/db
     ports:
       - 27017:27017
     expose:
@@ -139,11 +162,5 @@ services:
 networks:
   host:
     driver: bridge
-    labels:
-      arclytics.io: "production"
-
-# https://docs.docker.com/compose/compose-file/#volume-configuration-reference
-volumes:
-  mongo-volume-mount:
     labels:
       arclytics.io: "production"

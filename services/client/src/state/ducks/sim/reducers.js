@@ -189,6 +189,7 @@ const reducer = (state = initialState, action) => {
           ...configurations,
         },
         alloys: {
+          parentError: {},
           isLoading: false,
           dilution: 0,
           ...alloys,
@@ -217,7 +218,9 @@ const reducer = (state = initialState, action) => {
       return {
         ...initialState,
         isInitialised: Object.keys(last_alloy_store.alloys.parent).length !== 0,
-        isSimulated: Object.keys(last_simulation_results.TTT).length !== 0,
+        isSimulated:
+          last_simulation_results && last_simulation_results.TTT
+          && Object.keys(last_simulation_results.TTT).length !== 0,
         displayUserCurve: true,
         configurations: {
           ...initialState.configurations,

@@ -324,6 +324,10 @@ def login() -> any:
     try:
         if not User.objects(email=email):
             response['message'] = 'User does not exist.'
+            logger.debug({
+                'email': email,
+                'message': response['message']
+            })
             return jsonify(response), 404
     except Exception as e:
         logger.error(str(e))
@@ -337,6 +341,10 @@ def login() -> any:
         if auth_token:
             if not user.active:
                 response['message'] = 'Your Account has been disabled.'
+                logger.info({
+                    'message': response['message'],
+                    'user': user.email
+                })
                 return jsonify(response), 401
 
             # Let's save some stats for later
@@ -361,11 +369,23 @@ def login() -> any:
                         country=country, state=state, ip_address=ip_address
                     )
                 )
+                logger.info({
+                    'message': 'User logged in',
+                    'user': user.email,
+                    'country': country,
+                    'state': state,
+                    'ip_address': ip_address
+                })
                 user.save()
             except AddressNotFoundError:
                 user.reload()
                 ip_address = request.remote_addr
                 user.login_data.append(LoginData(ip_address=ip_address))
+                logger.error({
+                    'user': user.email,
+                    'message': 'Address not found.',
+                    'ip_address': ip_address
+                }, stack_info=False)
                 user.save()
             reader.close()
 

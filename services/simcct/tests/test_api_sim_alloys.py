@@ -21,8 +21,9 @@ from mongoengine import get_db
 from manage import BASE_DIR
 from sim_api.extensions.SimSession import SimSessionService
 from sim_api.models import AlloyStore, Configuration, User
-from sim_api.schemas import (AlloyStoreRequestSchema, AlloyStoreSchema,
-                             ConfigurationsSchema)
+from sim_api.schemas import (
+    AlloyStoreRequestSchema, AlloyStoreSchema, ConfigurationsSchema
+)
 from tests.test_api_base import BaseTestCase, app
 from tests.test_utilities import test_login
 

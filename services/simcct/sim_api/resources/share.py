@@ -30,16 +30,20 @@ from flask import Blueprint, jsonify, redirect, render_template, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
-from logger import AppLogger
+from arc_logging import AppLoggerLogger
 from sim_api.extensions import api
-from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
-                                          ElementSymbolInvalid,
-                                          MissingElementError)
+from sim_api.extensions.utilities import (
+    DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
+    MissingElementError
+)
 from sim_api.middleware import authenticate_user_cookie_restful
-from sim_api.models import (AlloyStore, Configuration, SharedSimulation,
-                            SimulationResults)
-from sim_api.token import (URLTokenError, confirm_simulation_token,
-                           generate_shared_simulation_token, generate_url)
+from sim_api.models import (
+    AlloyStore, Configuration, SharedSimulation, SimulationResults
+)
+from sim_api.token import (
+    URLTokenError, confirm_simulation_token, generate_shared_simulation_token,
+    generate_url
+)
 
 logger = AppLogger(__name__)
 
@@ -290,7 +294,7 @@ def request_shared_simulation(token):
     on the front end which will request the configuration data from the backend.
     """
 
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f'{protocol}://{client_host}:{client_port}'

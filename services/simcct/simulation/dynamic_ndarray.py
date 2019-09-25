@@ -67,9 +67,8 @@ class DynamicNdarray(object):
         # add the new attributes to the created instance
         self.shape = self.obj.shape
 
-    def __getitem__(
-            self, index: Union[Tuple[int, int], int]
-    ) -> Union[float, np.ndarray]:
+    def __getitem__(self, index: Union[Tuple[int, int], int]
+                    ) -> Union[float, np.ndarray]:
         """Using the `[]` operators, this will get you the element stored at
         the index passed in.
 

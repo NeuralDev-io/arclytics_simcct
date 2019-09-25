@@ -6,9 +6,12 @@ import { makeStyles } from '@material-ui/core/styles'
 import store from './state/store'
 import { PrivateRoute, AdminRoute, DemoRoute } from './components/moleisms/routers'
 import Toaster from './components/moleisms/toaster'
+import FeedbackModal, { RatingModal } from './components/moleisms/feedback'
 import ErrorBoundary from './components/pages/error-boundary/ErrorBoundary'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
+import NoMatchPage from './components/pages/no-match/NoMatchPage'
+import TestRoute from './components/pages/test-route/TestRoute'// TODO: Delete this
 import SimulationPage from './components/pages/simulation'
 import AdminPage from './components/pages/admin'
 import ProfileQuestionsPage from './components/pages/profile-questions'
@@ -17,6 +20,7 @@ import UserSimulationPage from './components/pages/user-sim'
 import UserAlloyPage from './components/pages/user-alloys'
 import PasswordResetPage from './components/pages/password-reset'
 import SharePage from './components/pages/share'
+import Healthy from './components/moleisms/healthy/Healthy'
 
 import './App.scss'
 
@@ -28,6 +32,8 @@ const useStyles = makeStyles({
 
 function App() {
   const classes = useStyles()
+
+
   return (
     <ErrorBoundary>
       <SnackbarProvider
@@ -43,7 +49,13 @@ function App() {
         <Provider store={store}>
           <Toaster />
           <div className="App">
+            <FeedbackModal />
+            <RatingModal />
             <Switch>
+              <Route
+                path="/healthy"
+                Component={Healthy}
+              />
               <Route
                 path="/signin"
                 render={props => <LoginPage {...props} />}
@@ -83,6 +95,12 @@ function App() {
                 path="/password/reset=:token"
                 render={props => <PasswordResetPage {...props} />}
               />
+              {/*TODO: DELETE THIS ROUTE*/}
+              <Route
+                path="/test"
+                render={props => (<TestRoute {...props} />)}
+              />
+
               <DemoRoute
                 path="/share/simulation/:token"
                 component={SharePage}
@@ -91,6 +109,7 @@ function App() {
                 path="/demo"
                 component={SimulationPage}
               />
+              <Route component={NoMatchPage} />
             </Switch>
           </div>
         </Provider>

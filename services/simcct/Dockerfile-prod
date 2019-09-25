@@ -45,4 +45,7 @@ RUN python setup.py install
 # go back to app source directory
 WORKDIR /usr/src/app
 
+# Create a file for healthy liveness probe
+RUN touch /usr/src/app/healthy
+
 CMD ["gunicorn", "manage:app", "--keep-alive 15", "--config=configs/gunicorn_conf.py"]

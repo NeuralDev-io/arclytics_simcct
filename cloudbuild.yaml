@@ -49,7 +49,7 @@ steps:
     - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'
 
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', './kubernetes/app-gke-secure-ingress.yaml']
+  args: ['apply', '-f', './kubernetes/gce-secure-ingress.yaml']
   env:
     - 'CLOUDSDK_CONTAINER_CLUSTER=arc-sim-aust'
     - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'

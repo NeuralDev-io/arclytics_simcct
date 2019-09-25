@@ -1503,13 +1503,13 @@ while [[ "$1" != "" ]] ; do
               case $3 in
                 create )
                   # Ingress that uses Multiple SSL/TLS terminations with 2 different domains.
-                  kubectl apply -f "${WORKDIR}/kubernetes/app-gke-secure-ingress.yaml"
+                  kubectl apply -f "${WORKDIR}/kubernetes/gce-secure-ingress.yaml"
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/app-gke-secure-ingress.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/gce-secure-ingress.yaml"
                   ;;
                 describe )
-                  kubectl describe ingress arc-secure-ingress
+                  kubectl describe ingress arc-gce-ingress
                   ;;
               esac
               shift

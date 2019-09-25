@@ -57,7 +57,7 @@ generalMessage "Waiting for the 2 containers to come up $(date)..."
 generalMessage " (IGNORE any reported not found & connection errors)"
 sleep 30
 generalMessage "  "
-until kubectl --v=0 exec mongo-2 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
+until kubectl --v=0 exec mongo-2 -c mongo-container -n arclytics -- mongo --quiet --eval 'db.getMongo()'; do
     sleep 5
     generalMessage "  "
 done

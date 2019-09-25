@@ -70,6 +70,7 @@ images:
 - 'asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.2.0'
 
 tags: ['arclytics-sim', 'neuraldev']
-timeout: '9000s'
-options:
-  machineType: 'N1_HIGHCPU_32'
+timeout: '18000s'
+# This actually costs more to build with this High CPU
+#options:
+#  machineType: 'N1_HIGHCPU_32'

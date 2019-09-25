@@ -10,8 +10,9 @@ import {
   UPDATE_CCT_INDEX,
   LOAD_SIM,
   LOAD_PERSISTED_SIM,
+  LOAD_LAST_SIM,
 } from './types'
-import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
+import { ASTM2Dia } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
 
 /**
@@ -50,11 +51,21 @@ export const initSession = (option, type, alloy) => (dispatch) => {
     }),
   })
     .then((res) => {
-      if (res.status !== 201) throw new Error('Something went wrong')
+      if (res.status !== 201) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong',
+        }
+      }
       return res.json()
     })
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         dispatch({
           type: INIT_SESSION,
@@ -70,10 +81,8 @@ export const initSession = (option, type, alloy) => (dispatch) => {
         type: INIT_SESSION,
         status: 'fail',
       })
-      addFlashToast({
-        message: err.message,
-        options: { variant: 'error' },
-      }, true)(dispatch)
+      // log to fluentd
+      console.log(err)
     })
 }
 
@@ -97,38 +106,51 @@ export const updateAlloyOption = option => (dispatch) => {
  * @param {string} type 'parent' | 'weld'
  * @param {object} alloy alloy to be updated
  */
-export const updateComp = (option, type, alloy) => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
-    method: 'PATCH',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      alloy_option: option,
-      alloy_type: type,
-      alloy,
-    }),
+export const updateComp = (option, type, alloy, error) => (dispatch) => {
+  dispatch({
+    type: UPDATE_COMP,
+    config: {},
+    alloyType: type,
+    alloy,
+    parentError: error,
   })
-    .then((res) => {
-      if (res.status !== 200) throw new Error('Something went wrong')
-      return res.json()
+
+  // only make API request if error free
+  if (Object.keys(error).length === 0) {
+    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        alloy_option: option,
+        alloy_type: type,
+        alloy,
+      }),
     })
-    .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
-      if (res.status === 'success') {
-        dispatch({
-          type: UPDATE_COMP,
-          config: res.data,
-          alloyType: type,
-          alloy,
-        })
-      }
-    })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+      .then((res) => {
+        if (res.status !== 200) {
+          return {
+            status: 'fail',
+            message: 'Something went wrong',
+          }
+        }
+        return res.json()
+      })
+      .then((res) => {
+        if (res.status === 'fail') {
+          addFlashToast({
+            message: res.message,
+            options: { variant: 'error' },
+          }, true)(dispatch)
+        }
+      })
+      .catch((err) => {
+        // log to fluentd
+        console.log(err)
+      })
+  }
 }
 
 export const updateDilution = val => (dispatch) => {
@@ -155,11 +177,21 @@ export const updateConfigMethod = value => (dispatch) => {
     body: JSON.stringify({ method: value }),
   })
     .then((res) => {
-      if (res.status !== 200) throw new Error('Something went wrong')
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong',
+        }
+      }
       return res.json()
     })
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         dispatch({
           type: UPDATE_CONFIG_METHOD,
@@ -167,10 +199,10 @@ export const updateConfigMethod = value => (dispatch) => {
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getState) => {
@@ -205,16 +237,26 @@ export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getStat
       body: JSON.stringify({ grain_size: parseFloat(astm) }),
     })
       .then((res) => {
-        if (res.status !== 202) throw new Error('Something went wrong')
+        if (res.status !== 202) {
+          return {
+            status: 'fail',
+            message: 'Something went wrong',
+          }
+        }
         return res.json()
       })
       .then((res) => {
-        if (res.status === 'fail') throw new Error(res.message)
+        if (res.status === 'fail') {
+          addFlashToast({
+            message: res.message,
+            options: { variant: 'error' },
+          }, true)(dispatch)
+        }
       })
-      .catch(err => addFlashToast({
-        message: err.message,
-        options: { variant: 'error' },
-      }, true)(dispatch))
+      .catch((err) => {
+        // log to fluentd
+        console.log(err)
+      })
   }
 }
 
@@ -267,16 +309,26 @@ export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState
       body: JSON.stringify(reqBody),
     })
       .then((res) => {
-        if (res.status !== 202) throw new Error('Something went wrong')
+        if (res.status !== 202) {
+          return {
+            status: 'fail',
+            message: 'Something went wrong',
+          }
+        }
         return res.json()
       })
       .then((res) => {
-        if (res.status === 'fail') throw new Error(res.message)
+        if (res.status === 'fail') {
+          addFlashToast({
+            message: res.message,
+            options: { variant: 'error' },
+          }, true)(dispatch)
+        }
       })
-      .catch(err => addFlashToast({
-        message: err.message,
-        options: { variant: 'error' },
-      }, true)(dispatch))
+      .catch((err) => {
+        // log to fluentd
+        console.log(err)
+      })
   }
 }
 
@@ -303,11 +355,21 @@ export const getMsBsAe = name => (dispatch, getState) => {
     },
   })
     .then((res) => {
-      if (res.status !== 200) throw new Error('Something went wrong')
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong',
+        }
+      }
       return res.json()
     })
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         dispatch({
           type: UPDATE_CONFIG,
@@ -318,10 +380,10 @@ export const getMsBsAe = name => (dispatch, getState) => {
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 export const setAutoCalculate = (name, value) => (dispatch) => {
@@ -362,16 +424,26 @@ export const updateConfig = (name, value, valError) => (dispatch, getState) => {
       body: JSON.stringify({ [name]: value }),
     })
       .then((res) => {
-        if (res.status !== 202) throw new Error('Something went wrong')
+        if (res.status !== 202) {
+          return {
+            status: 'fail',
+            message: 'Something went wrong',
+          }
+        }
         return res.json()
       })
       .then((res) => {
-        if (res.status === 'fail') throw new Error(res.message)
+        if (res.status === 'fail') {
+          addFlashToast({
+            message: res.message,
+            options: { variant: 'error' },
+          }, true)(dispatch)
+        }
       })
-      .catch(err => addFlashToast({
-        message: err.message,
-        options: { variant: 'error' },
-      }, true)(dispatch))
+      .catch((err) => {
+        // log to fluentd
+        console.log(err)
+      })
   }
 }
 
@@ -414,11 +486,21 @@ export const runSim = () => (dispatch, getState) => {
     },
   })
     .then((res) => {
-      if (res.status !== 200) throw new Error('Something went wrong')
+      if (res.status !== 200) {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       return res.json()
     })
     .then((simRes) => {
-      if (simRes.status === 'fail') throw new Error(simRes.message)
+      if (simRes.status === 'fail') {
+        return {
+          status: 'fail',
+          message: 'Something went wrong',
+        }
+      }
       if (simRes.status === 'success') {
         dispatch({
           type: RUN_SIM,
@@ -426,10 +508,10 @@ export const runSim = () => (dispatch, getState) => {
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 export const updateCCTIndex = idx => (dispatch) => {
@@ -464,11 +546,21 @@ export const loadSimFromLink = token => dispatch => (
     },
   })
     .then((res) => {
-      if (res.status !== 200) throw new Error('Something went wrong')
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong',
+        }
+      }
       return res.json()
     })
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         const {
           alloy_store,
@@ -501,10 +593,10 @@ export const loadSimFromLink = token => dispatch => (
         })
       }
     })
-    .catch(err => addFlashToast({
-      message: err.message,
-      options: { variant: 'error' },
-    }, true)(dispatch))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 )
 
 export const loadSimFromAccount = ({
@@ -538,5 +630,22 @@ export const loadPersistedSim = () => (dispatch, getState) => {
   dispatch({
     type: LOAD_PERSISTED_SIM,
     payload: lastSim,
+  })
+}
+
+export const loadLastSim = () => (dispatch, getState) => {
+  const { lastSim } = getState().self
+  const { last_configurations: { grain_size, is_valid, ...otherConfig } } = lastSim
+  const convertedConfig = {
+    ...otherConfig,
+    grain_size_ASTM: grain_size,
+    grain_size_diameter: ASTM2Dia(parseFloat(grain_size)),
+  }
+  dispatch({
+    type: LOAD_LAST_SIM,
+    payload: {
+      ...lastSim,
+      last_configurations: convertedConfig,
+    },
   })
 }

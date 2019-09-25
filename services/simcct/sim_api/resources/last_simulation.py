@@ -87,7 +87,9 @@ class LastSimulation(Resource):
 
         try:
             if post_configs:
-                valid_configs = Configuration.from_json(json.dumps(post_configs))
+                valid_configs = Configuration.from_json(
+                    json.dumps(post_configs)
+                )
                 valid_configs.validate(clean=True)
             if post_alloy_store:
                 valid_store = AlloyStore.from_json(json.dumps(post_alloy_store))
@@ -195,21 +197,22 @@ class LastSimulation(Resource):
 
         session_store = SimSessionService().load_session()
 
-        if user.last_configuration:
+        if not user.last_configuration:
+            session_store['configurations'] = None
+        else:
             session_store['configurations'] = user.last_configuration.to_dict()
             response['data']['last_configurations'] = (
                 user.last_configuration.to_dict()
             )
-        else:
-            session_store['configurations'] = None
 
-        if user.last_alloy_store:
-            session_store['alloy_store'] = user.last_alloy_store.to_dict()
-            response['data']['last_alloy_store'] = user.last_alloy_store.to_dict()
-        else:
+        if not user.last_alloy_store:
             session_store['alloy_store'] = None
+        else:
+            session_store['alloy_store'] = user.last_alloy_store.to_dict()
+            response['data'][
+                'last_alloy_store'] = user.last_alloy_store.to_dict()
 
-        if user.last_simulation_results:
+        if not user.last_simulation_results:
             session_store['simulation_results'] = (
                 user.last_simulation_results.to_dict()
             )

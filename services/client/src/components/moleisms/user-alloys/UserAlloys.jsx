@@ -39,7 +39,7 @@ class UserAlloys extends Component {
   }
 
   componentDidMount = () => {
-    const { userAlloys, getUserAlloysConnect } = this.props
+    const { userAlloys = [], getUserAlloysConnect } = this.props
     if (!userAlloys || userAlloys.length === 0) getUserAlloysConnect()
   }
 

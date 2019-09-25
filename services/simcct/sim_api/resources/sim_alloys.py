@@ -13,7 +13,7 @@ __author__ = [
 ]
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'MIT'
-__version__ = '0.1.0'
+__version__ = '1.0.0'
 __maintainer__ = 'Andrew Che'
 __email__ = 'andrew@neuraldev.io'
 __status__ = 'production'
@@ -28,7 +28,8 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from marshmallow import ValidationError
 
-from sim_api.extensions import api
+from arc_logging import AppLogger
+from sim_api.extensions import api, apm
 from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.schemas import (
@@ -36,8 +37,6 @@ from sim_api.schemas import (
 )
 from simulation.simconfiguration import SimConfiguration as SimConfig
 from simulation.utilities import Method, MissingElementError
-
-from logger import AppLogger
 
 logger = AppLogger(__name__)
 
@@ -132,11 +131,13 @@ class AlloyStore(Resource):
         except MissingElementError as e:
             response['message'] = str(e)
             logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 400
         except ValidationError as e:
             response['errors'] = str(e.messages)
             response['message'] = 'Alloy failed schema validation.'
             logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 400
 
         # Otherwise we have all the elements we need
@@ -170,6 +171,7 @@ class AlloyStore(Resource):
             response['errors'] = e.messages
             response['message'] = 'Alloy failed schema validation.'
             logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 400
 
         session_store = SimSessionService().load_session()
@@ -197,6 +199,7 @@ class AlloyStore(Resource):
                 'Validation error for session configurations.'
             )
             logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 500
 
         # Well, if we don't need to auto calc. anything, let's get out of here
@@ -237,7 +240,7 @@ class AlloyStore(Resource):
             'Compositions and Configurations in Session '
             'initiated.'
         )
-        response['data'] = {}
+        data = {}
 
         # We need to convert them to our enums as required by the Sim
         # package - by default we always use Li98
@@ -248,26 +251,25 @@ class AlloyStore(Resource):
             ms_rate_param = SimConfig.get_ms_alpha(comp=comp_np_arr)
             valid_configs['ms_temp'] = ms_temp
             valid_configs['ms_rate_param'] = ms_rate_param
-            response['data']['ms_temp'] = ms_temp
-            response['data']['ms_rate_param'] = ms_rate_param
+            data.update({'ms_temp': ms_temp, 'ms_rate_param': ms_rate_param})
 
         if valid_configs['auto_calculate_bs']:
             bs_temp = SimConfig.get_bs(method, comp=comp_np_arr)
             valid_configs['bs_temp'] = bs_temp
-            response['data']['bs_temp'] = bs_temp
+            data.update({'bs_temp': bs_temp})
 
         if valid_configs['auto_calculate_ae']:
             ae1, ae3 = SimConfig.calc_ae1_ae3(comp_np_arr)
             valid_configs['ae1_temp'] = ae1
             valid_configs['ae3_temp'] = ae3
-            response['data']['ae1_temp'] = ae1
-            response['data']['ae3_temp'] = ae3
+            data.update({'ae1_temp': ae1, 'ae3_temp': ae3})
 
         valid_configs['is_valid'] = False
         session_store['configurations'] = valid_configs
 
         SimSessionService().save_session(session_store)
 
+        response.update({'data': data})
         response['status'] = 'success'
         return response, 201
 

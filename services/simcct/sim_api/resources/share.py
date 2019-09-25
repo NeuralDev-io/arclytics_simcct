@@ -30,7 +30,7 @@ from flask import Blueprint, jsonify, redirect, render_template, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
-from logger import AppLogger
+from arc_logging import AppLoggerLogger
 from sim_api.extensions import api
 from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
                                           ElementSymbolInvalid,

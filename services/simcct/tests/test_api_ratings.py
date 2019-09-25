@@ -26,7 +26,7 @@ import unittest
 from pathlib import Path
 
 from tests.test_api_base import BaseTestCase
-from logger import AppLogger
+from arc_logging import AppLogger
 from sim_api.models import User, Feedback, AdminProfile
 from tests.test_api_users import log_test_user_in
 from tests.test_utilities import test_login

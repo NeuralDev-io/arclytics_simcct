@@ -25,7 +25,7 @@ from pathlib import Path
 from flask import json
 from mongoengine import get_db
 
-from logger import AppLogger
+from arc_logging import AppLogger
 from sim_api.extensions.SimSession import SimSessionService
 from sim_api.models import AlloyStore, Configuration, User
 from sim_api.schemas import AlloyStoreSchema, ConfigurationsSchema

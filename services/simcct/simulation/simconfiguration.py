@@ -149,7 +149,7 @@ class SimConfiguration(object):
 
             # Using the pt 1-to-1 mapping validates that the name is exactly
             # as we expect it. Will raise a KeyError exception if symbol names
-            # don't match. We return False and check it later.
+            # don't match. We raise a new ConfigurationError
             try:
                 elem_symbol = PeriodicTable[s].name
             except KeyError:

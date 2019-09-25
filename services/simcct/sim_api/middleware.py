@@ -31,7 +31,7 @@ from bson import ObjectId
 from flask import jsonify, request, session, json
 from mongoengine import DoesNotExist
 
-from logger import AppLogger
+from arc_logging import AppLogger
 from sim_api.extensions.Session.redis_session import SESSION_COOKIE_NAME
 from sim_api.models import User
 

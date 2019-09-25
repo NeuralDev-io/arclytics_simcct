@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
 import UserIcon from 'react-feather/dist/icons/user'
 import DatabaseIcon from 'react-feather/dist/icons/database'
 import SlidersIcon from 'react-feather/dist/icons/sliders'
@@ -23,30 +24,33 @@ class UserSidebar extends Component {
     return (
       <div className={styles.sidebar}>
         <h4>Account</h4>
-        <a
+        <Link
           id="profile"
-          href="/user/profile"
+          to="/user/profile"
+          onClick={() => this.setState({ active: 'profile' })}
           className={`${styles.item} ${active === 'profile' && styles.active}`}
         >
           <UserIcon className={styles.icon} />
           <span>Profile</span>
-        </a>
-        <a
+        </Link>
+        <Link
           id="alloy"
-          href="/user/profile"
+          to="/user/profile"
+          onClick={() => this.setState({ active: 'profile' })}
           className={`${styles.item} ${active === 'alloys' && styles.active}`}
         >
           <DatabaseIcon className={styles.icon} />
           <span>Security</span>
-        </a>
-        <a
+        </Link>
+        <Link
           id="simulations"
-          href="/user/profile"
+          to="/user/profile"
+          onClick={() => this.setState({ active: 'profile' })}
           className={`${styles.item} ${active === 'simulations' && styles.active}`}
         >
           <SlidersIcon className={styles.icon} />
           <span>Data personalisation</span>
-        </a>
+        </Link>
       </div>
     )
   }

@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { Link } from 'react-router-dom'
 import HardDriveIcon from 'react-feather/dist/icons/hard-drive'
 // import HelpIcon from 'react-feather/dist/icons/help-circle'
 import MonitorIcon from 'react-feather/dist/icons/monitor'
@@ -45,36 +46,36 @@ class AppBar extends React.Component {
       <nav className={styles.navContainer}>
         <div>
           <AnstoLogo className={styles.anstoLogo} />
-          <a
+          <Link
             id="sim"
             className={`${styles.navIcon} ${active === 'sim' && styles.active}`}
-            href="/"
+            to="/"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
               <SlidersIcon className={styles.icon} />
               <p>Simulation</p>
             </Tooltip>
-          </a>
-          <a
+          </Link>
+          <Link
             id="savedSimulations"
             className={`${styles.navIcon} ${active === 'savedSimulations' && styles.active} ${!isAuthenticated && styles.disabled}`}
-            href={isAuthenticated ? '/user/simulations' : ''}
+            to={isAuthenticated ? '/user/simulations' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
               <HardDriveIcon className={styles.icon} />
               <p>Saved simulations</p>
             </Tooltip>
-          </a>
-          <a
+          </Link>
+          <Link
             id="alloys"
             className={`${styles.navIcon} ${active === 'userAlloys' && styles.active} ${!isAuthenticated && styles.disabled}`}
-            href={isAuthenticated ? '/user/alloys' : ''}
+            to={isAuthenticated ? '/user/alloys' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
               <DatabaseIcon className={styles.icon} />
               <p>Alloy database</p>
             </Tooltip>
-          </a>
+          </Link>
           {/* <a
             id="help"
             className={`${styles.navIcon} ${active === 'edu' && styles.active} ${!isAuthenticated && styles.disabled}`}
@@ -85,29 +86,29 @@ class AppBar extends React.Component {
               <p>Help</p>
             </Tooltip>
           </a> */}
-          <a
+          <Link
             id="admin"
             className={`${styles.navIcon} ${active === 'admin' && styles.active}`}
             style={{ display: isAdmin ? 'flex' : 'none' }}
-            href="/admin/analytics"
+            to="/admin/analytics"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
               <MonitorIcon className={styles.icon} />
               <p>Admin</p>
             </Tooltip>
-          </a>
+          </Link>
         </div>
         <div>
-          <a
+          <Link
             id="profile"
             className={`${styles.navIcon} ${active === 'user' && styles.active} ${!isAuthenticated && styles.disabled}`}
-            href={isAuthenticated ? '/user/profile' : ''}
+            to={isAuthenticated ? '/user/profile' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
               <UserIcon className={styles.icon} />
               <p>Account</p>
             </Tooltip>
-          </a>
+          </Link>
           <div
             id="logout"
             className={`${styles.navIcon} ${!isAuthenticated && styles.disabled}`}

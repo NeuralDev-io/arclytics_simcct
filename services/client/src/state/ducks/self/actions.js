@@ -403,6 +403,7 @@ export const getLastSim = () => dispatch => (
           payload: res.data,
         })
       }
+      return res
     })
     .catch((err) => {
       // log to fluentd

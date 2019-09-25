@@ -2,6 +2,7 @@ import { PERSIST_SIM } from './types'
 
 const initialState = {
   lastSim: {},
+  lastSimTime: '',
 }
 
 const reducer = (state = initialState, action) => {
@@ -10,6 +11,7 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         lastSim: action.payload,
+        lastSimTime: action.time,
       }
     default:
       return state

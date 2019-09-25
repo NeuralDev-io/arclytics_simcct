@@ -1302,10 +1302,10 @@ while [[ "$1" != "" ]] ; do
 
                   sleep 15
                   # Wait till the PV and PVC are deleted first
-                  gcloud compute disks delete pd-ssd-disk-1 ${LOCATION_COMMAND}
-                  gcloud compute disks delete pd-ssd-disk-2 ${LOCATION_COMMAND}
+                  gcloud compute disks delete mongo-ssd-disk-1 ${LOCATION_COMMAND}
+                  gcloud compute disks delete mongo-ssd-disk-2 ${LOCATION_COMMAND}
                   # REMEMBER TO UPDATE scripts/configure_repset_auth.sh IF MOVING to 3
-                   gcloud compute disks delete pd-ssd-disk-3 ${LOCATION_COMMAND}
+                  gcloud compute disks delete mongo-ssd-disk-3 ${LOCATION_COMMAND}
                   ;;
               esac
               shift

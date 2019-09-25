@@ -116,9 +116,9 @@ spec:
         labels:
           app: mongodb
         annotations:
-          volume.beta.kubernetes.io/storage-class: standard
+          volume.beta.kubernetes.io/storage-class: fast
       spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 200Gi
+            storage: 30Gi

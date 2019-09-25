@@ -57,7 +57,7 @@ spec:
           exec:
             command:
               - cat
-              - /tmp/healthy
+              - /etc/nginx/healthy
           initialDelaySeconds: 15
           periodSeconds: 60
         env:

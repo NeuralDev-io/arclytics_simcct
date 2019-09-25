@@ -23,7 +23,8 @@ import { SaveAlloyModal } from '../../moleisms/user-alloys'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { SaveSimButton, ShareSimButton, LoadSimButton } from '../../moleisms/sim-actions'
 import { TTT, CCT } from '../../moleisms/charts'
-import { loadPersistedSim } from '../../../state/ducks/sim/actions'
+import { loadPersistedSim, loadLastSim } from '../../../state/ducks/sim/actions'
+import { getLastSim } from '../../../state/ducks/self/actions'
 import { persistSim } from '../../../state/ducks/persist/actions'
 
 import styles from './SimulationPage.module.scss'
@@ -39,10 +40,22 @@ class SimulationPage extends Component {
   }
 
   componentDidMount = () => {
-    const { persistSimConnect, persistedSim, loadPersistedSimConnect } = this.props
+    const {
+      persistSimConnect,
+      persistedSim,
+      loadPersistedSimConnect,
+      lastSim,
+      getLastSimConnect,
+      loadLastSimConnect,
+    } = this.props
     window.addEventListener('beforeunload', persistSimConnect)
-    if (Object.keys(persistedSim).length !== 0) {
-      loadPersistedSimConnect()
+    // if (Object.keys(persistedSim).length !== 0) {
+    //   loadPersistedSimConnect()
+    // }
+    if (lastSim === undefined || Object.keys(lastSim).length === 0) {
+      getLastSimConnect()
+        .then(() => loadLastSimConnect())
+      
     }
   }
 
@@ -183,7 +196,10 @@ SimulationPage.propTypes = {
   isAuthenticated: PropTypes.bool.isRequired,
   persistSimConnect: PropTypes.func.isRequired,
   loadPersistedSimConnect: PropTypes.func.isRequired,
+  getLastSimConnect: PropTypes.func.isRequired,
+  loadLastSimConnect: PropTypes.func.isRequired,
   persistedSim: PropTypes.shape({}).isRequired,
+  lastSim: PropTypes.shape({}).isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -191,11 +207,14 @@ const mapStateToProps = state => ({
   isInitialised: state.sim.isInitialised,
   isSimulated: state.sim.isSimulated,
   persistedSim: state.persist.lastSim,
+  lastSim: state.self.lastSim,
 })
 
 const mapDispatchToProps = {
   persistSimConnect: persistSim,
   loadPersistedSimConnect: loadPersistedSim,
+  getLastSimConnect: getLastSim,
+  loadLastSimConnect: loadLastSim,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(SimulationPage)

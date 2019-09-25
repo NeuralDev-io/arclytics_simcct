@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: arc-secure-ingress
+  name: arc-gce-ingress
   namespace: arclytics
   annotations:
     kubernetes.io/ingress.global-static-ip-name: "arclytics-ip"

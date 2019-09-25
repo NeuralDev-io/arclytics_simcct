@@ -31,8 +31,10 @@ from itsdangerous import URLSafeTimedSerializer
 from arc_logging import AppLogger
 from sim_api.extensions.utilities import get_mongo_uri
 from sim_api.models import (AdminProfile, User)
-from sim_api.token import (generate_confirmation_token,
-                           generate_promotion_confirmation_token, generate_url)
+from sim_api.token import (
+    generate_confirmation_token, generate_promotion_confirmation_token,
+    generate_url
+)
 from tests.test_api_base import BaseTestCase
 from tests.test_utilities import test_login
 
@@ -46,9 +48,9 @@ class TestAdminCreateService(BaseTestCase):
         """Test disable account is successful"""
         user = User(
             **{
-               'email': 'kyloren@gmail.com',
-               'first_name': 'Kylo',
-               'last_name': 'Ren'
+                'email': 'kyloren@gmail.com',
+                'first_name': 'Kylo',
+                'last_name': 'Ren'
             }
         )
         user.set_password('LetStarWarsDie')

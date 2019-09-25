@@ -1184,11 +1184,7 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client as client:
             resp = client.put(
                 '/api/v1/sim/confirm/register/resend',
-                data=json.dumps(
-                    {
-                        'email': 'lordvader@arclytics.com'
-                    }
-                ),
+                data=json.dumps({'email': 'lordvader@arclytics.com'}),
                 content_type='application/json'
             )
 
@@ -1214,11 +1210,7 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client as client:
             resp = client.put(
                 '/api/v1/sim/confirm/register/resend',
-                data=json.dumps(
-                    {
-                        'email': 'kenobi@arclytics.io'
-                    }
-                ),
+                data=json.dumps({'email': 'kenobi@arclytics.io'}),
                 content_type='application/json'
             )
 
@@ -1243,11 +1235,7 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client as client:
             resp = client.put(
                 '/api/v1/sim/confirm/register/resend',
-                data=json.dumps(
-                    {
-                        'email': 'kenobi@arclytics.com'
-                    }
-                ),
+                data=json.dumps({'email': 'kenobi@arclytics.com'}),
                 content_type='application/json'
             )
 
@@ -1257,7 +1245,6 @@ class TestAuthEndpoints(BaseTestCase):
             # self.assertEqual(
             #     data['message'], 'Another confirmation email has been sent.'
             # )
-
 
 
 if __name__ == '__main__':

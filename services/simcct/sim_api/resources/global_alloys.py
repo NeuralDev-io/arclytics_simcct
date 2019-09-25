@@ -26,8 +26,9 @@ from marshmallow import ValidationError
 
 from arc_logging import AppLoggerLogger
 from sim_api.extensions import api
-from sim_api.middleware import (authenticate_user_cookie_restful,
-                                authorize_admin_cookie_restful)
+from sim_api.middleware import (
+    authenticate_user_cookie_restful, authorize_admin_cookie_restful
+)
 from sim_api.schemas import AlloySchema
 from simulation.utilities import MissingElementError
 

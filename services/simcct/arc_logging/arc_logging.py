@@ -113,6 +113,7 @@ def check_logpath(log_path):
 
     return log_path
 
+
 # ========================================================================= #
 #      MISCELLANEOUS MODULE DATA
 # ========================================================================= #
@@ -139,8 +140,8 @@ NOTSET = 0
 
 def get_remote_fluentd():
     return (
-        env.get('FLUENTD_HOST', 'fluentd-service'),
-        int(env.get('FLUENTD_PORT', 24224))
+        env.get('FLUENTD_HOST',
+                'fluentd-service'), int(env.get('FLUENTD_PORT', 24224))
     )
 
 
@@ -194,6 +195,7 @@ if hasattr(sys, '_getframe'):
     # noinspection PyProtectedMember
     currentframe = lambda: sys._getframe(3)
 else:  # pragma: no cover
+
     def currentframe():
         """Return the frame object for the caller's stack frame."""
         # noinspection PyBroadException
@@ -274,15 +276,15 @@ def _release_lock():
 # ========================================================================= #
 class LogRecord(object):
     def __init__(
-            self,
-            name: str,
-            level: Union[int, str],
-            pathname,
-            lineno,
-            msg,
-            exc_info,
-            func=None,
-            stack_info=None,
+        self,
+        name: str,
+        level: Union[int, str],
+        pathname,
+        lineno,
+        msg,
+        exc_info,
+        func=None,
+        stack_info=None,
     ):
         ct = time.time()
         self.name = name
@@ -321,12 +323,8 @@ class LogRecord(object):
 
     def __str__(self):
         return '<LogRecord {}, {}, {}, {}, {}, {}>'.format(
-            self.name,
-            self.level_num,
-            self.pathname,
-            self.module,
-            self.funcName,
-            str(self.msg)
+            self.name, self.level_num, self.pathname, self.module,
+            self.funcName, str(self.msg)
         )
 
     def get_log_formatted(self):
@@ -360,8 +358,17 @@ class EventRecord(LogRecord):
     requirement for the `fluentd` Event object.
     """
 
-    def __init__(self, name: str, level: Union[int, str], pathname, lineno, msg,
-                 exc_info, func=None, stack_info=None):
+    def __init__(
+        self,
+        name: str,
+        level: Union[int, str],
+        pathname,
+        lineno,
+        msg,
+        exc_info,
+        func=None,
+        stack_info=None
+    ):
         super(EventRecord, self).__init__(
             name, level, pathname, lineno, msg, exc_info, func, stack_info
         )
@@ -376,15 +383,22 @@ class EventRecord(LogRecord):
         log = self.get_log_formatted()
 
         data = {
-            'timestamp': format_time(self),
-            'hostname': self.hostname,
-            'severity': self.level_name,
-            'log': log,
-            'stack_trace': self.stack_info,
-            'caller': '{module}.{function}'.format(
+            'timestamp':
+            format_time(self),
+            'hostname':
+            self.hostname,
+            'severity':
+            self.level_name,
+            'log':
+            log,
+            'stack_trace':
+            self.stack_info,
+            'caller':
+            '{module}.{function}'.format(
                 module=self.module, function=self.funcName
             ),
-            'line': self.lineno
+            'line':
+            self.lineno
         }
 
         if isinstance(self.msg, str):
@@ -413,15 +427,12 @@ class EventRecord(LogRecord):
 
     def __str__(self):
         return '<EventRecord {}, {}, {}, {}, {}, {}>'.format(
-            self.name,
-            self.level_num,
-            self.pathname,
-            self.module,
-            self.funcName,
-            str(self.msg)
+            self.name, self.level_num, self.pathname, self.module,
+            self.funcName, str(self.msg)
         )
 
     __repr__ = __str__
+
 
 #
 # Not using a Formatter from the `logging` module but we want to use the
@@ -503,6 +514,7 @@ class Handler(object):
     records as desired. By default, no formatter is specified; in this case,
     the 'raw' message as determined by record.message is logged.
     """
+
     def __init__(self, level=NOTSET):
         # Handler name
         self._name = None
@@ -588,7 +600,7 @@ class Handler(object):
         """
         # get the module data lock, as we're updating a shared structure.
         _acquire_lock()
-        try:    # unlikely to raise an exception, but you never know...
+        try:  # unlikely to raise an exception, but you never know...
             if self._name and self._name in _handlers:
                 del _handlers[self._name]
         finally:
@@ -614,8 +626,10 @@ class Handler(object):
             # Walk the stack frame up until we're out of logging,
             # so as to print the calling context.
             frame = tb.tb_frame
-            while (frame and os.path.dirname(frame.f_code.co_filename) ==
-                   __path__[0]):
+            while (
+                frame
+                and os.path.dirname(frame.f_code.co_filename) == __path__[0]
+            ):
                 frame = frame.f_back
             if frame:
                 traceback.print_stack(frame, file=sys.stderr)
@@ -651,6 +665,7 @@ class FluentdHandler(Handler):
     A handler class which writes logging records, appropriately formatted,
     to the `fluentd` driver using the `sender.emit` method.
     """
+
     def __init__(self, tag: str = ''):
         """Initialize the `fluentd` handler.
 
@@ -691,7 +706,7 @@ class FluentdHandler(Handler):
                 ev_record.__class__ = EventRecord
 
             if not self.__stream.emit(
-                    ev_record.level_str(), ev_record.data_dict()
+                ev_record.level_str(), ev_record.data_dict()
             ):
                 self.handle_errors(record)
                 self.__stream.clear_last_error()
@@ -794,6 +809,7 @@ class FileHandler(StreamHandler):
     """
     A handler class which writes formatted logging records to disk files.
     """
+
     def __init__(self, filename, mode='a', encoding=None, delay=False):
         """Open the specified file and use it as the stream for logging."""
         # Issue #27493: add support for Path objects to be passed in
@@ -856,7 +872,7 @@ class FileHandler(StreamHandler):
         # level = get_level_name(self.level)
         level = get_level_name(self.level)
         return '<{} {}({})>'.format(
-            self.__class__.__name__, self.base_filename,  level
+            self.__class__.__name__, self.base_filename, level
         )
 
     __repr__ = __str__
@@ -882,10 +898,10 @@ class _StderrHandler(StreamHandler):
 _DEFAULT_LAST_RESORT = _StderrHandler(WARNING)
 LAST_RESORT_HANDLER = _DEFAULT_LAST_RESORT
 
-
 # ========================================================================= #
 #      LOGGER
 # ========================================================================= #
+
 
 class AppLogger(object):
     """
@@ -893,6 +909,7 @@ class AppLogger(object):
     a message to the `fluentd` driver in a specific format depending on the
     data type of the message.
     """
+
     def __init__(self, name: str, level: int = NOTSET):
         """Instantiate the `FluentdLogger` instance with optional values
         passed in.
@@ -985,12 +1002,12 @@ class AppLogger(object):
 
     # noinspection PyUnusedLocal
     def _log(
-            self,
-            level: int,
-            msg: Union[str, dict, Any],
-            exc_info: bool = None,
-            stack_info=False,
-            **kwargs
+        self,
+        level: int,
+        msg: Union[str, dict, Any],
+        exc_info: bool = None,
+        stack_info=False,
+        **kwargs
     ):
         """
         Low-level logging routine which creates a EventRecord and then handles.
@@ -1059,7 +1076,7 @@ class AppLogger(object):
                 # if record.levelno >= handler.level:
                 handler.handle(record)
             if not c.propagate:
-                c = None   # break out
+                c = None  # break out
         if found == 0:
             if LAST_RESORT_HANDLER:
                 LAST_RESORT_HANDLER.handle(record)
@@ -1095,11 +1112,11 @@ class AppLogger(object):
         self._log(WARNING, msg, **kwargs)
 
     def error(
-            self,
-            msg: Union[str, dict],
-            stack_info: bool = True,
-            exc_info: bool = False,
-            **kwargs
+        self,
+        msg: Union[str, dict],
+        stack_info: bool = True,
+        exc_info: bool = False,
+        **kwargs
     ):
         """Log 'msg' with severity 'ERROR'.
 
@@ -1124,6 +1141,8 @@ class AppLogger(object):
 
     fatal = critical
 
-    def exception(self, msg: Union[str, dict], exc_info: bool = True, **kwargs):
+    def exception(
+        self, msg: Union[str, dict], exc_info: bool = True, **kwargs
+    ):
         """Convenience method for logging an ERROR with exception info."""
         self.error(msg, exc_info=exc_info, stack_info=True, **kwargs)

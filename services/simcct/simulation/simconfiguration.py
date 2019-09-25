@@ -183,16 +183,19 @@ class SimConfiguration(object):
 
         if method == Method.Kirkaldy83:
             # Eqn [30] in Kirkaldy defined 1983 paper
-            return round((
-                656 - (58 * c) - (35 * mn) - (75 * si) - (15 * ni) -
-                (34 * cr) - (41 * mo)
-            ), 4)
+            return round(
+                (
+                    656 - (58 * c) - (35 * mn) - (75 * si) - (15 * ni) -
+                    (34 * cr) - (41 * mo)
+                ), 4
+            )
 
         # By default, we return Method.Li98
         # Eqn [24] in paper. Li modified from Kirkaldy.
-        return round((
-            637.0 - (58 * c) - (35 * mn) - (15 * ni) - (34 * cr) - (41 * mo)
-        ), 4)
+        return round(
+            (637.0 - (58 * c) - (35 * mn) - (15 * ni) - (34 * cr) - (41 * mo)),
+            4
+        )
 
     @staticmethod
     def get_ms(method: Method = None, comp: np.ndarray = None) -> float:
@@ -214,17 +217,21 @@ class SimConfiguration(object):
 
         if method == Method.Kirkaldy83:
             # Eqn [31] in Kirkaldy 1983 paper
-            return round((
-                561 - (474 * c) - (33.0 * mn) - (17.0 * ni) - (17.0 * cr) -
-                (21.0 * mo)
-            ), 4)
+            return round(
+                (
+                    561 - (474 * c) - (33.0 * mn) - (17.0 * ni) - (17.0 * cr) -
+                    (21.0 * mo)
+                ), 4
+            )
 
         # By default we return Method.Li98
         # Eqn [25] in paper by Kung and Raymond
-        return round((
-            539 - (423 * c) - (30.4 * mn) - (17.7 * ni) - (12.1 * cr) -
-            (7.5 * mo) + (10.0 * co) - (7.5 * si)
-        ), 4)
+        return round(
+            (
+                539 - (423 * c) - (30.4 * mn) - (17.7 * ni) - (12.1 * cr) -
+                (7.5 * mo) + (10.0 * co) - (7.5 * si)
+            ), 4
+        )
 
     @staticmethod
     def get_ms_alpha(comp: np.ndarray = None) -> float:
@@ -234,10 +241,12 @@ class SimConfiguration(object):
         cr = comp['weight'][comp['symbol'] == PeriodicTable.Cr.name][0]
         mo = comp['weight'][comp['symbol'] == PeriodicTable.Mo.name][0]
 
-        return round((
-            0.0224 - (0.0107 * c) - (0.0007 * mn) - (0.00005 * ni) -
-            (0.00012 * cr) - (0.0001 * mo)
-        ), 4)
+        return round(
+            (
+                0.0224 - (0.0107 * c) - (0.0007 * mn) - (0.00005 * ni) -
+                (0.00012 * cr) - (0.0001 * mo)
+            ), 4
+        )
 
     @staticmethod
     def calc_ae1_ae3(comp: np.ndarray = None) -> (np.float, np.float):
@@ -276,11 +285,11 @@ class SimConfiguration(object):
         return np.around(ae1, 4), np.around(ae3 - 273, 4)
 
     def xfe_method2(
-            self,
-            comp_list: list = None,
-            ae1: np.float = None,
-            cf: np.float = 0.012,
-            plot: bool = False
+        self,
+        comp_list: list = None,
+        ae1: np.float = None,
+        cf: np.float = 0.012,
+        plot: bool = False
     ) -> (np.float, np.float):
         """Second method for estimating Xfe using parra-equilibrium methodology
         to predict  the Ae3 values with increasing carbon content. To find

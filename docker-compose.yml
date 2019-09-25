@@ -33,7 +33,7 @@ services:
       labels:
         arclytics.io: "development"
         service: "client"
-    image: neuraldev/arc_sim_client:1.1
+    image: neuraldev/arc_sim_client:1.2
     volumes:
       - ./services/client:/usr/src/app
       - /usr/src/app/node_modules
@@ -168,7 +168,7 @@ services:
       labels:
         arclytics.io: "development"
         service: "celery-worker"
-    image: neuraldev/arc_sim_celery:1.0
+    image: neuraldev/arc_sim_celery:1.2
     logging:
       driver: fluentd
       options:

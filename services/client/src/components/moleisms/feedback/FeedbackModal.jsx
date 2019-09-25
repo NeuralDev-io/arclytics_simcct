@@ -7,6 +7,7 @@ import { ReactComponent as Okay } from '../../../assets/icons/feedback/okay.svg'
 import { ReactComponent as Bad } from '../../../assets/icons/feedback/bad.svg'
 import { ReactComponent as Terrible } from '../../../assets/icons/feedback/bad.svg'
 import Button from '../../elements/button'
+import Select from '../../elements/select'
 import TextArea from '../../elements/textarea'
 import { ToastModal } from '../../elements/modal'
 import { buttonize } from '../../../utils/accessibility'
@@ -19,14 +20,22 @@ import {
 import styles from './FeedbackModal.module.scss'
 
 class FeedbackModal extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      categoryOptions: [
+        { label: 'Features', value: 'Features' },
+        { label: 'Performance', value: 'Performance' },
+        { label: 'Appearance', value: 'Appearance' },
+        { label: 'Others', value: 'Others' },
+      ],
+    }
+  }
+
   componentDidMount = () => {
     const { updateFeedbackConnect } = this.props
     // check here if it's turn to pop up feedback modal
-    updateFeedbackConnect({ visible: true })
-  }
-
-  handleSubmit = () => {
-
+    updateFeedbackConnect({ feedbackVisible: true })
   }
 
   renderRating = () => {
@@ -55,32 +64,47 @@ class FeedbackModal extends Component {
   render() {
     const {
       feedback: {
-        visible,
+        feedbackVisible,
         backdrop,
         givingFeedback,
+        category,
         rate,
         message,
       },
       updateFeedbackConnect,
       closeFeedbackConnect,
+      submitFeedbackConnect,
     } = this.props
+    const { categoryOptions } = this.state
+
     return (
       <React.Fragment>
         <div
           className={`${styles.backdrop} ${backdrop ? styles.show : ''}`}
           {...buttonize(closeFeedbackConnect)}
         />
-        <ToastModal show={visible} className={`${styles.modal} ${givingFeedback ? styles.form : ''}`}>
+        <ToastModal show={feedbackVisible} className={`${styles.modal} ${givingFeedback ? styles.form : ''}`}>
           {
             givingFeedback
               ? (
                 <form className={styles.getting}>
                   <h4>We appreaciate your feedback!</h4>
                   <p>All feedback goes to our dev team to improve the app experience.</p>
-                  <h6>How&apos;s your experience with us so far?</h6>
+                  <h6>How&apos;s your experience with us so far? *</h6>
                   <div className={styles.rating}>
                     {this.renderRating()}
                   </div>
+                  <h6>This feedback is mainly about *</h6>
+                  <Select
+                    name="category"
+                    placeholder="Choose category"
+                    options={categoryOptions}
+                    value={categoryOptions[categoryOptions.findIndex(c => c.value === category)]}
+                    length="stretch"
+                    onChange={val => updateFeedbackConnect({ category: val.value })}
+                    className={styles.select}
+                    isSearchable
+                  />
                   <h6>Tell us more about your experience</h6>
                   <TextArea
                     name="message"
@@ -88,16 +112,18 @@ class FeedbackModal extends Component {
                     value={message}
                     placeholder="Message (optional)"
                     length="stretch"
+                    rows={8}
                   />
                   <div className={styles.buttonGroup}>
                     <Button
-                      onClick={this.handleSubmit}
+                      onClick={submitFeedbackConnect}
                       length="long"
-                      isDisabled={rate === -1}
+                      isDisabled={rate === -1 || category === ''}
                     >
                       Submit
                     </Button>
                     <Button
+                      type="submit"
                       onClick={closeFeedbackConnect}
                       length="long"
                       appearance="text"
@@ -117,7 +143,7 @@ class FeedbackModal extends Component {
                     Give feedback
                   </Button>
                   <Button
-                    onClick={() => updateFeedbackConnect({ visible: false })}
+                    onClick={closeFeedbackConnect}
                     appearance="text"
                   >
                     No, thanks
@@ -134,9 +160,10 @@ class FeedbackModal extends Component {
 FeedbackModal.propTypes = {
   // given by connect()
   feedback: PropTypes.shape({
-    visible: PropTypes.bool,
+    feedbackVisible: PropTypes.bool,
     backdrop: PropTypes.bool,
     givingFeedback: PropTypes.bool,
+    category: PropTypes.string,
     rate: PropTypes.number,
     message: PropTypes.string,
   }).isRequired,

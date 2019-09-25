@@ -23,8 +23,46 @@ export const resetFeedback = () => (dispatch) => {
 }
 
 export const submitFeedback = () => (dispatch, getState) => {
-  const { rate, message } = getState().feedback
-  console.log(rate, message)
-  dispatch({ type: CLOSE_FEEDBACK })
-  dispatch({ type: RESET_FEEDBACK })
+  const { category, rate, message } = getState().feedback
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/feedback`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      category,
+      rating: rate,
+      comment: message,
+    }),
+  })
+    .then((res) => {
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong',
+        }
+      }
+      return res.json()
+    })
+    .then((res) => {
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
+      if (res.status === 'success') {
+        dispatch({ type: CLOSE_FEEDBACK })
+        setTimeout(() => dispatch({ type: RESET_FEEDBACK }), 500)
+        addFlashToast({
+          message: 'Thank you for your feedback.',
+          options: { variant: 'success' },
+        }, true)(dispatch)
+      }
+    })
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }

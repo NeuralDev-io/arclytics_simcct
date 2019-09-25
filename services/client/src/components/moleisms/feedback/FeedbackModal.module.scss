@@ -24,8 +24,8 @@
   height: 4.5rem;
 
   &.form {
-    width: 30rem;
-    height: 39rem;
+    width: 32rem;
+    height: 43rem;
     max-height: initial;
   }
 }
@@ -48,7 +48,7 @@
 
 .getting {
   padding: 2.5rem 2.5rem;
-  width: 28rem;
+  width: 30rem;
   margin: auto;
 
   & > h4 {
@@ -56,7 +56,7 @@
   }
 
   & > p {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
   }
 
   & > h6 {
@@ -102,6 +102,10 @@
         transition: ease-in-out all .2s;
       }
     }
+  }
+
+  & > .select {
+    margin-bottom: 1.5rem;
   }
 
   & > .buttonGroup {

@@ -5,9 +5,11 @@ import {
 } from './types'
 
 const initialState = {
-  visible: false,
+  feedbackVisible: false,
+  ratingVisible: false,
   backdrop: false,
   givingFeedback: false,
+  category: '',
   rate: -1,
   message: '',
 }
@@ -22,7 +24,8 @@ const reducer = (state = initialState, action) => {
     case CLOSE_FEEDBACK:
       return {
         ...state,
-        visible: false,
+        feedbackVisible: false,
+        ratingVisible: false,
         backdrop: false,
       }
     case RESET_FEEDBACK:

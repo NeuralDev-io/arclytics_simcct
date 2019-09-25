@@ -521,6 +521,7 @@ export const runSim = () => (dispatch, getState) => {
             simCount = 1
           }
           localStorage.setItem('simCount', simCount)
+          localStorage.setItem('gotFeedback', false)
         }
       }
     })

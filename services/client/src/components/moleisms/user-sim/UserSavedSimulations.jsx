@@ -22,7 +22,7 @@ class UserSavedSimulations extends Component {
   }
 
   componentDidMount = () => {
-    const { data, getSavedSimulationsConnect } = this.props
+    const { data = [], getSavedSimulationsConnect } = this.props
     if (data.length === 0) getSavedSimulationsConnect()
   }
 

@@ -39,7 +39,7 @@ class AdminAlloys extends Component {
   }
 
   componentDidMount = () => {
-    const { globalAlloys, getGlobalAlloysConnect } = this.props
+    const { globalAlloys = [], getGlobalAlloysConnect } = this.props
     if (!globalAlloys || globalAlloys.length === 0) getGlobalAlloysConnect()
   }
 

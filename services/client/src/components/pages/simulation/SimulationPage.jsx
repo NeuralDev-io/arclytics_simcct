@@ -43,19 +43,29 @@ class SimulationPage extends Component {
     const {
       persistSimConnect,
       persistedSim,
+      persistedSimTime,
       loadPersistedSimConnect,
       lastSim,
       getLastSimConnect,
       loadLastSimConnect,
     } = this.props
     window.addEventListener('beforeunload', persistSimConnect)
-    // if (Object.keys(persistedSim).length !== 0) {
-    //   loadPersistedSimConnect()
-    // }
-    if (lastSim === undefined || Object.keys(lastSim).length === 0) {
+
+    const persistedTime = Date.parse(persistedSimTime)
+    const now = new Date()
+    const diff = now - persistedTime
+
+    // if the last sim session is less than 1 hour ago, load it instead
+    // otherise, load the last sim saved in the account
+    if (diff / 60000 < 60 && Object.keys(persistedSim).length !== 0) {
+      loadPersistedSimConnect()
+    } else if (lastSim === undefined || Object.keys(lastSim).length === 0) {
       getLastSimConnect()
-        .then(() => loadLastSimConnect())
-      
+        .then((res) => {
+          if (res.status === 'success') {
+            loadLastSimConnect()
+          }
+        })
     }
   }
 
@@ -199,6 +209,7 @@ SimulationPage.propTypes = {
   getLastSimConnect: PropTypes.func.isRequired,
   loadLastSimConnect: PropTypes.func.isRequired,
   persistedSim: PropTypes.shape({}).isRequired,
+  persistedSimTime: PropTypes.string.isRequired,
   lastSim: PropTypes.shape({}).isRequired,
 }
 
@@ -207,6 +218,7 @@ const mapStateToProps = state => ({
   isInitialised: state.sim.isInitialised,
   isSimulated: state.sim.isSimulated,
   persistedSim: state.persist.lastSim,
+  persistedSimTime: state.persist.lastSimTime,
   lastSim: state.self.lastSim,
 })
 

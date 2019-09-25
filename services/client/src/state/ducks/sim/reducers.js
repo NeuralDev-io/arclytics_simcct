@@ -216,6 +216,9 @@ const reducer = (state = initialState, action) => {
       } = action.payload
       return {
         ...initialState,
+        isInitialised: Object.keys(last_alloy_store.alloys.parent).length !== 0,
+        isSimulated: Object.keys(last_simulation_results.TTT).length !== 0,
+        displayUserCurve: true,
         configurations: {
           ...initialState.configurations,
           error: last_simulation_invalid_fields.invalid_configs,

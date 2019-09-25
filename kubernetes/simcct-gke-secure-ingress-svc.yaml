@@ -54,7 +54,7 @@ spec:
               scheme: HTTP
               path: /healthy
               port: 8000
-            initialDelaySeconds: 15
+            initialDelaySeconds: 5
             periodSeconds: 15
             timeoutSeconds: 15
             successThreshold: 2
@@ -64,7 +64,7 @@ spec:
               command:
                 - cat
                 - /usr/src/app/healthy
-            initialDelaySeconds: 15
+            initialDelaySeconds: 5
             periodSeconds: 60
           resources:
             requests:

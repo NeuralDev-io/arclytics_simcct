@@ -27,9 +27,9 @@ import os
 
 from flask import Blueprint, Response, jsonify
 
-from arc_logging import AppLogging
+from arc_logging import AppLogger
 
-logger = AppLogging(__name__)
+logger = AppLogger(__name__)
 
 root_blueprint = Blueprint('root', __name__)
 

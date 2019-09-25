@@ -262,7 +262,7 @@ class TestAdminCreateService(BaseTestCase):
             print(f'User.active: {user["active"]}')
 
             self.assertEquals(resp.status_code, 302)
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -315,7 +315,7 @@ class TestAdminCreateService(BaseTestCase):
 
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -345,7 +345,7 @@ class TestAdminCreateService(BaseTestCase):
 
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -762,7 +762,7 @@ class TestAdminCreateService(BaseTestCase):
 
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -782,7 +782,7 @@ class TestAdminCreateService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -803,7 +803,7 @@ class TestAdminCreateService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -827,7 +827,7 @@ class TestAdminCreateService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -867,7 +867,7 @@ class TestAdminCreateService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -887,7 +887,7 @@ class TestAdminCreateService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -916,7 +916,7 @@ class TestAdminCreateService(BaseTestCase):
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
             self.assertTrue(resp.headers['Location'])
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -1016,7 +1016,7 @@ class TestAdminCreateService(BaseTestCase):
             resp = client.get(url, content_type='application/json')
 
             self.assertEquals(resp.status_code, 302)
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -1039,7 +1039,7 @@ class TestAdminCreateService(BaseTestCase):
 
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -1066,7 +1066,7 @@ class TestAdminCreateService(BaseTestCase):
 
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -1094,7 +1094,7 @@ class TestAdminCreateService(BaseTestCase):
 
             client_host = os.environ.get('CLIENT_HOST')
             self.assertEquals(resp.status_code, 302)
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"

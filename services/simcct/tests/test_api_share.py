@@ -661,7 +661,7 @@ class TestShareService(BaseTestCase):
             )
             self.assertEquals(resp_request_simulation.status_code, 302)
             token = resp_request_simulation.headers['Location'].split('/')[-1]
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = (

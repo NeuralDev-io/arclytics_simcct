@@ -176,7 +176,7 @@ def cancel_promotion(token):
     """
 
     response = {'status': 'fail', 'message': 'Invalid payload.'}
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -269,7 +269,7 @@ def verify_promotion(token):
     """
 
     response = {'status': 'fail', 'message': 'Invalid payload.'}
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -426,7 +426,7 @@ def confirm_disable_account(token):
     via a confirmation link sent to them in an email.
     """
     response = {'status': 'fail', 'message': 'Invalid payload.'}
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f"{protocol}://{client_host}:{client_port}"

@@ -15,11 +15,18 @@ kubectl apply -f ./hostvm-node-configurer-daemonset.yaml
 # VOLUMES, HENCE COMMENTED OUT BELOW
 #kubectl apply -f ../resources/gce-ssd-storageclass.yaml
 
+REGION="australia-southeast1"
+ZONE="australia-southeast1-a"
+LOCATION_COMMAND="--region=${REGION}"
+REPLICA_ZONE_MONGO="--replica-zones=${ZONE},australia-southeast1-c"
+
 # Register GCE Fast SSD persistent disks and then create the persistent disks 
 echo "Creating GCE disks"
 for i in 1 2 3
 do
-    gcloud compute disks create --size 30GB --type pd-ssd mongo-ssd-disk-$i
+    gcloud compute disks create --size 30GB \
+        --type pd-ssd mongo-ssd-disk-$i \
+        ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
 done
 sleep 3
 
@@ -43,14 +50,16 @@ sleep 3
 kubectl apply -f ./mongo-gke-svc.yaml --validate=false
 echo
 
+kubectl rollout status sts/mongo --namespace arclytics
+
 # Wait until the final (2nd) mongod has started properly
 generalMessage "Waiting for the 2 containers to come up $(date)..."
 generalMessage " (IGNORE any reported not found & connection errors)"
 sleep 30
-generalMessage -n "  "
+generalMessage "  "
 until kubectl --v=0 exec mongo-2 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
     sleep 5
-    generalMessage -n "  "
+    generalMessage "  "
 done
 generalMessage "...mongo containers are now running $(date)"
 echo
@@ -61,4 +70,4 @@ echo
 kubectl get sts
 
 . ./scripts/configure_repset_auth.sh
-
+. ./mongo_import.sh

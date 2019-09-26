@@ -25,7 +25,10 @@ class RatingModal extends Component {
       const countToShow = ['2', '4', '9', '15', '26']
       if (countToShow.includes(simCount) && localStorage.getItem('gotFeedback') !== 'true') {
         this.timer = setTimeout(() => {
-          updateFeedbackConnect({ ratingVisible: true, givingFeedback: false })
+          const { feedback: { feedbackVisible } } = this.props
+          if (!feedbackVisible) {
+            updateFeedbackConnect({ ratingVisible: true, givingFeedback: false })
+          }
         }, 5000)
       }
     }
@@ -91,6 +94,7 @@ class RatingModal extends Component {
 RatingModal.propTypes = {
   // given by connect()
   feedback: PropTypes.shape({
+    feedbackVisible: PropTypes.bool,
     ratingVisible: PropTypes.bool,
     rate: PropTypes.number,
   }).isRequired,

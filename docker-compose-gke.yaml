@@ -137,7 +137,7 @@ services:
   redis:
     build:
       context: ./services/redis
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-prod
       labels:
         arclytics.io: "production"
         service: "redis"

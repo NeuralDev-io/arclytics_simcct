@@ -27,7 +27,9 @@ spec:
   selector:
     matchLabels:
       app: mongodb
-  replicas: 2
+  replicas: 3
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -50,7 +52,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
         - name: mongo-container
-          image: asia.gcr.io/arc-sim/arc_sim_mongo:1.1.1
+          image: asia.gcr.io/arc-sim/arc_sim_mongo:latest
           imagePullPolicy: IfNotPresent
           resources:
             requests:
@@ -116,9 +118,9 @@ spec:
         labels:
           app: mongodb
         annotations:
-          volume.beta.kubernetes.io/storage-class: standard
+          volume.beta.kubernetes.io/storage-class: fast
       spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 200Gi
+            storage: 30Gi

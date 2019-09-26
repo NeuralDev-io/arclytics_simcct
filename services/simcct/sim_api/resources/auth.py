@@ -6,18 +6,19 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__author__ = [
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
+__license__ = 'MIT'
+__version__ = '1.7.0'
+__status__ = 'production'
 __date__ = '2019.07.05'
 """auth.py:
 
-This script describes the Users authentication endpoints for registration,
-login, and logout.
+This module describes the Users authentication endpoints for registration,
+login, logout, and any additional endpoints that require authentication and 
+authorisation purposes..
 """
 
 import json
@@ -34,8 +35,8 @@ from flask import (
 from geoip2.errors import AddressNotFoundError
 from mongoengine.errors import NotUniqueError, ValidationError
 
-from logger import AppLogger
-from sim_api.extensions import bcrypt
+from arc_logging import AppLogger
+from sim_api.extensions import bcrypt, apm
 from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
 from sim_api.middleware import (authenticate_user_and_cookie_flask)
@@ -49,16 +50,6 @@ logger = AppLogger(__name__)
 auth_blueprint = Blueprint('auth', __name__)
 
 
-class SessionValidationError(Exception):
-    """
-    A custom exception to be raised by a threaded async call to register if
-    the response is not what we are expecting.
-    """
-
-    def __init__(self, msg: str):
-        super(SessionValidationError, self).__init__(msg)
-
-
 class SimCCTBadServerLogout(Exception):
     """
     A custom exception to be raised by a synchronous call to logout on the
@@ -69,6 +60,7 @@ class SimCCTBadServerLogout(Exception):
         super(SimCCTBadServerLogout, self).__init__(msg)
 
 
+# noinspection PyBroadException
 @auth_blueprint.route('/confirm/<token>', methods=['GET'])
 def confirm_email(token):
     """This endpoint simply just takes in the token that a user would send
@@ -83,19 +75,19 @@ def confirm_email(token):
     """
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
-    redirect_url = f"{protocol}://{client_host}:{client_port}"
+    redirect_url = f'{protocol}://{client_host}:{client_port}'
 
     # We must confirm the token by decoding it
     try:
         email = confirm_token(token)
-    except URLTokenError as e:
+    except URLTokenError:
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
-    except URLTokenExpired as e:
+    except URLTokenExpired:
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
-    except Exception as e:
+    except Exception:
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     # We ensure there is a user for this email
@@ -193,7 +185,7 @@ def confirm_email_resend_after_registration() -> Tuple[dict, int]:
 def confirm_email_admin(token):
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -332,6 +324,10 @@ def login() -> any:
     try:
         if not User.objects(email=email):
             response['message'] = 'User does not exist.'
+            logger.debug({
+                'email': email,
+                'message': response['message']
+            })
             return jsonify(response), 404
     except Exception as e:
         logger.error(str(e))
@@ -345,6 +341,10 @@ def login() -> any:
         if auth_token:
             if not user.active:
                 response['message'] = 'Your Account has been disabled.'
+                logger.info({
+                    'message': response['message'],
+                    'user': user.email
+                })
                 return jsonify(response), 401
 
             # Let's save some stats for later
@@ -369,11 +369,23 @@ def login() -> any:
                         country=country, state=state, ip_address=ip_address
                     )
                 )
+                logger.info({
+                    'message': 'User logged in',
+                    'user': user.email,
+                    'country': country,
+                    'state': state,
+                    'ip_address': ip_address
+                })
                 user.save()
             except AddressNotFoundError:
                 user.reload()
                 ip_address = request.remote_addr
                 user.login_data.append(LoginData(ip_address=ip_address))
+                logger.error({
+                    'user': user.email,
+                    'message': 'Address not found.',
+                    'ip_address': ip_address
+                }, stack_info=False)
                 user.save()
             reader.close()
 
@@ -496,7 +508,7 @@ def reset_password() -> Tuple[dict, int]:
 def confirm_reset_password(token):
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -613,7 +625,7 @@ def change_password(user):
     authorized by the authentication middleware.
 
     Args:
-        user_id: the middleware will pass a user_id if successful
+        user: the middleware will pass a `models.User` object if successful
 
     Returns:
         A valid HTTP Response and a statue code as a tuple.

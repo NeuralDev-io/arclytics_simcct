@@ -1,0 +1,271 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config-map
+  namespace: arclytics
+data:
+  redis.conf: |
+    ################################## SECURITY ###################################
+    # Require clients to issue AUTH <PASSWORD> before processing any other
+    # commands.  This might be useful in environments in which you do not trust
+    # others with access to the host running redis-server.
+    #
+    # This should stay commented out for backward compatibility and because most
+    # people do not need auth (e.g. they run their own servers).
+    #
+    # Warning: since Redis is pretty fast an outside user can try up to
+    # 150k passwords per second against a good box. This means that you should
+    # use a very strong password otherwise it will be very easy to break.
+    #requirepass
+    protected-mode yes
+
+    ################################## NETWORK #####################################
+    port 6370
+
+    # TCP listen() backlog.
+    #
+    # In high requests-per-second environments you need an high backlog in order
+    # to avoid slow clients connections issues. Note that the Linux kernel
+    # will silently truncate it to the value of /proc/sys/net/core/somaxconn so
+    # make sure to raise both the value of somaxconn and tcp_max_syn_backlog
+    # in order to get the desired effect.
+    tcp-backlog 511
+
+    # Close the connection after a client is idle for N seconds (0 to disable)
+    timeout 0
+
+    # TCP keepalive.
+    #
+    # If non-zero, use SO_KEEPALIVE to send TCP ACKs to clients in absence
+    # of communication. This is useful for two reasons:
+    #
+    # 1) Detect dead peers.
+    # 2) Take the connection alive from the point of view of network
+    #    equipment in the middle.
+    tcp-keepalive 300
+
+    # Specify the server verbosity level.
+    # This can be one of:
+    # debug (a lot of information, useful for development/testing)
+    # verbose (many rarely useful info, but not a mess like the debug level)
+    # notice (moderately verbose, what you want in production probably)
+    # warning (only very important / critical messages are logged)
+    loglevel notice
+
+    # Specify the log file name. Also the empty string can be used to force
+    # Redis to log on the standard output. Note that if you use standard
+    # output for logging but daemonize, logs will be sent to /dev/null
+    logfile /data/redis.log
+
+    # Set the number of databases. The default database is DB 0, you can select
+    # a different one on a per-connection basis using SELECT <dbid> where
+    # dbid is a number between 0 and 'databases'-1
+    databases 16
+
+    # However it is possible to force the pre-4.0 behavior and always show a
+    # ASCII art logo in startup logs by setting the following option to yes.
+    always-show-logo yes
+
+    ################################### CLIENTS ####################################
+    # Set the max number of connected clients at the same time. By default
+    # this limit is set to 10000 clients, however if the Redis server is not
+    # able to configure the process file limit to allow for the specified limit
+    # the max number of allowed clients is set to the current file limit
+    # minus 32 (as Redis reserves a few file descriptors for internal uses).
+    #
+    # Once the limit is reached Redis will close all the new connections sending
+    # an error 'max number of clients reached'.
+    #
+    maxclients 1000
+
+    ################################ SNAPSHOTTING  ################################
+    # Save the DB on disk:
+    #
+    #   save <seconds> <changes>
+    #
+    #   Will save the DB if both the given number of seconds and the given
+    #   number of write operations against the DB occurred.
+    #
+    #   In the example below the behaviour will be to save:
+    #   after 300 sec (5 min) if at least 1 key changed
+    #   after 120 sec (2 min) if at least 10 keys changed
+    #   after 60 sec if at least 1000 keys changed
+    #   after 30 sec if at least 10000 keys changed
+    #
+    #   Note: you can disable saving completely by commenting out all "save" lines.
+    #
+    #   It is also possible to remove all the previously configured save
+    #   points by adding a save directive with a single empty string argument
+    #   like in the following example:
+    #   save ""
+    save 300 1
+    save 120 10
+    save 60 1000
+    save 30 10000
+
+    # By default Redis will stop accepting writes if RDB snapshots are enabled
+    # (at least one save point) and the latest background save failed.
+    # This will make the user aware (in a hard way) that data is not persisting
+    # on disk properly, otherwise chances are that no one will notice and some
+    # disaster will happen.
+    #
+    # If the background saving process will start working again Redis will
+    # automatically allow writes again.
+    #
+    # However if you have setup your proper monitoring of the Redis server
+    # and persistence, you may want to disable this feature so that Redis will
+    # continue to work as usual even if there are problems with disk,
+    # permissions, and so forth.
+    stop-writes-on-bgsave-error yes
+
+    # Compress string objects using LZF when dump .rdb databases?
+    # For default that's set to 'yes' as it's almost always a win.
+    # If you want to save some CPU in the saving child set it to 'no' but
+    # the dataset will likely be bigger if you have compressible values or keys.
+    rdbcompression yes
+
+    ############################## APPEND ONLY MODE ###############################
+    # By default Redis asynchronously dumps the dataset on disk. This mode is
+    # good enough in many applications, but an issue with the Redis process or
+    # a power outage may result into a few minutes of writes lost (depending on
+    # the configured save points).
+    #
+    # The Append Only File is an alternative persistence mode that provides
+    # much better durability. For instance using the default data fsync policy
+    # (see later in the config file) Redis can lose just one second of writes in a
+    # dramatic event like a server power outage, or a single write if something
+    # wrong with the Redis process itself happens, but the operating system is
+    # still running correctly.
+    #
+    # AOF and RDB persistence can be enabled at the same time without problems.
+    # If the AOF is enabled on startup Redis will load the AOF, that is the file
+    # with the better durability guarantees.
+    #
+    # Please check http://redis.io/topics/persistence for more information.
+    appendonly yes
+    appendfilename "appendonly.aof"
+
+    # The fsync() call tells the Operating System to actually write data on disk
+    # instead of waiting for more data in the output buffer. Some OS will really flush
+    # data on disk, some other OS will just try to do it ASAP.
+    #
+    # Redis supports three different modes:
+    #
+    # no: don't fsync, just let the OS flush the data when it wants. Faster.
+    # always: fsync after every write to the append only log. Slow, Safest.
+    # everysec: fsync only one time every second. Compromise.
+    #
+    # The default is "everysec", as that's usually the right compromise between
+    # speed and data safety. It's up to you to understand if you can relax this to
+    # "no" that will let the operating system flush the output buffer when
+    # it wants, for better performances (but if you can live with the idea of
+    # some data loss consider the default persistence mode that's snapshotting),
+    # or on the contrary, use "always" that's very slow but a bit safer than
+    # everysec.
+    #
+    # More details please check the following article:
+    # http://antirez.com/post/redis-persistence-demystified.html
+    #
+    # If unsure, use "everysec".
+
+    # appendfsync always
+    appendfsync everysec
+    # appendfsync no
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: arclytics
+  labels:
+    app: redis
+    service: redis-persistence
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  clusterIP: None
+  selector:
+    app: redis
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: arclytics
+  labels:
+    app: redis
+    service: redis-persistence
+spec:
+  serviceName: redis-service
+  selector:
+    matchLabels:
+      app: redis
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: redis
+        service: redis-persistence
+        replicaset: RedisRepSet
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: redis-container
+          image: asia.gcr.io/arc-sim/arc_sim_redis:latest
+          imagePullPolicy: Always
+          command: ['/usr/local/bin/redis-server']
+          args:
+            - '--requirepass'
+            - '$(REDIS_PASSWORD)'
+            - '--appendonly'
+            - 'yes'
+            - '--save'
+            - '300'
+            - '--save'
+            - '1'
+            - '120'
+            - '10'
+#            - '/redis-conf/redis.conf'
+          resources:
+            requests:
+              cpu: 250m
+              memory: 2Gi
+            limits:
+              cpu: 500m
+              memory: 4Gi
+          ports:
+            - containerPort: 6379
+              protocol: TCP
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: redis_password
+            - name: REDIS_PORT
+              value: "6379"
+          volumeMounts:
+            - name: redis-pvc
+              mountPath: /data
+#            - name: redis-config
+#              mountPath: /redis-conf
+#      volumes:
+#        - name: redis-config
+#          configMap:
+#            name: redis-config-map
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-pvc
+        namespace: arclytics
+        labels:
+          app: redis
+        annotations:
+          volume.beta.kubernetes.io/storage-class: fast
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 30Gi

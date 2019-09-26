@@ -501,6 +501,63 @@ flushAndSeedDb() {
     echoSpace
 }
 
+getLatestKubeVersion() {
+  LATEST=$(\gcloud container get-server-config \
+              ${LOCATION_COMMAND} \
+              --project=${PROJECT_ID} \
+              --format="json" \
+              | jq --raw-output '
+                def to_gke_semver(o):
+                  capture("(?<major>[0-9]*).(?<minor>[0-9]*).(?<patch>[0-9]*)-gke.(?<gke>[0-9]*)");
+                def from_gke_semver(o):
+                  .major + "." + .minor + "." + .patch + "-gke." + .gke;
+                reduce (
+                  .validMasterVersions[] | to_gke_semver(.)
+                ) as $this (
+                {
+                  "major":"0",
+                  "minor":"0",
+                  "patch": "0",
+                  "gke": "0"
+                };
+                if ($this.major|tonumber) > (.major|tonumber)
+                then . = $this
+                else (
+                  if ($this.major|tonumber) == (.major|tonumber)
+                  then (
+                    if ($this.minor|tonumber) > (.minor|tonumber)
+                    then . = $this
+                    else (
+                      if ($this.minor|tonumber) == (.minor|tonumber)
+                      then (
+                      if ($this.patch|tonumber) > (.patch|tonumber)
+                        then . = $this
+                          else (
+                              if ($this.patch|tonumber) == (.patch|tonumber)
+                              then (
+                                  if ($this.gke|tonumber) > (.gke|tonumber)
+                                  then . = $this
+                                  else .
+                                  end
+                              )
+                              else .
+                              end
+                          )
+                          end
+                      )
+                      else .
+                      end
+                    )
+                    end
+                  )
+                  else .
+                  end
+                )
+                end
+                ) | from_gke_semver(.)
+                ')
+}
+
 # shellcheck disable=SC2086
 runTests() {
     # Make sure the correct container groups are run for each test.
@@ -1038,8 +1095,8 @@ while [[ "$1" != "" ]] ; do
       # There are 3 for Australia.
       REGION="australia-southeast1"
       ZONE="australia-southeast1-a"
-      #LOCATION_COMMAND="--region=${REGION}"
-      LOCATION_COMMAND="--zone=${ZONE}"
+      LOCATION_COMMAND="--region=${REGION}"
+      #LOCATION_COMMAND="--zone=${ZONE}"
       REPLICA_ZONE_REDIS="--replica-zones=${ZONE},australia-southeast1-b"
       REPLICA_ZONE_MONGO="--replica-zones=${ZONE},australia-southeast1-c"
       IMAGE_TYPE="UBUNTU"
@@ -1075,61 +1132,7 @@ while [[ "$1" != "" ]] ; do
               case $3 in
                 create )
                   # This uses `jq` package to get the latest GKE versions for Kubernetes Master and Nodes
-                  LATEST=$(\
-                    gcloud container get-server-config \
-                        ${LOCATION_COMMAND} \
-                        --project=${PROJECT_ID} \
-                        --format="json" \
-                        | jq --raw-output '
-                          def to_gke_semver(o):
-                            capture("(?<major>[0-9]*).(?<minor>[0-9]*).(?<patch>[0-9]*)-gke.(?<gke>[0-9]*)");
-                          def from_gke_semver(o):
-                            .major + "." + .minor + "." + .patch + "-gke." + .gke;
-                          reduce (
-                            .validMasterVersions[] | to_gke_semver(.)
-                          ) as $this (
-                          {
-                            "major":"0",
-                            "minor":"0",
-                            "patch": "0",
-                            "gke": "0"
-                          };
-                          if ($this.major|tonumber) > (.major|tonumber)
-                          then . = $this
-                          else (
-                            if ($this.major|tonumber) == (.major|tonumber)
-                            then (
-                              if ($this.minor|tonumber) > (.minor|tonumber)
-                              then . = $this
-                              else (
-                                if ($this.minor|tonumber) == (.minor|tonumber)
-                                then (
-                                if ($this.patch|tonumber) > (.patch|tonumber)
-                                  then . = $this
-                                    else (
-                                        if ($this.patch|tonumber) == (.patch|tonumber)
-                                        then (
-                                            if ($this.gke|tonumber) > (.gke|tonumber)
-                                            then . = $this
-                                            else .
-                                            end
-                                        )
-                                        else .
-                                        end
-                                    )
-                                    end
-                                )
-                                else .
-                                end
-                              )
-                              end
-                            )
-                            else .
-                            end
-                          )
-                          end
-                          ) | from_gke_semver(.)
-                          ')
+                  getLatestKubeVersion
                    echo Kubernetes Version: ${LATEST}
 
                   # Create new GKE Kubernetes cluster (using host node VM images based on Ubuntu
@@ -1140,9 +1143,9 @@ while [[ "$1" != "" ]] ; do
                       ${LOCATION_COMMAND} \
                       --image-type=${IMAGE_TYPE} \
                       --machine-type=n1-standard-2 \
-                      --num-nodes=4 \
-                      --min-nodes=4 \
-                      --max-nodes=8 \
+                      --num-nodes=2 \
+                      --min-nodes=1 \
+                      --max-nodes=2 \
                       --enable-autoscaling \
                       --node-labels=component=arc-nodes \
                       --cluster-version=${LATEST}
@@ -1244,7 +1247,9 @@ while [[ "$1" != "" ]] ; do
                   do
                       gcloud compute disks create --size 50GB \
                           --type pd-ssd mongo-ssd-disk-$i \
-                          ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
+                          ${LOCATION_COMMAND}
+                          # Only used for REGION
+                          #${REPLICA_ZONE_MONGO}
                   done
                   sleep 3
 

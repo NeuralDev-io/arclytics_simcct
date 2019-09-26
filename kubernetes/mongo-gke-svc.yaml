@@ -59,7 +59,7 @@ spec:
               cpu: 500m
               memory: 1Gi
             limits:
-              cpu: 750m
+              cpu: 1000m
               memory: 2Gi
           command:
             - "numactl"
@@ -123,4 +123,4 @@ spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 30Gi
+            storage: 50Gi

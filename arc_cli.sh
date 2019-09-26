@@ -1142,10 +1142,10 @@ while [[ "$1" != "" ]] ; do
                   gcloud container clusters create ${CLUSTER_NAME} \
                       ${LOCATION_COMMAND} \
                       --image-type=${IMAGE_TYPE} \
-                      --machine-type=n1-standard-2 \
+                      --machine-type=n1-standard-4 \
                       --num-nodes=2 \
-                      --min-nodes=1 \
-                      --max-nodes=2 \
+                      --min-nodes=2 \
+                      --max-nodes=4 \
                       --enable-autoscaling \
                       --node-labels=component=arc-nodes \
                       --cluster-version=${LATEST}
@@ -1247,9 +1247,8 @@ while [[ "$1" != "" ]] ; do
                   do
                       gcloud compute disks create --size 50GB \
                           --type pd-ssd mongo-ssd-disk-$i \
-                          ${LOCATION_COMMAND}
+                          ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
                           # Only used for REGION
-                          #${REPLICA_ZONE_MONGO}
                   done
                   sleep 3
 
@@ -1428,7 +1427,7 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-kibana-gke-svc.yaml"
                   ;;
                 port-forward )
-                  KIBANA_POD_NAME=$(kubectl get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
+                  KIBANA_POD_NAME=$(kubectl get pod -l app=kibana --namespace=arclytics -o jsonpath="{.items[0].metadata.name}")
                   kubectl port-forward "${KIBANA_POD_NAME}" 5600:5601 --namespace arclytics
                   ;;
               esac

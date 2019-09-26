@@ -16,7 +16,7 @@ data:
     # Warning: since Redis is pretty fast an outside user can try up to
     # 150k passwords per second against a good box. This means that you should
     # use a very strong password otherwise it will be very easy to break.
-    #requirepass "#{ENV['REDIS_PASSWORD']}"
+    #requirepass
     protected-mode yes
 
     ################################## NETWORK #####################################
@@ -218,9 +218,17 @@ spec:
           imagePullPolicy: Always
           command: ['/usr/local/bin/redis-server']
           args:
-            - '/redis-conf/redis.conf'
             - '--requirepass'
             - '$(REDIS_PASSWORD)'
+            - '--appendonly'
+            - 'yes'
+            - '--save'
+            - '300'
+            - '--save'
+            - '1'
+            - '120'
+            - '10'
+#            - '/redis-conf/redis.conf'
           resources:
             requests:
               cpu: 250m
@@ -242,12 +250,12 @@ spec:
           volumeMounts:
             - name: redis-pvc
               mountPath: /data
-            - name: redis-config
-              mountPath: /redis-conf
-      volumes:
-        - name: redis-config
-          configMap:
-            name: redis-config-map
+#            - name: redis-config
+#              mountPath: /redis-conf
+#      volumes:
+#        - name: redis-config
+#          configMap:
+#            name: redis-config-map
   volumeClaimTemplates:
     - metadata:
         name: redis-pvc

@@ -12,10 +12,9 @@ const Modal = ({
   onClose = () => {},
   className,
   children,
-  clicked,
 }) => (
   <div className={`${styles.container} ${show ? styles.show : ''}`}>
-    <div className={styles.backdrop} {...buttonize(clicked)} />
+    <div className={styles.backdrop} {...buttonize(onClose)} />
     <div className={`${styles.modalContainer} ${withCloseIcon && styles.withCloseIcon}`}>
       <div className={`${styles.modal} ${className || ''}`}>
         {children}
@@ -37,14 +36,12 @@ Modal.propTypes = {
   onClose: PropTypes.func,
   className: PropTypes.string,
   children: PropTypes.node,
-  clicked: PropTypes.func,
   withCloseIcon: PropTypes.bool,
 }
 
 Modal.defaultProps = {
   className: '',
   children: null,
-  clicked: null,
   withCloseIcon: false,
   onClose: () => {},
 }

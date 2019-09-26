@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
       - name: client-https-container
-        image: asia.gcr.io/arc-sim/arc_sim_client:1.1.7
+        image: asia.gcr.io/arc-sim/arc_sim_client:1.2.0
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -54,11 +54,12 @@ spec:
           successThreshold: 2
           failureThreshold: 5
         livenessProbe:
-          httpGet:
-            path: /healthy
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 30
+          exec:
+            command:
+              - cat
+              - /etc/nginx/healthy
+          initialDelaySeconds: 15
+          periodSeconds: 60
         env:
           - name: REACT_APP_SIM_HOST
             value: "https://api.arclytics.io"

@@ -14,4 +14,8 @@ RUN pip install --quiet --no-cache-dir -r requirements.txt
 # add app
 COPY . /usr/src/app
 
+# install our arc_logging library
+WORKDIR /usr/src/app/arc_logging
+RUN python setup.py install
+
 ENTRYPOINT celery worker -A celery_worker.celery -l info

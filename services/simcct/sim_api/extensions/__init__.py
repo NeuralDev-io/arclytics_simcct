@@ -7,8 +7,7 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = [
-    'Andrew Che <@codeninja55>',
-    'David Matthews <@tree1004>',
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
 __license__ = 'MIT'
@@ -30,11 +29,11 @@ from elasticapm.contrib.flask import ElasticAPM
 from .Session import FlaskRedisSession
 from .mongo import MongoAlloys
 from .mongodb import MongoSingleton
-from .utilities import (DuplicateElementError, ElementInvalid,
-                        ElementSymbolInvalid, JSONEncoder, MissingElementError,
-                        PasswordValidationError, PeriodicTable,
-                        RESPONSE_HEADERS, SimpleUTC, URLTokenError,
-                        URLTokenExpired, get_mongo_uri)
+from .utilities import (
+    DuplicateElementError, ElementInvalid, ElementSymbolInvalid, JSONEncoder,
+    MissingElementError, PasswordValidationError, PeriodicTable,
+    RESPONSE_HEADERS, SimpleUTC, URLTokenError, URLTokenExpired, get_mongo_uri
+)
 
 # Some other extensions to Flask
 apm = ElasticAPM()

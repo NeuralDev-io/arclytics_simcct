@@ -7,8 +7,7 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = [
-    'Andrew Che <@codeninja55>',
-    'David Matthews <@tree1004>',
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
 __license__ = 'MIT'
@@ -29,19 +28,19 @@ from typing import Tuple, Union
 import jwt
 from bson import ObjectId
 from flask import current_app, json
-from mongoengine import (BooleanField, DO_NOTHING, DateTimeField, DictField,
-                         Document, EmailField, EmbeddedDocument,
-                         EmbeddedDocumentField, EmbeddedDocumentListField,
-                         FloatField, IntField, ObjectIdField, ReferenceField,
-                         StringField, ValidationError, queryset_manager)
+from mongoengine import (
+    BooleanField, DO_NOTHING, DateTimeField, DictField, Document, EmailField,
+    EmbeddedDocument, EmbeddedDocumentField, EmbeddedDocumentListField,
+    FloatField, IntField, ObjectIdField, ReferenceField, StringField,
+    ValidationError, queryset_manager
+)
 
 from sim_api.extensions import bcrypt
-from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
-                                          ElementSymbolInvalid, JSONEncoder,
-                                          MissingElementError,
-                                          PasswordValidationError,
-                                          PeriodicTable)
-from logger import AppLogger
+from sim_api.extensions.utilities import (
+    DuplicateElementError, ElementInvalid, ElementSymbolInvalid, JSONEncoder,
+    MissingElementError, PasswordValidationError, PeriodicTable
+)
+from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 
@@ -91,30 +90,49 @@ def validate_comp_elements(alloy_comp: list) -> Tuple[bool, list]:
 
 
 def not_negative(val):
-    if val < 0.0:
-        raise ValidationError('Cannot be a negative number.')
+    try:
+        if float(val) < 0.0:
+            raise ValidationError('Cannot be a negative number.')
+    except ValueError:
+        raise ValidationError('Value Error.')
+    except TypeError:
+        raise ValidationError('Type Error.')
 
 
 def greater_than_zero(val):
-    if val < 0.0 or val == 0:
-        raise ValidationError('Must be more than 0.0.')
+    try:
+        if float(val) < 0.0 or float(val) == 0:
+            raise ValidationError('Must be more than 0.0.')
+    except ValueError:
+        raise ValidationError('Value Error.')
+    except TypeError:
+        raise ValidationError('Type Error.')
 
 
 def not_over_100(val):
-    if val > 100.0:
-        raise ValidationError('Must be less than 100.0.')
+    try:
+        if float(val) > 100.0:
+            raise ValidationError('Must be less than 100.0.')
+    except ValueError:
+        raise ValidationError('Value Error.')
+    except TypeError:
+        raise ValidationError('Type Error.')
 
 
 def within_percentage_bounds(val):
-    if val > 100.0:
-        raise ValidationError('Must be less than 100.0.')
-    if val < 0.0:
-        raise ValidationError('Must be more than 0.0.')
+    try:
+        if float(val) > 100.0:
+            raise ValidationError('Must be less than 100.0.')
+        if float(val) < 0.0:
+            raise ValidationError('Must be more than 0.0.')
+    except ValueError:
+        raise ValidationError('Value Error.')
+    except TypeError:
+        raise ValidationError('Type Error.')
 
 
-def validate_no_duplicate_elements(
-        alloy_comp: list
-) -> Tuple[bool, Union[set, None]]:
+def validate_no_duplicate_elements(alloy_comp: list
+                                   ) -> Tuple[bool, Union[set, None]]:
     elements = []
     for e in alloy_comp:
         elements.append(e['symbol'])

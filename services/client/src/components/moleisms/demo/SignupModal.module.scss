@@ -1,0 +1,15 @@
+.modal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 1rem 2.5rem;
+
+  & > h6 {
+    margin-right: 2.5rem;
+  }
+
+  & > Button:first-of-type {
+    margin-right: .5rem;
+    margin-left: auto;
+  }
+}

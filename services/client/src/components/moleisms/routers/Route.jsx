@@ -109,6 +109,7 @@ export class DemoRoute extends React.Component {
     const { component: Component, ...rest } = this.props
     const { isAuthenticated, isLoading } = this.state
     if (isLoading) return <div />
+    if (isAuthenticated) return <Redirect to="/" />
     return (
       <Route
         {...rest}

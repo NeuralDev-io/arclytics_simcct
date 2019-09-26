@@ -1326,10 +1326,11 @@ while [[ "$1" != "" ]] ; do
                       --type pd-ssd redis-ssd-disk \
                       ${LOCATION_COMMAND} ${REPLICA_ZONE_REDIS}
                   kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
-                  kubectl create -f "${WORKDIR}/kubernetes/redis-gke-service.yaml" --validate=false
+                  kubectl create -f "${WORKDIR}/kubernetes/redis-gke-svc.yaml" --validate=false
+                  kubectl rollout status sts/redis --namespace arclytics
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/redis-gke-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/redis-gke-svc.yaml"
                   kubectl delete pvc redis-pvc-redis-0 --namespace=arclytics
                   kubectl delete pv redis-pv --namespace=arclytics
                   sleep 15

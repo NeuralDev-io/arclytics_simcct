@@ -50,7 +50,7 @@ class RatingModal extends Component {
       <Good key={4} className={styles.ratingIcon} />,
       <Excellent key={5} className={styles.ratingIcon} />,
     ]
-    const textArray = ['Terrible', 'Bad', 'Okay', 'Good', 'Excellent']
+    // const textArray = ['Terrible', 'Bad', 'Okay', 'Good', 'Excellent']
 
     return [1, 2, 3, 4, 5].map((point, index) => (
       <div

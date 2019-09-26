@@ -83,15 +83,6 @@
         cursor: pointer;
         transition: $ease-in-out-cubic all .2s;
         margin-bottom: .5rem;
-      
-        &:hover, &.active {
-          transform: scale(1.1);
-
-          & ~.text {
-            opacity: 1;
-            top: 0;
-          }
-        }
       }
 
       .text {
@@ -99,6 +90,17 @@
         opacity: 0;
         top: -.5rem;
         transition: $ease-in-out-cubic all .2s;
+      }
+
+      &:hover, &:focus , &.active {
+        .ratingIcon {
+          transform: scale(1.1);
+        }
+
+        .text {
+          opacity: 1;
+          top: 0;
+        }
       }
     }
   }
@@ -121,22 +123,22 @@
   }
 }
 
-.rate1:hover, .rate1.active {
-  stroke: var(--r500);
+.rate1:hover, .rate1:focus, .rate1.active {
+  .ratingIcon { stroke: var(--r500); }
 }
 
-.rate2:hover, .rate2.active {
-  stroke: var(--o500);
+.rate2:hover, .rate2:focus, .rate2.active {
+  .ratingIcon { stroke: var(--o500); }
 }
 
-.rate3:hover, .rate3.active {
-  stroke: var(--arc500);
+.rate3:hover, .rate3:focus, .rate3.active {
+  .ratingIcon { stroke: var(--arc500); }
 }
 
-.rate4:hover, .rate4.active {
-  stroke: var(--t500);
+.rate4:hover, .rate4:focus, .rate4.active {
+  .ratingIcon { stroke: var(--t500); }
 }
 
-.rate5:hover, .rate5.active {
-  stroke: var(--g500);
+.rate5:hover, .rate5:focus, .rate5.active {
+  .ratingIcon { stroke: var(--g500); }
 }

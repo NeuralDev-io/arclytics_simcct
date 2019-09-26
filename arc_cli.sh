@@ -1017,10 +1017,10 @@ while [[ "$1" != "" ]] ; do
             # This will trigger a manual Cloud Build.
             gcloud builds submit ${WORKDIR} \
                 --config=${WORKDIR}/cloudbuild.yaml \
-                --machine-type=n1-highcpu-32 \
+                --machine-type=n1-highcpu-8 \
                 --ignore-file=${WORKDIR}/.gcloudignore \
                 --gcs-source-staging-dir=gs://arc-sim_cloudbuild/source \
-                --timeout=1h30m
+                --timeout=2h30m
           ;;
         esac
       shift
@@ -1170,6 +1170,8 @@ while [[ "$1" != "" ]] ; do
           secrets )
             kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml" \
                 --namespace=arclytics
+            kubectl apply -f "${WORKDIR}/kubernetes/efk-secrets.yaml" \
+                --namespace=kube-system
 
             # For MONGO REPLICASET
             TMPFILE=$(mktemp)

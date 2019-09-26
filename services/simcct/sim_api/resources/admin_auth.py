@@ -7,10 +7,9 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
-__license__ = 'TBA'
+__license__ = 'MIT'
 __version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+
 __status__ = 'development'
 __date__ = '2019.08.11'
 """admin_auth.py: 

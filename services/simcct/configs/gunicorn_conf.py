@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # gunicorn_conf.py
@@ -15,8 +14,6 @@ __author__ = [
 ]
 __license__ = 'MIT'
 __version__ = '1.0.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'production'
 __date__ = '2019.09.10'
 """gunicorn_conf.py: 

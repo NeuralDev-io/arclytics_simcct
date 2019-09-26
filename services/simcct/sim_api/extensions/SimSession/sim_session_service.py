@@ -7,15 +7,10 @@
 # [1] https://gist.github.com/wushaobo/52be20bc801243dddf52a8be4c13179a
 # [2] https://github.com/mrichman/flask-redis
 # -----------------------------------------------------------------------------
-__author__ = [
-    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
-    'Dinol Shrestha <@dinolsth>'
-]
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __license__ = 'MIT'
 __version__ = '1.0.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__status__ = 'production'
 __date__ = '2019.08.08'
 """sim_session_service.py: 
 
@@ -29,7 +24,7 @@ from typing import Union
 
 from flask import session
 
-from sim_api.extensions import JSONEncoder
+from sim_api.extensions import JSONEncoder, apm
 from sim_api.models import User
 
 from arc_logging import AppLogger
@@ -101,6 +96,8 @@ class SimSessionService(object):
 
     def load_session(self) -> Union[str, dict]:
         if not session:
+            logger.exception('Session is empty.')
+            apm.capture_exception()
             return 'Session is empty.'
 
         # We access the Session from Redis and get the Session data
@@ -108,6 +105,7 @@ class SimSessionService(object):
         if not session_data_store:
             message = 'Cannot retrieve data from Session store.'
             logger.error(message, stack_info=True)
+            apm.capture_exception()
             return message
 
         sess_data: dict = json.loads(session_data_store)

@@ -35,7 +35,6 @@ from smtplib import (
 
 from arc_logging import AppLogger
 
-
 logger = AppLogger(__name__)
 
 

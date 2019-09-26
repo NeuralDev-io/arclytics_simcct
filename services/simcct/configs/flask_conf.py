@@ -10,11 +10,8 @@ __author__ = [
     'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
-__credits__ = ['']
-__license__ = 'TBA'
+__license__ = 'MIT'
 __version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.06.04'
 """flask_conf.py: 

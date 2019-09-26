@@ -7,15 +7,9 @@
 # Attributions: 
 # [1] 
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = [
-    'Andrew Che <@codeninja55>',
-    'David Matthews <@tree1004>',
-    'Dinol Shrestha <@dinolsth>'
-]
+__author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
 __version__ = '1.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = '{dev_status}'
 __date__ = '2019.09.22'
 """extensions.py: 

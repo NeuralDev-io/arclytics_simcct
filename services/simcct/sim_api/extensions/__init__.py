@@ -12,8 +12,6 @@ __author__ = [
 ]
 __license__ = 'MIT'
 __version__ = '1.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.25'
 """extensions.py: 

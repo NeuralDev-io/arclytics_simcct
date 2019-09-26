@@ -28,9 +28,9 @@ spec:
         - backend:
             serviceName: client-service
             servicePort: 8080
-  - host: arclytics.io
-    http:
-      paths:
-        - backend:
-            serviceName: web-service
-            servicePort: 8080
+#  - host: arclytics.io
+#    http:
+#      paths:
+#        - backend:
+#            serviceName: web-service
+#            servicePort: 8080

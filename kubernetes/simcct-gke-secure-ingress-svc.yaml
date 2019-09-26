@@ -35,7 +35,7 @@ spec:
   selector:
     matchLabels:
       app: simcct
-  replicas: 4
+  replicas: 2
   template:
     metadata:
       labels:

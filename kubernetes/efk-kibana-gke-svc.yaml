@@ -51,7 +51,7 @@ spec:
         image: docker.elastic.co/kibana/kibana:7.3.2
         resources:
           limits:
-            cpu: 500m
+            cpu: 250m
           requests:
             cpu: 100m
         ports:

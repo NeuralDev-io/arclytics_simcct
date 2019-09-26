@@ -1349,19 +1349,19 @@ while [[ "$1" != "" ]] ; do
                 create )
                   # Register GCE Fast SSD persistent disks and then create the persistent disks
                   generalMessage "Creating GCE disks for Elasticsearch"
-                  for i in 1 2 3
+                  for i in 1 2
                   do
-                      gcloud compute disks create --size 20GB \
-                          --type pd-ssd es-ssd-disk-$i \
+                      gcloud compute disks create --size 200GB \
+                          --type pd-standard es-standard-disk-$i \
                           ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
                   done
                   sleep 3
 
                   # Create persistent volumes using disks created above
                   generalMessage "Creating GKE Persistent Volumes"
-                  for i in 1 2 3
+                  for i in 1 2
                   do
-                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/efk-elasticsearch-gke-ssd-pv.yaml" > /tmp/es-gke-pv.yaml
+                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/efk-elasticsearch-gke-standard-pv.yaml" > /tmp/es-gke-pv.yaml
                       kubectl apply -f /tmp/es-gke-pv.yaml
                   done
                   rm /tmp/es-gke-pv.yaml
@@ -1376,14 +1376,14 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-svc.yaml"
                   kubectl delete pvc elasticsearch-pvc-elasticsearch-0 --namespace=arclytics
                   kubectl delete pvc elasticsearch-pvc-elasticsearch-1 --namespace=arclytics
-                  kubectl delete pvc elasticsearch-pvc-elasticsearch-2 --namespace=arclytics
+                  #kubectl delete pvc elasticsearch-pvc-elasticsearch-2 --namespace=arclytics
                   kubectl delete pv elasticsearch-pv-1 --namespace=arclytics
                   kubectl delete pv elasticsearch-pv-2 --namespace=arclytics
-                  kubectl delete pv elasticsearch-pv-3 --namespace=arclytics
+                  #kubectl delete pv elasticsearch-pv-3 --namespace=arclytics
                   sleep 15
                   gcloud compute disks delete es-standard-disk-1 ${LOCATION_COMMAND}
                   gcloud compute disks delete es-standard-disk-2 ${LOCATION_COMMAND}
-                  gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
+                  #gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
                   ;;
               esac
               shift

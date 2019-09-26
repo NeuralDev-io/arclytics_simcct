@@ -1028,8 +1028,8 @@ while [[ "$1" != "" ]] ; do
       ;;
     deploy )
       # Some Defaults
-      PROJECT_ID="arc-sim"
-      CLUSTER_NAME="arc-sim-aust"
+      PROJECT_ID="arc-simcct"
+      CLUSTER_NAME="arc-sim-cluster"
       KUBERNETES_MASTER_VERSION="1.13.7-gke.8"
       KUBERNETES_NODE_VERSION=${KUBERNETES_MASTER_VERSION}
       # Note: Only use one of ZONE/REGION but generally ZONE because
@@ -1241,8 +1241,8 @@ while [[ "$1" != "" ]] ; do
                   generalMessage "Creating GCE disks"
                   for i in 1 2 3
                   do
-                      gcloud compute disks create --size 200GB \
-                          --type pd-ssd pd-standard-disk-$i \
+                      gcloud compute disks create --size 50GB \
+                          --type pd-ssd mongo-ssd-disk-$i \
                           ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
                   done
                   sleep 3

@@ -9,11 +9,11 @@ const ToastModal = ({
   show = false,
   withCloseIcon = false,
   onClose = () => {},
-  className,
+  className: { container = '', modal = '' },
   children,
 }) => (
-  <div className={`${styles.modalContainer} ${show ? styles.visible : ''} ${withCloseIcon && styles.withCloseIcon}`}>
-    <div className={`${styles.modal} ${className}`}>
+  <div className={`${styles.modalContainer} ${show ? styles.visible : ''} ${withCloseIcon && styles.withCloseIcon} ${container}`}>
+    <div className={`${styles.modal} ${modal}`}>
       {children}
     </div>
     { withCloseIcon
@@ -31,12 +31,18 @@ ToastModal.propTypes = {
   show: PropTypes.bool.isRequired,
   withCloseIcon: PropTypes.bool,
   onClose: PropTypes.func,
-  className: PropTypes.string,
+  className: PropTypes.shape({
+    container: PropTypes.string,
+    modal: PropTypes.string,
+  }),
   children: PropTypes.node,
 }
 
 ToastModal.defaultProps = {
-  className: '',
+  className: {
+    container: '',
+    modal: '',
+  },
   children: null,
   withCloseIcon: false,
   onClose: () => {},

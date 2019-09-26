@@ -16,11 +16,11 @@ data:
     # Warning: since Redis is pretty fast an outside user can try up to
     # 150k passwords per second against a good box. This means that you should
     # use a very strong password otherwise it will be very easy to break.
-    requirepass "#{ENV['REDIS_PASSWORD']}"
+    #requirepass "#{ENV['REDIS_PASSWORD']}"
     protected-mode yes
 
     ################################## NETWORK #####################################
-    port "#{ENV['REDIS_PORT' || 6379]}"
+    port 6370
 
     # TCP listen() backlog.
     #
@@ -51,6 +51,11 @@ data:
     # notice (moderately verbose, what you want in production probably)
     # warning (only very important / critical messages are logged)
     loglevel notice
+
+    # Specify the log file name. Also the empty string can be used to force
+    # Redis to log on the standard output. Note that if you use standard
+    # output for logging but daemonize, logs will be sent to /dev/null
+    logfile /data/redis.log
 
     # Set the number of databases. The default database is DB 0, you can select
     # a different one on a per-connection basis using SELECT <dbid> where
@@ -197,6 +202,8 @@ spec:
     matchLabels:
       app: redis
   replicas: 1
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -208,25 +215,12 @@ spec:
       containers:
         - name: redis-container
           image: asia.gcr.io/arc-sim/arc_sim_redis:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           command: ['/usr/local/bin/redis-server']
-          args: ['/redis-conf/redis.conf']
-          readinessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - "redis-cli -h $(hostname) ping"
-            initialDelaySeconds: 30
-            timeoutSeconds: 5
-          livenessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - "redis-cli -h $(hostname) ping"
-            initialDelaySeconds: 30
-            periodSeconds: 15
+          args:
+            - '/redis-conf/redis.conf'
+            - '--requirepass'
+            - '$(REDIS_PASSWORD)'
           resources:
             requests:
               cpu: 250m
@@ -244,16 +238,12 @@ spec:
                   name: credentials
                   key: redis_password
             - name: REDIS_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: credentials
-                  key: redis_port
+              value: "6379"
           volumeMounts:
             - name: redis-pvc
               mountPath: /data
             - name: redis-config
               mountPath: /redis-conf
-              subPath: redis.conf
       volumes:
         - name: redis-config
           configMap:

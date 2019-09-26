@@ -11,10 +11,9 @@
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['']
-__license__ = 'TBA'
+__license__ = 'MIT'
 __version__ = '1.0.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+
 __status__ = 'development'
 __date__ = '2019.07.25'
 """celery_runner.py: 
@@ -27,7 +26,7 @@ can be used to make a worker by running
 from celery import Celery
 from flask import Flask
 
-from sim_api.app import create_app
+from sim_api import create_app
 
 
 def make_celery(app: Flask = None) -> Celery:

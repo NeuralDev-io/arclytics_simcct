@@ -10,8 +10,8 @@ __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = '{license}'
 __version__ = '{mayor}.{minor}.{rel}'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+
+
 __status__ = 'development'
 __date__ = '2019.08.28'
 """app.py: 
@@ -21,7 +21,6 @@ an Event emitted log to the fluentd microservice.
 """
 
 import os
-import sys
 
 from fluent import sender, event
 from flask import Flask, jsonify, request

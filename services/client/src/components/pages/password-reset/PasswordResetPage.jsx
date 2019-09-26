@@ -8,11 +8,11 @@
 
 import React, { Component } from 'react'
 import CheckCircleIcon from 'react-feather/dist/icons/check-circle'
-import { resetPassword } from '../../../api/AuthenticationHelper'
-import { ReactComponent as Logo } from '../../../assets/ANSTO_Logo_SVG/logo_text.svg'
+import PropTypes from 'prop-types'
+import { resetPassword, checkAuthStatus } from '../../../api/AuthenticationHelper'
+import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import { passwordResetValidation } from '../../../utils/ValidationHelper'
 
-// import PropTypes from 'prop-types'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import Modal from '../../elements/modal/Modal'
@@ -34,9 +34,18 @@ class PasswordResetPage extends Component {
     this.handleStatus = this.handleStatus.bind(this)
   }
 
+  componentDidMount = () => {
+    const { history } = this.props
+    checkAuthStatus().then((res) => {
+      if (res.status === 'success') {
+        history.push('/')
+      }
+    })
+  }
+
   handleStatus = () => {
     const { status } = this.state
-    const { history } = this
+    const { history } = this.props
     if (status === '') {
       return ('')
     }
@@ -50,7 +59,7 @@ class PasswordResetPage extends Component {
           <span>
             Click the button below to go back to the login page.
           </span>
-          <Button length="long" onClick={() => { this.props.history.push('/signin') }}> Go to log in </Button>
+          <Button length="long" onClick={() => { history.push('/signin') }}> Go to log in </Button>
         </Modal>
       )
     }
@@ -148,8 +157,15 @@ class PasswordResetPage extends Component {
   }
 }
 
-// PasswordResetPage.propTypes = {
-//   match:
-// }
+PasswordResetPage.propTypes = {
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      token: PropTypes.string,
+    }),
+  }).isRequired,
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
+}
 
-export default (PasswordResetPage)
+export default PasswordResetPage

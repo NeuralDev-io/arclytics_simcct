@@ -6,25 +6,17 @@
 # Attributions:
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
 __status__ = 'development'
 __date__ = '2019.07.03'
-"""test_api_config.py: 
-
-This test module ensures all configuration settings for the API server is as expected.
-"""
 
 import os
 import unittest
+
 from flask import current_app
 from flask_testing import TestCase
-from sim_api.app import create_app
+
+from sim_api import create_app
 
 app = create_app()
 
@@ -76,7 +68,7 @@ class TestProductionConfig(TestCase):
         self.assertEqual(
             app.config['MONGO_DBNAME'], os.environ.get('MONGO_APP_DB')
         )
-        self.assertTrue(app.config['BCRYPT_LOG_ROUNDS'] == 13)
+        self.assertTrue(app.config['BCRYPT_LOG_ROUNDS'] == 12)
         self.assertTrue(app.config['TOKEN_EXPIRATION_DAYS'] == 30)
         self.assertTrue(app.config['TOKEN_EXPIRATION_SECONDS'] == 0)
 

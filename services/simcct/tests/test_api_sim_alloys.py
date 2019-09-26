@@ -6,9 +6,7 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __status__ = 'development'
 __date__ = '2019.07.13'
 
@@ -21,8 +19,9 @@ from mongoengine import get_db
 from manage import BASE_DIR
 from sim_api.extensions.SimSession import SimSessionService
 from sim_api.models import AlloyStore, Configuration, User
-from sim_api.schemas import (AlloyStoreRequestSchema, AlloyStoreSchema,
-                             ConfigurationsSchema)
+from sim_api.schemas import (
+    AlloyStoreRequestSchema, AlloyStoreSchema, ConfigurationsSchema
+)
 from tests.test_api_base import BaseTestCase, app
 from tests.test_utilities import test_login
 

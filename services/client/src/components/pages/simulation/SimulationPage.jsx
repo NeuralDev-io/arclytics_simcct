@@ -15,12 +15,18 @@ import { connect } from 'react-redux'
 import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
 import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
 import Button from '../../elements/button'
+import Modal from '../../elements/modal'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
 import PhaseFractions from '../../moleisms/charts/PhaseFractions'
+import { SaveAlloyModal } from '../../moleisms/user-alloys'
+import { SignupModal } from '../../moleisms/demo'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { SaveSimButton, ShareSimButton, LoadSimButton } from '../../moleisms/sim-actions'
 import { TTT, CCT } from '../../moleisms/charts'
+import { loadPersistedSim, loadLastSim } from '../../../state/ducks/sim/actions'
+import { getLastSim } from '../../../state/ducks/self/actions'
+import { persistSim } from '../../../state/ducks/persist/actions'
 
 import styles from './SimulationPage.module.scss'
 
@@ -30,14 +36,55 @@ class SimulationPage extends Component {
     this.state = {
       displayConfig: true,
       displayProfile: true,
+      displaySaveModal: false,
     }
   }
+
+  componentDidMount = () => {
+    const {
+      persistSimConnect,
+      persistedSim,
+      persistedSimTime,
+      loadPersistedSimConnect,
+      lastSim,
+      getLastSimConnect,
+      loadLastSimConnect,
+    } = this.props
+    window.addEventListener('beforeunload', persistSimConnect)
+
+    const persistedTime = Date.parse(persistedSimTime)
+    const now = new Date()
+    const diff = now - persistedTime
+
+    // if the last sim session is less than 1 hour ago, load it instead
+    // otherise, load the last sim saved in the account
+    if (diff / 60000 < 60 && Object.keys(persistedSim).length !== 0) {
+      loadPersistedSimConnect()
+    } else if (lastSim === undefined || Object.keys(lastSim).length === 0) {
+      getLastSimConnect()
+        .then((res) => {
+          if (res.status === 'success') {
+            loadLastSimConnect()
+          }
+        })
+    }
+  }
+
+  componentWillUnmount = () => {
+    const { persistSimConnect } = this.props
+    persistSimConnect()
+    window.removeEventListener('beforeunload', persistSimConnect)
+  }
+
+  handleShowModal = () => this.setState({ displaySaveModal: true })
+
+  handleCloseModal = () => this.setState({ displaySaveModal: false })
 
   render() {
     const {
       displayConfig,
       displayProfile,
-      runSimConnect,
+      displaySaveModal,
     } = this.state
     const {
       history,
@@ -53,8 +100,8 @@ class SimulationPage extends Component {
         <div className={styles.compSidebar}>
           <CompSidebar
             sessionIsInitialised={isInitialised}
-            onSimulate={runSimConnect}
             isAuthenticated={isAuthenticated}
+            onSaveButtonClick={this.handleShowModal}
           />
         </div>
         <div className={styles.main}>
@@ -133,6 +180,10 @@ class SimulationPage extends Component {
             </div>
           </div>
         </div>
+        <Modal show={displaySaveModal} clicked={this.handleCloseModal}>
+          <SaveAlloyModal handleClose={this.handleCloseModal} />
+        </Modal>
+        <SignupModal show={!isAuthenticated} redirect={history.push} />
       </React.Fragment>
     )
   }
@@ -155,14 +206,29 @@ SimulationPage.propTypes = {
   isSimulated: PropTypes.bool.isRequired,
   isAdmin: PropTypes.bool.isRequired,
   isAuthenticated: PropTypes.bool.isRequired,
+  persistSimConnect: PropTypes.func.isRequired,
+  loadPersistedSimConnect: PropTypes.func.isRequired,
+  getLastSimConnect: PropTypes.func.isRequired,
+  loadLastSimConnect: PropTypes.func.isRequired,
+  persistedSim: PropTypes.shape({}).isRequired,
+  persistedSimTime: PropTypes.string.isRequired,
+  lastSim: PropTypes.shape({}).isRequired,
 }
 
 const mapStateToProps = state => ({
   globalAlloys: state.alloys.global,
   isInitialised: state.sim.isInitialised,
   isSimulated: state.sim.isSimulated,
+  persistedSim: state.persist.lastSim,
+  persistedSimTime: state.persist.lastSimTime,
+  lastSim: state.self.lastSim,
 })
 
-const mapDispatchToProps = {}
+const mapDispatchToProps = {
+  persistSimConnect: persistSim,
+  loadPersistedSimConnect: loadPersistedSim,
+  getLastSimConnect: getLastSim,
+  loadLastSimConnect: loadLastSim,
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(SimulationPage)

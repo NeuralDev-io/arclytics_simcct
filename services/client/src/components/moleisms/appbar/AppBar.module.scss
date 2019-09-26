@@ -15,9 +15,14 @@
     flex-direction: column;
     align-items: center;
 
-    & > .logo {
+    & > .anstoLogo {
       width: 2.5rem;
       margin-bottom: 2.5rem;
+    }
+
+    & > .logo {
+      width: 2.5rem;
+      margin-bottom: 1.5rem;
     }
 
     & > .navIcon {

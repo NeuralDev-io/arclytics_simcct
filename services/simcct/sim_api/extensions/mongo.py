@@ -6,13 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.07.14'
 """alloys.py: 
 
@@ -29,7 +26,6 @@ class MongoAlloys(object):
     """
     This is a concrete definition of Alloys as a data access layer.
     """
-
     def __init__(self):
         # Instead of making another connection to Mongo, we use the one defined
         # in `app.py` extension `MongoSingleton` by calling the `MongoEngine`
@@ -37,6 +33,7 @@ class MongoAlloys(object):
         self.db = get_db('default')
 
         # We create an index to avoid duplicates
+        # TODO(ANDREW): Find the Master Error that occurred today.
         self.db.alloys.create_index([('name', ASCENDING)], unique=True)
 
     def find_all(self):

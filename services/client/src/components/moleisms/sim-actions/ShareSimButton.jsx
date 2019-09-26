@@ -33,7 +33,7 @@ class ShareSimButton extends Component {
       this.setState({ emailError: error })
       return
     }
-    this.setState({ currentEmail: email })
+    this.setState({ currentEmail: email, emailError: '' })
   }
 
   handleEmailAdded = (emails) => {
@@ -57,7 +57,12 @@ class ShareSimButton extends Component {
      * server always expects to use and store the ASTM version so we put it back in
      * but we ensure we use the right request body key in the API request.
      */
-    const { grain_size_ASTM, grain_size_diameter, ...others } = configurations
+    const {
+      grain_size_ASTM,
+      grain_size_diameter,
+      error,
+      ...others
+    } = configurations
     return {
       ...others,
       grain_size: grain_size_ASTM,
@@ -87,7 +92,12 @@ class ShareSimButton extends Component {
      * and updates the state of `shareUrlLink` if the promise successfully returns
      * the response from the `users` server that we expect.
      */
-    const { configurations, alloys, results } = this.props
+    const {
+      configurations,
+      alloys,
+      results,
+      addFlashToastConnect,
+    } = this.props
     const alloyStore = this.cleanAlloyStore(alloys)
     const validConfigs = this.cleanConfigurations(configurations)
     const simResults = this.cleanResults(results)
@@ -97,17 +107,26 @@ class ShareSimButton extends Component {
       .then((res) => {
         this.setState({ shareUrlLink: res.link, linkCopyDisabled: false })
       })
-      .catch(err => console.log(err))
+      .catch(() => {
+        addFlashToastConnect({
+          message: 'Something went wrong',
+          options: { variant: 'error' },
+        }, true)
+      })
   }
 
   onEmailSubmit = () => {
-    const { addFlashToastConnect } = this.props
     /**
      * The callback function for the generate button which makes the API call
      * and updates the state of `shareUrlLink` if the promise successfully returns
      * the response from the `users` server that we expect.
      */
-    const { configurations, alloys, results } = this.props
+    const {
+      configurations,
+      alloys,
+      results,
+      addFlashToastConnect,
+    } = this.props
     const { emails, message } = this.state
 
     const alloyStore = this.cleanAlloyStore(alloys)
@@ -117,11 +136,17 @@ class ShareSimButton extends Component {
     sendShareEmail(
       emails, message, validConfigs, alloyStore, simResults,
     ).then(() => {
-      addFlashToastConnect({
+      setTimeout(this.handleCloseModal, 200)
+      setTimeout(() => addFlashToastConnect({
         message: 'Simulation shared successfully',
         options: { variant: 'success' },
-      }, true)
-      setTimeout(this.handleCloseModal, 500)
+      }, true), 500)
+      this.setState({
+        emails: [],
+        currentEmail: '',
+        message: '',
+        emailError: '',
+      })
     }).catch(() => {
       addFlashToastConnect({
         message: 'Something went wrong',
@@ -264,31 +289,6 @@ class ShareSimButton extends Component {
                   COPY LINK
                 </Button>
                 <span>{copyLinkSuccess}</span>
-              </div>
-            </AccordionSection>
-            {/* Export */}
-            <AccordionSection
-              title="By exporting to file"
-              id="export"
-            >
-              <TextField
-                type="text"
-                name="filename"
-                onChange={() => console.log('Export typed')}
-                placeholder="File name"
-                length="stretch"
-              />
-
-              <div className={styles.exportButtonContainer}>
-                <Button
-                  onClick={() => console.log('Export Link')}
-                  name="exportFileSubmit"
-                  type="button"
-                  appearance="outline"
-                  length="long"
-                >
-                  EXPORT
-                </Button>
               </div>
             </AccordionSection>
 

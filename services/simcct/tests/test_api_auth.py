@@ -6,9 +6,7 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
 __status__ = 'development'
 __date__ = '2019.07.05'
 """test_api_auth.py: 
@@ -219,7 +217,7 @@ class TestAuthEndpoints(BaseTestCase):
             print(f'User.verified: {user["verified"]}')
 
             self.assertEquals(resp.status_code, 302)
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -1179,6 +1177,72 @@ class TestAuthEndpoints(BaseTestCase):
 
     # TODO(davidmatthews1004@gmail.com) write tests for geolocation with
     #  external ip addresses.
+
+    def test_resend_confirm_email_after_registration_user_dne(self):
+        with self.client as client:
+            resp = client.put(
+                '/api/v1/sim/confirm/register/resend',
+                data=json.dumps({'email': 'lordvader@arclytics.com'}),
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+            # self.assertEqual(
+            #     data['message'], 'User does not exist.'
+            # )
+
+    def test_resend_confirm_email_after_registration_already_verified(self):
+        user = User(
+            **{
+                'email': 'kenobi@arclytics.io',
+                'first_name': 'Obi-Wan',
+                'last_name': 'Kenobi'
+            }
+        )
+        user.set_password('helloThere')
+        user.verified = True
+        user.save()
+
+        with self.client as client:
+            resp = client.put(
+                '/api/v1/sim/confirm/register/resend',
+                data=json.dumps({'email': 'kenobi@arclytics.io'}),
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            # self.assertEqual(data['status'], 'success')
+            # self.assertEqual(
+            #     data['message'], 'User is already verified.'
+            # )
+
+    def test_resend_confirm_email_after_registration_success(self):
+        user = User(
+            **{
+                'email': 'kenobi@arclytics.com',
+                'first_name': 'Obi-Wan',
+                'last_name': 'Kenobi'
+            }
+        )
+        user.set_password('helloThere')
+        user.save()
+
+        with self.client as client:
+            resp = client.put(
+                '/api/v1/sim/confirm/register/resend',
+                data=json.dumps({'email': 'kenobi@arclytics.com'}),
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+            # self.assertEqual(
+            #     data['message'], 'Another confirmation email has been sent.'
+            # )
 
 
 if __name__ == '__main__':

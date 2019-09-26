@@ -6,27 +6,21 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__status__ = 'development'
 __date__ = '2019.08.11'
-"""test_api_last_simulation.py: 
-
-Test the Last Simulation Resources.
-"""
 
 import os
 import unittest
 from copy import deepcopy
 from pathlib import Path
 
-from flask import json
 from flask import current_app as app
+from flask import json
 from mongoengine import get_db
 
+from sim_api.models import AdminProfile, Configuration, User, UserProfile
 from tests.test_api_base import BaseTestCase
-from sim_api.models import User, Configuration, UserProfile, AdminProfile
 from tests.test_utilities import test_login
 
 BASE_DIR = os.path.dirname(__file__)
@@ -140,15 +134,18 @@ class TestLastSimulation(BaseTestCase):
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
-                data=json.dumps({'alloy_store': {}}),
+                data=json.dumps({'alloy_store': ALLOY_STORE}),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'], 'Missing Configurations in payload.'
-            )
-            self.assertEqual(data['status'], 'fail')
-            self.assert400(res)
+            # self.assertEqual(
+            #     data['message'], 'Missing Configurations in payload.'
+            # )
+            # self.assertEqual(data['status'], 'fail')
+            # self.assert400(res)
+            self.assertEqual(data['message'], 'Saved Last Simulation Data.')
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 201)
 
     def test_create_last_missing_alloy_store(self):
         with app.test_client() as client:
@@ -156,17 +153,18 @@ class TestLastSimulation(BaseTestCase):
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
-                data=json.dumps({'configurations': {
-                    'is_valid': False
-                }}),
+                data=json.dumps({'configurations': CONFIGS}),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'], 'Missing Alloy Store in payload.'
-            )
-            self.assertEqual(data['status'], 'fail')
-            self.assert400(res)
+            # self.assertEqual(
+            #     data['message'], 'Missing Alloy Store in payload.'
+            # )
+            # self.assertEqual(data['status'], 'fail')
+            # self.assert400(res)
+            self.assertEqual(data['message'], 'Saved Last Simulation Data.')
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 201)
 
     def test_create_last_invalid_configs_missing(self):
         with app.test_client() as client:
@@ -453,10 +451,7 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'],
-                'Saved Alloy Store, Configurations and Results.'
-            )
+            self.assertEqual(data['message'], 'Saved Last Simulation Data.')
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 201)
             user = self.tony
@@ -496,7 +491,8 @@ class TestLastSimulation(BaseTestCase):
             )
             data = json.loads(res.data.decode())
             self.assertEqual(
-                data['message'], 'User does not have a last configurations.'
+                data['message'],
+                'User does not have a last configurations or alloy store.'
             )
             self.assertEqual(data['status'], 'fail')
             self.assert404(res)
@@ -516,23 +512,28 @@ class TestLastSimulation(BaseTestCase):
             user.last_configuration = Configuration(**CONFIGS)
             user.save()
 
-            cookie = test_login(client, user.email, 'Subatomic!')
+            test_login(client, user.email, 'Subatomic!')
 
             res = client.get(
                 '/api/v1/sim/user/last/simulation',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
+            # self.assertEqual(
+            #     data['message'], 'User does not have a last alloy stored.'
+            # )
+            # self.assertEqual(data['status'], 'fail')
+            # self.assert404(res)
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 200)
             self.assertEqual(
-                data['message'], 'User does not have a last alloy stored.'
+                data['data']['last_configurations']['grain_size'], 8.0
             )
-            self.assertEqual(data['status'], 'fail')
-            self.assert404(res)
             user.delete()
 
     def test_get_detail_last_success(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            test_login(client, self.tony.email, self._tony_pw)
 
             post_res = client.post(
                 '/api/v1/sim/user/last/simulation',
@@ -546,10 +547,7 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(post_res.data.decode())
-            self.assertEqual(
-                data['message'],
-                'Saved Alloy Store, Configurations and Results.'
-            )
+            self.assertEqual(data['message'], 'Saved Last Simulation Data.')
 
             res = client.get(
                 '/api/v1/sim/user/last/simulation',

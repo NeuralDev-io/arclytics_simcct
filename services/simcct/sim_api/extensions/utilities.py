@@ -6,17 +6,14 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.07.25'
 """utilities.py: 
 
-{Description}
+Utilities for extensions that are not clearly defined.
 """
 
 import decimal
@@ -67,7 +64,6 @@ RESPONSE_HEADERS = {
 
 class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""
-
     def default(self, o):
         if isinstance(o, Method):
             return o.name
@@ -95,7 +91,6 @@ class PasswordValidationError(Exception):
     Raises an Exception if now password was set before trying to save
     the User model.
     """
-
     def __init__(self):
         super(PasswordValidationError,
               self).__init__('A password must be set before saving.')
@@ -105,22 +100,21 @@ class URLTokenError(Exception):
     """
     A custom exception to be raised from any itsdangerous package exceptions.
     """
-
     def __init__(self, msg: str = None):
         super(URLTokenError, self).__init__(msg)
 
 
 class URLTokenExpired(Exception):
     """
-    Custom exception to be raised from any itsdangerous package exceptions.
+    Custom exception to be raised from any `itsdangerous` package exceptions.
     """
-
     def __init__(self, msg: str = None):
         super(URLTokenExpired, self).__init__(msg)
 
 
 class ElementSymbolInvalid(Exception):
-    """Raises an Exception if the Element does not conform to a valid symbol
+    """
+    Raises an Exception if the Element does not conform to a valid symbol
     as used in the Periodic Table of Elements.
     """
     default_err = (

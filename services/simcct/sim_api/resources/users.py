@@ -6,13 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.07.03'
 """users.py: 
 
@@ -20,7 +17,6 @@ This file defines all the API resource routes and controller definitions using
 the Flask Resource inheritance model.
 """
 
-import os
 from datetime import datetime
 from typing import Tuple
 
@@ -28,37 +24,15 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
-from logger import AppLogger
-from sim_api.extensions import api
+from arc_logging import AppLogger
+from sim_api.extensions import api, apm
 from sim_api.middleware import (
     authenticate_user_cookie_restful, authorize_admin_cookie_restful
 )
 from sim_api.models import (User, UserProfile)
 
-users_blueprint = Blueprint('users', __name__)
-
 logger = AppLogger(__name__)
-
-
-class PingTest(Resource):
-    """Just a sanity check"""
-
-    # noinspection PyMethodMayBeStatic
-    def get(self) -> Tuple[dict, int]:
-        response = {
-            'status': 'success',
-            'message': 'pong',
-            'container_id': os.uname()[1]
-        }
-        return response, 200
-
-
-class HealthTest(Resource):
-    """Readiness probe for GCP Ingress."""
-
-    # noinspection PyMethodMayBeStatic
-    def get(self) -> Tuple[dict, int]:
-        return {}, 200
+users_blueprint = Blueprint('users', __name__)
 
 
 class UserList(Resource):
@@ -223,6 +197,7 @@ class Users(Resource):
             response.pop('data')
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
+            logger.exception(response['message'], exc_info=True)
             return response, 418
 
         # Return response body.
@@ -270,6 +245,8 @@ class UserProfiles(Resource):
         except ValidationError as e:
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 400
 
         # Otherwise the save was successful and a response with the updated
@@ -285,8 +262,6 @@ class UserProfiles(Resource):
         return response, 201
 
 
-api.add_resource(PingTest, '/api/v1/sim/ping')
-api.add_resource(HealthTest, '/healthy')
 api.add_resource(UserList, '/api/v1/sim/users')
 api.add_resource(Users, '/api/v1/sim/user')
 api.add_resource(UserProfiles, '/api/v1/sim/user/profile')

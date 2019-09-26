@@ -7,8 +7,6 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.13'
 
@@ -19,7 +17,7 @@ from pathlib import Path
 import numpy as np
 from mongoengine import get_db
 
-from logger import AppLogger
+from arc_logging import AppLogger
 from manage import BASE_DIR
 from sim_api.extensions.SimSession import SimSessionService
 from sim_api.models import AlloyStore, Configuration, User

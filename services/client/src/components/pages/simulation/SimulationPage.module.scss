@@ -1,23 +1,14 @@
 .compSidebar {
-  width: 25vw;
+  width: 20rem;
   height: 100vh;
   margin-left: 4rem;
   position: fixed;
-
-  @media screen and (max-width: 1720px) {
-    width: 420px;
-  }
 }
 
 .main {
-  margin-left: calc(4rem + 25vw);
-  width: calc(100vw - calc(4rem + 25vw));
+  margin-left: calc(4rem + 20rem);
+  width: calc(100vw - calc(4rem + 20rem));
   padding: 2rem 2.5rem 2.5rem 2.5rem;
-
-  @media screen and (max-width: 1720px) {
-    margin-left: calc(4rem + 420px);
-    width: calc(100% - calc(4rem + 420px));
-  }
 
   header {
     display: flex;
@@ -64,8 +55,8 @@
 
       .line {
         flex-basis: 45%;
-        min-height: 25rem;
-        max-height: 30rem;
+        min-height: 28rem;
+        max-height: 35rem;
         z-index: 1001;
         position: relative;
         display: flex;

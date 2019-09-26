@@ -1,5 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import Button from '../../elements/button'
+import { ReactComponent as WarningImage } from '../../../assets/undraw_react_y7wq.svg'
+import styles from './ErrorBoundary.module.scss'
+
+/*
+  If you are wondering why react still shows the react error in production
+  https://stackoverflow.com/questions/52096804/react-still-showing-errors-after-catching-with-errorboundary.
+*/
 
 // TODO: add an error screen and add logging function
 class ErrorBoundary extends React.Component {
@@ -13,6 +21,10 @@ class ErrorBoundary extends React.Component {
     return { error }
   }
 
+  handleRefereshPage = () => {
+    window.location.reload()
+  }
+
   componentDidCatch(error, errorInfo) {
     // Catch errors in any components below and re-render with error message
     this.setState({
@@ -23,18 +35,22 @@ class ErrorBoundary extends React.Component {
   }
 
   render() {
-    const { error, errorInfo } = this.state
+    const { errorInfo } = this.state
     const { children } = this.props
     if (errorInfo) {
       // Error path
       return (
         <div>
-          <h2>Something went wrong.</h2>
-          <details style={{ whiteSpace: 'pre-wrap' }}>
-            {error && error.toString()}
-            <br />
-            {errorInfo.componentStack}
-          </details>
+          <div className={styles.container}>
+            <WarningImage className={styles.warningImage} />
+            <h2>Oops something went wrong</h2>
+            <span>
+              We might have lost a few electrons. We are working on it.
+              <br />
+              Meanwhile, try reloading the page or check your connection.
+            </span>
+            <Button className={styles.refreshButton} onClick={this.handleRefereshPage} length="long">Refresh page</Button>
+          </div>
         </div>
       )
     }

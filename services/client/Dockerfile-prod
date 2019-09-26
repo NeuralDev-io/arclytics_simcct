@@ -1,6 +1,6 @@
 # MULTISTAGE BUILD PATTERN
 
-# build environment
+# ========== # BUILD ENVIRONMENT # ========== #
 FROM node:10.16.2-alpine as build
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
@@ -8,26 +8,34 @@ ENV PATH /app/node_modules/.bin:$PATH
 # https://vsupalov.com/docker-arg-env-variable-guide/
 # Get BUILD TIME ARGS to set ENV Variables
 # Note: ARGS defines expect from docker-compose.yml client.build.args
+ARG NODE_ENV
+ENV NODE_ENV ${NODE_ENV}
 ARG REACT_APP_SIM_HOST
 ENV REACT_APP_SIM_HOST ${REACT_APP_SIM_HOST}
-RUN echo ${REACT_APP_SIM_HOST}
 ARG REACT_APP_SIM_PORT
 ENV REACT_APP_SIM_PORT ${REACT_APP_SIM_PORT}
 
 COPY package.json /app/package.json
-RUN npm install --silent
+RUN npm install --silent --only=prod
 COPY . /app
 
 # Build the app using npm before we pass it to the production env
 RUN npm run build
 
-# production environment
+# ========== # PRODUCTION ENVIRONMENT # ========== #
 FROM nginx:1.16.0-alpine
+# Copy from the build environment
 COPY --from=build /app/build /usr/share/nginx/html
+
 # Clear out the map files so you can't see the code in the Dev Console
-#RUN rm /usr/share/nginx/html/static/css/*.map
-#RUN rm /usr/share/nginx/html/static/js/*.map
+RUN rm /usr/share/nginx/html/static/css/*.map
+RUN rm /usr/share/nginx/html/static/js/*.map
+
 # Remove the default configurations so we serve the correct files
 RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx/kubernetes.conf /etc/nginx/conf.d
+
+# Create a readiness file
+RUN touch /etc/nginx/healthy
+
 CMD ["nginx", "-g", "daemon off;"]

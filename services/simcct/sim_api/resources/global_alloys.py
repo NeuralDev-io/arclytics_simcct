@@ -7,11 +7,8 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
+__license__ = 'MIT'
 __version__ = '0.9.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.14'
 """global_alloys.py: 
@@ -24,10 +21,11 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from marshmallow import ValidationError
 
-from logger import AppLogger
+from arc_logging import AppLogger
 from sim_api.extensions import api
-from sim_api.middleware import (authenticate_user_cookie_restful,
-                                authorize_admin_cookie_restful)
+from sim_api.middleware import (
+    authenticate_user_cookie_restful, authorize_admin_cookie_restful
+)
 from sim_api.schemas import AlloySchema
 from simulation.utilities import MissingElementError
 

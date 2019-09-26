@@ -6,12 +6,14 @@
  * @github Xaraox
  */
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
+import PropTypes from 'prop-types'
 import { Formik } from 'formik'
+import { Link } from 'react-router-dom'
 import AlertCircleIcon from 'react-feather/dist/icons/alert-circle'
-import { ReactComponent as Logo } from '../../../assets/ANSTO_Logo_SVG/logo_text.svg'
-import { signup } from '../../../api/AuthenticationHelper'
+import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
+import { signup, checkAuthStatus } from '../../../api/AuthenticationHelper'
 import { signupValidation } from '../../../utils/ValidationHelper'
+import { buttonize } from '../../../utils/accessibility'
 
 import Button from '../../elements/button'
 import TextField from '../../elements/textfield'
@@ -29,7 +31,11 @@ class SignupPage extends Component {
 
   componentDidMount = () => {
     const { history } = this.props
-    if (localStorage.getItem('token')) history.push('/')
+    checkAuthStatus().then((res) => {
+      if (res.status === 'success') {
+        history.push('/')
+      }
+    })
   }
 
   render() {
@@ -40,12 +46,10 @@ class SignupPage extends Component {
         <div className={styles.form}>
           <div className={styles.logoContainer}>
             <Logo className={styles.logo} />
-            {/* <h3> ARCLYTICS </h3>
-            <Logo styles.logo/> */}
-
+            <h3>ARCLYTICS</h3>
           </div>
           <div className={styles.header}>
-            <h3> Sign up </h3>
+            <h3>Sign up</h3>
           </div>
           <Formik
             initialValues={{
@@ -97,123 +101,128 @@ class SignupPage extends Component {
               setFieldValue,
               isSubmitting,
             }) => (
-              <form onSubmit={handleSubmit}>
-                <div>
-                  <div className={styles.name}>
-                    <div className={styles.firstName}>
+              <div>
+                <form onSubmit={handleSubmit}>
+                  <div>
+                    <div className={styles.name}>
+                      <div className={styles.firstName}>
+                        <TextField
+                          type="text"
+                          name="firstName"
+                          onChange={e => setFieldValue('firstName', e)}
+                          onBlur={handleBlur}
+                          value={values.firstName}
+                          placeholder="First Name"
+                          length="long"
+                          error={errors.firstName && touched.firstName && errors.firstName}
+                        />
+                      </div>
+                      <div className={styles.lastName}>
+                        <TextField
+                          type="text"
+                          name="lastName"
+                          onChange={e => setFieldValue('lastName', e)}
+                          onBlur={handleBlur}
+                          value={values.lastName}
+                          placeholder="Last Name"
+                          length="long"
+                          error={errors.lastName && touched.lastName && errors.lastName}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.emailPassword}>
                       <TextField
-                        type="text"
-                        name="firstName"
-                        onChange={e => setFieldValue('firstName', e)}
+                        type="email"
+                        name="email"
+                        onChange={e => setFieldValue('email', e)}
                         onBlur={handleBlur}
-                        value={values.firstName}
-                        placeholder="First Name"
-                        length="long"
-                        error={errors.firstName && touched.firstName && errors.firstName}
+                        value={values.email}
+                        placeholder="Email"
+                        length="stretch"
+                        error={errors.email && touched.email && errors.email}
                       />
                     </div>
-                    <div className={styles.lastName}>
+                    <div className={styles.emailPassword}>
                       <TextField
-                        type="text"
-                        name="lastName"
-                        onChange={e => setFieldValue('lastName', e)}
-                        onBlur={handleBlur}
-                        value={values.lastName}
-                        placeholder="Last Name"
-                        length="long"
-                        error={errors.lastName && touched.lastName && errors.lastName}
+                        type="password"
+                        name="password"
+                        onChange={e => setFieldValue('password', e)}
+                        value={values.password}
+                        placeholder="Password"
+                        length="stretch"
+                        error={errors.password && touched.password && errors.password}
                       />
                     </div>
+                    <div className={styles.passwordConfirmed}>
+                      <TextField
+                        type="password"
+                        name="passwordConfirmed"
+                        length="stretch"
+                        value={values.passwordConfirmed}
+                        onChange={e => setFieldValue('passwordConfirmed', e)}
+                        placeholder="Confirm password"
+                        error={
+                          errors.passwordConfirmed
+                          && touched.passwordConfirmed
+                          && errors.passwordConfirmed
+                        }
+                      />
+                    </div>
+                    <div className={styles.signUpButton}>
+                      <Button
+                        name="SIGN UP"
+                        appearance="default"
+                        type="submit"
+                        length="long"
+                        disabled={isSubmitting}
+                      >
+                        SIGN UP
+                      </Button>
+                    </div>
                   </div>
-                  <div className={styles.emailPassword}>
-                    <TextField
-                      type="email"
-                      name="email"
-                      onChange={e => setFieldValue('email', e)}
-                      onBlur={handleBlur}
-                      value={values.email}
-                      placeholder="Email"
-                      length="stretch"
-                      error={errors.email && touched.email && errors.email}
-                    />
-                  </div>
-                  <div className={styles.emailPassword}>
-                    <TextField
-                      type="password"
-                      name="password"
-                      onChange={e => setFieldValue('password', e)}
-                      value={values.password}
-                      placeholder="Password"
-                      length="stretch"
-                      error={errors.password && touched.password && errors.password}
-                    />
-                  </div>
+                </form>
+                <Modal
+                  className={styles.cnfrmModal}
+                  show={showCnfrmModal}
+                >
 
-                  <div className={styles.passwordConfirmed}>
-                    <TextField
-                      type="password"
-                      name="passwordConfirmed"
-                      length="stretch"
-                      value={values.passwordConfirmed}
-                      onChange={e => setFieldValue('passwordConfirmed', e)}
-                      placeholder="Confirm password"
-                      error={
-                        errors.passwordConfirmed
-                        && touched.passwordConfirmed
-                        && errors.passwordConfirmed
-                      }
-                    />
-                  </div>
-
-                  <div className={styles.signUpButton}>
+                  <AlertCircleIcon className={styles.alertCircleIcon} />
+                  <h5> Your account has been successfully registered. Verify your account. </h5>
+                  <sub>
+                    So that you are able to use the full services of the Arclytics Sim application
+                    and to be able to personalise your account.
+                  </sub>
+                  <span>
+                    We have sent an email to &nbsp;
+                    <span className={styles.email}>
+                      {values.email}
+                    </span>
+                  </span>
+                  <h6>Already verified?</h6>
+                  <div className={styles.buttons}>
                     <Button
-                      name="SIGN UP"
                       appearance="default"
-                      type="submit"
-                      length="long"
-                      disabled={isSubmitting}
+                      className={styles.goToSignIn}
+                      onClick={() => history.push('/signin')}
                     >
-                      SIGN UP
+                      Take me to sign in
                     </Button>
                   </div>
-                </div>
-              </form>
+                  <span>
+                    Didn&apos;t receive an email? Click&nbsp;
+                    <span className={styles.resendEmail} {...buttonize()}>
+                      here&nbsp;
+                    </span>
+                    to resend.
+                  </span>
+                </Modal>
+              </div>
             )}
           </Formik>
-          <Modal
-            className={styles.cnfrmModal}
-            show={showCnfrmModal}
-          >
-            <AlertCircleIcon className={styles.alertCircleIcon} />
-            <h5> Your account has been successfully registered. Verify your account. </h5>
-            <span>
-              So that you are able to use the full services of the Arclytics Sim application
-              and to be able to personalise your account.
-            </span>
-            <span>
-              Please verify your account.
-            </span>
-            <div className={styles.buttons}>
-              <Button
-                isDisabled={true}
-                className={styles.resendEmail}
-              >
-                I did not receive an email. Resend.
-              </Button>
-              <Button
-                appearance="outline"
-                className={styles.goToSignIn}
-                onClick={() => history.push('/signin')}
-              >
-                I have verified. Go to login
-              </Button>
-            </div>
-
-          </Modal>
           <div>
             <h6>
-              Already have an account?
-              <a href="http://localhost:3000/signin" className={styles.signIn}> Sign in </a>
+              Already have an account?&nbsp;
+              <Link className={styles.signIn} to="/signin">Sign in</Link>
             </h6>
           </div>
         </div>
@@ -222,12 +231,10 @@ class SignupPage extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-
-})
-
-const mapDispatchToProps = {
-
+SignupPage.propTypes = {
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired,
+  }).isRequired,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SignupPage)
+export default SignupPage

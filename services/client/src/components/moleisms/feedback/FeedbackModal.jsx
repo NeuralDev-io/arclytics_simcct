@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { ReactComponent as Excellent } from '../../../assets/icons/feedback/good.svg'
+import { ReactComponent as Excellent } from '../../../assets/icons/feedback/excellent.svg'
 import { ReactComponent as Good } from '../../../assets/icons/feedback/good.svg'
 import { ReactComponent as Okay } from '../../../assets/icons/feedback/okay.svg'
 import { ReactComponent as Bad } from '../../../assets/icons/feedback/bad.svg'
-import { ReactComponent as Terrible } from '../../../assets/icons/feedback/bad.svg'
+import { ReactComponent as Terrible } from '../../../assets/icons/feedback/terrible.svg'
 import Button from '../../elements/button'
 import Select from '../../elements/select'
 import TextArea from '../../elements/textarea'
@@ -40,7 +40,10 @@ class FeedbackModal extends Component {
       const countToShow = ['3', '8', '13', '20']
       if (countToShow.includes(simCount) && localStorage.getItem('gotFeedback') !== 'true') {
         this.timer = setTimeout(() => {
-          updateFeedbackConnect({ feedbackVisible: true, givingFeedback: false })
+          const { feedback: { feedbackVisible } } = this.props
+          if (!feedbackVisible) {
+            updateFeedbackConnect({ feedbackVisible: true, givingFeedback: false })
+          }
         }, 5000)
       }
     }
@@ -68,18 +71,18 @@ class FeedbackModal extends Component {
   renderRating = () => {
     const { feedback: { rate }, updateFeedbackConnect } = this.props
     const iconArray = [
-      <Terrible key={1} className={`${styles.ratingIcon} ${styles.rate1} ${rate === 1 ? styles.active : ''}`} />,
-      <Bad key={2} className={`${styles.ratingIcon} ${styles.rate2} ${rate === 2 ? styles.active : ''}`} />,
-      <Okay key={3} className={`${styles.ratingIcon} ${styles.rate3} ${rate === 3 ? styles.active : ''}`} />,
-      <Good key={4} className={`${styles.ratingIcon} ${styles.rate4} ${rate === 4 ? styles.active : ''}`} />,
-      <Excellent key={5} className={`${styles.ratingIcon} ${styles.rate5} ${rate === 5 ? styles.active : ''}`} />,
+      <Terrible key={1} className={styles.ratingIcon} />,
+      <Bad key={2} className={styles.ratingIcon} />,
+      <Okay key={3} className={styles.ratingIcon} />,
+      <Good key={4} className={styles.ratingIcon} />,
+      <Excellent key={5} className={styles.ratingIcon} />,
     ]
     const textArray = ['Terrible', 'Bad', 'Okay', 'Good', 'Excellent']
 
     return [1, 2, 3, 4, 5].map((point, index) => (
       <div
         key={point}
-        className={styles.individualRate}
+        className={`${styles.individualRate} ${styles[`rate${point}`]} ${rate === point ? styles.active : ''}`}
         {...buttonize(() => updateFeedbackConnect({ rate: point }))}
       >
         {iconArray[index]}
@@ -108,7 +111,10 @@ class FeedbackModal extends Component {
           className={`${styles.backdrop} ${backdrop ? styles.show : ''}`}
           {...buttonize(this.handleClose)}
         />
-        <ToastModal show={feedbackVisible} className={`${styles.modal} ${givingFeedback ? styles.form : ''}`}>
+        <ToastModal
+          show={feedbackVisible}
+          className={{ modal: `${styles.modal} ${givingFeedback ? styles.form : ''}` }}
+        >
           {
             givingFeedback
               ? (
@@ -130,12 +136,12 @@ class FeedbackModal extends Component {
                     className={styles.select}
                     isSearchable
                   />
-                  <h6>Tell us more about your experience</h6>
+                  <h6>Tell us more about your experience *</h6>
                   <TextArea
                     name="message"
                     onChange={val => updateFeedbackConnect({ message: val })}
                     value={message}
-                    placeholder="Message (optional)"
+                    placeholder="Message"
                     length="stretch"
                     rows={8}
                   />
@@ -144,7 +150,7 @@ class FeedbackModal extends Component {
                       onClick={this.handleSubmit}
                       type="submit"
                       length="long"
-                      isDisabled={rate === -1 || category === ''}
+                      isDisabled={rate === -1 || category === '' || message === ''}
                     >
                       Submit
                     </Button>

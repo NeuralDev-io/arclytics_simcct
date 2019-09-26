@@ -1045,18 +1045,19 @@ while [[ "$1" != "" ]] ; do
       RESERVED_IP_NAME="arclytics-ip"
       CLIENT_SSL_NAME="client-app-https-cert"
       SIMCCT_SSL_NAME="simcct-app-https-cert"
-      KIBANA_SSL_NAME="kibana-app-https-cert"
+      WEBSITE_SSL_NAME="website-https-cert"
       CLIENT_HTTPS_TLS_NAME="client-app-https-secret"
       SIMCCT_HTTPS_TLS_NAME="simcct-app-https-secret"
-      KIBANA_HTTPS_TLS_NAME="kibana-app-https-secret"
+      WEBSITE_HTTPS_TLS_NAME="website-https-secret"
       CLOUD_STORAGE_BUCKET="asia.artifacts.arc-sim.appspot.com"
 
       while [[ "$2" != "" ]] ; do
         case $2 in
           auth )
+            generalMessage "Getting Cluster Credentials for ${CLUSTER_NAME}"
             gcloud container clusters get-credentials ${CLUSTER_NAME} \
                 --project=${PROJECT_ID} \
-                --zone=${ZONE}
+                ${LOCATION_COMMAND}
             ;;
           config )
             gcloud compute project-info describe --project ${PROJECT_ID}
@@ -1128,7 +1129,7 @@ while [[ "$1" != "" ]] ; do
                           end
                           ) | from_gke_semver(.)
                           ')
-                  # echo ${LATEST}
+                   echo Kubernetes Version: ${LATEST}
 
                   # Create new GKE Kubernetes cluster (using host node VM images based on Ubuntu
                   # rather than ChromiumOS default & also use slightly larger VMs than default)
@@ -1143,9 +1144,9 @@ while [[ "$1" != "" ]] ; do
                       --max-nodes=3 \
                       --enable-autoscaling \
                       --node-labels=component=arc-nodes \
-                      --cluster-version=${KUBERNETES_NODE_VERSION}
+                      --cluster-version=${LATEST}
+                      #--cluster-version=${KUBERNETES_NODE_VERSION} \
                       # This may have caused the Ingress not to work with latest version
-                      # --cluster-version=${LATEST} \
                       # australia-southeast1 has 3 ZONES so 9 is more than we're allowed but ensure 8 is possible
 
                   generalMessage "Getting Cluster Credentials for ${CLUSTER_NAME}"
@@ -1185,9 +1186,9 @@ while [[ "$1" != "" ]] ; do
             gcloud compute ssl-certificates create ${SIMCCT_SSL_NAME} \
                 --certificate "${WORKDIR}/certs/io.arclytics.api.crt" \
                 --private-key "${WORKDIR}/certs/io.arclytics.api.key"
-            gcloud compute ssl-certificates create ${KIBANA_SSL_NAME} \
-                --certificate "${WORKDIR}/certs/io.arclytics.kibana.crt.pem" \
-                --private-key "${WORKDIR}/certs/io.arclytics.kibana.key.pem"
+            gcloud compute ssl-certificates create ${WEBSITE_SSL_NAME} \
+                --certificate "${WORKDIR}/certs/io.arclytics.crt" \
+                --private-key "${WORKDIR}/certs/io.arclytics.key"
 
             # Apply the certificates to Kubernetes Secrets which will be used
             # by the Ingress controller.
@@ -1199,9 +1200,9 @@ while [[ "$1" != "" ]] ; do
                --cert "${WORKDIR}/certs/io.arclytics.api.crt" \
                --key "${WORKDIR}/certs/io.arclytics.api.key" \
                --namespace=arclytics
-            kubectl create secret tls ${KIBANA_HTTPS_TLS_NAME} \
-               --cert "${WORKDIR}/certs/io.arclytics.kibana.crt.pem" \
-               --key "${WORKDIR}/certs/io.arclytics.kibana.key.pem" \
+            kubectl create secret tls ${WEBSITE_HTTPS_TLS_NAME} \
+               --cert "${WORKDIR}/certs/io.arclytics.crt" \
+               --key "${WORKDIR}/certs/io.arclytics.key" \
                --namespace=arclytics
             ;;
           addresses )
@@ -1236,19 +1237,19 @@ while [[ "$1" != "" ]] ; do
 
                   # Register GCE Fast SSD persistent disks and then create the persistent disks
                   generalMessage "Creating GCE disks"
-                  for i in 1 2
+                  for i in 1 2 3
                   do
                       gcloud compute disks create --size 200GB \
-                          --type pd-standard pd-standard-disk-$i \
+                          --type pd-ssd pd-standard-disk-$i \
                           ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
                   done
                   sleep 3
 
                   # Create persistent volumes using disks created above
                   generalMessage "Creating GKE Persistent Volumes"
-                  for i in 1 2
+                  for i in 1 2 3
                   do
-                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/mongo-gke-xfs-standard-pv.yaml" > /tmp/xfs-gke-pv.yaml
+                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/mongo-gke-xfs-ssd-pv.yaml" > /tmp/xfs-gke-pv.yaml
                       kubectl apply -f /tmp/xfs-gke-pv.yaml
                   done
                   rm /tmp/xfs-gke-pv.yaml
@@ -1261,17 +1262,19 @@ while [[ "$1" != "" ]] ; do
                   # rm $TMPFILE
 
                   # Create mongodb service with mongod stateful-set
-                  kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-service.yaml" --validate=false
+                  kubectl apply -f "${WORKDIR}/kubernetes/mongo-gke-svc.yaml" --validate=false
                   echoSpace
+
+                  kubectl rollout status sts/mongo --namespace arclytics
 
                   # Wait until the final (2nd) mongod has started properly
                   generalMessage "Waiting for the 2 containers to come up $(date)..."
                   generalMessage " (IGNORE any reported not found & connection errors)"
                   sleep 30
-                  generalMessage -n "  "
-                  until kubectl --v=0 exec mongo-1 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
+                  generalMessage "  "
+                  until kubectl --v=0 exec mongo-2 -c mongo-container -- mongo --quiet --eval 'db.getMongo()'; do
                       sleep 5
-                      generalMessage -n "  "
+                      generalMessage "  "
                   done
                   generalMessage "...mongo containers are now running $(date)"
                   echo
@@ -1292,17 +1295,17 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete -f "${WORKDIR}/kubernetes/mongo-gke-svc.yaml"
                   kubectl delete pvc mongo-pvc-mongo-0 --namespace=arclytics
                   kubectl delete pvc mongo-pvc-mongo-1 --namespace=arclytics
-                  # kubectl delete pvc mongo-pvc-mongo-2
+                  kubectl delete pvc mongo-pvc-mongo-2 --namespace=arclytics
                   kubectl delete pv mongo-pv-1 --namespace=arclytics
                   kubectl delete pv mongo-pv-2 --namespace=arclytics
-                  # kubectl delete pv mongo-pv-3
+                  kubectl delete pv mongo-pv-3 --namespace=arclytics
 
                   sleep 15
                   # Wait till the PV and PVC are deleted first
-                  gcloud compute disks delete pd-standard-disk-1 ${LOCATION_COMMAND}
-                  gcloud compute disks delete pd-standard-disk-2 ${LOCATION_COMMAND}
+                  gcloud compute disks delete mongo-ssd-disk-1 ${LOCATION_COMMAND}
+                  gcloud compute disks delete mongo-ssd-disk-2 ${LOCATION_COMMAND}
                   # REMEMBER TO UPDATE scripts/configure_repset_auth.sh IF MOVING to 3
-                  # gcloud compute disks delete pd-standard-disk-3 ${LOCATION_COMMAND}
+                  gcloud compute disks delete mongo-ssd-disk-3 ${LOCATION_COMMAND}
                   ;;
               esac
               shift
@@ -1319,11 +1322,12 @@ while [[ "$1" != "" ]] ; do
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_redis:${TAG}
                   ;;
                 create )
-                  gcloud compute disks create --size 50GB \
+                  gcloud compute disks create --size 30GB \
                       --type pd-ssd redis-ssd-disk \
                       ${LOCATION_COMMAND} ${REPLICA_ZONE_REDIS}
                   kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
                   kubectl create -f "${WORKDIR}/kubernetes/redis-gke-svc.yaml" --validate=false
+                  kubectl rollout status sts/redis --namespace arclytics
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/redis-gke-svc.yaml"
@@ -1344,8 +1348,8 @@ while [[ "$1" != "" ]] ; do
                   generalMessage "Creating GCE disks for Elasticsearch"
                   for i in 1 2 3
                   do
-                      gcloud compute disks create --size 200GB \
-                          --type pd-standard es-standard-disk-$i \
+                      gcloud compute disks create --size 20GB \
+                          --type pd-ssd es-ssd-disk-$i \
                           ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
                   done
                   sleep 3
@@ -1354,14 +1358,14 @@ while [[ "$1" != "" ]] ; do
                   generalMessage "Creating GKE Persistent Volumes"
                   for i in 1 2 3
                   do
-                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/efk-elasticsearch-gke-standard-pv.yaml" > /tmp/es-gke-pv.yaml
+                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/efk-elasticsearch-gke-ssd-pv.yaml" > /tmp/es-gke-pv.yaml
                       kubectl apply -f /tmp/es-gke-pv.yaml
                   done
                   rm /tmp/es-gke-pv.yaml
                   sleep 3
 
                   kubectl create -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-svc.yaml"
-                  kubectl rollout status sts/elasticsearch
+                  kubectl rollout status sts/elasticsearch --namespace arclytics
                   # To check cluster state
                   # kubectl exec curl-hash-id -- curl http://elasticsearch-0.elasticsearch:9200/_cluster/state?pretty
                   ;;
@@ -1493,6 +1497,26 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
+                  ;;
+              esac
+              shift
+            done
+            ;;
+          web )
+            while [[ "$3" != "" ]]; do
+              case $3 in
+                build )
+                  # Prune to avoid collisions of names:tags output
+                  docker system prune -af --volumes --filter 'label=service=website'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build website
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=website")
+                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_website:latest
+                  ;;
+                create )
+                  kubectl apply -f "${WORKDIR}/kubernetes/web-gke-secure-svc.yaml"
+                  ;;
+                delete )
+                  kubectl delete -f "${WORKDIR}/kubernetes/web-gke-secure-svc.yaml"
                   ;;
               esac
               shift

@@ -7,8 +7,7 @@
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = [
-    'Andrew Che <@codeninja55>',
-    'David Matthews <@tree1004>',
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
 __license__ = 'TBA'
@@ -31,7 +30,7 @@ from bson import ObjectId
 from flask import jsonify, request, session, json
 from mongoengine import DoesNotExist
 
-from logger import AppLogger
+from arc_logging import AppLogger
 from sim_api.extensions.Session.redis_session import SESSION_COOKIE_NAME
 from sim_api.models import User
 
@@ -99,7 +98,12 @@ def authenticate_user_and_cookie_flask(f):
         if not user.active:
             response['message'] = 'This user account has been disabled.'
             logger.info(
-                json.dumps({"message": response['message'], "user": user.email})
+                json.dumps(
+                    {
+                        "message": response['message'],
+                        "user": user.email
+                    }
+                )
             )
             return jsonify(response), 403
 
@@ -162,14 +166,24 @@ def authorize_admin_cookie_flask(f):
         if not user.active:
             response['message'] = 'This user account has been disabled.'
             logger.info(
-                json.dumps({"message": response['message'], "user": user.email})
+                json.dumps(
+                    {
+                        "message": response['message'],
+                        "user": user.email
+                    }
+                )
             )
             return jsonify(response), 403
 
         if not user.is_admin:
             response['message'] = 'Not authorized.'
             logger.info(
-                json.dumps({"message": response['message'], "user": user.email})
+                json.dumps(
+                    {
+                        "message": response['message'],
+                        "user": user.email
+                    }
+                )
             )
             return jsonify(response), 403
 
@@ -230,7 +244,12 @@ def authenticate_user_cookie_restful(f):
         if not user.active:
             response['message'] = 'This user account has been disabled.'
             logger.info(
-                json.dumps({"message": response['message'], "user": user.email})
+                json.dumps(
+                    {
+                        "message": response['message'],
+                        "user": user.email
+                    }
+                )
             )
             return response, 403
 
@@ -293,14 +312,24 @@ def authorize_admin_cookie_restful(f):
         if not user.active:
             response['message'] = 'This user account has been disabled.'
             logger.info(
-                json.dumps({"message": response['message'], "user": user.email})
+                json.dumps(
+                    {
+                        "message": response['message'],
+                        "user": user.email
+                    }
+                )
             )
             return response, 403
 
         if not user.is_admin:
             response['message'] = 'Not authorized.'
             logger.info(
-                json.dumps({"message": response['message'], "user": user.email})
+                json.dumps(
+                    {
+                        "message": response['message'],
+                        "user": user.email
+                    }
+                )
             )
             return response, 403
 
@@ -351,7 +380,12 @@ def authenticate(f):
         if not user.active:
             response['message'] = 'This user account has been disabled.'
             logger.info(
-                json.dumps({"message": response["message"], "user": user.email})
+                json.dumps(
+                    {
+                        "message": response["message"],
+                        "user": user.email
+                    }
+                )
             )
             return response, 403
 

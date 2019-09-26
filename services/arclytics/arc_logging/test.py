@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from fluentd_logging import FluentdLogging
+from arc_logging import AppLogger
 
-logger = FluentdLogging(__name__)
+logger = AppLogger(__name__)
 
 
 def log_testing():

@@ -28,7 +28,7 @@ from redis import Redis
 
 from tests.test_utilities import FlaskTestClientProxy
 from sim_api import set_flask_mongo, init_db
-from logger import AppLogger
+from arc_logging import AppLogger
 from sim_api import create_app
 
 logger = AppLogger(__name__)

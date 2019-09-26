@@ -1,0 +1,28 @@
+.container{
+  width: initial;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  height: 90vh;
+  padding: 1.5rem;
+
+  h3{
+    text-align: center;
+  }
+}
+
+.pageNotFoundImage{
+  height: 30vh;
+  width: initial;
+  margin-bottom: 2rem;
+}
+
+.buttonContainer{
+  display:flex;
+  flex-flow: row wrap;
+  justify-content: space-evenly;
+}

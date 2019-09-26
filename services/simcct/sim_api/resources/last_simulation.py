@@ -26,9 +26,10 @@ from flask_restful import Resource
 from mongoengine import FieldDoesNotExist, ValidationError
 
 from sim_api.extensions import api
-from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
-                                          ElementSymbolInvalid,
-                                          MissingElementError)
+from sim_api.extensions.utilities import (
+    DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
+    MissingElementError
+)
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import AlloyStore, Configuration, SimulationResults
 from sim_api.extensions.SimSession.sim_session_service import SimSessionService
@@ -37,7 +38,7 @@ from sim_api.schemas import (
 )
 from simulation.utilities import Method
 from simulation.simconfiguration import SimConfiguration as SimConfig
-from logger import AppLogger
+from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 
@@ -77,8 +78,10 @@ class LastSimulation(Resource):
         post_results = post_data.get('simulation_results', None)
         post_invalid_fields = post_data.get('invalid_fields', None)
 
-        if (not post_configs and not post_alloy_store and not post_results
-                and not post_invalid_fields):
+        if (
+            not post_configs and not post_alloy_store and not post_results
+            and not post_invalid_fields
+        ):
             return response, 400
 
         valid_configs = None
@@ -87,10 +90,14 @@ class LastSimulation(Resource):
 
         try:
             if post_configs:
-                valid_configs = Configuration.from_json(json.dumps(post_configs))
+                valid_configs = Configuration.from_json(
+                    json.dumps(post_configs)
+                )
                 valid_configs.validate(clean=True)
             if post_alloy_store:
-                valid_store = AlloyStore.from_json(json.dumps(post_alloy_store))
+                valid_store = AlloyStore.from_json(
+                    json.dumps(post_alloy_store)
+                )
                 valid_store.validate(clean=True)
             if post_results:
                 valid_results = SimulationResults.from_json(
@@ -195,21 +202,25 @@ class LastSimulation(Resource):
 
         session_store = SimSessionService().load_session()
 
-        if user.last_configuration:
+        if not user.last_configuration:
+            session_store['configurations'] = None
+        else:
             session_store['configurations'] = user.last_configuration.to_dict()
             response['data']['last_configurations'] = (
                 user.last_configuration.to_dict()
             )
-        else:
-            session_store['configurations'] = None
 
-        if user.last_alloy_store:
-            session_store['alloy_store'] = user.last_alloy_store.to_dict()
-            response['data']['last_alloy_store'] = user.last_alloy_store.to_dict()
-        else:
+        if not user.last_alloy_store:
             session_store['alloy_store'] = None
+        else:
+            session_store['alloy_store'] = user.last_alloy_store.to_dict()
+            response['data']['last_alloy_store'
+                             ] = user.last_alloy_store.to_dict()
 
-        if user.last_simulation_results:
+        if not user.last_simulation_results:
+            # We don't need to do anything here so we can just keep going
+            pass
+        else:
             session_store['simulation_results'] = (
                 user.last_simulation_results.to_dict()
             )

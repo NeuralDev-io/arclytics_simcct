@@ -51,9 +51,8 @@ def ae3_single_carbon(wt_comp: np.ndarray, wt_c: float) -> float:
     return ae3
 
 
-def ae3_set_carbon(
-        ai_vect: np.array, wt_mat: np.ndarray, c: float
-) -> (float, float):
+def ae3_set_carbon(ai_vect: np.array, wt_mat: np.ndarray,
+                   c: float) -> (float, float):
     """
     Calculate Ae3 for fixed value of carbon (C).
     Args:
@@ -736,9 +735,8 @@ def ai_eqn3(
     return np.float32(num_3 / den_3)
 
 
-def ae3_multi_carbon(
-        wt: np.ndarray, results: np.ndarray
-) -> (np.ndarray, np.ndarray):
+def ae3_multi_carbon(wt: np.ndarray,
+                     results: np.ndarray) -> (np.ndarray, np.ndarray):
     """Range of composition for Carbon.
 
     Args:

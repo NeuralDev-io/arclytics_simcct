@@ -23,16 +23,15 @@ import time
 
 from flask import Blueprint, json
 from flask_restful import Resource
+from arc_logging import AppLogger
 
-from sim_api.extensions import api
+from sim_api.extensions import api, apm
 from sim_api.extensions.SimSession import SimSessionService
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.schemas import AlloyStoreSchema, ConfigurationsSchema
 from simulation.phasesimulation import PhaseSimulation
 from simulation.simconfiguration import SimConfiguration
 from simulation.utilities import ConfigurationError, SimulationError
-
-from logger import AppLogger
 
 logger = AppLogger(__name__)
 
@@ -54,10 +53,12 @@ class Simulation(Resource):
             response['message'] = session_store
             return response, 500
 
-        log_msg = json.dumps({
-            'message': 'Session Store',
-            **session_store['configurations']
-        })
+        log_msg = json.dumps(
+            {
+                'message': 'Session Store',
+                **session_store['configurations']
+            }
+        )
         logger.debug(log_msg)
 
         session_configs = session_store.get('configurations')
@@ -128,16 +129,22 @@ class Simulation(Resource):
         except ConfigurationError as e:
             response['errors'] = str(e)
             response['message'] = 'Configuration error.'
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 400
         except SimulationError as e:
             response['errors'] = str(e)
             response['message'] = 'Simulation error.'
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 400
 
-        log_msg = json.dumps({
-            'message': 'SimConfigs Instance',
-            **sim.configs.__dict__
-        })
+        log_msg = json.dumps(
+            {
+                'message': 'SimConfigs Instance',
+                **sim.configs.__dict__
+            }
+        )
         logger.debug(log_msg)
 
         # Now we do the simulation part but catch all exceptions and return it
@@ -155,11 +162,15 @@ class Simulation(Resource):
             response['errors'] = str(e)
             response['message'] = 'Zero Division Error.'
             response['configs'] = sim.configs.__dict__
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 500
         except Exception as e:
             response['errors'] = str(e)
             response['message'] = 'Exception.'
             response['configs'] = sim.configs.__dict__
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 500
 
         # Converting the TTT and CCT `numpy.ndarray` will raise an
@@ -178,6 +189,8 @@ class Simulation(Resource):
         except AssertionError as e:
             response['errors'] = str(e)
             response['message'] = 'Assertion error building response data.'
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 500
 
         finish = time.time()
@@ -185,7 +198,7 @@ class Simulation(Resource):
         # logger.debug(f'Configurations Setup Time: {sim_configs_time}')
         # logger.debug(f'Integral Matrix Time: {integral_mat_time}')
         # logger.debug(f'Total Simulation Time: {simulation_time}')
-        logger.debug('Total Time: {}'.format(finish - start))
+        logger.debug('Simulation Total Time: {}'.format(finish - start))
 
         # If a valid simulation has been run, the configurations are now valid.
         session_store['configurations']['is_valid'] = True

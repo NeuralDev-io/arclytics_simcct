@@ -40,7 +40,10 @@ class FeedbackModal extends Component {
       const countToShow = ['3', '8', '13', '20']
       if (countToShow.includes(simCount) && localStorage.getItem('gotFeedback') !== 'true') {
         this.timer = setTimeout(() => {
-          updateFeedbackConnect({ feedbackVisible: true, givingFeedback: false })
+          const { feedback: { feedbackVisible } } = this.props
+          if (!feedbackVisible) {
+            updateFeedbackConnect({ feedbackVisible: true, givingFeedback: false })
+          }
         }, 5000)
       }
     }

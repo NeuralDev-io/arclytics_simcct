@@ -6,29 +6,19 @@
 # Attributions:
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-
-__credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __status__ = '{dev_status}'
 __date__ = '2019.07.05'
-"""test_api_mongo.py: 
-
-{Description}
-"""
 
 import unittest
 
 import pymongo
-from mongoengine.connection import get_db, get_connection
-
 from flask import current_app as app
-from tests.test_api_base import BaseTestCase
+from mongoengine.connection import get_connection, get_db
+
+from sim_api import get_flask_mongo, init_db, set_flask_mongo
 from sim_api.extensions import MongoSingleton
-from sim_api import get_flask_mongo, set_flask_mongo, init_db
+from tests.test_api_base import BaseTestCase
 
 
 class TestMongoSingleton(BaseTestCase):

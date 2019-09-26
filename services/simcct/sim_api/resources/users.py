@@ -6,10 +6,7 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = [
-    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
-    'Dinol Shrestha <@dinolsth>'
-]
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __license__ = 'MIT'
 __version__ = '1.0.0'
 __status__ = 'production'
@@ -28,7 +25,7 @@ from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
 from arc_logging import AppLogger
-from sim_api.extensions import api
+from sim_api.extensions import api, apm
 from sim_api.middleware import (
     authenticate_user_cookie_restful, authorize_admin_cookie_restful
 )
@@ -249,6 +246,7 @@ class UserProfiles(Resource):
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
             logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 400
 
         # Otherwise the save was successful and a response with the updated

@@ -6,9 +6,7 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
 __status__ = 'development'
 __date__ = '2019.07.05'
 """test_api_auth.py: 

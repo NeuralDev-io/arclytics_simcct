@@ -7,19 +7,8 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
-
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.2.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.03'
-"""test_api_admin_auth.py: 
-
-This script will run all tests on the Admin create and account disable 
-endpoints.
-"""
 
 import json
 import os
@@ -43,7 +32,6 @@ logger = AppLogger(__name__)
 
 class TestAdminCreateService(BaseTestCase):
     """Tests for Admin creation and disable account endpoints"""
-
     def test_disable_account(self):
         """Test disable account is successful"""
         user = User(
@@ -92,7 +80,6 @@ class TestAdminCreateService(BaseTestCase):
             self.assertEqual(
                 disable_data['message'], 'Confirmation email sent.'
             )
-            # os.environ['FLASK_ENV'] = 'development'
 
     def test_disable_account_no_data(self):
         """Test empty disable request is unsuccessful"""

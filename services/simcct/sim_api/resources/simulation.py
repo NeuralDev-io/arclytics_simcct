@@ -8,10 +8,9 @@
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
-__license__ = 'TBA'
+__license__ = 'MIT'
 __version__ = '0.5.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+
 __status__ = 'development'
 __date__ = '2019.07.17'
 """simulation.py: 

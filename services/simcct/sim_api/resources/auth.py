@@ -6,10 +6,7 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = [
-    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
-    'Dinol Shrestha <@dinolsth>'
-]
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __license__ = 'MIT'
 __version__ = '1.7.0'
 __status__ = 'production'
@@ -55,7 +52,6 @@ class SimCCTBadServerLogout(Exception):
     A custom exception to be raised by a synchronous call to logout on the
     SimCCT server if the response is not what we are expecting.
     """
-
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
 
@@ -139,7 +135,6 @@ def confirm_email_resend(user):
 @auth_blueprint.route('/confirm/register/resend', methods=['PUT'])
 def confirm_email_resend_after_registration() -> Tuple[dict, int]:
 
-    # response = {'status': 'fail', 'message': 'Invalid payload.'}
     response = {'status': 'success'}
 
     data = request.get_json()
@@ -324,10 +319,7 @@ def login() -> any:
     try:
         if not User.objects(email=email):
             response['message'] = 'User does not exist.'
-            logger.debug({
-                'email': email,
-                'message': response['message']
-            })
+            logger.debug({'email': email, 'message': response['message']})
             return jsonify(response), 404
     except Exception as e:
         logger.error(str(e))
@@ -341,10 +333,12 @@ def login() -> any:
         if auth_token:
             if not user.active:
                 response['message'] = 'Your Account has been disabled.'
-                logger.info({
-                    'message': response['message'],
-                    'user': user.email
-                })
+                logger.info(
+                    {
+                        'message': response['message'],
+                        'user': user.email
+                    }
+                )
                 return jsonify(response), 401
 
             # Let's save some stats for later
@@ -369,23 +363,28 @@ def login() -> any:
                         country=country, state=state, ip_address=ip_address
                     )
                 )
-                logger.info({
-                    'message': 'User logged in',
-                    'user': user.email,
-                    'country': country,
-                    'state': state,
-                    'ip_address': ip_address
-                })
+                logger.info(
+                    {
+                        'message': 'User logged in',
+                        'user': user.email,
+                        'country': country,
+                        'state': state,
+                        'ip_address': ip_address
+                    }
+                )
                 user.save()
             except AddressNotFoundError:
                 user.reload()
                 ip_address = request.remote_addr
                 user.login_data.append(LoginData(ip_address=ip_address))
-                logger.error({
-                    'user': user.email,
-                    'message': 'Address not found.',
-                    'ip_address': ip_address
-                }, stack_info=False)
+                logger.error(
+                    {
+                        'user': user.email,
+                        'message': 'Address not found.',
+                        'ip_address': ip_address
+                    },
+                    stack_info=False
+                )
                 user.save()
             reader.close()
 

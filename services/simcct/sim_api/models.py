@@ -6,12 +6,9 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = [
-    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
-    'Dinol Shrestha <@dinolsth>'
-]
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __license__ = 'MIT'
-__version__ = '1.3.0'
+__version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.07.03'
 """models.py: 
@@ -35,12 +32,12 @@ from mongoengine import (
     ValidationError, queryset_manager
 )
 
-from sim_api.extensions import bcrypt
+from arc_logging import AppLogger
+from sim_api.extensions import bcrypt, apm
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid, JSONEncoder,
     MissingElementError, PasswordValidationError, PeriodicTable
 )
-from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 
@@ -333,7 +330,8 @@ class Element(EmbeddedDocument):
         return {'symbol': self.symbol, 'weight': self.weight}
 
     def clean(self):
-        """Ensure that the `symbol` field must conform to a proper periodic
+        """
+        Ensure that the `symbol` field must conform to a proper periodic
         table element symbol and ensure they are both required.
         """
         # These ensure they are not missing.
@@ -487,15 +485,11 @@ class User(Document):
     login_data = EmbeddedDocumentListField(document_type=LoginData)
 
     # Define the collection and indexing for this document
-    meta = {
-        'collection': 'users',
-        # 'indexes': [
-        # {'fields': ['saved_alloys.name'], 'unique': True}
-        # ]
-    }
+    meta = {'collection': 'users', 'indexes': ['last_login', '#email']}
 
     def set_password(self, raw_password: str) -> None:
-        """Helper utility method to save an encrypted password using the
+        """
+        Helper utility method to save an encrypted password using the
         Bcrypt Flask extension.
         """
         self.password = bcrypt.generate_password_hash(
@@ -571,7 +565,8 @@ class User(Document):
                 json_encoder=JSONEncoder
             )
         except Exception as e:
-            logger.error('Encode auth token error: {}'.format(e))
+            logger.exception('Encode auth token error: {}'.format(e))
+            apm.capture_exception()
             return None
 
     @staticmethod
@@ -593,6 +588,7 @@ class User(Document):
             return 'Signature expired. Please login again.'
         except jwt.InvalidTokenError:
             logger.info('Invalid token error.')
+            apm.capture_exception()
             return 'Invalid token. Please log in again.'
 
     @staticmethod

@@ -10,10 +10,9 @@
 
 __author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['']
-__license__ = 'TBA'
+__license__ = 'MIT'
 __version__ = '1.0.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+
 __status__ = 'development'
 __date__ = '2019.08.11'
 """save_simulation.py: 

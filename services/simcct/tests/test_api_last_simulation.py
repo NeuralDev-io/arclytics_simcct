@@ -149,10 +149,7 @@ class TestLastSimulation(BaseTestCase):
             # )
             # self.assertEqual(data['status'], 'fail')
             # self.assert400(res)
-            self.assertEqual(
-                data['message'],
-                'Saved Last Simulation Data.'
-            )
+            self.assertEqual(data['message'], 'Saved Last Simulation Data.')
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 201)
 
@@ -162,8 +159,7 @@ class TestLastSimulation(BaseTestCase):
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
-                data=json.dumps({'configurations': CONFIGS
-                }),
+                data=json.dumps({'configurations': CONFIGS}),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -172,10 +168,7 @@ class TestLastSimulation(BaseTestCase):
             # )
             # self.assertEqual(data['status'], 'fail')
             # self.assert400(res)
-            self.assertEqual(
-                data['message'],
-                'Saved Last Simulation Data.'
-            )
+            self.assertEqual(data['message'], 'Saved Last Simulation Data.')
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 201)
 
@@ -464,10 +457,7 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'],
-                'Saved Last Simulation Data.'
-            )
+            self.assertEqual(data['message'], 'Saved Last Simulation Data.')
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 201)
             user = self.tony
@@ -528,7 +518,7 @@ class TestLastSimulation(BaseTestCase):
             user.last_configuration = Configuration(**CONFIGS)
             user.save()
 
-            cookie = test_login(client, user.email, 'Subatomic!')
+            test_login(client, user.email, 'Subatomic!')
 
             res = client.get(
                 '/api/v1/sim/user/last/simulation',
@@ -549,7 +539,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_get_detail_last_success(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            test_login(client, self.tony.email, self._tony_pw)
 
             post_res = client.post(
                 '/api/v1/sim/user/last/simulation',
@@ -563,10 +553,7 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(post_res.data.decode())
-            self.assertEqual(
-                data['message'],
-                'Saved Last Simulation Data.'
-            )
+            self.assertEqual(data['message'], 'Saved Last Simulation Data.')
 
             res = client.get(
                 '/api/v1/sim/user/last/simulation',

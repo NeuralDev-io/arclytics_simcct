@@ -1,0 +1,27 @@
+.container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+
+  h2, span {
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+}
+
+.refreshButton {
+  margin-bottom: 1.5rem;
+}
+
+.warningImage {
+  height: 30vh;
+  width: initial;
+  margin-bottom: 2rem;
+}
+

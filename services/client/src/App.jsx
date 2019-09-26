@@ -10,6 +10,8 @@ import FeedbackModal, { RatingModal } from './components/moleisms/feedback'
 import ErrorBoundary from './components/pages/error-boundary/ErrorBoundary'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
+import NoMatchPage from './components/pages/no-match/NoMatchPage'
+import TestRoute from './components/pages/test-route/TestRoute'// TODO: Delete this
 import SimulationPage from './components/pages/simulation'
 import AdminPage from './components/pages/admin'
 import ProfileQuestionsPage from './components/pages/profile-questions'
@@ -30,6 +32,8 @@ const useStyles = makeStyles({
 
 function App() {
   const classes = useStyles()
+
+
   return (
     <ErrorBoundary>
       <SnackbarProvider
@@ -91,6 +95,12 @@ function App() {
                 path="/password/reset=:token"
                 render={props => <PasswordResetPage {...props} />}
               />
+              {/*TODO: DELETE THIS ROUTE*/}
+              <Route
+                path="/test"
+                render={props => (<TestRoute {...props} />)}
+              />
+
               <DemoRoute
                 path="/share/simulation/:token"
                 component={SharePage}
@@ -99,6 +109,7 @@ function App() {
                 path="/demo"
                 component={SimulationPage}
               />
+              <Route component={NoMatchPage} />
             </Switch>
           </div>
         </Provider>

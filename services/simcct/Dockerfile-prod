@@ -38,11 +38,14 @@ RUN pip install --quiet --no-cache-dir -r requirements.txt
 COPY . /usr/src/app
 RUN rm -rf /usr/src/app/entrypoint.sh
 
-# install our flask-fluentd-logger
-WORKDIR /usr/src/app/fluentd_logging
+# install our arc_logging library
+WORKDIR /usr/src/app/arc_logging
 RUN python setup.py install
 
 # go back to app source directory
 WORKDIR /usr/src/app
+
+# Create a file for healthy liveness probe
+RUN touch /usr/src/app/healthy
 
 CMD ["gunicorn", "manage:app", "--keep-alive 15", "--config=configs/gunicorn_conf.py"]

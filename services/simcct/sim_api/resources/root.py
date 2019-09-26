@@ -3,21 +3,19 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # root.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 
 __author__ = [
-    'Andrew Che <@codeninja55>',
-    'David Matthews <@tree1004>',
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
 __license__ = 'MIT'
 __version__ = '1.0.0'
 __status__ = 'production'
 __date__ = '2019.09.16'
-
 """root.py: 
 
 Just a basic module to define some testing endpoints. 
@@ -27,9 +25,9 @@ import os
 
 from flask import Blueprint, Response, jsonify
 
-from fluentd_logging import FluentdLogging
+from arc_logging import AppLogger
 
-logger = FluentdLogging(__name__)
+logger = AppLogger(__name__)
 
 root_blueprint = Blueprint('root', __name__)
 

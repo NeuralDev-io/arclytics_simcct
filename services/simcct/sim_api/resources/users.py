@@ -7,8 +7,7 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = [
-    'Andrew Che <@codeninja55>',
-    'David Matthews <@tree1004>',
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
 __license__ = 'MIT'
@@ -28,13 +27,12 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
+from arc_logging import AppLogger
 from sim_api.extensions import api
 from sim_api.middleware import (
     authenticate_user_cookie_restful, authorize_admin_cookie_restful
 )
 from sim_api.models import (User, UserProfile)
-
-from logger import AppLogger
 
 logger = AppLogger(__name__)
 users_blueprint = Blueprint('users', __name__)

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redis-pv-INST
+  namespace: arclytics
+spec:
+  capacity:
+    storage: 30Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: fast
+  gcePersistentDisk:
+    pdName: redis-ssd-disk-INST  # Make sure you use the SSD name created in `gcloud`

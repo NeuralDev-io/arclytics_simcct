@@ -1414,10 +1414,10 @@ while [[ "$1" != "" ]] ; do
             while [[ "$3" != "" ]]; do
               case $3 in
                 create )
-                  kubectl create -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
+                  kubectl create -f "${WORKDIR}/kubernetes/efk-kibana-gke-svc.yaml"
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/efk-kibana-gke-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-kibana-gke-svc.yaml"
                   ;;
                 port-forward )
                   KIBANA_POD_NAME=$(kubectl get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
@@ -1431,10 +1431,10 @@ while [[ "$1" != "" ]] ; do
             while [[ "$3" != "" ]]; do
               case $3 in
                 create )
-                  kubectl apply -f "${WORKDIR}/kubernetes/efk-apm-gke-service.yaml"
+                  kubectl apply -f "${WORKDIR}/kubernetes/efk-apm-gke-svc.yaml"
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/efk-apm-gke-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/efk-apm-gke-svc.yaml"
                   ;;
               esac
               shift
@@ -1493,10 +1493,10 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 create )
                   # eval $(minikube docker-env)
-                  kubectl create -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-service.yaml"
+                  kubectl create -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
-                  kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-service.yaml"
+                  kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
                   ;;
               esac
               shift

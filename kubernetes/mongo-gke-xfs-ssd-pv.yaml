@@ -9,8 +9,8 @@ spec:
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: standard
+  storageClassName: fast
   gcePersistentDisk:
     fsType: xfs
-    pdName: pd-ssd-disk-INST
+    pdName: mongo-ssd-disk-INST
 

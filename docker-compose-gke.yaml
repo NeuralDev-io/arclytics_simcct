@@ -3,6 +3,24 @@ version: '3.7'
 
 services:
 
+  website:
+    build:
+      context: ./arclytics.io/client/
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+      labels:
+        arclytics.io: "production"
+        service: "website"
+    image: asia.gcr.io/arc-sim/arc_sim_website:latest
+    ports:
+      - 8080:8080
+    expose:
+      - 8080
+    networks:
+      - arc_deploy
+
+
   fluentd:
     build:
       context: ./services/fluentd
@@ -20,7 +38,7 @@ services:
       - 24224
       - 9880
     networks:
-      - host
+      - arc_deploy
 
   client:
     build:
@@ -45,7 +63,7 @@ services:
       - simcct
       - mongodb
     networks:
-      - host
+      - arc_deploy
 
   simcct:
     build:
@@ -85,7 +103,7 @@ services:
       - mongodb
       - redis
     networks:
-      - host
+      - arc_deploy
 
   celery-worker:
     build:
@@ -114,16 +132,16 @@ services:
     depends_on:
       - redis
     networks:
-      - host
+      - arc_deploy
 
   redis:
     build:
       context: ./services/redis
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-prod
       labels:
         arclytics.io: "production"
         service: "redis"
-    image: asia.gcr.io/arc-sim/arc_sim_redis:1.1.0
+    image: asia.gcr.io/arc-sim/arc_sim_redis:latest
     restart: always
     command: redis-server --requirepass ${REDIS_PASSWORD}
     ports:
@@ -131,7 +149,7 @@ services:
     expose:
       - 6379
     networks:
-      - host
+      - arc_deploy
 
   mongodb:
     build:
@@ -140,7 +158,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "mongodb"
-    image: asia.gcr.io/arc-sim/arc_sim_mongo:1.1.1
+    image: asia.gcr.io/arc-sim/arc_sim_mongo:latest
     restart: always
     ports:
       - 27017:27017
@@ -157,10 +175,10 @@ services:
       - MONGO_DATA_DIR=/usr/data/db
       - MONGO_LOG_DIR=/dev/null
     networks:
-      - host
+      - arc_deploy
 
 networks:
-  host:
+  arc_deploy:
     driver: bridge
     labels:
       arclytics.io: "production"

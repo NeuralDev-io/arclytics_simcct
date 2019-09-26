@@ -6,7 +6,6 @@ metadata:
   labels:
     app: celery-worker
     component: celery-worker
-    replicaset: CeleryRepSet
 spec:
   replicas: 2
   template:

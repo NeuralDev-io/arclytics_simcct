@@ -8,8 +8,7 @@
 # [2] https://github.com/mrichman/flask-redis
 # -----------------------------------------------------------------------------
 __author__ = [
-    'Andrew Che <@codeninja55>',
-    'David Matthews <@tree1004>',
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
 __license__ = 'MIT'
@@ -33,7 +32,7 @@ from flask import session
 from sim_api.extensions import JSONEncoder
 from sim_api.models import User
 
-from logger import AppLogger
+from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 

@@ -4,7 +4,7 @@ metadata:
   name: redis-service
   namespace: arclytics
   labels:
-    app: redis
+    app: redis-cluster
     service: redis-persistence
 spec:
   ports:
@@ -12,22 +12,22 @@ spec:
     targetPort: 6379
   clusterIP: None
   selector:
-    app: redis
+    app: redis-cluster
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: redis
+  name: redis-cluster
   namespace: arclytics
   labels:
-    app: redis
+    app: redis-cluster
     service: redis-persistence
 spec:
   serviceName: redis-service
   selector:
     matchLabels:
-      app: redis
-  replicas: 1
+      app: redis-cluster
+  replicas: 2
   template:
     metadata:
       labels:
@@ -38,8 +38,8 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: redis-container
-          image: asia.gcr.io/arc-sim/arc_sim_redis:1.1.0
-          imagePullPolicy: IfNotPresent
+          image: asia.gcr.io/arc-sim/arc_sim_redis:latest
+          imagePullPolicy: Always
           resources:
             requests:
               cpu: 250m
@@ -47,17 +47,31 @@ spec:
             limits:
               cpu: 500m
               memory: 4Gi
-          args:
-            - "--requirepass"
-            - "$(REDIS_PASSWORD)"
-            - "--appendonly"
-            - "yes"
-            - "--save"
-            - "900"
-            - "1"
+          command: ["/usr/local/bin/redis-server"]
+          args: ["/redis-conf/redis.conf"]
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "redis-cli -h $(hostname) ping"
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "redis-cli -h $(hostname) ping"
+            initialDelaySeconds: 30
+            periodSeconds: 15
           ports:
             - containerPort: 6379
               protocol: TCP
+              name: client
+            - containerPort: 16379
+              protocol: TCP
+              name: inter-node
           env:
             - name: REDIS_PASSWORD
               valueFrom:
@@ -72,11 +86,11 @@ spec:
         name: redis-pvc
         namespace: arclytics
         labels:
-          app: redis
+          app: redis-cluster
         annotations:
           volume.beta.kubernetes.io/storage-class: fast
       spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 50Gi
+            storage: 30Gi

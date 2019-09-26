@@ -6,18 +6,9 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '1.0.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __status__ = 'development'
 __date__ = '2019.07.14'
-"""test_api_global_alloys.py: 
-
-Test all the endpoints on the Alloy resources endpoint.
-"""
 
 import unittest
 from pathlib import Path
@@ -32,7 +23,7 @@ from sim_api.models import User, Configuration, AlloyStore, AdminProfile
 from sim_api.schemas import AlloySchema, ConfigurationsSchema, AlloyStoreSchema
 from tests.test_api_base import BaseTestCase, app
 from tests.test_utilities import test_login
-from logger import AppLogger
+from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 

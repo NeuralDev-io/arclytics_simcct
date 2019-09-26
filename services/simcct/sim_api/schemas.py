@@ -6,13 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.4.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.07.09'
 """schemas.py: 
 
@@ -25,11 +22,8 @@ from bson import ObjectId
 from marshmallow import Schema, ValidationError, fields, validates
 from marshmallow.validate import OneOf
 
-from logger import AppLogger
 from simulation.periodic import PeriodicTable
 from simulation.utilities import MissingElementError
-
-logger = AppLogger(__name__)
 
 Schema.TYPE_MAPPING[ObjectId] = fields.String
 
@@ -83,7 +77,7 @@ class ElementSchema(Schema):
         """The validate method for the symbol field."""
         try:
             PeriodicTable[value].name
-        except KeyError as e:
+        except KeyError:
             msg = (
                 'ValidationError (Element) (Field does not match a valid '
                 'element symbol in the Periodic Table: ["symbol"])'
@@ -168,7 +162,6 @@ class ConfigurationsSchema(Schema):
             'required': 'A method is required.'
         }
     )
-    # TODO(andrew@neuraldev.io -- Sprint 6): do error messages on all these
     grain_size = fields.Float(required=True)
     nucleation_start = fields.Float(required=True)
     nucleation_finish = fields.Float(required=True)

@@ -7,14 +7,10 @@
 # [1] https://gist.github.com/wushaobo/52be20bc801243dddf52a8be4c13179a
 # [2] https://github.com/mrichman/flask-redis
 # -----------------------------------------------------------------------------
-
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.2.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.08.07'
 """redis_session.py: 
 
@@ -26,6 +22,7 @@ it is not tampered with at each request.
 import json
 import time
 from datetime import datetime, timedelta, timezone
+from os import environ as env
 from typing import Tuple, Union
 from uuid import uuid4
 
@@ -35,7 +32,8 @@ from itsdangerous import BadSignature, SignatureExpired
 from redis import ReadOnlyError
 from werkzeug.datastructures import CallbackDict
 
-from logger import AppLogger
+from arc_logging import AppLogger
+from sim_api.extensions import apm
 from sim_api.extensions.utilities import JSONEncoder
 
 logger = AppLogger(__name__)
@@ -94,7 +92,7 @@ class RedisSessionInterface(SessionInterface):
             try:
                 sid_as_bytes = signer.unsign(session_key)
                 session_key = sid_as_bytes.decode()
-            except BadSignature as e:
+            except BadSignature:
                 return self._new_session()
 
         # If we have both the session key and the JWT in the cookies, then
@@ -125,9 +123,6 @@ class RedisSessionInterface(SessionInterface):
         #         f'Request IP: {ip_address}'
         #     )
         #     return self._new_session()
-
-        # TODO(andrew@neuraldev.io): Add a check for User-Agent
-
         return RedisSession(data, sid=sid)
 
     def save_session(self, app, session, response):
@@ -171,18 +166,23 @@ class RedisSessionInterface(SessionInterface):
                 itsdangerous.want_bytes(session_key)
             )
 
-        # FIXME(andrew@neuraldev.io): In development, don't do this.
-        # response.set_cookie(
-        #     SESSION_COOKIE_NAME, session_key, expires=expiry_date,
-        #     httponly=True, domain=self.get_cookie_domain(app), secure=True,
-        # )
-        response.set_cookie(
-            SESSION_COOKIE_NAME,
-            session_key,
-            expires=expiry_date,
-            httponly=True,
-            domain=self.get_cookie_domain(app)
-        )
+        if env.get('FLASK_ENV', 'production') == 'development':
+            response.set_cookie(
+                SESSION_COOKIE_NAME,
+                session_key,
+                expires=expiry_date,
+                httponly=True,
+                domain=self.get_cookie_domain(app)
+            )
+        else:
+            response.set_cookie(
+                SESSION_COOKIE_NAME,
+                session_key,
+                expires=expiry_date,
+                httponly=True,
+                secure=True,
+                domain=self.get_cookie_domain(app)
+            )
 
     @staticmethod
     def _new_session():
@@ -222,6 +222,8 @@ class RedisSessionInterface(SessionInterface):
                 write_method(*args, **kwargs)
                 break
             except ReadOnlyError:
+                logger.exception('Redis Read error.')
+                apm.capture_exception()
                 self.redis.connection_pool.reset()
                 time.sleep(1)
 
@@ -252,6 +254,7 @@ class RedisSessionInterface(SessionInterface):
         try:
             return abs(int(expiry_timestamp) - timestamp_from_ttl) > 10
         except (ValueError, TypeError):
+            apm.capture_exception()
             return True
 
     def _extract_sid_and_expiry_ts_from(
@@ -272,9 +275,13 @@ class RedisSessionInterface(SessionInterface):
 
         try:
             res = s.loads(session_key, salt=self.salt)
-        except BadSignature as e:
+        except BadSignature:
+            logger.exception('Bad Signature.')
+            apm.capture_exception()
             return 'BadSignature', None
-        except SignatureExpired as e:
+        except SignatureExpired:
+            logger.exception('Signature Expired')
+            apm.capture_exception()
             return 'SignatureExpired', None
         return res.get('sid'), res.get('expiry_seconds')
 

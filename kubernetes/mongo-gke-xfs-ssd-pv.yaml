@@ -2,14 +2,15 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: mongo-pv-INST
+  namespace: arclytics
 spec:
   capacity:
     storage: 30Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: standard
+  storageClassName: fast
   gcePersistentDisk:
     fsType: xfs
-    pdName: pd-ssd-disk-INST
+    pdName: mongo-ssd-disk-INST
 

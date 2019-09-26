@@ -25,6 +25,7 @@ import {
   UPDATE_USER_ALLOY,
   DELETE_USER_ALLOY,
 } from './types'
+import { addFlashToast } from '../toast/actions'
 
 // Change the ports for which server
 
@@ -49,9 +50,23 @@ const getAlloys = type => (dispatch) => {
       'Content-Type': 'application/json',
     },
   })
-    .then(res => res.json())
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status === 404) { return { status: 'success', data: [] } }
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Counld\'t retrieve alloy list',
+        }
+      }
+      return res.json()
+    })
+    .then((res) => {
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         dispatch({
           type: type === 'global' ? GET_GLOBAL_ALLOYS : GET_USER_ALLOYS,
@@ -59,10 +74,13 @@ const getAlloys = type => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
-const createAlloy = (type, alloy) => (dispatch) => {
+const createAlloy = (type, alloy) => dispatch => (
   /**
    * API call to `users` or `simcct` server to create a new alloy which is stored
    * in the Global database or User's Document. The Users are identified by the
@@ -85,9 +103,22 @@ const createAlloy = (type, alloy) => (dispatch) => {
     },
     body: JSON.stringify(alloy),
   })
-    .then(res => res.json())
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status !== 201) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong',
+        }
+      }
+      return res.json()
+    })
+    .then((res) => {
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         dispatch({
           type: type === 'global' ? CREATE_GLOBAL_ALLOY : CREATE_USER_ALLOY,
@@ -98,8 +129,11 @@ const createAlloy = (type, alloy) => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
-}
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
+)
 
 const updateAlloy = (type, alloy) => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys/${alloy._id}`, { // eslint-disable-line
@@ -113,9 +147,22 @@ const updateAlloy = (type, alloy) => (dispatch) => {
       compositions: alloy.compositions,
     }),
   })
-    .then(res => res.json())
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong',
+        }
+      }
+      return res.json()
+    })
+    .then((res) => {
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         dispatch({
           type: type === 'global' ? UPDATE_GLOBAL_ALLOY : UPDATE_USER_ALLOY,
@@ -123,7 +170,10 @@ const updateAlloy = (type, alloy) => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 const deleteAlloy = (type, alloyId) => (dispatch) => {
@@ -148,9 +198,22 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
       'Content-Type': 'application/json',
     },
   })
-    .then(res => res.json())
     .then((res) => {
-      if (res.status === 'fail') throw new Error(res.message)
+      if (res.status !== 202) {
+        return {
+          status: 'fail',
+          message: 'Something went wrong',
+        }
+      }
+      return res.json()
+    })
+    .then((res) => {
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
       if (res.status === 'success') {
         dispatch({
           type: type === 'global' ? DELETE_GLOBAL_ALLOY : DELETE_USER_ALLOY,
@@ -158,7 +221,10 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
         })
       }
     })
-    .catch(err => console.log(err))
+    .catch((err) => {
+      // log to fluentd
+      console.log(err)
+    })
 }
 
 export const getGlobalAlloys = () => getAlloys('global')

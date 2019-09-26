@@ -7,18 +7,18 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-
-__credits__ = ['']
-__license__ = 'TBA'
+__author__ = [
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
+__license__ = 'MIT'
 __version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__status__ = 'production'
 __date__ = '2019.06.04'
 """manage.py: 
 
-This script is to our CLI script tool to manage the application.
+This script is to our CLI script tool to manage the application and the 
+entrypoint to create a Flask application.
 """
 
 import json
@@ -34,22 +34,14 @@ from mongoengine.connection import connect, disconnect_all, get_db
 from prettytable import PrettyTable
 from pymongo import MongoClient
 
-from sim_api.app import create_app
+from sim_api import create_app
 from sim_api.models import AdminProfile, User, UserProfile
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(BASE_DIR)
 
-APP_CONFIGS = None
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'
 DATE_FMT = '%Y-%m-%d'
-
-DEFAULT_CONFIGS = Path(BASE_DIR) / 'configs' / 'app.json'
-if os.path.isfile(DEFAULT_CONFIGS):
-    with open(DEFAULT_CONFIGS) as config_file:
-        APP_CONFIGS = json.load(config_file)
-else:
-    raise FileNotFoundError('Cannot find app.json')
 
 COV = coverage.coverage(
     branch=True,
@@ -60,21 +52,26 @@ COV = coverage.coverage(
         'sim_api/resources/users.py', 'sim_api/resources/auth.py',
         'sim_api/middleware.py', 'sim_api/mongodb.py', 'sim_api/token.py',
         'sim_api/resources/share.py', 'sim_api/resources/admin_auth.py',
-        'sim_api/resources/ratings.py'
+        'sim_api/resources/ratings.py', 'sim_api/resources/last_simulation.py',
+        'sim_api/resources/save_simulation.py',
+        'sim_api/resources/simulation.py', 'sim_api/resources/sim_alloys.py',
+        'sim_api/resources/sim_configurations.py',
+        'sim_api/resources/global_alloys.py'
     ],
     omit=[
-        'arc_api/app.py'
-        'configs/flask_conf.py',
-        'tests/*',
-        'configs/*',
-        'data/*',
-        'logger/*',
-        'logs/*',
+        'arc_api/__init__.py'
+        'configs/flask_conf.py', 'configs/gunicorn_conf.py', 'tests/*',
+        'configs/*', 'data/*', 'logger/*', 'logs/*',
+        'sim_api/extensions/Session/*', 'sim_api/extensions/SimSession/*',
+        'flask-fluentd-logger/*'
     ]
 )
 COV.start()
 
+# Create an instance of the global Flask app for the SimCCT Server.
 app = create_app()
+# Add the Flask Instance to the Flask CLI tool to use as a factory to create
+# more Flask instances when you run a CLI command.
 cli = FlaskGroup(create_app=create_app)
 
 
@@ -90,35 +87,22 @@ def flush():
 
 @cli.command('flush_all')
 def flush():
+    """Flush all databases and data stores."""
     if os.environ.get('FLASK_ENV', 'development') == 'production':
-        client = MongoClient(
-            host=str(os.environ.get('MONGO_HOST')),
-            port=int(os.environ.get('MONGO_PORT')),
-            username=str(os.environ.get('MONGO_APP_USER')),
-            password=str(os.environ.get('MONGO_APP_USER_PASSWORD')),
-            authSource='admin',
-        )
-        redis_client = redis.Redis(
-            host=os.environ.get('REDIS_HOST'),
-            port=os.environ.get('REDIS_PORT'),
-            password=os.environ.get('REDIS_PASSWORD')
-        )
-        db = os.environ.get('MONGO_APP_DB')
-        print('Dropping <{}> database:'.format(db), file=sys.stderr)
-        client.drop_database(db)
-    else:
-        client = MongoClient(
-            host=os.environ.get('MONGO_HOST'),
-            port=int(os.environ.get('MONGO_PORT'))
-        )
-        redis_client = redis.Redis(
-            host=os.environ.get('REDIS_HOST'),
-            port=os.environ.get('REDIS_PORT')
-        )
-        print('Dropping <{}> database:'.format('arc_dev'), file=sys.stderr)
-        client.drop_database('arc_dev')
-        print('Dropping <{}> database:'.format('arc_test'), file=sys.stderr)
-        client.drop_database('arc_test')
+        print('You should not flush the database in production.')
+        return
+
+    client = MongoClient(
+        host=os.environ.get('MONGO_HOST'),
+        port=int(os.environ.get('MONGO_PORT'))
+    )
+    redis_client = redis.Redis(
+        host=os.environ.get('REDIS_HOST'), port=os.environ.get('REDIS_PORT')
+    )
+    print('Dropping <{}> database:'.format('arc_dev'), file=sys.stderr)
+    client.drop_database('arc_dev')
+    print('Dropping <{}> database:'.format('arc_test'), file=sys.stderr)
+    client.drop_database('arc_test')
 
     dbs_created = redis_client.config_get('databases')
     print('Flushing Redis: {}'.format(dbs_created), file=sys.stderr)
@@ -127,6 +111,10 @@ def flush():
 
 @cli.command('test_conn')
 def test_data_conn():
+    """
+    A simple CLI command to test the Mongo and Redis connections when in a
+    production environment.
+    """
     if os.environ.get('FLASK_ENV', 'development') == 'production':
         disconnect_all()
 
@@ -228,6 +216,7 @@ def seed_user_db():
 
 @cli.command('seed_alloys_db')
 def seed_alloy_db():
+    """Seed the global alloys database."""
     if os.environ.get('FLASK_ENV', 'development') == 'production':
         client = MongoClient(
             host=str(os.environ.get('MONGO_HOST')),
@@ -247,15 +236,16 @@ def seed_alloy_db():
         with open(path) as f:
             json_data = json.load(f)
 
-    from sim_api.schemas import AlloySchema
-    data = AlloySchema(many=True).load(json_data['alloys'])
+    with app.app_context():
+        from sim_api.schemas import AlloySchema
+        data = AlloySchema(many=True).load(json_data['alloys'])
 
-    print(
-        'Seeding global alloys to <{}> database:'.format(db.name),
-        file=sys.stderr
-    )
-    # Check the correct database -- arc_dev
-    db.alloys.insert_many(data)
+        print(
+            'Seeding global alloys to <{}> database:'.format(db.name),
+            file=sys.stderr
+        )
+        # Check the correct database -- arc_dev
+        db.alloys.insert_many(data)
 
     tbl = PrettyTable(['Symbol', 'Weight'])
 

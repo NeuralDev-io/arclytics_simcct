@@ -1,26 +1,21 @@
-import {
-  GET_PERSIST_USER_STATUS,
-} from './types'
+import { PERSIST_SIM } from './types'
 
 const initialState = {
-  userStatus: {
-    admin: false,
-    isProfile: false,
-    verified: false,
-  },
+  lastSim: {},
+  lastSimTime: '',
 }
 
 const reducer = (state = initialState, action) => {
-  if (action.type === GET_PERSIST_USER_STATUS) {
-    return {
-      ...state,
-      userStatus: {
-        ...state.user,
-        ...action.payload,
-      },
-    }
+  switch (action.type) {
+    case PERSIST_SIM:
+      return {
+        ...state,
+        lastSim: action.payload,
+        lastSimTime: action.time,
+      }
+    default:
+      return state
   }
-  return state
 }
 
 export default reducer

@@ -9,6 +9,8 @@ import {
   UPDATE_DISPLAY_USER_CURVE,
   UPDATE_CCT_INDEX,
   LOAD_SIM,
+  LOAD_PERSISTED_SIM,
+  LOAD_LAST_SIM,
 } from './types'
 
 const initialState = {
@@ -32,6 +34,7 @@ const initialState = {
     cctIndex: -1,
   },
   configurations: {
+    error: {},
     method: 'Li98',
     grain_size_ASTM: 8.0,
     grain_size_diameter: 0.202,
@@ -49,6 +52,7 @@ const initialState = {
     cct_cooling_rate: 10,
   },
   alloys: {
+    parentError: {},
     isLoading: false,
     alloyOption: 'single',
     parent: {
@@ -119,6 +123,7 @@ const reducer = (state = initialState, action) => {
         ...state,
         alloys: {
           ...state.alloys,
+          parentError: action.parentError,
           [action.alloyType]: action.alloy,
         },
         configurations: {
@@ -162,6 +167,7 @@ const reducer = (state = initialState, action) => {
         results: {
           ...state.results,
           ...action.payload,
+          cctIndex: 0,
         },
       }
     case UPDATE_CCT_INDEX:
@@ -178,8 +184,12 @@ const reducer = (state = initialState, action) => {
         isInitialised: true,
         isSimulated: true,
         displayUserCurve: true,
-        configurations,
+        configurations: {
+          error: {},
+          ...configurations,
+        },
         alloys: {
+          parentError: {},
           isLoading: false,
           dilution: 0,
           ...alloys,
@@ -191,8 +201,41 @@ const reducer = (state = initialState, action) => {
           mix: [],
         },
         results: {
-          cctIndex: -1,
+          cctIndex: 0,
           ...results,
+        },
+      }
+    }
+    case LOAD_PERSISTED_SIM:
+      return action.payload
+    case LOAD_LAST_SIM: {
+      const {
+        last_alloy_store,
+        last_configurations,
+        last_simulation_invalid_fields,
+        last_simulation_results,
+      } = action.payload
+      return {
+        ...initialState,
+        isInitialised: Object.keys(last_alloy_store.alloys.parent).length !== 0,
+        isSimulated:
+          last_simulation_results && last_simulation_results.TTT
+          && Object.keys(last_simulation_results.TTT).length !== 0,
+        displayUserCurve: true,
+        configurations: {
+          ...initialState.configurations,
+          error: last_simulation_invalid_fields.invalid_configs,
+          ...last_configurations,
+        },
+        alloys: {
+          ...initialState.alloys,
+          parentError: last_simulation_invalid_fields.invalid_alloy_store,
+          parent: last_alloy_store.alloys.parent,
+          alloyOption: last_alloy_store.alloy_option,
+        },
+        results: {
+          ...initialState.results,
+          ...last_simulation_results,
         },
       }
     }

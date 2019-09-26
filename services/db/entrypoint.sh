@@ -23,7 +23,7 @@ mongoimport "${MONGO_APP_DB}" \
     --db "${MONGO_APP_DB}" \
     --collection alloys \
     --drop \
-    --file /data/test/global_alloys.json \
+    --file /data/backups/production_global_alloys.json \
 
 mongoimport "${MONGO_APP_DB}" \
     --host localhost \
@@ -33,4 +33,4 @@ mongoimport "${MONGO_APP_DB}" \
     --db "${MONGO_APP_DB}" \
     --collection users \
     --drop \
-    --file /data/test/users.json \
+    --file /data/backups/production_user_data.json \

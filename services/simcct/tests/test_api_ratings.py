@@ -6,29 +6,18 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['David Matthews <@tree1004>']
-
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.2.0'
-__maintainer__ = 'David Matthews'
-__email__ = 'davidmatthews1004@gmail.com'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __status__ = 'development'
 __date__ = '2019.08.27'
-"""test_api_ratings.py: 
 
-This script will run all tests on the Ratings and feedback endpoints.
-"""
-
-import os
 import json
+import os
 import unittest
 from pathlib import Path
 
+from arc_logging import AppLogger
+from sim_api.models import AdminProfile, Feedback, User
 from tests.test_api_base import BaseTestCase
-from logger import AppLogger
-from sim_api.models import User, Feedback, AdminProfile
-from tests.test_api_users import log_test_user_in
 from tests.test_utilities import test_login
 
 logger = AppLogger(__name__)
@@ -49,7 +38,6 @@ def load_test_feedback(self, user: User):
 
 class TestRatingsService(BaseTestCase):
     """Tests for Ratings and feedback endpoints"""
-
     def test_post_rating_no_data(self):
         mace = User(
             **{

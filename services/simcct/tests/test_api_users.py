@@ -7,28 +7,18 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
-
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.2.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.03'
-"""test_api_users.py: 
-
-This script will run all tests on the Users endpoints.
-"""
 
 import json
 import unittest
 
 from mongoengine import get_db
 
+from arc_logging import AppLogger
+from sim_api.models import (AdminProfile, User, UserProfile)
 from tests.test_api_base import BaseTestCase, app
-from sim_api.models import (User, UserProfile, AdminProfile)
 from tests.test_utilities import test_login
-from logger import AppLogger
 
 logger = AppLogger(__name__)
 
@@ -111,7 +101,7 @@ class TestUserService(BaseTestCase):
 
     def test_ping(self):
         """Ensure the /ping route behaves correctly."""
-        res = self.client.get('/api/v1/sim/ping')
+        res = self.client.get('/ping')
         data = json.loads(res.data.decode())
         self.assertEqual(res.status_code, 200)
         self.assertIn('success', data['status'])

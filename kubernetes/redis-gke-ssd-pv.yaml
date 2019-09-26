@@ -1,7 +1,8 @@
-apiVersion: "v1"
-kind: "PersistentVolume"
+apiVersion: v1
+kind: PersistentVolume
 metadata:
   name: redis-pv
+  namespace: arclytics
 spec:
   capacity:
     storage: 30Gi

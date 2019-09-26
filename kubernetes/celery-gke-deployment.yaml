@@ -2,51 +2,82 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: celery-worker
+  namespace: arclytics
+  labels:
+    app: celery-worker
+    component: celery-worker
 spec:
   replicas: 2
   template:
     metadata:
       labels:
          app: celery
+         component: celery-worker
     spec:
-      containers:
-      - name: celery-worker
-        image: gcr.io/arclytics-sim/arc_sim_celery:1.0
-        imagePullPolicy: Always
-        ports:
-          - containerPort: 5555
-        env:
-        - name: FLASK_ENV
-          value: "production"
-        - name: APP_SETTINGS
-          value: "flask_conf.ProductionConfig"
-        - name: REDIS_HOST
-          value: "redis-service.default.svc.cluster.local"
-        - name: REDIS_PORT
-          value: "6379"
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: credentials
-              key: redis_password
-        - name: MAIL_SERVER
-          valueFrom:
-            secretKeyRef:
-              name: credentials
-              key: mail_server
-        - name: MAIL_PORT
-          value: "587"
-        - name: MAIL_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: credentials
-              key: mail_username
-        - name: MAIL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: credentials
-              key: mail_password
       initContainers:
         - name: init-celery-broker
           image: busybox
           command: ['sh', '-c', 'until nslookup redis-service; do echo waiting for redis-service to be available; sleep 2; done;']
+      containers:
+        - name: celery-worker-container
+          image: asia.gcr.io/arc-sim/arc_sim_celery:1.2.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5555
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command:
+                - cat
+                - /usr/src/app/healthy
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 15
+            successThreshold: 2
+            failureThreshold: 5
+          livenessProbe:
+            exec:
+              command:
+                - cat
+                - /usr/src/app/healthy
+            initialDelaySeconds: 5
+            periodSeconds: 60
+          env:
+            - name: FLASK_ENV
+              value: "production"
+            - name: APP_SETTINGS
+              value: "flask_conf.ProductionConfig"
+            - name: REDIS_HOST
+              value: "redis-service.arclytics.svc.cluster.local"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: redis_password
+            - name: MAIL_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: mail_server
+            - name: MAIL_PORT
+              value: "587"
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: mail_username
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: mail_password
+            - name: ELASTIC_APM_SERVER_URL
+              value: http://apm-service.arclytics.svc.cluster.local:8200

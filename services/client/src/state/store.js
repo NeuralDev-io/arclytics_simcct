@@ -1,3 +1,7 @@
+/**
+ * Create Redux store
+ */
+
 import {
   createStore, applyMiddleware, compose, combineReducers,
 } from 'redux'
@@ -8,14 +12,25 @@ import * as reducers from './ducks'
 import myPersistReducer from './ducks/persist/reducers'
 
 const persistConfig = {
-  key: 'userStatus',
+  key: 'root',
   storage,
 }
 
-const rootReducer = combineReducers({
+const appReducer = combineReducers({
   ...reducers,
   persist: persistReducer(persistConfig, myPersistReducer),
 })
+
+const rootReducer = (state, action) => {
+  let localState = state
+  if (action.type === 'USER_LOGOUT') {
+    // for all keys defined in your persistConfig(s)
+    storage.removeItem('persist:root')
+
+    localState = undefined
+  }
+  return appReducer(localState, action)
+}
 
 const initialState = {}
 

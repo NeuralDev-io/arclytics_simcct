@@ -50,7 +50,11 @@ class ProfileQuestionsPage extends Component {
     const {
       question1, question2, question3, question4,
     } = this.state
-    this.props.createUserProfileConnect({
+    const {
+      createUserProfileConnect,
+      history,
+    } = this.props
+    createUserProfileConnect({
       aim: question1.label,
       highest_education: question2.label,
       sci_tech_exp: question3.label,

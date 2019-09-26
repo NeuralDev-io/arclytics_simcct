@@ -9,7 +9,7 @@
 __author__ = ['David Matthews <@tree1004>']
 
 __credits__ = ['']
-__license__ = 'TBA'
+__license__ = 'MIT'
 __version__ = '0.1.0'
 __maintainer__ = 'David Matthews'
 __email__ = 'davidmatthews1004@gmail.com'
@@ -27,7 +27,7 @@ from flask import Blueprint, request
 from flask_restful import Resource
 from mongoengine import ValidationError
 
-from logger import AppLogger
+from arc_logging import AppLogger
 from sim_api.extensions import api
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import Feedback, Rating

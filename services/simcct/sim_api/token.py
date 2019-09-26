@@ -6,13 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.07.22'
 """token.py: 
 
@@ -20,6 +17,7 @@ This module defines some helper methods to generate email tokens to be used in
 features such as registration, sharing, and changing passwords.
 """
 
+import os
 from typing import Union
 
 from flask import current_app as app
@@ -28,6 +26,9 @@ from itsdangerous import URLSafeTimedSerializer
 from itsdangerous.exc import BadSignature, SignatureExpired
 
 from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
+
+# TODO(Greg):
+#  - Please add logging and APM exception catching where you think necessary.
 
 
 def generate_confirmation_token(email: str):
@@ -63,10 +64,16 @@ def confirm_token(token: bytes, expiration: int = 3600) -> Union[bool, str]:
 
 
 def generate_url(endpoint, token):
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        return url_for(endpoint, token=token, _external=True, _scheme='https')
     return url_for(endpoint, token=token, _external=True)
 
 
 def generate_url_with_signature(endpoint, signature):
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        return url_for(
+            endpoint, signature=signature, _external=True, _scheme='https'
+        )
     return url_for(endpoint, signature=signature, _external=True)
 
 

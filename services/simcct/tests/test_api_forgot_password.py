@@ -6,12 +6,7 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __status__ = 'development'
 __date__ = '2019.07.26'
 """test_api_forgot_password.py: 
@@ -203,7 +198,7 @@ class TestForgotPassword(BaseTestCase):
             # self.assertEqual(data['status'], 'fail')
             # self.assert400(res)
             self.assertEquals(res.status_code, 302)
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = (
@@ -232,7 +227,7 @@ class TestForgotPassword(BaseTestCase):
             # redirect_url = f'http://localhost:3000/password/reset={token}'
             # self.assertRedirects(res, redirect_url)
             self.assertEquals(res.status_code, 302)
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = (

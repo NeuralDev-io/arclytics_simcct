@@ -7,17 +7,9 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.17'
-"""test_api_simulation.py: 
 
-{Description}
-"""
 import os
 import unittest
 from pathlib import Path
@@ -25,7 +17,7 @@ from pathlib import Path
 from flask import json
 from mongoengine import get_db
 
-from logger import AppLogger
+from arc_logging import AppLogger
 from sim_api.extensions.SimSession import SimSessionService
 from sim_api.models import AlloyStore, Configuration, User
 from sim_api.schemas import AlloyStoreSchema, ConfigurationsSchema
@@ -261,6 +253,7 @@ class TestSimulationService(BaseTestCase):
             )
             data = json.loads(res.data.decode())
             # logger.debug(data)
+
 
 if __name__ == '__main__':
     unittest.main()

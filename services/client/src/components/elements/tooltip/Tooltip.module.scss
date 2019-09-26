@@ -3,7 +3,8 @@
 .tooltip {
   background-color: rgba(var(--n900-rgb), 0.9);
   color: var(--n0);
-  width: fit-content;
+  width: max-content;
+  max-width: 28rem;
   // box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 5px 10px rgba(0,0,0,.15);
   border-radius: 6px;
   padding: .5rem .75rem;
@@ -26,7 +27,7 @@
 .container {
   width: fit-content;
   position: relative;
-  z-index: 10;
+  //z-index: 10;
 }
 
 .bottom {

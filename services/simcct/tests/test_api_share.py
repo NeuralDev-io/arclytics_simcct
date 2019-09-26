@@ -6,32 +6,22 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
-
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.2.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __status__ = 'development'
 __date__ = '2019.07.03'
-"""test_api_share.py: 
 
-This script will run all tests on the sharing endpoints.
-"""
-
-import os
 import json
+import os
 import unittest
-from pathlib import Path
-from mongoengine import get_db
 from copy import deepcopy
+from pathlib import Path
 
-from tests.test_api_base import BaseTestCase, app
-from logger import AppLogger
-from sim_api.models import User, SharedSimulation
+from mongoengine import get_db
+
+from arc_logging import AppLogger
+from sim_api.models import SharedSimulation, User
 from sim_api.token import (generate_shared_simulation_token, generate_url)
-from tests.test_api_users import log_test_user_in
+from tests.test_api_base import BaseTestCase, app
 from tests.test_utilities import test_login
 
 logger = AppLogger(__name__)
@@ -48,7 +38,6 @@ SIMULATION_RESULTS = _TEST_JSON['simulation_results']
 
 class TestShareService(BaseTestCase):
     """Test for sharing simulations via link and email"""
-
     def setUp(self) -> None:
         assert app.config['TESTING'] is True
         self.mongo = get_db('default')
@@ -661,7 +650,7 @@ class TestShareService(BaseTestCase):
             )
             self.assertEquals(resp_request_simulation.status_code, 302)
             token = resp_request_simulation.headers['Location'].split('/')[-1]
-            protocol = os.environ.get('CLIENT_PROTOCOL')
+            protocol = os.environ.get('CLIENT_SCHEME')
             client_host = os.environ.get('CLIENT_HOST')
             client_port = os.environ.get('CLIENT_PORT')
             redirect_url = (

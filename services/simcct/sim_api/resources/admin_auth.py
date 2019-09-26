@@ -7,12 +7,9 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
-
-__credits__ = ['']
-__license__ = 'TBA'
+__license__ = 'MIT'
 __version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+
 __status__ = 'development'
 __date__ = '2019.08.11'
 """admin_auth.py: 
@@ -28,14 +25,15 @@ from email_validator import EmailNotValidError, validate_email
 from flask import Blueprint, redirect, render_template, request
 from flask_restful import Resource
 
-from logger import AppLogger
+from arc_logging import AppLogger
 from sim_api.extensions import api
 from sim_api.extensions.utilities import URLTokenExpired
 from sim_api.middleware import authorize_admin_cookie_restful
 from sim_api.models import (AdminProfile, User)
-from sim_api.token import (URLTokenError, confirm_token,
-                           generate_confirmation_token,
-                           generate_promotion_confirmation_token, generate_url)
+from sim_api.token import (
+    URLTokenError, confirm_token, generate_confirmation_token,
+    generate_promotion_confirmation_token, generate_url
+)
 
 logger = AppLogger(__name__)
 
@@ -176,7 +174,7 @@ def cancel_promotion(token):
     """
 
     response = {'status': 'fail', 'message': 'Invalid payload.'}
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -269,7 +267,7 @@ def verify_promotion(token):
     """
 
     response = {'status': 'fail', 'message': 'Invalid payload.'}
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f"{protocol}://{client_host}:{client_port}"
@@ -426,7 +424,7 @@ def confirm_disable_account(token):
     via a confirmation link sent to them in an email.
     """
     response = {'status': 'fail', 'message': 'Invalid payload.'}
-    protocol = os.environ.get('CLIENT_PROTOCOL')
+    protocol = os.environ.get('CLIENT_SCHEME')
     client_host = os.environ.get('CLIENT_HOST')
     client_port = os.environ.get('CLIENT_PORT')
     redirect_url = f"{protocol}://{client_host}:{client_port}"

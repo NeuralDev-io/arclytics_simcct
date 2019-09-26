@@ -1038,7 +1038,8 @@ while [[ "$1" != "" ]] ; do
       # There are 3 for Australia.
       REGION="australia-southeast1"
       ZONE="australia-southeast1-a"
-      LOCATION_COMMAND="--region=${REGION}"
+      #LOCATION_COMMAND="--region=${REGION}"
+      LOCATION_COMMAND="--zone=${ZONE}"
       REPLICA_ZONE_REDIS="--replica-zones=${ZONE},australia-southeast1-b"
       REPLICA_ZONE_MONGO="--replica-zones=${ZONE},australia-southeast1-c"
       IMAGE_TYPE="UBUNTU"
@@ -1139,9 +1140,9 @@ while [[ "$1" != "" ]] ; do
                       ${LOCATION_COMMAND} \
                       --image-type=${IMAGE_TYPE} \
                       --machine-type=n1-standard-2 \
-                      --num-nodes=2 \
-                      --min-nodes=1 \
-                      --max-nodes=3 \
+                      --num-nodes=4 \
+                      --min-nodes=4 \
+                      --max-nodes=8 \
                       --enable-autoscaling \
                       --node-labels=component=arc-nodes \
                       --cluster-version=${LATEST}

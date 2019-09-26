@@ -28,6 +28,7 @@ class UserProfileConfig extends Component {
       displayUserCurve,
       toggleDisplayUserCurveConnect,
       isAuthenticated,
+      isInitialised,
     } = this.props
     return (
       <React.Fragment>
@@ -37,7 +38,7 @@ class UserProfileConfig extends Component {
           onChange={val => toggleDisplayUserCurveConnect(val)}
           isChecked={displayUserCurve}
           label="Show user profile"
-          isDisabled={!isAuthenticated}
+          isDisabled={!isAuthenticated || !isInitialised}
         />
         <div className={`input-row ${styles.config}`}>
           <span>Start temperature</span>
@@ -48,7 +49,7 @@ class UserProfileConfig extends Component {
             value={configurations.start_temp}
             length="short"
             suffix="°C"
-            isDisabled={!isAuthenticated}
+            isDisabled={!isAuthenticated || !isInitialised}
             error={configurations.error.start_temp}
           />
         </div>
@@ -62,7 +63,7 @@ class UserProfileConfig extends Component {
             length="short"
             suffix="°C/sec"
             className={styles.textfield}
-            isDisabled={!isAuthenticated}
+            isDisabled={!isAuthenticated || !isInitialised}
             error={configurations.error.cct_cooling_rate}
           />
         </div>
@@ -72,6 +73,7 @@ class UserProfileConfig extends Component {
 }
 
 UserProfileConfig.propTypes = {
+  isInitialised: PropTypes.bool.isRequired,
   configurations: PropTypes.shape({
     start_temp: PropTypes.number.isRequired,
     cct_cooling_rate: PropTypes.number.isRequired,
@@ -85,6 +87,7 @@ UserProfileConfig.propTypes = {
 const mapStateToProps = state => ({
   configurations: state.sim.configurations,
   displayUserCurve: state.sim.displayUserCurve,
+  isInitialised: state.sim.isInitialised,
 })
 
 const mapDispatchToProps = {

@@ -198,6 +198,7 @@ class Users(Resource):
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
             logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 418
 
         # Return response body.

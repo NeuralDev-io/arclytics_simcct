@@ -39,7 +39,7 @@ class RatingModal extends Component {
   }
 
   renderRating = () => {
-    const { feedback: { rate }, updateFeedbackConnect } = this.props
+    const { feedback: { rate }, submitRatingConnect } = this.props
     const iconArray = [
       <Terrible key={1} className={styles.ratingIcon} />,
       <Bad key={2} className={styles.ratingIcon} />,
@@ -53,7 +53,7 @@ class RatingModal extends Component {
       <div
         key={point}
         className={`${styles.individualRate} ${styles[`rate${point}`]} ${rate === point ? styles.active : ''}`}
-        {...buttonize(() => updateFeedbackConnect({ rate: point }))}
+        {...buttonize(() => submitRatingConnect(point))}
       >
         {iconArray[index]}
         <div className={styles.text}>{textArray[index]}</div>

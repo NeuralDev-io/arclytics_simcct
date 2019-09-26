@@ -22,8 +22,8 @@ from bson import ObjectId
 from marshmallow import Schema, ValidationError, fields, validates
 from marshmallow.validate import OneOf
 
-from simulation.periodic import PeriodicTable
-from simulation.utilities import MissingElementError
+from arc_simulation.periodic import PeriodicTable
+from arc_simulation.utilities import MissingElementError
 
 Schema.TYPE_MAPPING[ObjectId] = fields.String
 

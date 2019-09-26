@@ -170,6 +170,7 @@ class ConfigForm extends Component {
       configurations,
       updateConfigMethodConnect,
       isAuthenticated,
+      isInitialised,
     } = this.props
     const methodOptions = [
       { label: 'Li (98)', value: 'Li98' },
@@ -210,7 +211,7 @@ class ConfigForm extends Component {
               }
               length="long"
               onChange={option => updateConfigMethodConnect(option.value)}
-              isDisabled={!isAuthenticated}
+              isDisabled={!isAuthenticated || !isInitialised}
             />
           </div>
           <div className="input-col">
@@ -242,7 +243,7 @@ class ConfigForm extends Component {
                   onChange={val => this.handleUpdateGrainSize('astm', val)}
                   value={configurations.grain_size_ASTM}
                   length="short"
-                  isDisabled={!isAuthenticated}
+                  isDisabled={!isAuthenticated || !isInitialised}
                   error={configurations.error.astm}
                 />
               </div>
@@ -256,7 +257,7 @@ class ConfigForm extends Component {
                   value={configurations.grain_size_diameter}
                   length="short"
                   suffix="μm"
-                  isDisabled={!isAuthenticated}
+                  isDisabled={!isAuthenticated || !isInitialised}
                   error={configurations.error.dia}
                 />
               </div>
@@ -294,7 +295,7 @@ class ConfigForm extends Component {
                     }
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_ae || !isAuthenticated}
+                    isDisabled={configurations.auto_calculate_ae || !isAuthenticated || !isInitialised}
                     error={configurations.error.ae1_temp}
                   />
                 </div>
@@ -314,7 +315,7 @@ class ConfigForm extends Component {
                     }
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_ae || !isAuthenticated}
+                    isDisabled={configurations.auto_calculate_ae || !isAuthenticated || !isInitialised}
                     error={configurations.error.ae3_temp}
                   />
                 </div>
@@ -324,7 +325,7 @@ class ConfigForm extends Component {
                 onChange={val => this.toggleAeAutoCalc(val)}
                 isChecked={configurations.auto_calculate_ae}
                 label="Auto-calculate Ae"
-                isDisabled={!isAuthenticated}
+                isDisabled={!isAuthenticated || !isInitialised}
               />
             </div>
             <div>
@@ -354,7 +355,7 @@ class ConfigForm extends Component {
                     }
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_bs || !isAuthenticated}
+                    isDisabled={configurations.auto_calculate_bs || !isAuthenticated || !isInitialised}
                     error={configurations.error.bs_temp}
                   />
                 </div>
@@ -364,7 +365,7 @@ class ConfigForm extends Component {
                 onChange={val => this.toggleBsAutoCalc(val)}
                 isChecked={configurations.auto_calculate_bs}
                 label="Auto-calculate BS"
-                isDisabled={!isAuthenticated}
+                isDisabled={!isAuthenticated || !isInitialised}
               />
             </div>
             <div>
@@ -397,7 +398,7 @@ class ConfigForm extends Component {
                     }
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_ms || !isAuthenticated}
+                    isDisabled={configurations.auto_calculate_ms || !isAuthenticated || !isInitialised}
                     error={configurations.error.ms_temp}
                   />
                 </div>
@@ -417,7 +418,7 @@ class ConfigForm extends Component {
                         : configurations.ms_rate_param
                     }
                     length="short"
-                    isDisabled={configurations.auto_calculate_ms || !isAuthenticated}
+                    isDisabled={configurations.auto_calculate_ms || !isAuthenticated || !isInitialised}
                     error={configurations.error.ms_rate_param}
                   />
                 </div>
@@ -427,7 +428,7 @@ class ConfigForm extends Component {
                 onChange={val => this.toggleMsAutoCalc(val)}
                 isChecked={configurations.auto_calculate_ms}
                 label="Auto-calculate MS"
-                isDisabled={!isAuthenticated}
+                isDisabled={!isAuthenticated || !isInitialised}
               />
             </div>
           </div>
@@ -460,7 +461,7 @@ class ConfigForm extends Component {
                 value={configurations.nucleation_start}
                 length="short"
                 suffix="%"
-                isDisabled={!isAuthenticated}
+                isDisabled={!isAuthenticated || !isInitialised}
                 error={configurations.error.nucleation_start}
               />
             </div>
@@ -473,7 +474,7 @@ class ConfigForm extends Component {
                 value={configurations.nucleation_finish}
                 length="short"
                 suffix="%"
-                isDisabled={!isAuthenticated}
+                isDisabled={!isAuthenticated || !isInitialised}
                 error={configurations.error.nucleation_finish}
               />
             </div>
@@ -492,6 +493,7 @@ const textFieldType = PropTypes.oneOfType([
 ConfigForm.propTypes = {
   isAuthenticated: PropTypes.bool.isRequired,
   // props from connect()
+  isInitialised: PropTypes.bool.isRequired,
   configurations: PropTypes.shape({
     error: PropTypes.shape({}),
     method: PropTypes.string,
@@ -520,6 +522,7 @@ ConfigForm.propTypes = {
 
 const mapStateToProps = state => ({
   configurations: state.sim.configurations,
+  isInitialised: state.sim.isInitialised,
 })
 
 const mapDispatchToProps = {

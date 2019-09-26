@@ -6,7 +6,7 @@ import { ReactComponent as Good } from '../../../assets/icons/feedback/good.svg'
 import { ReactComponent as Okay } from '../../../assets/icons/feedback/okay.svg'
 import { ReactComponent as Bad } from '../../../assets/icons/feedback/bad.svg'
 import { ReactComponent as Terrible } from '../../../assets/icons/feedback/terrible.svg'
-import Modal from '../../elements/modal'
+import { ToastModal } from '../../elements/modal'
 import { buttonize } from '../../../utils/accessibility'
 import {
   updateFeedback,
@@ -59,7 +59,7 @@ class RatingModal extends Component {
         {...buttonize(() => submitRatingConnect(point))}
       >
         {iconArray[index]}
-        <div className={styles.text}>{textArray[index]}</div>
+        {/* <div className={styles.text}>{textArray[index]}</div> */}
       </div>
     ))
   }
@@ -73,20 +73,19 @@ class RatingModal extends Component {
     } = this.props
 
     return (
-      <Modal
+      <ToastModal
         show={ratingVisible}
         withCloseIcon
         onClose={closeFeedbackConnect}
+        className={{ container: styles.container, modal: styles.modal }}
       >
         <form className={styles.getting}>
-          <h4>We appreaciate your feedback!</h4>
-          <p>All feedback goes to our dev team to improve the app experience.</p>
-          <h6>How&apos;s your experience with us so far? *</h6>
+          <h6>How&apos;s your experience with us so far?</h6>
           <div className={styles.rating}>
             {this.renderRating()}
           </div>
         </form>
-      </Modal>
+      </ToastModal>
     )
   }
 }

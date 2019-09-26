@@ -16,6 +16,7 @@ export const closeFeedback = () => (dispatch) => {
   dispatch({
     type: CLOSE_FEEDBACK,
   })
+  localStorage.setItem('gotFeedback', true)
 }
 
 export const resetFeedback = () => (dispatch) => {

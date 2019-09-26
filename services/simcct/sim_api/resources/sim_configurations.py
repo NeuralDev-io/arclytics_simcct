@@ -141,6 +141,7 @@ class Configurations(Resource):
                 response['errors'] = str(e)
                 response['message'] = 'Int conversion error.'
                 logger.exception(response['message'], exc_info=True)
+                apm.capture_exception()
                 return response, 400
             sess_configs['cct_cooling_rate'] = valid_cct_cool_rate
 

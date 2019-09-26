@@ -106,7 +106,7 @@ def authenticate_user_and_cookie_flask(f):
                     }
                 )
             )
-            apm.capture_exception()
+            apm.capture_message('Unauthorised access.')
             return jsonify(response), 403
 
         return f(user, *args, **kwargs)
@@ -153,8 +153,8 @@ def authorize_admin_cookie_flask(f):
         # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):
             response['message'] = resp
-            logger.exception(resp)
-            apm.capture_exception()
+            logger.info(resp)
+            apm.capture_message('Invalid Auth token.')
             return jsonify(response), 401
 
         # Validate the user is active
@@ -177,7 +177,7 @@ def authorize_admin_cookie_flask(f):
                     }
                 )
             )
-            apm.capture_exception()
+            apm.capture_message('Unauthorised access.')
             return jsonify(response), 403
 
         if not user.is_admin:
@@ -190,7 +190,10 @@ def authorize_admin_cookie_flask(f):
                     }
                 )
             )
-            apm.capture_exception()
+            # Must capture message because there is no exception in this
+            # case which is a bug if Python APM Agent.
+            # https://github.com/elastic/apm-agent-python/issues/599
+            apm.capture_message('Unauthorised admin access.')
             return jsonify(response), 403
 
         return f(user, *args, **kwargs)
@@ -258,7 +261,10 @@ def authenticate_user_cookie_restful(f):
                     }
                 )
             )
-            apm.capture_exception()
+            # Must capture message because there is no exception in this
+            # case which is a bug if Python APM Agent.
+            # https://github.com/elastic/apm-agent-python/issues/599
+            apm.capture_message('Unauthorised access.')
             return response, 403
 
         return f(user, *args, **kwargs)
@@ -327,7 +333,10 @@ def authorize_admin_cookie_restful(f):
                     }
                 )
             )
-            apm.capture_exception()
+            # Must capture message because there is no exception in this
+            # case which is a bug if Python APM Agent.
+            # https://github.com/elastic/apm-agent-python/issues/599
+            apm.capture_message('Unauthorised access.')
             return response, 403
 
         if not user.is_admin:
@@ -340,7 +349,10 @@ def authorize_admin_cookie_restful(f):
                     }
                 )
             )
-            apm.capture_exception()
+            # Must capture message because there is no exception in this
+            # case which is a bug if Python APM Agent.
+            # https://github.com/elastic/apm-agent-python/issues/599
+            apm.capture_message('Unauthorised admin access.')
             return response, 403
 
         return f(user, *args, **kwargs)

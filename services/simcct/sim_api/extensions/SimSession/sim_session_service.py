@@ -96,16 +96,22 @@ class SimSessionService(object):
 
     def load_session(self) -> Union[str, dict]:
         if not session:
-            logger.exception('Session is empty.')
-            apm.capture_exception()
+            logger.info('Session is empty.')
+            # Must capture message because there is no exception in this
+            # case which is a bug if Python APM Agent.
+            # https://github.com/elastic/apm-agent-python/issues/599
+            apm.capture_message('Unauthorised access.')
             return 'Session is empty.'
 
         # We access the Session from Redis and get the Session data
         session_data_store = session.get(self.SESSION_PREFIX, None)
         if not session_data_store:
             message = 'Cannot retrieve data from Session store.'
-            logger.error(message, stack_info=True)
-            apm.capture_exception()
+            logger.info(message, stack_info=True)
+            # Must capture message because there is no exception in this
+            # case which is a bug if Python APM Agent.
+            # https://github.com/elastic/apm-agent-python/issues/599
+            apm.capture_message('Unauthorised access.')
             return message
 
         sess_data: dict = json.loads(session_data_store)

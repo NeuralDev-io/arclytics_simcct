@@ -108,7 +108,10 @@ class FeedbackModal extends Component {
           className={`${styles.backdrop} ${backdrop ? styles.show : ''}`}
           {...buttonize(this.handleClose)}
         />
-        <ToastModal show={feedbackVisible} className={`${styles.modal} ${givingFeedback ? styles.form : ''}`}>
+        <ToastModal
+          show={feedbackVisible}
+          className={{ modal: `${styles.modal} ${givingFeedback ? styles.form : ''}` }}
+        >
           {
             givingFeedback
               ? (

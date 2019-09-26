@@ -11,17 +11,17 @@
 
 steps:
 # RUN THE BELOW ONCE TO ENSURE THERE IS A DOCKER-COMPOSE CLOUD BUILDER TO USE
-#- name: 'gcr.io/cloud-builders/docker'
-#  args:
-#  - 'build'
-#  - '--build-arg'
-#  - 'version=1.24.1'
-#  - '-t'
-#  - 'asia.gcr.io/$PROJECT_ID/docker-compose:latest'
-#  - '-t'
-#  - 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
-#  - './services/cloud-builders-dc/'
-- name: 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'build'
+  - '--build-arg'
+  - 'version=1.24.1'
+  - '-t'
+  - 'asia.gcr.io/$PROJECT_ID/docker-compose:latest'
+  - '-t'
+  - 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
+  - './services/cloud-builders-dc/'
+- name: 'asia.gcr.io/$PROJECT_ID/docker-compose:latest'
   args:
   - '--project-name'
   - 'arc'
@@ -63,8 +63,8 @@ steps:
     - 'CLOUDSDK_COMPUTE_REGION=australia-southeast1'
 
 images:
-#- 'asia.gcr.io/$PROJECT_ID/docker-compose:latest'
-#- 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
+- 'asia.gcr.io/$PROJECT_ID/docker-compose:latest'
+- 'asia.gcr.io/$PROJECT_ID/docker-compose:1.24.1'
 - 'asia.gcr.io/$PROJECT_ID/arc_sim_client:1.2.0'
 - 'asia.gcr.io/$PROJECT_ID/arc_sim_service:1.2.1'
 - 'asia.gcr.io/$PROJECT_ID/arc_sim_celery:1.2.0'

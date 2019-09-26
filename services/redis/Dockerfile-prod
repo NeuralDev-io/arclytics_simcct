@@ -1,0 +1,10 @@
+# Alpine with ruby support image
+FROM redis:latest
+
+LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
+
+# Copy redis.conf, port=7000, datadir=/data/
+RUN mkdir -p /redis-conf
+COPY ./redis-prod.conf /redis-conf/redis.conf
+
+EXPOSE 6379

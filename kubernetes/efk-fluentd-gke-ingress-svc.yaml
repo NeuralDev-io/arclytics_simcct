@@ -8,26 +8,22 @@ metadata:
     service: fluentd-logging
 data:
   fluent.conf: |
+    <system>
+      workers 4
+    </system>
+    # work on multi process workers. worker0 - worker1 run in_forward
     # take anything that is sent directly to port 24224 like Python
     <source>
       @type forward
       port 24224
       bind 0.0.0.0
     </source>
-    # take anything sent to http port
-    <source>
-      @type http
-      port 9880
-      bind 0.0.0.0
-      body_size_limit 128m
-      keepalive_timeout 10s
-      # ensure we only accept from our client host
-      cors_allow_origins ["*"]
-      # tag is part of the URL, e.g.,
-      # curl -X POST -d 'json={"message":"Hello world!"}' http://fluentd-service.arclytics.svc.cluster.local:9880/tag.here
-    </source>
     # Do not collect fluentd's own logs to avoid infinite loops.
     <match fluent.**>
+      @type null
+    </match>
+    # Do not collect healthy ReadinessProbe
+    <match healthy.**>
       @type null
     </match>
     # we send logs to elasticsearch inside cluster
@@ -59,6 +55,9 @@ data:
           retry_forever true
         </buffer>
       </store>
+      <store>
+        @type stdout
+      </store>
     </match>
 ---
 apiVersion: v1
@@ -74,10 +73,6 @@ spec:
   selector:
     app: fluentd-logging
   ports:
-    - name: http
-      protocol: TCP
-      port: 9880
-      targetPort: 9880
     - name: forwarding-tcp
       protocol: TCP
       port: 24224
@@ -103,6 +98,18 @@ spec:
         app: fluentd-logging
         service: fluentd-logging
     spec:
+      initContainers:  # Create a healthy file in /tmp which can be probed
+        - name: create-probe-file
+          image: busybox
+          command:
+           - '/bin/sh'
+           - '-c'
+           - 'touch /tmp/healthy'
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: healthy-file-volume
+              mountPath: /tmp
       containers:
         - name: fluentd-container
           image: asia.gcr.io/arc-sim/arc_fluentd:latest
@@ -114,8 +121,23 @@ spec:
               hostPort: 24224
               protocol: TCP
             - containerPort: 9880
-              name: http
-              protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+                - cat
+                - /tmp/healthy
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            successThreshold: 2
+            failureThreshold: 5
+          livenessProbe:
+            exec:
+              command:
+                - cat
+                - /tmp/healthy
+            initialDelaySeconds: 15
+            periodSeconds: 60
           env:
             - name: FLUENT_ELASTICSEARCH_HOST
               value: elasticsearch.arclytics.svc.cluster.local
@@ -142,10 +164,14 @@ spec:
               cpu: 100m
               memory: 200Mi
           volumeMounts:
+            - name: healthy-file-volume
+              mountPath: /tmp
             - name: fluentd-config
               mountPath: /fluentd/etc  # path of fluentd config file
       terminationGracePeriodSeconds: 30
       volumes:
+        - name: healthy-file-volume
+          emptyDir: {}
         - name: fluentd-config
           configMap:
             name: fluentd-config

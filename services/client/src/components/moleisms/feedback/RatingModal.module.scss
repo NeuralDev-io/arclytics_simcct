@@ -1,9 +1,9 @@
 @import '../../../styles/animation';
 
 .getting {
-  // padding: 2.5rem 2.5rem;
+  margin-top: -1.75rem;
+  margin-bottom: -.75rem;
   width: 30rem;
-  margin: auto;
 
   & > h4 {
     margin-bottom: .5rem;
@@ -20,7 +20,6 @@
 
   & > .rating {
     width: 100%;
-    margin-bottom: 1rem;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -78,4 +77,14 @@
 
 .rate5:hover, .rate5:focus, .rate5.active {
   .ratingIcon { stroke: var(--g500); }
+}
+
+.container {
+  transform: initial;
+  left: initial;
+  right: 2.5rem;
+
+  .modal {
+    max-height: initial;
+  }
 }

@@ -620,6 +620,7 @@ class User(Document):
             logger.exception(
                 'Encode authentication token error.', exc_info=True
             )
+            apm.capture_exception()
             return None
 
     @staticmethod

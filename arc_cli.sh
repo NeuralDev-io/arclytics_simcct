@@ -501,6 +501,63 @@ flushAndSeedDb() {
     echoSpace
 }
 
+getLatestKubeVersion() {
+  LATEST=$(\gcloud container get-server-config \
+              ${LOCATION_COMMAND} \
+              --project=${PROJECT_ID} \
+              --format="json" \
+              | jq --raw-output '
+                def to_gke_semver(o):
+                  capture("(?<major>[0-9]*).(?<minor>[0-9]*).(?<patch>[0-9]*)-gke.(?<gke>[0-9]*)");
+                def from_gke_semver(o):
+                  .major + "." + .minor + "." + .patch + "-gke." + .gke;
+                reduce (
+                  .validMasterVersions[] | to_gke_semver(.)
+                ) as $this (
+                {
+                  "major":"0",
+                  "minor":"0",
+                  "patch": "0",
+                  "gke": "0"
+                };
+                if ($this.major|tonumber) > (.major|tonumber)
+                then . = $this
+                else (
+                  if ($this.major|tonumber) == (.major|tonumber)
+                  then (
+                    if ($this.minor|tonumber) > (.minor|tonumber)
+                    then . = $this
+                    else (
+                      if ($this.minor|tonumber) == (.minor|tonumber)
+                      then (
+                      if ($this.patch|tonumber) > (.patch|tonumber)
+                        then . = $this
+                          else (
+                              if ($this.patch|tonumber) == (.patch|tonumber)
+                              then (
+                                  if ($this.gke|tonumber) > (.gke|tonumber)
+                                  then . = $this
+                                  else .
+                                  end
+                              )
+                              else .
+                              end
+                          )
+                          end
+                      )
+                      else .
+                      end
+                    )
+                    end
+                  )
+                  else .
+                  end
+                )
+                end
+                ) | from_gke_semver(.)
+                ')
+}
+
 # shellcheck disable=SC2086
 runTests() {
     # Make sure the correct container groups are run for each test.
@@ -1028,8 +1085,8 @@ while [[ "$1" != "" ]] ; do
       ;;
     deploy )
       # Some Defaults
-      PROJECT_ID="arc-sim"
-      CLUSTER_NAME="arc-sim-aust"
+      PROJECT_ID="arc-simcct"
+      CLUSTER_NAME="arc-sim-cluster"
       KUBERNETES_MASTER_VERSION="1.13.7-gke.8"
       KUBERNETES_NODE_VERSION=${KUBERNETES_MASTER_VERSION}
       # Note: Only use one of ZONE/REGION but generally ZONE because
@@ -1039,6 +1096,7 @@ while [[ "$1" != "" ]] ; do
       REGION="australia-southeast1"
       ZONE="australia-southeast1-a"
       LOCATION_COMMAND="--region=${REGION}"
+      #LOCATION_COMMAND="--zone=${ZONE}"
       REPLICA_ZONE_REDIS="--replica-zones=${ZONE},australia-southeast1-b"
       REPLICA_ZONE_MONGO="--replica-zones=${ZONE},australia-southeast1-c"
       IMAGE_TYPE="UBUNTU"
@@ -1074,61 +1132,7 @@ while [[ "$1" != "" ]] ; do
               case $3 in
                 create )
                   # This uses `jq` package to get the latest GKE versions for Kubernetes Master and Nodes
-                  LATEST=$(\
-                    gcloud container get-server-config \
-                        ${LOCATION_COMMAND} \
-                        --project=${PROJECT_ID} \
-                        --format="json" \
-                        | jq --raw-output '
-                          def to_gke_semver(o):
-                            capture("(?<major>[0-9]*).(?<minor>[0-9]*).(?<patch>[0-9]*)-gke.(?<gke>[0-9]*)");
-                          def from_gke_semver(o):
-                            .major + "." + .minor + "." + .patch + "-gke." + .gke;
-                          reduce (
-                            .validMasterVersions[] | to_gke_semver(.)
-                          ) as $this (
-                          {
-                            "major":"0",
-                            "minor":"0",
-                            "patch": "0",
-                            "gke": "0"
-                          };
-                          if ($this.major|tonumber) > (.major|tonumber)
-                          then . = $this
-                          else (
-                            if ($this.major|tonumber) == (.major|tonumber)
-                            then (
-                              if ($this.minor|tonumber) > (.minor|tonumber)
-                              then . = $this
-                              else (
-                                if ($this.minor|tonumber) == (.minor|tonumber)
-                                then (
-                                if ($this.patch|tonumber) > (.patch|tonumber)
-                                  then . = $this
-                                    else (
-                                        if ($this.patch|tonumber) == (.patch|tonumber)
-                                        then (
-                                            if ($this.gke|tonumber) > (.gke|tonumber)
-                                            then . = $this
-                                            else .
-                                            end
-                                        )
-                                        else .
-                                        end
-                                    )
-                                    end
-                                )
-                                else .
-                                end
-                              )
-                              end
-                            )
-                            else .
-                            end
-                          )
-                          end
-                          ) | from_gke_semver(.)
-                          ')
+                  getLatestKubeVersion
                    echo Kubernetes Version: ${LATEST}
 
                   # Create new GKE Kubernetes cluster (using host node VM images based on Ubuntu
@@ -1138,10 +1142,10 @@ while [[ "$1" != "" ]] ; do
                   gcloud container clusters create ${CLUSTER_NAME} \
                       ${LOCATION_COMMAND} \
                       --image-type=${IMAGE_TYPE} \
-                      --machine-type=n1-standard-2 \
+                      --machine-type=n1-standard-4 \
                       --num-nodes=2 \
-                      --min-nodes=1 \
-                      --max-nodes=3 \
+                      --min-nodes=2 \
+                      --max-nodes=4 \
                       --enable-autoscaling \
                       --node-labels=component=arc-nodes \
                       --cluster-version=${LATEST}
@@ -1241,9 +1245,10 @@ while [[ "$1" != "" ]] ; do
                   generalMessage "Creating GCE disks"
                   for i in 1 2 3
                   do
-                      gcloud compute disks create --size 200GB \
-                          --type pd-ssd pd-standard-disk-$i \
+                      gcloud compute disks create --size 50GB \
+                          --type pd-ssd mongo-ssd-disk-$i \
                           ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
+                          # Only used for REGION
                   done
                   sleep 3
 
@@ -1348,19 +1353,19 @@ while [[ "$1" != "" ]] ; do
                 create )
                   # Register GCE Fast SSD persistent disks and then create the persistent disks
                   generalMessage "Creating GCE disks for Elasticsearch"
-                  for i in 1 2 3
+                  for i in 1 2
                   do
-                      gcloud compute disks create --size 20GB \
-                          --type pd-ssd es-ssd-disk-$i \
+                      gcloud compute disks create --size 200GB \
+                          --type pd-standard es-standard-disk-$i \
                           ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
                   done
                   sleep 3
 
                   # Create persistent volumes using disks created above
                   generalMessage "Creating GKE Persistent Volumes"
-                  for i in 1 2 3
+                  for i in 1 2
                   do
-                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/efk-elasticsearch-gke-ssd-pv.yaml" > /tmp/es-gke-pv.yaml
+                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/efk-elasticsearch-gke-standard-pv.yaml" > /tmp/es-gke-pv.yaml
                       kubectl apply -f /tmp/es-gke-pv.yaml
                   done
                   rm /tmp/es-gke-pv.yaml
@@ -1375,14 +1380,14 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-svc.yaml"
                   kubectl delete pvc elasticsearch-pvc-elasticsearch-0 --namespace=arclytics
                   kubectl delete pvc elasticsearch-pvc-elasticsearch-1 --namespace=arclytics
-                  kubectl delete pvc elasticsearch-pvc-elasticsearch-2 --namespace=arclytics
+                  #kubectl delete pvc elasticsearch-pvc-elasticsearch-2 --namespace=arclytics
                   kubectl delete pv elasticsearch-pv-1 --namespace=arclytics
                   kubectl delete pv elasticsearch-pv-2 --namespace=arclytics
-                  kubectl delete pv elasticsearch-pv-3 --namespace=arclytics
+                  #kubectl delete pv elasticsearch-pv-3 --namespace=arclytics
                   sleep 15
                   gcloud compute disks delete es-standard-disk-1 ${LOCATION_COMMAND}
                   gcloud compute disks delete es-standard-disk-2 ${LOCATION_COMMAND}
-                  gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
+                  #gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
                   ;;
               esac
               shift
@@ -1422,7 +1427,7 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-kibana-gke-svc.yaml"
                   ;;
                 port-forward )
-                  KIBANA_POD_NAME=$(kubectl get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
+                  KIBANA_POD_NAME=$(kubectl get pod -l app=kibana --namespace=arclytics -o jsonpath="{.items[0].metadata.name}")
                   kubectl port-forward "${KIBANA_POD_NAME}" 5600:5601 --namespace arclytics
                   ;;
               esac

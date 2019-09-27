@@ -13,8 +13,6 @@ __author__ = [
 ]
 __license__ = 'MIT'
 __version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'production'
 __date__ = '2019.06.04'
 """manage.py: 
@@ -70,7 +68,10 @@ COV = coverage.coverage(
 )
 COV.start()
 
+# Create an instance of the global Flask app for the SimCCT Server.
 app = create_app()
+# Add the Flask Instance to the Flask CLI tool to use as a factory to create
+# more Flask instances when you run a CLI command.
 cli = FlaskGroup(create_app=create_app)
 
 
@@ -86,7 +87,7 @@ def flush():
 
 @cli.command('flush_all')
 def flush():
-    """Flush all databases and datastores."""
+    """Flush all databases and data stores."""
     if os.environ.get('FLASK_ENV', 'development') == 'production':
         print('You should not flush the database in production.')
         return

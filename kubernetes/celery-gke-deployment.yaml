@@ -20,7 +20,7 @@ spec:
           command: ['sh', '-c', 'until nslookup redis-service; do echo waiting for redis-service to be available; sleep 2; done;']
       containers:
         - name: celery-worker-container
-          image: asia.gcr.io/arc-sim/arc_sim_celery:1.2.0
+          image: asia.gcr.io/arc-simcct/arc_sim_celery:1.2.0
           imagePullPolicy: Always
           ports:
             - containerPort: 5555

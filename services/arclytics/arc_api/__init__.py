@@ -9,8 +9,6 @@
 __author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
 __version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.09'
 """__init__.py:

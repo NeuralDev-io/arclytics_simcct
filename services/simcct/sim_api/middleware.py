@@ -10,10 +10,8 @@ __author__ = [
     'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
 ]
-__license__ = 'TBA'
-__version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__license__ = 'MIT'
+__version__ = '1.0.0'
 __status__ = 'production'
 __date__ = '2019.07.06'
 """middleware.py: 
@@ -27,17 +25,19 @@ from functools import wraps
 from threading import Thread
 
 from bson import ObjectId
-from flask import jsonify, request, session, json
+from flask import json, jsonify, request, session
 from mongoengine import DoesNotExist
 
 from arc_logging import AppLogger
 from sim_api.extensions.Session.redis_session import SESSION_COOKIE_NAME
+from sim_api.extensions import apm
 from sim_api.models import User
 
 logger = AppLogger(__name__)
 
 
 def async_func(f):
+    """Threading decorator if you want to make a method use separate thread."""
     @wraps(f)
     def wrapper(*args, **kwargs):
         thr = Thread(target=f, args=args, kwargs=kwargs)
@@ -58,7 +58,6 @@ def authenticate_user_and_cookie_flask(f):
     Returns:
         the `sim_api.models.User` object if found.
     """
-
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {'status': 'fail', 'message': 'Session token is not valid.'}
@@ -93,6 +92,8 @@ def authenticate_user_and_cookie_flask(f):
         except DoesNotExist as e:
             response['errors'] = str(e)
             response['message'] = 'User does not exist.'
+            logger.exception(response['message'])
+            apm.capture_exception()
             return jsonify(response), 404
 
         if not user.active:
@@ -105,6 +106,7 @@ def authenticate_user_and_cookie_flask(f):
                     }
                 )
             )
+            apm.capture_message('Unauthorised access.')
             return jsonify(response), 403
 
         return f(user, *args, **kwargs)
@@ -125,7 +127,6 @@ def authorize_admin_cookie_flask(f):
     Returns:
         the `sim_api.models.User` object if found.
     """
-
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {'status': 'fail', 'message': 'Session token is not valid.'}
@@ -152,6 +153,8 @@ def authorize_admin_cookie_flask(f):
         # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):
             response['message'] = resp
+            logger.info(resp)
+            apm.capture_message('Invalid Auth token.')
             return jsonify(response), 401
 
         # Validate the user is active
@@ -161,6 +164,7 @@ def authorize_admin_cookie_flask(f):
             response['errors'] = str(e)
             response['message'] = 'User does not exist.'
             logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return jsonify(response), 404
 
         if not user.active:
@@ -173,6 +177,7 @@ def authorize_admin_cookie_flask(f):
                     }
                 )
             )
+            apm.capture_message('Unauthorised access.')
             return jsonify(response), 403
 
         if not user.is_admin:
@@ -185,6 +190,10 @@ def authorize_admin_cookie_flask(f):
                     }
                 )
             )
+            # Must capture message because there is no exception in this
+            # case which is a bug if Python APM Agent.
+            # https://github.com/elastic/apm-agent-python/issues/599
+            apm.capture_message('Unauthorised admin access.')
             return jsonify(response), 403
 
         return f(user, *args, **kwargs)
@@ -204,7 +213,6 @@ def authenticate_user_cookie_restful(f):
     Returns:
         the `sim_api.models.User` object if found.
     """
-
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {'status': 'fail', 'message': 'Session token is not valid.'}
@@ -239,6 +247,8 @@ def authenticate_user_cookie_restful(f):
         except DoesNotExist as e:
             response['errors'] = str(e)
             response['message'] = 'User does not exist.'
+            logger.exception(response['message'])
+            apm.capture_exception()
             return response, 404
 
         if not user.active:
@@ -251,6 +261,10 @@ def authenticate_user_cookie_restful(f):
                     }
                 )
             )
+            # Must capture message because there is no exception in this
+            # case which is a bug if Python APM Agent.
+            # https://github.com/elastic/apm-agent-python/issues/599
+            apm.capture_message('Unauthorised access.')
             return response, 403
 
         return f(user, *args, **kwargs)
@@ -271,7 +285,6 @@ def authorize_admin_cookie_restful(f):
     Returns:
         the `sim_api.models.User` object if found.
     """
-
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {'status': 'fail', 'message': 'Session token is not valid.'}
@@ -307,6 +320,7 @@ def authorize_admin_cookie_restful(f):
             response['errors'] = str(e)
             response['message'] = 'User does not exist.'
             logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 404
 
         if not user.active:
@@ -319,6 +333,10 @@ def authorize_admin_cookie_restful(f):
                     }
                 )
             )
+            # Must capture message because there is no exception in this
+            # case which is a bug if Python APM Agent.
+            # https://github.com/elastic/apm-agent-python/issues/599
+            apm.capture_message('Unauthorised access.')
             return response, 403
 
         if not user.is_admin:
@@ -331,64 +349,12 @@ def authorize_admin_cookie_restful(f):
                     }
                 )
             )
+            # Must capture message because there is no exception in this
+            # case which is a bug if Python APM Agent.
+            # https://github.com/elastic/apm-agent-python/issues/599
+            apm.capture_message('Unauthorised admin access.')
             return response, 403
 
         return f(user, *args, **kwargs)
-
-    return decorated_func
-
-
-# =========================================================================== #
-# ========================= # OLD MIDDLEWARE # ============================== #
-# =========================================================================== #
-
-
-def authenticate(f):
-    @wraps(f)
-    def decorated_func(*args, **kwargs):
-        response = {
-            'status': 'fail',
-            'message': 'Provide a valid JWT auth token.'
-        }
-        # get auth token
-        auth_header = request.headers.get('Authorization', None)
-
-        if not auth_header:
-            return response, 401
-
-        # auth_header = 'Bearer token'
-        auth_token = auth_header.split(' ')[1]
-
-        # Decode either returns bson.ObjectId if successful or a string from an
-        # exception
-        resp = User.decode_auth_token(auth_token=auth_token)
-
-        # Either returns an ObjectId User ID or a string response.
-        if not isinstance(resp, ObjectId):
-            response['message'] = resp
-            return response, 401
-
-        # Validate the user is active
-        try:
-            user = User.objects.get(id=resp)
-        except DoesNotExist as e:
-            response['errors'] = str(e)
-            response['message'] = 'User does not exist.'
-            logger.exception(response['message'], exc_info=True)
-            return response, 404
-
-        if not user.active:
-            response['message'] = 'This user account has been disabled.'
-            logger.info(
-                json.dumps(
-                    {
-                        "message": response["message"],
-                        "user": user.email
-                    }
-                )
-            )
-            return response, 403
-
-        return f(resp, *args, **kwargs)
 
     return decorated_func

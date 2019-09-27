@@ -7,21 +7,13 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.06.26'
-"""test_simulation_package.py: 
-
-The test module for the Phase Simulation package.
-"""
 
 import os
 import sys
 import unittest
 
-from simulation.ae3_utilities import *
 from simulation.phasesimulation import *
 
 BASE_DIR = os.path.abspath(

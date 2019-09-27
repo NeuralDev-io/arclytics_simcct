@@ -6,11 +6,8 @@
 # Attributions:
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = '{license}'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__status__ = 'development'
 __date__ = '2019.07.05'
 """test_api_user_model.py: 
 
@@ -36,7 +33,6 @@ _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 
 class TestUserModel(BaseTestCase):
     """Run direct tests on the User model without an API call."""
-
     def tearDown(self) -> None:
         db = get_db('default')
         self.assertTrue(db.name, 'arc_test')

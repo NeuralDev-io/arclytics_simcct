@@ -6,10 +6,7 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = [
-    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
-    'Dinol Shrestha <@dinolsth>'
-]
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __license__ = 'MIT'
 __version__ = '1.7.0'
 __status__ = 'production'
@@ -55,7 +52,6 @@ class SimCCTBadServerLogout(Exception):
     A custom exception to be raised by a synchronous call to logout on the
     SimCCT server if the response is not what we are expecting.
     """
-
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
 
@@ -139,7 +135,6 @@ def confirm_email_resend(user):
 @auth_blueprint.route('/confirm/register/resend', methods=['PUT'])
 def confirm_email_resend_after_registration() -> Tuple[dict, int]:
 
-    # response = {'status': 'fail', 'message': 'Invalid payload.'}
     response = {'status': 'success'}
 
     data = request.get_json()
@@ -324,10 +319,7 @@ def login() -> any:
     try:
         if not User.objects(email=email):
             response['message'] = 'User does not exist.'
-            logger.debug({
-                'email': email,
-                'message': response['message']
-            })
+            logger.debug({'email': email, 'message': response['message']})
             return jsonify(response), 404
     except Exception as e:
         logger.error(str(e))
@@ -341,10 +333,12 @@ def login() -> any:
         if auth_token:
             if not user.active:
                 response['message'] = 'Your Account has been disabled.'
-                logger.info({
-                    'message': response['message'],
-                    'user': user.email
-                })
+                logger.info(
+                    {
+                        'message': response['message'],
+                        'user': user.email
+                    }
+                )
                 return jsonify(response), 401
 
             # Let's save some stats for later
@@ -358,7 +352,32 @@ def login() -> any:
                 'GeoLite2-City.mmdb'
             )
             try:
-                location_data = reader.city(str(request.remote_addr))
+                # First we check if there is a proxy or other network service
+                # that forwards the IP address. If it is not the case,
+                # we can check for the HTTP_X_REAL_IP which is part of
+                # the header and is often used in a proxy.
+                if not request.environ.get('X-Forwarded-For', None):
+                    # If HTTP_X_REAL_IP not found, we can then fall back
+                    # to use the `request.remote_addr` even though it is
+                    # unlikely to be a real address.
+                    request_ip = request.environ.get(
+                        'HTTP_X_REAL_IP', request.remote_addr
+                    )
+                else:
+                    # If we have a forwarded IP, it usually can be split
+                    # We want the first one because the syntax is as follows:
+                    # X-Forwarded-For: <client>, <proxy1>, <proxy2>
+                    # Refer to:
+                    # https://developer.mozilla.org/en-US/docs/Web/HTTP/
+                    # Headers/X-Forwarded-For
+                    # "The X-Forwarded-For (XFF) header is a de-facto standard
+                    # header for identifying the originating IP address of a
+                    # client connecting to a web server through an HTTP proxy
+                    # or a load balancer."
+                    forwarded_ip = request.environ.get('X-Forwarded-For')
+                    request_ip = str(forwarded_ip).split(',')[0]
+
+                location_data = reader.city(str(request_ip))
                 # location_data = reader.city('203.10.91.88')
                 country = location_data.country.names['en']
                 state = location_data.subdivisions[0].names['en']
@@ -369,23 +388,28 @@ def login() -> any:
                         country=country, state=state, ip_address=ip_address
                     )
                 )
-                logger.info({
-                    'message': 'User logged in',
-                    'user': user.email,
-                    'country': country,
-                    'state': state,
-                    'ip_address': ip_address
-                })
+                logger.info(
+                    {
+                        'message': 'User logged in',
+                        'user': user.email,
+                        'country': country,
+                        'state': state,
+                        'ip_address': ip_address
+                    }
+                )
                 user.save()
             except AddressNotFoundError:
                 user.reload()
                 ip_address = request.remote_addr
                 user.login_data.append(LoginData(ip_address=ip_address))
-                logger.error({
-                    'user': user.email,
-                    'message': 'Address not found.',
-                    'ip_address': ip_address
-                }, stack_info=False)
+                logger.exception(
+                    {
+                        'user': user.email,
+                        'message': 'Address not found.',
+                        'ip_address': ip_address
+                    },
+                )
+                apm.capture_exception()
                 user.save()
             reader.close()
 
@@ -446,7 +470,7 @@ def reset_password() -> Tuple[dict, int]:
     Returns:
         A valid HTTP Response and a statue code as a tuple.
     """
-    # Not using Middleware because w need to use a different token decoding
+    # Not using Middleware because we need to use a different token decoding
     response = {'status': 'fail', 'message': 'Provide a valid JWT auth token.'}
 
     # get the auth token
@@ -459,8 +483,6 @@ def reset_password() -> Tuple[dict, int]:
     # Decode either returns bson.ObjectId if successful or a string from an
     # exception
     resp_or_id = User.decode_password_reset_token(auth_token=token)
-
-    # Either returns an ObjectId User ID or a string response.
     if isinstance(resp_or_id, str):
         response['message'] = resp_or_id
         return jsonify(response), 401
@@ -492,8 +514,24 @@ def reset_password() -> Tuple[dict, int]:
         response['message'] = 'User does not exist.'
         return jsonify(response), 401
 
-    # TODO(andrew@neuraldev.io): Send a confirmation email again to the user
-    #  that their password has been reset.
+    # The email to notify the user that their password has been changed.
+    from sim_api.email_service import send_email
+    send_email(
+        to=[user.email],
+        subject_suffix='Your Arclytics Sim password has been changed',
+        html_template=render_template(
+            'change_password.html',
+            change_datetime=datetime.utcnow().isoformat(),
+            email=user.email,
+            user_name=f'{user.first_name} {user.last_name}'
+        ),
+        text_template=render_template(
+            'change_password.txt',
+            change_datetime=datetime.utcnow().isoformat(),
+            email=user.email,
+            user_name=f'{user.first_name} {user.last_name}'
+        )
+    )
 
     # Well, they have passed every test
     user.set_password(password)
@@ -516,11 +554,18 @@ def confirm_reset_password(token):
     # Decode the token from the email to the confirm it was the right one
     try:
         email = confirm_token(token)
-    except URLTokenError as e:
+    except URLTokenError:
+        logger.exception('Bad URL token.')
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/password/reset?tokenexpired=true', code=302
         )
     except Exception as e:
+        logger.exception({
+            'msg': 'URL token confirmation error. ',
+            'error': str(e)
+        })
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/password/reset?tokenexpired=true', code=302
         )
@@ -722,8 +767,8 @@ def change_email(user) -> Tuple[dict, int]:
     user.verified = False
     user.save()
 
-    confirm_token = generate_confirmation_token(valid_new_email)
-    confirm_url = generate_url('auth.confirm_email', confirm_token)
+    confm_token = generate_confirmation_token(valid_new_email)
+    confirm_url = generate_url('auth.confirm_email', confm_token)
 
     from sim_api.email_service import send_email
     send_email(

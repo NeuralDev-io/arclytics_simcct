@@ -1,4 +1,18 @@
-"""This script prompts the user for the name of an output file produced by
+# -*- coding: utf-8 -*-
+# ----------------------------------------------------------------------------------------------------------------------
+# arclytics_sim
+# middleware.py
+#
+# Attributions:
+# [1]
+# ----------------------------------------------------------------------------------------------------------------------
+__author__ = ['David Matthews <@tree1004>']
+__license__ = 'MIT'
+__version__ = '0.1.0'
+__status__ = 'development'
+__date__ = '2019.07.06'
+"""
+This script prompts the user for the name of an output file produced by
 the SSTP program and writes the file's data to a JSON file.
 """
 

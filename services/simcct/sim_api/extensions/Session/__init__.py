@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # __init__.py.py
@@ -9,17 +8,12 @@
 # [1] https://github.com/mrichman/flask-redis
 # [2] https://pythonhosted.org/Flask-Session/
 # ----------------------------------------------------------------------------------------------------------------------
-
-__author__ = 'Andrew Che <@codeninja55>'
-__copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = '{dev_status}'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.09.06'
-"""__init__.py.py: 
+"""__init__.py: 
 
 The Session package to change the Flask Session interface to use the Redis
 as a server-side storage and to customise the way we want to encode our 

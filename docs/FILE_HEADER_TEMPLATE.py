@@ -13,8 +13,6 @@ __copyright__ = 'Copyright (C) ${YEAR}, NeuralDev'
 __credits__ = ['']
 __license__ = '{license}'
 __version__ = '{mayor}.{minor}.{rel}'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = '{dev_status}'
 __date__ = '${YEAR}.${MONTH}.${DAY}'
 """${NAME}.py: 

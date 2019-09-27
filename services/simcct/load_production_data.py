@@ -11,10 +11,9 @@
 __author__ = ['Andrew Che <@codeninja55>']
 __copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
 __credits__ = ['']
-__license__ = 'TBA'
+__license__ = 'MIT'
 __version__ = '1.0.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+
 __status__ = 'production'
 __date__ = '2019.09.15'
 """load_production_data.py: 

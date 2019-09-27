@@ -666,3 +666,7 @@ export const loadLastSim = () => (dispatch, getState) => {
     },
   })
 }
+
+export const loadSimFromTimeMachine = (sim) => (dispatch) => {
+  
+}

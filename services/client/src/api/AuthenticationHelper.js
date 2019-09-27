@@ -12,8 +12,8 @@
  * @author Arvy Salazar, Andrew Che, Dalton Le
  * @github Xaraox
  */
-
-const ARC_URL = `${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim`
+import apm from '../rum'
+import { ARC_URL } from '../constants'
 
 export const login = async (values, resolve, reject) => {
   fetch(`${ARC_URL}/auth/login`, {
@@ -35,7 +35,6 @@ export const login = async (values, resolve, reject) => {
     })
     .catch(err => console.log(err))
 }
-
 
 export const signup = async (values, resolve, reject) => {
   const {
@@ -65,17 +64,15 @@ export const signup = async (values, resolve, reject) => {
     .catch(err => console.log(err))
 }
 
-export const logout = () => {
-  return fetch(`${ARC_URL}/auth/logout`, {
-    method: 'GET',
-    mode: 'cors',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then(res => res.json())
-}
+export const logout = () => fetch(`${ARC_URL}/auth/logout`, {
+  method: 'GET',
+  mode: 'cors',
+  credentials: 'include',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+  .then(res => res.json())
 
 /**
  * Check authentication status of current user.
@@ -91,6 +88,10 @@ export const logout = () => {
  */
 export const checkAuthStatus = async () => {
   let auth
+  // Create a custom APM transaction trace
+  const transaction = apm.startTransaction('Auth Status', 'Auth')
+  apm.addTags('auth')
+  const httpSpan = transaction.startSpan('FETCH /auth/status', 'http')
   try {
     auth = await fetch(`${ARC_URL}/auth/status`, {
       method: 'GET',
@@ -103,10 +104,17 @@ export const checkAuthStatus = async () => {
         if (res.status !== 200) {
           throw new Error('Unauthorised')
         }
+        // End the current transaction at the end of the response call back
+        const transactionEnding = apm.getCurrentTransaction()
+        if (transactionEnding) {
+          httpSpan.end()
+          transactionEnding.end()
+        }
         return res.json()
       })
       .then(res => res)
   } catch (err) {
+    apm.captureError('/auth/status failed.')
     return { status: 'fail' }
   }
   return auth

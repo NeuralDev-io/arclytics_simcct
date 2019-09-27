@@ -57,6 +57,10 @@ COPY . /usr/src/app
 WORKDIR /usr/src/app/arc_logging
 RUN python setup.py install
 
+# Install our simulation package
+WORKDIR /usr/src/app/arc_simulation
+RUN python setup.py install
+
 # go back to app source directory
 WORKDIR /usr/src/app
 

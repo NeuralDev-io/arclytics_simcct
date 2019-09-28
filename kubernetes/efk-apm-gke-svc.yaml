@@ -23,6 +23,10 @@ data:
           enabled: true
           cache.expiration: 5m
           index_pattern: "apm-*-sourcemap*"
+      ssl:
+        enabled: true
+        key: "/usr/share/ssl/tls.key"
+        certificate: "/usr/share/ssl/tls.crt"
     setup.template.settings:
       index:
         number_of_shards: 1
@@ -90,7 +94,13 @@ spec:
               mountPath: /usr/share/apm-server/apm-server.yml
               readOnly: true
               subPath: apm-server.yml
+            - name: apm-server-ssl
+              mountPath: /usr/share/ssl
+              readOnly: true
       volumes:
         - name: apm-server-config
           configMap:
             name: apm-server-config
+        - name: apm-server-ssl
+          secret:
+            secretName: client-app-https-secret

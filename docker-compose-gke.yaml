@@ -48,8 +48,8 @@ services:
         - NODE_ENV=production
         - REACT_APP_SIM_HOST=https://api.arclytics.io
         - REACT_APP_SIM_PORT=443
-        - REACT_APP_APM_URL=https://app.arclytics.io:443/apm
-        - REACT_APP_FLUENTD_URL=https://app.arclytics.io:443/logs
+        - REACT_APP_APM_URL=https://app.arclytics.io/apm
+        - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logs
       labels:
         arclytics.io: "production"
         service: "client"

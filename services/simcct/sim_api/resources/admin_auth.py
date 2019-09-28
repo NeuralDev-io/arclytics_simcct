@@ -26,7 +26,7 @@ from flask import Blueprint, redirect, render_template, request
 from flask_restful import Resource
 
 from arc_logging import AppLogger
-from sim_api.extensions import api
+from sim_api.extensions import api, apm
 from sim_api.extensions.utilities import URLTokenExpired
 from sim_api.middleware import authorize_admin_cookie_restful
 from sim_api.models import (AdminProfile, User)
@@ -53,6 +53,8 @@ class AdminCreate(Resource):
         # Validating empty payload
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not post_data:
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # Extract the request body data
@@ -62,9 +64,13 @@ class AdminCreate(Resource):
         # Ensure email and position data was given
         if not email:
             response['message'] = 'No email provided.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
         if not position:
             response['message'] = 'No position provided.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # Verify it is actually a valid email
@@ -77,20 +83,29 @@ class AdminCreate(Resource):
             # email is not valid, exception message is human-readable
             response['error'] = str(e)
             response['message'] = 'Invalid email.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_message(response['message'])
             return response, 400
 
         # Make sure the user exists in the database.
         if not User.objects(email=valid_email):
             response['message'] = 'User does not exist.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         # Get the user object and verify that it is verified and an admin
         user = User.objects.get(email=valid_email)
         if not user.verified:
             response['message'] = 'The user must verify their email.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 401
         if user.is_admin:
             response['message'] = 'User is already an Administrator.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # Start promotion
@@ -185,26 +200,44 @@ def cancel_promotion(token):
         # Change expiration parameter to 30 days instead of 1 hour.
         email_list = confirm_token(token, 2592000)
     except URLTokenError as e:
+        message = 'URLTokenError'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
+        message = 'URL token expired.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     except Exception as e:
+        message = 'An Exception Occured.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # If a list is not returned, we should get out of here.
     if not isinstance(email_list, list):
+        message = 'Email list value is an invalid type.'
+        logger.info(message)
+        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Ensure both admin and user email is present in list
     if not len(email_list) == 2:
+        message = 'Email list value has incorrect number of elements.'
+        logger.info(message)
+        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
@@ -214,21 +247,33 @@ def cancel_promotion(token):
         admin_email = email_list[0]
         user_email = email_list[1]
     except IndexError as e:
+        message = 'Email list index error.'
+        logger.exception(message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     if not admin_email or not user_email:
+        message = 'Missing admin_email or user_email value(s).'
+        logger.info(message)
+        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Ensure both users exist in the database
     if not User.objects(email=admin_email):
+        message = 'Admin does not exist.'
+        logger.info(message)
+        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     if not User.objects(email=user_email):
+        message = 'Email does not exist.'
+        logger.info(message)
+        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
@@ -240,6 +285,9 @@ def cancel_promotion(token):
     if not admin_user.is_admin or not admin_user.admin_profile.verified:
         # response['message'] = 'User is not authorised to promote other users.'
         # return jsonify(response), 401
+        message = 'User is not authorised to promote other users.'
+        logger.info(message)
+        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
@@ -276,20 +324,35 @@ def verify_promotion(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
+        message = 'URLTokenError'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
+        message = 'URL Token has expired.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
     except Exception as e:
+        message = 'An Exception Occured.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
 
     # Ensure the user exists in the database
     if not User.objects(email=email):
+        message = 'User does not exist.'
+        logger.info(message)
+        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
@@ -300,6 +363,9 @@ def verify_promotion(token):
     # Ensure the user is verified, an admin and that they have a valid admin
     # profile
     if not user.verified:
+        message = 'User is not verified.'
+        logger.info(message)
+        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
@@ -307,10 +373,16 @@ def verify_promotion(token):
     # database clean method for user will set user.is_admin to true after the
     # admin profile is created.
     if not user.is_admin:
+        message = 'User is not an admin.'
+        logger.info(message)
+        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
     if user.disable_admin:
+        message = 'User account is disabled.'
+        logger.info(message)
+        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
@@ -360,6 +432,8 @@ class DisableAccount(Resource):
         # Validating empty payload
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not post_data:
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # Extract the request body data
@@ -367,6 +441,8 @@ class DisableAccount(Resource):
 
         if not email:
             response['message'] = 'No email provided.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # Verify it is actually a valid email
@@ -379,11 +455,16 @@ class DisableAccount(Resource):
             # email is not valid, exception message is human-readable
             response['error'] = str(e)
             response['message'] = 'Invalid email.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
 
         # Validation checks
         if not User.objects(email=valid_email):
             response['message'] = 'User does not exist.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         user = User.objects.get(email=valid_email)
@@ -433,14 +514,26 @@ def confirm_disable_account(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
+        message = 'URLTokenError'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
+        message = 'URL Token has expired.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
     except Exception as e:
+        message = 'An Exception Occurred.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )

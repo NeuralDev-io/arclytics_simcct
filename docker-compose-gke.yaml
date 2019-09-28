@@ -61,6 +61,8 @@ services:
     environment:
       - REACT_APP_SIM_HOST=https://api.arclytics.io
       - REACT_APP_SIM_PORT=443
+      - REACT_APP_APM_URL=https://app.arclytics.io/apm
+      - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logs
     depends_on:
       - simcct
       - mongodb
@@ -80,7 +82,7 @@ services:
     expose:
       - 8000
     environment:
-      - FLASK_APP=sim_api/app.py
+      - FLASK_APP=sim_api/__init__.py
       - FLASK_ENV=production
       - APP_SETTINGS=configs.flask_conf.ProductionConfig
       - SECRET_KEY=${SECRET_KEY}
@@ -100,7 +102,7 @@ services:
       - FLUENTD_HOST=fluentd-service
       - FLUENTD_PORT=24224
       - FLUENTD_PREFIX_TAG=simcct
-      - ELASTIC_APM_SERVER_URL=http://apm-server:8200
+      - ELASTIC_APM_SERVER_URL=http://apm-service:8200
     depends_on:
       - mongodb
       - redis

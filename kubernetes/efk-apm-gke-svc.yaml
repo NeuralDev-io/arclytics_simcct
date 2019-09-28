@@ -19,10 +19,10 @@ data:
         allow_origins: ['*']
         library_pattern: "node_modules|bower_components|~"
         exclude_from_grouping: "^/webpack"
-        source_mapping:
-          enabled: true
-          cache.expiration: 5m
-          index_pattern: "apm-*-sourcemap*"
+        #source_mapping:
+        #  enabled: true
+        #  cache.expiration: 5m
+        #  index_pattern: "apm-*-sourcemap*"
       ssl:
         enabled: true
         key: "/usr/share/ssl/tls.key"

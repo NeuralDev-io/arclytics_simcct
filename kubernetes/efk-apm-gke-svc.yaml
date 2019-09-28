@@ -13,16 +13,16 @@ data:
       frontend:
         enabled: false
       rum:
-        enabled: false
-      #  event_rate.limit: 300
-      #  event_rate.lru_size: 1000
-      #  allow_origins: ['*']
-      #  library_pattern: "node_modules|bower_components|~"
-      #  exclude_from_grouping: "^/webpack"
-      #  source_mapping:
-      #    enabled: true
-      #    cache.expiration: 5m
-      #    index_pattern: "apm-*-sourcemap*"
+        enabled: true
+        event_rate.limit: 300
+        event_rate.lru_size: 1000
+        allow_origins: ['*']
+        library_pattern: "node_modules|bower_components|~"
+        exclude_from_grouping: "^/webpack"
+        source_mapping:
+          enabled: true
+          cache.expiration: 5m
+          index_pattern: "apm-*-sourcemap*"
     setup.template.settings:
       index:
         number_of_shards: 1

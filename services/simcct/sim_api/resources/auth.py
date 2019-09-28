@@ -79,11 +79,23 @@ def confirm_email(token):
     # We must confirm the token by decoding it
     try:
         email = confirm_token(token)
-    except URLTokenError:
+    except URLTokenError as e:
+        message = 'URLTokenError'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
-    except URLTokenExpired:
+    except URLTokenExpired as e:
+        message = 'Token expired.'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
-    except Exception:
+    except Exception as e:
+        message = 'An Exception Occurred.'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     # We ensure there is a user for this email
@@ -105,6 +117,7 @@ def confirm_email_resend(user):
 
     if user.verified:
         response['message'] = 'User is already verified.'
+        logger.info({'user': str(user.id), 'message': response['message']})
         return jsonify(response), 400
 
     # generate the confirmation token for verifying email
@@ -142,12 +155,16 @@ def confirm_email_resend_after_registration() -> Tuple[dict, int]:
     email = data.get('email', None)
 
     if not User.objects(email=email):
+        log_message = 'User does not exist'
+        logger.warning(log_message)
         # response['message'] = 'User does not exist.'
         return jsonify(response), 200
 
     user = User.objects.get(email=email)
 
     if user.verified:
+        log_message = 'User is already verified.'
+        logger.warning(log_message)
         # response['message'] = 'User is already verified.'
         return jsonify(response), 200
 
@@ -188,10 +205,22 @@ def confirm_email_admin(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
+        message = 'URLTokenError'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except URLTokenExpired as e:
+        message = 'Token expired.'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except Exception as e:
+        message = 'An Exception Occured.'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     user = User.objects.get(email=email)
@@ -222,15 +251,24 @@ def register_user() -> Tuple[dict, int]:
     last_name = post_data.get('last_name', '')
 
     if not email:
-        response['message'] = 'A user account must have an email.'
+        message = 'A user must have an email.'
+        logger.info(message)
+        response['message'] = message
+        apm.capture_message(message)
         return jsonify(response), 400
 
     if not password:
-        response['message'] = 'A user account must have a password.'
+        message = 'A user account must have a password.'
+        logger.info(message)
+        response['message'] = message
+        apm.capture_message(message)
         return jsonify(response), 400
 
     if len(str(password)) < 6 or len(str(password)) > 120:
-        response['message'] = 'The password is invalid.'
+        message = 'The password is invalid.'
+        logger.info(message)
+        response['message'] = message
+        apm.capture_message(message)
         return jsonify(response), 400
 
     # Create a Mongo User object if one doesn't exists
@@ -241,7 +279,10 @@ def register_user() -> Tuple[dict, int]:
         # ensure we set an encrypted password.
         new_user.set_password(raw_password=password)
     else:
-        response['message'] = 'This user already exists.'
+        message = 'This user already exists.'
+        logger.info(message)
+        apm.capture_message(message)
+        response['message'] = message
         return jsonify(response), 400
 
     try:
@@ -276,12 +317,18 @@ def register_user() -> Tuple[dict, int]:
         return jsonify(response), 201
 
     except ValidationError as e:
-        # logger.error('Validation Error: {}'.format(e))
-        response['message'] = 'The user cannot be validated.'
+        message = 'The user cannot be validated.'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
+        response['message'] = message
         return jsonify(response), 400
     except NotUniqueError as e:
-        # logger.error('Not Unique Error: {}'.format(e))
-        response['message'] = 'The users details already exists.'
+        message = 'The users details already exists.'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
+        response['message'] = message
         return jsonify(response), 400
 
 
@@ -297,6 +344,8 @@ def login() -> any:
     # Validating empty payload
     response = {'status': 'fail', 'message': 'Invalid payload.'}
     if not post_data:
+        logger.info('Invaid payload.')
+        apm.capture_message('Invalid payload.')
         return jsonify(response), 400
 
     # Extract the request data required for login
@@ -306,14 +355,20 @@ def login() -> any:
     # Validate some of these
     if not email:
         response['message'] = 'You must provide an email.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     if not password:
         response['message'] = 'You must provide a password.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     if len(str(password)) < 6 or len(str(password)) > 254:
         response['message'] = 'Email or password combination incorrect.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     try:
@@ -322,8 +377,11 @@ def login() -> any:
             logger.debug({'email': email, 'message': response['message']})
             return jsonify(response), 404
     except Exception as e:
-        logger.error(str(e))
-        response['message'] = 'User does not exist.'
+        message = 'User does not exist'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
+        response['message'] = message
         return jsonify(response), 404
 
     user = User.objects.get(email=email)
@@ -333,12 +391,12 @@ def login() -> any:
         if auth_token:
             if not user.active:
                 response['message'] = 'Your Account has been disabled.'
-                logger.info(
-                    {
-                        'message': response['message'],
-                        'user': user.email
-                    }
-                )
+                log_message = {
+                    'message': response['message'],
+                    'user': user.email
+                }
+                logger.info(log_message)
+                apm.capture_message(log_message)
                 return jsonify(response), 401
 
             # Let's save some stats for later
@@ -388,15 +446,15 @@ def login() -> any:
                         country=country, state=state, ip_address=ip_address
                     )
                 )
-                logger.info(
-                    {
-                        'message': 'User logged in',
-                        'user': user.email,
-                        'country': country,
-                        'state': state,
-                        'ip_address': ip_address
-                    }
-                )
+                log_message = {
+                    'message': 'User logged in',
+                    'user': user.email,
+                    'country': country,
+                    'state': state,
+                    'ip_address': ip_address
+                }
+                logger.info(log_message)
+                apm.capture_message(log_message)
                 user.save()
             except AddressNotFoundError:
                 user.reload()
@@ -425,6 +483,8 @@ def login() -> any:
             return jsonify(response), 200
 
     response['message'] = 'Email or password combination incorrect.'
+    logger.info(response['message'])
+    apm.capture_message(response['message'])
     return jsonify(response), 404
 
 
@@ -440,24 +500,34 @@ def check_password(user) -> Tuple[dict, int]:
 
     response = {'status': 'fail', 'message': 'Invalid payload.'}
     if not data:
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     password = data.get('password', '')
 
     if not password:
         response['message'] = 'You must provide a password.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     if len(str(password)) < 6 or len(str(password)) > 254:
         response['message'] = 'Password incorrect.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     if bcrypt.check_password_hash(user.password, password):
         response.pop('message')
         response['status'] = 'success'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 200
 
     response['message'] = 'Password incorrect.'
+    logger.info(response['message'])
+    apm.capture_message(response['message'])
     return jsonify(response), 400
 
 
@@ -476,6 +546,8 @@ def reset_password() -> Tuple[dict, int]:
     # get the auth token
     auth_header = request.headers.get('Authorization', None)
     if not auth_header:
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     token = auth_header.split(' ')[1]
@@ -485,11 +557,15 @@ def reset_password() -> Tuple[dict, int]:
     resp_or_id = User.decode_password_reset_token(auth_token=token)
     if isinstance(resp_or_id, str):
         response['message'] = resp_or_id
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     request_data = request.get_json()
     if not request_data:
         response['message'] = 'Invalid payload.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     # validate the passwords
@@ -498,20 +574,28 @@ def reset_password() -> Tuple[dict, int]:
 
     if not password or not confirm_password:
         response['message'] = 'Must provide a password and confirm password.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     if len(str(password)) < 6 or len(str(password)) > 120:
         response['message'] = 'The password is invalid.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     if not password == confirm_password:
         response['message'] = 'Passwords do not match.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     # Validate the user is active
     user = User.objects.get(id=resp_or_id)
     if not user or not user.active:
         response['message'] = 'User does not exist.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     # The email to notify the user that their password has been changed.
@@ -601,12 +685,16 @@ def reset_password_email() -> Tuple[dict, int]:
     # Validating empty payload
     response = {'status': 'fail', 'message': 'Invalid payload.'}
     if not post_data:
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     # Get the email from the client-side request body
     post_email = post_data.get('email')
 
     if not post_email:
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     # Verify it is actually a valid email
@@ -619,11 +707,16 @@ def reset_password_email() -> Tuple[dict, int]:
         # email is not valid, exception message is human-readable
         response['error'] = str(e)
         response['message'] = 'Invalid email.'
+        log_message = {'message', response['message'], 'error', str(e)}
+        logger.error(log_message)
+        apm.capture_exception()
         return jsonify(response), 400
 
     # Verify the email matches a user in the database
     if not User.objects(email=valid_email):
         response['message'] = 'User does not exist.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 404
 
     # If there is a user with this email address, we must send to that email
@@ -632,6 +725,8 @@ def reset_password_email() -> Tuple[dict, int]:
     # Verify the user's account has been verified/confirmed
     if not user.verified:
         response['message'] = 'The user must verify their email.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     # Generate the JWT token with the user id embedded
@@ -679,6 +774,8 @@ def change_password(user):
 
     request_data = request.get_json()
     if not request_data:
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     # validate the old password first because we want to ensure we have the
@@ -689,23 +786,33 @@ def change_password(user):
 
     if not old_password:
         response['message'] = 'Must provide the current password.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     if not new_password or not confirm_password:
         response['message'] = 'Must provide a password and confirm password.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     if len(str(new_password)) < 6 or len(str(new_password)) > 120:
         response['message'] = 'The password is invalid.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     if not new_password == confirm_password:
         response['message'] = 'Passwords do not match.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     # Validate the user is active
     if not user.verified:
         response['message'] = 'User needs to verify account.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     if bcrypt.check_password_hash(user.password, old_password):
@@ -736,6 +843,8 @@ def change_password(user):
         return jsonify(response), 200
 
     response['message'] = 'Password is not correct.'
+    logger.info(response['message'])
+    apm.capture_message(response['message'])
     return jsonify(response), 401
 
 
@@ -746,12 +855,16 @@ def change_email(user) -> Tuple[dict, int]:
 
     request_data = request.get_json()
     if not request_data:
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     new_email = request_data.get('new_email', None)
 
     if not new_email:
         response['message'] = 'No new email given.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     # Validate new email address.
@@ -761,6 +874,9 @@ def change_email(user) -> Tuple[dict, int]:
     except EmailNotValidError as e:
         response['error'] = str(e)
         response['message'] = 'Invalid email.'
+        log_message = {'message': response['message'], 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return jsonify(response), 400
 
     user.email = valid_new_email

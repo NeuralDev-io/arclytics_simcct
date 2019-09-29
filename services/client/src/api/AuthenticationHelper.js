@@ -8,7 +8,8 @@
  * @version 0.9.0
  * @author Arvy Salazar, Andrew Che, Dalton Le
  */
-import { ARC_URL } from '../constants'
+
+const ARC_URL = `${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim`
 
 export const login = async (values, resolve, reject) => {
   fetch(`${ARC_URL}/auth/login`, {
@@ -83,10 +84,6 @@ export const logout = () => fetch(`${ARC_URL}/auth/logout`, {
  */
 export const checkAuthStatus = async () => {
   let auth
-  // Create a custom APM transaction trace
-  // const transaction = apm.startTransaction('Auth Status', 'Auth')
-  // apm.addLabels('auth')
-  // const httpSpan = transaction.startSpan('FETCH /auth/status', 'http')
   try {
     auth = await fetch(`${ARC_URL}/auth/status`, {
       method: 'GET',
@@ -99,17 +96,10 @@ export const checkAuthStatus = async () => {
         if (res.status !== 200) {
           throw new Error('Unauthorised')
         }
-        // End the current transaction at the end of the response call back
-        // const transactionEnding = apm.getCurrentTransaction()
-        // if (transactionEnding) {
-        //   httpSpan.end()
-        //   transactionEnding.end()
-        // }
         return res.json()
       })
       .then(res => res)
   } catch (err) {
-    // apm.captureError('/auth/status failed.')
     return { status: 'fail' }
   }
   return auth
@@ -153,7 +143,7 @@ export const forgotPassword = (resolve, reject, email) => {
       if (res.status === 'success') {
         resolve(res.message)
       } else {
-      // return an error message as string
+        // return an error message as string
         reject(res.message)
       }
     })

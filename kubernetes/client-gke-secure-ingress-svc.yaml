@@ -66,6 +66,6 @@ spec:
           - name: REACT_APP_SIM_PORT
             value: "8000"
           - name: REACT_APP_APM_URL
-            value: "https://app.arclytics.io/apm"
+            value: "https://apm.arclytics.io"
           - name: REACT_APP_FLUENTD_URL
             value: "https://app.arclytics.io/logs"

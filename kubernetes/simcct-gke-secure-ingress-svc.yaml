@@ -133,7 +133,12 @@ spec:
           - name: FLUENTD_SCHEME
             value: "http"
           - name: ELASTIC_APM_SERVER_URL
-            value: http://apm-service.arclytics.svc.cluster.local:8200
+            value: https://apm-service.arclytics.svc.cluster.local:8200
+          - name: ELASTIC_APM_SECRET_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: apm-secret-token
+                key: secret_token
           volumeMounts:
             - mountPath: /usr/src/app/certs
               readOnly: true

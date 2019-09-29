@@ -110,7 +110,7 @@ class ProductionConfig(BaseConfig):
     ELASTIC_APM = {
         'SERVER_URL': env.get('ELASTIC_APM_SERVER_URL', None),
         'SERVICE_NAME': 'simcct',
-        'SECRET_TOKEN': env.get('ELASTIC_APM_SECRET_TOKEN'),
         'CAPTURE_BODY': 'all',
-        'DEBUG': False
+        'DEBUG': False,
+        # 'SECRET_TOKEN': env.get('ELASTIC_APM_SECRET_TOKEN'),
     }

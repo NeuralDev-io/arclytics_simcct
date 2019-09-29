@@ -10,6 +10,7 @@
   "homepage": "https://app.arclytics.io",
   "dependencies": {
     "@material-ui/core": "^4.4.0",
+    "babel-eslint": "10.0.2",
     "classnames": "^2.2.6",
     "file-saver": "^2.0.2",
     "formik": "^1.5.7",
@@ -35,7 +36,7 @@
   },
   "scripts": {
     "start": "react-scripts --max_old_space_size=2048 start",
-    "build": "react-scripts --max_old_space_size=4096 build",
+    "build": "react-scripts --max_old_space_size=8092 build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint --ext .js,.jsx ./",
@@ -58,7 +59,6 @@
     ]
   },
   "devDependencies": {
-    "babel-eslint": "^10.0.2",
     "enzyme": "^3.9.0",
     "enzyme-adapter-react-16": "^1.11.2",
     "eslint": "^6.1.0",

@@ -5,3 +5,6 @@ htmlcov
 .dockerignore
 Dockerfile
 Dockerfile-prod
+cypress
+cypress.json
+README.md

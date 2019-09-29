@@ -1,7 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
- *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
@@ -12,7 +9,6 @@
  * @author Arvy Salazar, Andrew Che, Dalton Le
  */
 import { ARC_URL } from '../constants'
-// import apm from '../rum'
 
 export const login = async (values, resolve, reject) => {
   fetch(`${ARC_URL}/auth/login`, {

@@ -1,7 +1,13 @@
 {
-  "name": "client",
+  "name": "arc_client",
   "version": "1.2.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://codeninja55@bitbucket.org/neuraldev/arclytics_sim.git"
+  },
+  "license": "MIT",
+  "homepage": "https://app.arclytics.io",
   "dependencies": {
     "@material-ui/core": "^4.4.0",
     "classnames": "^2.2.6",
@@ -57,7 +63,7 @@
     "enzyme-adapter-react-16": "^1.11.2",
     "eslint": "^6.1.0",
     "eslint-config-airbnb": "^17.1.1",
-    "eslint-plugin-import": "^2.18.0",
+    "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.14.3",
     "typescript": "^3.5.3"

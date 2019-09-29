@@ -23,11 +23,11 @@ ARG REACT_APP_FLUENTD_URL
 ENV REACT_APP_FLUENTD_URL ${REACT_APP_FLUENTD_URL}
 
 COPY package.json /app/package.json
-RUN yarn install --silent --only=prod
+RUN yarn install --silent --prod
 COPY . /app
 
 # Build the app using npm before we pass it to the production env
-RUN yarn build
+RUN yarn build --prod
 
 # ========== # PRODUCTION ENVIRONMENT # ========== #
 FROM nginx:1.16.0-alpine

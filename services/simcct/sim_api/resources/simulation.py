@@ -53,6 +53,8 @@ class Simulation(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         log_msg = json.dumps(
@@ -66,6 +68,8 @@ class Simulation(Resource):
         session_configs = session_store.get('configurations')
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         configs = ConfigurationsSchema().load(session_configs)
@@ -86,6 +90,8 @@ class Simulation(Resource):
             and not sess_alloy_store['alloys']['mix']
         ) or not sess_alloy_store:
             response['message'] = 'No previous session alloy was set.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         alloy_store = AlloyStoreSchema().load(sess_alloy_store)
@@ -94,10 +100,14 @@ class Simulation(Resource):
         # the calculations for CCT/TTT will cause many problems.
         if not configs['ae1_temp'] > 0.0 or not configs['ae3_temp'] > 0.0:
             response['message'] = 'Ae1 and Ae3 value cannot be less than 0.0.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         if not configs['ms_temp'] > 0.0 or not configs['bs_temp'] > 0.0:
             response['message'] = 'MS and BS value cannot be less than 0.0.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         alloy = None

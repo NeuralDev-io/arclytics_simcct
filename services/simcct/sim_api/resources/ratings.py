@@ -6,13 +6,9 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['David Matthews <@tree1004>']
-
-__credits__ = ['']
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth']
 __license__ = 'MIT'
 __version__ = '0.1.0'
-__maintainer__ = 'David Matthews'
-__email__ = 'davidmatthews1004@gmail.com'
 __status__ = 'development'
 __date__ = '2019.08.26'
 """ratings.py: 
@@ -48,6 +44,7 @@ class UserRating(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self, user) -> Tuple[dict, int]:
+        """Post a rating and save it to the user's list of ratings"""
         # Get post data
         data = request.get_json()
 
@@ -87,6 +84,11 @@ class UserFeedback(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self, user) -> Tuple[dict, int]:
+        """
+        Method to post feedback and try to create a Feedback object then
+        notify the subscribed admins of the new post.
+        """
+
         # Get post data
         data = request.get_json()
 

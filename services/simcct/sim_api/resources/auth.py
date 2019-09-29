@@ -251,7 +251,7 @@ def register_user() -> Tuple[dict, int]:
     last_name = post_data.get('last_name', '')
 
     if not email:
-        message = 'A user must have an email.'
+        message = 'A user account must have an email.'
         logger.info(message)
         response['message'] = message
         apm.capture_message(message)
@@ -521,8 +521,6 @@ def check_password(user) -> Tuple[dict, int]:
     if bcrypt.check_password_hash(user.password, password):
         response.pop('message')
         response['status'] = 'success'
-        logger.info(response['message'])
-        apm.capture_message(response['message'])
         return jsonify(response), 200
 
     response['message'] = 'Password incorrect.'

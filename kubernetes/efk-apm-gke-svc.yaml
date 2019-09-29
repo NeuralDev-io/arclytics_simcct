@@ -10,6 +10,11 @@ data:
   apm-server.yml: |
     apm-server:
       host: "0.0.0.0:8200"
+      ssl:
+        enabled: true
+        key: "/usr/share/ssl/tls.key"
+        certificate: "/usr/share/ssl/tls.crt"
+      secret_token: "#{ENV['ELASTIC_APM_SECRET_TOKEN']}"
       frontend:
         enabled: false
       rum:
@@ -23,10 +28,6 @@ data:
         #  enabled: true
         #  cache.expiration: 5m
         #  index_pattern: "apm-*-sourcemap*"
-      ssl:
-        enabled: true
-        key: "/usr/share/ssl/tls.key"
-        certificate: "/usr/share/ssl/tls.crt"
     setup.template.settings:
       index:
         number_of_shards: 1
@@ -36,6 +37,9 @@ data:
       host: http://kibana-service.arclytics.svc.cluster.local:5601
     output.elasticsearch:
       hosts: ["http://elasticsearch-0.elasticsearch.arclytics.svc.cluster.local:9200", "http://elasticsearch-1.elasticsearch.arclytics.svc.cluster.local:9200"]
+      username: "#{ENV['ELASTICSEARCH_USER'] || 'elastic'}"
+      passowrd: "#{ENV['ELASTICSEARCH_PASSWORD'] || ''}"
+      #protocol: https
 ---
 apiVersion: v1
 kind: Service
@@ -81,10 +85,27 @@ spec:
               containerPort: 8200
               protocol: TCP
           env:
+            - name: ELASTIC_APM_SECRET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: apm-secret-token
+                  key: secret_token
             - name: ELASTICSEARCH_HOST
               value: elasticsearch.arclytics.svc.cluster.local
             - name: ELASTICSEARCH_PORT
               value: "9200"
+            # X-Pack Authentication  -- required by fluentd even if not used
+            # =====================
+            - name: ELASTICSEARCH_USER
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: elastic_user
+            - name: ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: elastic_password
             - name: KIBANA_HOST
               value: kibana-service.arclytics.svc.cluster.local
             - name: KIBANA_PORT
@@ -103,4 +124,4 @@ spec:
             name: apm-server-config
         - name: apm-server-ssl
           secret:
-            secretName: client-app-https-secret
+            secretName: apm-app-https-secret

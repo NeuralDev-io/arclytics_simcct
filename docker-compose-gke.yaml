@@ -61,7 +61,7 @@ services:
     environment:
       - REACT_APP_SIM_HOST=https://api.arclytics.io
       - REACT_APP_SIM_PORT=443
-      - REACT_APP_APM_URL=https://app.arclytics.io/apm
+      - REACT_APP_APM_URL=https://apm.arclytics.io
       - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logs
     depends_on:
       - simcct
@@ -102,7 +102,7 @@ services:
       - FLUENTD_HOST=fluentd-service
       - FLUENTD_PORT=24224
       - FLUENTD_PREFIX_TAG=simcct
-      - ELASTIC_APM_SERVER_URL=http://apm-service:8200
+      - ELASTIC_APM_SERVER_URL=https://apm-service:8200
     depends_on:
       - mongodb
       - redis

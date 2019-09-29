@@ -1183,6 +1183,13 @@ while [[ "$1" != "" ]] ; do
             kubectl create secret generic shared-bootstrap-secrets \
                 --from-file=internal-auth-mongodb-keyfile=${TMPFILE} \
                 --namespace=arclytics
+
+            # FOR APM SECRET TOKEN
+            TMPFILE=$(mktemp)
+            /usr/bin/openssl rand -base64 741 > ${TMPFILE}
+            kubectl create secret generic apm-secret-token \
+                --from-file=secret_token=${TMPFILE} \
+                --namespace=arclytics
             rm ${TMPFILE}
 
             # Apply the SSL certificates to GCP management as well.
@@ -1205,6 +1212,11 @@ while [[ "$1" != "" ]] ; do
             kubectl create secret tls ${SIMCCT_HTTPS_TLS_NAME} \
                --cert "${WORKDIR}/certs/io.arclytics.api.crt" \
                --key "${WORKDIR}/certs/io.arclytics.api.key" \
+               --namespace=arclytics
+            APM_HTTPS_TLS_NAME="apm-app-https-secret"
+            kubectl create secret tls ${APM_HTTPS_TLS_NAME} \
+               --cert "${WORKDIR}/certs/io.arclytics.apm.fullchain.pem" \
+               --key "${WORKDIR}/certs/io.arclytics.apm.privkey.pem" \
                --namespace=arclytics
             kubectl create secret tls ${WEBSITE_HTTPS_TLS_NAME} \
                --cert "${WORKDIR}/certs/io.arclytics.crt" \

@@ -95,7 +95,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - CLIENT_PROTOCOL=https
+      - CLIENT_SCHEME=https
       - CLIENT_HOST=app.arclytics.io
       - CLIENT_PORT=443
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786

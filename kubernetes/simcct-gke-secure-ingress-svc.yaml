@@ -118,7 +118,7 @@ spec:
               secretKeyRef:
                 name: credentials
                 key: redis_password
-          - name: CLIENT_PROTOCOL
+          - name: CLIENT_SCHEME
             value: "https"
           - name: CLIENT_HOST
             value: "app.arclytics.io"

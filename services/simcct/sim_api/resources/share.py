@@ -6,13 +6,9 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['David Matthews <@tree1004>']
-
-__credits__ = ['']
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth']
 __license__ = 'MIT'
 __version__ = '0.1.0'
-__maintainer__ = 'David Matthews'
-__email__ = 'davidmatthews1004@gmail.com'
 __status__ = 'development'
 __date__ = '2019.08.11'
 """share.py: 
@@ -59,6 +55,14 @@ class ShareSimulationLink(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self, user) -> Tuple[dict, int]:
+        """Generate a link for a shared sim object and return it to the
+        frontend.
+
+        :param owner: User object for the owner of the shared simulation object
+        returned by the authenticate middleware
+        :return: Returns a json response
+        """
+
         # Get post data
         data = request.get_json()
 
@@ -167,6 +171,13 @@ class ShareSimulationEmail(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self, owner) -> Tuple[dict, int]:
+        """Generate a link for a shared sim object and send it to the list of
+        email address provided.
+
+        :param owner: User object for the owner of the shared simulation object
+        returned by the authenticate middleware
+        :return: Returns a json response
+        """
         # Get post data
         data = request.get_json()
 

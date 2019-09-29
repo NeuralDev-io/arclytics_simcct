@@ -56,6 +56,8 @@ class Configurations(Resource):
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         patch_data = request.get_json()
         if not patch_data:
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # First we need to make sure there are actually some changes to be made
@@ -75,6 +77,8 @@ class Configurations(Resource):
 
         if not is_update:
             response['message'] = 'Payload does not have any valid keys.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # If there are changes to be made, then we will get the session store.
@@ -82,11 +86,15 @@ class Configurations(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         sess_configs = session_store.get('configurations')
         if sess_configs is None:
             response['message'] = 'No previous session configurations was set.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         grain_size = patch_data.get('grain_size', None)
@@ -182,12 +190,16 @@ class ConfigsMethod(Resource):
 
         post_data = request.get_json()
         if not post_data:
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
         # Extract the method from the post request body
         method = post_data.get('method', None)
 
         if not method:
             response['message'] = 'No method was provided.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         if (
@@ -198,18 +210,24 @@ class ConfigsMethod(Resource):
                 'Invalid method provided (must be Li98 or '
                 'Kirkaldy83).'
             )
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         session_store = SimSessionService().load_session()
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_configs = session_store.get('configurations')
 
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         # Change the configs
@@ -254,12 +272,16 @@ class MartensiteStart(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_configs = session_store.get('configurations')
 
         if not session_configs:
             response['message'] = "No previous session initiated."
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # We need to convert them to our enums as required by the calculations.
@@ -278,6 +300,8 @@ class MartensiteStart(Resource):
 
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # DECISION:
@@ -294,6 +318,8 @@ class MartensiteStart(Resource):
 
         if comp_list is None:
             response['message'] = 'User has not set an Alloy.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         try:
@@ -339,6 +365,8 @@ class MartensiteStart(Resource):
 
         post_data = request.get_json()
         if not post_data:
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # Let's do some validation of those arguments we really need.
@@ -347,10 +375,14 @@ class MartensiteStart(Resource):
 
         if not ms_temp:
             response['message'] = 'MS temperature is required.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         if not ms_rate_param:
             response['message'] = 'MS Rate Parameter temperature is required.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         session_store = SimSessionService().load_session()
@@ -358,12 +390,16 @@ class MartensiteStart(Resource):
         # If there is an error loading the session, we get an error message
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_configs = session_store.get('configurations', None)
 
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         session_configs['auto_calculate_ms'] = False
@@ -407,12 +443,16 @@ class BainiteStart(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_configs = session_store.get('configurations')
 
         if not session_configs:
             response['message'] = "No previous session initiated."
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # We need to convert them to our enums as required by the calculations.
@@ -426,6 +466,8 @@ class BainiteStart(Resource):
 
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # DECISION:
@@ -442,6 +484,8 @@ class BainiteStart(Resource):
 
         if comp_list is None:
             response['message'] = 'User has not set an Alloy.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         try:
@@ -485,6 +529,8 @@ class BainiteStart(Resource):
 
         post_data = request.get_json()
         if not post_data:
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # Let's do some validation of those arguments we really need.
@@ -492,17 +538,23 @@ class BainiteStart(Resource):
 
         if not bs_temp:
             response['message'] = 'BS temperature is required.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         session_store = SimSessionService().load_session()
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_configs = session_store.get('configurations')
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         session_configs['auto_calculate_bs'] = False
@@ -543,12 +595,16 @@ class Austenite(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_configs = session_store.get('configurations')
 
         if not session_configs:
             response['message'] = "No previous session initiated."
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         session_configs['auto_calculate_ae'] = True
@@ -557,6 +613,8 @@ class Austenite(Resource):
 
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         comp_list: list = []
@@ -572,6 +630,8 @@ class Austenite(Resource):
 
         if comp_list is None:
             response['message'] = 'User has not set an Alloy.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         try:
@@ -614,6 +674,8 @@ class Austenite(Resource):
 
         post_data = request.get_json()
         if not post_data:
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         # Let's do some validation of those arguments we really need.
@@ -622,22 +684,30 @@ class Austenite(Resource):
 
         if not ae1_temp:
             response['message'] = 'Ae1 temperature is required.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         if not ae3_temp:
             response['message'] = 'Ae3 temperature is required.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 400
 
         session_store = SimSessionService().load_session()
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_configs = session_store.get('configurations')
 
         if session_configs is None:
             response['message'] = 'No previous session configurations was set.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         session_configs['auto_calculate_ae'] = False

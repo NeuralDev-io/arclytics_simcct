@@ -60,12 +60,3 @@ spec:
               - /etc/nginx/healthy
           initialDelaySeconds: 15
           periodSeconds: 60
-        env:
-          - name: REACT_APP_SIM_HOST
-            value: "https://api.arclytics.io"
-          - name: REACT_APP_SIM_PORT
-            value: "8000"
-          - name: REACT_APP_APM_URL
-            value: "https://apm.arclytics.io"
-          - name: REACT_APP_FLUENTD_URL
-            value: "https://app.arclytics.io/logs"

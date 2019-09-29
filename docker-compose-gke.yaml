@@ -102,7 +102,8 @@ services:
       - FLUENTD_HOST=fluentd-service
       - FLUENTD_PORT=24224
       - FLUENTD_PREFIX_TAG=simcct
-      - ELASTIC_APM_SERVER_URL=https://apm-service:8200
+      - ELASTIC_APM_SERVER_URL=http://apm-service:8200
+      - ELASTIC_APM_SECRET_TOKEN=${SECRET_TOKEN}
     depends_on:
       - mongodb
       - redis
@@ -132,7 +133,8 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - ELASTIC_APM_SERVER_URL=http://apm-server:8200
+      - ELASTIC_APM_SERVER_URL=http://apm-service:8200
+      - ELASTIC_APM_SECRET_TOKEN=${SECRET_TOKEN}
     depends_on:
       - redis
     networks:

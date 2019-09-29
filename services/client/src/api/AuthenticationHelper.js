@@ -10,10 +10,9 @@
  *
  * @version 0.9.0
  * @author Arvy Salazar, Andrew Che, Dalton Le
- * @github Xaraox
  */
-import apm from '../rum'
 import { ARC_URL } from '../constants'
+// import apm from '../rum'
 
 export const login = async (values, resolve, reject) => {
   fetch(`${ARC_URL}/auth/login`, {
@@ -89,9 +88,9 @@ export const logout = () => fetch(`${ARC_URL}/auth/logout`, {
 export const checkAuthStatus = async () => {
   let auth
   // Create a custom APM transaction trace
-  const transaction = apm.startTransaction('Auth Status', 'Auth')
-  apm.addTags('auth')
-  const httpSpan = transaction.startSpan('FETCH /auth/status', 'http')
+  // const transaction = apm.startTransaction('Auth Status', 'Auth')
+  // apm.addLabels('auth')
+  // const httpSpan = transaction.startSpan('FETCH /auth/status', 'http')
   try {
     auth = await fetch(`${ARC_URL}/auth/status`, {
       method: 'GET',
@@ -105,16 +104,16 @@ export const checkAuthStatus = async () => {
           throw new Error('Unauthorised')
         }
         // End the current transaction at the end of the response call back
-        const transactionEnding = apm.getCurrentTransaction()
-        if (transactionEnding) {
-          httpSpan.end()
-          transactionEnding.end()
-        }
+        // const transactionEnding = apm.getCurrentTransaction()
+        // if (transactionEnding) {
+        //   httpSpan.end()
+        //   transactionEnding.end()
+        // }
         return res.json()
       })
       .then(res => res)
   } catch (err) {
-    apm.captureError('/auth/status failed.')
+    // apm.captureError('/auth/status failed.')
     return { status: 'fail' }
   }
   return auth

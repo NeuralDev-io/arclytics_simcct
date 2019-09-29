@@ -11,8 +11,8 @@ spec:
   tls:
     - secretName: client-app-https-secret
     - secretName: simcct-app-https-secret
-    - secretName: apm-app-https-secret
     - secretName: website-https-secret
+#    - secretName: apm-app-https-secret
   backend:
     serviceName: client-service
     servicePort: 8080
@@ -29,12 +29,12 @@ spec:
         - backend:
             serviceName: client-service
             servicePort: 8080
-  - host: apm.arclytics.io
-    http:
-      paths:
-        - backend:
-            serviceName: apm-service
-            servicePort: 8200
+#  - host: apm.arclytics.io
+#    http:
+#      paths:
+#        - backend:
+#            serviceName: apm-service
+#            servicePort: 8200
 #  - host: arclytics.io
 #    http:
 #      paths:

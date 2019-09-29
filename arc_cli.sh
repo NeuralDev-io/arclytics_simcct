@@ -1185,12 +1185,12 @@ while [[ "$1" != "" ]] ; do
                 --namespace=arclytics
 
             # FOR APM SECRET TOKEN
-            TMPFILE=$(mktemp)
-            /usr/bin/openssl rand -base64 741 > ${TMPFILE}
-            kubectl create secret generic apm-secret-token \
-                --from-file=secret_token=${TMPFILE} \
-                --namespace=arclytics
-            rm ${TMPFILE}
+            #TMPFILE=$(mktemp)
+            #/usr/bin/openssl rand -base64 741 > ${TMPFILE}
+            #kubectl create secret generic apm-secret-token \
+            #    --from-file=secret_token=${TMPFILE} \
+            #    --namespace=arclytics
+            #rm ${TMPFILE}
 
             # Apply the SSL certificates to GCP management as well.
             gcloud compute ssl-certificates create ${CLIENT_SSL_NAME} \

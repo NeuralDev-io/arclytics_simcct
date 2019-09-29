@@ -2,6 +2,9 @@
 
 # ========== # BUILD ENVIRONMENT # ========== #
 FROM node:10.16.3-alpine as build
+
+RUN apk --no-cache add yarn
+
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 
@@ -20,11 +23,11 @@ ARG REACT_APP_FLUENTD_URL
 ENV REACT_APP_FLUENTD_URL ${REACT_APP_FLUENTD_URL}
 
 COPY package.json /app/package.json
-RUN npm install --silent --only=prod
+RUN yarn install --silent --only=prod
 COPY . /app
 
 # Build the app using npm before we pass it to the production env
-RUN npm run build
+RUN yarn build
 
 # ========== # PRODUCTION ENVIRONMENT # ========== #
 FROM nginx:1.16.0-alpine

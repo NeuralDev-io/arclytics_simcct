@@ -18,7 +18,7 @@ export const login = async (values, resolve, reject) => {
     mode: 'cors',
     credentials: 'include',
     headers: {
-      'content-Type': 'application/json',
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(values),
   })
@@ -41,7 +41,7 @@ export const signup = async (values, resolve, reject) => {
     method: 'POST',
     mode: 'cors',
     headers: {
-      'content-Type': 'application/json',
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       email,

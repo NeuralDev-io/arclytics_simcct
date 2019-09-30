@@ -7,9 +7,10 @@
  *
  * @version 0.9.0
  * @author Arvy Salazar, Andrew Che, Dalton Le
+ *
  */
 
-const ARC_URL = `${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim`
+import { ARC_URL } from '../constants'
 
 export const login = async (values, resolve, reject) => {
   fetch(`${ARC_URL}/auth/login`, {

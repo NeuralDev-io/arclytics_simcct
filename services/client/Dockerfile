@@ -19,10 +19,6 @@ RUN npm ci --silent
 # https://bitbucket.org/site/master/issues/16846/npm-error-eacces-permission-denied
 RUN npm config set unsafe-perm true
 
-#RUN npm install react-scripts@3.1.0 -g --silent
-RUN npm run lint-fix-docker
-RUN which react-scripts
-
 # Set environment variables at BUILD TIME
 ARG REACT_APP_SIM_HOST
 ENV REACT_APP_SIM_HOST $REACT_APP_SIM_HOST

@@ -3,8 +3,6 @@
 # ========== # BUILD ENVIRONMENT # ========== #
 FROM node:10.16.3-alpine as build
 
-RUN apk --no-cache add yarn
-
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 
@@ -22,12 +20,17 @@ ENV REACT_APP_APM_URL ${REACT_APP_APM_URL}
 ARG REACT_APP_FLUENTD_URL
 ENV REACT_APP_FLUENTD_URL ${REACT_APP_FLUENTD_URL}
 
-COPY package.json /app/package.json
-RUN yarn install --silent --prod
+# Install react-scripts pinned at 3.0.1 to global /usr/local/bin/react-scripts
+# This is due to there being an issue with 3.1.0
+#RUN npm install --silent react-scripts@3.0.1 --global
+#RUN which react-scripts
+
+COPY ./package.json /app/package.json
+RUN npm install --only=prod
 COPY . /app
 
 # Build the app using npm before we pass it to the production env
-RUN yarn build --prod
+RUN npm run build
 
 # ========== # PRODUCTION ENVIRONMENT # ========== #
 FROM nginx:1.16.0-alpine

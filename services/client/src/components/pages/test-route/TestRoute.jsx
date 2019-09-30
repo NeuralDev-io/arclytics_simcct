@@ -14,7 +14,7 @@ class TestRoute extends Component {
   // }
 
   render() {
-    const { err } =  this.state
+    const { err } = this.state
     if (err) {
       throw new Error('Test error!')
     }

@@ -32,9 +32,9 @@ spec:
   - host: logger.arclytics.io
     http:
       paths:
-          - backend:
-              serviceName: client-service
-              servicePort: 9880
+        - backend:
+            serviceName: client-service
+            servicePort: 9880
 #  - host: apm.arclytics.io
 #    http:
 #      paths:

@@ -1,7 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
- *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
@@ -10,7 +7,6 @@
  *
  * @version 0.9.0
  * @author Arvy Salazar, Andrew Che, Dalton Le
- * @github Xaraox
  */
 
 const ARC_URL = `${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim`
@@ -35,7 +31,6 @@ export const login = async (values, resolve, reject) => {
     })
     .catch(err => console.log(err))
 }
-
 
 export const signup = async (values, resolve, reject) => {
   const {
@@ -65,17 +60,15 @@ export const signup = async (values, resolve, reject) => {
     .catch(err => console.log(err))
 }
 
-export const logout = () => {
-  return fetch(`${ARC_URL}/auth/logout`, {
-    method: 'GET',
-    mode: 'cors',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then(res => res.json())
-}
+export const logout = () => fetch(`${ARC_URL}/auth/logout`, {
+  method: 'GET',
+  mode: 'cors',
+  credentials: 'include',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+  .then(res => res.json())
 
 /**
  * Check authentication status of current user.
@@ -150,7 +143,7 @@ export const forgotPassword = (resolve, reject, email) => {
       if (res.status === 'success') {
         resolve(res.message)
       } else {
-      // return an error message as string
+        // return an error message as string
         reject(res.message)
       }
     })

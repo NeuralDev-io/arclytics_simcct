@@ -40,10 +40,12 @@ class BaseConfig:
 
     # elastic application performance monitoring
     ELASTIC_APM = {
-        'SERVER_URL': env.get('ELASTIC_APM_SERVER_URL', None),
+        'SERVER_URL':
+            env.get('ELASTIC_APM_SERVER_URL', 'http://localhost:8200'),
         'SERVICE_NAME': 'celery',
-        'SECRET_TOKEN': env.get('SECRET_KEY'),
-        'DEBUG': False
+        'SECRET_TOKEN': env.get('SECRET_TOKEN'),
+        'CAPTURE_BODY': 'all',
+        'DEBUG': True
     }
 
 
@@ -77,3 +79,12 @@ class ProductionConfig(BaseConfig):
     redis_uri = f'redis://user:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}'
     CELERY_BROKER_URL = f'{redis_uri}/5'
     CELERY_RESULT_BACKEND = f'{redis_uri}/6'
+
+    # production elastic application performance monitoring
+    ELASTIC_APM = {
+        'SERVER_URL': env.get('ELASTIC_APM_SERVER_URL', None),
+        'SERVICE_NAME': 'simcct',
+        'CAPTURE_BODY': 'all',
+        'DEBUG': False,
+        # 'SECRET_TOKEN': env.get('ELASTIC_APM_SECRET_TOKEN'),
+    }

@@ -20,7 +20,7 @@ pipelines:
             - pip3 install --quiet --cache-dir ~/.pip3/cache --upgrade pip
             - pip3 install --quiet --cache-dir ~/.pip3/cache docker-compose==1.24.1
             - docker-compose -v
-            - docker-compose -p arc up -d --build simcct celery-worker redis nginx mongodb client
+            - docker-compose -p arc -f docker-compose-gke.yaml up -d --build simcct celery-worker redis nginx mongodb client
             #- docker exec -t arc_simcct_1 python manage.py test
             - docker-compose -p arc down
 

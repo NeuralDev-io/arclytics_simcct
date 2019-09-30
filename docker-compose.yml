@@ -50,7 +50,8 @@ services:
       - NODE_ENV=development
       - REACT_APP_SIM_HOST=http://localhost
       - REACT_APP_SIM_PORT=8000
-      - REACT_APP_APM_URL=http://apm-server:8200
+      - REACT_APP_APM_URL=http://localhost/apm
+      - REACT_APP_FLUENTD_URL=http://localhost/logger
     depends_on:
       - mongodb
       - simcct

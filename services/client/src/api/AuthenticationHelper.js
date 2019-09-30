@@ -7,9 +7,10 @@
  *
  * @version 0.9.0
  * @author Arvy Salazar, Andrew Che, Dalton Le
+ *
  */
 
-const ARC_URL = `${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim`
+import { ARC_URL } from '../constants'
 
 export const login = async (values, resolve, reject) => {
   fetch(`${ARC_URL}/auth/login`, {
@@ -17,7 +18,7 @@ export const login = async (values, resolve, reject) => {
     mode: 'cors',
     credentials: 'include',
     headers: {
-      'content-Type': 'application/json',
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(values),
   })
@@ -40,7 +41,7 @@ export const signup = async (values, resolve, reject) => {
     method: 'POST',
     mode: 'cors',
     headers: {
-      'content-Type': 'application/json',
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       email,

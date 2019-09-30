@@ -44,24 +44,20 @@ services:
         - NODE_ENV=production
         - REACT_APP_SIM_HOST=https://api.arclytics.io
         - REACT_APP_SIM_PORT=443
-        - REACT_APP_APM_URL=https://apm.arclytics.io
-        - REACT_APP_FLUENTD_URL=http://logger.arclytics.io
+        - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logger
       labels:
         arclytics.io: "production"
         service: "client"
     image: asia.gcr.io/arc-simcct/arc_sim_client:1.2.3
     ports:
       - 8080:8080
-      - 9880:9880
     expose:
       - 8080
-      - 9880
     environment:
       - NODE_ENV=production
       - REACT_APP_SIM_HOST=https://api.arclytics.io
       - REACT_APP_SIM_PORT=443
-      - REACT_APP_APM_URL=https://apm.arclytics.io
-      - REACT_APP_FLUENTD_URL=http://logger.arclytics.io
+      - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logger
 
   simcct:
     build:

@@ -347,6 +347,7 @@ def login() -> any:
             user.save()
 
             # Get location data
+            # TODO(david): NOTE THIS IS HARD CODING AND TERRIBLE.
             reader = geoip2.database.Reader(
                 '/usr/src/app/sim_api/resources/GeoLite2-City/'
                 'GeoLite2-City.mmdb'
@@ -356,7 +357,7 @@ def login() -> any:
                 # that forwards the IP address. If it is not the case,
                 # we can check for the HTTP_X_REAL_IP which is part of
                 # the header and is often used in a proxy.
-                if not request.environ.get('X-Forwarded-For', None):
+                if not request.headers.get('X-Forwarded-For', None):
                     # If HTTP_X_REAL_IP not found, we can then fall back
                     # to use the `request.remote_addr` even though it is
                     # unlikely to be a real address.
@@ -374,7 +375,7 @@ def login() -> any:
                     # header for identifying the originating IP address of a
                     # client connecting to a web server through an HTTP proxy
                     # or a load balancer."
-                    forwarded_ip = request.environ.get('X-Forwarded-For')
+                    forwarded_ip = request.headers.get('X-Forwarded-For')
                     request_ip = str(forwarded_ip).split(',')[0]
 
                 location_data = reader.city(str(request_ip))
@@ -390,7 +391,7 @@ def login() -> any:
                 )
                 logger.info(
                     {
-                        'message': 'User logged in',
+                        'message': 'User logged in.',
                         'user': user.email,
                         'country': country,
                         'state': state,
@@ -406,7 +407,8 @@ def login() -> any:
                     {
                         'user': user.email,
                         'message': 'Address not found.',
-                        'ip_address': ip_address
+                        'ip_address': ip_address,
+                        'request_environ': str(request.environ)
                     },
                 )
                 apm.capture_exception()

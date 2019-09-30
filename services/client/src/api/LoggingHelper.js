@@ -13,78 +13,74 @@ import { LOGGER_URL } from '../constants'
 
 /*
 * TODO(andrew@neuraldev.io):
-*  - Make a log function for different levels.
-*  - Retry the logger at least 3 times before ignoring it.
-*  - Find a way to get the timestamp.
-*  - Make the Arclytics backend to accept these log calls.
+*  - Documentation
+* - DONE -- Make a log function for different levels.
+* - DONE -- Retry the logger at least 3 times before ignoring it.
+* - DONE -- Find a way to get the timestamp.
 * */
 
+
+const fetch_retry = async (url, options, n) => {
+  // Because well, recursion is lame and for rookies.
+  for (let i = 0; i < n; i += 1) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      return await fetch(url, options)
+    } catch (err) {
+      const isLastAttempt = i + 1 === n
+      if (isLastAttempt) throw err
+    }
+  }
+  return null
+}
+
 /*
-* This method uses the fluent package plugin called in_http which exposes
-* an endpoint that will accept a log from the http source such as this
-* fetch request.
+*
 *
 * Usage: URL --> https://host:port/tag.label
 * Body: {"container_name": string, "log": string, "source": string}
 * */
-// eslint-disable-next-line import/prefer-default-export
-export const log = async (message, label, caller) => fetch(
-  // Try to make the log call once and if it fails, return the failed response.
-  `${LOGGER_URL}/client.${label}`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
+export const log = async (log_message, message, label, caller, stack_trace) => {
+  const timestamp = new Date()
+  return fetch_retry(
+    `${LOGGER_URL}/client.${label}`, {
+      method: 'POST',
+      mode: 'cors',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        log: log_message,
+        source: 'http',
+        timestamp: timestamp.toISOString(),
+        severity: label.toUpperCase(),
+        stack_trace,
+        caller,
+        message,
+      }),
     },
-    body: JSON.stringify({
-      // tag: `${tag}.${label}`,
-      log: message,
-      source: 'http',
-      timestamp: Date.now(),
-      severity: label.toUpperCase(),
-      caller,
-      message,
-    }),
-  //  Ignore both the response and any errors
-  },
-).then((res) => {
-  if (res.status !== 200) return { status: 'failed' }
-  return { status: 'succeeded' }
-})
+    3,
+  )
+}
 
-// TODO(andrew@neuraldev.io): Meh, find a better way to do recursion.
 export const logDebug = (message, caller) => {
   const label = 'debug'
-  log(message, label, caller).then((res) => {
-    if (res.status === ' failed') {
-      log(message, label, caller).then((res2) => {
-        if (res2.status === ' failed') log(message, label, caller).then(() => {})
-      })
-    }
-  })
+  log(message, message, label, caller, '').then(() => {})
 }
 
-// TODO(andrew@neuraldev.io): Meh, find a better way to do recursion.
 export const logInfo = (message, caller) => {
   const label = 'info'
-  log(message, label, caller).then((res) => {
-    if (res.status === ' failed') {
-      log(message, label, caller).then((res2) => {
-        if (res2.status === ' failed') log(message, label, caller).then(() => {})
-      })
-    }
-  })
+  log(message, message, label, caller, '').then(() => {})
+}
+
+export const logException = (log_message, message, caller, stack_trace) => {
+  const label = 'error'
+  log(log_message, message, label, caller, stack_trace).then(() => {})
 }
 
 
-// TODO(andrew@neuraldev.io): Meh, find a better way to do recursion.
-export const logError = (message, caller) => {
+export const logError = (log_message, message, caller, stack_trace) => {
   const label = 'error'
-  log(message, label, caller).then((res) => {
-    if (res.status === ' failed') {
-      log(message, label, caller).then((res2) => {
-        if (res2.status === ' failed') log(message, label, caller).then(() => {})
-      })
-    }
-  })
+  log(log_message, message, label, caller, stack_trace).then(() => {})
 }

@@ -43,7 +43,7 @@ class ErrorBoundary extends React.Component {
       errorInfo,
     })
     // TODO(andrew@neuraldev.io): Check what type `error` and `errorInfo` are
-    logError(errorInfo, 'ErrorBoundary')
+    logError(error.toString(), error.message, 'ErrorBoundary', error.stack)
   }
 
   handleRefreshPage = () => {

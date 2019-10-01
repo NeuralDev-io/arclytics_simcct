@@ -89,6 +89,7 @@ class LoadSimButton extends Component {
         <div className={styles.modal}>
           <h4>Import simulation</h4>
           <FileInput
+            name="import_simulation"
             Icon={props => <UploadIcon {...props} />}
             onChange={this.handleFileInputChange}
             filename={filename}

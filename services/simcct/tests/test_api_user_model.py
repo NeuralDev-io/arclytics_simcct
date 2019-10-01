@@ -33,6 +33,7 @@ _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 
 class TestUserModel(BaseTestCase):
     """Run direct tests on the User model without an API call."""
+
     def tearDown(self) -> None:
         db = get_db('default')
         self.assertTrue(db.name, 'arc_test')
@@ -48,11 +49,10 @@ class TestUserModel(BaseTestCase):
         self.assertIsInstance(
             User.admin_profile, mongoengine.EmbeddedDocumentField
         )
+        self.assertIsInstance(User.last_configuration, mongoengine.DictField)
+        self.assertIsInstance(User.last_alloy_store, mongoengine.DictField)
         self.assertIsInstance(
-            User.last_configuration, mongoengine.EmbeddedDocumentField
-        )
-        self.assertIsInstance(
-            User.last_alloy_store, mongoengine.EmbeddedDocumentField
+            User.last_simulation_results, mongoengine.DictField
         )
         self.assertIsInstance(
             User.saved_alloys, mongoengine.EmbeddedDocumentListField

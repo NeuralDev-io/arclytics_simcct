@@ -83,7 +83,7 @@ class ProductionConfig(BaseConfig):
     # production elastic application performance monitoring
     ELASTIC_APM = {
         'SERVER_URL': env.get('ELASTIC_APM_SERVER_URL', None),
-        'SERVICE_NAME': 'simcct',
+        'SERVICE_NAME': 'celery',
         'CAPTURE_BODY': 'all',
         'DEBUG': False,
         # 'SECRET_TOKEN': env.get('ELASTIC_APM_SECRET_TOKEN'),

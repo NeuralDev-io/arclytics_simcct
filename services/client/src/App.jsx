@@ -1,3 +1,17 @@
+/**
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * App Component
+ *
+ * @version 1.2.0
+ * @author Dalton Le, Arvy Salazar, Andrew Che
+ *
+ * This is the App Component which provides the React Router for the Arclytics
+ * Sim React front-end client.
+ *
+ */
+
 import React from 'react'
 import { Provider } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
@@ -92,12 +106,12 @@ function App() {
               />
               <Route
                 path="/password/reset=:token"
-                render={props => <PasswordResetPage {...props} />}
+                render={(props) => <PasswordResetPage {...props} />}
               />
               {/* TODO(andrew@neuraldev.io): DELETE THIS ROUTE - AFTER TESTING HTTP LOGGER */}
               <Route
                 path="/test"
-                render={props => (<TestRoute {...props} />)}
+                render={(props) => (<TestRoute {...props} />)}
               />
 
               <DemoRoute

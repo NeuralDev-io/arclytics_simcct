@@ -7,19 +7,22 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import { Formik } from 'formik'
 import { Link } from 'react-router-dom'
 import AlertCircleIcon from 'react-feather/dist/icons/alert-circle'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
-import { signup, checkAuthStatus } from '../../../api/AuthenticationHelper'
+import {signup, checkAuthStatus, resendVerify} from '../../../api/AuthenticationHelper'
 import { signupValidation } from '../../../utils/ValidationHelper'
 import { buttonize } from '../../../utils/accessibility'
 
+import Toaster from '../../moleisms/toaster'
 import Button from '../../elements/button'
 import TextField from '../../elements/textfield'
 import Modal from '../../elements/modal'
 
 import styles from './SignupPage.module.scss'
+import {addFlashToast} from "../../../state/ducks/toast/actions";
 
 class SignupPage extends Component {
   constructor(props) {
@@ -35,6 +38,29 @@ class SignupPage extends Component {
       if (res.status === 'success') {
         history.push('/')
       }
+    })
+  }
+
+  handleResend = (email) => {
+    //use toast
+    const promise = new Promise((resolve, reject) => {
+      resendVerify(resolve, reject, email)
+    })
+    promise.then((res) => {
+      // If response is successful
+      console.log('does not work')
+      this.props.addFlashToastConnect({
+        message: 'An email has been successfully sent too '+ email,
+        options: { variant: 'success' },
+      }, true)
+    })
+    .catch((err) => {
+      // If response is unsuccessful
+      console.log("error")
+      this.props.addFlashToastConnect({
+        message: 'Something went wrong. Try sending again later from the profile page',
+        options: { variant: 'error' },
+      }, true)
     })
   }
 
@@ -210,7 +236,7 @@ class SignupPage extends Component {
                   </div>
                   <span>
                     Didn&apos;t receive an email? Click&nbsp;
-                    <span className={styles.resendEmail} {...buttonize()}>
+                    <span className={styles.resendEmail} {...buttonize( () => this.handleResend(values.email))}>
                       here&nbsp;
                     </span>
                     to resend.
@@ -237,4 +263,8 @@ SignupPage.propTypes = {
   }).isRequired,
 }
 
-export default SignupPage
+const mapDispatchToProps = {
+  addFlashToastConnect: addFlashToast,
+}
+
+export default connect(null, mapDispatchToProps) (SignupPage)

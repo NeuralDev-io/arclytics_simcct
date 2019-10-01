@@ -220,17 +220,27 @@ spec:
           imagePullPolicy: Always
           command: ['/usr/local/bin/redis-server']
           args:
-            - '/redis-conf/redis.conf'
+#            - '/redis-conf/redis.conf'
             - '--requirepass'
             - '$(REDIS_PASSWORD)'
-#            - '--appendonly'
-#            - 'yes'
-#            - '--save'
-#            - '300'
-#            - '--save'
-#            - '1'
-#            - '120'
-#            - '10'
+            - '--appendonly'
+            - 'yes'
+            - '--save'
+            - '300'
+            - '--save'
+            - '1'
+            - '--save'
+            - '120'
+            - '10'
+            - '--save'
+            - '60'
+            - '1000'
+            - '--loglevel'
+            - 'verbose'
+            - '--appendonly'
+            - 'yes'
+            - '--appendfilename'
+            - 'appendonly.aof'
           resources:
             requests:
               cpu: 250m
@@ -252,12 +262,12 @@ spec:
           volumeMounts:
             - name: redis-pvc
               mountPath: /data
-            - name: redis-config
-              mountPath: /redis-conf
-      volumes:
-        - name: redis-config
-          configMap:
-            name: redis-config-map
+#            - name: redis-config
+#              mountPath: /redis-conf
+#      volumes:
+#        - name: redis-config
+#          configMap:
+#            name: redis-config-map
   volumeClaimTemplates:
     - metadata:
         name: redis-pvc

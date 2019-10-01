@@ -11,7 +11,7 @@ __author__ = [
     'Dinol Shrestha <@dinolsth>'
 ]
 __license__ = 'MIT'
-__version__ = '0.1.0'
+__version__ = '1.0.0'
 __status__ = 'development'
 __date__ = '2019.06.04'
 """flask_conf.py: 
@@ -64,7 +64,8 @@ class BaseConfig:
         'SERVER_URL':
         env.get('ELASTIC_APM_SERVER_URL', 'http://localhost:8200'),
         'SERVICE_NAME': 'simcct',
-        'SECRET_TOKEN': SECRET_KEY,
+        'SECRET_TOKEN': env.get('SECRET_TOKEN'),
+        'CAPTURE_BODY': 'all',
         'DEBUG': True
     }
 
@@ -109,6 +110,7 @@ class ProductionConfig(BaseConfig):
     ELASTIC_APM = {
         'SERVER_URL': env.get('ELASTIC_APM_SERVER_URL', None),
         'SERVICE_NAME': 'simcct',
-        'SECRET_TOKEN': env.get('SECRET_KEY'),
-        'DEBUG': False
+        'CAPTURE_BODY': 'all',
+        'DEBUG': False,
+        # 'SECRET_TOKEN': env.get('ELASTIC_APM_SECRET_TOKEN'),
     }

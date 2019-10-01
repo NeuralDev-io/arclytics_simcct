@@ -356,6 +356,7 @@ class EventRecord(LogRecord):
     The EventRecord instances are then converted to a dictionary as per the
     requirement for the `fluentd` Event object.
     """
+
     def __init__(
         self,
         name: str,
@@ -512,6 +513,7 @@ class Handler(object):
     records as desired. By default, no formatter is specified; in this case,
     the 'raw' message as determined by record.message is logged.
     """
+
     def __init__(self, level=NOTSET):
         # Handler name
         self._name = None
@@ -662,6 +664,7 @@ class FluentdHandler(Handler):
     A handler class which writes logging records, appropriately formatted,
     to the `fluentd` driver using the `sender.emit` method.
     """
+
     def __init__(self, tag: str = ''):
         """Initialize the `fluentd` handler.
 
@@ -805,6 +808,7 @@ class FileHandler(StreamHandler):
     """
     A handler class which writes formatted logging records to disk files.
     """
+
     def __init__(self, filename, mode='a', encoding=None, delay=False):
         """Open the specified file and use it as the stream for logging."""
         # Issue #27493: add support for Path objects to be passed in
@@ -904,6 +908,7 @@ class AppLogger(object):
     a message to the `fluentd` driver in a specific format depending on the
     data type of the message.
     """
+
     def __init__(self, name: str, level: int = NOTSET):
         """Instantiate the `FluentdLogger` instance with optional values
         passed in.

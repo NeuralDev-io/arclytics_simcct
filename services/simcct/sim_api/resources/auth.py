@@ -52,6 +52,7 @@ class SimCCTBadServerLogout(Exception):
     A custom exception to be raised by a synchronous call to logout on the
     SimCCT server if the response is not what we are expecting.
     """
+
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
 
@@ -426,14 +427,6 @@ def login() -> any:
                 user.reload()
                 ip_address = request.remote_addr
                 user.login_data.append(LoginData(ip_address=ip_address))
-                logger.exception(
-                    {
-                        'user': user.email,
-                        'message': 'Address not found.',
-                        'ip_address': ip_address,
-                        'request_environ': str(request.environ)
-                    },
-                )
                 apm.capture_exception()
                 user.save()
             reader.close()
@@ -592,10 +585,12 @@ def confirm_reset_password(token):
             f'{redirect_url}/password/reset?tokenexpired=true', code=302
         )
     except Exception as e:
-        logger.exception({
-            'msg': 'URL token confirmation error. ',
-            'error': str(e)
-        })
+        logger.exception(
+            {
+                'msg': 'URL token confirmation error. ',
+                'error': str(e)
+            }
+        )
         apm.capture_exception()
         return redirect(
             f'{redirect_url}/password/reset?tokenexpired=true', code=302
@@ -769,10 +764,7 @@ def change_password(user):
         return jsonify(response), 200
 
     response['message'] = 'Password is not correct.'
-    logger.info({
-        'email': user.email,
-        'message': response['message']
-    })
+    logger.info({'email': user.email, 'message': response['message']})
     apm.capture_message(response['message'])
     return jsonify(response), 401
 

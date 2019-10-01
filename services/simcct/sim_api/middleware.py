@@ -38,6 +38,7 @@ logger = AppLogger(__name__)
 
 def async_func(f):
     """Threading decorator if you want to make a method use separate thread."""
+
     @wraps(f)
     def wrapper(*args, **kwargs):
         thr = Thread(target=f, args=args, kwargs=kwargs)
@@ -58,6 +59,7 @@ def authenticate_user_and_cookie_flask(f):
     Returns:
         the `sim_api.models.User` object if found.
     """
+
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {'status': 'fail', 'message': 'Session token is not valid.'}
@@ -127,6 +129,7 @@ def authorize_admin_cookie_flask(f):
     Returns:
         the `sim_api.models.User` object if found.
     """
+
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {'status': 'fail', 'message': 'Session token is not valid.'}
@@ -213,6 +216,7 @@ def authenticate_user_cookie_restful(f):
     Returns:
         the `sim_api.models.User` object if found.
     """
+
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {'status': 'fail', 'message': 'Session token is not valid.'}
@@ -285,6 +289,7 @@ def authorize_admin_cookie_restful(f):
     Returns:
         the `sim_api.models.User` object if found.
     """
+
     @wraps(f)
     def decorated_func(*args, **kwargs):
         response = {'status': 'fail', 'message': 'Session token is not valid.'}

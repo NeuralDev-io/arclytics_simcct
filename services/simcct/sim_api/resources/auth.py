@@ -22,6 +22,7 @@ import json
 import os
 from datetime import datetime
 from typing import Tuple
+from pathlib import Path
 
 import geoip2
 import geoip2.database
@@ -30,6 +31,7 @@ from flask import (
     Blueprint, jsonify, redirect, render_template, request, session
 )
 from geoip2.errors import AddressNotFoundError
+from maxminddb.errors import InvalidDatabaseError
 from mongoengine.errors import NotUniqueError, ValidationError
 
 from arc_logging import AppLogger
@@ -366,37 +368,44 @@ def login() -> any:
 
             user.save()
 
-            # Get location data
-            # TODO(david): NOTE THIS IS HARD CODING AND TERRIBLE.
-            reader = geoip2.database.Reader(
-                '/usr/src/app/sim_api/resources/GeoLite2-City/'
-                'GeoLite2-City.mmdb'
-            )
+            # First we check if there is a proxy or other network service
+            # that forwards the IP address. If it is not the case,
+            # we can check for the HTTP_X_REAL_IP which is part of
+            # the header and is often used in a proxy.
+            if not request.headers.get('X-Forwarded-For', None):
+                # If HTTP_X_REAL_IP not found, we can then fall back
+                # to use the `request.remote_addr` even though it is
+                # unlikely to be a real address.
+                request_ip = request.environ.get(
+                    'HTTP_X_REAL_IP', request.remote_addr
+                )
+            else:
+                # If we have a forwarded IP, it usually can be split
+                # We want the first one because the syntax is as follows:
+                # X-Forwarded-For: <client>, <proxy1>, <proxy2>
+                # Refer to:
+                # https://developer.mozilla.org/en-US/docs/Web/HTTP/
+                # Headers/X-Forwarded-For
+                # "The X-Forwarded-For (XFF) header is a de-facto standard
+                # header for identifying the originating IP address of a
+                # client connecting to a web server through an HTTP proxy
+                # or a load balancer."
+                forwarded_ip = request.headers.get('X-Forwarded-For')
+                request_ip = str(forwarded_ip).split(',')[0]
+
+            # Get the relative path of the database from the current path
+            # Applying dirname to a directory yields the parent directory
+            par_dir = os.path.dirname(os.path.abspath(__file__))
+            db_path = Path(par_dir) / 'GeoLite2-City' / 'GeoLite2-City.mmdb'
+
             try:
-                # First we check if there is a proxy or other network service
-                # that forwards the IP address. If it is not the case,
-                # we can check for the HTTP_X_REAL_IP which is part of
-                # the header and is often used in a proxy.
-                if not request.headers.get('X-Forwarded-For', None):
-                    # If HTTP_X_REAL_IP not found, we can then fall back
-                    # to use the `request.remote_addr` even though it is
-                    # unlikely to be a real address.
-                    request_ip = request.environ.get(
-                        'HTTP_X_REAL_IP', request.remote_addr
+                if not db_path.exists():
+                    raise FileNotFoundError(
+                        f'MaxMind DB file not found in {db_path.as_posix()}.'
                     )
-                else:
-                    # If we have a forwarded IP, it usually can be split
-                    # We want the first one because the syntax is as follows:
-                    # X-Forwarded-For: <client>, <proxy1>, <proxy2>
-                    # Refer to:
-                    # https://developer.mozilla.org/en-US/docs/Web/HTTP/
-                    # Headers/X-Forwarded-For
-                    # "The X-Forwarded-For (XFF) header is a de-facto standard
-                    # header for identifying the originating IP address of a
-                    # client connecting to a web server through an HTTP proxy
-                    # or a load balancer."
-                    forwarded_ip = request.headers.get('X-Forwarded-For')
-                    request_ip = str(forwarded_ip).split(',')[0]
+                # Read from a MaxMind DB  that we have stored as so the
+                # `geoip2` library cna look for the IP address location.
+                reader = geoip2.database.Reader(db_path.as_posix())
 
                 location_data = reader.city(str(request_ip))
                 # location_data = reader.city('203.10.91.88')
@@ -418,25 +427,52 @@ def login() -> any:
                         'ip_address': ip_address
                     }
                 )
+                reader.close()
                 user.save()
+            except FileNotFoundError as e:
+                apm.capture_exception()
+                logger.critical(
+                    {
+                        'message': 'File not found error.',
+                        'error': str(e)
+                    }
+                )
+            except ValueError as e:
+                apm.capture_exception()
+                logger.exception(
+                    {
+                        'message': 'geoip2 Read error.',
+                        'error': str(e)
+                    }
+                )
+            except InvalidDatabaseError as e:
+                apm.capture_exception()
+                logger.exception(
+                    {
+                        'message': 'Invalid MaxMind DB error.',
+                        'error': str(e)
+                    }
+                )
             except AddressNotFoundError:
                 # If our library cannot find a location based on the IP address
                 # usually because we're in a localhost testing environment or
                 # if the address is somehow bad, then we need to handle this
                 # error and allow the response.
-                user.reload()
-                ip_address = request.remote_addr
-                user.login_data.append(LoginData(ip_address=ip_address))
                 apm.capture_exception()
+            finally:
+                user.reload()
+                user.login_data.append(LoginData(ip_address=request_ip))
                 user.save()
-            reader.close()
 
             session['jwt'] = auth_token.decode()
             session['ip_address'] = request.remote_addr
             session['signed_in'] = True
 
-            # Inject the Simulation Session data
-            SimSessionService().new_session(user=user)
+            # We check if the user has any last simulation configurations (the
+            # least we expect them to have), otherwise we inject the
+            # Simulation Session data
+            if not user.last_configuration:
+                SimSessionService().new_session(user=user)
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'

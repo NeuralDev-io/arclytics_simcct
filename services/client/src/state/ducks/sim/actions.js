@@ -644,6 +644,7 @@ export const loadSimFromAccount = ({
       },
       configurations: {
         grain_size_ASTM: grain_size,
+        grain_size_diameter: ASTM2Dia(parseFloat(grain_size)),
         ...otherConfig,
       },
       results: simulation_results,

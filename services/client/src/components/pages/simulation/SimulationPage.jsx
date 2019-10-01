@@ -12,6 +12,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom'
 import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
 import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
 import Button from '../../elements/button'
@@ -49,8 +50,12 @@ class SimulationPage extends Component {
       lastSim,
       getLastSimConnect,
       loadLastSimConnect,
+      location,
     } = this.props
     window.addEventListener('beforeunload', persistSimConnect)
+
+    // if sim already loaded from account, then don't load any cached sim
+    if (location.state !== undefined && location.state.loadFromAccount) return
 
     const persistedTime = Date.parse(persistedSimTime)
     const now = new Date()
@@ -202,6 +207,11 @@ SimulationPage.propTypes = {
     })),
   })).isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      loadFromAccount: PropTypes.bool,
+    }),
+  }).isRequired,
   isInitialised: PropTypes.bool.isRequired,
   isSimulated: PropTypes.bool.isRequired,
   isAdmin: PropTypes.bool.isRequired,
@@ -231,4 +241,4 @@ const mapDispatchToProps = {
   loadLastSimConnect: loadLastSim,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SimulationPage)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SimulationPage))

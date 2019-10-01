@@ -1006,7 +1006,7 @@ while [[ "$1" != "" ]] ; do
             ARC_DIR="${WORKDIR}/services/simcct"
             SIMCCT_DIR="${WORKDIR}/services/simcct"
             CELERY_DIR="${WORKDIR}/services/celery-worker"
-            EXCLUDE_PATTERN="${WORKDIR}/services/simcct/arc_simulation/**"
+            EXCLUDE_PATTERN="${WORKDIR}/services/simcct/arc_simulation/**.py"
             echo "Running yapf formatter"
             echo "Current Directory: ${WORKDIR}"
             echo "Configuration used: ${CONFIG}"

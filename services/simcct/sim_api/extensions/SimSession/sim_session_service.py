@@ -38,7 +38,7 @@ class SimSessionService(object):
 
     def new_session(self, user: User) -> None:
         if user.last_configuration is not None:
-            configs = user.last_configuration.to_dict()
+            configs = user.last_configuration
         else:
             # These are based of defaults in the front-end as agreed to by
             # Andrew and Dalton.
@@ -61,7 +61,7 @@ class SimSessionService(object):
             }
 
         if user.last_alloy_store is not None:
-            alloy_store = user.last_alloy_store.to_dict()
+            alloy_store = user.last_alloy_store
         else:
             alloy_store = {
                 'alloy_option': 'single',
@@ -72,7 +72,7 @@ class SimSessionService(object):
                 }
             }
         if user.last_simulation_results is not None:
-            last_results = user.last_simulation_results.to_dict()
+            last_results = user.last_simulation_results
         else:
             last_results = {}
 
@@ -115,7 +115,7 @@ class SimSessionService(object):
             return message
 
         sess_data: dict = json.loads(session_data_store)
-        # Return the data as a dict and the sid to be used later for saving
+        # Return the data as a dict
         return sess_data
 
     def clean_simulation_session(self) -> None:

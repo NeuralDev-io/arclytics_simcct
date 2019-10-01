@@ -1004,13 +1004,14 @@ while [[ "$1" != "" ]] ; do
             headerMessage "ARC CLI STYLING PYTHON"
             CONFIG="${WORKDIR}/.yapf.cfg"
             ARC_DIR="${WORKDIR}/services/simcct"
+            SIMCCT_DIR="${WORKDIR}/services/simcct"
             CELERY_DIR="${WORKDIR}/services/celery-worker"
-            EXCLUDE_DIR="${WORKDIR}/services/client"
+            EXCLUDE_PATTERN="${WORKDIR}/services/simcct/arc_simulation/**"
             echo "Running yapf formatter"
             echo "Current Directory: ${WORKDIR}"
             echo "Configuration used: ${CONFIG}"
             echo "Exclude directory: ${EXCLUDE_DIR}"
-            yapf -ri --verbose --style=${CONFIG} --exclude=${EXCLUDE_DIR} ${ARC_DIR} ${CELERY_DIR}
+            yapf -ri --verbose --style=${CONFIG} --exclude=${EXCLUDE_PATTERN} ${SIMCCT_DIR} ${ARC_DIR} ${CELERY_DIR}
             completeMessage
             exit 0
             ;;

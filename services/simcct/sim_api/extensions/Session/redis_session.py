@@ -50,11 +50,24 @@ class RedisSession(CallbackDict, SessionMixin):
     def __init__(self, initial=None, sid=None, new=False):
         def on_update(s):
             s.modified = True
+            s.accessed = True
 
         CallbackDict.__init__(self, initial, on_update)
         self.sid = sid
         self.new = new
         self.modified = False
+
+    def __getitem__(self, key):
+        self.accessed = True
+        return super(RedisSession, self).__getitem__(key)
+
+    def get(self, key, default=None):
+        self.accessed = True
+        return super(RedisSession, self).get(key, default)
+
+    def setdefault(self, key, default=None):
+        self.accessed = True
+        return super(RedisSession, self).setdefault(key, default)
 
 
 class RedisSessionInterface(SessionInterface):

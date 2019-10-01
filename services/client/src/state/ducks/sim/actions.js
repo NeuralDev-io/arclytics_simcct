@@ -16,6 +16,7 @@ import {
 } from './types'
 import { ASTM2Dia } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
+import { addSimToTimeMachine } from '../timeMachine/actions'
 import { logError } from '../../../api/LoggingHelper'
 
 export const resetSession = () => (dispatch) => {
@@ -515,6 +516,7 @@ export const runSim = () => (dispatch, getState) => {
           type: RUN_SIM,
           payload: simRes.data,
         })
+        addSimToTimeMachine()(dispatch, getState)
         // update sim count in localStorage
         const currentSimCount = localStorage.getItem('simCount')
         if (currentSimCount === undefined) {
@@ -544,6 +546,13 @@ export const updateCCTIndex = idx => (dispatch) => {
   dispatch({
     type: UPDATE_CCT_INDEX,
     payload: idx,
+  })
+}
+
+export const loadSim = sim => (dispatch) => {
+  dispatch({
+    type: LOAD_SIM,
+    payload: sim,
   })
 }
 

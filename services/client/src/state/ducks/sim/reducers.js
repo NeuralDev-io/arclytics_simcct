@@ -82,6 +82,8 @@ const reducer = (state = initialState, action) => {
             ...state.alloys,
             isLoading: true,
           },
+          isSimulated: false,
+          results: { ...initialState.results },
         })
       }
       if (action.status === 'success') {
@@ -98,6 +100,8 @@ const reducer = (state = initialState, action) => {
             ...state.configurations,
             ...action.config,
           },
+          isSimulated: false,
+          results: { ...initialState.results },
         })
       }
       if (action.status === 'fail') {
@@ -107,6 +111,8 @@ const reducer = (state = initialState, action) => {
             ...state.alloys,
             isLoading: false,
           },
+          isSimulated: false,
+          results: { ...initialState.results },
         }
       }
       break

@@ -24,7 +24,10 @@ const reducer = (state = initialState, action) => {
         newData.shift()
       }
       // add new sim
-      newData.push(action.payload)
+      newData.push({
+        sim: action.payload,
+        timestamp: action.timestamp,
+      })
       return {
         ...state,
         data: newData,

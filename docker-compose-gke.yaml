@@ -17,8 +17,6 @@ services:
       - 8080:8080
     expose:
       - 8080
-    networks:
-      - arc_deploy
 
 
   fluentd:
@@ -37,8 +35,6 @@ services:
     expose:
       - 24224
       - 9880
-    networks:
-      - arc_deploy
 
   client:
     build:
@@ -48,12 +44,11 @@ services:
         - NODE_ENV=production
         - REACT_APP_SIM_HOST=https://api.arclytics.io
         - REACT_APP_SIM_PORT=443
-        - REACT_APP_APM_URL=https://apm.arclytics.io
-        - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logs
+        - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logger
       labels:
         arclytics.io: "production"
         service: "client"
-    image: asia.gcr.io/arc-simcct/arc_sim_client:1.2.2
+    image: asia.gcr.io/arc-simcct/arc_sim_client:1.2.3
     ports:
       - 8080:8080
     expose:
@@ -62,13 +57,7 @@ services:
       - NODE_ENV=production
       - REACT_APP_SIM_HOST=https://api.arclytics.io
       - REACT_APP_SIM_PORT=443
-      - REACT_APP_APM_URL=https://apm.arclytics.io
-      - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logs
-    depends_on:
-      - simcct
-      - mongodb
-    networks:
-      - arc_deploy
+      - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logger
 
   simcct:
     build:
@@ -105,11 +94,6 @@ services:
       - FLUENTD_PREFIX_TAG=simcct
       - ELASTIC_APM_SERVER_URL=http://apm-service:8200
       - ELASTIC_APM_SECRET_TOKEN=${SECRET_TOKEN}
-    depends_on:
-      - mongodb
-      - redis
-    networks:
-      - arc_deploy
 
   celery-worker:
     build:
@@ -136,10 +120,6 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - ELASTIC_APM_SERVER_URL=http://apm-service:8200
       - ELASTIC_APM_SECRET_TOKEN=${SECRET_TOKEN}
-    depends_on:
-      - redis
-    networks:
-      - arc_deploy
 
   redis:
     build:
@@ -156,8 +136,6 @@ services:
       - 6379
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-    networks:
-      - arc_deploy
 
   mongodb:
     build:
@@ -182,11 +160,3 @@ services:
       - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
       - MONGO_DATA_DIR=/usr/data/db
       - MONGO_LOG_DIR=/dev/null
-    networks:
-      - arc_deploy
-
-networks:
-  arc_deploy:
-    driver: bridge
-    labels:
-      arclytics.io: "production"

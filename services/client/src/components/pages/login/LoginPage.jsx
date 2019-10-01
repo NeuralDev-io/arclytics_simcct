@@ -1,9 +1,16 @@
 /**
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
  * Login Page
  *
- * @version 0.0.0
+ * @version 1.0.0
  * @author Arvy Salazar
- * @github Xaraox
+ *
+ * This is the Login Page component that includes the Forget Password and Register
+ * page. It also handles the logic required to make API requests for each of these
+ * features provided.
+ *
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
@@ -24,7 +31,6 @@ import styles from './LoginPage.module.scss'
   TODO:
   - once the textfield err prop is fixed uncomment err and need just test edge cases and for
     Formik move it to the err prop
-  - change all the logos too ansto logos
 */
 
 class LoginPage extends Component {
@@ -114,7 +120,7 @@ class LoginPage extends Component {
                     if (!res.isProfile) history.push('/profileQuestions')
                     else history.push('/')
                   } else {
-                    //TODO: something went wrong try again later.
+                    // TODO: something went wrong try again later.
                     console.log(res)
                   }
                 })

@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
       - name: client-https-container
-        image: asia.gcr.io/arc-simcct/arc_sim_client:1.2.2
+        image: asia.gcr.io/arc-simcct/arc_sim_client:1.2.3
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
@@ -49,8 +49,8 @@ spec:
             port: 8080
             path: /healthy
           initialDelaySeconds: 5
-          periodSeconds: 15
-          timeoutSeconds: 2
+          periodSeconds: 60
+          timeoutSeconds: 15
           successThreshold: 2
           failureThreshold: 5
         livenessProbe:
@@ -59,4 +59,4 @@ spec:
               - cat
               - /etc/nginx/healthy
           initialDelaySeconds: 15
-          periodSeconds: 60
+          periodSeconds: 120

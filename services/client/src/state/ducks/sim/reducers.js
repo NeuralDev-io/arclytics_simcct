@@ -116,6 +116,8 @@ const reducer = (state = initialState, action) => {
           ...state.alloys,
           alloyOption: action.payload,
         },
+        isSimulated: false,
+        results: { ...initialState.results },
       }
     case UPDATE_COMP:
       // set new alloy comp and auto-calculated fields in state
@@ -130,6 +132,8 @@ const reducer = (state = initialState, action) => {
           ...state.configurations,
           ...action.config,
         },
+        isSimulated: false,
+        results: { ...initialState.results },
       })
     case UPDATE_DILUTION:
       return {
@@ -138,6 +142,8 @@ const reducer = (state = initialState, action) => {
           ...state.alloys,
           dilution: action.payload,
         },
+        isSimulated: false,
+        results: { ...initialState.results },
       }
     case UPDATE_CONFIG_METHOD:
       return {
@@ -146,6 +152,8 @@ const reducer = (state = initialState, action) => {
           ...state.configurations,
           method: action.payload,
         },
+        isSimulated: false,
+        results: { ...initialState.results },
       }
     case UPDATE_CONFIG:
       return {
@@ -154,6 +162,8 @@ const reducer = (state = initialState, action) => {
           ...state.configurations,
           ...action.payload,
         },
+        isSimulated: false,
+        results: { ...initialState.results },
       }
     case UPDATE_DISPLAY_USER_CURVE:
       return {

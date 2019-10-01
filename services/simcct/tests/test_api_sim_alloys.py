@@ -65,8 +65,8 @@ class TestSimAlloys(BaseTestCase):
         }
         alloy_store = AlloyStoreSchema().load(store_dict)
 
-        cls.user.last_alloy_store = AlloyStore(**alloy_store)
-        cls.user.last_configuration = Configuration(**configs)
+        cls.user.last_alloy_store = alloy_store
+        cls.user.last_configuration = configs
 
         cls.user.save()
         cls._email = cls.user.email

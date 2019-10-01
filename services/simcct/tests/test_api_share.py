@@ -26,7 +26,7 @@ from tests.test_utilities import test_login
 
 logger = AppLogger(__name__)
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
+BASE_DIR = os.path.dirname(__file__)
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'share_sim_data.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     _TEST_JSON = json.load(f)
@@ -103,8 +103,8 @@ class TestShareService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
-            self.assertEqual(resp.status_code, 201)
             self.assertEqual(data['status'], 'success')
+            self.assertEqual(resp.status_code, 201)
             shared_simulation = SharedSimulation.objects.get(
                 owner_email='luke@skywalker.io'
             )

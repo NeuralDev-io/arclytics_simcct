@@ -19,7 +19,7 @@ from mongoengine import get_db
 
 from arc_logging import AppLogger
 from sim_api.extensions.SimSession import SimSessionService
-from sim_api.models import AlloyStore, Configuration, User
+from sim_api.models import User
 from sim_api.schemas import AlloyStoreSchema, ConfigurationsSchema
 from tests.test_api_base import BaseTestCase, app
 from tests.test_utilities import test_login
@@ -66,8 +66,8 @@ class TestSimulationService(BaseTestCase):
         }
         alloy_store = AlloyStoreSchema().load(store_dict)
 
-        cls.user.last_alloy_store = AlloyStore(**alloy_store)
-        cls.user.last_configuration = Configuration(**configs)
+        cls.user.last_alloy_store = alloy_store
+        cls.user.last_configuration = configs
 
         cls.user.save()
         cls._email = cls.user.email
@@ -94,13 +94,13 @@ class TestSimulationService(BaseTestCase):
         return configs, alloy_store
 
     # def test_simulate_no_prev_configs(self):
-    #     """Ensure that if they have no previous configurations set it fails."""
+    #    """Ensure that if they have no previous configurations set it fails."""
     #     with app.test_client() as client:
     #         # We login to get a cookie
     #         _, _ = self.login_client(client)
     #
-    #         # We change the session by making a transaction on it within context
-    #         # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
+    #       # We change the session by making a transaction on it within context
+    #       # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
     #         #  is set because otherwise opening a transaction will not use
     #         #  a standard HTTP request environ_base.
     #         with client.session_transaction(
@@ -133,8 +133,8 @@ class TestSimulationService(BaseTestCase):
     #         # We login to get a cookie
     #         _, _ = self.login_client(client)
     #
-    #         # We change the session by making a transaction on it within context
-    #         # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
+    #       # We change the session by making a transaction on it within context
+    #       # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
     #         #  is set because otherwise opening a transaction will not use
     #         #  a standard HTTP request environ_base.
     #         with client.session_transaction(

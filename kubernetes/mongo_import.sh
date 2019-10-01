@@ -13,7 +13,7 @@ TEMPFILE_PW=$(mktemp)
 
 # Get the decoded values from the credentials secrets store.
 kubectl get secret credentials -o jsonpath="{.data.mongo_root_user}" --namespace=arclytics | base64 -d > "${TEMPFILE_USER}"
-kubectl get secret credentials -o jsonpath="{.data.mongo_root_password}" | base64 -d > "${TEMPFILE_PW}"
+kubectl get secret credentials -o jsonpath="{.data.mongo_root_password}" --namespace=arclytics | base64 -d > "${TEMPFILE_PW}"
 
 # Get the decoded password back from the temp files.
 MONGO_ROOT_USER=$(<"${TEMPFILE_USER}")

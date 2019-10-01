@@ -6,33 +6,33 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
 __version__ = '1.0.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__status__ = 'production'
 __date__ = '2019.07.14'
 """alloys.py: 
 
 This is a service layer that acts to define and implement the application/
-business logic for Alloys.
+business logic for Global Alloys.
 """
 
 from typing import Union
 
 from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
+from marshmallow import ValidationError
 
+from arc_logging import AppLogger
 from sim_api.abstract_adapter import AlloyAbstract
-from sim_api.extensions import MongoAlloys
+from sim_api.extensions import MongoAlloys, apm
 from sim_api.schemas import AlloySchema
+
+logger = AppLogger(__name__)
 
 
 class AlloysService(object):
     """Service layer where the application logic resides."""
-
     def __init__(self, client=AlloyAbstract(adapter=MongoAlloys)):
         """Simply connects the service to the MongoAlloys through an adapter."""
         self.client = client
@@ -59,18 +59,37 @@ class AlloysService(object):
         """
 
         alloy = self.client.find({'_id': query_params})
-        # if isinstance(query_params, ObjectId):
-        #     alloy = self.client.find({'_id': query_params})
-        # if isinstance(query_params, str):
-        #     alloy = self.client.find({'name': query_params})
+        if not isinstance(query_params, ObjectId):
+            logger.error(
+                {
+                    'message': 'Invalid Global Alloys search parameter.',
+                    'parameter': str(ObjectId)
+                }
+            )
         return self.dump(alloy)
 
     def create_alloys_many(self, alloys: list) -> Union[list, str]:
+        """We use the PyMongo interface insert_many() method with an instance
+        of a Python list with many alloy dictionaries.
+
+        Args:
+            alloys: a list of Python dict object that conforms with the
+                    AlloySchema.
+
+        Returns:
+            A list of ObjectId object of the newly created alloy or a str.
+        """
         try:
             alloy_id_list = self.client.create_many(
                 self.load(alloys, many=True)
             )
+        except ValidationError as e:
+            logger.exception({'msg': e.messages})
+            apm.capture_exception()
+            return e.messages
         except DuplicateKeyError as e:
+            logger.exception('Duplicate Key Error')
+            apm.capture_exception()
             return str(e)
         return alloy_id_list
 
@@ -86,7 +105,18 @@ class AlloysService(object):
         """
         try:
             alloy_id = self.client.create(self.load(alloy))
-        except DuplicateKeyError as e:
+        except ValidationError as e:
+            logger.exception({'msg': e.messages, 'data': str(alloy)})
+            apm.capture_exception()
+            return e.messages
+        except DuplicateKeyError:
+            logger.exception(
+                {
+                    'msg': 'Duplicate Key Error',
+                    'data': str(alloy)
+                }
+            )
+            apm.capture_exception()
             return 'Alloy already exists.'
         return alloy_id
 

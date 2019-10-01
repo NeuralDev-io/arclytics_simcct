@@ -20,13 +20,13 @@ spec:
           command: ['sh', '-c', 'until nslookup redis-service; do echo waiting for redis-service to be available; sleep 2; done;']
       containers:
         - name: celery-worker-container
-          image: asia.gcr.io/arc-sim/arc_sim_celery:1.2.0
+          image: asia.gcr.io/arc-simcct/arc_sim_celery:1.2.0
           imagePullPolicy: Always
           ports:
             - containerPort: 5555
           resources:
             requests:
-              cpu: 150m
+              cpu: 250m
               memory: 256Mi
             limits:
               cpu: 500m
@@ -81,3 +81,9 @@ spec:
                   key: mail_password
             - name: ELASTIC_APM_SERVER_URL
               value: http://apm-service.arclytics.svc.cluster.local:8200
+              #value: https://apm.arclytics.io
+            - name: ELASTIC_APM_SECRET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: elastic_apm_secret_token

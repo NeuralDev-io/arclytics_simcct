@@ -10,8 +10,7 @@ __author__ = 'Andrew Che <@codeninja55>'
 __credits__ = ['']
 __license__ = '{license}'
 __version__ = '{mayor}.{minor}.{rel}'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+
 __status__ = 'development'
 __date__ = '2019.08.11'
 """last_simulation.py: 
@@ -25,20 +24,15 @@ from flask import Blueprint, json, request
 from flask_restful import Resource
 from mongoengine import FieldDoesNotExist, ValidationError
 
+from arc_logging import AppLogger
 from sim_api.extensions import api
+from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
     MissingElementError
 )
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import AlloyStore, Configuration, SimulationResults
-from sim_api.extensions.SimSession.sim_session_service import SimSessionService
-from sim_api.schemas import (
-    AlloySchema, AlloyStoreSchema, ConfigurationsSchema
-)
-from simulation.utilities import Method
-from simulation.simconfiguration import SimConfiguration as SimConfig
-from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 

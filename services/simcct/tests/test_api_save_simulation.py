@@ -6,9 +6,7 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __status__ = 'development'
 __date__ = '2019.07.13'
 
@@ -18,14 +16,13 @@ from copy import deepcopy
 from pathlib import Path
 
 from bson import ObjectId
-from flask import json
 from flask import current_app as app
+from flask import json
 from mongoengine import DoesNotExist, get_db
 
+from sim_api.models import (AdminProfile, AlloyStore, Configuration,
+                            SavedSimulation, User, UserProfile)
 from tests.test_api_base import BaseTestCase
-from sim_api.models import (
-    User, Configuration, AlloyStore, SavedSimulation, UserProfile, AdminProfile
-)
 from tests.test_utilities import test_login
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))

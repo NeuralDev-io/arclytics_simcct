@@ -1,7 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
- *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
@@ -9,7 +6,7 @@
  *
  * @version 0.0.0
  * @author Arvy Salazar
- * @github Xaraox
+ *
  */
 export const loginValidation = (values) => {
   const { email, password } = values
@@ -66,20 +63,13 @@ export const signupValidation = (values) => {
 }
 
 export const forgotPasswordEmail = (email) => {
-  if (!email) {
-    return 'Required'
-  } else if (
-    !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)
-  ) {
-    return 'Invalid email'
-  } else {
-    return ''
-  }
-
+  if (!email) return 'Required'
+  if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)) return 'Invalid email'
+  return ''
 }
 
 export const passwordResetValidation = (values) => {
-  const { newPwd, cnfrmPwd, } = values
+  const { newPwd, cnfrmPwd } = values
   const errors = {}
 
   if (!newPwd) {
@@ -93,6 +83,5 @@ export const passwordResetValidation = (values) => {
   } else if (newPwd !== cnfrmPwd) {
     errors.cnfrmPwdErr = 'Password does not match'
   }
-  
   return errors
 }

@@ -4,6 +4,7 @@ import {
   RESET_FEEDBACK,
 } from './types'
 import { addFlashToast } from '../toast/actions'
+import { logError } from '../../../api/LoggingHelper'
 
 export const updateFeedback = feedback => (dispatch) => {
   dispatch({
@@ -65,7 +66,7 @@ export const submitFeedback = () => (dispatch, getState) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'feedback.actions.submitFeedback', err.stack)
     })
 }
 
@@ -108,6 +109,6 @@ export const submitRating = rate => (dispatch, getState) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'feedback.actions.submitRating', err.stack)
     })
 }

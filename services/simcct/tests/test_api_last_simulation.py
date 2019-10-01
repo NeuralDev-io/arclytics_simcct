@@ -6,27 +6,21 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__status__ = 'development'
 __date__ = '2019.08.11'
-"""test_api_last_simulation.py: 
-
-Test the Last Simulation Resources.
-"""
 
 import os
 import unittest
 from copy import deepcopy
 from pathlib import Path
 
-from flask import json
 from flask import current_app as app
+from flask import json
 from mongoengine import get_db
 
+from sim_api.models import AdminProfile, Configuration, User, UserProfile
 from tests.test_api_base import BaseTestCase
-from sim_api.models import User, Configuration, UserProfile, AdminProfile
 from tests.test_utilities import test_login
 
 BASE_DIR = os.path.dirname(__file__)

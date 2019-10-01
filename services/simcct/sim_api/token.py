@@ -69,7 +69,7 @@ def confirm_token(token: bytes, expiration: int = 3600) -> Union[bool, str]:
         apm.capture_exception()
         raise URLTokenError(message)
     except Exception as e:
-        message = 'An Exception Occured.'
+        message = 'An Exception Occurred.'
         log_message = {'message': message, 'error': e}
         logger.error(log_message)
         apm.capture_exception()

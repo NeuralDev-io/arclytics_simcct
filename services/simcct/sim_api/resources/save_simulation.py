@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # save_simulation.py
@@ -7,13 +6,10 @@
 # Attributions:
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
-
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __license__ = 'MIT'
 __version__ = '1.0.0'
-
-__status__ = 'development'
+__status__ = 'production'
 __date__ = '2019.08.11'
 """save_simulation.py: 
 
@@ -93,7 +89,6 @@ class SaveSimulationList(Resource):
             )
         )
 
-        # TODO(andrew@neuraldev.io): Add the graphs also
         # The following `mongoengine.EmbeddedDocument` models have in-built
         # custom validation that will be passed down.
         try:
@@ -184,8 +179,6 @@ class SaveSimulationList(Resource):
                 'status': 'fail',
                 'message': 'No saved simulations found.'
             }
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 404
 
         # We convert it to a list because the custom to_dict() method in the
@@ -220,10 +213,7 @@ class SaveSimulationDetail(Resource):
 
         try:
             qs = SavedSimulation.objects.get(id=sim_id)
-        except DoesNotExist as e:
-            log_message = {'message': 'Does not exist', 'error': str(e)}
-            logger.exception(log_message)
-            apm.capture_exception()
+        except DoesNotExist:
             return {'status': 'fail', 'message': 'Does not exist.'}, 404
         return {'status': 'success', 'data': qs.to_dict()}, 200
 
@@ -244,10 +234,7 @@ class SaveSimulationDetail(Resource):
 
         try:
             qs = SavedSimulation.objects.get(id=sim_id)
-        except DoesNotExist as e:
-            log_message = {'message': 'Does not exist', 'error': str(e)}
-            logger.exception(log_message)
-            apm.capture_exception()
+        except DoesNotExist:
             return {'status': 'fail', 'message': 'Does not exist.'}, 404
 
         qs.delete()

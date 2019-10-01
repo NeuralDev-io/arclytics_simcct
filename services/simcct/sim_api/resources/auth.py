@@ -79,21 +79,19 @@ def confirm_email(token):
     # We must confirm the token by decoding it
     try:
         email = confirm_token(token)
-    except URLTokenError as e:
-        message = 'URLTokenError'
-        log_message = {'message': message, "error": e}
-        logger.error(log_message)
-        apm.capture_exception()
+    except URLTokenError:
+        # We send a redirect to the frontend with a query in the params to
+        # say that the token has expired and they will handle it appropriately
+        # for the user.
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
-    except URLTokenExpired as e:
-        message = 'Token expired.'
-        log_message = {'message': message, "error": e}
-        logger.error(log_message)
-        apm.capture_exception()
+    except URLTokenExpired:
+        # We send a redirect to the frontend with a query in the params to
+        # say that the token has expired and they will handle it appropriately
+        # for the user.
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except Exception as e:
         message = 'An Exception Occurred.'
-        log_message = {'message': message, "error": e}
+        log_message = {'message': message, "error": str(e)}
         logger.error(log_message)
         apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
@@ -204,20 +202,12 @@ def confirm_email_admin(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        message = 'URLTokenError'
-        log_message = {'message': message, "error": e}
-        logger.error(log_message)
-        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except URLTokenExpired as e:
-        message = 'Token expired.'
-        log_message = {'message': message, "error": e}
-        logger.error(log_message)
-        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except Exception as e:
         message = 'An Exception Occured.'
-        log_message = {'message': message, "error": e}
+        log_message = {'message': message, "error": str(e)}
         logger.error(log_message)
         apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
@@ -303,10 +293,10 @@ def register_user() -> Tuple[dict, int]:
         response['message'] = 'User has been registered.'
         return jsonify(response), 201
 
-    except ValidationError as e:
+    except ValidationError:
         response['message'] = 'The user cannot be validated.'
         return jsonify(response), 400
-    except NotUniqueError as e:
+    except NotUniqueError:
         response['message'] = 'The users details already exists.'
         return jsonify(response), 400
 
@@ -429,6 +419,10 @@ def login() -> any:
                 )
                 user.save()
             except AddressNotFoundError:
+                # If our library cannot find a location based on the IP address
+                # usually because we're in a localhost testing environment or
+                # if the address is somehow bad, then we need to handle this
+                # error and allow the response.
                 user.reload()
                 ip_address = request.remote_addr
                 user.login_data.append(LoginData(ip_address=ip_address))
@@ -656,9 +650,6 @@ def reset_password_email() -> Tuple[dict, int]:
         # email is not valid, exception message is human-readable
         response['error'] = str(e)
         response['message'] = 'Invalid email.'
-        log_message = {'message', response['message'], 'error', str(e)}
-        logger.error(log_message)
-        apm.capture_exception()
         return jsonify(response), 400
 
     # Verify the email matches a user in the database
@@ -674,8 +665,6 @@ def reset_password_email() -> Tuple[dict, int]:
     # Verify the user's account has been verified/confirmed
     if not user.verified:
         response['message'] = 'The user must verify their email.'
-        logger.info(response['message'])
-        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     # Generate the JWT token with the user id embedded
@@ -733,8 +722,6 @@ def change_password(user):
 
     if not old_password:
         response['message'] = 'Must provide the current password.'
-        logger.info(response['message'])
-        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     if not new_password or not confirm_password:
@@ -752,8 +739,6 @@ def change_password(user):
     # Validate the user is active
     if not user.verified:
         response['message'] = 'User needs to verify account.'
-        logger.info(response['message'])
-        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     if bcrypt.check_password_hash(user.password, old_password):
@@ -784,7 +769,10 @@ def change_password(user):
         return jsonify(response), 200
 
     response['message'] = 'Password is not correct.'
-    logger.info(response['message'])
+    logger.info({
+        'email': user.email,
+        'message': response['message']
+    })
     apm.capture_message(response['message'])
     return jsonify(response), 401
 
@@ -811,17 +799,14 @@ def change_email(user) -> Tuple[dict, int]:
     except EmailNotValidError as e:
         response['error'] = str(e)
         response['message'] = 'Invalid email.'
-        log_message = {'message': response['message'], 'error': str(e)}
-        logger.exception(log_message)
-        apm.capture_exception()
         return jsonify(response), 400
 
     user.email = valid_new_email
     user.verified = False
     user.save()
 
-    confm_token = generate_confirmation_token(valid_new_email)
-    confirm_url = generate_url('auth.confirm_email', confm_token)
+    confirm_token = generate_confirmation_token(valid_new_email)
+    confirm_url = generate_url('auth.confirm_email', confirm_token)
 
     from sim_api.email_service import send_email
     send_email(

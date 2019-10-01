@@ -6,13 +6,9 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['David Matthews <@tree1004>']
-
-__credits__ = ['']
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth']
 __license__ = 'MIT'
 __version__ = '0.1.0'
-__maintainer__ = 'David Matthews'
-__email__ = 'davidmatthews1004@gmail.com'
 __status__ = 'development'
 __date__ = '2019.08.26'
 """ratings.py: 
@@ -23,13 +19,15 @@ Rating and Feedback endpoints using the Flask Resource inheritance model.
 
 from typing import Tuple
 
-from flask import Blueprint, request
+from flask import Blueprint, request, render_template
 from flask_restful import Resource
 from mongoengine import ValidationError
 
 from arc_logging import AppLogger
-from sim_api.extensions import api
-from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.extensions import api, apm
+from sim_api.middleware import (
+    authenticate_user_cookie_restful, authorize_admin_cookie_restful
+)
 from sim_api.models import Feedback, Rating
 
 logger = AppLogger(__name__)
@@ -46,6 +44,7 @@ class UserRating(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self, user) -> Tuple[dict, int]:
+        """Post a rating and save it to the user's list of ratings"""
         # Get post data
         data = request.get_json()
 
@@ -66,6 +65,9 @@ class UserRating(Resource):
         except ValidationError as e:
             response['error'] = str(e.message)
             response['message'] = 'Rating validation error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
 
         user.ratings.append(Rating(rating=rating))
@@ -85,6 +87,11 @@ class UserFeedback(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self, user) -> Tuple[dict, int]:
+        """
+        Method to post feedback and try to create a Feedback object then
+        notify the subscribed admins of the new post.
+        """
+
         # Get post data
         data = request.get_json()
 
@@ -119,7 +126,35 @@ class UserFeedback(Resource):
         except ValidationError as e:
             response['error'] = str(e.message)
             response['message'] = 'Feedback validation error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
+
+        feedback_mailing_list = []
+        # TODO(davidmatthews1004@gmail.com) Get all admins that are subscribed
+        #  to the feedback mailing list.
+        feedback_mailing_list.append('feedback@arclytics.io')
+
+        from sim_api.email_service import send_email
+        send_email(
+            to=feedback_mailing_list,
+            subject_suffix='A User has submitted Feedback',
+            html_template=render_template(
+                'feedback_submitted.html',
+                user_name=f'{user.first_name} {user.last_name}',
+                category=category,
+                rating=rating,
+                comment=comment
+            ),
+            text_template=render_template(
+                'feedback_submitted.txt',
+                user_name=f'{user.first_name} {user.last_name}',
+                category=category,
+                rating=rating,
+                comment=comment
+            )
+        )
 
         response['status'] = 'success'
         response['message'] = f'Feedback submitted by {user.email}.'
@@ -131,7 +166,7 @@ class FeedbackList(Resource):
     Route for admins to view a list of feedback submissions.
     """
 
-    method_decorators = {'get': [authenticate_user_cookie_restful]}
+    method_decorators = {'get': [authorize_admin_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
     def get(self, _):
@@ -225,6 +260,57 @@ class FeedbackList(Resource):
         return response, 200
 
 
+class SubscribeFeedback(Resource):
+    """
+    Route for Admins to subscribe to the feedback mailing list.
+    """
+
+    method_decorators = {'post': [authorize_admin_cookie_restful]}
+
+    def post(self, user):
+        """
+        Toggle subscription to the feedback mailing list.
+        """
+
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+        data = request.get_json()
+        if not data:
+            return response, 400
+
+        action = data.get('action', None)
+
+        if not action:
+            response['message'] = 'No action provided.'
+            return response, 400
+
+        if action == 'subscribe':
+            if user.admin_profile.sub_to_feedback:
+                response['message'] = 'User is already subscribed.'
+                return response, 400
+            else:
+                user.admin_profile.sub_to_feedback = True
+                user.save()
+                response['status'] = 'success'
+                response['message'] = 'User has been subscribed.'
+                return response, 200
+
+        elif action == 'unsubscribe':
+            if not user.admin_profile.sub_to_feedback:
+                response['message'] = 'User is already unsubscribed.'
+                return response, 400
+            else:
+                user.admin_profile.sub_to_feedback = False
+                user.save()
+                response['status'] = 'success'
+                response['message'] = 'User has been unsubscribed.'
+                return response, 200
+        else:
+            response['message'] = 'Invalid action.'
+            return response, 400
+
+
 api.add_resource(UserRating, '/api/v1/sim/user/rating')
 api.add_resource(UserFeedback, '/api/v1/sim/user/feedback')
 api.add_resource(FeedbackList, '/api/v1/sim/admin/feedback/list')
+api.add_resource(SubscribeFeedback, '/api/v1/sim/admin/feedback/list/subscribe')

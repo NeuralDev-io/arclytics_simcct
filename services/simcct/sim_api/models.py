@@ -198,6 +198,7 @@ class AdminProfile(EmbeddedDocument):
     mobile_number = StringField(max_length=11, min_length=10)
     verified = BooleanField(default=False)
     promoted_by = ObjectIdField()
+    sub_to_feedback = BooleanField(default=False)
 
     def to_dict(self) -> dict:
         """

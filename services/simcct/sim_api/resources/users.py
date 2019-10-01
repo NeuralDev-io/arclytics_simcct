@@ -160,6 +160,8 @@ class Users(Resource):
             if not user.admin_profile.verified:
                 response['message'] = 'User is not verified as an admin.'
                 response.pop('data')
+                logger.info(response['message'])
+                apm.capture_message(response['message'])
                 return response, 401
 
             # Otherwise, we can proceed to update the admin profile fields.

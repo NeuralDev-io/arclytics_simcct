@@ -204,12 +204,16 @@ class ConfigsMethod(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_configs = session_store.get('configurations')
 
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         # Change the configs
@@ -254,6 +258,8 @@ class MartensiteStart(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_configs = session_store.get('configurations')
@@ -358,12 +364,16 @@ class MartensiteStart(Resource):
         # If there is an error loading the session, we get an error message
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_configs = session_store.get('configurations', None)
 
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         session_configs['auto_calculate_ms'] = False
@@ -407,6 +417,8 @@ class BainiteStart(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_configs = session_store.get('configurations')
@@ -503,6 +515,8 @@ class BainiteStart(Resource):
         session_configs = session_store.get('configurations')
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         session_configs['auto_calculate_bs'] = False
@@ -543,6 +557,8 @@ class Austenite(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_configs = session_store.get('configurations')
@@ -632,12 +648,16 @@ class Austenite(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_configs = session_store.get('configurations')
 
         if session_configs is None:
             response['message'] = 'No previous session configurations was set.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         session_configs['auto_calculate_ae'] = False

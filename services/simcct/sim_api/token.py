@@ -25,10 +25,12 @@ from flask import url_for
 from itsdangerous import URLSafeTimedSerializer
 from itsdangerous.exc import BadSignature, SignatureExpired
 
+from sim_api.extensions import apm
 from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
 
-# TODO(Greg):
-#  - Please add logging and APM exception catching where you think necessary.
+from arc_logging import AppLogger
+
+logger = AppLogger(__name__)
 
 
 def generate_confirmation_token(email: str):
@@ -55,21 +57,48 @@ def confirm_token(token: bytes, expiration: int = 3600) -> Union[bool, str]:
             max_age=expiration
         )
     except SignatureExpired as e:
-        raise URLTokenExpired('Signature expired.')
+        message = 'Signature expired.'
+        log_message = {'message': message, 'error': e}
+        logger.error(log_message)
+        apm.capture_exception()
+        raise URLTokenExpired(message)
     except BadSignature as e:
-        raise URLTokenError('Bad signature.')
+        message = 'Bad signature.'
+        log_message = {'message': message, 'error': e}
+        logger.error(log_message)
+        apm.capture_exception()
+        raise URLTokenError(message)
     except Exception as e:
+        message = 'An Exception Occured.'
+        log_message = {'message': message, 'error': e}
+        logger.error(log_message)
+        apm.capture_exception()
         raise URLTokenError(str(e))
     return email
 
 
 def generate_url(endpoint, token):
+    """Generate a url for an endpoint with a token. E.g. a confirmation url
+    for a user to verify their account.
+
+    :param endpoint: An endpoint referencing a method in the backend
+    :param token: A token that has been serialized with relevant data (e.g. a
+    user's email address) and the secret salt.
+    :return: url for the given endpoint with token attached.
+    """
     if os.environ.get('FLASK_ENV', 'development') == 'production':
         return url_for(endpoint, token=token, _external=True, _scheme='https')
     return url_for(endpoint, token=token, _external=True)
 
 
 def generate_url_with_signature(endpoint, signature):
+    """Generate a url for an endpoint with a signature.
+
+    :param endpoint: An endpoint referencing a method in the backend.
+    :param signature: A signature serialized with releant data and the secret
+    salt.
+    :return: url for the given endpoint with signature attached.
+    """
     if os.environ.get('FLASK_ENV', 'development') == 'production':
         return url_for(
             endpoint, signature=signature, _external=True, _scheme='https'
@@ -79,6 +108,12 @@ def generate_url_with_signature(endpoint, signature):
 
 def generate_promotion_confirmation_token(admin_email: str, user_email: str
                                           ) -> Union[bool, list]:
+    """Generate a token for a promotion confirmation.
+
+    :param admin_email: The email address of the admin performing the promotion
+    :param user_email: The email address of  the user receiving the promotion
+    :return: A token serialized with the two email addresses and salt.
+    """
     serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     return serializer.dumps(
         [admin_email, user_email], salt=app.config['SECURITY_PASSWORD_SALT']
@@ -86,18 +121,37 @@ def generate_promotion_confirmation_token(admin_email: str, user_email: str
 
 
 def generate_shared_simulation_token(sim_id: str) -> Union[bool, list]:
+    """Generate a token for a shared simulation.
+
+    :param sim_id: The object id for the simulation that is being shared.
+    :return: A token serialized with the sim_id and salt.
+    """
     serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     return serializer.dumps(sim_id, salt=app.config['SECURITY_PASSWORD_SALT'])
 
 
 def confirm_simulation_token(token) -> Union[bool, dict]:
+    """Confirm a token for a shared simulation
+
+    :param token: The serialized token that should contain the object id for the
+    simulation that is shared.
+    :return: The simulation id decoded from the token.
+    """
     serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     try:
         sim_data = serializer.loads(
             token, salt=app.config['SECURITY_PASSWORD_SALT']
         )
     except BadSignature as e:
-        raise URLTokenError('Bad signature.')
+        message = 'Bad signature.'
+        log_message = {'message': message, 'error': e}
+        logger.error(log_message)
+        apm.capture_exception()
+        raise URLTokenError(message)
     except Exception as e:
+        message = 'Token error.'
+        log_message = {'message': message, 'error': e}
+        logger.error(log_message)
+        apm.capture_exception()
         raise URLTokenError('Token error.')
     return sim_data

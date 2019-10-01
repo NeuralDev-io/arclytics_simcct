@@ -176,6 +176,8 @@ class AlloyStore(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_store['alloy_store'] = valid_store
@@ -187,6 +189,7 @@ class AlloyStore(Resource):
                 'Cannot retrieve configurations from session.'
             )
             logger.error(response['message'], stack_info=True)
+            apm.capture_message(response['message'])
             return response, 500
 
         try:
@@ -231,6 +234,8 @@ class AlloyStore(Resource):
 
         if comp_np_arr is False:
             response['message'] = 'Compositions conversion error.'
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         # We need to store some results so let's prepare an empty dict
@@ -340,6 +345,8 @@ class AlloyStore(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         # We get what's currently stored in the session and we update it
@@ -402,6 +409,9 @@ class AlloyStore(Resource):
         except ValidationError as e:
             response['errors'] = e.messages
             response['message'] = 'Alloy failed schema validation.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
 
         # We also need to do auto update fixes if necessary
@@ -441,6 +451,8 @@ class AlloyStore(Resource):
 
         if comp_np_arr is False:
             response['message'] = 'Compositions conversion error.'
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         # We need to store some results so let's prepare an empty dict

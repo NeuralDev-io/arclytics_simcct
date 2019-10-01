@@ -53,6 +53,8 @@ class Simulation(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         log_msg = json.dumps(
@@ -66,6 +68,8 @@ class Simulation(Resource):
         session_configs = session_store.get('configurations')
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         configs = ConfigurationsSchema().load(session_configs)
@@ -86,6 +90,8 @@ class Simulation(Resource):
             and not sess_alloy_store['alloys']['mix']
         ) or not sess_alloy_store:
             response['message'] = 'No previous session alloy was set.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         alloy_store = AlloyStoreSchema().load(sess_alloy_store)

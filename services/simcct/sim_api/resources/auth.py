@@ -79,11 +79,23 @@ def confirm_email(token):
     # We must confirm the token by decoding it
     try:
         email = confirm_token(token)
-    except URLTokenError:
+    except URLTokenError as e:
+        message = 'URLTokenError'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
-    except URLTokenExpired:
+    except URLTokenExpired as e:
+        message = 'Token expired.'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
-    except Exception:
+    except Exception as e:
+        message = 'An Exception Occurred.'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     # We ensure there is a user for this email
@@ -142,12 +154,16 @@ def confirm_email_resend_after_registration() -> Tuple[dict, int]:
     email = data.get('email', None)
 
     if not User.objects(email=email):
+        log_message = 'User does not exist'
+        logger.warning(log_message)
         # response['message'] = 'User does not exist.'
         return jsonify(response), 200
 
     user = User.objects.get(email=email)
 
     if user.verified:
+        log_message = 'User is already verified.'
+        logger.warning(log_message)
         # response['message'] = 'User is already verified.'
         return jsonify(response), 200
 
@@ -188,10 +204,22 @@ def confirm_email_admin(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
+        message = 'URLTokenError'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except URLTokenExpired as e:
+        message = 'Token expired.'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except Exception as e:
+        message = 'An Exception Occured.'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     user = User.objects.get(email=email)
@@ -276,11 +304,9 @@ def register_user() -> Tuple[dict, int]:
         return jsonify(response), 201
 
     except ValidationError as e:
-        # logger.error('Validation Error: {}'.format(e))
         response['message'] = 'The user cannot be validated.'
         return jsonify(response), 400
     except NotUniqueError as e:
-        # logger.error('Not Unique Error: {}'.format(e))
         response['message'] = 'The users details already exists.'
         return jsonify(response), 400
 
@@ -319,11 +345,13 @@ def login() -> any:
     try:
         if not User.objects(email=email):
             response['message'] = 'User does not exist.'
-            logger.debug({'email': email, 'message': response['message']})
             return jsonify(response), 404
     except Exception as e:
-        logger.error(str(e))
-        response['message'] = 'User does not exist.'
+        message = 'User does not exist'
+        log_message = {'message': message, "error": e}
+        logger.error(log_message)
+        apm.capture_exception()
+        response['message'] = message
         return jsonify(response), 404
 
     user = User.objects.get(email=email)
@@ -428,6 +456,8 @@ def login() -> any:
             return jsonify(response), 200
 
     response['message'] = 'Email or password combination incorrect.'
+    logger.info(response['message'])
+    apm.capture_message(response['message'])
     return jsonify(response), 404
 
 
@@ -488,6 +518,8 @@ def reset_password() -> Tuple[dict, int]:
     resp_or_id = User.decode_password_reset_token(auth_token=token)
     if isinstance(resp_or_id, str):
         response['message'] = resp_or_id
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     request_data = request.get_json()
@@ -515,6 +547,8 @@ def reset_password() -> Tuple[dict, int]:
     user = User.objects.get(id=resp_or_id)
     if not user or not user.active:
         response['message'] = 'User does not exist.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     # The email to notify the user that their password has been changed.
@@ -622,11 +656,16 @@ def reset_password_email() -> Tuple[dict, int]:
         # email is not valid, exception message is human-readable
         response['error'] = str(e)
         response['message'] = 'Invalid email.'
+        log_message = {'message', response['message'], 'error', str(e)}
+        logger.error(log_message)
+        apm.capture_exception()
         return jsonify(response), 400
 
     # Verify the email matches a user in the database
     if not User.objects(email=valid_email):
         response['message'] = 'User does not exist.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 404
 
     # If there is a user with this email address, we must send to that email
@@ -635,6 +674,8 @@ def reset_password_email() -> Tuple[dict, int]:
     # Verify the user's account has been verified/confirmed
     if not user.verified:
         response['message'] = 'The user must verify their email.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     # Generate the JWT token with the user id embedded
@@ -692,6 +733,8 @@ def change_password(user):
 
     if not old_password:
         response['message'] = 'Must provide the current password.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     if not new_password or not confirm_password:
@@ -709,6 +752,8 @@ def change_password(user):
     # Validate the user is active
     if not user.verified:
         response['message'] = 'User needs to verify account.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     if bcrypt.check_password_hash(user.password, old_password):
@@ -739,6 +784,8 @@ def change_password(user):
         return jsonify(response), 200
 
     response['message'] = 'Password is not correct.'
+    logger.info(response['message'])
+    apm.capture_message(response['message'])
     return jsonify(response), 401
 
 
@@ -764,6 +811,9 @@ def change_email(user) -> Tuple[dict, int]:
     except EmailNotValidError as e:
         response['error'] = str(e)
         response['message'] = 'Invalid email.'
+        log_message = {'message': response['message'], 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return jsonify(response), 400
 
     user.email = valid_new_email

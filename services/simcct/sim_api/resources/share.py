@@ -6,13 +6,9 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['David Matthews <@tree1004>']
-
-__credits__ = ['']
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth']
 __license__ = 'MIT'
 __version__ = '0.1.0'
-__maintainer__ = 'David Matthews'
-__email__ = 'davidmatthews1004@gmail.com'
 __status__ = 'development'
 __date__ = '2019.08.11'
 """share.py: 
@@ -31,7 +27,7 @@ from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
 from arc_logging import AppLogger
-from sim_api.extensions import api
+from sim_api.extensions import api, apm
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
     MissingElementError
@@ -59,6 +55,14 @@ class ShareSimulationLink(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self, user) -> Tuple[dict, int]:
+        """Generate a link for a shared sim object and return it to the
+        frontend.
+
+        :param owner: User object for the owner of the shared simulation object
+        returned by the authenticate middleware
+        :return: Returns a json response
+        """
+
         # Get post data
         data = request.get_json()
 
@@ -98,26 +102,44 @@ class ShareSimulationLink(Resource):
         except ElementSymbolInvalid as e:
             response['errors'] = str(e)
             response['message'] = 'Element Symbol Invalid.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except ElementInvalid as e:
             response['errors'] = str(e)
             response['message'] = 'Element Invalid.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except MissingElementError as e:
             response['errors'] = str(e)
             response['message'] = 'Alloy is missing essential elements.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except DuplicateElementError as e:
             response['errors'] = str(e)
             response['message'] = 'Alloy contains duplicate elements.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except ValidationError as e:
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except OverflowError as e:
             response['errors'] = str(e)
             response['message'] = 'Overflow error.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 500
 
         # Create a token that contains the ObjectId for the shared simulation
@@ -145,6 +167,13 @@ class ShareSimulationEmail(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self, owner) -> Tuple[dict, int]:
+        """Generate a link for a shared sim object and send it to the list of
+        email address provided.
+
+        :param owner: User object for the owner of the shared simulation object
+        returned by the authenticate middleware
+        :return: Returns a json response
+        """
         # Get post data
         data = request.get_json()
 
@@ -176,6 +205,9 @@ class ShareSimulationEmail(Resource):
             except EmailNotValidError as e:
                 response['error'] = str(e)
                 response['message'] = 'Invalid email.'
+                log_message = {'message': response['message'], 'errors': str(e)}
+                logger.exception(log_message)
+                apm.capture_exception()
                 return response, 400
         else:
             for email in email_list:
@@ -185,6 +217,11 @@ class ShareSimulationEmail(Resource):
                 except EmailNotValidError as e:
                     response['error'] = str(e)
                     response['message'] = 'Invalid email.'
+                    log_message = {
+                        'message': response['message'], 'errors': str(e)
+                    }
+                    logger.exception(log_message)
+                    apm.capture_exception()
                     return response, 400
 
         # Get the configuration and alloy_store information from the request so
@@ -221,26 +258,44 @@ class ShareSimulationEmail(Resource):
         except ElementSymbolInvalid as e:
             response['errors'] = str(e)
             response['message'] = 'Element Symbol Invalid.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except ElementInvalid as e:
             response['errors'] = str(e)
             response['message'] = 'Element Invalid.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except MissingElementError as e:
             response['errors'] = str(e)
             response['message'] = 'Alloy is missing essential elements.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except DuplicateElementError as e:
             response['errors'] = str(e)
             response['message'] = 'Alloy contains duplicate elements.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except ValidationError as e:
             response['errors'] = str(e)
             response['message'] = 'Validation error.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except OverflowError as e:
             response['errors'] = str(e)
             response['message'] = 'Overflow error.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 500
 
         # Create a token that contains the ObjectId for the shared simulation
@@ -301,18 +356,6 @@ def request_shared_simulation(token):
 
     return redirect(f'{redirect_url}/share/simulation/{token}')
 
-    # # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
-    # client_host = os.environ.get('CLIENT_HOST')
-    # # We can make our own redirect response by doing the following
-    # custom_redir_response = app.response_class(
-    #     status=302, mimetype='application/json'
-    # )
-    # # TODO(davidmatthews1004@gmail.com): Correct this endpoint and make sure I
-    # #  am correctly sending the signature.
-    # redirect_url = \
-    #     f'http://{client_host}/share/simulation/request/token={token}'
-    # return redirect(redirect_url, code=302)
-
 
 @share_blueprint.route('/user/share/simulation/view/<token>', methods=['GET'])
 def view_shared_simulation(token):
@@ -339,6 +382,9 @@ def view_shared_simulation(token):
     except URLTokenError as e:
         response['error'] = str(e)
         response['message'] = 'Invalid token.'
+        log_message = {'message': response['message'], 'errors': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return jsonify(response), 400
 
     # If the id decoded from the simulation does not exist, we must inform the
@@ -346,6 +392,8 @@ def view_shared_simulation(token):
     # has been deleted since a link has been generated for it.
     if not SharedSimulation.objects(id=sim_id):
         response['message'] = 'Simulation does not exist.'
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 404
 
     # Using the do_dict() method for the SharedSimulation document in

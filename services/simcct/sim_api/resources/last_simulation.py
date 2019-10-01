@@ -25,7 +25,7 @@ from flask_restful import Resource
 from mongoengine import FieldDoesNotExist, ValidationError
 
 from arc_logging import AppLogger
-from sim_api.extensions import api
+from sim_api.extensions import api, apm
 from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
@@ -102,34 +102,52 @@ class LastSimulation(Resource):
             # In case the request has fields we do not expect.
             response['error'] = str(e)
             response['message'] = 'Field does not exist error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except ElementSymbolInvalid as e:
             # Where the symbol used for the element is not valid meaning it
             # does not exist in a Periodic Table.
             response['error'] = str(e)
             response['message'] = 'Invalid element symbol error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except ElementInvalid as e:
             # If no "symbol" or "weight" passed as an Element object.
             response['error'] = str(e)
             response['message'] = 'Invalid element error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except MissingElementError as e:
             # Where the alloy is missing elements we expect to always be
             # available as they are required downstream in the algorithm.
             response['error'] = str(e)
             response['message'] = 'Missing element error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except DuplicateElementError as e:
             # One of the alloys contains two or more elements with the same
             # chemical symbol.
             response['error'] = str(e)
             response['message'] = 'Alloy contains a duplicate element.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except ValidationError as e:
             # All other validation errors
             response['error'] = str(e)
             response['message'] = 'Model schema validation error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
 
         response['data'] = {}
@@ -190,6 +208,8 @@ class LastSimulation(Resource):
             response['message'] = (
                 'User does not have a last configurations or alloy store.'
             )
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         response['data'] = {}

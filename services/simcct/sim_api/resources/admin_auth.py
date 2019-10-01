@@ -26,7 +26,7 @@ from flask import Blueprint, redirect, render_template, request
 from flask_restful import Resource
 
 from arc_logging import AppLogger
-from sim_api.extensions import api
+from sim_api.extensions import api, apm
 from sim_api.extensions.utilities import URLTokenExpired
 from sim_api.middleware import authorize_admin_cookie_restful
 from sim_api.models import (AdminProfile, User)
@@ -77,6 +77,9 @@ class AdminCreate(Resource):
             # email is not valid, exception message is human-readable
             response['error'] = str(e)
             response['message'] = 'Invalid email.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_message(response['message'])
             return response, 400
 
         # Make sure the user exists in the database.
@@ -88,6 +91,8 @@ class AdminCreate(Resource):
         user = User.objects.get(email=valid_email)
         if not user.verified:
             response['message'] = 'The user must verify their email.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 401
         if user.is_admin:
             response['message'] = 'User is already an Administrator.'
@@ -185,14 +190,26 @@ def cancel_promotion(token):
         # Change expiration parameter to 30 days instead of 1 hour.
         email_list = confirm_token(token, 2592000)
     except URLTokenError as e:
+        message = 'URLTokenError'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
+        message = 'URL token expired.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     except Exception as e:
+        message = 'An Exception Occured.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
@@ -214,6 +231,9 @@ def cancel_promotion(token):
         admin_email = email_list[0]
         user_email = email_list[1]
     except IndexError as e:
+        message = 'Email list index error.'
+        logger.exception(message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
@@ -276,14 +296,26 @@ def verify_promotion(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
+        message = 'URLTokenError'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
+        message = 'URL Token has expired.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
     except Exception as e:
+        message = 'An Exception Occured.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
@@ -342,9 +374,8 @@ def verify_promotion(token):
         )
     )
 
-    logger.debug(client_host)
-    response['status'] = 'success'
-    response.pop('message')
+    # response['status'] = 'success'
+    # response.pop('message')
     return redirect(f'{redirect_url}/signin', code=302)
 
 
@@ -379,11 +410,16 @@ class DisableAccount(Resource):
             # email is not valid, exception message is human-readable
             response['error'] = str(e)
             response['message'] = 'Invalid email.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
 
         # Validation checks
         if not User.objects(email=valid_email):
             response['message'] = 'User does not exist.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         user = User.objects.get(email=valid_email)
@@ -433,14 +469,26 @@ def confirm_disable_account(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
+        message = 'URLTokenError'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
+        message = 'URL Token has expired.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
     except Exception as e:
+        message = 'An Exception Occurred.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
@@ -471,7 +519,6 @@ def confirm_disable_account(token):
         )
     )
 
-    logger.debug(client_host)
     response['status'] = 'success'
     response.pop('message')
     return redirect(f'{redirect_url}/', code=302)

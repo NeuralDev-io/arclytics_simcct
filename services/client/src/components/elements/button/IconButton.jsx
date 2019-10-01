@@ -12,7 +12,13 @@ const IconButton = ({
 }) => {
   const classname = `${styles.button} ${isDisabled && styles.disabled} ${className}`
   return (
-    <div className={classname} {...buttonize(onClick)}>
+    <div
+      className={classname}
+      {...(() => {
+        if (isDisabled) return {}
+        return buttonize(onClick)
+      })()}
+    >
       <Icon className={styles.icon} />
     </div>
   )

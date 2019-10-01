@@ -6,11 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __license__ = 'MIT'
-__version__ = '0.1.0'
-
-__status__ = 'development'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.08.11'
 """admin_auth.py: 
 
@@ -77,9 +76,6 @@ class AdminCreate(Resource):
             # email is not valid, exception message is human-readable
             response['error'] = str(e)
             response['message'] = 'Invalid email.'
-            log_message = {'message': response['message'], 'error': str(e)}
-            logger.exception(log_message)
-            apm.capture_message(response['message'])
             return response, 400
 
         # Make sure the user exists in the database.
@@ -91,8 +87,6 @@ class AdminCreate(Resource):
         user = User.objects.get(email=valid_email)
         if not user.verified:
             response['message'] = 'The user must verify their email.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 401
         if user.is_admin:
             response['message'] = 'User is already an Administrator.'
@@ -189,19 +183,11 @@ def cancel_promotion(token):
         # we want a list back of emails.
         # Change expiration parameter to 30 days instead of 1 hour.
         email_list = confirm_token(token, 2592000)
-    except URLTokenError as e:
-        message = 'URLTokenError'
-        log_message = {'message': message, 'error': str(e)}
-        logger.exception(log_message)
-        apm.capture_exception()
+    except URLTokenError:
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
-    except URLTokenExpired as e:
-        message = 'URL token expired.'
-        log_message = {'message': message, 'error': str(e)}
-        logger.exception(log_message)
-        apm.capture_exception()
+    except URLTokenExpired:
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
@@ -230,8 +216,8 @@ def cancel_promotion(token):
     try:
         admin_email = email_list[0]
         user_email = email_list[1]
-    except IndexError as e:
-        message = 'Email list index error.'
+    except IndexError:
+        message = f'Email list index error. List: {str(email_list)}'
         logger.exception(message)
         apm.capture_exception()
         return redirect(
@@ -296,18 +282,10 @@ def verify_promotion(token):
     try:
         email = confirm_token(token)
     except URLTokenError as e:
-        message = 'URLTokenError'
-        log_message = {'message': message, 'error': str(e)}
-        logger.exception(log_message)
-        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
     except URLTokenExpired as e:
-        message = 'URL Token has expired.'
-        log_message = {'message': message, 'error': str(e)}
-        logger.exception(log_message)
-        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
@@ -410,16 +388,11 @@ class DisableAccount(Resource):
             # email is not valid, exception message is human-readable
             response['error'] = str(e)
             response['message'] = 'Invalid email.'
-            log_message = {'message': response['message'], 'error': str(e)}
-            logger.exception(log_message)
-            apm.capture_exception()
             return response, 400
 
         # Validation checks
         if not User.objects(email=valid_email):
             response['message'] = 'User does not exist.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 404
 
         user = User.objects.get(email=valid_email)
@@ -468,25 +441,16 @@ def confirm_disable_account(token):
     # Decode the token from the email to confirm it was the right one
     try:
         email = confirm_token(token)
-    except URLTokenError as e:
-        message = 'URLTokenError'
-        log_message = {'message': message, 'error': str(e)}
-        logger.exception(log_message)
-        apm.capture_exception()
+    except URLTokenError:
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
-    except URLTokenExpired as e:
-        message = 'URL Token has expired.'
-        log_message = {'message': message, 'error': str(e)}
-        logger.exception(log_message)
-        apm.capture_exception()
+    except URLTokenExpired:
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
     except Exception as e:
-        message = 'An Exception Occurred.'
-        log_message = {'message': message, 'error': str(e)}
+        log_message = {'message': 'An Exception Occurred.', 'error': str(e)}
         logger.exception(log_message)
         apm.capture_exception()
         return redirect(

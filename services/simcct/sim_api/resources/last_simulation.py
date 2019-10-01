@@ -6,12 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
-
-__status__ = 'development'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.08.11'
 """last_simulation.py: 
 

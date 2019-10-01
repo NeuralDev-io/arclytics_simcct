@@ -13,7 +13,6 @@ __author__ = [
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'MIT'
 __version__ = '1.0.0'
-
 __status__ = 'production'
 __date__ = '2019.07.13'
 """sim_configurations.py: 
@@ -212,8 +211,6 @@ class ConfigsMethod(Resource):
 
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 404
 
         # Change the configs
@@ -286,16 +283,17 @@ class MartensiteStart(Resource):
             response['message'] = 'No previous session initiated.'
             return response, 400
 
-        # DECISION:
-        # We will not implement this as it adds too much complexity to
-        # the logical path of the system state. This was not a core
-        # requirement and Dr. Bendeich often said he did not want this
-        # implemented at all.
         comp_list: list = []
         if sess_alloy_store['alloy_option'] == 'single':
             comp_list = sess_alloy_store['alloys']['parent']['compositions']
         else:
             # Would normally find the `mix` option.
+
+            # DECISION:
+            # We will not implement this as it adds too much complexity to
+            # the logical path of the system state. This was not a core
+            # requirement and Dr. Bendeich often said he did not want this
+            # implemented at all.
             pass
 
         if comp_list is None:
@@ -372,8 +370,6 @@ class MartensiteStart(Resource):
 
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 404
 
         session_configs['auto_calculate_ms'] = False
@@ -515,8 +511,6 @@ class BainiteStart(Resource):
         session_configs = session_store.get('configurations')
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 404
 
         session_configs['auto_calculate_bs'] = False
@@ -656,8 +650,6 @@ class Austenite(Resource):
 
         if session_configs is None:
             response['message'] = 'No previous session configurations was set.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 404
 
         session_configs['auto_calculate_ae'] = False

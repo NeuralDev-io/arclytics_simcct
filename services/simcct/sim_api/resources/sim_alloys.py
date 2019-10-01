@@ -13,7 +13,6 @@ __author__ = [
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'MIT'
 __version__ = '1.0.0'
-
 __status__ = 'production'
 __date__ = '2019.08.03'
 """sim_alloys.py: 
@@ -128,8 +127,6 @@ class AlloyStore(Resource):
             valid_alloy = AlloySchema().load(alloy)
         except MissingElementError as e:
             response['message'] = str(e)
-            logger.exception(response['message'], exc_info=True)
-            apm.capture_exception()
             return response, 400
         except ValidationError as e:
             response['errors'] = str(e.messages)

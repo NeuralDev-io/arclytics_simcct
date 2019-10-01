@@ -6,12 +6,14 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
+__author__ = [
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'MIT'
-__version__ = '0.5.0'
-
-__status__ = 'development'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.07.17'
 """simulation.py: 
 
@@ -68,8 +70,6 @@ class Simulation(Resource):
         session_configs = session_store.get('configurations')
         if not session_configs:
             response['message'] = 'No previous session configurations was set.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 404
 
         configs = ConfigurationsSchema().load(session_configs)
@@ -90,8 +90,6 @@ class Simulation(Resource):
             and not sess_alloy_store['alloys']['mix']
         ) or not sess_alloy_store:
             response['message'] = 'No previous session alloy was set.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 404
 
         alloy_store = AlloyStoreSchema().load(sess_alloy_store)
@@ -131,6 +129,8 @@ class Simulation(Resource):
 
         # stop_configs_time = time.time()
         # sim_configs_time = stop_configs_time - start
+
+        # TODO(andrew@neuraldev.io) Validate for Carbon < 0.7
 
         try:
             sim = PhaseSimulation(sim_configs=sim_configs)

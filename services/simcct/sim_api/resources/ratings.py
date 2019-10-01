@@ -6,10 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth']
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __license__ = 'MIT'
-__version__ = '0.1.0'
-__status__ = 'development'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.08.26'
 """ratings.py: 
 

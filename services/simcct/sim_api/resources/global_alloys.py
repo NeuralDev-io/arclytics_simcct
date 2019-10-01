@@ -6,10 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __license__ = 'MIT'
-__version__ = '0.9.0'
-__status__ = 'development'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.07.14'
 """global_alloys.py: 
 
@@ -231,13 +231,14 @@ class Alloys(Resource):
         response.pop('message')
         return response, 200
 
-    # noinspection PyMethodMayBeStatic
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def patch(self, alloy_id):
         """Exposes the PATCH method for `/alloys` to update an existing alloy by
         an admin to update the existing data.
 
         Args:
-            _: A valid ObjectId string that will be checked  that is not used.
+            alloy_id: A valid ObjectId string that will be checked that is
+            not used.
 
         Returns:
             A Response object consisting of a dict and status code as an int.

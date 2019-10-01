@@ -8,10 +8,9 @@
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
-__license__ = 'TBA'
+__license__ = 'MIT'
 __version__ = '0.5.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+
 __status__ = 'development'
 __date__ = '2019.07.17'
 """simulation.py: 
@@ -20,6 +19,9 @@ This module defines and implements the endpoints for CCT and TTT simulations.
 """
 
 import time
+from os import environ as env
+# import threading
+import concurrent.futures
 
 from flask import Blueprint, json
 from flask_restful import Resource
@@ -152,6 +154,10 @@ class Simulation(Resource):
             ttt_results = sim.ttt()
             user_cooling_curve_results = sim.user_cooling_profile()
             cct_results = sim.cct()
+            # with concurrent.futures.ThreadPoolExecutor() as executor:
+            #     ttt_future = executor.submit(sim.ttt)
+            #     user_future = executor.submit(sim.user_cooling_profile)
+            #     cct_future = executor.submit(sim.cct)
 
             # We send the three simulation functions off to a Dask Worker to
             # compute as a background thread.
@@ -176,16 +182,16 @@ class Simulation(Resource):
         # Converting the TTT and CCT `numpy.ndarray` will raise an
         # AssertionError if the shape of the ndarray is not correct.
         try:
-            # data = {
-            #     'TTT': ttt_future.result(),
-            #     'CCT': cct_future.result(),
-            #     'USER': user_cc_future.result()
-            # }
             data = {
                 'TTT': ttt_results,
                 'CCT': cct_results,
                 'USER': user_cooling_curve_results
             }
+            # data = {
+            #     'TTT': ttt_future.result(),
+            #     'CCT': cct_future.result(),
+            #     'USER': user_future.result()
+            # }
         except AssertionError as e:
             response['errors'] = str(e)
             response['message'] = 'Assertion error building response data.'

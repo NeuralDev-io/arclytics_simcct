@@ -9,7 +9,7 @@
 __author__ = ['David Matthews <@tree1004>']
 
 __credits__ = ['']
-__license__ = 'TBA'
+__license__ = 'MIT'
 __version__ = '0.1.0'
 __maintainer__ = 'David Matthews'
 __email__ = 'davidmatthews1004@gmail.com'

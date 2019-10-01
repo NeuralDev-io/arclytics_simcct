@@ -10,8 +10,26 @@ data:
   apm-server.yml: |
     apm-server:
       host: "0.0.0.0:8200"
+      ssl:
+        enabled: false
+        #key: "/usr/share/ssl/tls.key"
+        #certificate: "/usr/share/ssl/tls.crt"
+      # Note: This doesn't seem to work as the ConfigMap is created external to the Pods
+      # which means there are no environment variables set at the time this file is created.
+      #secret_token: '${ELASTIC_APM_SECRET_TOKEN}'
       frontend:
         enabled: false
+      rum:
+        enabled: false
+        event_rate.limit: 300
+        event_rate.lru_size: 1000
+        allow_origins: ['*']
+        library_pattern: "node_modules|bower_components|~"
+        exclude_from_grouping: "^/webpack"
+        #source_mapping:
+        #  enabled: true
+        #  cache.expiration: 5m
+        #  index_pattern: "apm-*-sourcemap*"
     setup.template.settings:
       index:
         number_of_shards: 1
@@ -20,7 +38,12 @@ data:
       enabled: true
       host: http://kibana-service.arclytics.svc.cluster.local:5601
     output.elasticsearch:
-      hosts: ["http://elasticsearch-0.elasticsearch.arclytics.svc.cluster.local:9200", "http://elasticsearch-1.elasticsearch.arclytics.svc.cluster.local:9200", "http://elasticsearch-2.elasticsearch.arclytics.svc.cluster.local:9200"]
+      hosts: ["http://elasticsearch-0.elasticsearch.arclytics.svc.cluster.local:9200", "http://elasticsearch-1.elasticsearch.arclytics.svc.cluster.local:9200"]
+      #username: '${ELASTICSEARCH_USER:elastic}'
+      #passowrd: '${ELASTICSEARCH_PASSWORD:elastic}'
+      #protocol: https
+    queue.mem.events: 4096
+    max_procs: 4
 ---
 apiVersion: v1
 kind: Service
@@ -66,10 +89,27 @@ spec:
               containerPort: 8200
               protocol: TCP
           env:
+            - name: ELASTIC_APM_SECRET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: elastic_apm_secret_token
             - name: ELASTICSEARCH_HOST
               value: elasticsearch.arclytics.svc.cluster.local
             - name: ELASTICSEARCH_PORT
               value: "9200"
+            # X-Pack Authentication  -- required by fluentd even if not used
+            # =====================
+            - name: ELASTICSEARCH_USER
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: elastic_user
+            - name: ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: elastic_password
             - name: KIBANA_HOST
               value: kibana-service.arclytics.svc.cluster.local
             - name: KIBANA_PORT
@@ -79,7 +119,13 @@ spec:
               mountPath: /usr/share/apm-server/apm-server.yml
               readOnly: true
               subPath: apm-server.yml
+            - name: apm-server-ssl
+              mountPath: /usr/share/ssl
+              readOnly: true
       volumes:
         - name: apm-server-config
           configMap:
             name: apm-server-config
+        - name: apm-server-ssl
+          secret:
+            secretName: apm-app-https-secret

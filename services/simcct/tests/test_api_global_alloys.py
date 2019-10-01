@@ -6,18 +6,9 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '1.0.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __status__ = 'development'
 __date__ = '2019.07.14'
-"""test_api_global_alloys.py: 
-
-Test all the endpoints on the Alloy resources endpoint.
-"""
 
 import unittest
 from pathlib import Path

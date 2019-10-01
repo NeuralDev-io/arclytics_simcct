@@ -14,6 +14,7 @@ import {
 } from './types'
 import { ASTM2Dia } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
+import {logError} from "../../../api/LoggingHelper";
 
 /**
  * Initialise a new sim session on the server, then update alloy in
@@ -81,8 +82,7 @@ export const initSession = (option, type, alloy) => (dispatch) => {
         type: INIT_SESSION,
         status: 'fail',
       })
-      // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'actions.initSession', err.stack)
     })
 }
 
@@ -104,6 +104,7 @@ export const updateAlloyOption = option => (dispatch) => {
  *
  * @param {string} option 'single' | 'mix'
  * @param {string} type 'parent' | 'weld'
+ * @param {string} error
  * @param {object} alloy alloy to be updated
  */
 export const updateComp = (option, type, alloy, error) => (dispatch) => {
@@ -147,8 +148,7 @@ export const updateComp = (option, type, alloy, error) => (dispatch) => {
         }
       })
       .catch((err) => {
-        // log to fluentd
-        console.log(err)
+        logError(err.toString(), err.message, 'actions.updateComp', err.stack)
       })
   }
 }
@@ -201,7 +201,7 @@ export const updateConfigMethod = value => (dispatch) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'actions.updateConfigMethod', err.stack)
     })
 }
 
@@ -255,7 +255,7 @@ export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getStat
       })
       .catch((err) => {
         // log to fluentd
-        console.log(err)
+        logError(err.toString(), err.message, 'actions.updateGrainSize', err.stack)
       })
   }
 }
@@ -327,7 +327,7 @@ export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState
       })
       .catch((err) => {
         // log to fluentd
-        console.log(err)
+        logError(err.toString(), err.message, 'actions.updateMsBsAe', err.stack)
       })
   }
 }
@@ -382,7 +382,7 @@ export const getMsBsAe = name => (dispatch, getState) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'actions.getMsBsAe', err.stack)
     })
 }
 
@@ -442,7 +442,7 @@ export const updateConfig = (name, value, valError) => (dispatch, getState) => {
       })
       .catch((err) => {
         // log to fluentd
-        console.log(err)
+        logError(err.toString(), err.message, 'actions.updateConfig', err.stack)
       })
   }
 }
@@ -477,7 +477,7 @@ export const runSim = () => (dispatch, getState) => {
       cct_cooling_rate,
       start_temp,
     }),
-  }).catch(err => console.log(err))
+  }).catch(err => logError(err.toString(), err.message, 'actions.runSim', err.stack))
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/simulate`, {
     method: 'GET',
     credentials: 'include',
@@ -527,7 +527,7 @@ export const runSim = () => (dispatch, getState) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'actions.runSim', err.stack)
     })
 }
 
@@ -612,7 +612,7 @@ export const loadSimFromLink = token => dispatch => (
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'actions.loadSimFromLink', err.stack)
     })
 )
 

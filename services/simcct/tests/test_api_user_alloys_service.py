@@ -6,15 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __status__ = 'development'
 __date__ = '2019.08.02'
-"""test_api_user_alloys_service.py: 
 
-Unit Testing the User Alloy Service.
-"""
 import os
 import unittest
 from pathlib import Path

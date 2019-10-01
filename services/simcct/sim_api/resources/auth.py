@@ -157,7 +157,6 @@ def confirm_email_resend_after_registration() -> Tuple[dict, int]:
     if not User.objects(email=email):
         log_message = 'User does not exist'
         logger.warning(log_message)
-        # response['message'] = 'User does not exist.'
         return jsonify(response), 200
 
     user = User.objects.get(email=email)
@@ -339,12 +338,8 @@ def login() -> any:
         if not User.objects(email=email):
             response['message'] = 'User does not exist.'
             return jsonify(response), 404
-    except Exception as e:
-        message = 'User does not exist'
-        log_message = {'message': message, "error": e}
-        logger.error(log_message)
-        apm.capture_exception()
-        response['message'] = message
+    except Exception:
+        response['message'] = 'User does not exist'
         return jsonify(response), 404
 
     user = User.objects.get(email=email)
@@ -570,8 +565,6 @@ def reset_password() -> Tuple[dict, int]:
     user = User.objects.get(id=resp_or_id)
     if not user or not user.active:
         response['message'] = 'User does not exist.'
-        logger.info(response['message'])
-        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     # The email to notify the user that their password has been changed.
@@ -686,8 +679,6 @@ def reset_password_email() -> Tuple[dict, int]:
     # Verify the email matches a user in the database
     if not User.objects(email=valid_email):
         response['message'] = 'User does not exist.'
-        logger.info(response['message'])
-        apm.capture_message(response['message'])
         return jsonify(response), 404
 
     # If there is a user with this email address, we must send to that email

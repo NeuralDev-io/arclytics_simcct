@@ -213,9 +213,6 @@ class UserAlloy(Resource):
             except DoesNotExist as e:
                 response['error'] = str(e)
                 response['message'] = 'Alloy does not exist.'
-                log_message = {'message': response['message'], 'error': str(e)}
-                logger.exception(log_message)
-                apm.capture_exception()
                 return response, 404
             except MultipleObjectsReturned as e:
                 response['error'] = str(e)
@@ -283,52 +280,34 @@ class UserAlloy(Resource):
             return response, 400
         except ElementSymbolInvalid as e:
             # This validation is a custom one used to validate the symbol
-            # used
             # in the element is one that is valid with the Periodic Table.
             response['error'] = str(e)
             response['message'] = 'Invalid element symbol error.'
-            log_message = {'message': response['message'], 'error': str(e)}
-            logger.exception(log_message)
-            apm.capture_exception()
             return response, 400
         except ElementInvalid as e:
             # This validation is a custom one used to validate the
             # Element used
             response['error'] = str(e)
             response['message'] = 'Invalid element error.'
-            log_message = {'message': response['message'], 'error': str(e)}
-            logger.exception(log_message)
-            apm.capture_exception()
             return response, 400
         except MissingElementError as e:
             # This validation is a custom one used to validate missing Elements
             response['error'] = str(e)
             response['message'] = 'Missing element error.'
-            log_message = {'message': response['message'], 'error': str(e)}
-            logger.exception(log_message)
-            apm.capture_exception()
             return response, 400
         except DuplicateElementError as e:
             # One of the alloys contains two or more elements with the same
             # chemical symbol.
             response['error'] = str(e)
             response['message'] = 'Alloy contains a duplicate element.'
-            log_message = {'message': response['message'], 'error': str(e)}
-            logger.exception(log_message)
-            apm.capture_exception()
             return response, 400
         except ValidationError as e:
             response['error'] = str(e.message)
             response['message'] = 'Alloy validation error.'
-            log_message = {'message': response['message'], 'error': str(e)}
-            logger.exception(log_message)
-            apm.capture_exception()
             return response, 400
 
         if user.saved_alloys.count() == 0:
             response['message'] = 'No alloys found.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 404
 
         # Now we do the real updating work
@@ -338,8 +317,6 @@ class UserAlloy(Resource):
 
         if updated == 0:
             response['message'] = 'Alloy does not exist.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 404
 
         updated = User.objects.filter(
@@ -361,8 +338,6 @@ class UserAlloy(Resource):
             # and if there is, then we return an internal server error.
             response['error'] = str(e.message)
             response['message'] = 'Validation error on saving.'
-            log_message = {'message': response['message'], 'error': str(e)}
-            logger.exception(log_message)
             apm.capture_exception()
             return response, 500
 
@@ -386,9 +361,6 @@ class UserAlloy(Resource):
             'Method Not Allowed. These are not the endpoints you are '
             'looking for.'
         )
-        logger.info(msg)
-        apm.capture_message(msg)
-
         return {'message': msg}, 405
 
     # noinspection PyMethodMayBeStatic
@@ -424,9 +396,6 @@ class UserAlloy(Resource):
         except DoesNotExist as e:
             response['error'] = str(e)
             response['message'] = 'Alloy does not exist.'
-            log_message = {'message': response['message'], 'error': str(e)}
-            logger.exception(log_message)
-            apm.capture_exception()
             return response, 404
         except MultipleObjectsReturned as e:
             response['error'] = str(e)

@@ -183,7 +183,7 @@ class LastSimulation(Resource):
             return response, 400
         except ValidationError as e:
             # All other validation errors
-            response['error'] = str(e)
+            response['error'] = str(e.messages)
             response['message'] = 'Model schema validation error.'
             apm.capture_exception()
             return response, 400

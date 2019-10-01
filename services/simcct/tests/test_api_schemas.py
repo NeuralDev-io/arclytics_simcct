@@ -22,7 +22,7 @@ from manage import BASE_DIR
 from tests.test_api_base import BaseTestCase
 from sim_api.schemas import (AlloySchema, ConfigurationsSchema)
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'tests' / 'sim_configs.json'
 
 
 class TestSchemas(BaseTestCase):

@@ -116,7 +116,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_empty_json(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
@@ -130,11 +130,16 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_missing_configurations(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
-                data=json.dumps({'alloy_store': ALLOY_STORE}),
+                data=json.dumps(
+                    {
+                        'is_valid': True,
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -149,11 +154,14 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_missing_alloy_store(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
-                data=json.dumps({'configurations': CONFIGS}),
+                data=json.dumps({
+                    'is_valid': True,
+                    'configurations': CONFIGS
+                }),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -178,6 +186,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': configs,
                         'alloy_store': ALLOY_STORE,
                         'simulation_results': RESULTS
@@ -197,7 +206,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_configs_bad_method(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(CONFIGS)
             configs['method'] = 'KirkaldyAndLi2019'
 
@@ -205,6 +214,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': configs,
                         'alloy_store': ALLOY_STORE,
                         'simulation_results': RESULTS
@@ -224,7 +234,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_configs_bad_nuc(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(CONFIGS)
             configs['nucleation_start'] = -1
             configs['nucleation_finish'] = 101
@@ -253,7 +263,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_configs_negative_trans_temps(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(CONFIGS)
             configs['ms_temp'] = -1
             configs['ms_rate_param'] = -1
@@ -265,6 +275,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': configs,
                         'alloy_store': ALLOY_STORE,
                         'simulation_results': RESULTS
@@ -285,7 +296,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_alloy_option(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
 
             alloy_store = {
                 'alloy_option': 'random',
@@ -303,6 +314,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': CONFIGS,
                         'alloy_store': alloy_store,
                         'simulation_results': RESULTS
@@ -322,7 +334,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_alloy_missing_elem(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             comp = deepcopy(COMP)
             del comp[-1]
 
@@ -342,6 +354,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': CONFIGS,
                         'alloy_store': alloy_store,
                         'simulation_results': RESULTS
@@ -357,7 +370,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_alloy_bad_elem(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             comp = deepcopy(COMP)
             comp.append({'symbol': 'Vb', 'weight': 0.0})
 
@@ -377,6 +390,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': CONFIGS,
                         'alloy_store': alloy_store,
                         'simulation_results': RESULTS
@@ -396,7 +410,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_alloy_bad_elem_weight(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             comp = deepcopy(COMP)
             comp.append({'symbol': 'Li', 'weight': -1})
 
@@ -416,6 +430,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': CONFIGS,
                         'alloy_store': alloy_store,
                         'simulation_results': RESULTS
@@ -437,12 +452,13 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_alloy_configs(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': CONFIGS,
                         'alloy_store': ALLOY_STORE,
                         'simulation_results': RESULTS
@@ -457,7 +473,7 @@ class TestLastSimulation(BaseTestCase):
             user = self.tony
             user.reload()
 
-            self.assertDictEqual(user.last_configuration.to_dict(), CONFIGS)
+            self.assertDictEqual(user.last_configuration, CONFIGS)
 
     def test_get_detail_last_no_token(self):
         with app.test_client() as client:
@@ -483,7 +499,7 @@ class TestLastSimulation(BaseTestCase):
             user.verified = True
             user.save()
 
-            cookie = test_login(client, user.email, 'Subatomic!')
+            _ = test_login(client, user.email, 'Subatomic!')
 
             res = client.get(
                 '/api/v1/sim/user/last/simulation',
@@ -509,7 +525,7 @@ class TestLastSimulation(BaseTestCase):
             )
             user.set_password('Subatomic!')
             user.verified = True
-            user.last_configuration = Configuration(**CONFIGS)
+            user.last_configuration = CONFIGS
             user.save()
 
             test_login(client, user.email, 'Subatomic!')
@@ -539,6 +555,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': CONFIGS,
                         'alloy_store': ALLOY_STORE,
                         'simulation_results': RESULTS

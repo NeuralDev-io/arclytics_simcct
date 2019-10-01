@@ -27,7 +27,7 @@ from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'tests' / 'sim_configs.json'
 
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     test_json = json.load(f)

@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-// import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
-// import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
+import UndoIcon from 'react-feather/dist/icons/rotate-ccw'
+import RedoIcon from 'react-feather/dist/icons/rotate-cw'
 import CompForm from './CompForm'
 import CompTable from './CompTable'
-import Button from '../../elements/button'
+import Button, { IconButton } from '../../elements/button'
 import { runSim } from '../../../state/ducks/sim/actions'
+import { timeTravelBack, timeTravelNext } from '../../../state/ducks/timeMachine/actions'
 
 import styles from './CompSidebar.module.scss'
 
@@ -21,14 +22,18 @@ class CompSidebar extends Component {
   render() {
     const {
       runSimConnect,
+      timeTravelBackConnect,
+      timeTravelNextConnect,
       sessionIsInitialised,
       isAuthenticated,
       onSaveButtonClick,
       configError,
       parentError,
+      timeMachine,
     } = this.props
     const { showSettings } = this.state
 
+    console.log(timeMachine.data.length)
     return (
       <div className={styles.sidebar}>
         <header>
@@ -46,6 +51,22 @@ class CompSidebar extends Component {
           >
             {showSettings ? 'Collapse' : 'Expand'}
           </Button> */}
+          <IconButton
+            onClick={timeTravelBackConnect}
+            Icon={props => <UndoIcon {...props} />}
+            isDisabled={
+              timeMachine.data.length === 0
+              || timeMachine.current === 0
+            }
+          />
+          <IconButton
+            onClick={timeTravelNextConnect}
+            Icon={props => <RedoIcon {...props} />}
+            isDisabled={
+              timeMachine.data.length === 0
+              || timeMachine.current === timeMachine.data.length - 1
+            }
+          />
         </header>
         <div style={{ display: showSettings ? 'block' : 'none' }}>
           <CompForm
@@ -77,19 +98,28 @@ class CompSidebar extends Component {
 CompSidebar.propTypes = {
   onSaveButtonClick: PropTypes.func.isRequired,
   runSimConnect: PropTypes.func.isRequired,
+  timeTravelBackConnect: PropTypes.func.isRequired,
+  timeTravelNextConnect: PropTypes.func.isRequired,
   sessionIsInitialised: PropTypes.bool.isRequired,
   isAuthenticated: PropTypes.bool.isRequired,
   configError: PropTypes.shape({}).isRequired,
   parentError: PropTypes.shape({}).isRequired,
+  timeMachine: PropTypes.shape({
+    data: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+    current: PropTypes.number,
+  }).isRequired,
 }
 
 const mapStateToProps = state => ({
   configError: state.sim.configurations.error,
   parentError: state.sim.alloys.parentError,
+  timeMachine: state.timeMachine,
 })
 
 const mapDispatchToProps = {
   runSimConnect: runSim,
+  timeTravelBackConnect: timeTravelBack,
+  timeTravelNextConnect: timeTravelNext,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(CompSidebar)

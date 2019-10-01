@@ -6,8 +6,9 @@ import {
   SET_SIM_DATA,
 } from './types'
 
+const CAPACITY = 10
+
 const initialState = {
-  capacity: 10,
   data: [],
   current: -1,
 }
@@ -18,6 +19,10 @@ const reducer = (state = initialState, action) => {
       const newData = [...state.data]
       // remove all sim after current position
       newData.splice(state.current + 1)
+      // if capacity is maxed, remove the oldest sim
+      if (newData.length === CAPACITY) {
+        newData.shift()
+      }
       // add new sim
       newData.push(action.payload)
       return {

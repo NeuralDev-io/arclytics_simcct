@@ -6,6 +6,7 @@ import Button from '../../elements/button'
 import { forgotPasswordEmail } from '../../../utils/ValidationHelper'
 import { forgotPassword } from '../../../api/AuthenticationHelper'
 import { buttonize } from '../../../utils/accessibility'
+import { logError } from '../../../api/LoggingHelper'
 
 class ForgotPassword extends Component {
   constructor(props) {
@@ -39,7 +40,7 @@ class ForgotPassword extends Component {
       })
         .catch((err) => {
           // If response is unsuccessful
-          console.log(err)
+          logError(err.toString(), err.message, 'ForgotPassword.handleForgotPasswordEmail', err.stack)
           this.setState({
             forgotPwdErr: err,
           })
@@ -55,7 +56,7 @@ class ForgotPassword extends Component {
     const { forgotEmail, forgotPwdErr, emailSent } = this.state
     const { forgotPwdHandler } = this.props
     return (
-      <React.Fragment>
+      <>
         <h3 className={styles.header}> Password Reset </h3>
         <span> Enter your email to send a password reset email.</span>
         <TextField
@@ -88,7 +89,7 @@ class ForgotPassword extends Component {
             Go back to login
           </h6>
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

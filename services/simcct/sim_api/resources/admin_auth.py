@@ -53,8 +53,6 @@ class AdminCreate(Resource):
         # Validating empty payload
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not post_data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Extract the request body data
@@ -64,13 +62,9 @@ class AdminCreate(Resource):
         # Ensure email and position data was given
         if not email:
             response['message'] = 'No email provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
         if not position:
             response['message'] = 'No position provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Verify it is actually a valid email
@@ -91,8 +85,6 @@ class AdminCreate(Resource):
         # Make sure the user exists in the database.
         if not User.objects(email=valid_email):
             response['message'] = 'User does not exist.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 404
 
         # Get the user object and verify that it is verified and an admin
@@ -104,8 +96,6 @@ class AdminCreate(Resource):
             return response, 401
         if user.is_admin:
             response['message'] = 'User is already an Administrator.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Start promotion
@@ -226,18 +216,12 @@ def cancel_promotion(token):
 
     # If a list is not returned, we should get out of here.
     if not isinstance(email_list, list):
-        message = 'Email list value is an invalid type.'
-        logger.info(message)
-        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Ensure both admin and user email is present in list
     if not len(email_list) == 2:
-        message = 'Email list value has incorrect number of elements.'
-        logger.info(message)
-        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
@@ -255,25 +239,16 @@ def cancel_promotion(token):
         )
 
     if not admin_email or not user_email:
-        message = 'Missing admin_email or user_email value(s).'
-        logger.info(message)
-        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
 
     # Ensure both users exist in the database
     if not User.objects(email=admin_email):
-        message = 'Admin does not exist.'
-        logger.info(message)
-        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     if not User.objects(email=user_email):
-        message = 'Email does not exist.'
-        logger.info(message)
-        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
@@ -285,9 +260,6 @@ def cancel_promotion(token):
     if not admin_user.is_admin or not admin_user.admin_profile.verified:
         # response['message'] = 'User is not authorised to promote other users.'
         # return jsonify(response), 401
-        message = 'User is not authorised to promote other users.'
-        logger.info(message)
-        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
@@ -350,9 +322,6 @@ def verify_promotion(token):
 
     # Ensure the user exists in the database
     if not User.objects(email=email):
-        message = 'User does not exist.'
-        logger.info(message)
-        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
@@ -363,9 +332,6 @@ def verify_promotion(token):
     # Ensure the user is verified, an admin and that they have a valid admin
     # profile
     if not user.verified:
-        message = 'User is not verified.'
-        logger.info(message)
-        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
@@ -373,16 +339,10 @@ def verify_promotion(token):
     # database clean method for user will set user.is_admin to true after the
     # admin profile is created.
     if not user.is_admin:
-        message = 'User is not an admin.'
-        logger.info(message)
-        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
     if user.disable_admin:
-        message = 'User account is disabled.'
-        logger.info(message)
-        apm.capture_message(message)
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
@@ -414,9 +374,8 @@ def verify_promotion(token):
         )
     )
 
-    logger.debug(client_host)
-    response['status'] = 'success'
-    response.pop('message')
+    # response['status'] = 'success'
+    # response.pop('message')
     return redirect(f'{redirect_url}/signin', code=302)
 
 
@@ -432,8 +391,6 @@ class DisableAccount(Resource):
         # Validating empty payload
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not post_data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Extract the request body data
@@ -441,8 +398,6 @@ class DisableAccount(Resource):
 
         if not email:
             response['message'] = 'No email provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Verify it is actually a valid email
@@ -564,7 +519,6 @@ def confirm_disable_account(token):
         )
     )
 
-    logger.debug(client_host)
     response['status'] = 'success'
     response.pop('message')
     return redirect(f'{redirect_url}/', code=302)

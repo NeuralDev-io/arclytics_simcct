@@ -65,8 +65,6 @@ class LastSimulation(Resource):
 
         # First we validate the request data
         if not post_data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         post_configs = post_data.get('configurations', None)
@@ -78,8 +76,6 @@ class LastSimulation(Resource):
             not post_configs and not post_alloy_store and not post_results
             and not post_invalid_fields
         ):
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         valid_configs = None

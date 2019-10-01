@@ -32,9 +32,6 @@ from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 
-# TODO(Greg):
-#  - Please add logging and APM exception catching where you think necessary.
-
 
 def generate_confirmation_token(email: str):
     serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])

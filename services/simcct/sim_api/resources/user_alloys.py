@@ -70,15 +70,11 @@ class UserAlloysList(Resource):
         post_data = request.get_json()
 
         if not post_data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # We need to pass the `mongoengine` library a kwargs so we need to
         # validate the data request has been successfully converted to a dict
         if not isinstance(post_data, dict):
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         alloy_name = post_data.get('name', None)
@@ -86,8 +82,6 @@ class UserAlloysList(Resource):
 
         if not alloy_name:
             response['message'] = 'Name must be provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if not alloy_comp or not isinstance(alloy_comp, list):
@@ -95,8 +89,6 @@ class UserAlloysList(Resource):
                 'Compositions must be provided as a list of valid elements e.g.'
                 ' {"symbol": "C", "weight": 1.0}'
             )
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         try:
@@ -209,8 +201,6 @@ class UserAlloy(Resource):
 
         # Verify the request params is a valid ObjectId to use
         if not ObjectId.is_valid(alloy_id):
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if user.saved_alloys.count() == 1:
@@ -254,15 +244,11 @@ class UserAlloy(Resource):
         put_data = request.get_json()
 
         if not put_data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Verify the request params is a valid ObjectId to use
         if not ObjectId.is_valid(alloy_id):
             response['message'] = 'Invalid ObjectId.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         put_name = put_data.get('name', None)
@@ -271,14 +257,10 @@ class UserAlloy(Resource):
         # If there are no keys in the request body that match what we want.
         if not put_name:
             response['message'] = 'Alloy name must be provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if not put_comp:
             response['message'] = 'Alloy compositions list must be provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if not isinstance(put_comp, list):
@@ -286,8 +268,6 @@ class UserAlloy(Resource):
                 'Compositions must be provided as a list of valid elements e.g.'
                 ' {"symbol": "C", "weight": 1.0}'
             )
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         try:
@@ -426,8 +406,6 @@ class UserAlloy(Resource):
 
         # Verify the request params is a valid ObjectId to use
         if not ObjectId.is_valid(alloy_id):
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if user.saved_alloys.count() == 0:
@@ -464,8 +442,6 @@ class UserAlloy(Resource):
         # Just another validation check that it's been acted upon.
         if not deleted == 1:
             response['message'] = 'Failed to delete alloy.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         response.pop('message')

@@ -65,6 +65,9 @@ class UserRating(Resource):
         except ValidationError as e:
             response['error'] = str(e.message)
             response['message'] = 'Rating validation error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
 
         user.ratings.append(Rating(rating=rating))
@@ -95,8 +98,6 @@ class UserFeedback(Resource):
         # Validating empty payload
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Extract the request body data
@@ -106,16 +107,12 @@ class UserFeedback(Resource):
 
         if not category:
             response['message'] = 'No category provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
         # if not rating:
         #     response['message'] = 'No rating provided.'
         #     return response, 400
         if not comment:
             response['message'] = 'No comment provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         try:
@@ -197,21 +194,15 @@ class FeedbackList(Resource):
 
             if not sort_valid:
                 response['message'] = 'Sort value is invalid.'
-                logger.info(response['message'])
-                apm.capture_message(response['message'])
                 return response, 400
 
         # Validate limit
         if limit:
             if not isinstance(limit, int):
                 response['message'] = 'Limit value is invalid.'
-                logger.info(response['message'])
-                apm.capture_message(response['message'])
                 return response, 400
             if not limit >= 1:
                 response['message'] = 'Limit must be > 1.'
-                logger.info(response['message'])
-                apm.capture_message(response['message'])
                 return response, 400
         else:
             limit = 10
@@ -222,18 +213,12 @@ class FeedbackList(Resource):
         if offset:
             if not isinstance(offset, int):
                 response['message'] = 'Offset value is invalid.'
-                logger.info(response['message'])
-                apm.capture_message(response['message'])
                 return response, 400
             if offset > feedback_size + 1:
                 response['message'] = 'Offset value exceeds number of records.'
-                logger.info(response['message'])
-                apm.capture_message(response['message'])
                 return response, 400
             if offset < 1:
                 response['message'] = 'Offset must be > 1.'
-                logger.info(response['message'])
-                apm.capture_message(response['message'])
                 return response, 400
         else:
             offset = 1
@@ -291,23 +276,17 @@ class SubscribeFeedback(Resource):
 
         data = request.get_json()
         if not data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         action = data.get('action', None)
 
         if not action:
-            message = 'No action provided.'
-            logger.info(message)
-            apm.capture_message(message)
+            response['message'] = 'No action provided.'
             return response, 400
 
         if action == 'subscribe':
             if user.admin_profile.sub_to_feedback:
                 response['message'] = 'User is already subscribed.'
-                logger.info(response['message'])
-                apm.capture_message(response['message'])
                 return response, 400
             else:
                 user.admin_profile.sub_to_feedback = True
@@ -319,8 +298,6 @@ class SubscribeFeedback(Resource):
         elif action == 'unsubscribe':
             if not user.admin_profile.sub_to_feedback:
                 response['message'] = 'User is already unsubscribed.'
-                logger.info(response['message'])
-                apm.capture_message(response['message'])
                 return response, 400
             else:
                 user.admin_profile.sub_to_feedback = False
@@ -330,8 +307,6 @@ class SubscribeFeedback(Resource):
                 return response, 200
         else:
             response['message'] = 'Invalid action.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
 

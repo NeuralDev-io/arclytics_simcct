@@ -69,8 +69,6 @@ class SaveSimulationList(Resource):
         post_data = request.get_json()
 
         if not post_data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         post_configs = post_data.get('configurations')
@@ -80,14 +78,10 @@ class SaveSimulationList(Resource):
         # Valid the request body
         if not post_configs:
             response['message'] = 'Missing Configurations in payload.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if not post_alloy_store:
             response['message'] = 'Missing Alloy Store in payload.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         saved_sim_inst = SavedSimulation(
@@ -222,8 +216,6 @@ class SaveSimulationDetail(Resource):
         """
 
         if not ObjectId.is_valid(sim_id):
-            logger.info('Invalid ObjectId.')
-            apm.capture_message('Invalid ObjectId.')
             return {'status': 'fail', 'message': 'Invalid ObjectId.'}, 400
 
         try:
@@ -248,8 +240,6 @@ class SaveSimulationDetail(Resource):
             A valid HTTP Response with a dict and a HTTP status code.
         """
         if not ObjectId.is_valid(sim_id):
-            logger.info('Invalid ObjectId.')
-            apm.capture_message('Invalid ObjectId.')
             return {'status': 'fail', 'message': 'Invalid ObjectId.'}, 400
 
         try:

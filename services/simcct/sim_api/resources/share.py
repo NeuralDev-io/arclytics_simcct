@@ -69,8 +69,6 @@ class ShareSimulationLink(Resource):
         # Ensure payload is not empty
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Extract the data
@@ -82,8 +80,6 @@ class ShareSimulationLink(Resource):
 
         if not configuration or not alloy_store:
             response['message'] = 'Configurations or Alloy Store not sent.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Validate the request simulation data. Validation is done by the
@@ -184,8 +180,6 @@ class ShareSimulationEmail(Resource):
         # Ensure payload is not empty
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Extract the data
@@ -195,18 +189,12 @@ class ShareSimulationEmail(Resource):
         email_list = data.get('emails', None)
         if not email_list:
             response['message'] = 'No email addresses provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
         if not isinstance(email_list, list):
             response['message'] = 'Invalid email address type.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
         if not all(isinstance(email, str) for email in email_list):
             response['message'] = 'An email address is invalid in the list.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         valid_email_list = []
@@ -244,8 +232,6 @@ class ShareSimulationEmail(Resource):
 
         if not configuration or not alloy_store:
             response['message'] = 'Configurations or Alloy Store not sent.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # We also provide the user an opportunity to send an optional message
@@ -388,8 +374,6 @@ def view_shared_simulation(token):
     # safe.
     if not token:
         response['message'] = 'Token not provided.'
-        logger.info(response['message'])
-        apm.capture_message(response['message'])
         return jsonify(response), 400
 
     # Try to decode the token and get the simulation id from it.

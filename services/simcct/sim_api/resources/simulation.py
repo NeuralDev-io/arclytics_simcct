@@ -100,14 +100,10 @@ class Simulation(Resource):
         # the calculations for CCT/TTT will cause many problems.
         if not configs['ae1_temp'] > 0.0 or not configs['ae3_temp'] > 0.0:
             response['message'] = 'Ae1 and Ae3 value cannot be less than 0.0.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if not configs['ms_temp'] > 0.0 or not configs['bs_temp'] > 0.0:
             response['message'] = 'MS and BS value cannot be less than 0.0.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         alloy = None

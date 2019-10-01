@@ -69,8 +69,6 @@ class Users(Resource):
         # Validating empty payload
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Ensure there are valid keys in the request body
@@ -87,8 +85,6 @@ class Users(Resource):
         # If there are no valid keys, reject request.
         if not is_update:
             response['message'] = 'Payload does not have any valid keys.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         response['data'] = {}
@@ -120,8 +116,6 @@ class Users(Resource):
                     'User profile cannot be updated as '
                     'there is no existing profile.'
                 )
-                logger.info(response['message'])
-                apm.capture_message(response['message'])
                 return response, 400
 
             # Once we have ensured we have all the fields, we can create the
@@ -228,8 +222,6 @@ class UserProfiles(Resource):
         # Validating empty payload
         response = {'status': 'fail', 'message': 'Invalid payload.'}
         if not data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Extract the request body data

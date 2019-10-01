@@ -63,8 +63,6 @@ class AlloyStore(Resource):
 
         post_data = request.get_json()
         if not post_data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Extract the method from the post request body
@@ -80,8 +78,6 @@ class AlloyStore(Resource):
 
         if not alloy_option:
             response['message'] = 'No alloy option was provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # We have a couple of ways the Alloy is stored in both Session and
@@ -93,28 +89,20 @@ class AlloyStore(Resource):
                 'Alloy option not one of '
                 '["single" | "mix"].'
             )
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if not alloy_type or not isinstance(alloy_type, str):
             response['message'] = 'No alloy type was provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if alloy_type not in {'parent', 'weld', 'mix'}:
             response['message'] = (
                 'Alloy type not one of ["parent" | "weld" | "mix"].'
             )
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if not alloy:
             response['message'] = 'No alloy was provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         alloy_name = alloy.get('name', None)
@@ -125,20 +113,14 @@ class AlloyStore(Resource):
                 'No valid keys was provided for alloy '
                 '(i.e. must be "name" or "compositions")'
             )
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if not alloy_comp:
             response['message'] = 'You must provide an alloy composition.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if not alloy_name:
             response['message'] = 'You must provide an alloy name.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # Let's validate the Alloy follows our schema
@@ -309,8 +291,6 @@ class AlloyStore(Resource):
 
         patch_data = request.get_json()
         if not patch_data:
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
         # Extract the method from the post request body
         # REQUEST BODY SHOULD BE
@@ -328,8 +308,6 @@ class AlloyStore(Resource):
                 'Alloy option not one of '
                 '["single" | "mix"].'
             )
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # We have a couple of ways the Alloy is stored in both Session and
@@ -339,38 +317,28 @@ class AlloyStore(Resource):
 
         if not alloy_type or not isinstance(alloy_type, str):
             response['message'] = 'No alloy type was provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if alloy_type not in {'parent', 'weld', 'mix'}:
             response['message'] = (
                 'Alloy type not one of ["parent" | "weld" | "mix"].'
             )
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if not alloy:
             response['message'] = 'No alloy was provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # The alloy might be provided but if it's got no valid keys, we need to
         # check that
         if not alloy.get('name', None) and not alloy.get('compositions', None):
             response['message'] = 'No valid key in the alloy was provided.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         if not isinstance(alloy.get('compositions'), list):
             response['message'] = (
                 'Valid compositions must be provided as a list.'
             )
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         session_store = SimSessionService().load_session()
@@ -387,8 +355,6 @@ class AlloyStore(Resource):
         # Basically, the user should have a session initiated from login
         if not sess_alloy_store:
             response['message'] = 'No previous session initiated.'
-            logger.info(response['message'])
-            apm.capture_message(response['message'])
             return response, 400
 
         # We just update the alloy_option straight up

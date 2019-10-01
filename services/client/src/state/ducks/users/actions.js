@@ -2,6 +2,7 @@ import {
   GET_USERS,
 } from './types'
 import { addFlashToast } from '../toast/actions'
+import { logError } from '../../../api/LoggingHelper'
 
 export const getUsers = () => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/users`, {
@@ -33,7 +34,7 @@ export const getUsers = () => (dispatch) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'users.actions.getUsers', err.stack)
     })
 }
 

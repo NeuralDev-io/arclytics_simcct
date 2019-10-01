@@ -9,6 +9,7 @@ import {
   GET_LAST_SIM,
 } from './types'
 import { addFlashToast } from '../toast/actions'
+import { logError } from '../../../api/LoggingHelper'
 
 export const getUserProfile = () => (dispatch) => { // eslint-disable-line
   return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user`, {
@@ -43,7 +44,7 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.getUserProfile', err.stack)
     })
 }
 
@@ -82,7 +83,7 @@ export const createUserProfile = values => (dispatch) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.createUserProfile', err.stack)
     })
 }
 
@@ -121,7 +122,7 @@ export const updateUserProfile = values => (dispatch) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.updateUserProfile', err.stack)
     })
 }
 
@@ -160,7 +161,7 @@ export const updateEmail = values => (dispatch) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.updateEmail', err.stack)
     })
 }
 
@@ -199,7 +200,7 @@ export const changePassword = values => (dispatch) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.changePassword', err.stack)
     })
 }
 
@@ -214,7 +215,7 @@ export const saveSimulation = () => (dispatch, getState) => {
     alloy_option: alloys.alloyOption,
     alloys: {
       parent: alloys.parent,
-      // TODO(daltonle): Change this when weld and mix are added 
+      // TODO(daltonle): Change this when weld and mix are added
       weld: alloys.parent,
       mix: alloys.parent,
     },
@@ -277,7 +278,7 @@ export const saveSimulation = () => (dispatch, getState) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.saveSimulation', err.stack)
     })
 }
 
@@ -328,7 +329,7 @@ export const getSavedSimulations = () => (dispatch) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.getSavedSimulations', err.stack)
     })
 }
 
@@ -339,7 +340,7 @@ export const saveLastSim = () => (dispatch, getState) => {
     alloy_option: alloys.alloyOption,
     alloys: {
       parent: alloys.parent,
-      // TODO(daltonle): Change this when weld and mix are added 
+      // TODO(daltonle): Change this when weld and mix are added
       weld: alloys.parent,
       mix: alloys.parent,
     },
@@ -383,7 +384,7 @@ export const saveLastSim = () => (dispatch, getState) => {
   })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.saveLastSim', err.stack)
     })
 }
 
@@ -407,6 +408,6 @@ export const getLastSim = () => dispatch => (
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.getLastSim', err.stack)
     })
 )

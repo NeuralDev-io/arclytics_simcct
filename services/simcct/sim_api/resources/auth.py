@@ -332,14 +332,15 @@ def login() -> any:
         auth_token = user.encode_auth_token(user.id)
         if auth_token:
             if not user.active:
-                response['message'] = 'Your Account has been disabled.'
+                response['message'] = 'This user account has been disabled.'
                 logger.info(
                     {
                         'message': response['message'],
                         'user': user.email
                     }
                 )
-                return jsonify(response), 401
+                apm.capture_message('Unauthorised access.')
+                return jsonify(response), 403
 
             # Let's save some stats for later
             user.last_login = datetime.utcnow()

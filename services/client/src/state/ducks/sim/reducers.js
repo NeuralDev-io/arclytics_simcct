@@ -11,6 +11,7 @@ import {
   LOAD_SIM,
   LOAD_PERSISTED_SIM,
   LOAD_LAST_SIM,
+  LOAD_SIM_FROM_FILE,
 } from './types'
 
 const initialState = {
@@ -191,6 +192,7 @@ const reducer = (state = initialState, action) => {
     case LOAD_SIM: {
       const { alloys, configurations, results } = action.payload
       return {
+        ...initialState,
         isInitialised: true,
         isSimulated: true,
         displayUserCurve: true,
@@ -201,14 +203,29 @@ const reducer = (state = initialState, action) => {
         alloys: {
           parentError: {},
           isLoading: false,
-          dilution: 0,
           ...alloys,
-          weld: {
-            _id: '',
-            name: '',
-            compositions: [],
-          },
-          mix: [],
+        },
+        results: {
+          cctIndex: 0,
+          ...results,
+        },
+      }
+    }
+    case LOAD_SIM_FROM_FILE: {
+      const { alloys, configurations, results } = action.payload
+      return {
+        ...initialState,
+        isInitialised: true,
+        isSimulated: true,
+        displayUserCurve: true,
+        configurations: {
+          error: {},
+          ...configurations,
+        },
+        alloys: {
+          parentError: {},
+          isLoading: false,
+          ...alloys,
         },
         results: {
           cctIndex: 0,

@@ -11,10 +11,11 @@ import {
   LOAD_SIM,
   LOAD_PERSISTED_SIM,
   LOAD_LAST_SIM,
+  LOAD_SIM_FROM_FILE,
 } from './types'
 import { ASTM2Dia } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
-import {logError} from "../../../api/LoggingHelper";
+import { logError } from '../../../api/LoggingHelper'
 
 /**
  * Initialise a new sim session on the server, then update alloy in
@@ -547,9 +548,9 @@ export const updateCCTIndex = idx => (dispatch) => {
  * }
  * @param {Object} sim simulation object
  */
-export const loadSim = sim => (dispatch) => {
+export const loadSimFromFile = sim => (dispatch) => {
   dispatch({
-    type: LOAD_SIM,
+    type: LOAD_SIM_FROM_FILE,
     payload: sim,
   })
 }

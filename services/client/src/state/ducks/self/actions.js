@@ -206,11 +206,13 @@ export const changePassword = values => (dispatch) => {
 
 /**
  * API call to `users` server to save a new saved simulation for the user.
- * User's are identified by the JWT token passed as an Authorization header.
+ * This function will only be called when the configurations are valid
+ * and the simulation has been run
  */
 export const saveSimulation = () => (dispatch, getState) => {
   // first, get sim alloys and configs from state
   const { configurations, alloys, results } = getState().sim
+
   const alloyStore = {
     alloy_option: alloys.alloyOption,
     alloys: {

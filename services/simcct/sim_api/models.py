@@ -462,6 +462,10 @@ class User(Document):
 
     # The following fields describe the simulation properties saved to a users
     # Document for later retrieval
+    # Note: It is necessary to use `sim_api.schemas.ConfigurationSchema`,
+    # `sim_api.schemas.AlloySchema` and
+    # `sim_api.schemas.SimulationResultsSchema` to validate these before
+    # dumping to the database if we want to ensure validity.
     last_configuration = DictField(default=None)
     last_alloy_store = DictField(default=None)
     last_simulation_results = DictField(default=None)

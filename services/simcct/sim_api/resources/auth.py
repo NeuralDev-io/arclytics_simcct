@@ -802,6 +802,11 @@ def logout(_) -> Tuple[dict, int]:
 
     # Remove the data from the user's current session.
     session.clear()
+
+    # Clear all keys in the session
+    for key in session.keys():
+        session.pop(key)
+
     response = {'status': 'success', 'message': 'Successfully logged out.'}
     return jsonify(response), 202
 

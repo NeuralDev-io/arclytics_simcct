@@ -1,3 +1,17 @@
+/**
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * App Component
+ *
+ * @version 1.2.0
+ * @author Dalton Le, Arvy Salazar, Andrew Che
+ *
+ * This is the App Component which provides the React Router for the Arclytics
+ * Sim React front-end client.
+ *
+ */
+
 import React from 'react'
 import { Provider } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
@@ -11,7 +25,7 @@ import ErrorBoundary from './components/pages/error-boundary/ErrorBoundary'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
 import NoMatchPage from './components/pages/no-match/NoMatchPage'
-import TestRoute from './components/pages/test-route/TestRoute'// TODO: Delete this
+import TestRoute from './components/pages/test-route/TestRoute'// TODO(andrew@neuraldev.io): Delete this
 import SimulationPage from './components/pages/simulation'
 import AdminPage from './components/pages/admin'
 import ProfileQuestionsPage from './components/pages/profile-questions'
@@ -32,7 +46,6 @@ const useStyles = makeStyles({
 
 function App() {
   const classes = useStyles()
-
 
   return (
     <ErrorBoundary>
@@ -93,12 +106,12 @@ function App() {
               />
               <Route
                 path="/password/reset=:token"
-                render={props => <PasswordResetPage {...props} />}
+                render={(props) => <PasswordResetPage {...props} />}
               />
-              {/*TODO: DELETE THIS ROUTE*/}
+              {/* TODO(andrew@neuraldev.io): DELETE THIS ROUTE - AFTER TESTING HTTP LOGGER */}
               <Route
                 path="/test"
-                render={props => (<TestRoute {...props} />)}
+                render={(props) => (<TestRoute {...props} />)}
               />
 
               <DemoRoute

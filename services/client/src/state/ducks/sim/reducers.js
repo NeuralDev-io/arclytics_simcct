@@ -12,6 +12,7 @@ import {
   LOAD_PERSISTED_SIM,
   LOAD_LAST_SIM,
   LOAD_SIM_FROM_FILE,
+  RESET_SIM,
 } from './types'
 
 const initialState = {
@@ -266,6 +267,10 @@ const reducer = (state = initialState, action) => {
         },
       }
     }
+    case RESET_SIM:
+      return {
+        ...initialState,
+      }
     default:
       return state
   }

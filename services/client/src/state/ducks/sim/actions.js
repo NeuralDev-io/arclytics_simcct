@@ -12,10 +12,18 @@ import {
   LOAD_PERSISTED_SIM,
   LOAD_LAST_SIM,
   LOAD_SIM_FROM_FILE,
+  RESET_SIM,
 } from './types'
 import { ASTM2Dia } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
 import { logError } from '../../../api/LoggingHelper'
+
+export const resetSession = () => (dispatch) => {
+  // make api call to update session
+  dispatch({
+    type: RESET_SIM,
+  })
+}
 
 /**
  * Initialise a new sim session on the server, then update alloy in

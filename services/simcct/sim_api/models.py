@@ -454,15 +454,9 @@ class User(Document):
 
     # The following fields describe the simulation properties saved to a users
     # Document for later retrieval
-    last_configuration = EmbeddedDocumentField(
-        document_type=Configuration, default=None
-    )
-    last_alloy_store = EmbeddedDocumentField(
-        document_type=AlloyStore, default=None
-    )
-    last_simulation_results = EmbeddedDocumentField(
-        document_type=SimulationResults, default=None
-    )
+    last_configuration = DictField(default=None)
+    last_alloy_store = DictField(default=None)
+    last_simulation_results = DictField(default=None)
     last_simulation_invalid_fields = DictField(default=None)
 
     saved_alloys = EmbeddedDocumentListField(document_type=Alloy)

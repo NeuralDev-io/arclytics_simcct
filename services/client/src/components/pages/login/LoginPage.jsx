@@ -26,6 +26,7 @@ import Button from '../../elements/button'
 import { buttonize } from '../../../utils/accessibility'
 
 import styles from './LoginPage.module.scss'
+import { logError, logInfo } from '../../../api/LoggingHelper'
 
 /*
   TODO:
@@ -119,19 +120,17 @@ class LoginPage extends Component {
                   if (res.status === 'success') {
                     if (!res.isProfile) history.push('/profileQuestions')
                     else history.push('/')
-                  } else {
-                    // TODO: something went wrong try again later.
-                    console.log(res)
                   }
                 })
               })
-                .catch(() => {
+                .catch((rejectMsg) => {
                   // If response is unsuccessful
                   setErrors({
                     email: 'Invalid email',
                     password: 'Password is invalid',
                   })
                   setSubmitting(false)
+                  logInfo(rejectMsg, 'LoginPage.Formik')
                 })
             }}
           >

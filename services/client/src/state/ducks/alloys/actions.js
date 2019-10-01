@@ -26,6 +26,7 @@ import {
   DELETE_USER_ALLOY,
 } from './types'
 import { addFlashToast } from '../toast/actions'
+import {logError} from "../../../api/LoggingHelper";
 
 // Change the ports for which server
 
@@ -76,7 +77,7 @@ const getAlloys = type => (dispatch) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'alloys.actions.getAlloys', err.stack)
     })
 }
 
@@ -131,7 +132,7 @@ const createAlloy = (type, alloy) => dispatch => (
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'alloys.actions.createAlloy', err.stack)
     })
 )
 
@@ -172,7 +173,7 @@ const updateAlloy = (type, alloy) => (dispatch) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'alloys.actions.updateAlloy', err.stack)
     })
 }
 
@@ -223,7 +224,7 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'alloys.actions.deleteAlloy', err.stack)
     })
 }
 

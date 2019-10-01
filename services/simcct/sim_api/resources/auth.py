@@ -332,14 +332,15 @@ def login() -> any:
         auth_token = user.encode_auth_token(user.id)
         if auth_token:
             if not user.active:
-                response['message'] = 'Your Account has been disabled.'
+                response['message'] = 'This user account has been disabled.'
                 logger.info(
                     {
                         'message': response['message'],
                         'user': user.email
                     }
                 )
-                return jsonify(response), 401
+                apm.capture_message('Unauthorised access.')
+                return jsonify(response), 403
 
             # Let's save some stats for later
             user.last_login = datetime.utcnow()
@@ -347,6 +348,7 @@ def login() -> any:
             user.save()
 
             # Get location data
+            # TODO(david): NOTE THIS IS HARD CODING AND TERRIBLE.
             reader = geoip2.database.Reader(
                 '/usr/src/app/sim_api/resources/GeoLite2-City/'
                 'GeoLite2-City.mmdb'
@@ -356,7 +358,7 @@ def login() -> any:
                 # that forwards the IP address. If it is not the case,
                 # we can check for the HTTP_X_REAL_IP which is part of
                 # the header and is often used in a proxy.
-                if not request.environ.get('X-Forwarded-For', None):
+                if not request.headers.get('X-Forwarded-For', None):
                     # If HTTP_X_REAL_IP not found, we can then fall back
                     # to use the `request.remote_addr` even though it is
                     # unlikely to be a real address.
@@ -374,7 +376,7 @@ def login() -> any:
                     # header for identifying the originating IP address of a
                     # client connecting to a web server through an HTTP proxy
                     # or a load balancer."
-                    forwarded_ip = request.environ.get('X-Forwarded-For')
+                    forwarded_ip = request.headers.get('X-Forwarded-For')
                     request_ip = str(forwarded_ip).split(',')[0]
 
                 location_data = reader.city(str(request_ip))
@@ -390,7 +392,7 @@ def login() -> any:
                 )
                 logger.info(
                     {
-                        'message': 'User logged in',
+                        'message': 'User logged in.',
                         'user': user.email,
                         'country': country,
                         'state': state,
@@ -406,7 +408,8 @@ def login() -> any:
                     {
                         'user': user.email,
                         'message': 'Address not found.',
-                        'ip_address': ip_address
+                        'ip_address': ip_address,
+                        'request_environ': str(request.environ)
                     },
                 )
                 apm.capture_exception()
@@ -799,6 +802,11 @@ def logout(_) -> Tuple[dict, int]:
 
     # Remove the data from the user's current session.
     session.clear()
+
+    # Clear all keys in the session
+    for key in session.keys():
+        session.pop(key)
+
     response = {'status': 'success', 'message': 'Successfully logged out.'}
     return jsonify(response), 202
 

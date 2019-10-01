@@ -11,6 +11,7 @@
  */
 
 import { ARC_URL } from '../constants'
+import { logError } from './LoggingHelper'
 
 export const login = async (values, resolve, reject) => {
   fetch(`${ARC_URL}/auth/login`, {
@@ -25,12 +26,14 @@ export const login = async (values, resolve, reject) => {
     .then((res) => {
       if (res.status === 200) {
         resolve(res.json())
-      } else if (res.status === 404) {
+      } else if (res.status === 404 || res.status === 403) {
       // return an error message as string
         res.json().then(object => reject(object.message))
       }
     })
-    .catch(err => console.log(err))
+    .catch((err) => logError(
+      err.toString(), err.message, 'AuthenticationHelper.login', err.stack,
+    ))
 }
 
 export const signup = async (values, resolve, reject) => {
@@ -58,7 +61,9 @@ export const signup = async (values, resolve, reject) => {
         res.json().then(object => reject(object.message))
       }
     })
-    .catch(err => console.log(err))
+    .catch((err) => logError(
+      err.toString(), err.message, 'AuthenticationHelper.signup', err.stack,
+    ))
 }
 
 export const logout = () => fetch(`${ARC_URL}/auth/logout`, {
@@ -148,7 +153,9 @@ export const forgotPassword = (resolve, reject, email) => {
         reject(res.message)
       }
     })
-    .catch(err => console.log(err))
+    .catch((err) => logError(
+      err.toString(), err.message, 'AuthenticationHelper.forgotPassword', err.stack,
+    ))
 }
 
 export const resetPassword = (resolve, reject, values, token) => {
@@ -163,12 +170,12 @@ export const resetPassword = (resolve, reject, values, token) => {
     .then(res => res.json())
     .then((res) => {
       if (res.status === 'success') {
-        // console.log(res.status, res.message)
         resolve(res)
       } else {
-        // console.log(res.status, res.message)
         reject(res.message)
       }
     })
-    .catch(err => console.log(err))
+    .catch((err) => logError(
+      err.toString(), err.message, 'AuthenticationHelper.reset', err.stack,
+    ))
 }

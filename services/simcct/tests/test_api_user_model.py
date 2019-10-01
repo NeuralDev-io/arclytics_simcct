@@ -25,7 +25,7 @@ from mongoengine import get_db
 from mongoengine.errors import ValidationError, NotUniqueError
 
 from tests.test_api_base import BaseTestCase
-from sim_api.models import (User, Configuration, Element, Alloy)
+from sim_api.models import User
 from sim_api.extensions.utilities import PasswordValidationError
 
 _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
@@ -98,16 +98,15 @@ class TestUserModel(BaseTestCase):
             test_json = json.load(f)
         test_configs = test_json['configurations']
 
-        config_inst = Configuration(**test_configs)
-        user.last_configuration = config_inst
-        user.cascade_save()
+        user.last_configuration = test_configs
+        user.save()
 
-        self.assertEqual(user.last_configuration.method, 'Li98')
-        self.assertEqual(user.last_configuration.grain_size, 8.0)
-        self.assertEqual(user.last_configuration.nucleation_start, 1.0)
-        self.assertEqual(user.last_configuration.nucleation_finish, 99.9)
-        self.assertEqual(user.last_configuration.start_temp, 900)
-        self.assertEqual(user.last_configuration.cct_cooling_rate, 10)
+        self.assertEqual(user.last_configuration['method'], 'Li98')
+        self.assertEqual(user.last_configuration['grain_size'], 8.0)
+        self.assertEqual(user.last_configuration['nucleation_start'], 1.0)
+        self.assertEqual(user.last_configuration['nucleation_finish'], 99.9)
+        self.assertEqual(user.last_configuration['start_temp'], 900)
+        self.assertEqual(user.last_configuration['cct_cooling_rate'], 10)
 
     # noinspection PyTypeChecker
     def test_add_compositions(self):
@@ -121,15 +120,16 @@ class TestUserModel(BaseTestCase):
         )
         user.set_password('BifrostIsReal')
 
-        elem1 = Element(symbol='C', weight=0.044)
-        elem2 = Element(symbol='Mn', weight=1.73)
-        comp = Alloy()
-        comp.name = 'Selvigium'
-        comp['compositions'] = [elem1, elem2]
         alloy_store = {
             'alloy_option': 'single',
             'alloys': {
-                'parent': comp,
+                'parent': {
+                    'name': 'Selvigium',
+                    'compositions': [
+                        {'symbol': 'C', 'weight': 0.044},
+                        {'symbol': 'Mn', 'weight': 1.73}
+                    ]
+                },
                 'weld': None,
                 'mix': None
             }
@@ -159,9 +159,10 @@ class TestUserModel(BaseTestCase):
         with open(_TEST_CONFIGS_PATH, 'r') as f:
             test_json = json.load(f)
 
-        new_comp_inst = Alloy()
-        new_comp_inst.name = 'Selvigium'
-        new_comp_inst.compositions = test_json['compositions']
+        new_comp_inst = {
+            'name': 'Selvigium',
+            'compositions': test_json['compositions']
+        }
 
         alloy_store = {
             'alloy_option': 'single',

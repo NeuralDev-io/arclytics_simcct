@@ -19,9 +19,12 @@ from flask import current_app as app
 from flask import json
 from mongoengine import get_db
 
-from sim_api.models import AdminProfile, Configuration, User, UserProfile
+from sim_api.models import AdminProfile, User, UserProfile
 from tests.test_api_base import BaseTestCase
 from tests.test_utilities import test_login
+from arc_logging import AppLogger
+
+logger = AppLogger(__name__)
 
 BASE_DIR = os.path.dirname(__file__)
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'sim_configs.json'
@@ -176,7 +179,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_configs_missing(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(_TEST_JSON['configurations'])
 
             configs.pop('method')
@@ -195,10 +198,7 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            err = (
-                "ValidationError (Configuration:None) (Field is required: "
-                "['method', 'grain_size'])"
-            )
+            err = "{'method': ['A method is required.']}"
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
             self.assertEqual(data['status'], 'fail')
@@ -266,10 +266,6 @@ class TestLastSimulation(BaseTestCase):
             _ = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(CONFIGS)
             configs['ms_temp'] = -1
-            configs['ms_rate_param'] = -1
-            configs['bs_temp'] = -1
-            configs['ae1_temp'] = -1
-            configs['ae3_temp'] = -1
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
@@ -285,9 +281,7 @@ class TestLastSimulation(BaseTestCase):
             )
             data = json.loads(res.data.decode())
             err = (
-                "ValidationError (Configuration:None) (Cannot be a negative "
-                "number.: ['ms_temp', 'ms_rate_param', 'bs_temp', 'ae1_temp', "
-                "'ae3_temp'])"
+                "{'ms_temp': ['Cannot be negative.']}"
             )
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
@@ -323,10 +317,7 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            err = (
-                "ValidationError (AlloyStore:None) (Value must be one of "
-                "('single', 'mix'): ['alloy_option'])"
-            )
+            err = "{'alloy_option': ['Must be one of: single, mix.']}"
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
             self.assertEqual(data['status'], 'fail')
@@ -439,14 +430,9 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            err = (
-                "ValidationError (AlloyStore:None) (Value must be one of "
-                "('single', 'mix'): ['alloy_option'] parent."
-                "compositions.19.weight.Cannot be a negative number.: "
-                "['alloys'])"
-            )
+            err = "ValidationError (Weight) (Weight must be more than 0.0.)"
             self.assertEqual(data['error'], err)
-            self.assertEqual(data['message'], "Model schema validation error.")
+            self.assertEqual(data['message'], "Invalid element weight error.")
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 

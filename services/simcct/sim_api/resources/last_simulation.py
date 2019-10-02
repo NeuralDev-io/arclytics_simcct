@@ -83,7 +83,7 @@ class LastSimulation(Resource):
 
         # We enforce the client tells us this last set of configurations and
         # alloys are either valid or not so that we can save appropriately.
-        if not is_valid:
+        if is_valid is None:
             response['message'] = 'Validity must be defined.'
             return response, 400
 
@@ -128,7 +128,7 @@ class LastSimulation(Resource):
             # successful POST method.
             response.update(
                 {
-                    'message': 'Saved Last Simulation Data.',
+                    'message': 'Saved Invalid Last Simulation Data.',
                     'data': {
                         'last_configuration': post_configs,
                         'last_alloy_store': post_alloy_store

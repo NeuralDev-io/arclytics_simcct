@@ -455,6 +455,69 @@ class TestLastSimulation(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
+    def test_create_last_alloy_invalid_configs(self):
+        """Ensure we can save a last configuration that is invalid."""
+        with app.test_client() as client:
+            test_login(client, self.tony.email, self._tony_pw)
+            configs = deepcopy(CONFIGS)
+            configs['nucleation_start'] = -1
+
+            res = client.post(
+                '/api/v1/sim/user/last/simulation',
+                data=json.dumps(
+                    {
+                        'is_valid': False,
+                        'configurations': configs,
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': {}
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'], 'Saved Invalid Last Simulation Data.'
+            )
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 201)
+            user = self.tony
+            user.reload()
+
+            self.assertDictEqual(user.last_configuration, configs)
+            self.assertDictEqual(user.last_alloy_store, ALLOY_STORE)
+            self.assertDictEqual(user.last_simulation_results, {})
+
+    def test_create_last_alloy_invalid_alloys(self):
+        """Ensure we can save a last configuration that is invalid."""
+        with app.test_client() as client:
+            test_login(client, self.tony.email, self._tony_pw)
+            comp = deepcopy(COMP)
+
+            res = client.post(
+                '/api/v1/sim/user/last/simulation',
+                data=json.dumps(
+                    {
+                        'is_valid': False,
+                        'configurations': {},
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': {}
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'], 'Saved Invalid Last Simulation Data.'
+            )
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 201)
+            user = self.tony
+            user.reload()
+
+            self.assertDictEqual(user.last_configuration, configs)
+            self.assertDictEqual(user.last_alloy_store, ALLOY_STORE)
+            self.assertDictEqual(user.last_simulation_results, {})
+
     def test_create_last_alloy_configs(self):
         with app.test_client() as client:
             _ = test_login(client, self.tony.email, self._tony_pw)
@@ -576,11 +639,11 @@ class TestLastSimulation(BaseTestCase):
             self.assertDictEqual(data['data']['last_configuration'], CONFIGS)
 
             _name = data['data']['last_alloy_store']['alloys']['parent']['name']
+            self.assert200(res)
             self.assertEqual(
                 data['data']['last_alloy_store']['alloys']['parent']['name'],
                 _name
             )
-            self.assert200(res)
 
 
 if __name__ == '__main__':

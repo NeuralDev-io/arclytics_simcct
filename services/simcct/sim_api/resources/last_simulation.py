@@ -279,7 +279,23 @@ class LastSimulation(Resource):
         session_store = SimSessionService().load_session()
 
         if not user.last_configuration:
-            session_store['configurations'] = None
+            session_store['configurations'] = {
+                'is_valid': False,
+                'method': 'Li98',
+                'grain_size': 8.0,
+                'nucleation_start': 1.0,
+                'nucleation_finish': 99.90,
+                'auto_calculate_ms': True,
+                'ms_temp': 0.0,
+                'ms_rate_param': 0.0,
+                'auto_calculate_bs': True,
+                'bs_temp': 0.0,
+                'auto_calculate_ae': True,
+                'ae1_temp': 0.0,
+                'ae3_temp': 0.0,
+                'start_temp': 900,
+                'cct_cooling_rate': 10
+            }
         else:
             session_store['configurations'] = user.last_configuration
             is_valid = user.last_configuration['is_valid']
@@ -291,14 +307,21 @@ class LastSimulation(Resource):
             )
 
         if not user.last_alloy_store:
-            session_store['alloy_store'] = None
+            session_store['alloy_store'] = alloy_store = {
+                'alloy_option': 'single',
+                'alloys': {
+                    'parent': None,
+                    'weld': None,
+                    'mix': None
+                }
+            }
         else:
             session_store['alloy_store'] = user.last_alloy_store
             data.update({'last_alloy_store': user.last_alloy_store})
 
         if not user.last_simulation_results:
             # We don't need to do anything here so we can just keep going
-            pass
+            session_store['results'] = {}
         else:
             session_store['simulation_results'] = user.last_simulation_results
             data.update(

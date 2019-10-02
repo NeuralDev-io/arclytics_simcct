@@ -157,9 +157,15 @@ services:
       - FLASK_ENV=development
       - APP_SETTINGS=configs.flask_conf.DevelopmentConfig
       - SECRET_KEY=${SECRET_KEY}
+      - SIMCCT_HOST=http://simcct:8000/api/v1/sim
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - MONGO_APP_DB=arc_dev
+      - MONGO_APP_USER=${MONGO_APP_USER}
+      - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
       - FLUENTD_HOST=fluentd
       - FLUENTD_PORT=24224
       - FLUENTD_PREFIX_TAG=arclytics

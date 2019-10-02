@@ -24,9 +24,7 @@ from flask import current_app
 from tests.test_api_base import BaseTestCase
 from sim_api.models import User
 from sim_api.resources.auth import SimCCTBadServerLogout
-# from sim_api.resources.auth import register_session
 from sim_api.token import generate_confirmation_token, generate_url
-from tests.test_api_users import log_test_user_in
 from sim_api.extensions.utilities import get_mongo_uri
 from tests.test_utilities import test_login
 

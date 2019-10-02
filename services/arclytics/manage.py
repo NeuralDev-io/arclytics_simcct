@@ -17,6 +17,7 @@ __date__ = '2019.07.09'
 This script is to our CLI script tool to manage the application.
 """
 
+import os
 import sys
 import unittest
 
@@ -24,6 +25,10 @@ import coverage
 from flask.cli import FlaskGroup
 
 from arc_api import create_app
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
 
 COV = coverage.coverage(
     branch=True,

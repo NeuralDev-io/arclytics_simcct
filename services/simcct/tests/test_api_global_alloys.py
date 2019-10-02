@@ -27,7 +27,7 @@ from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'tests' / 'sim_configs.json'
 
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     test_json = json.load(f)
@@ -138,12 +138,8 @@ class TestAlloyService(BaseTestCase):
         }
         alloy_store = AlloyStoreSchema().load(store)
 
-        cls.shuri.last_alloy_store = AlloyStore.from_json(
-            json.dumps(alloy_store)
-        )
-        cls.shuri.last_configuration = Configuration.from_json(
-            json.dumps(configs)
-        )
+        cls.shuri.last_alloy_store = alloy_store
+        cls.shuri.last_configuration = configs
 
         cls.shuri.save()
 
@@ -365,19 +361,12 @@ class TestAlloyService(BaseTestCase):
             self.assertEqual(res.status_code, 400)
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(
-                data['message'], 'Request data failed schema validation.'
+                data['message'], 'Invalid element error.'
             )
-            self.assertTrue(data['errors'])
-            err = {
-                'compositions': {
-                    '0': {
-                        'name': ['Unknown field.'],
-                        'symbol': ['Missing data for required field.']
-                    },
-                    '_schema': ['Missing data for required field ["symbol"].']
-                }
-            }
-            self.assertEqual(data['errors'], err)
+            self.assertTrue(data['error'])
+            err = ('ValidationError (Element) (Field is required: '
+                   '["Element.symbol"].)')
+            self.assertEqual(data['error'], err)
 
     def test_create_duplicate_name_alloy(self):
         """Ensure we can't create a duplicate alloy."""
@@ -647,12 +636,10 @@ class TestAlloyService(BaseTestCase):
                 content_type='application/json'
             )
             data = res.json
-            self.assertEqual(
-                data['message'], 'Missing element error in schema validation.'
-            )
+            self.assertEqual(data['message'], 'Missing element error.')
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(res.status_code, 400)
-            self.assertTrue(data['errors'])
+            self.assertTrue(data['error'])
 
     def test_update_alloy_non_existing(self):
         """Ensure if we try to update before creating it errors."""

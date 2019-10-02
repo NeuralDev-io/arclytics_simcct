@@ -179,3 +179,27 @@ export const resetPassword = (resolve, reject, values, token) => {
       err.toString(), err.message, 'AuthenticationHelper.reset', err.stack,
     ))
 }
+
+export const resendVerify = (resolve, reject, email) => {
+  fetch(`${ARC_URL}/confirm/register/resend`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email: email,
+    })
+  })
+    .then(res => res.json())
+    .then((res) => {
+        if (res.status === 'success'){
+          resolve(res.message)
+        } else {
+          reject(res)
+        }
+      }
+    )
+    .catch(err => {
+      console.log(err)
+    })
+}

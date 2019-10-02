@@ -1004,13 +1004,14 @@ while [[ "$1" != "" ]] ; do
             headerMessage "ARC CLI STYLING PYTHON"
             CONFIG="${WORKDIR}/.yapf.cfg"
             ARC_DIR="${WORKDIR}/services/simcct"
+            SIMCCT_DIR="${WORKDIR}/services/simcct"
             CELERY_DIR="${WORKDIR}/services/celery-worker"
-            EXCLUDE_DIR="${WORKDIR}/services/client"
+            EXCLUDE_PATTERN="${WORKDIR}/services/simcct/arc_simulation/**.py"
             echo "Running yapf formatter"
             echo "Current Directory: ${WORKDIR}"
             echo "Configuration used: ${CONFIG}"
             echo "Exclude directory: ${EXCLUDE_DIR}"
-            yapf -ri --verbose --style=${CONFIG} --exclude=${EXCLUDE_DIR} ${ARC_DIR} ${CELERY_DIR}
+            yapf -ri --verbose --style=${CONFIG} --exclude=${EXCLUDE_PATTERN} ${SIMCCT_DIR} ${ARC_DIR} ${CELERY_DIR}
             completeMessage
             exit 0
             ;;
@@ -1473,6 +1474,15 @@ while [[ "$1" != "" ]] ; do
                   # eval $(minikube docker-env)  <-- If using Docker and self-built images
                   kubectl create -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
                   ;;
+                update )
+                  docker system prune -af --volumes --filter 'label=service=simcct'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
+                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                  kubectl delete deployment simcct
+                  sleep 10
+                  kubectl apply -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
+                  ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
                   ;;
@@ -1491,7 +1501,16 @@ while [[ "$1" != "" ]] ; do
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
                   ;;
                 create )
-                  kubectl create -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
+                  kubectl apply -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
+                  ;;
+                update )
+                  docker system prune -af --volumes --filter 'label=service=celery-worker'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build celery-worker
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
+                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                  kubectl delete deployment celery-worker
+                  sleep 10
+                  kubectl apply -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
@@ -1512,7 +1531,16 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 create )
                   # eval $(minikube docker-env)
-                  kubectl create -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
+                  kubectl apply -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
+                  ;;
+                update )
+                  docker system prune -af --volumes --filter 'label=service=client'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
+                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+                  kubectl delete deployment client-https
+                  sleep 10
+                  kubectl apply -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
@@ -1532,6 +1560,15 @@ while [[ "$1" != "" ]] ; do
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_website:latest
                   ;;
                 create )
+                  kubectl apply -f "${WORKDIR}/kubernetes/web-gke-secure-svc.yaml"
+                  ;;
+                update )
+                  docker system prune -af --volumes --filter 'label=service=website'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build website
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=website")
+                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_website:latest
+                  kubectl delete deployment web
+                  sleep 10
                   kubectl apply -f "${WORKDIR}/kubernetes/web-gke-secure-svc.yaml"
                   ;;
                 delete )

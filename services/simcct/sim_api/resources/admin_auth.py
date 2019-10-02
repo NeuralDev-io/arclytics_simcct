@@ -6,11 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __license__ = 'MIT'
-__version__ = '0.1.0'
-
-__status__ = 'development'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.08.11'
 """admin_auth.py: 
 
@@ -26,7 +25,7 @@ from flask import Blueprint, redirect, render_template, request
 from flask_restful import Resource
 
 from arc_logging import AppLogger
-from sim_api.extensions import api
+from sim_api.extensions import api, apm
 from sim_api.extensions.utilities import URLTokenExpired
 from sim_api.middleware import authorize_admin_cookie_restful
 from sim_api.models import (AdminProfile, User)
@@ -184,15 +183,19 @@ def cancel_promotion(token):
         # we want a list back of emails.
         # Change expiration parameter to 30 days instead of 1 hour.
         email_list = confirm_token(token, 2592000)
-    except URLTokenError as e:
+    except URLTokenError:
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
-    except URLTokenExpired as e:
+    except URLTokenExpired:
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     except Exception as e:
+        message = 'An Exception Occured.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
@@ -213,7 +216,10 @@ def cancel_promotion(token):
     try:
         admin_email = email_list[0]
         user_email = email_list[1]
-    except IndexError as e:
+    except IndexError:
+        message = f'Email list index error. List: {str(email_list)}'
+        logger.exception(message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
@@ -284,6 +290,10 @@ def verify_promotion(token):
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
     except Exception as e:
+        message = 'An Exception Occured.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
@@ -342,9 +352,8 @@ def verify_promotion(token):
         )
     )
 
-    logger.debug(client_host)
-    response['status'] = 'success'
-    response.pop('message')
+    # response['status'] = 'success'
+    # response.pop('message')
     return redirect(f'{redirect_url}/signin', code=302)
 
 
@@ -432,15 +441,18 @@ def confirm_disable_account(token):
     # Decode the token from the email to confirm it was the right one
     try:
         email = confirm_token(token)
-    except URLTokenError as e:
+    except URLTokenError:
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
-    except URLTokenExpired as e:
+    except URLTokenExpired:
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
     except Exception as e:
+        log_message = {'message': 'An Exception Occurred.', 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
@@ -471,7 +483,6 @@ def confirm_disable_account(token):
         )
     )
 
-    logger.debug(client_host)
     response['status'] = 'success'
     response.pop('message')
     return redirect(f'{redirect_url}/', code=302)

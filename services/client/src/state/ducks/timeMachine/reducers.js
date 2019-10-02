@@ -4,6 +4,7 @@ import {
   GO_FORWARD,
   GO_BACKWARD,
   SET_SIM_DATA,
+  GO_TO_POINT,
 } from './types'
 
 const CAPACITY = 10
@@ -31,7 +32,7 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         data: newData,
-        current: state.current + 1,
+        current: newData.length - 1,
       }
     }
     case REMOVE_SIM: {
@@ -56,6 +57,11 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         current: state.current - 1,
+      }
+    case GO_TO_POINT:
+      return {
+        ...state,
+        current: action.payload,
       }
     default:
       return state

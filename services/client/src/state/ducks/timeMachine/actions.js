@@ -2,6 +2,7 @@ import {
   ADD_SIM,
   GO_FORWARD,
   GO_BACKWARD,
+  GO_TO_POINT,
 } from './types'
 import {
   LOAD_SIM,
@@ -40,4 +41,17 @@ export const timeTravelNext = () => (dispatch, getState) => {
 
   // set back current position by 1
   dispatch({ type: GO_FORWARD })
+}
+
+export const timeTravelTo = index => (dispatch, getState) => {
+  const { data } = getState().timeMachine
+  // load sim to app
+  const { sim } = data[index]
+  dispatch({
+    type: LOAD_SIM,
+    payload: sim,
+  })
+
+  // set current position
+  dispatch({ type: GO_TO_POINT, payload: index })
 }

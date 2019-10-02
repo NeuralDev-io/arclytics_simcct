@@ -29,7 +29,7 @@ from sim_api.extensions.utilities import (
     DuplicateElementError, ElementSymbolInvalid, ElementInvalid,
     ElementWeightInvalid, MissingElementError
 )
-from arc_simulation.simulation.periodic import PeriodicTable
+from simulation.periodic import PeriodicTable
 
 Schema.TYPE_MAPPING[ObjectId] = fields.String
 

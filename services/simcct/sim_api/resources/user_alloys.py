@@ -6,12 +6,13 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
+__author__ = [
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
 __license__ = 'MIT'
-__version__ = '0.1.0'
-
-__status__ = 'development'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.08.02'
 """user_alloys.py: 
 
@@ -29,13 +30,16 @@ from mongoengine.errors import (
     DoesNotExist, FieldDoesNotExist, MultipleObjectsReturned
 )
 
-from sim_api.extensions import api
+from arc_logging import AppLogger
+from sim_api.extensions import api, apm
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
     MissingElementError
 )
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import Alloy, User
+
+logger = AppLogger(__name__)
 
 user_alloys_blueprint = Blueprint('user_alloys', __name__)
 
@@ -93,32 +97,50 @@ class UserAlloysList(Resource):
         except FieldDoesNotExist as e:
             response['error'] = str(e)
             response['message'] = 'Field does not exist error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except ElementSymbolInvalid as e:
             # This validation is a custom one used to validate the symbol used
             # in the element is one that is valid with the Periodic Table.
             response['error'] = str(e)
             response['message'] = 'Invalid element symbol error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except ElementInvalid as e:
             # This validation is a custom one used to validate the Element used
             response['error'] = str(e)
             response['message'] = 'Invalid element error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except MissingElementError as e:
             # This validation is a custom one used to validate missing Elements
             response['error'] = str(e)
             response['message'] = 'Missing element error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except DuplicateElementError as e:
             # One of the alloys contains two or more elements with the same
             # chemical symbol.
             response['error'] = str(e)
             response['message'] = 'Alloy contains a duplicate element.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except ValidationError as e:
             response['error'] = str(e.message)
             response['message'] = 'Alloy validation error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
 
         valid_data = {
@@ -148,6 +170,8 @@ class UserAlloysList(Resource):
         # To avoid running a list comprehension loop, if there's nothing
         # to return we get out of here and notify the client.
         if user.saved_alloys.count() == 0:
+            logger.info({'message': 'No alloys found.'})
+            apm.capture_message({'message': 'No alloys found.'})
             return {'status': 'fail', 'message': 'No alloys found.'}, 404
 
         # Mongo by default returns a Cursor which we must convert to dict
@@ -193,6 +217,9 @@ class UserAlloy(Resource):
             except MultipleObjectsReturned as e:
                 response['error'] = str(e)
                 response['message'] = 'Multiple objects returned.'
+                log_message = {'message': response['message'], 'error': str(e)}
+                logger.exception(log_message)
+                apm.capture_exception()
                 return response, 418
 
         response = {'status': 'success', 'data': alloy.to_dict()}
@@ -247,10 +274,12 @@ class UserAlloy(Resource):
         except FieldDoesNotExist as e:
             response['error'] = str(e)
             response['message'] = 'Field does not exist error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except ElementSymbolInvalid as e:
             # This validation is a custom one used to validate the symbol
-            # used
             # in the element is one that is valid with the Periodic Table.
             response['error'] = str(e)
             response['message'] = 'Invalid element symbol error.'
@@ -298,6 +327,8 @@ class UserAlloy(Resource):
 
         if updated == 0:
             response['message'] = 'Failed to update alloy.'
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         try:
@@ -307,6 +338,7 @@ class UserAlloy(Resource):
             # and if there is, then we return an internal server error.
             response['error'] = str(e.message)
             response['message'] = 'Validation error on saving.'
+            apm.capture_exception()
             return response, 500
 
         user.reload()
@@ -329,7 +361,6 @@ class UserAlloy(Resource):
             'Method Not Allowed. These are not the endpoints you are '
             'looking for.'
         )
-
         return {'message': msg}, 405
 
     # noinspection PyMethodMayBeStatic
@@ -353,6 +384,8 @@ class UserAlloy(Resource):
         if user.saved_alloys.count() == 0:
             # If there is no alloy to delete.
             response['message'] = 'No alloy found.'
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 404
 
         # To ensure we delete the correct one, we must first find it. If
@@ -367,6 +400,9 @@ class UserAlloy(Resource):
         except MultipleObjectsReturned as e:
             response['error'] = str(e)
             response['message'] = 'Multiple objects returned.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 418
 
         # If we find the alloy above, we overwrite it by doing a $pull

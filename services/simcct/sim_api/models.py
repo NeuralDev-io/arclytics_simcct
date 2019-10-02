@@ -198,6 +198,7 @@ class AdminProfile(EmbeddedDocument):
     mobile_number = StringField(max_length=11, min_length=10)
     verified = BooleanField(default=False)
     promoted_by = ObjectIdField()
+    sub_to_feedback = BooleanField(default=False)
 
     def to_dict(self) -> dict:
         """
@@ -336,7 +337,7 @@ class Element(EmbeddedDocument):
         """
         # These ensure they are not missing.
         if not self.symbol:
-            msg = 'Field is required: ["Element.symbol"])'
+            msg = 'Field is required: ["Element.symbol"]'
             raise ElementInvalid(message=msg)
 
         if not self.weight == 0.0:
@@ -453,18 +454,13 @@ class User(Document):
 
     # The following fields describe the simulation properties saved to a users
     # Document for later retrieval
-    last_configuration = EmbeddedDocumentField(
-        document_type=Configuration, default=None
-    )
-
-    last_alloy_store = EmbeddedDocumentField(
-        document_type=AlloyStore, default=None
-    )
-
-    last_simulation_results = EmbeddedDocumentField(
-        document_type=SimulationResults, default=None
-    )
-
+    # Note: It is necessary to use `sim_api.schemas.ConfigurationSchema`,
+    # `sim_api.schemas.AlloySchema` and
+    # `sim_api.schemas.SimulationResultsSchema` to validate these before
+    # dumping to the database if we want to ensure validity.
+    last_configuration = DictField(default=None)
+    last_alloy_store = DictField(default=None)
+    last_simulation_results = DictField(default=None)
     last_simulation_invalid_fields = DictField(default=None)
 
     saved_alloys = EmbeddedDocumentListField(document_type=Alloy)

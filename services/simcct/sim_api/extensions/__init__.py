@@ -38,7 +38,8 @@ from .mongodb import MongoSingleton
 from .utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid, JSONEncoder,
     MissingElementError, PasswordValidationError, PeriodicTable,
-    RESPONSE_HEADERS, SimpleUTC, URLTokenError, URLTokenExpired, get_mongo_uri
+    RESPONSE_HEADERS, SimpleUTC, URLTokenError, URLTokenExpired, get_mongo_uri,
+    ElementWeightInvalid
 )
 
 redis_session = FlaskRedisSession()

@@ -20,8 +20,9 @@ from flask import current_app as app
 from flask import json
 from mongoengine import DoesNotExist, get_db
 
-from sim_api.models import (AdminProfile, AlloyStore, Configuration,
-                            SavedSimulation, User, UserProfile)
+from sim_api.models import (
+    AdminProfile, AlloyStore, Configuration, SavedSimulation, User, UserProfile
+)
 from tests.test_api_base import BaseTestCase
 from tests.test_utilities import test_login
 

@@ -91,8 +91,10 @@ class TestingConfig(BaseConfig):
 
 class ProductionConfig(BaseConfig):
     """Production configuration."""
+    # Ensuring the security of cookies
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
+
     MONGO_DBNAME = env.get('MONGO_APP_DB')
     BCRYPT_LOG_ROUNDS = 12
 

@@ -183,7 +183,7 @@ class ConfigForm extends Component {
           <div className="input-col">
             <div className={styles.headerContainer}>
               <h6>CCT/TTT method</h6>
-              <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
+              <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="right">
                 <InfoIcon className={styles.infoIcon} />
                 <p>
                   J.S.Krikaldy, et al., &quot;Prediction of microstructure and hardenability in
@@ -270,7 +270,7 @@ class ConfigForm extends Component {
             <div>
               <div className={styles.headerContainer}>
                 <h6>Ferrite/Pearlite</h6>
-                <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
+                <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="right">
                   <InfoIcon className={styles.infoIcon} />
                   <p>
                     Ae3 = temperature below austenite to ferrite transformation becomes
@@ -436,7 +436,7 @@ class ConfigForm extends Component {
         <div className={styles.third}>
           <div className={styles.headerContainer}>
             <h5>Nucleation parameters</h5>
-            <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
+            <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="right">
               <InfoIcon className={styles.infoIcon} />
               <p>
                 Plots a sigmoidal function distribution on a separate sheet This is for

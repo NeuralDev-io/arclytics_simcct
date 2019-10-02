@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import UndoIcon from 'react-feather/dist/icons/rotate-ccw'
-import RedoIcon from 'react-feather/dist/icons/rotate-cw'
+import UndoIcon from 'react-feather/dist/icons/skip-back'
+import RedoIcon from 'react-feather/dist/icons/skip-forward'
+import MinusIcon from 'react-feather/dist/icons/minus'
 import CompForm from './CompForm'
 import CompTable from './CompTable'
 import Button, { IconButton } from '../../elements/button'
@@ -33,7 +34,6 @@ class CompSidebar extends Component {
     } = this.props
     const { showSettings } = this.state
 
-    console.log(timeMachine.data.length)
     return (
       <div className={styles.sidebar}>
         <header>
@@ -51,22 +51,50 @@ class CompSidebar extends Component {
           >
             {showSettings ? 'Collapse' : 'Expand'}
           </Button> */}
-          <IconButton
-            onClick={timeTravelBackConnect}
-            Icon={props => <UndoIcon {...props} />}
-            isDisabled={
-              timeMachine.data.length === 0
-              || timeMachine.current === 0
-            }
-          />
-          <IconButton
-            onClick={timeTravelNextConnect}
-            Icon={props => <RedoIcon {...props} />}
-            isDisabled={
-              timeMachine.data.length === 0
-              || timeMachine.current === timeMachine.data.length - 1
-            }
-          />
+          <div className={styles.timeMachine}>
+            <IconButton
+              onClick={timeTravelBackConnect}
+              Icon={props => <UndoIcon {...props} />}
+              isDisabled={
+                timeMachine.data.length === 0
+                || timeMachine.current === 0
+              }
+              className={{
+                button: `${styles.timeButton}
+                  ${(timeMachine.data.length === 0 || timeMachine.current === 0) ? styles.disabled : ''}`,
+                icon: styles.timeIcon,
+              }}
+              tooltipText="Previous"
+              tooltipPosition="bottom"
+            />
+            <IconButton
+              onClick={timeTravelBackConnect}
+              Icon={props => <MinusIcon {...props} />}
+              isDisabled={timeMachine.data.length === 0}
+              className={{
+                button: `${styles.timeButton}
+                  ${(timeMachine.data.length === 0) ? styles.disabled : ''}`,
+                icon: styles.timeIcon,
+              }}
+              tooltipText="History"
+              tooltipPosition="bottom"
+            />
+            <IconButton
+              onClick={timeTravelNextConnect}
+              Icon={props => <RedoIcon {...props} />}
+              isDisabled={
+                timeMachine.data.length === 0
+                || timeMachine.current === timeMachine.data.length - 1
+              }
+              className={{
+                button: `${styles.timeButton}
+                  ${(timeMachine.data.length === 0 || timeMachine.current === timeMachine.data.length - 1) ? styles.disabled : ''}`,
+                icon: styles.timeIcon,
+              }}
+              tooltipText="Next"
+              tooltipPosition="bottom"
+            />
+          </div>
         </header>
         <div style={{ display: showSettings ? 'block' : 'none' }}>
           <CompForm

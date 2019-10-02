@@ -74,7 +74,7 @@ class AuthService(object):
     @staticmethod
     def decode_auth_token(
             auth_token: Union[bytes, str]
-    ) -> Union[Tuple, str]:
+    ) -> Union[Tuple[ ObjectId, str], Tuple[str, None]]:
         """Decodes the JWT auth token.
 
         Args:
@@ -89,8 +89,8 @@ class AuthService(object):
             )
             return ObjectId(payload['sub']), payload['role']
         except jwt.ExpiredSignatureError:
-            return 'Signature expired. Please login again.'
+            return 'Signature expired. Please login again.', None
         except jwt.InvalidTokenError:
             logger.info('Invalid token error.')
             apm.capture_exception()
-            return 'Invalid token. Please log in again.'
+            return 'Invalid token. Please log in again.', None

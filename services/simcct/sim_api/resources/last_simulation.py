@@ -267,36 +267,34 @@ class LastSimulation(Resource):
         """
         response = {'status': 'fail'}
 
+        # Note:
+        # If the user has no last configurations, we ensure that we use
+        # the default one rather than set it to None.
+        # This is an agreement with frontend and they will update each
+        # individual configuration as the user fixes it.
+        # In this case, we can just return and let the frontend know that
+        # nothing in the session state has changed for the user.
         if not user.last_configuration and not user.last_alloy_store:
             response['message'] = (
                 'User does not have a last configurations or alloy store.'
             )
             return response, 404
 
+        # At this point, we know the user has at least some last configuration
+        # or alloy store saved and we need to update the session state with
+        # those values. Because on login, the default values are already set,
+        # to ensure that we stay in sync, we only set the session store with
+        # the dictionary where the user has something stored from the past.
+
         # Build up our response data as we go.
         data = {}
 
+        # Get our session storage back from the Session instance which
+        # is retrieved from Redis and converted to a dictionary for us
+        # by the `SimSessionService`
         session_store = SimSessionService().load_session()
 
-        if not user.last_configuration:
-            session_store['configurations'] = {
-                'is_valid': False,
-                'method': 'Li98',
-                'grain_size': 8.0,
-                'nucleation_start': 1.0,
-                'nucleation_finish': 99.90,
-                'auto_calculate_ms': True,
-                'ms_temp': 0.0,
-                'ms_rate_param': 0.0,
-                'auto_calculate_bs': True,
-                'bs_temp': 0.0,
-                'auto_calculate_ae': True,
-                'ae1_temp': 0.0,
-                'ae3_temp': 0.0,
-                'start_temp': 900,
-                'cct_cooling_rate': 10
-            }
-        else:
+        if user.last_configuration:
             session_store['configurations'] = user.last_configuration
             is_valid = user.last_configuration['is_valid']
             data.update(
@@ -306,23 +304,11 @@ class LastSimulation(Resource):
                 }
             )
 
-        if not user.last_alloy_store:
-            session_store['alloy_store'] = alloy_store = {
-                'alloy_option': 'single',
-                'alloys': {
-                    'parent': None,
-                    'weld': None,
-                    'mix': None
-                }
-            }
-        else:
+        if user.last_alloy_store:
             session_store['alloy_store'] = user.last_alloy_store
             data.update({'last_alloy_store': user.last_alloy_store})
 
-        if not user.last_simulation_results:
-            # We don't need to do anything here so we can just keep going
-            session_store['results'] = {}
-        else:
+        if user.last_simulation_results:
             session_store['simulation_results'] = user.last_simulation_results
             data.update(
                 {'last_simulation_results': user.last_simulation_results}

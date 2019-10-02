@@ -6,7 +6,7 @@
 # Attributions:
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
 __version__ = '1.0.0'
 __status__ = 'production'
@@ -33,18 +33,8 @@ logger = AppLogger(__name__)
 
 class AuthService(object):
     @staticmethod
-    def encode_auth_token(
-            user_id: ObjectId, role: str = 'user'
-    ) -> Union[bytes, None]:
-        """Generates JWT auth token that is returned as bytes.
-
-        Args:
-            user_id: an ObjectId for the User.
-            role: the role of user. Must be one of: `admin` or `user`.
-
-        Returns:
-            A valid JWT token as bytes.
-        """
+    def encode_auth_token(user_id: ObjectId) -> Union[bytes, None]:
+        """Generates JWT auth token that is returned as bytes."""
         try:
             payload = {
                 'exp':
@@ -55,9 +45,7 @@ class AuthService(object):
                 'iat':
                     datetime.utcnow(),
                 'sub':
-                    user_id,
-                'role':
-                    role
+                    user_id
             }
 
             return jwt.encode(

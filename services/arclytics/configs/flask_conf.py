@@ -32,6 +32,11 @@ class BaseConfig:
     # Flask-RESTful JSON encoder change
     RESTFUL_JSON = {'cls': JSONEncoder}
 
+    # Bcrypt and Token encoding
+    BCRYPT_LOG_ROUNDS = 12
+    TOKEN_EXPIRATION_DAYS = 30
+    TOKEN_EXPIRATION_SECONDS = 0
+
     # Redis Connection
     redis_host = env.get('REDIS_HOST', None)
     redis_port = env.get('REDIS_PORT', None)
@@ -57,13 +62,18 @@ class DevelopmentConfig(BaseConfig):
     """Development configuration."""
     MONGO_DBNAME = 'arc_dev'
 
+    # Bcrypt
+    BCRYPT_LOG_ROUNDS = 4
+
 
 class TestingConfig(BaseConfig):
     """Testing configuration."""
     TESTING = True
     MONGO_DBNAME = 'arc_test'
     PRESERVE_CONTEXT_ON_EXCEPTION = False
-    REDIS_DB = 2
+
+    # Bcrypt
+    BCRYPT_LOG_ROUNDS = 4
 
 
 class ProductionConfig(BaseConfig):
@@ -71,6 +81,9 @@ class ProductionConfig(BaseConfig):
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
     MONGO_DBNAME = env.get('MONGO_APP_DB')
+
+    # Bcrypt
+    BCRYPT_LOG_ROUNDS = 12
 
     # Redis Connection
     REDIS_HOST = env.get('REDIS_HOST', None)

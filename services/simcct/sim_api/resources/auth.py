@@ -268,8 +268,9 @@ def register_user() -> Tuple[dict, int]:
     try:
         new_user.save()
 
-        # generate auth token
-        auth_token = AuthService().encode_auth_token(new_user.id)
+        # generate auth token and pass the role of the user, which at the
+        # beginning is always the default.
+        auth_token = AuthService().encode_auth_token(new_user.id, role='user')
         # generate the confirmation token for verifying email
         confirmation_token = generate_confirmation_token(email)
         confirm_url = generate_url('auth.confirm_email', confirmation_token)
@@ -348,7 +349,8 @@ def login() -> any:
 
     # Now let's really check if the User can access our application
     if bcrypt.check_password_hash(user.password, password):
-        auth_token = AuthService().encode_auth_token(user.id)
+        user_role = 'admin' if user.is_admin else 'user'
+        auth_token = AuthService().encode_auth_token(user.id, role=user_role)
 
         if auth_token:
             if not user.active:

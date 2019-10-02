@@ -65,6 +65,7 @@ export class TimeTravelButtons extends Component {
               ${(timeMachine.data.length === 0 || timeMachine.current === 0) ? styles.disabled : ''}`,
             icon: styles.timeIcon,
           }}
+          withTooltip
           tooltipText="Previous"
           tooltipPosition="bottom"
         />
@@ -84,6 +85,7 @@ export class TimeTravelButtons extends Component {
                 ${(timeMachine.data.length === 0) ? styles.disabled : ''}`,
               icon: styles.timeIcon,
             }}
+            withTooltip
             tooltipText="History"
             tooltipPosition="bottom"
           />
@@ -103,6 +105,7 @@ export class TimeTravelButtons extends Component {
               ${(timeMachine.data.length === 0 || timeMachine.current === timeMachine.data.length - 1) ? styles.disabled : ''}`,
             icon: styles.timeIcon,
           }}
+          withTooltip
           tooltipText="Next"
           tooltipPosition="bottom"
         />

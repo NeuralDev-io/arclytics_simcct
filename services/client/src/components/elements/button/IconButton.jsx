@@ -11,25 +11,39 @@ const IconButton = ({
     button: '',
     icon: '',
   },
+  withTooltip = false,
   tooltipPosition = 'right',
   tooltipText = 'Button',
   Icon,
   onClick,
 }) => {
   const classname = `${styles.button} ${isDisabled && styles.disabled} ${className.button}`
+  if (withTooltip) {
+    return (
+      <Tooltip position={tooltipPosition}>
+        <div
+          className={classname}
+          {...(() => {
+            if (isDisabled) return {}
+            return buttonize(onClick)
+          })()}
+        >
+          <Icon className={`${styles.icon} ${className.icon}`} />
+        </div>
+        <span>{tooltipText}</span>
+      </Tooltip>
+    )
+  }
   return (
-    <Tooltip position={tooltipPosition}>
-      <div
-        className={classname}
-        {...(() => {
-          if (isDisabled) return {}
-          return buttonize(onClick)
-        })()}
-      >
-        <Icon className={`${styles.icon} ${className.icon}`} />
-      </div>
-      <span>{tooltipText}</span>
-    </Tooltip>
+    <div
+      className={classname}
+      {...(() => {
+        if (isDisabled) return {}
+        return buttonize(onClick)
+      })()}
+    >
+      <Icon className={`${styles.icon} ${className.icon}`} />
+    </div>
   )
 }
 
@@ -44,7 +58,8 @@ IconButton.propTypes = {
     button: PropTypes.string,
     icon: PropTypes.string,
   }),
-  tooltipText: PropTypes.string.isRequired,
+  withTooltip: PropTypes.bool,
+  tooltipText: PropTypes.string,
   tooltipPosition: PropTypes.string,
 }
 
@@ -54,6 +69,8 @@ IconButton.defaultProps = {
     button: '',
     icon: '',
   },
+  withTooltip: false,
+  tooltipText: 'Click me',
   tooltipPosition: 'right',
 }
 

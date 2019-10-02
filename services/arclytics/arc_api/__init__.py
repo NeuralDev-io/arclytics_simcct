@@ -79,6 +79,7 @@ def create_app(configs_path=app_settings) -> Flask:
         supports_credentials=True
     )
     # ========== # IMPORT FLASK BLUEPRINTS # ========== #
+    from arc_api.resources.root import root_blueprint
     # ========== # REGISTER FLASK BLUEPRINTS # ========== #
     app.register_blueprint(root_blueprint)
     app.register_blueprint(user_analytics_blueprint)
@@ -106,7 +107,6 @@ def extensions(app) -> None:
     Returns:
         None.
     """
-    apm.init_app(app)
-    api.init_app(app)
-    bcrypt.init_app(app)
+    for ext in flask_extensions:
+        ext.init_app(app)
     return None

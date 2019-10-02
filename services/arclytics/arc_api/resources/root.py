@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # root.py
@@ -7,34 +6,26 @@
 # Attributions:
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
-
-__author__ = 'Andrew Che <@codeninja55>'
-__copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = '{dev_status}'
+__author__ = ['Andrew Che <@codeninja55>']
+__license__ = 'MIT'
+__version__ = '0.1.0'
+__status__ = 'development'
 __date__ = '2019.10.03'
 
 """root.py: 
 
-{Description}
+This is the root resource with mostly Flask style API View methods including 
+the one necessary to do Kubernetes Readiness Probes.
 """
-
 
 import os
 
-from flask import Blueprint, Response, request, make_response, jsonify
-from arc_api.auth_service import AuthService
+from flask import Blueprint, Response
 
 from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 root_blueprint = Blueprint('root', __name__)
-
-API_TOKEN_NAME = 'JWT_TOKEN'
 
 
 @root_blueprint.route('/', methods=['GET'])
@@ -61,9 +52,12 @@ def readiness_probe():
     return response
 
 
-@root_blueprint.route('/test_auth', methods=['GET'])
-def test():
-    cookies = request.cookies.get(API_TOKEN_NAME)
-    user_id, role = AuthService().decode_auth_token(cookies)
-    response = {'cookies': cookies, 'user': user_id, 'role': role}
-    return jsonify(response), 200
+# This is used to only test the application in development.
+# Do not leave this here otherwise.
+# from flask import jsonify, request
+# from arc_api.middleware import authorize_admin_cookie_flask
+# @root_blueprint.route('/test_auth', methods=['GET'])
+# @authorize_admin_cookie_flask
+# def test(user_id):
+#     response = {'user': user_id}
+#     return jsonify(response), 200

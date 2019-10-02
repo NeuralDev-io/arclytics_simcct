@@ -157,6 +157,13 @@ services:
       - FLASK_ENV=development
       - APP_SETTINGS=configs.flask_conf.DevelopmentConfig
       - SECRET_KEY=${SECRET_KEY}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - FLUENTD_HOST=fluentd
+      - FLUENTD_PORT=24224
+      - FLUENTD_PREFIX_TAG=arclytics
+      - ELASTIC_APM_SERVER_URL=http://apm-server:8200
     depends_on:
       - fluentd
     networks:

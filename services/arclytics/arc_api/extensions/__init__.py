@@ -25,8 +25,10 @@ apm = ElasticAPM()
 api = Api()
 bcrypt = Bcrypt()
 
-from .utilities import JSONEncoder
+flask_extensions = [apm, api, bcrypt]
+
+from .utilities import JSONEncoder, API_TOKEN_NAME
 
 __all__ = [
-    'apm', 'api', 'bcrypt', 'JSONEncoder'
+    'apm', 'api', 'bcrypt', 'JSONEncoder', 'flask_extensions', 'API_TOKEN_NAME'
 ]

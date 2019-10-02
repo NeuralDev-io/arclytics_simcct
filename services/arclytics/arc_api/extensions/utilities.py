@@ -23,6 +23,8 @@ from datetime import datetime
 import numpy as np
 from bson import ObjectId
 
+API_TOKEN_NAME = 'JWT_TOKEN'
+
 
 class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""

@@ -1,21 +1,15 @@
 # -*- coding: utf-8 -*-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # user_analytics.py
-# 
-# Attributions: 
-# [1] 
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
-
-__author__ = 'Andrew Che <@codeninja55>'
-__copyright__ = 'Copyright (C) 2019, Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = '{license}'
-__version__ = '{mayor}.{minor}.{rel}'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = '{dev_status}'
+__author__ = ['Andrew Che <@codeninja55>']
+__license__ = 'MIT'
+__version__ = '0.1.0'
+__status__ = 'development'
 __date__ = '2019.10.02'
 
 """user_analytics.py: 
@@ -23,12 +17,16 @@ __date__ = '2019.10.02'
 {Description}
 """
 
-# Built-in/Generic Imports
-import os
+from flask import Blueprint, request
+from flask_restful import Resource
 
-# Libs
+from arc_api.extensions import api
 
-# Own modules
-# from {path} import {class}
+user_analytics_blueprint = Blueprint('user_analytics', __name__)
 
 
+class UserLoginData(Resource):
+    def get(self):
+        pass
+
+api.add_resource(UserLoginData, '/v1/arc/users/login/live')

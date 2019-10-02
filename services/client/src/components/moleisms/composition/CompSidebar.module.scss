@@ -28,23 +28,3 @@
     flex-shrink: 0;
   }
 }
-
-.timeMachine {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.timeButton {
-  width: 2rem;
-  height: 2rem;
-  background-color: transparent;
-
-  &.disabled { background-color: transparent; }
-
-  & .timeIcon {
-    height: 1rem;
-    width: 1rem;
-    stroke: var(--arc500);
-  }
-}

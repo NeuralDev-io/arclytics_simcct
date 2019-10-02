@@ -1,14 +1,11 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import UndoIcon from 'react-feather/dist/icons/skip-back'
-import RedoIcon from 'react-feather/dist/icons/skip-forward'
-import MinusIcon from 'react-feather/dist/icons/minus'
 import CompForm from './CompForm'
 import CompTable from './CompTable'
-import Button, { IconButton } from '../../elements/button'
+import Button from '../../elements/button'
+import TimeTravelButtons from './TimeTravelButtons'
 import { runSim } from '../../../state/ducks/sim/actions'
-import { timeTravelBack, timeTravelNext } from '../../../state/ducks/timeMachine/actions'
 
 import styles from './CompSidebar.module.scss'
 
@@ -23,14 +20,11 @@ class CompSidebar extends Component {
   render() {
     const {
       runSimConnect,
-      timeTravelBackConnect,
-      timeTravelNextConnect,
       sessionIsInitialised,
       isAuthenticated,
       onSaveButtonClick,
       configError,
       parentError,
-      timeMachine,
     } = this.props
     const { showSettings } = this.state
 
@@ -51,50 +45,7 @@ class CompSidebar extends Component {
           >
             {showSettings ? 'Collapse' : 'Expand'}
           </Button> */}
-          <div className={styles.timeMachine}>
-            <IconButton
-              onClick={timeTravelBackConnect}
-              Icon={props => <UndoIcon {...props} />}
-              isDisabled={
-                timeMachine.data.length === 0
-                || timeMachine.current === 0
-              }
-              className={{
-                button: `${styles.timeButton}
-                  ${(timeMachine.data.length === 0 || timeMachine.current === 0) ? styles.disabled : ''}`,
-                icon: styles.timeIcon,
-              }}
-              tooltipText="Previous"
-              tooltipPosition="bottom"
-            />
-            <IconButton
-              onClick={timeTravelBackConnect}
-              Icon={props => <MinusIcon {...props} />}
-              isDisabled={timeMachine.data.length === 0}
-              className={{
-                button: `${styles.timeButton}
-                  ${(timeMachine.data.length === 0) ? styles.disabled : ''}`,
-                icon: styles.timeIcon,
-              }}
-              tooltipText="History"
-              tooltipPosition="bottom"
-            />
-            <IconButton
-              onClick={timeTravelNextConnect}
-              Icon={props => <RedoIcon {...props} />}
-              isDisabled={
-                timeMachine.data.length === 0
-                || timeMachine.current === timeMachine.data.length - 1
-              }
-              className={{
-                button: `${styles.timeButton}
-                  ${(timeMachine.data.length === 0 || timeMachine.current === timeMachine.data.length - 1) ? styles.disabled : ''}`,
-                icon: styles.timeIcon,
-              }}
-              tooltipText="Next"
-              tooltipPosition="bottom"
-            />
-          </div>
+          <TimeTravelButtons />
         </header>
         <div style={{ display: showSettings ? 'block' : 'none' }}>
           <CompForm
@@ -126,28 +77,19 @@ class CompSidebar extends Component {
 CompSidebar.propTypes = {
   onSaveButtonClick: PropTypes.func.isRequired,
   runSimConnect: PropTypes.func.isRequired,
-  timeTravelBackConnect: PropTypes.func.isRequired,
-  timeTravelNextConnect: PropTypes.func.isRequired,
   sessionIsInitialised: PropTypes.bool.isRequired,
   isAuthenticated: PropTypes.bool.isRequired,
   configError: PropTypes.shape({}).isRequired,
   parentError: PropTypes.shape({}).isRequired,
-  timeMachine: PropTypes.shape({
-    data: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-    current: PropTypes.number,
-  }).isRequired,
 }
 
 const mapStateToProps = state => ({
   configError: state.sim.configurations.error,
   parentError: state.sim.alloys.parentError,
-  timeMachine: state.timeMachine,
 })
 
 const mapDispatchToProps = {
   runSimConnect: runSim,
-  timeTravelBackConnect: timeTravelBack,
-  timeTravelNextConnect: timeTravelNext,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(CompSidebar)

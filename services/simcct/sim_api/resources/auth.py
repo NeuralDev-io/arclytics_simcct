@@ -43,6 +43,7 @@ from sim_api.models import LoginData, User
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
+from sim_api.auth_service import AuthService
 
 logger = AppLogger(__name__)
 
@@ -203,9 +204,9 @@ def confirm_email_admin(token):
 
     try:
         email = confirm_token(token)
-    except URLTokenError as e:
+    except URLTokenError:
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
-    except URLTokenExpired as e:
+    except URLTokenExpired:
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except Exception as e:
         message = 'An Exception Occured.'
@@ -268,7 +269,7 @@ def register_user() -> Tuple[dict, int]:
         new_user.save()
 
         # generate auth token
-        auth_token = new_user.encode_auth_token(new_user.id)
+        auth_token = AuthService().encode_auth_token(new_user.id)
         # generate the confirmation token for verifying email
         confirmation_token = generate_confirmation_token(email)
         confirm_url = generate_url('auth.confirm_email', confirmation_token)
@@ -303,6 +304,7 @@ def register_user() -> Tuple[dict, int]:
         return jsonify(response), 400
 
 
+# noinspection PyBroadException
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
 def login() -> any:
     """
@@ -345,7 +347,8 @@ def login() -> any:
     user = User.objects.get(email=email)
 
     if bcrypt.check_password_hash(user.password, password):
-        auth_token = user.encode_auth_token(user.id)
+        auth_token = AuthService().encode_auth_token(user.id)
+
         if auth_token:
             if not user.active:
                 response['message'] = 'This user account has been disabled.'
@@ -530,7 +533,7 @@ def reset_password() -> Tuple[dict, int]:
 
     # Decode either returns bson.ObjectId if successful or a string from an
     # exception
-    resp_or_id = User.decode_password_reset_token(auth_token=token)
+    resp_or_id = AuthService().decode_password_reset_token(auth_token=token)
     if isinstance(resp_or_id, str):
         response['message'] = resp_or_id
         logger.info(response['message'])
@@ -627,7 +630,7 @@ def confirm_reset_password(token):
 
     # We create a JWT token to send to the client-side so they can attach
     # it as part of the next request
-    jwt_token = user.encode_password_reset_token(user_id=user.id).decode()
+    jwt_token = AuthService().encode_password_reset_token(user_id=user.id).decode()
 
     response['status'] = 'success'
     response.pop('message')

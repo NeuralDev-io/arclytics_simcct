@@ -24,7 +24,7 @@ from os import environ as env
 from flask import Flask
 from flask_cors import CORS
 
-from arc_api.extensions import api, apm
+from arc_api.extensions import api, apm, bcrypt
 
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'
 DATE_FMT = '%Y-%m-%d'
@@ -104,4 +104,5 @@ def extensions(app) -> None:
     """
     apm.init_app(app)
     api.init_app(app)
+    bcrypt.init_app(app)
     return None

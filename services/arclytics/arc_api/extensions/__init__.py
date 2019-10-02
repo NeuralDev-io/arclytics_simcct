@@ -18,9 +18,11 @@ context of the app.
 """
 
 from flask_restful import Api
+from flask_bcrypt import Bcrypt
 from elasticapm.contrib.flask import ElasticAPM
 
 apm = ElasticAPM()
 api = Api()
+bcrypt = Bcrypt()
 
 from .utilities import JSONEncoder

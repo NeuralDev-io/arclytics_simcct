@@ -671,7 +671,7 @@ export const loadPersistedSim = () => (dispatch, getState) => {
 
 export const loadLastSim = () => (dispatch, getState) => {
   const { lastSim } = getState().self
-  const { last_configurations: { grain_size, is_valid, ...otherConfig } } = lastSim
+  const { last_configuration: { grain_size, is_valid, ...otherConfig } } = lastSim
   const convertedConfig = {
     ...otherConfig,
     grain_size_ASTM: grain_size,
@@ -681,7 +681,7 @@ export const loadLastSim = () => (dispatch, getState) => {
     type: LOAD_LAST_SIM,
     payload: {
       ...lastSim,
-      last_configurations: convertedConfig,
+      last_configuration: convertedConfig,
     },
   })
 }

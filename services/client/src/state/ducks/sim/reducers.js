@@ -245,7 +245,7 @@ const reducer = (state = initialState, action) => {
     case LOAD_LAST_SIM: {
       const {
         last_alloy_store,
-        last_configurations,
+        last_configuration,
         last_simulation_invalid_fields,
         last_simulation_results,
       } = action.payload
@@ -259,7 +259,7 @@ const reducer = (state = initialState, action) => {
         configurations: {
           ...initialState.configurations,
           error: last_simulation_invalid_fields.invalid_configs,
-          ...last_configurations,
+          ...last_configuration,
         },
         alloys: {
           ...initialState.alloys,

@@ -27,7 +27,7 @@ from tests.test_utilities import test_login
 
 logger = AppLogger(__name__)
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'tests' / 'sim_configs.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     test_json = json.load(f)
 
@@ -72,8 +72,8 @@ class TestSimConfigurations(BaseTestCase):
         }
         alloy_store = AlloyStoreSchema().load(store_dict)
 
-        cls.user.last_alloy_store = AlloyStore(**alloy_store)
-        cls.user.last_configuration = Configuration(**configs)
+        cls.user.last_alloy_store = alloy_store
+        cls.user.last_configuration = configs
 
         cls.user.save()
         cls._email = cls.user.email

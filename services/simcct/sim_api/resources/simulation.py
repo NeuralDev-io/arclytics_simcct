@@ -6,12 +6,14 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
+__author__ = [
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'MIT'
-__version__ = '0.5.0'
-
-__status__ = 'development'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.07.17'
 """simulation.py: 
 
@@ -53,6 +55,8 @@ class Simulation(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         log_msg = json.dumps(
@@ -126,16 +130,18 @@ class Simulation(Resource):
         # stop_configs_time = time.time()
         # sim_configs_time = stop_configs_time - start
 
+        # TODO(andrew@neuraldev.io) Validate for Carbon < 0.7
+
         try:
             sim = PhaseSimulation(sim_configs=sim_configs)
         except ConfigurationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Configuration error.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
             return response, 400
         except SimulationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Simulation error.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
@@ -165,14 +171,14 @@ class Simulation(Resource):
             # ttt_future = dask_client.submit(sim.ttt)
             # user_cc_future = dask_client.submit(sim.user_cooling_profile)
         except ZeroDivisionError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Zero Division Error.'
             response['configs'] = sim.configs.__dict__
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
             return response, 500
         except Exception as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Exception.'
             response['configs'] = sim.configs.__dict__
             logger.exception(response['message'], exc_info=True)
@@ -193,7 +199,7 @@ class Simulation(Resource):
             #     'USER': user_future.result()
             # }
         except AssertionError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Assertion error building response data.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()

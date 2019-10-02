@@ -22,6 +22,7 @@ import json
 import os
 from datetime import datetime
 from typing import Tuple
+from pathlib import Path
 
 import geoip2
 import geoip2.database
@@ -30,6 +31,7 @@ from flask import (
     Blueprint, jsonify, redirect, render_template, request, session
 )
 from geoip2.errors import AddressNotFoundError
+from maxminddb.errors import InvalidDatabaseError
 from mongoengine.errors import NotUniqueError, ValidationError
 
 from arc_logging import AppLogger
@@ -52,6 +54,7 @@ class SimCCTBadServerLogout(Exception):
     A custom exception to be raised by a synchronous call to logout on the
     SimCCT server if the response is not what we are expecting.
     """
+
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
 
@@ -80,10 +83,20 @@ def confirm_email(token):
     try:
         email = confirm_token(token)
     except URLTokenError:
+        # We send a redirect to the frontend with a query in the params to
+        # say that the token has expired and they will handle it appropriately
+        # for the user.
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except URLTokenExpired:
+        # We send a redirect to the frontend with a query in the params to
+        # say that the token has expired and they will handle it appropriately
+        # for the user.
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
-    except Exception:
+    except Exception as e:
+        message = 'An Exception Occurred.'
+        log_message = {'message': message, "error": str(e)}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     # We ensure there is a user for this email
@@ -142,12 +155,15 @@ def confirm_email_resend_after_registration() -> Tuple[dict, int]:
     email = data.get('email', None)
 
     if not User.objects(email=email):
-        # response['message'] = 'User does not exist.'
+        log_message = 'User does not exist'
+        logger.warning(log_message)
         return jsonify(response), 200
 
     user = User.objects.get(email=email)
 
     if user.verified:
+        log_message = 'User is already verified.'
+        logger.warning(log_message)
         # response['message'] = 'User is already verified.'
         return jsonify(response), 200
 
@@ -192,6 +208,10 @@ def confirm_email_admin(token):
     except URLTokenExpired as e:
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except Exception as e:
+        message = 'An Exception Occured.'
+        log_message = {'message': message, "error": str(e)}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     user = User.objects.get(email=email)
@@ -275,12 +295,10 @@ def register_user() -> Tuple[dict, int]:
         response['message'] = 'User has been registered.'
         return jsonify(response), 201
 
-    except ValidationError as e:
-        # logger.error('Validation Error: {}'.format(e))
+    except ValidationError:
         response['message'] = 'The user cannot be validated.'
         return jsonify(response), 400
-    except NotUniqueError as e:
-        # logger.error('Not Unique Error: {}'.format(e))
+    except NotUniqueError:
         response['message'] = 'The users details already exists.'
         return jsonify(response), 400
 
@@ -319,11 +337,9 @@ def login() -> any:
     try:
         if not User.objects(email=email):
             response['message'] = 'User does not exist.'
-            logger.debug({'email': email, 'message': response['message']})
             return jsonify(response), 404
-    except Exception as e:
-        logger.error(str(e))
-        response['message'] = 'User does not exist.'
+    except Exception:
+        response['message'] = 'User does not exist'
         return jsonify(response), 404
 
     user = User.objects.get(email=email)
@@ -347,37 +363,44 @@ def login() -> any:
 
             user.save()
 
-            # Get location data
-            # TODO(david): NOTE THIS IS HARD CODING AND TERRIBLE.
-            reader = geoip2.database.Reader(
-                '/usr/src/app/sim_api/resources/GeoLite2-City/'
-                'GeoLite2-City.mmdb'
-            )
+            # First we check if there is a proxy or other network service
+            # that forwards the IP address. If it is not the case,
+            # we can check for the HTTP_X_REAL_IP which is part of
+            # the header and is often used in a proxy.
+            if not request.headers.get('X-Forwarded-For', None):
+                # If HTTP_X_REAL_IP not found, we can then fall back
+                # to use the `request.remote_addr` even though it is
+                # unlikely to be a real address.
+                request_ip = request.environ.get(
+                    'HTTP_X_REAL_IP', request.remote_addr
+                )
+            else:
+                # If we have a forwarded IP, it usually can be split
+                # We want the first one because the syntax is as follows:
+                # X-Forwarded-For: <client>, <proxy1>, <proxy2>
+                # Refer to:
+                # https://developer.mozilla.org/en-US/docs/Web/HTTP/
+                # Headers/X-Forwarded-For
+                # "The X-Forwarded-For (XFF) header is a de-facto standard
+                # header for identifying the originating IP address of a
+                # client connecting to a web server through an HTTP proxy
+                # or a load balancer."
+                forwarded_ip = request.headers.get('X-Forwarded-For')
+                request_ip = str(forwarded_ip).split(',')[0]
+
+            # Get the relative path of the database from the current path
+            # Applying dirname to a directory yields the parent directory
+            par_dir = os.path.dirname(os.path.abspath(__file__))
+            db_path = Path(par_dir) / 'GeoLite2-City' / 'GeoLite2-City.mmdb'
+
             try:
-                # First we check if there is a proxy or other network service
-                # that forwards the IP address. If it is not the case,
-                # we can check for the HTTP_X_REAL_IP which is part of
-                # the header and is often used in a proxy.
-                if not request.headers.get('X-Forwarded-For', None):
-                    # If HTTP_X_REAL_IP not found, we can then fall back
-                    # to use the `request.remote_addr` even though it is
-                    # unlikely to be a real address.
-                    request_ip = request.environ.get(
-                        'HTTP_X_REAL_IP', request.remote_addr
+                if not db_path.exists():
+                    raise FileNotFoundError(
+                        f'MaxMind DB file not found in {db_path.as_posix()}.'
                     )
-                else:
-                    # If we have a forwarded IP, it usually can be split
-                    # We want the first one because the syntax is as follows:
-                    # X-Forwarded-For: <client>, <proxy1>, <proxy2>
-                    # Refer to:
-                    # https://developer.mozilla.org/en-US/docs/Web/HTTP/
-                    # Headers/X-Forwarded-For
-                    # "The X-Forwarded-For (XFF) header is a de-facto standard
-                    # header for identifying the originating IP address of a
-                    # client connecting to a web server through an HTTP proxy
-                    # or a load balancer."
-                    forwarded_ip = request.headers.get('X-Forwarded-For')
-                    request_ip = str(forwarded_ip).split(',')[0]
+                # Read from a MaxMind DB  that we have stored as so the
+                # `geoip2` library cna look for the IP address location.
+                reader = geoip2.database.Reader(db_path.as_posix())
 
                 location_data = reader.city(str(request_ip))
                 # location_data = reader.city('203.10.91.88')
@@ -399,28 +422,48 @@ def login() -> any:
                         'ip_address': ip_address
                     }
                 )
+                reader.close()
                 user.save()
-            except AddressNotFoundError:
-                user.reload()
-                ip_address = request.remote_addr
-                user.login_data.append(LoginData(ip_address=ip_address))
+            except FileNotFoundError as e:
+                apm.capture_exception()
+                logger.critical(
+                    {
+                        'message': 'File not found error.',
+                        'error': str(e)
+                    }
+                )
+            except ValueError as e:
+                apm.capture_exception()
                 logger.exception(
                     {
-                        'user': user.email,
-                        'message': 'Address not found.',
-                        'ip_address': ip_address,
-                        'request_environ': str(request.environ)
-                    },
+                        'message': 'geoip2 Read error.',
+                        'error': str(e)
+                    }
                 )
+            except InvalidDatabaseError as e:
                 apm.capture_exception()
+                logger.exception(
+                    {
+                        'message': 'Invalid MaxMind DB error.',
+                        'error': str(e)
+                    }
+                )
+            except AddressNotFoundError:
+                # If our library cannot find a location based on the IP address
+                # usually because we're in a localhost testing environment or
+                # if the address is somehow bad, then we need to handle this
+                # error and allow the response.
+                apm.capture_exception()
+            finally:
+                user.reload()
+                user.login_data.append(LoginData(ip_address=request_ip))
                 user.save()
-            reader.close()
 
             session['jwt'] = auth_token.decode()
             session['ip_address'] = request.remote_addr
             session['signed_in'] = True
 
-            # Inject the Simulation Session data
+            # We inject the Simulation Session data
             SimSessionService().new_session(user=user)
 
             response['status'] = 'success'
@@ -428,6 +471,8 @@ def login() -> any:
             return jsonify(response), 200
 
     response['message'] = 'Email or password combination incorrect.'
+    logger.info(response['message'])
+    apm.capture_message(response['message'])
     return jsonify(response), 404
 
 
@@ -488,6 +533,8 @@ def reset_password() -> Tuple[dict, int]:
     resp_or_id = User.decode_password_reset_token(auth_token=token)
     if isinstance(resp_or_id, str):
         response['message'] = resp_or_id
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     request_data = request.get_json()
@@ -564,10 +611,12 @@ def confirm_reset_password(token):
             f'{redirect_url}/password/reset?tokenexpired=true', code=302
         )
     except Exception as e:
-        logger.exception({
-            'msg': 'URL token confirmation error. ',
-            'error': str(e)
-        })
+        logger.exception(
+            {
+                'msg': 'URL token confirmation error. ',
+                'error': str(e)
+            }
+        )
         apm.capture_exception()
         return redirect(
             f'{redirect_url}/password/reset?tokenexpired=true', code=302
@@ -739,6 +788,8 @@ def change_password(user):
         return jsonify(response), 200
 
     response['message'] = 'Password is not correct.'
+    logger.info({'email': user.email, 'message': response['message']})
+    apm.capture_message(response['message'])
     return jsonify(response), 401
 
 
@@ -770,8 +821,8 @@ def change_email(user) -> Tuple[dict, int]:
     user.verified = False
     user.save()
 
-    confm_token = generate_confirmation_token(valid_new_email)
-    confirm_url = generate_url('auth.confirm_email', confm_token)
+    confirm_token = generate_confirmation_token(valid_new_email)
+    confirm_url = generate_url('auth.confirm_email', confirm_token)
 
     from sim_api.email_service import send_email
     send_email(

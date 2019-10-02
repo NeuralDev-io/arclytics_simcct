@@ -37,9 +37,7 @@ class SimSessionService(object):
     SESSION_PREFIX = 'simulation'
 
     def new_session(self, user: User) -> None:
-        if user.last_configuration is not None:
-            configs = user.last_configuration.to_dict()
-        else:
+        if not user.last_configuration:
             # These are based of defaults in the front-end as agreed to by
             # Andrew and Dalton.
             configs = {
@@ -59,10 +57,10 @@ class SimSessionService(object):
                 'start_temp': 900,
                 'cct_cooling_rate': 10
             }
-
-        if user.last_alloy_store is not None:
-            alloy_store = user.last_alloy_store.to_dict()
         else:
+            configs = user.last_configuration
+
+        if not user.last_alloy_store:
             alloy_store = {
                 'alloy_option': 'single',
                 'alloys': {
@@ -71,10 +69,13 @@ class SimSessionService(object):
                     'mix': None
                 }
             }
-        if user.last_simulation_results is not None:
-            last_results = user.last_simulation_results.to_dict()
         else:
+            alloy_store = user.last_alloy_store
+
+        if not user.last_simulation_results:
             last_results = {}
+        else:
+            last_results = user.last_simulation_results
 
         # This dict defines what we store in Redis for the session
         session_data_store = {
@@ -115,7 +116,7 @@ class SimSessionService(object):
             return message
 
         sess_data: dict = json.loads(session_data_store)
-        # Return the data as a dict and the sid to be used later for saving
+        # Return the data as a dict
         return sess_data
 
     def clean_simulation_session(self) -> None:

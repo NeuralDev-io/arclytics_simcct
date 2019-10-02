@@ -57,18 +57,6 @@ class RedisSession(CallbackDict, SessionMixin):
         self.new = new
         self.modified = False
 
-    def __getitem__(self, key):
-        self.accessed = True
-        return super(RedisSession, self).__getitem__(key)
-
-    def get(self, key, default=None):
-        self.accessed = True
-        return super(RedisSession, self).get(key, default)
-
-    def setdefault(self, key, default=None):
-        self.accessed = True
-        return super(RedisSession, self).setdefault(key, default)
-
 
 class RedisSessionInterface(SessionInterface):
     def __init__(self, app=None, use_signer=True):

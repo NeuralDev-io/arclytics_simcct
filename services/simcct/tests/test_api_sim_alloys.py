@@ -106,7 +106,7 @@ class TestSimAlloys(BaseTestCase):
                             'name': 'Bad Alloy',
                             'compositions': [{
                                 'symbol': 'C',
-                                'weight': 1
+                                'weight': 0.7
                             }]
                         }
                     }
@@ -114,11 +114,7 @@ class TestSimAlloys(BaseTestCase):
                 content_type='application/json'
             )
             data = res.json
-            msg = (
-                "Missing elements ['Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', 'W', "
-                "'As', 'Fe']"
-            )
-            self.assertEqual(data['message'], msg)
+            self.assertEqual(data['message'], 'Missing element error.')
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 

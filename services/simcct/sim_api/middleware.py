@@ -92,7 +92,7 @@ def authenticate_user_and_cookie_flask(f):
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'User does not exist.'
             logger.exception(response['message'])
             apm.capture_exception()
@@ -164,7 +164,7 @@ def authorize_admin_cookie_flask(f):
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'User does not exist.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
@@ -249,7 +249,7 @@ def authenticate_user_cookie_restful(f):
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'User does not exist.'
             logger.exception(response['message'])
             apm.capture_exception()
@@ -322,7 +322,7 @@ def authorize_admin_cookie_restful(f):
         try:
             user = User.objects.get(id=resp)
         except DoesNotExist as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'User does not exist.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()

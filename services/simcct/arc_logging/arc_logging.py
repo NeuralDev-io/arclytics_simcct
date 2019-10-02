@@ -327,9 +327,12 @@ class LogRecord(object):
         )
 
     def get_log_formatted(self):
-        return '{asctime} : {hostname} : {name} : {level_name} : {message}'.format(
+        return ('{asctime} : {hostname} : {name} : {module}.{function} : '
+                '{level_name} : {message}').format(
             asctime=format_time(self),
             hostname=self.hostname,
+            module=self.module,
+            function=self.funcName,
             name=self.name,
             level_name=self.level_name,
             message=str(self.msg)

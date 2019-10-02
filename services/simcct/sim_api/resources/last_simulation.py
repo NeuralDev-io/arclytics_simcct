@@ -149,6 +149,14 @@ class LastSimulation(Resource):
         try:
             if post_configs:
                 valid_configs = ConfigurationsSchema().load(post_configs)
+
+                if valid_results or is_valid:
+                    # If we're told that the configurations are valid or they
+                    # have a set of results, we set that in our storage of the
+                    # data.
+                    # Note: a set of results means the data is valid for a
+                    # simulation # run so therefore it is valid in that sense.
+                    valid_configs['is_valid'] = is_valid
             if post_alloy_store:
                 valid_store = AlloyStoreSchema().load(post_alloy_store)
             if post_results:
@@ -217,13 +225,6 @@ class LastSimulation(Resource):
         else:
             user.last_simulation_invalid_fields = {}
 
-        if valid_results or is_valid:
-            # If we're told that the configurations are valid or they have a
-            # set of results, we set that in our storage of the data.
-            # Note: a set of results means the data is valid for a simulation
-            # run so therefore it is valid in that sense.
-            valid_configs['is_valid'] = is_valid
-
         try:
             user.save()
         except MEValidationError as e:
@@ -284,7 +285,7 @@ class LastSimulation(Resource):
             is_valid = user.last_configuration['is_valid']
             data.update(
                 {
-                    'configurations': user.last_configuration,
+                    'last_configuration': user.last_configuration,
                     'is_valid': is_valid
                 }
             )

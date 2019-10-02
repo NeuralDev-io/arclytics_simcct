@@ -463,11 +463,8 @@ def login() -> any:
             session['ip_address'] = request.remote_addr
             session['signed_in'] = True
 
-            # We check if the user has any last simulation configurations (the
-            # least we expect them to have), otherwise we inject the
-            # Simulation Session data
-            if not user.last_configuration:
-                SimSessionService().new_session(user=user)
+            # We inject the Simulation Session data
+            SimSessionService().new_session(user=user)
 
             response['status'] = 'success'
             response['message'] = 'Successfully logged in.'

@@ -27,10 +27,9 @@ from marshmallow.validate import OneOf
 
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementSymbolInvalid, ElementInvalid,
-    ElementWeightInvalid
+    ElementWeightInvalid, MissingElementError
 )
 from arc_simulation.simulation.periodic import PeriodicTable
-from arc_simulation.simulation.utilities import MissingElementError
 
 Schema.TYPE_MAPPING[ObjectId] = fields.String
 
@@ -44,9 +43,9 @@ class SimulationResultsSchema(Schema):
     """This schema defines the full results data sent to and received from
     client.
     """
-    TTT = fields.Nested(fields.Dict)
-    CCT = fields.Nested(fields.Dict)
-    USER = fields.Nested(fields.Dict)
+    TTT = fields.Dict()
+    CCT = fields.Dict()
+    USER = fields.Dict()
 
     # By default, `schema.load()` will raise a `ValidationError` if it
     # encounters a key with no matching `Field` in the schema
@@ -188,6 +187,7 @@ class ConfigurationsSchema(Schema):
         required=True,
         allow_none=False,
         data_key='method',
+        validate=OneOf(['Li98', 'Kirkaldy83']),
         error_messages={
             'null': 'You must provide a method.',
             'required': 'A method is required.'
@@ -210,12 +210,8 @@ class ConfigurationsSchema(Schema):
 
     # Validation for this done in method `validate_cooling_rate`.
     # User cooling curve configurations
-    nucleation_start = fields.Float(
-        required=False, validate=validate.Range(min=0.001, max=99.9999)
-    )
-    nucleation_finish = fields.Float(
-        required=False, validate=validate.Range(min=0.001, max=99.9999)
-    )
+    nucleation_start = fields.Float(required=False)
+    nucleation_finish = fields.Float(required=False)
     cct_cooling_rate = fields.Int(required=False)
 
     # By default, `schema.load()` will raise a `ValidationError` if it
@@ -238,6 +234,15 @@ class ConfigurationsSchema(Schema):
         if value >= 99.99999:
             raise ValidationError(
                 'Nucleation start cannot be more than 99.99.'
+            )
+
+    @validates('nucleation_finish')
+    def validate_nucleation_finish(self, value):
+        if value <= 0.0:
+            raise ValidationError('Nucleation finish must be more than 0.0.')
+        if value >= 99.99999:
+            raise ValidationError(
+                'Nucleation finish cannot be more than 99.99.'
             )
 
     @validates('cct_cooling_rate')

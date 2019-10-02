@@ -986,7 +986,7 @@ class TestUserService(BaseTestCase):
                 f"ValidationError (User:{boba.id}) (aim.Field is "
                 f"required: ['profile'])"
             )
-            self.assertEqual(data['errors'], err)
+            self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Validation error.')
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(resp.status_code, 400)

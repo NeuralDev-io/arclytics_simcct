@@ -102,31 +102,27 @@ class ShareSimulationLink(Resource):
             )
             shared_simulation_object.save()
         except ElementSymbolInvalid as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Element Symbol Invalid.'
             return response, 400
         except ElementInvalid as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Element Invalid.'
             return response, 400
         except MissingElementError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Alloy is missing essential elements.'
-            log_message = {'message': response['message'], 'errors': str(e)}
             return response, 400
         except DuplicateElementError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Alloy contains duplicate elements.'
             return response, 400
         except ValidationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Validation error.'
-            log_message = {'message': response['message'], 'errors': str(e)}
-            logger.exception(log_message)
-            apm.capture_exception()
             return response, 400
         except OverflowError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Overflow error.'
             log_message = {'message': response['message'], 'errors': str(e)}
             logger.exception(log_message)
@@ -239,30 +235,30 @@ class ShareSimulationEmail(Resource):
             )
             shared_simulation_object.save()
         except ElementSymbolInvalid as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Element Symbol Invalid.'
             return response, 400
         except ElementInvalid as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Element Invalid.'
             return response, 400
         except MissingElementError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Alloy is missing essential elements.'
             return response, 400
         except DuplicateElementError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Alloy contains duplicate elements.'
             return response, 400
         except ValidationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Validation error.'
             log_message = {'message': response['message'], 'errors': str(e)}
             logger.exception(log_message)
             apm.capture_exception()
             return response, 400
         except OverflowError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Overflow error.'
             log_message = {'message': response['message'], 'errors': str(e)}
             logger.exception(log_message)

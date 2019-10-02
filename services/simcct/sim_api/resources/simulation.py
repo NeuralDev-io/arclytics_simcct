@@ -135,13 +135,13 @@ class Simulation(Resource):
         try:
             sim = PhaseSimulation(sim_configs=sim_configs)
         except ConfigurationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Configuration error.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
             return response, 400
         except SimulationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Simulation error.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
@@ -171,14 +171,14 @@ class Simulation(Resource):
             # ttt_future = dask_client.submit(sim.ttt)
             # user_cc_future = dask_client.submit(sim.user_cooling_profile)
         except ZeroDivisionError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Zero Division Error.'
             response['configs'] = sim.configs.__dict__
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
             return response, 500
         except Exception as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Exception.'
             response['configs'] = sim.configs.__dict__
             logger.exception(response['message'], exc_info=True)
@@ -199,7 +199,7 @@ class Simulation(Resource):
             #     'USER': user_future.result()
             # }
         except AssertionError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Assertion error building response data.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()

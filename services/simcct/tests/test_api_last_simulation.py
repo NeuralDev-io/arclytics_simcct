@@ -168,11 +168,6 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            # self.assertEqual(
-            #     data['message'], 'Missing Alloy Store in payload.'
-            # )
-            # self.assertEqual(data['status'], 'fail')
-            # self.assert400(res)
             self.assertEqual(data['message'], 'Saved Last Simulation Data.')
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 201)
@@ -223,26 +218,23 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            err = (
-                "ValidationError (Configuration:None) (Value must be one of "
-                "('Li98', 'Kirkaldy83'): ['method'])"
-            )
+            err = "{'method': ['Must be one of: Li98, Kirkaldy83.']}"
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
-    def test_create_last_invalid_configs_bad_nuc(self):
+    def test_create_last_invalid_configs_bad_nuc_start(self):
         with app.test_client() as client:
             _ = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(CONFIGS)
             configs['nucleation_start'] = -1
-            configs['nucleation_finish'] = 101
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': configs,
                         'alloy_store': ALLOY_STORE,
                         'simulation_results': RESULTS
@@ -252,9 +244,36 @@ class TestLastSimulation(BaseTestCase):
             )
             data = json.loads(res.data.decode())
             err = (
-                "ValidationError (Configuration:None) (Must be more than 0.0.:"
-                " ['nucleation_start'] Must be less than 100.0.: "
-                "['nucleation_finish'])"
+                "{'nucleation_start': ['Nucleation start must be "
+                "more than 0.0.']}"
+            )
+            self.assertEqual(data['error'], err)
+            self.assertEqual(data['message'], 'Model schema validation error.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+    def test_create_last_invalid_configs_bad_nuc_finish(self):
+        with app.test_client() as client:
+            _ = test_login(client, self.tony.email, self._tony_pw)
+            configs = deepcopy(CONFIGS)
+            configs['nucleation_finish'] = 101
+
+            res = client.post(
+                '/api/v1/sim/user/last/simulation',
+                data=json.dumps(
+                    {
+                        'is_valid': True,
+                        'configurations': configs,
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            err = (
+                "{'nucleation_finish': ['Nucleation finish cannot be more "
+                "than 99.99.']}"
             )
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
@@ -521,15 +540,10 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            # self.assertEqual(
-            #     data['message'], 'User does not have a last alloy stored.'
-            # )
-            # self.assertEqual(data['status'], 'fail')
-            # self.assert404(res)
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 200)
             self.assertEqual(
-                data['data']['last_configurations']['grain_size'], 8.0
+                data['data']['last_configuration']['grain_size'], 8.0
             )
             user.delete()
 
@@ -559,13 +573,12 @@ class TestLastSimulation(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
             self.assertTrue(data.get('data', None))
-            self.assertDictEqual(data['data']['last_configurations'], CONFIGS)
+            self.assertDictEqual(data['data']['last_configuration'], CONFIGS)
 
-            expected_alloy_store = deepcopy(ALLOY_STORE)
-            _id = data['data']['last_alloy_store']['alloys']['parent']['_id']
-            expected_alloy_store['alloys']['parent']['_id'] = _id
-            self.assertDictEqual(
-                data['data']['last_alloy_store'], expected_alloy_store
+            _name = data['data']['last_alloy_store']['alloys']['parent']['name']
+            self.assertEqual(
+                data['data']['last_alloy_store']['alloys']['parent']['name'],
+                _name
             )
             self.assert200(res)
 

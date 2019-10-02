@@ -348,14 +348,6 @@ class Element(EmbeddedDocument):
         # Make sure they are a valid Element symbol as per the `PeriodicTable`
         try:
             valid_symbol = PeriodicTable[self.symbol].name
-
-            # We need to make sure that the alloy cannot have a high content
-            # of Carbon otherwise the simulations will raise a Math Domain Err.
-            if valid_symbol == 'C':
-                if self.weight > 0.8:
-                    raise ValidationError(
-                        'Carbon weight content must not be more than 0.8'
-                    )
         except KeyError:
             raise ElementSymbolInvalid()
         self.symbol = valid_symbol

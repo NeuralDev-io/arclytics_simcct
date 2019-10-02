@@ -107,7 +107,7 @@ class Configurations(Resource):
             except ValueError as e:
                 # Save what we have validated so far
                 response['status'] = 'fail'
-                response['errors'] = str(e)
+                response['error'] = str(e)
                 response['message'] = 'Invalid Starting Temperature.'
                 logger.exception(response['message'], exc_info=True)
                 apm.capture_exception()
@@ -115,7 +115,7 @@ class Configurations(Resource):
             except Exception as e:
                 # Save what we have validated so far
                 response['status'] = 'fail'
-                response['errors'] = str(e)
+                response['error'] = str(e)
                 response['message'] = 'Int conversion error.'
                 logger.exception(response['message'], exc_info=True)
                 apm.capture_exception()
@@ -129,7 +129,7 @@ class Configurations(Resource):
             except ValueError as e:
                 # Save what we have validated so far
                 response['status'] = 'fail'
-                response['errors'] = str(e)
+                response['error'] = str(e)
                 response['message'] = 'Invalid CCT Cooling Rate.'
                 logger.exception(response['message'], exc_info=True)
                 apm.capture_exception()
@@ -137,7 +137,7 @@ class Configurations(Resource):
             except Exception as e:
                 # Save what we have validated so far
                 response['status'] = 'fail'
-                response['errors'] = str(e)
+                response['error'] = str(e)
                 response['message'] = 'Int conversion error.'
                 logger.exception(response['message'], exc_info=True)
                 apm.capture_exception()
@@ -149,7 +149,7 @@ class Configurations(Resource):
         try:
             valid_configs = ConfigurationsSchema().load(sess_configs)
         except ValidationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Configurations not valid.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
@@ -303,7 +303,7 @@ class MartensiteStart(Resource):
         try:
             comp_np_arr = SimConfig.get_compositions(comp_list)
         except ConfigurationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = str(e)
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
@@ -455,7 +455,7 @@ class BainiteStart(Resource):
         try:
             comp_np_arr = SimConfig.get_compositions(comp_list)
         except ConfigurationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = str(e)
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
@@ -587,7 +587,7 @@ class Austenite(Resource):
         try:
             comp_np_arr = SimConfig.get_compositions(comp_list)
         except ConfigurationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = str(e)
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()

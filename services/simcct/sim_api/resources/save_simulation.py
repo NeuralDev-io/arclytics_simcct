@@ -130,7 +130,7 @@ class SaveSimulationList(Resource):
             apm.capture_exception()
             return response, 400
         except OverflowError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Overflow error.'
             log_message = {'message': response['message'], 'error': str(e)}
             logger.exception(log_message)

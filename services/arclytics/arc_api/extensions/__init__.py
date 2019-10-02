@@ -26,3 +26,7 @@ api = Api()
 bcrypt = Bcrypt()
 
 from .utilities import JSONEncoder
+
+__all__ = [
+    'apm', 'api', 'bcrypt', 'JSONEncoder'
+]

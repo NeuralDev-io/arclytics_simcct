@@ -25,7 +25,7 @@ import jwt
 from bson import ObjectId
 from flask import current_app as app
 
-from sim_api.extensions import apm, JSONEncoder
+from arc_api.extensions import apm, JSONEncoder
 from arc_logging import AppLogger
 
 logger = AppLogger(__name__)

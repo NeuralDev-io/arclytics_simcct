@@ -10,6 +10,7 @@ fluent-logger==0.9.3
 gunicorn==19.9.0
 prettytable==0.7.2
 pymongo==3.9.0
+PyJWT==1.7.1
 PyYAML==5.1.2
 requests==2.22.0
 redis==3.2.1

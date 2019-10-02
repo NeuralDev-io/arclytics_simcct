@@ -85,12 +85,6 @@ class ProductionConfig(BaseConfig):
     # Bcrypt
     BCRYPT_LOG_ROUNDS = 12
 
-    # Redis Connection
-    REDIS_HOST = env.get('REDIS_HOST', None)
-    REDIS_PORT = env.get('REDIS_PORT', None)
-    REDIS_PASSWORD = env.get('REDIS_PASSWORD', None)
-    redis_uri = f'redis://user:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}'
-
     # production elastic application performance monitoring
     ELASTIC_APM = {
         'SERVER_URL': env.get('ELASTIC_APM_SERVER_URL', None),

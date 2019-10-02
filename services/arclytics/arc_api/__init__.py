@@ -24,7 +24,8 @@ from os import environ as env
 from flask import Flask
 from flask_cors import CORS
 
-from arc_api.extensions import api, apm, bcrypt
+from arc_api.extensions import *
+from arc_api.resources import *
 
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'
 DATE_FMT = '%Y-%m-%d'
@@ -78,11 +79,14 @@ def create_app(configs_path=app_settings) -> Flask:
         supports_credentials=True
     )
     # ========== # IMPORT FLASK BLUEPRINTS # ========== #
-
     # ========== # REGISTER FLASK BLUEPRINTS # ========== #
+    app.register_blueprint(root_blueprint)
+    app.register_blueprint(user_analytics_blueprint)
 
     # Set up Flask extensions plugins
     extensions(app)
+
+    app.json_encoder = JSONEncoder
 
     # Shell context for Flask CLI
     @app.shell_context_processor

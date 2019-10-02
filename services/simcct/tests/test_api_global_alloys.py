@@ -364,8 +364,6 @@ class TestAlloyService(BaseTestCase):
                 data['message'], 'Invalid element error.'
             )
             self.assertTrue(data['error'])
-
-            logger.debug(data['error'])
             err = ('ValidationError (Element) (Field is required: '
                    '["Element.symbol"].)')
             self.assertEqual(data['error'], err)

@@ -140,12 +140,12 @@ services:
       dockerfile: Dockerfile
       labels:
         arclytics.io: "development"
-    image: neuraldev/arclytics_service:1.3
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: localhost:24224
-        tag: arclytics.docker.access
+    image: neuraldev/arclytics_service:0.9
+#    logging:
+#      driver: fluentd
+#      options:
+#        fluentd-address: localhost:24224
+#        tag: arclytics.docker.access
     volumes:
       - ./services/arclytics:/usr/src/app
     ports:
@@ -157,7 +157,6 @@ services:
       - FLASK_ENV=development
       - APP_SETTINGS=configs.flask_conf.DevelopmentConfig
       - SECRET_KEY=${SECRET_KEY}
-      - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
     depends_on:
       - fluentd
     networks:

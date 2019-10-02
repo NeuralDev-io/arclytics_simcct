@@ -55,36 +55,34 @@ def create_app(configs_path=app_settings) -> Flask:
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
     # Set up the Flask App Context
-    with app.app_context():
-        # ========== # INIT FLASK EXTENSIONS # ========== #
-        # Notes:
-        #  - `headers` will inject the Content-Type in all responses.
-        #  - `expose_headers`: The header or list which are safe to expose to
-        #  the
-        #     API of a CORS API specification.
-        #  - `support_credentials`: Allows users to make authenticated requests.
-        #     If true, injects the Access-Control-Allow-Credentials header in
-        #     responses. This allows cookies and credentials to be submitted
-        #     across
-        #     domains.
-        #     Note:	This option cannot be used in conjunction with a ‘*’ origin
-        CORS(
-            app=app,
-            headers=['Content-Type'],
-            expose_headers=[
-                'Access-Control-Allow-Origin',
-                'Access-Control-Allow-Credentials',
-                'Content-Type'
-            ],
-            supports_credentials=True
-        )
 
-        # Set up Flask extensions plugins
-        extensions(app)
+    # ========== # INIT FLASK EXTENSIONS # ========== #
+    # Notes:
+    #  - `headers` will inject the Content-Type in all responses.
+    #  - `expose_headers`: The header or list which are safe to expose to
+    #  the
+    #     API of a CORS API specification.
+    #  - `support_credentials`: Allows users to make authenticated requests.
+    #     If true, injects the Access-Control-Allow-Credentials header in
+    #     responses. This allows cookies and credentials to be submitted
+    #     across domains.
+    #     Note:	This option cannot be used in conjunction with a ‘*’ origin
+    CORS(
+        app=app,
+        headers=['Content-Type'],
+        expose_headers=[
+            'Access-Control-Allow-Origin',
+            'Access-Control-Allow-Credentials',
+            'Content-Type'
+        ],
+        supports_credentials=True
+    )
+    # ========== # IMPORT FLASK BLUEPRINTS # ========== #
 
-        # ========== # IMPORT FLASK BLUEPRINTS # ========== #
+    # ========== # REGISTER FLASK BLUEPRINTS # ========== #
 
-        # ========== # REGISTER FLASK BLUEPRINTS # ========== #
+    # Set up Flask extensions plugins
+    extensions(app)
 
     # Shell context for Flask CLI
     @app.shell_context_processor

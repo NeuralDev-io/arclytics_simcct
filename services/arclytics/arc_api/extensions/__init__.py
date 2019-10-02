@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
-# extensions.py
-# 
-# Attributions: 
-# [1] 
+# extensions.__init__.py
+#
+# Attributions:
+# [1]
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
 __version__ = '1.1.0'
-__status__ = '{dev_status}'
-__date__ = '2019.09.22'
-"""extensions.py: 
+__status__ = 'development'
+__date__ = '2019.10.02'
+"""extensions.__init__.py: 
 
 This module just defines extensions for Flask that can be used across the
 context of the app.
@@ -23,3 +22,5 @@ from elasticapm.contrib.flask import ElasticAPM
 
 apm = ElasticAPM()
 api = Api()
+
+from .utilities import JSONEncoder

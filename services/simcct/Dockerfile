@@ -13,17 +13,16 @@ RUN conda install --yes --freeze-installed -q \
     cytoolz \
     conda-forge::pip \
     nomkl \
-    dask==2.3.0 \
-    numpy==1.16.4 \
+    numpy==1.17.2 \
     conda-forge::marshmallow==3.2.0 \
     conda-forge::flask==1.0.2 \
-    conda-forge::socat \
     && conda clean -tipsy \
     && find /opt/conda/ -type f,l -name '*.a' -delete \
     && find /opt/conda/ -type f,l -name '*.pyc' -delete \
     && find /opt/conda/ -type f,l -name '*.js.map' -delete \
-    && find /opt/conda/lib/python*/site-packages/bokeh/server/static -type f,l -name '*.js' -not -name '*.min.js' -delete \
     && rm -rf /opt/conda/pkgs
+    # dask==2.3.0 \
+    # && find /opt/conda/lib/python*/site-packages/bokeh/server/static -type f,l -name '*.js' -not -name '*.min.js' -delete \
 
 # Pillow dependencies
 # RUN apk --no-cache add python-dev  jpeg-dev \

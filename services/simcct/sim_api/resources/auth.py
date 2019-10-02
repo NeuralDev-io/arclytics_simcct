@@ -346,6 +346,7 @@ def login() -> any:
 
     user = User.objects.get(email=email)
 
+    # Now let's really check if the User can access our application
     if bcrypt.check_password_hash(user.password, password):
         auth_token = AuthService().encode_auth_token(user.id)
 
@@ -462,9 +463,13 @@ def login() -> any:
                 user.login_data.append(LoginData(ip_address=request_ip))
                 user.save()
 
+            # Store additional information in their session as it will be
+            # required by the server-side session interface to check and
+            # generate other tokens and keys.
             session['jwt'] = auth_token.decode()
-            session['ip_address'] = request.remote_addr
-            session['signed_in'] = True
+            session['ip_address'] = request_ip
+            session['is_admin'] = user.is_admin
+            session['user_id'] = str(user.id)
 
             # We inject the Simulation Session data
             SimSessionService().new_session(user=user)
@@ -873,15 +878,11 @@ def get_user_status(user) -> Tuple[dict, int]:
     if not user.profile:
         is_profile = False
 
-    sim_session = json.loads(session['simulation'])
-
     response = {
         "status": 'success',
         "isProfile": is_profile,
         "verified": user.verified,
         "active": user.active,
-        "signedIn": session['signed_in'],
-        "simulationValid": sim_session['configurations']['is_valid'],
         "admin": user.is_admin,
     }
     return jsonify(response), 200

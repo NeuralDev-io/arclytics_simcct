@@ -142,8 +142,6 @@ class TestUserService(BaseTestCase):
             self.assertTrue(data['active'])
             self.assertTrue(data['admin'])
             self.assertTrue(data['isProfile'])
-            self.assertFalse(data['simulationValid'])
-            self.assertTrue(data['signedIn'])
             self.assertTrue(data['verified'])
 
     def test_single_user_not_active(self):

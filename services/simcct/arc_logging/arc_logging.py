@@ -33,8 +33,7 @@
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __license__ = 'MIT'
-__version__ = '0.3.0'
-
+__version__ = '0.9.0'
 __status__ = 'development'
 __date__ = '2019.09.21'
 """
@@ -194,7 +193,6 @@ if hasattr(sys, '_getframe'):
     # noinspection PyProtectedMember
     currentframe = lambda: sys._getframe(3)
 else:  # pragma: no cover
-
     def currentframe():
         """Return the frame object for the caller's stack frame."""
         # noinspection PyBroadException
@@ -215,7 +213,7 @@ else:  # pragma: no cover
 # (There's no particular reason for picking addLevelName.)
 #
 
-_srcfile = os.path.normcase(get_remote_fluentd.__code__.co_filename)
+_srcfile = os.path.normcase(check_logpath.__code__.co_filename)
 
 # _srcfile is only used in conjunction with sys._getframe().
 # To provide compatibility with older versions of Python, set _srcfile
@@ -327,9 +325,12 @@ class LogRecord(object):
         )
 
     def get_log_formatted(self):
-        return '{asctime} : {hostname} : {name} : {level_name} : {message}'.format(
+        return ('{asctime} : {hostname} : {name} : {module}.{function} : '
+                '{level_name} : {message}').format(
             asctime=format_time(self),
             hostname=self.hostname,
+            module=self.module,
+            function=self.funcName,
             name=self.name,
             level_name=self.level_name,
             message=str(self.msg)
@@ -356,6 +357,7 @@ class EventRecord(LogRecord):
     The EventRecord instances are then converted to a dictionary as per the
     requirement for the `fluentd` Event object.
     """
+
     def __init__(
         self,
         name: str,
@@ -512,6 +514,7 @@ class Handler(object):
     records as desired. By default, no formatter is specified; in this case,
     the 'raw' message as determined by record.message is logged.
     """
+
     def __init__(self, level=NOTSET):
         # Handler name
         self._name = None
@@ -662,6 +665,7 @@ class FluentdHandler(Handler):
     A handler class which writes logging records, appropriately formatted,
     to the `fluentd` driver using the `sender.emit` method.
     """
+
     def __init__(self, tag: str = ''):
         """Initialize the `fluentd` handler.
 
@@ -805,6 +809,7 @@ class FileHandler(StreamHandler):
     """
     A handler class which writes formatted logging records to disk files.
     """
+
     def __init__(self, filename, mode='a', encoding=None, delay=False):
         """Open the specified file and use it as the stream for logging."""
         # Issue #27493: add support for Path objects to be passed in
@@ -904,6 +909,7 @@ class AppLogger(object):
     a message to the `fluentd` driver in a specific format depending on the
     data type of the message.
     """
+
     def __init__(self, name: str, level: int = NOTSET):
         """Instantiate the `FluentdLogger` instance with optional values
         passed in.

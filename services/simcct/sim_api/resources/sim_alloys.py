@@ -13,7 +13,6 @@ __author__ = [
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'MIT'
 __version__ = '1.0.0'
-
 __status__ = 'production'
 __date__ = '2019.08.03'
 """sim_alloys.py: 
@@ -28,13 +27,17 @@ from marshmallow import ValidationError
 
 from arc_logging import AppLogger
 from sim_api.extensions import api, apm
+from sim_api.extensions.utilities import (
+    DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
+    MissingElementError, ElementWeightInvalid
+)
 from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.schemas import (
     AlloySchema, AlloyStoreSchema, ConfigurationsSchema
 )
-from simulation.simconfiguration import SimConfiguration as SimConfig
-from simulation.utilities import Method, MissingElementError
+from simulation import SimConfiguration as SimConfig
+from simulation import Method
 
 logger = AppLogger(__name__)
 
@@ -126,13 +129,36 @@ class AlloyStore(Resource):
         # Let's validate the Alloy follows our schema
         try:
             valid_alloy = AlloySchema().load(alloy)
+        except ElementSymbolInvalid as e:
+            # Where the symbol used for the element is not valid meaning it
+            # does not exist in a Periodic Table.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element symbol error.'
+            return response, 400
+        except ElementInvalid as e:
+            # If no "symbol" or "weight" passed as an Element object.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element error.'
+            return response, 400
+        except ElementWeightInvalid as e:
+            # If no "symbol" or "weight" passed as an Element object.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element weight error.'
+            return response, 400
         except MissingElementError as e:
-            response['message'] = str(e)
-            logger.exception(response['message'], exc_info=True)
-            apm.capture_exception()
+            # Where the alloy is missing elements we expect to always be
+            # available as they are required downstream in the algorithm.
+            response['error'] = str(e)
+            response['message'] = 'Missing element error.'
+            return response, 400
+        except DuplicateElementError as e:
+            # One of the alloys contains two or more elements with the same
+            # chemical symbol.
+            response['error'] = str(e)
+            response['message'] = 'Alloy contains a duplicate element.'
             return response, 400
         except ValidationError as e:
-            response['errors'] = str(e.messages)
+            response['error'] = str(e.messages)
             response['message'] = 'Alloy failed schema validation.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
@@ -166,7 +192,7 @@ class AlloyStore(Resource):
                 # implemented at all.
                 pass
         except ValidationError as e:
-            response['errors'] = e.messages
+            response['error'] = e.messages
             response['message'] = 'Alloy failed schema validation.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
@@ -176,6 +202,8 @@ class AlloyStore(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.info(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         session_store['alloy_store'] = valid_store
@@ -187,12 +215,13 @@ class AlloyStore(Resource):
                 'Cannot retrieve configurations from session.'
             )
             logger.error(response['message'], stack_info=True)
+            apm.capture_message(response['message'])
             return response, 500
 
         try:
             valid_configs = ConfigurationsSchema().load(session_configs)
         except ValidationError as e:
-            response['errors'] = e.messages
+            response['error'] = e.messages
             response['message'] = (
                 'Validation error for session configurations.'
             )
@@ -231,6 +260,8 @@ class AlloyStore(Resource):
 
         if comp_np_arr is False:
             response['message'] = 'Compositions conversion error.'
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         # We need to store some results so let's prepare an empty dict
@@ -340,6 +371,8 @@ class AlloyStore(Resource):
 
         if isinstance(session_store, str):
             response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         # We get what's currently stored in the session and we update it
@@ -399,8 +432,36 @@ class AlloyStore(Resource):
                 # requirement and Dr. Bendeich often said he did not want this
                 # implemented at all.
                 pass
+        except ElementSymbolInvalid as e:
+            # Where the symbol used for the element is not valid meaning it
+            # does not exist in a Periodic Table.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element symbol error.'
+            return response, 400
+        except ElementInvalid as e:
+            # If no "symbol" or "weight" passed as an Element object.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element error.'
+            return response, 400
+        except ElementWeightInvalid as e:
+            # If no "symbol" or "weight" passed as an Element object.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element weight error.'
+            return response, 400
+        except MissingElementError as e:
+            # Where the alloy is missing elements we expect to always be
+            # available as they are required downstream in the algorithm.
+            response['error'] = str(e)
+            response['message'] = 'Missing element error.'
+            return response, 400
+        except DuplicateElementError as e:
+            # One of the alloys contains two or more elements with the same
+            # chemical symbol.
+            response['error'] = str(e)
+            response['message'] = 'Alloy contains a duplicate element.'
+            return response, 400
         except ValidationError as e:
-            response['errors'] = e.messages
+            response['error'] = e.messages
             response['message'] = 'Alloy failed schema validation.'
             return response, 400
 
@@ -441,6 +502,8 @@ class AlloyStore(Resource):
 
         if comp_np_arr is False:
             response['message'] = 'Compositions conversion error.'
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
             return response, 500
 
         # We need to store some results so let's prepare an empty dict

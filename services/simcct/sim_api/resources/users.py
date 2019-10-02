@@ -160,6 +160,8 @@ class Users(Resource):
             if not user.admin_profile.verified:
                 response['message'] = 'User is not verified as an admin.'
                 response.pop('data')
+                logger.info(response['message'])
+                apm.capture_message(response['message'])
                 return response, 401
 
             # Otherwise, we can proceed to update the admin profile fields.
@@ -195,7 +197,7 @@ class Users(Resource):
             user.save()
         except ValidationError as e:
             response.pop('data')
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Validation error.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
@@ -244,7 +246,7 @@ class UserProfiles(Resource):
             user.last_updated = datetime.utcnow()
             user.save()
         except ValidationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Validation error.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()

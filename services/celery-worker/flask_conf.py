@@ -41,7 +41,7 @@ class BaseConfig:
     # elastic application performance monitoring
     ELASTIC_APM = {
         'SERVER_URL':
-            env.get('ELASTIC_APM_SERVER_URL', 'http://localhost:8200'),
+        env.get('ELASTIC_APM_SERVER_URL', 'http://localhost:8200'),
         'SERVICE_NAME': 'celery',
         'SECRET_TOKEN': env.get('SECRET_TOKEN'),
         'CAPTURE_BODY': 'all',

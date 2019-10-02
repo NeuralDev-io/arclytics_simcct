@@ -33,7 +33,7 @@
 # -----------------------------------------------------------------------------
 __author__ = 'Andrew Che <@codeninja55>'
 __license__ = 'MIT'
-__version__ = '0.3.0'
+__version__ = '0.9.0'
 __status__ = 'development'
 __date__ = '2019.09.21'
 """
@@ -193,7 +193,6 @@ if hasattr(sys, '_getframe'):
     # noinspection PyProtectedMember
     currentframe = lambda: sys._getframe(3)
 else:  # pragma: no cover
-
     def currentframe():
         """Return the frame object for the caller's stack frame."""
         # noinspection PyBroadException
@@ -214,7 +213,7 @@ else:  # pragma: no cover
 # (There's no particular reason for picking addLevelName.)
 #
 
-_srcfile = os.path.normcase(get_remote_fluentd.__code__.co_filename)
+_srcfile = os.path.normcase(check_logpath.__code__.co_filename)
 
 # _srcfile is only used in conjunction with sys._getframe().
 # To provide compatibility with older versions of Python, set _srcfile
@@ -326,9 +325,12 @@ class LogRecord(object):
         )
 
     def get_log_formatted(self):
-        return '{asctime} : {hostname} : {name} : {level_name} : {message}'.format(
+        return ('{asctime} : {hostname} : {name} : {module}.{function} : '
+                '{level_name} : {message}').format(
             asctime=format_time(self),
             hostname=self.hostname,
+            module=self.module,
+            function=self.funcName,
             name=self.name,
             level_name=self.level_name,
             message=str(self.msg)

@@ -25,7 +25,7 @@ from sim_api.schemas import (
 from tests.test_api_base import BaseTestCase, app
 from tests.test_utilities import test_login
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'tests' / 'sim_configs.json'
 
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     test_json = json.load(f)
@@ -65,8 +65,8 @@ class TestSimAlloys(BaseTestCase):
         }
         alloy_store = AlloyStoreSchema().load(store_dict)
 
-        cls.user.last_alloy_store = AlloyStore(**alloy_store)
-        cls.user.last_configuration = Configuration(**configs)
+        cls.user.last_alloy_store = alloy_store
+        cls.user.last_configuration = configs
 
         cls.user.save()
         cls._email = cls.user.email
@@ -106,7 +106,7 @@ class TestSimAlloys(BaseTestCase):
                             'name': 'Bad Alloy',
                             'compositions': [{
                                 'symbol': 'C',
-                                'weight': 1
+                                'weight': 0.7
                             }]
                         }
                     }
@@ -114,11 +114,7 @@ class TestSimAlloys(BaseTestCase):
                 content_type='application/json'
             )
             data = res.json
-            msg = (
-                "Missing elements ['Mn', 'Ni', 'Cr', 'Mo', 'Si', 'Co', 'W', "
-                "'As', 'Fe']"
-            )
-            self.assertEqual(data['message'], msg)
+            self.assertEqual(data['message'], 'Missing element error.')
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 

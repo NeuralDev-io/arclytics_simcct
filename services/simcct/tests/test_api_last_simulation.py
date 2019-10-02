@@ -19,9 +19,12 @@ from flask import current_app as app
 from flask import json
 from mongoengine import get_db
 
-from sim_api.models import AdminProfile, Configuration, User, UserProfile
+from sim_api.models import AdminProfile, User, UserProfile
 from tests.test_api_base import BaseTestCase
 from tests.test_utilities import test_login
+from arc_logging import AppLogger
+
+logger = AppLogger(__name__)
 
 BASE_DIR = os.path.dirname(__file__)
 _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'sim_configs.json'
@@ -116,7 +119,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_empty_json(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
@@ -130,11 +133,16 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_missing_configurations(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
-                data=json.dumps({'alloy_store': ALLOY_STORE}),
+                data=json.dumps(
+                    {
+                        'is_valid': True,
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -149,26 +157,24 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_missing_alloy_store(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
-                data=json.dumps({'configurations': CONFIGS}),
+                data=json.dumps({
+                    'is_valid': True,
+                    'configurations': CONFIGS
+                }),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            # self.assertEqual(
-            #     data['message'], 'Missing Alloy Store in payload.'
-            # )
-            # self.assertEqual(data['status'], 'fail')
-            # self.assert400(res)
             self.assertEqual(data['message'], 'Saved Last Simulation Data.')
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 201)
 
     def test_create_last_invalid_configs_missing(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(_TEST_JSON['configurations'])
 
             configs.pop('method')
@@ -178,6 +184,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': configs,
                         'alloy_store': ALLOY_STORE,
                         'simulation_results': RESULTS
@@ -186,10 +193,7 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            err = (
-                "ValidationError (Configuration:None) (Field is required: "
-                "['method', 'grain_size'])"
-            )
+            err = "{'method': ['A method is required.']}"
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
             self.assertEqual(data['status'], 'fail')
@@ -197,7 +201,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_configs_bad_method(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(CONFIGS)
             configs['method'] = 'KirkaldyAndLi2019'
 
@@ -205,6 +209,32 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
+                        'configurations': configs,
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': RESULTS
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            err = "{'method': ['Must be one of: Li98, Kirkaldy83.']}"
+            self.assertEqual(data['error'], err)
+            self.assertEqual(data['message'], 'Model schema validation error.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+    def test_create_last_invalid_configs_bad_nuc_start(self):
+        with app.test_client() as client:
+            _ = test_login(client, self.tony.email, self._tony_pw)
+            configs = deepcopy(CONFIGS)
+            configs['nucleation_start'] = -1
+
+            res = client.post(
+                '/api/v1/sim/user/last/simulation',
+                data=json.dumps(
+                    {
+                        'is_valid': True,
                         'configurations': configs,
                         'alloy_store': ALLOY_STORE,
                         'simulation_results': RESULTS
@@ -214,25 +244,25 @@ class TestLastSimulation(BaseTestCase):
             )
             data = json.loads(res.data.decode())
             err = (
-                "ValidationError (Configuration:None) (Value must be one of "
-                "('Li98', 'Kirkaldy83'): ['method'])"
+                "{'nucleation_start': ['Nucleation start must be "
+                "more than 0.0.']}"
             )
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
-    def test_create_last_invalid_configs_bad_nuc(self):
+    def test_create_last_invalid_configs_bad_nuc_finish(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(CONFIGS)
-            configs['nucleation_start'] = -1
             configs['nucleation_finish'] = 101
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': configs,
                         'alloy_store': ALLOY_STORE,
                         'simulation_results': RESULTS
@@ -242,9 +272,8 @@ class TestLastSimulation(BaseTestCase):
             )
             data = json.loads(res.data.decode())
             err = (
-                "ValidationError (Configuration:None) (Must be more than 0.0.:"
-                " ['nucleation_start'] Must be less than 100.0.: "
-                "['nucleation_finish'])"
+                "{'nucleation_finish': ['Nucleation finish cannot be more "
+                "than 99.99.']}"
             )
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
@@ -253,18 +282,15 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_configs_negative_trans_temps(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(CONFIGS)
             configs['ms_temp'] = -1
-            configs['ms_rate_param'] = -1
-            configs['bs_temp'] = -1
-            configs['ae1_temp'] = -1
-            configs['ae3_temp'] = -1
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': configs,
                         'alloy_store': ALLOY_STORE,
                         'simulation_results': RESULTS
@@ -274,9 +300,7 @@ class TestLastSimulation(BaseTestCase):
             )
             data = json.loads(res.data.decode())
             err = (
-                "ValidationError (Configuration:None) (Cannot be a negative "
-                "number.: ['ms_temp', 'ms_rate_param', 'bs_temp', 'ae1_temp', "
-                "'ae3_temp'])"
+                "{'ms_temp': ['Cannot be negative.']}"
             )
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
@@ -285,7 +309,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_alloy_option(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
 
             alloy_store = {
                 'alloy_option': 'random',
@@ -303,6 +327,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': CONFIGS,
                         'alloy_store': alloy_store,
                         'simulation_results': RESULTS
@@ -311,10 +336,7 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            err = (
-                "ValidationError (AlloyStore:None) (Value must be one of "
-                "('single', 'mix'): ['alloy_option'])"
-            )
+            err = "{'alloy_option': ['Must be one of: single, mix.']}"
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
             self.assertEqual(data['status'], 'fail')
@@ -322,7 +344,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_alloy_missing_elem(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             comp = deepcopy(COMP)
             del comp[-1]
 
@@ -342,6 +364,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': CONFIGS,
                         'alloy_store': alloy_store,
                         'simulation_results': RESULTS
@@ -357,7 +380,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_alloy_bad_elem(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             comp = deepcopy(COMP)
             comp.append({'symbol': 'Vb', 'weight': 0.0})
 
@@ -377,6 +400,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': CONFIGS,
                         'alloy_store': alloy_store,
                         'simulation_results': RESULTS
@@ -396,7 +420,7 @@ class TestLastSimulation(BaseTestCase):
 
     def test_create_last_invalid_alloy_bad_elem_weight(self):
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            _ = test_login(client, self.tony.email, self._tony_pw)
             comp = deepcopy(COMP)
             comp.append({'symbol': 'Li', 'weight': -1})
 
@@ -416,6 +440,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': CONFIGS,
                         'alloy_store': alloy_store,
                         'simulation_results': RESULTS
@@ -424,25 +449,97 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            err = (
-                "ValidationError (AlloyStore:None) (Value must be one of "
-                "('single', 'mix'): ['alloy_option'] parent."
-                "compositions.19.weight.Cannot be a negative number.: "
-                "['alloys'])"
-            )
+            err = "ValidationError (Weight) (Weight must be more than 0.0.)"
             self.assertEqual(data['error'], err)
-            self.assertEqual(data['message'], "Model schema validation error.")
+            self.assertEqual(data['message'], "Invalid element weight error.")
             self.assertEqual(data['status'], 'fail')
             self.assert400(res)
 
-    def test_create_last_alloy_configs(self):
+    def test_create_last_alloy_invalid_configs(self):
+        """Ensure we can save a last configuration that is invalid."""
         with app.test_client() as client:
-            cookie = test_login(client, self.tony.email, self._tony_pw)
+            test_login(client, self.tony.email, self._tony_pw)
+            configs = deepcopy(CONFIGS)
+            configs['nucleation_start'] = -1
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': False,
+                        'configurations': configs,
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': {}
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'], 'Saved Invalid Last Simulation Data.'
+            )
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 201)
+            user = self.tony
+            user.reload()
+
+            self.assertDictEqual(user.last_configuration, configs)
+            self.assertDictEqual(user.last_alloy_store, ALLOY_STORE)
+            self.assertDictEqual(user.last_simulation_results, {})
+
+    def test_create_last_alloy_invalid_alloys(self):
+        """Ensure we can save a last configuration that is invalid."""
+        with app.test_client() as client:
+            test_login(client, self.tony.email, self._tony_pw)
+            comp = deepcopy(COMP)
+            # Carbon can't be more than 0.8 which is invalid
+            comp[0]['weight'] = 0.9
+            alloy_store: dict = {
+                'alloy_option': 'single',
+                'alloys': {
+                    'parent': {
+                        'name': 'Pym Alloy',
+                        'compositions': comp
+                    },
+                    'weld': None,
+                    'mix': None
+                }
+            }
+
+            res = client.post(
+                '/api/v1/sim/user/last/simulation',
+                data=json.dumps(
+                    {
+                        'is_valid': False,
+                        'configurations': {},
+                        'alloy_store': alloy_store,
+                        'simulation_results': {}
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'], 'Saved Invalid Last Simulation Data.'
+            )
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 201)
+            user = self.tony
+            user.reload()
+
+            self.assertDictEqual(user.last_alloy_store, alloy_store)
+            self.assertDictEqual(user.last_configuration, {})
+            self.assertDictEqual(user.last_simulation_results, {})
+
+    def test_create_last_alloy_configs(self):
+        with app.test_client() as client:
+            _ = test_login(client, self.tony.email, self._tony_pw)
+
+            res = client.post(
+                '/api/v1/sim/user/last/simulation',
+                data=json.dumps(
+                    {
+                        'is_valid': True,
                         'configurations': CONFIGS,
                         'alloy_store': ALLOY_STORE,
                         'simulation_results': RESULTS
@@ -457,7 +554,7 @@ class TestLastSimulation(BaseTestCase):
             user = self.tony
             user.reload()
 
-            self.assertDictEqual(user.last_configuration.to_dict(), CONFIGS)
+            self.assertDictEqual(user.last_configuration, CONFIGS)
 
     def test_get_detail_last_no_token(self):
         with app.test_client() as client:
@@ -483,7 +580,7 @@ class TestLastSimulation(BaseTestCase):
             user.verified = True
             user.save()
 
-            cookie = test_login(client, user.email, 'Subatomic!')
+            _ = test_login(client, user.email, 'Subatomic!')
 
             res = client.get(
                 '/api/v1/sim/user/last/simulation',
@@ -509,7 +606,7 @@ class TestLastSimulation(BaseTestCase):
             )
             user.set_password('Subatomic!')
             user.verified = True
-            user.last_configuration = Configuration(**CONFIGS)
+            user.last_configuration = CONFIGS
             user.save()
 
             test_login(client, user.email, 'Subatomic!')
@@ -519,17 +616,106 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            # self.assertEqual(
-            #     data['message'], 'User does not have a last alloy stored.'
-            # )
-            # self.assertEqual(data['status'], 'fail')
-            # self.assert404(res)
             self.assertEqual(data['status'], 'success')
             self.assertEqual(res.status_code, 200)
             self.assertEqual(
-                data['data']['last_configurations']['grain_size'], 8.0
+                data['data']['last_configuration']['grain_size'], 8.0
             )
             user.delete()
+
+    def test_get_last_alloy_default_values(self):
+        """Ensure we can save a last configuration that is the default."""
+
+        default_alloy_store = {
+            'alloy_option': 'single',
+            'alloys': {
+                'parent': None,
+                'weld': None,
+                'mix': None
+            }
+        }
+        default_configuration = {
+            'is_valid': False,
+            'method': 'Li98',
+            'grain_size': 8.0,
+            'nucleation_start': 1.0,
+            'nucleation_finish': 99.90,
+            'auto_calculate_ms': True,
+            'ms_temp': 0.0,
+            'ms_rate_param': 0.0,
+            'auto_calculate_bs': True,
+            'bs_temp': 0.0,
+            'auto_calculate_ae': True,
+            'ae1_temp': 0.0,
+            'ae3_temp': 0.0,
+            'start_temp': 900,
+            'cct_cooling_rate': 10
+        }
+
+        with app.test_client() as client:
+            test_login(client, self.tony.email, self._tony_pw)
+            # By default, when the user logs in and they have no previous
+            # configurations or alloy store saved, then they will get the
+            # default during login with the `SimSessionService.new_session`
+            res = client.get(
+                '/api/v1/sim/user/last/simulation',
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'],
+                'User does not have a last configurations or alloy store.'
+            )
+            self.assertEqual(data['status'], 'fail')
+            self.assertIsNone(data.get('data', None))
+            self.assert404(res)
+            from sim_api.extensions.SimSession import SimSessionService
+            session_store = SimSessionService().load_session()
+            self.assertDictEqual(
+                session_store['configurations'], default_configuration
+            )
+            self.assertDictEqual(
+                session_store['alloy_store'], default_alloy_store
+            )
+            self.assertFalse(session_store['results'])
+
+    def test_get_last_alloy_invalid_save(self):
+        """Ensure we can get a last configuration that is invalid."""
+        with app.test_client() as client:
+            test_login(client, self.tony.email, self._tony_pw)
+            res = client.post(
+                '/api/v1/sim/user/last/simulation',
+                data=json.dumps(
+                    {
+                        'is_valid': False,
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': {}
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'], 'Saved Invalid Last Simulation Data.'
+            )
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 201)
+            user = self.tony
+            user.reload()
+
+            self.assertDictEqual(user.last_alloy_store, ALLOY_STORE)
+            self.assertDictEqual(user.last_configuration, CONFIGS)
+            self.assertDictEqual(user.last_simulation_results, {})
+
+            res = client.get(
+                '/api/v1/sim/user/last/simulation',
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'success')
+            self.assertTrue(data.get('data', None))
+            self.assertDictEqual(data['data']['last_configuration'], CONFIGS)
 
     def test_get_detail_last_success(self):
         with app.test_client() as client:
@@ -539,6 +725,7 @@ class TestLastSimulation(BaseTestCase):
                 '/api/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
+                        'is_valid': True,
                         'configurations': CONFIGS,
                         'alloy_store': ALLOY_STORE,
                         'simulation_results': RESULTS
@@ -556,15 +743,14 @@ class TestLastSimulation(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
             self.assertTrue(data.get('data', None))
-            self.assertDictEqual(data['data']['last_configurations'], CONFIGS)
+            self.assertDictEqual(data['data']['last_configuration'], CONFIGS)
 
-            expected_alloy_store = deepcopy(ALLOY_STORE)
-            _id = data['data']['last_alloy_store']['alloys']['parent']['_id']
-            expected_alloy_store['alloys']['parent']['_id'] = _id
-            self.assertDictEqual(
-                data['data']['last_alloy_store'], expected_alloy_store
-            )
+            _name = data['data']['last_alloy_store']['alloys']['parent']['name']
             self.assert200(res)
+            self.assertEqual(
+                data['data']['last_alloy_store']['alloys']['parent']['name'],
+                _name
+            )
 
 
 if __name__ == '__main__':

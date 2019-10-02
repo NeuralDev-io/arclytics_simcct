@@ -492,6 +492,19 @@ class TestLastSimulation(BaseTestCase):
         with app.test_client() as client:
             test_login(client, self.tony.email, self._tony_pw)
             comp = deepcopy(COMP)
+            # Carbon can't be more than 0.8 which is invalid
+            comp[0]['weight'] = 0.9
+            alloy_store: dict = {
+                'alloy_option': 'single',
+                'alloys': {
+                    'parent': {
+                        'name': 'Pym Alloy',
+                        'compositions': comp
+                    },
+                    'weld': None,
+                    'mix': None
+                }
+            }
 
             res = client.post(
                 '/api/v1/sim/user/last/simulation',
@@ -499,7 +512,7 @@ class TestLastSimulation(BaseTestCase):
                     {
                         'is_valid': False,
                         'configurations': {},
-                        'alloy_store': ALLOY_STORE,
+                        'alloy_store': alloy_store,
                         'simulation_results': {}
                     }
                 ),
@@ -514,8 +527,8 @@ class TestLastSimulation(BaseTestCase):
             user = self.tony
             user.reload()
 
-            self.assertDictEqual(user.last_configuration, configs)
-            self.assertDictEqual(user.last_alloy_store, ALLOY_STORE)
+            self.assertDictEqual(user.last_alloy_store, alloy_store)
+            self.assertDictEqual(user.last_configuration, {})
             self.assertDictEqual(user.last_simulation_results, {})
 
     def test_create_last_alloy_configs(self):
@@ -609,6 +622,100 @@ class TestLastSimulation(BaseTestCase):
                 data['data']['last_configuration']['grain_size'], 8.0
             )
             user.delete()
+
+    def test_get_last_alloy_default_values(self):
+        """Ensure we can save a last configuration that is the default."""
+
+        default_alloy_store = {
+            'alloy_option': 'single',
+            'alloys': {
+                'parent': None,
+                'weld': None,
+                'mix': None
+            }
+        }
+        default_configuration = {
+            'is_valid': False,
+            'method': 'Li98',
+            'grain_size': 8.0,
+            'nucleation_start': 1.0,
+            'nucleation_finish': 99.90,
+            'auto_calculate_ms': True,
+            'ms_temp': 0.0,
+            'ms_rate_param': 0.0,
+            'auto_calculate_bs': True,
+            'bs_temp': 0.0,
+            'auto_calculate_ae': True,
+            'ae1_temp': 0.0,
+            'ae3_temp': 0.0,
+            'start_temp': 900,
+            'cct_cooling_rate': 10
+        }
+
+        with app.test_client() as client:
+            test_login(client, self.tony.email, self._tony_pw)
+            # By default, when the user logs in and they have no previous
+            # configurations or alloy store saved, then they will get the
+            # default during login with the `SimSessionService.new_session`
+            res = client.get(
+                '/api/v1/sim/user/last/simulation',
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'],
+                'User does not have a last configurations or alloy store.'
+            )
+            self.assertEqual(data['status'], 'fail')
+            self.assertIsNone(data.get('data', None))
+            self.assert404(res)
+            from sim_api.extensions.SimSession import SimSessionService
+            session_store = SimSessionService().load_session()
+            self.assertDictEqual(
+                session_store['configurations'], default_configuration
+            )
+            self.assertDictEqual(
+                session_store['alloy_store'], default_alloy_store
+            )
+            self.assertFalse(session_store['results'])
+
+    def test_get_last_alloy_invalid_save(self):
+        """Ensure we can get a last configuration that is invalid."""
+        with app.test_client() as client:
+            test_login(client, self.tony.email, self._tony_pw)
+            res = client.post(
+                '/api/v1/sim/user/last/simulation',
+                data=json.dumps(
+                    {
+                        'is_valid': False,
+                        'configurations': CONFIGS,
+                        'alloy_store': ALLOY_STORE,
+                        'simulation_results': {}
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'], 'Saved Invalid Last Simulation Data.'
+            )
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 201)
+            user = self.tony
+            user.reload()
+
+            self.assertDictEqual(user.last_alloy_store, ALLOY_STORE)
+            self.assertDictEqual(user.last_configuration, CONFIGS)
+            self.assertDictEqual(user.last_simulation_results, {})
+
+            res = client.get(
+                '/api/v1/sim/user/last/simulation',
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['status'], 'success')
+            self.assertTrue(data.get('data', None))
+            self.assertDictEqual(data['data']['last_configuration'], CONFIGS)
 
     def test_get_detail_last_success(self):
         with app.test_client() as client:

@@ -4,10 +4,11 @@ import { connect } from 'react-redux'
 import PlusIcon from 'react-feather/dist/icons/plus'
 import EditIcon from 'react-feather/dist/icons/edit-3'
 import SlashIcon from 'react-feather/dist/icons/slash'
+import PromoteIcon from 'react-feather/dist/icons/user-check'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import Table from '../../elements/table'
-import { getUsers } from '../../../state/ducks/users/actions'
+import { getUsers, promoteAdmin } from '../../../state/ducks/users/actions'
 
 import styles from './ManageUsers.module.scss'
 
@@ -24,6 +25,11 @@ class ManageUsers extends Component {
     if (users.length === 0) getUsersConnect()
   }
 
+  async handlePromote (email) {
+    const { getUsersConnect, promoteAdminConnect} = this.props
+    await promoteAdminConnect(email)
+    await getUsersConnect()
+  }
   render() {
     const { searchEmail } = this.state
     const { users } = this.props
@@ -62,9 +68,20 @@ class ManageUsers extends Component {
             >
               Edit
             </Button>
+
+            <Button
+              onClick={() => {this.handlePromote(original.email)}}
+              appearance="text"
+              IconComponent={props => <PromoteIcon {...props}/>}
+              isDisabled={original.admin}
+            >
+              Promote
+            </Button>
+
             <Button
               onClick={() => console.log(original)}
               appearance="text"
+              isDisabled={original.admin}
               color={original.active ? 'dangerous' : 'default'}
               IconComponent={props => <SlashIcon {...props} />}
             >
@@ -126,6 +143,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   getUsersConnect: getUsers,
+  promoteAdminConnect: promoteAdmin
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ManageUsers)

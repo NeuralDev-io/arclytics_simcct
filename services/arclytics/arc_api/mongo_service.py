@@ -16,6 +16,7 @@ __date__ = '2019.10.03'
 {Description}
 """
 
+from typing import Union
 from os import environ as env
 
 import pandas as pd
@@ -44,19 +45,31 @@ class MongoService():
             self,
             db_name: str = 'arc_dev',
             collection: str = '',
-            no_id: bool = True
-    ) -> pd.DataFrame:
+            query: dict = None,
+            projections: dict = None,
+    ) -> Union[pd.DataFrame, None]:
+
+        if query is None:
+            return None
+
         db = self.conn[db_name]
 
-        # Exclude the _id in the list
-        projection_cols = {'profile': True, '_id': False}
         # Make a query to the specific DB and Collection
-        cursor = db[collection].find({}, projection=projection_cols)
+        cursor = db[collection].find(query, projection=projections)
 
         # Expand the cursor and construct the DataFrame
         df = pd.DataFrame(list(cursor))
 
         return df
 
-    def read_aggregation(self):
-        pass
+    def read_aggregation(
+            self, db_name: str, collection: str, pipeline: list = None
+    ):
+
+        if not pipeline:
+            return None
+
+        db = self.conn[db_name]
+        cursor = db[collection].aggregate(pipeline=pipeline)
+
+        return pd.DataFrame(list(cursor))

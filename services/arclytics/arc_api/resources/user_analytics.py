@@ -56,9 +56,22 @@ class UserProfileData(Resource):
     # method_decorators = {'get': [authorize_admin_cookie_restful]}
 
     def get(self) -> Tuple[dict, int]:
-        df = MongoService().read_mongo('arc_dev', 'users')
-        profiles = df['profile'].dropna()
-        return {'profiles': profiles.to_dict(), 'dataframe': df.to_dict()}, 200
+
+        pipeline = [
+            {'$unwind': '$profile'},
+            {
+                '$project': {
+                    'aim': '$profile.aim',
+                    'highest_education': '$profile.highest_education',
+                    'sci_tech_exp': '$profile.sci_tech_exp',
+                    'phase_transform_exp': '$profile.phase_transform_exp',
+                    '_id': 0
+                }
+            },
+        ]
+
+        df = MongoService().read_aggregation('arc_dev', 'users', pipeline)
+        return {'profiles': df.to_dict()}, 200
 
 
 api.add_resource(UserLoginData, '/v1/arc/users/login/live')

@@ -396,6 +396,10 @@ services:
       - 8888
     environment:
       - NB_USER=arclytics
+      - NB_UID=1000
+      - NB_GID=100
+      - NB_UMASK=002
+      - JUPYTER_ENABLE_LAB=yes
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
       - MONGO_URI=mongodb://mongodb:27017
       - REDIS_URI=redis://redis:6379

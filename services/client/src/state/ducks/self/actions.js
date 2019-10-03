@@ -206,11 +206,13 @@ export const changePassword = values => (dispatch) => {
 
 /**
  * API call to `users` server to save a new saved simulation for the user.
- * User's are identified by the JWT token passed as an Authorization header.
+ * This function will only be called when the configurations are valid
+ * and the simulation has been run
  */
 export const saveSimulation = () => (dispatch, getState) => {
   // first, get sim alloys and configs from state
   const { configurations, alloys, results } = getState().sim
+
   const alloyStore = {
     alloy_option: alloys.alloyOption,
     alloys: {
@@ -366,6 +368,8 @@ export const saveLastSim = () => (dispatch, getState) => {
   const alloyError = alloys.parentError
   const configError = configurations.error
 
+  const isValid = Object.keys(alloyError).length !== 0 && Object.keys(configError) !== 0
+
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/last/simulation`, {
     method: 'POST',
     credentials: 'include',
@@ -373,6 +377,7 @@ export const saveLastSim = () => (dispatch, getState) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
+      is_valid: isValid,
       configurations: validConfigs,
       alloy_store: alloyStore,
       simulation_results: simResults,

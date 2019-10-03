@@ -1,11 +1,10 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-// import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
-// import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
 import CompForm from './CompForm'
 import CompTable from './CompTable'
 import Button from '../../elements/button'
+import TimeTravelButtons from './TimeTravelButtons'
 import { runSim } from '../../../state/ducks/sim/actions'
 
 import styles from './CompSidebar.module.scss'
@@ -46,6 +45,7 @@ class CompSidebar extends Component {
           >
             {showSettings ? 'Collapse' : 'Expand'}
           </Button> */}
+          <TimeTravelButtons />
         </header>
         <div style={{ display: showSettings ? 'block' : 'none' }}>
           <CompForm

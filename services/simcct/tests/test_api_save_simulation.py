@@ -110,7 +110,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/api/v1/sim/user/simulation',
+                '/v1/sim/user/simulation',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -125,7 +125,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/api/v1/sim/user/simulation',
+                '/v1/sim/user/simulation',
                 data=json.dumps({'alloy_store': ALLOY_STORE}),
                 content_type='application/json'
             )
@@ -142,7 +142,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/api/v1/sim/user/simulation',
+                '/v1/sim/user/simulation',
                 data=json.dumps({'configurations': CONFIGS}),
                 content_type='application/json'
             )
@@ -162,7 +162,7 @@ class TestSaveSimulationService(BaseTestCase):
             del alloy_store['alloys']['parent']['compositions'][-1]
 
             res = client.post(
-                '/api/v1/sim/user/simulation',
+                '/v1/sim/user/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -192,7 +192,7 @@ class TestSaveSimulationService(BaseTestCase):
             )
 
             res = client.post(
-                '/api/v1/sim/user/simulation',
+                '/v1/sim/user/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -217,7 +217,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/api/v1/sim/user/simulation',
+                '/v1/sim/user/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -255,7 +255,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.get(
-                '/api/v1/sim/user/simulation', content_type='application/json'
+                '/v1/sim/user/simulation', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'fail')
@@ -288,7 +288,7 @@ class TestSaveSimulationService(BaseTestCase):
             ).save()
 
             res = client.get(
-                '/api/v1/sim/user/simulation', content_type='application/json'
+                '/v1/sim/user/simulation', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
@@ -316,7 +316,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.get(
-                '/api/v1/sim/user/simulation/BadObjectId',
+                '/v1/sim/user/simulation/BadObjectId',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -330,7 +330,7 @@ class TestSaveSimulationService(BaseTestCase):
             sim_id = ObjectId()
 
             res = client.get(
-                f'/api/v1/sim/user/simulation/{sim_id}',
+                f'/v1/sim/user/simulation/{sim_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -349,7 +349,7 @@ class TestSaveSimulationService(BaseTestCase):
             ).save()
 
             res = client.get(
-                f'/api/v1/sim/user/simulation/{saved_sim.id}',
+                f'/v1/sim/user/simulation/{saved_sim.id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -369,7 +369,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.delete(
-                '/api/v1/sim/user/simulation/BadObjectId',
+                '/v1/sim/user/simulation/BadObjectId',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -383,7 +383,7 @@ class TestSaveSimulationService(BaseTestCase):
             sim_id = ObjectId()
 
             res = client.delete(
-                f'/api/v1/sim/user/simulation/{sim_id}',
+                f'/v1/sim/user/simulation/{sim_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -402,7 +402,7 @@ class TestSaveSimulationService(BaseTestCase):
             ).save()
 
             res = client.delete(
-                f'/api/v1/sim/user/simulation/{saved_sim.id}',
+                f'/v1/sim/user/simulation/{saved_sim.id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())

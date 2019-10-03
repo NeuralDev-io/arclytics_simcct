@@ -18,7 +18,7 @@ from flask import json
 from arc_api.extensions import API_TOKEN_NAME
 
 GMT_DATETIME_FORMAT = "%a, %d-%b-%Y %H:%M:%S GMT"
-URL_PREFIX = env.get('SIMCCT_HOST', 'http://localhost:8000/api/v1/sim')
+URL_PREFIX = env.get('SIMCCT_HOST', 'http://localhost:8000/v1/sim')
 
 
 def get_mongo_uri():

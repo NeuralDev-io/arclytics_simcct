@@ -222,4 +222,4 @@ class Simulation(Resource):
         return response, 200
 
 
-api.add_resource(Simulation, '/api/v1/sim/simulate')
+api.add_resource(Simulation, '/v1/sim/simulate')

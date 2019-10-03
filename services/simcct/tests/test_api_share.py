@@ -62,7 +62,7 @@ class TestShareService(BaseTestCase):
     #         client, email='luke@skywalker.io', password='IronHeart!'
     # ):
     #     client.post(
-    #         '/api/v1/sim/auth/login',
+    #         '/v1/sim/auth/login',
     #         data=json.dumps({
     #             'email': email,
     #             'password': password
@@ -92,7 +92,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp = self.client.post(
-                '/api/v1/sim/user/share/simulation/link',
+                '/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -135,7 +135,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp = client.post(
-                '/api/v1/sim/user/share/simulation/link',
+                '/v1/sim/user/share/simulation/link',
                 data=json.dumps(''),
                 content_type='application/json'
             )
@@ -173,7 +173,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp = client.post(
-                '/api/v1/sim/user/share/simulation/link',
+                '/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -214,7 +214,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp = client.post(
-                '/api/v1/sim/user/share/simulation/link',
+                '/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -254,7 +254,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp = client.post(
-                '/api/v1/sim/user/share/simulation/link',
+                '/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -300,7 +300,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp = client.post(
-                '/api/v1/sim/user/share/simulation/link',
+                '/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -338,7 +338,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp = client.post(
-                '/api/v1/sim/user/share/simulation/link',
+                '/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -379,7 +379,7 @@ class TestShareService(BaseTestCase):
     #     with self.client as client:
     #         test_login(client, luke.email, 'NeverJoinYou')
     #         resp = client.post(
-    #             '/api/v1/sim/user/share/simulation/email',
+    #             '/v1/sim/user/share/simulation/email',
     #             data=json.dumps(
     #                 {
     #                     # 'emails': ['davidmatthews1004@gmail.com'],
@@ -430,7 +430,7 @@ class TestShareService(BaseTestCase):
     #     with self.client as client:
     #         test_login(client, luke.email, 'NeverJoinYou')
     #         resp = client.post(
-    #             '/api/v1/sim/user/share/simulation/email',
+    #             '/v1/sim/user/share/simulation/email',
     #             data=json.dumps(
     #                 {
     #                     # 'emails': ['davidmatthews1004@gmail.com'],
@@ -480,7 +480,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp = client.post(
-                '/api/v1/sim/user/share/simulation/email',
+                '/v1/sim/user/share/simulation/email',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -516,7 +516,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp = client.post(
-                '/api/v1/sim/user/share/simulation/email',
+                '/v1/sim/user/share/simulation/email',
                 data=json.dumps(
                     {
                         'emails': [1234],
@@ -555,7 +555,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp = client.post(
-                '/api/v1/sim/user/share/simulation/email',
+                '/v1/sim/user/share/simulation/email',
                 data=json.dumps(
                     {
                         'emails': ['invalidemail@com'],
@@ -592,7 +592,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp = client.post(
-                '/api/v1/sim/user/share/simulation/email',
+                '/v1/sim/user/share/simulation/email',
                 data=json.dumps(
                     {
                         'emails':
@@ -630,7 +630,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp_create_link = self.client.post(
-                '/api/v1/sim/user/share/simulation/link',
+                '/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -679,7 +679,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp_create = client.post(
-                '/api/v1/sim/user/share/simulation/link',
+                '/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -789,7 +789,7 @@ class TestShareService(BaseTestCase):
         with self.client as client:
             test_login(client, luke.email, 'NeverJoinYou')
             resp_create = client.post(
-                '/api/v1/sim/user/share/simulation/link',
+                '/v1/sim/user/share/simulation/link',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,

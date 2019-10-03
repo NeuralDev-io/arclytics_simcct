@@ -157,7 +157,7 @@ services:
       - FLASK_ENV=development
       - APP_SETTINGS=configs.flask_conf.DevelopmentConfig
       - SECRET_KEY=${SECRET_KEY}
-      - SIMCCT_HOST=http://simcct:8000/api/v1/sim
+      - SIMCCT_HOST=http://simcct:8000/v1/sim
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}

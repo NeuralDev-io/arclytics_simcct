@@ -163,8 +163,8 @@ client() {
 
 # run all tests
 all() {
-    # arcTest
     simcct
+    arcTest
     # client
     # e2e
 }

@@ -63,7 +63,7 @@ class TestForgotPassword(BaseTestCase):
         """Ensure an empty request body fails during reset password."""
         with app.test_client() as client:
             res = client.post(
-                '/api/v1/sim/reset/password',
+                '/v1/sim/reset/password',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -76,7 +76,7 @@ class TestForgotPassword(BaseTestCase):
         """Ensure a request body without email fails."""
         with app.test_client() as client:
             res = client.post(
-                '/api/v1/sim/reset/password',
+                '/v1/sim/reset/password',
                 data=json.dumps(
                     {'address': '123 Forgetful Street, Old Town, 2222'}
                 ),
@@ -91,7 +91,7 @@ class TestForgotPassword(BaseTestCase):
         """Ensure if an invalid email we receive an error from validation."""
         with app.test_client() as client:
             res = client.post(
-                '/api/v1/sim/reset/password',
+                '/v1/sim/reset/password',
                 data=json.dumps({'email': 'bademail@nodomain'}),
                 content_type='application/json'
             )
@@ -119,7 +119,7 @@ class TestForgotPassword(BaseTestCase):
             # self.assertEqual(data['message'], 'Invalid email.')
 
             res = client.post(
-                '/api/v1/sim/reset/password',
+                '/v1/sim/reset/password',
                 data=json.dumps({'email': 'bademailatyahoo.com'}),
                 content_type='application/json'
             )
@@ -136,7 +136,7 @@ class TestForgotPassword(BaseTestCase):
         """Ensure if the user does not exist we don't send an email."""
         with app.test_client() as client:
             res = client.post(
-                '/api/v1/sim/reset/password',
+                '/v1/sim/reset/password',
                 data=json.dumps({'email': 'carol@systemssecurity.com'}),
                 content_type='application/json'
             )
@@ -158,7 +158,7 @@ class TestForgotPassword(BaseTestCase):
 
         with app.test_client() as client:
             res = client.post(
-                '/api/v1/sim/reset/password',
+                '/v1/sim/reset/password',
                 data=json.dumps({'email': 'loki@asgard.space'}),
                 content_type='application/json'
             )
@@ -178,7 +178,7 @@ class TestForgotPassword(BaseTestCase):
         user.save()
         with app.test_client() as client:
             res = client.post(
-                '/api/v1/sim/reset/password',
+                '/v1/sim/reset/password',
                 data=json.dumps({'email': email}),
                 content_type='application/json',
             )
@@ -239,7 +239,7 @@ class TestForgotPassword(BaseTestCase):
         """Ensure if no token is provided it fails."""
         with app.test_client() as client:
             res = client.put(
-                '/api/v1/sim/auth/password/reset',
+                '/v1/sim/auth/password/reset',
                 data=json.dumps({}),  # token will fail before data
                 content_type='application/json'
             )
@@ -255,7 +255,7 @@ class TestForgotPassword(BaseTestCase):
         token = ''
         with app.test_client() as client:
             res = client.put(
-                '/api/v1/sim/auth/password/reset',
+                '/v1/sim/auth/password/reset',
                 data=json.dumps({}),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
@@ -273,7 +273,7 @@ class TestForgotPassword(BaseTestCase):
             _, jwt_token, user = self.preprocess_reset_password(client)
 
             res = client.put(
-                '/api/v1/sim/auth/password/reset',
+                '/v1/sim/auth/password/reset',
                 data=json.dumps({}),
                 headers={'Authorization': f'Bearer {jwt_token}'},
                 content_type='application/json'
@@ -291,13 +291,13 @@ class TestForgotPassword(BaseTestCase):
 
             # Both requests have one or the other required request body
             res1 = client.put(
-                '/api/v1/sim/auth/password/reset',
+                '/v1/sim/auth/password/reset',
                 data=json.dumps({'password': 'IDontNeedToConfirm'}),
                 headers={'Authorization': f'Bearer {jwt_token}'},
                 content_type='application/json'
             )
             res2 = client.put(
-                '/api/v1/sim/auth/password/reset',
+                '/v1/sim/auth/password/reset',
                 data=json.dumps({'confirm_password': 'IDontNeedToConfirm'}),
                 headers={'Authorization': f'Bearer {jwt_token}'},
                 content_type='application/json'
@@ -311,7 +311,7 @@ class TestForgotPassword(BaseTestCase):
             self.assert400(res2)
 
             res3 = client.put(
-                '/api/v1/sim/auth/password/reset',
+                '/v1/sim/auth/password/reset',
                 data=json.dumps(
                     {
                         'password': 'short',
@@ -331,7 +331,7 @@ class TestForgotPassword(BaseTestCase):
             _, jwt_token, user = self.preprocess_reset_password(client)
 
             res = client.put(
-                '/api/v1/sim/auth/password/reset',
+                '/v1/sim/auth/password/reset',
                 data=json.dumps(
                     {
                         'password': 'NewPassword',
@@ -353,7 +353,7 @@ class TestForgotPassword(BaseTestCase):
             user.save()
 
             res = client.put(
-                '/api/v1/sim/auth/password/reset',
+                '/v1/sim/auth/password/reset',
                 data=json.dumps(
                     {
                         'password': 'NewPassword',
@@ -376,7 +376,7 @@ class TestForgotPassword(BaseTestCase):
             new_pw = 'IAmFrankCastelleone'
 
             res = client.put(
-                '/api/v1/sim/auth/password/reset',
+                '/v1/sim/auth/password/reset',
                 data=json.dumps(
                     {
                         'password': new_pw,
@@ -408,7 +408,7 @@ class TestForgotPassword(BaseTestCase):
 
         with app.test_client() as client:
             res = client.post(
-                '/api/v1/sim/reset/password',
+                '/v1/sim/reset/password',
                 data=json.dumps({'email': test_email}),
                 content_type='application/json'
             )

@@ -372,7 +372,7 @@ def view_shared_simulation(token):
     return jsonify(response), 200
 
 
-api.add_resource(ShareSimulationLink, '/api/v1/sim/user/share/simulation/link')
+api.add_resource(ShareSimulationLink, '/v1/sim/user/share/simulation/link')
 api.add_resource(
-    ShareSimulationEmail, '/api/v1/sim/user/share/simulation/email'
+    ShareSimulationEmail, '/v1/sim/user/share/simulation/email'
 )

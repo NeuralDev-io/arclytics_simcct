@@ -101,7 +101,7 @@ class TestSimConfigurations(BaseTestCase):
 
     def logout_client(self, client):
         resp_login = client.get(
-            '/api/v1/sim/auth/logout',
+            '/v1/sim/auth/logout',
             content_type='application/json',
             environ_base={'REMOTE_ADDR': '127.0.0.1'}
         )
@@ -116,7 +116,7 @@ class TestSimConfigurations(BaseTestCase):
 
             # Don't need data in any of these as Middleware should go first.
             res = client.patch(
-                '/api/v1/sim/configs/update',
+                '/v1/sim/configs/update',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -126,7 +126,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assert401(res)
 
             res = client.put(
-                '/api/v1/sim/configs/method/update',
+                '/v1/sim/configs/method/update',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -136,7 +136,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assert401(res)
 
             res = client.get(
-                '/api/v1/sim/configs/ms',
+                '/v1/sim/configs/ms',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -146,7 +146,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assert401(res)
 
             res = client.put(
-                '/api/v1/sim/configs/ms',
+                '/v1/sim/configs/ms',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -156,7 +156,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assert401(res)
 
             res = client.get(
-                '/api/v1/sim/configs/bs',
+                '/v1/sim/configs/bs',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -166,7 +166,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assert401(res)
 
             res = client.put(
-                '/api/v1/sim/configs/bs',
+                '/v1/sim/configs/bs',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -176,7 +176,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assert401(res)
 
             res = client.get(
-                '/api/v1/sim/configs/ae',
+                '/v1/sim/configs/ae',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -186,7 +186,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assert401(res)
 
             res = client.put(
-                '/api/v1/sim/configs/ae',
+                '/v1/sim/configs/ae',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -202,7 +202,7 @@ class TestSimConfigurations(BaseTestCase):
 
             method = 'Kirkaldy83'
             res = client.put(
-                '/api/v1/sim/configs/method/update',
+                '/v1/sim/configs/method/update',
                 data=json.dumps({'method': method}),
                 content_type='application/json'
             )
@@ -217,7 +217,7 @@ class TestSimConfigurations(BaseTestCase):
 
             method = 'Li98'
             res = client.put(
-                '/api/v1/sim/configs/method/update',
+                '/v1/sim/configs/method/update',
                 data=json.dumps({'method': method}),
                 content_type='application/json'
             )
@@ -236,7 +236,7 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res = client.get(
-                '/api/v1/sim/configs/ms', content_type='application/json'
+                '/v1/sim/configs/ms', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             session_store = SimSessionService().load_session()
@@ -257,7 +257,7 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res = client.get(
-                '/api/v1/sim/configs/bs', content_type='application/json'
+                '/v1/sim/configs/bs', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             session_store = SimSessionService().load_session()
@@ -277,7 +277,7 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res = client.get(
-                '/api/v1/sim/configs/ae',
+                '/v1/sim/configs/ae',
                 data=json.dumps({'auto_calculate_ae': True}),
                 content_type='application/json'
             )
@@ -308,7 +308,7 @@ class TestSimConfigurations(BaseTestCase):
 
             method = 'Kirkaldy83'
             res = client.put(
-                '/api/v1/sim/configs/method/update',
+                '/v1/sim/configs/method/update',
                 data=json.dumps({'method': method}),
                 content_type='application/json'
             )
@@ -327,7 +327,7 @@ class TestSimConfigurations(BaseTestCase):
 
             method = 'Kirkaldy83'
             res = client.put(
-                '/api/v1/sim/configs/method/update',
+                '/v1/sim/configs/method/update',
                 data=json.dumps({'method': method}),
                 content_type='application/json'
             )
@@ -342,7 +342,7 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res = client.put(
-                '/api/v1/sim/configs/method/update',
+                '/v1/sim/configs/method/update',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -352,7 +352,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
 
             res = client.patch(
-                '/api/v1/sim/alloys/update',
+                '/v1/sim/alloys/update',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -362,7 +362,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
 
             res = client.patch(
-                '/api/v1/sim/configs/update',
+                '/v1/sim/configs/update',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -376,7 +376,7 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res = client.put(
-                '/api/v1/sim/configs/method/update',
+                '/v1/sim/configs/method/update',
                 data=json.dumps({'method': ''}),
                 content_type='application/json'
             )
@@ -390,7 +390,7 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res = client.put(
-                '/api/v1/sim/configs/method/update',
+                '/v1/sim/configs/method/update',
                 data=json.dumps({'method': 'AndrewMethod!'}),
                 content_type='application/json'
             )
@@ -410,7 +410,7 @@ class TestSimConfigurations(BaseTestCase):
             client.set_cookie('localhost', cookie['key'], cookie['value'])
 
             res = client.put(
-                '/api/v1/sim/configs/method/update',
+                '/v1/sim/configs/method/update',
                 data=json.dumps({'method': 'Kirkaldy83'}),
                 content_type='application/json'
             )
@@ -427,14 +427,14 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res_method_update = client.put(
-                '/api/v1/sim/configs/method/update',
+                '/v1/sim/configs/method/update',
                 data=json.dumps({'method': 'Kirkaldy83'}),
                 content_type='application/json'
             )
             self.assert200(res_method_update)
 
             res = client.get(
-                '/api/v1/sim/configs/ms', content_type='application/json'
+                '/v1/sim/configs/ms', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             session_store = SimSessionService().load_session()
@@ -457,14 +457,14 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res_method_update = client.put(
-                '/api/v1/sim/configs/method/update',
+                '/v1/sim/configs/method/update',
                 data=json.dumps({'method': 'Kirkaldy83'}),
                 content_type='application/json'
             )
             self.assert200(res_method_update)
 
             res = client.get(
-                '/api/v1/sim/configs/bs', content_type='application/json'
+                '/v1/sim/configs/bs', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             session_store = SimSessionService().load_session()
@@ -485,7 +485,7 @@ class TestSimConfigurations(BaseTestCase):
 
             # Since this is a patch method and we only want to change 1 thing
             res = client.patch(
-                '/api/v1/sim/configs/update',
+                '/v1/sim/configs/update',
                 data=json.dumps({'start_temp': 901}),
                 content_type='application/json'
             )
@@ -516,7 +516,7 @@ class TestSimConfigurations(BaseTestCase):
         with app.test_client() as client:
             self.login_client(client)
             res = client.patch(
-                '/api/v1/sim/configs/update',
+                '/v1/sim/configs/update',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -539,7 +539,7 @@ class TestSimConfigurations(BaseTestCase):
             client.set_cookie('localhost', cookie['key'], cookie['value'])
 
             res = client.patch(
-                '/api/v1/sim/configs/update',
+                '/v1/sim/configs/update',
                 data=json.dumps(configs),
                 content_type='application/json'
             )
@@ -553,7 +553,7 @@ class TestSimConfigurations(BaseTestCase):
         with app.test_client() as client:
             self.login_client(client)
             res = client.patch(
-                '/api/v1/sim/configs/update',
+                '/v1/sim/configs/update',
                 data=json.dumps({'nuc_start': 123}),
                 content_type='application/json'
             )
@@ -569,7 +569,7 @@ class TestSimConfigurations(BaseTestCase):
         with app.test_client() as client:
             self.login_client(client)
             res = client.put(
-                '/api/v1/sim/configs/ms',
+                '/v1/sim/configs/ms',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -584,7 +584,7 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res = client.put(
-                '/api/v1/sim/configs/bs',
+                '/v1/sim/configs/bs',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -600,7 +600,7 @@ class TestSimConfigurations(BaseTestCase):
             ms_configs = {'ms_rate_param': 0.9}
 
             res = client.put(
-                '/api/v1/sim/configs/ms',
+                '/v1/sim/configs/ms',
                 data=json.dumps(ms_configs),
                 content_type='application/json'
             )
@@ -638,7 +638,7 @@ class TestSimConfigurations(BaseTestCase):
             }
 
             res = client.put(
-                '/api/v1/sim/configs/ms',
+                '/v1/sim/configs/ms',
                 data=json.dumps(ms_configs),
                 content_type='application/json',
                 environ_base={'REMOTE_ADDR': '127.0.0.1'}
@@ -676,7 +676,7 @@ class TestSimConfigurations(BaseTestCase):
             bs_configs = {'bs_temp': 563.238}
 
             res = client.put(
-                '/api/v1/sim/configs/bs',
+                '/v1/sim/configs/bs',
                 data=json.dumps(bs_configs),
                 content_type='application/json',
                 environ_base={'REMOTE_ADDR': '127.0.0.1'}
@@ -698,7 +698,7 @@ class TestSimConfigurations(BaseTestCase):
             }
 
             res = client.put(
-                '/api/v1/sim/configs/ms',
+                '/v1/sim/configs/ms',
                 data=json.dumps(configs),
                 content_type='application/json'
             )
@@ -716,7 +716,7 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res = client.put(
-                '/api/v1/sim/configs/bs',
+                '/v1/sim/configs/bs',
                 data=json.dumps({'bs_temp': 563.238}),
                 content_type='application/json'
             )
@@ -733,7 +733,7 @@ class TestSimConfigurations(BaseTestCase):
             self.login_client(client)
 
             res = client.put(
-                '/api/v1/sim/configs/ae',
+                '/v1/sim/configs/ae',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -751,7 +751,7 @@ class TestSimConfigurations(BaseTestCase):
             }
 
             res = client.put(
-                '/api/v1/sim/configs/ae',
+                '/v1/sim/configs/ae',
                 data=json.dumps(bad_ae_configs),
                 content_type='application/json'
             )
@@ -769,7 +769,7 @@ class TestSimConfigurations(BaseTestCase):
             }
 
             res = client.put(
-                '/api/v1/sim/configs/ae',
+                '/v1/sim/configs/ae',
                 data=json.dumps(bad_ae_configs),
                 content_type='application/json'
             )
@@ -804,7 +804,7 @@ class TestSimConfigurations(BaseTestCase):
             ae_configs = {'ae1_temp': 700.902, 'ae3_temp': 845.838}
 
             res = client.put(
-                '/api/v1/sim/configs/ae',
+                '/v1/sim/configs/ae',
                 data=json.dumps(ae_configs),
                 content_type='application/json',
                 environ_base={'REMOTE_ADDR': '127.0.0.1'}
@@ -823,7 +823,7 @@ class TestSimConfigurations(BaseTestCase):
             new_ae = {'ae1_temp': 700.902, 'ae3_temp': 845.838}
 
             res = client.put(
-                '/api/v1/sim/configs/ae',
+                '/v1/sim/configs/ae',
                 data=json.dumps(new_ae),
                 content_type='application/json'
             )

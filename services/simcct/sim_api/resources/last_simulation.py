@@ -328,4 +328,4 @@ class LastSimulation(Resource):
         return response, 200
 
 
-api.add_resource(LastSimulation, '/api/v1/sim/user/last/simulation')
+api.add_resource(LastSimulation, '/v1/sim/user/last/simulation')

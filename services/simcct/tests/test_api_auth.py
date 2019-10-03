@@ -65,7 +65,7 @@ class TestAuthEndpoints(BaseTestCase):
     def test_user_registration(self):
         """Ensure we can register a user."""
         resp = self.client.post(
-            '/api/v1/sim/auth/register',
+            '/v1/sim/auth/register',
             data=json.dumps(
                 {
                     # 'email': 'andrew@neuraldev.io',
@@ -96,7 +96,7 @@ class TestAuthEndpoints(BaseTestCase):
         user.save()
         with self.client:
             response = self.client.post(
-                '/api/v1/sim/auth/register',
+                '/v1/sim/auth/register',
                 data=json.dumps(
                     {
                         'email': 'green_machine@avengers.io',
@@ -115,7 +115,7 @@ class TestAuthEndpoints(BaseTestCase):
     def test_user_registration_invalid_json(self):
         with self.client:
             response = self.client.post(
-                '/api/v1/sim/auth/register',
+                '/v1/sim/auth/register',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -127,7 +127,7 @@ class TestAuthEndpoints(BaseTestCase):
     def test_user_registration_invalid_json_keys_no_email(self):
         with self.client:
             response = self.client.post(
-                '/api/v1/sim/auth/register',
+                '/v1/sim/auth/register',
                 data=json.dumps(
                     {
                         'first_name': 'Joe',
@@ -147,7 +147,7 @@ class TestAuthEndpoints(BaseTestCase):
     def test_user_registration_invalid_json_keys_invalid_email(self):
         with self.client:
             response = self.client.post(
-                '/api/v1/sim/auth/register',
+                '/v1/sim/auth/register',
                 data=json.dumps(
                     {
                         'email': 'joe@mistakenemail',
@@ -164,7 +164,7 @@ class TestAuthEndpoints(BaseTestCase):
     def test_user_registration_invalid_json_keys_no_password(self):
         with self.client:
             response = self.client.post(
-                '/api/v1/sim/auth/register',
+                '/v1/sim/auth/register',
                 data=json.dumps({'email': 'test@yahoo.com'}),
                 content_type='application/json',
             )
@@ -179,7 +179,7 @@ class TestAuthEndpoints(BaseTestCase):
         """Ensure registration fails with a generic <6 char password."""
         with self.client:
             response = self.client.post(
-                '/api/v1/sim/auth/register',
+                '/v1/sim/auth/register',
                 data=json.dumps(
                     {
                         'email': 'test@yahoo.com',
@@ -274,7 +274,7 @@ class TestAuthEndpoints(BaseTestCase):
             tony.save()
 
             response_peter = self.client.post(
-                '/api/v1/sim/auth/login',
+                '/v1/sim/auth/login',
                 data=json.dumps(
                     {
                         'email': 'spiderman@newavenger.io',
@@ -290,7 +290,7 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(response_peter.status_code, 200)
 
             response_tony = self.client.post(
-                '/api/v1/sim/auth/login',
+                '/v1/sim/auth/login',
                 data=json.dumps(
                     {
                         'email': 'tony@avengers.io',
@@ -309,7 +309,7 @@ class TestAuthEndpoints(BaseTestCase):
         """Ensure if no request body provided it returns appropriate message."""
         with self.client:
             response = self.client.post(
-                '/api/v1/sim/auth/login',
+                '/v1/sim/auth/login',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -333,7 +333,7 @@ class TestAuthEndpoints(BaseTestCase):
         user.save()
         with self.client:
             resp_1 = self.client.post(
-                '/api/v1/sim/auth/login',
+                '/v1/sim/auth/login',
                 data=json.dumps({'password': 'test123'}),
                 content_type='application/json'
             )
@@ -345,7 +345,7 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(resp_1.status_code, 400)
 
             resp_2 = self.client.post(
-                '/api/v1/sim/auth/login',
+                '/v1/sim/auth/login',
                 data=json.dumps({
                     'email': 'war_machine@avengers.io',
                 }),
@@ -358,7 +358,7 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertEqual(resp_2.status_code, 400)
 
             resp_3 = self.client.post(
-                '/api/v1/sim/auth/login',
+                '/v1/sim/auth/login',
                 data=json.dumps(
                     {
                         'email': 'test@test.com',
@@ -387,7 +387,7 @@ class TestAuthEndpoints(BaseTestCase):
             user.set_password('ILoveCassie')
             user.save()
             response = self.client.post(
-                '/api/v1/sim/auth/login',
+                '/v1/sim/auth/login',
                 data=json.dumps(
                     {
                         'email': 'ant_man@avengers.io',
@@ -408,7 +408,7 @@ class TestAuthEndpoints(BaseTestCase):
     def test_not_registered_user_login(self):
         with self.client:
             response = self.client.post(
-                '/api/v1/sim/auth/login',
+                '/v1/sim/auth/login',
                 data=json.dumps(
                     {
                         'email': 'test@test.com',
@@ -435,7 +435,7 @@ class TestAuthEndpoints(BaseTestCase):
         user.save()
         with self.client:
             response = self.client.post(
-                '/api/v1/sim/auth/login',
+                '/v1/sim/auth/login',
                 data=json.dumps(
                     {
                         'email': 'metal_arm@newavengers.io',
@@ -468,7 +468,7 @@ class TestAuthEndpoints(BaseTestCase):
 
             # user login
             resp_login = self.client.post(
-                '/api/v1/sim/auth/login',
+                '/v1/sim/auth/login',
                 data=json.dumps(
                     {
                         'email': 'falcon@newavengers.io',
@@ -479,7 +479,7 @@ class TestAuthEndpoints(BaseTestCase):
             )
             # valid token logout
 
-            response = self.client.get('/api/v1/sim/auth/logout', )
+            response = self.client.get('/v1/sim/auth/logout', )
             data = json.loads(response.data.decode())
             self.assertIn(
                 'success',
@@ -501,7 +501,7 @@ class TestAuthEndpoints(BaseTestCase):
     #     current_app.config['TOKEN_EXPIRATION_SECONDS'] = -1
     #     with self.client:
     #         resp_login = self.client.post(
-    #             '/api/v1/sim/auth/login',
+    #             '/v1/sim/auth/login',
     #             data=json.dumps(
     #                 {
     #                     'email': 'tchalla@newavengers.io',
@@ -513,7 +513,7 @@ class TestAuthEndpoints(BaseTestCase):
     #         # invalid token logout
     #         token = json.loads(resp_login.data.decode())['token']
     #         self.client.get(
-    #             '/api/v1/sim/auth/logout',
+    #             '/v1/sim/auth/logout',
     #             headers={
     #                 'Authorization': 'Bearer {token}'.format(token=token)
     #             }
@@ -523,14 +523,14 @@ class TestAuthEndpoints(BaseTestCase):
     def test_invalid_logout(self):
         with self.client:
             self.client.get(
-                '/api/v1/sim/auth/logout',
+                '/v1/sim/auth/logout',
                 headers={'Authorization': 'Bearer invalid'}
             )
             self.assertRaises(SimCCTBadServerLogout)
 
     def test_invalid_auth_header(self):
         with self.client:
-            self.client.get('/api/v1/sim/auth/logout', headers={})
+            self.client.get('/v1/sim/auth/logout', headers={})
             self.assertRaises(SimCCTBadServerLogout)
 
     def test_user_status(self):
@@ -549,7 +549,7 @@ class TestAuthEndpoints(BaseTestCase):
             )
 
             resp_login = self.client.post(
-                '/api/v1/sim/auth/login',
+                '/v1/sim/auth/login',
                 data=json.dumps(
                     {
                         'email': 'scarlet_witch@avengers.io',
@@ -559,7 +559,7 @@ class TestAuthEndpoints(BaseTestCase):
                 content_type='application/json'
             )
             resp_status = self.client.get(
-                '/api/v1/sim/auth/status', content_type='application/json'
+                '/v1/sim/auth/status', content_type='application/json'
             )
             data = json.loads(resp_status.data.decode())
             self.assertIn('success', data['status'])
@@ -571,7 +571,7 @@ class TestAuthEndpoints(BaseTestCase):
     def test_invalid_status(self):
         with self.client:
             response = self.client.get(
-                '/api/v1/sim/auth/status',
+                '/v1/sim/auth/status',
                 headers={'Authorization': 'Bearer invalid'}
             )
             data = json.loads(response.data.decode())
@@ -598,7 +598,7 @@ class TestAuthEndpoints(BaseTestCase):
             user.active = False
             user.save()
 
-            response = self.client.get('/api/v1/sim/auth/logout')
+            response = self.client.get('/v1/sim/auth/logout')
             data = json.loads(response.data.decode())
             self.assertEqual(
                 'This user account has been disabled.', data['message']
@@ -623,7 +623,7 @@ class TestAuthEndpoints(BaseTestCase):
             user.reload()
             user.active = False
             user.save()
-            response = self.client.get('/api/v1/sim/auth/status')
+            response = self.client.get('/v1/sim/auth/status')
             data = json.loads(response.data.decode())
             self.assertTrue(data['status'] == 'fail')
             self.assertTrue(
@@ -646,7 +646,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(client, vader.email, 'IAmYourFather')
 
             res = client.put(
-                '/api/v1/sim/auth/password/change',
+                '/v1/sim/auth/password/change',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -670,7 +670,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(client, vader.email, 'IAmYourFather')
 
             res = client.put(
-                '/api/v1/sim/auth/password/change',
+                '/v1/sim/auth/password/change',
                 data=json.dumps({'password': ''}),
                 content_type='application/json'
             )
@@ -696,7 +696,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(client, vader.email, 'IAmYourFather')
 
             res = client.put(
-                '/api/v1/sim/auth/password/change',
+                '/v1/sim/auth/password/change',
                 data=json.dumps(
                     {
                         'password': 'BothEyesOpen!',
@@ -714,7 +714,7 @@ class TestAuthEndpoints(BaseTestCase):
             self.assert400(res)
 
             res = client.put(
-                '/api/v1/sim/auth/password/change',
+                '/v1/sim/auth/password/change',
                 data=json.dumps(
                     {
                         'password': 'BothEyesOpen!',
@@ -746,7 +746,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(client, vader.email, 'IAmYourFather')
 
             res = client.put(
-                '/api/v1/sim/auth/password/change',
+                '/v1/sim/auth/password/change',
                 data=json.dumps(
                     {
                         'password': 'BothEyesOpen!',
@@ -776,7 +776,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(client, vader.email, 'IAmYourFather')
 
             res = client.put(
-                '/api/v1/sim/auth/password/change',
+                '/v1/sim/auth/password/change',
                 data=json.dumps(
                     {
                         'password': 'IAmYourFather',
@@ -807,7 +807,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(client, vader.email, 'IAmYourFather')
 
             res = client.put(
-                '/api/v1/sim/auth/password/change',
+                '/v1/sim/auth/password/change',
                 data=json.dumps(
                     {
                         'password': 'WhosACutie..',
@@ -842,7 +842,7 @@ class TestAuthEndpoints(BaseTestCase):
             hill.save()
 
             res = client.put(
-                '/api/v1/sim/auth/password/change',
+                '/v1/sim/auth/password/change',
                 data=json.dumps(
                     {
                         'password': '#EyeCandy',
@@ -875,7 +875,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(client, sif.email, 'WarriorsThree$')
 
             res = client.put(
-                '/api/v1/sim/auth/password/change',
+                '/v1/sim/auth/password/change',
                 data=json.dumps(
                     {
                         'password': 'WarriorsThree$',
@@ -906,7 +906,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(client, fury.email, 'RealFury!')
 
             res = client.put(
-                '/api/v1/sim/auth/password/change',
+                '/v1/sim/auth/password/change',
                 data=json.dumps(
                     {
                         'password': 'RealFury!',
@@ -937,7 +937,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(client, user.email, 'TVShowPlease')
 
             resp = client.put(
-                '/api/v1/sim/auth/email/change',
+                '/v1/sim/auth/email/change',
                 # data=json.dumps({'new_email': 'brickmatic479@gmail.com'}),
                 data=json.dumps({'new_email': 'obiwan@arclytics.com'}),
                 content_type='application/json'
@@ -970,7 +970,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(self.client, user.email, 'TVShowPlease')
 
             resp = self.client.put(
-                '/api/v1/sim/auth/email/change',
+                '/v1/sim/auth/email/change',
                 data=json.dumps(''),
                 content_type='application/json'
             )
@@ -995,7 +995,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(self.client, vader.email, 'AllTooEasy')
 
             resp = self.client.put(
-                '/api/v1/sim/auth/email/change',
+                '/v1/sim/auth/email/change',
                 data=json.dumps({'some_invalid_key': 'some_value'}),
                 content_type='application/json'
             )
@@ -1020,7 +1020,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(self.client, user.email, 'HanMyBoy')
 
             resp = self.client.put(
-                '/api/v1/sim/auth/email/change',
+                '/v1/sim/auth/email/change',
                 data=json.dumps({'new_email': 'invalid_hutt.com'}),
                 content_type='application/json'
             )
@@ -1046,7 +1046,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(client, user.email, 'helloThere')
 
             resp = client.get(
-                '/api/v1/sim/confirm/resend', content_type='application/json'
+                '/v1/sim/confirm/resend', content_type='application/json'
             )
 
             data = json.loads(resp.data.decode())
@@ -1072,7 +1072,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(client, user.email, 'helloThere')
 
             resp = self.client.get(
-                '/api/v1/sim/confirm/resend', content_type='application/json'
+                '/v1/sim/confirm/resend', content_type='application/json'
             )
 
             data = json.loads(resp.data.decode())
@@ -1095,7 +1095,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(client, luke.email, 'IAmAJedi')
 
             resp = self.client.post(
-                '/api/v1/sim/auth/password/check',
+                '/v1/sim/auth/password/check',
                 data=json.dumps({'password': 'IAmAJedi'}),
                 content_type='application/json'
             )
@@ -1118,7 +1118,7 @@ class TestAuthEndpoints(BaseTestCase):
             cookie = test_login(client, luke.email, 'IAmAJedi')
 
             resp = self.client.post(
-                '/api/v1/sim/auth/password/check',
+                '/v1/sim/auth/password/check',
                 data=json.dumps({'password': 'IAmNotAJedi'}),
                 content_type='application/json'
             )
@@ -1179,7 +1179,7 @@ class TestAuthEndpoints(BaseTestCase):
     def test_resend_confirm_email_after_registration_user_dne(self):
         with self.client as client:
             resp = client.put(
-                '/api/v1/sim/confirm/register/resend',
+                '/v1/sim/confirm/register/resend',
                 data=json.dumps({'email': 'lordvader@arclytics.com'}),
                 content_type='application/json'
             )
@@ -1205,7 +1205,7 @@ class TestAuthEndpoints(BaseTestCase):
 
         with self.client as client:
             resp = client.put(
-                '/api/v1/sim/confirm/register/resend',
+                '/v1/sim/confirm/register/resend',
                 data=json.dumps({'email': 'kenobi@arclytics.io'}),
                 content_type='application/json'
             )
@@ -1230,7 +1230,7 @@ class TestAuthEndpoints(BaseTestCase):
 
         with self.client as client:
             resp = client.put(
-                '/api/v1/sim/confirm/register/resend',
+                '/v1/sim/confirm/register/resend',
                 data=json.dumps({'email': 'kenobi@arclytics.com'}),
                 content_type='application/json'
             )

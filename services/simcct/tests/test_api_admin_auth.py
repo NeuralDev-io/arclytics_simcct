@@ -70,7 +70,7 @@ class TestAdminCreateService(BaseTestCase):
             cookie = test_login(client, vader.email, 'AllTooEasy')
 
             resp_disable = client.put(
-                '/api/v1/sim/disable/user',
+                '/v1/sim/disable/user',
                 data=json.dumps({'email': 'kyloren@gmail.com'}),
                 content_type='application/json'
             )
@@ -107,7 +107,7 @@ class TestAdminCreateService(BaseTestCase):
             cookie = test_login(client, user.email, 'MeesaMakePassword')
 
             resp = client.put(
-                '/api/v1/sim/disable/user',
+                '/v1/sim/disable/user',
                 data=json.dumps(''),
                 content_type='application/json'
             )
@@ -142,7 +142,7 @@ class TestAdminCreateService(BaseTestCase):
             cookie = test_login(client, r2d2.email, 'Weeeeeew')
 
             resp = client.put(
-                '/api/v1/sim/disable/user',
+                '/v1/sim/disable/user',
                 data=json.dumps({'email': 'c3p0@protocol.com'}),
                 content_type='application/json'
             )
@@ -179,7 +179,7 @@ class TestAdminCreateService(BaseTestCase):
             cookie = test_login(client, vader.email, 'AllTooEasy')
 
             resp_disable = client.put(
-                '/api/v1/sim/disable/user',
+                '/v1/sim/disable/user',
                 data=json.dumps({'invalid_key': 'invalid_data'}),
                 content_type='application/json'
             )
@@ -216,7 +216,7 @@ class TestAdminCreateService(BaseTestCase):
             cookie = test_login(client, vader.email, 'AllTooEasy')
 
             resp_disable = client.put(
-                '/api/v1/sim/disable/user',
+                '/v1/sim/disable/user',
                 data=json.dumps({'email': 'invalid_email.com'}),
                 content_type='application/json'
             )
@@ -382,7 +382,7 @@ class TestAdminCreateService(BaseTestCase):
             cookie = test_login(client, quigon.email, 'ShortNegotiations')
 
             resp = client.post(
-                '/api/v1/sim/admin/create',
+                '/v1/sim/admin/create',
                 data=json.dumps(
                     {
                         'email': 'obiwan@arclytics.com',
@@ -434,7 +434,7 @@ class TestAdminCreateService(BaseTestCase):
             )
 
             resp = client.post(
-                '/api/v1/sim/admin/create',
+                '/v1/sim/admin/create',
                 data=json.dumps(
                     {
                         'email': 'invalidbiggs@abcdefghijklmopqrstuvwxyz.com',
@@ -483,7 +483,7 @@ class TestAdminCreateService(BaseTestCase):
             cookie = test_login(client, ackbar.email, 'ITSATRAP')
 
             resp = client.post(
-                '/api/v1/sim/admin/create',
+                '/v1/sim/admin/create',
                 data=json.dumps(
                     {
                         'email': 'ersoj@arclytics.com',
@@ -547,7 +547,7 @@ class TestAdminCreateService(BaseTestCase):
             cookie = test_login(client, aayla.email, 'KilledByBly')
 
             resp = client.post(
-                '/api/v1/sim/admin/create',
+                '/v1/sim/admin/create',
                 data=json.dumps(
                     {
                         'email': 'luminaraunduli@gmail.com',
@@ -590,7 +590,7 @@ class TestAdminCreateService(BaseTestCase):
             cookie = test_login(client, quigon.email, 'ShortNegotiations')
 
             resp = client.post(
-                '/api/v1/sim/admin/create',
+                '/v1/sim/admin/create',
                 data=json.dumps(''),
                 content_type='application/json'
             )
@@ -626,7 +626,7 @@ class TestAdminCreateService(BaseTestCase):
             cookie = test_login(client, quigon.email, 'ShortNegotiations')
 
             resp = self.client.post(
-                '/api/v1/sim/admin/create',
+                '/v1/sim/admin/create',
                 data=json.dumps({'position': 'Jedi Knight.'}),
                 content_type='application/json'
             )
@@ -662,7 +662,7 @@ class TestAdminCreateService(BaseTestCase):
             cookie = test_login(client, quigon.email, 'ShortNegotiations')
 
             resp = client.post(
-                '/api/v1/sim/admin/create',
+                '/v1/sim/admin/create',
                 data=json.dumps({'email': 'brickmatic479@gmail.com'}),
                 content_type='application/json'
             )
@@ -699,7 +699,7 @@ class TestAdminCreateService(BaseTestCase):
             cookie = test_login(client, quigon.email, 'ShortNegotiations')
 
             resp = client.post(
-                '/api/v1/sim/admin/create',
+                '/v1/sim/admin/create',
                 data=json.dumps(
                     {
                         'email': 'noobmaster69@arclytics.com',

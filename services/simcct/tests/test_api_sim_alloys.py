@@ -97,7 +97,7 @@ class TestSimAlloys(BaseTestCase):
             _, _ = self.login_client(client)
 
             res = client.post(
-                '/api/v1/sim/alloys/update',
+                '/v1/sim/alloys/update',
                 data=json.dumps(
                     {
                         'alloy_option': 'single',
@@ -166,7 +166,7 @@ class TestSimAlloys(BaseTestCase):
             ]
 
             res = client.post(
-                '/api/v1/sim/alloys/update',
+                '/v1/sim/alloys/update',
                 data=json.dumps(
                     {
                         'alloy_option': 'single',
@@ -201,7 +201,7 @@ class TestSimAlloys(BaseTestCase):
             # By default the auto calculate bools are all true so we need to
             # set them to false to get this working.
             client.put(
-                '/api/v1/sim/configs/ms',
+                '/v1/sim/configs/ms',
                 data=json.dumps(
                     {
                         'ms_temp': 464.196,
@@ -211,12 +211,12 @@ class TestSimAlloys(BaseTestCase):
                 content_type='application/json'
             )
             client.put(
-                '/api/v1/sim/configs/bs',
+                '/v1/sim/configs/bs',
                 data=json.dumps({'bs_temp': 563.238}),
                 content_type='application/json'
             )
             client.put(
-                '/api/v1/sim/configs/ae',
+                '/v1/sim/configs/ae',
                 data=json.dumps({
                     'ae1_temp': 700.902,
                     'ae3_temp': 845.838
@@ -247,7 +247,7 @@ class TestSimAlloys(BaseTestCase):
             req_alloy = AlloyStoreRequestSchema().load(new_alloy_store)
 
             res = client.patch(
-                '/api/v1/sim/alloys/update',
+                '/v1/sim/alloys/update',
                 data=json.dumps(req_alloy),
                 content_type='application/json'
             )
@@ -277,7 +277,7 @@ class TestSimAlloys(BaseTestCase):
             }
 
             res = client.patch(
-                '/api/v1/sim/alloys/update',
+                '/v1/sim/alloys/update',
                 data=json.dumps(new_comp),
                 content_type='application/json'
             )
@@ -308,7 +308,7 @@ class TestSimAlloys(BaseTestCase):
             }
 
             res = client.patch(
-                '/api/v1/sim/alloys/update',
+                '/v1/sim/alloys/update',
                 data=json.dumps(new_comp),
                 content_type='application/json'
             )
@@ -330,13 +330,13 @@ class TestSimAlloys(BaseTestCase):
 
             # We need to make auto_calculate true by using the endpoints
             client.get(
-                '/api/v1/sim/configs/ms', content_type='application/json'
+                '/v1/sim/configs/ms', content_type='application/json'
             )
             client.get(
-                '/api/v1/sim/configs/ae', content_type='application/json'
+                '/v1/sim/configs/ae', content_type='application/json'
             )
             client.get(
-                '/api/v1/sim/configs/bs', content_type='application/json'
+                '/v1/sim/configs/bs', content_type='application/json'
             )
 
             session_store = SimSessionService().load_session()
@@ -361,7 +361,7 @@ class TestSimAlloys(BaseTestCase):
             req_alloy = AlloyStoreRequestSchema().load(new_alloy_store)
 
             res = client.patch(
-                '/api/v1/sim/alloys/update',
+                '/v1/sim/alloys/update',
                 data=json.dumps(req_alloy),
                 content_type='application/json'
             )
@@ -406,7 +406,7 @@ class TestSimAlloys(BaseTestCase):
             session_store = SimSessionService().load_session()
             prev_sess_comp = session_store.get('alloy_store')
             res = client.patch(
-                '/api/v1/sim/alloys/update',
+                '/v1/sim/alloys/update',
                 data=json.dumps(
                     {
                         'alloy_option': 'single',

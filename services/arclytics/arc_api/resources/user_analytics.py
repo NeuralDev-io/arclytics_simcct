@@ -16,9 +16,9 @@ __date__ = '2019.10.02'
 
 {Description}
 """
+from typing import Tuple
 
-from flask import Blueprint, request
-from flask import current_app as app
+from flask import Blueprint
 from flask_restful import Resource
 
 from arc_api.extensions import api, redis_client
@@ -31,12 +31,19 @@ logger = AppLogger(__name__)
 
 # noinspection PyMethodMayBeStatic
 class UserLoginData(Resource):
+
     # method_decorators = {'get': [authorize_admin_cookie_restful]}
 
-    def get(self):
+    def get(self) -> Tuple[dict, int]:
+        """Simply get the number of logged in users by Session in Redis."""
+
+        # Get the number of keys using the pattern that we defined
+        # in `services.simcct.sim_api.extensions.Session.redis_session`
+        # as being `session:{session id}`. We just get all the keys
+        # matching this pattern which means they have logged in.
         keys = redis_client.keys(pattern=u'session*')
-        logger.debug(keys)
-        return {'keys': len(keys)}, 200
+
+        return {'status': 'success', 'value': len(keys)}, 200
 
 
 api.add_resource(UserLoginData, '/v1/arc/users/login/live')

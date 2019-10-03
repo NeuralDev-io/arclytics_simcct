@@ -861,12 +861,12 @@ def change_email(user) -> Tuple[dict, int]:
 def logout(_) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
 
-    # Remove the data from the user's current session.
-    session.clear()
-
     # Clear all keys in the session
     for key in session.keys():
         session.pop(key)
+
+    # Remove the data from the user's current session.
+    session.clear()
 
     response = {'status': 'success', 'message': 'Successfully logged out.'}
     return jsonify(response), 202

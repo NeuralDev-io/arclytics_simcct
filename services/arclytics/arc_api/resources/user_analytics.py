@@ -16,12 +16,16 @@ __date__ = '2019.10.02'
 
 {Description}
 """
+
+from os import environ as env
 from typing import Tuple
 
+import pandas as pd
 from flask import Blueprint
 from flask_restful import Resource
 
 from arc_api.extensions import api, redis_client
+from arc_api.mongo_service import MongoService
 from arc_api.middleware import authorize_admin_cookie_restful
 from arc_logging import AppLogger
 
@@ -46,4 +50,16 @@ class UserLoginData(Resource):
         return {'status': 'success', 'value': len(keys)}, 200
 
 
+# noinspection PyMethodMayBeStatic
+class UserProfileData(Resource):
+
+    # method_decorators = {'get': [authorize_admin_cookie_restful]}
+
+    def get(self) -> Tuple[dict, int]:
+        df = MongoService().read_mongo('arc_dev', 'users')
+        profiles = df['profile'].dropna()
+        return {'profiles': profiles.to_dict(), 'dataframe': df.to_dict()}, 200
+
+
 api.add_resource(UserLoginData, '/v1/arc/users/login/live')
+api.add_resource(UserProfileData, '/v1/arc/users/profile')

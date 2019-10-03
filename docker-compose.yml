@@ -24,7 +24,7 @@ services:
     depends_on:
       - elasticsearch
     networks:
-      - host
+      - arclytics_subnet
 
   client:
     build:
@@ -57,7 +57,7 @@ services:
       - simcct
       - fluentd
     networks:
-      - host
+      - arclytics_subnet
 
   nginx:
     build:
@@ -83,7 +83,7 @@ services:
       - simcct
       - apm-server
     networks:
-      - host
+      - arclytics_subnet
 
   simcct:
     build:
@@ -132,7 +132,7 @@ services:
       - elasticsearch
       - apm-server
     networks:
-      - host
+      - arclytics_subnet
 
   arclytics:
     build:
@@ -173,7 +173,7 @@ services:
     depends_on:
       - fluentd
     networks:
-      - host
+      - arclytics_subnet
 
   celery-worker:
     build:
@@ -209,7 +209,7 @@ services:
       - redis
       - fluentd
     networks:
-      - host
+      - arclytics_subnet
 
   redis:
     build:
@@ -231,7 +231,7 @@ services:
     depends_on:
       - fluentd
     networks:
-      - host
+      - arclytics_subnet
 
   mongodb:
     build:
@@ -258,7 +258,7 @@ services:
     depends_on:
       - fluentd
     networks:
-      - host
+      - arclytics_subnet
 
   elasticsearch:
     build:
@@ -285,7 +285,7 @@ services:
         soft: -1
         hard: -1
     networks:
-      - host
+      - arclytics_subnet
 
   apm-server:
     build:
@@ -308,7 +308,7 @@ services:
     depends_on:
       - elasticsearch
     networks:
-      - host
+      - arclytics_subnet
 
   kibana:
     build:
@@ -327,7 +327,7 @@ services:
       - elasticsearch
       - fluentd
     networks:
-      - host
+      - arclytics_subnet
 
   swagger:
     build:
@@ -343,7 +343,7 @@ services:
     environment:
       - URL=swagger.yaml
     networks:
-      - host
+      - arclytics_subnet
 
   # ============================== # DASK MICROSERVICES # ============================== #
   dask-scheduler:
@@ -363,7 +363,7 @@ services:
     # Entrypoint command needs to be set here because Dockerfile shared with `dask-worker`
     command: ['dask-scheduler']
     networks:
-      - host
+      - arclytics_subnet
 
   dask-worker:
     build:
@@ -375,7 +375,7 @@ services:
     hostname: dask-worker
     command: ['dask-worker', 'tcp://dask-scheduler:8786', '--no-nanny']
     networks:
-      - host
+      - arclytics_subnet
 
   jupyter:
     build:
@@ -389,7 +389,7 @@ services:
     volumes:
       - type: bind
         source: ./services/jupyter/notebooks
-        target: /home/arclytics/
+        target: /home/arclytics/notebooks
     ports:
       - 8888:8888
     expose:
@@ -397,11 +397,10 @@ services:
     environment:
       - NB_USER=arclytics
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
-    depends_on:
-      - dask-scheduler
-      - dask-worker
+      - MONGO_URI=mongodb://mongodb:27017
+      - REDIS_URI=redis://redis:6379
     networks:
-      - host
+      - arclytics_subnet
 
   # ============================== # TEST MICROSERVICES # ============================== #
   # Both these services were created for testing purposes and a proof-of-concept for
@@ -429,7 +428,7 @@ services:
     depends_on:
       - fluentd
     networks:
-      - host
+      - arclytics_subnet
 
   fluent-react:
     build:
@@ -450,11 +449,11 @@ services:
     depends_on:
       - fluentd
     networks:
-      - host
+      - arclytics_subnet
   # =================================================================================== #
 
 networks:
-  host:
+  arclytics_subnet:
     driver: bridge
     labels:
       arclytics.io: "development"

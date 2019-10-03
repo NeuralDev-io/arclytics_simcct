@@ -10,11 +10,11 @@
  *
  */
 
-import { ARC_URL } from '../constants'
+import { SIMCCT_URL } from '../constants'
 import { logError } from './LoggingHelper'
 
 export const login = async (values, resolve, reject) => {
-  fetch(`${ARC_URL}/auth/login`, {
+  fetch(`${SIMCCT_URL}/auth/login`, {
     method: 'POST',
     mode: 'cors',
     credentials: 'include',
@@ -40,7 +40,7 @@ export const signup = async (values, resolve, reject) => {
   const {
     email, password, firstName, lastName,
   } = values
-  fetch(`${ARC_URL}/auth/register`, {
+  fetch(`${SIMCCT_URL}/auth/register`, {
     method: 'POST',
     mode: 'cors',
     headers: {
@@ -66,7 +66,7 @@ export const signup = async (values, resolve, reject) => {
     ))
 }
 
-export const logout = () => fetch(`${ARC_URL}/auth/logout`, {
+export const logout = () => fetch(`${SIMCCT_URL}/auth/logout`, {
   method: 'GET',
   mode: 'cors',
   credentials: 'include',
@@ -91,7 +91,7 @@ export const logout = () => fetch(`${ARC_URL}/auth/logout`, {
 export const checkAuthStatus = async () => {
   let auth
   try {
-    auth = await fetch(`${ARC_URL}/auth/status`, {
+    auth = await fetch(`${SIMCCT_URL}/auth/status`, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -114,7 +114,7 @@ export const checkAuthStatus = async () => {
 export const checkPassword = async (password) => {
   let isPasswordValid = false
   try {
-    isPasswordValid = await fetch(`${ARC_URL}/auth/password/check`, {
+    isPasswordValid = await fetch(`${SIMCCT_URL}/auth/password/check`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -135,7 +135,7 @@ export const checkPassword = async (password) => {
 }
 
 export const forgotPassword = (resolve, reject, email) => {
-  fetch(`${ARC_URL}/reset/password`, {
+  fetch(`${SIMCCT_URL}/reset/password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -159,7 +159,7 @@ export const forgotPassword = (resolve, reject, email) => {
 }
 
 export const resetPassword = (resolve, reject, values, token) => {
-  fetch(`${ARC_URL}/auth/password/reset`, {
+  fetch(`${SIMCCT_URL}/auth/password/reset`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -181,7 +181,7 @@ export const resetPassword = (resolve, reject, values, token) => {
 }
 
 export const resendVerify = (resolve, reject, email) => {
-  fetch(`${ARC_URL}/confirm/register/resend`, {
+  fetch(`${SIMCCT_URL}/confirm/register/resend`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

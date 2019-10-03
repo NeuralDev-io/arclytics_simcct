@@ -265,6 +265,6 @@ class UserProfiles(Resource):
         return response, 201
 
 
-api.add_resource(UserList, '/api/v1/sim/users')
-api.add_resource(Users, '/api/v1/sim/user')
-api.add_resource(UserProfiles, '/api/v1/sim/user/profile')
+api.add_resource(UserList, '/v1/sim/users')
+api.add_resource(Users, '/v1/sim/user')
+api.add_resource(UserProfiles, '/v1/sim/user/profile')

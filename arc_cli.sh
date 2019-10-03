@@ -13,7 +13,7 @@ WORKDIR=$(dirname "$(readlink -f "$0")")
 DOCKER_COMPOSE_PATH="${WORKDIR}/docker-compose.yml"
 ARGS=""
 CONTAINER_GROUP=""
-CONTAINER_ARGS="simcct client redis mongodb nginx celery-worker fluentd elasticsearch kibana apm-server"
+CONTAINER_ARGS="arclytics simcct client redis mongodb nginx celery-worker fluentd elasticsearch kibana apm-server"
 CONTAINER_LOG=""
 LOGS_WATCH=0
 FLUSH_ALL=0
@@ -46,14 +46,21 @@ terminalColWidth=$(tput cols)
 esc="\033";  # if this doesn't work, enter an ESC directly
 
 # Foreground colours
+# shellcheck disable=SC2034
 blackf="${esc}[30m"; redf="${esc}[31m"; greenf="${esc}[32m"; yellowf="${esc}[33m"
+# shellcheck disable=SC2034
 bluef="${esc}[34m"; purplef="${esc}[35m"; cyanf="${esc}[36m"; whitef="${esc}[37m"
 # Background colors
+# shellcheck disable=SC2034
 blackb="${esc}[40m"; redb="${esc}[41m"; greenb="${esc}[42m"; yellowb="${esc}[43m"
+# shellcheck disable=SC2034
 blueb="${esc}[44m"; purpleb="${esc}[45m"; cyanb="${esc}[46m"; whiteb="${esc}[47m"
 # Bold, italic, underline, and inverse style toggles
+# shellcheck disable=SC2034
 boldon="${esc}[1m"; boldoff="${esc}[22m"; italicson="${esc}[3m";
+# shellcheck disable=SC2034
 italicsoff="${esc}[23m"; ulon="${esc}[4m"; uloff="${esc}[24m";
+# shellcheck disable=SC2034
 invon="${esc}[7m"; invoff="${esc}[27m";
 reset="${esc}[0m"
 
@@ -117,8 +124,8 @@ getMongoUserAndPassword() {
 
 # Run only the arclytics tests
 arcTest() {
-    headerMessage "RUNNING USERS SERVER TESTS"
-    generalMessage "Beginning ${TEST_TITLE} for Users Server"
+    headerMessage "RUNNING ARCLYTICS SERVER TESTS"
+    generalMessage "Beginning ${TEST_TITLE} for Arclytics Server"
     echoSpace
     if [[ ${tty} == 1 ]]; then
         generalMessage "docker-compose exec -T arclytics python manage.py ${TEST_TYPE}"
@@ -156,8 +163,8 @@ client() {
 
 # run all tests
 all() {
-    # arcTest
     simcct
+    arcTest
     # client
     # e2e
 }

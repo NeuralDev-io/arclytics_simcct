@@ -287,7 +287,8 @@ class TestUserModel(BaseTestCase):
         )
         user.set_password('PeterTingle!')
         user.save()
-        auth_token = user.encode_auth_token(user.id)
+        from sim_api.auth_service import AuthService
+        auth_token = AuthService().encode_auth_token(user.id)
         self.assertTrue(isinstance(auth_token, bytes))
 
     def test_decode_auth_token(self):
@@ -301,9 +302,10 @@ class TestUserModel(BaseTestCase):
         )
         user.set_password('PeterTingle!')
         user.save()
-        auth_token = user.encode_auth_token(user.id)
+        from sim_api.auth_service import AuthService
+        auth_token = AuthService().encode_auth_token(user.id)
         self.assertTrue(isinstance(auth_token, bytes))
-        self.assertEqual(User.decode_auth_token(auth_token), user.id)
+        self.assertEqual(AuthService().decode_auth_token(auth_token), user.id)
 
 
 if __name__ == '__main__':

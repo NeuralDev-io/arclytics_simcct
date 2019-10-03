@@ -24,7 +24,8 @@ from os import environ as env
 from flask import Flask
 from flask_cors import CORS
 
-from arc_api.extensions import api, apm
+from arc_api.extensions import *
+from arc_api.resources import *
 
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'
 DATE_FMT = '%Y-%m-%d'
@@ -55,36 +56,38 @@ def create_app(configs_path=app_settings) -> Flask:
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
     # Set up the Flask App Context
-    with app.app_context():
-        # ========== # INIT FLASK EXTENSIONS # ========== #
-        # Notes:
-        #  - `headers` will inject the Content-Type in all responses.
-        #  - `expose_headers`: The header or list which are safe to expose to
-        #  the
-        #     API of a CORS API specification.
-        #  - `support_credentials`: Allows users to make authenticated requests.
-        #     If true, injects the Access-Control-Allow-Credentials header in
-        #     responses. This allows cookies and credentials to be submitted
-        #     across
-        #     domains.
-        #     Note:	This option cannot be used in conjunction with a ‘*’ origin
-        CORS(
-            app=app,
-            headers=['Content-Type'],
-            expose_headers=[
-                'Access-Control-Allow-Origin',
-                'Access-Control-Allow-Credentials',
-                'Content-Type'
-            ],
-            supports_credentials=True
-        )
 
-        # Set up Flask extensions plugins
-        extensions(app)
+    # ========== # INIT FLASK EXTENSIONS # ========== #
+    # Notes:
+    #  - `headers` will inject the Content-Type in all responses.
+    #  - `expose_headers`: The header or list which are safe to expose to
+    #  the
+    #     API of a CORS API specification.
+    #  - `support_credentials`: Allows users to make authenticated requests.
+    #     If true, injects the Access-Control-Allow-Credentials header in
+    #     responses. This allows cookies and credentials to be submitted
+    #     across domains.
+    #     Note:	This option cannot be used in conjunction with a ‘*’ origin
+    CORS(
+        app=app,
+        headers=['Content-Type'],
+        expose_headers=[
+            'Access-Control-Allow-Origin',
+            'Access-Control-Allow-Credentials',
+            'Content-Type'
+        ],
+        supports_credentials=True
+    )
+    # ========== # IMPORT FLASK BLUEPRINTS # ========== #
+    from arc_api.resources.root import root_blueprint
+    # ========== # REGISTER FLASK BLUEPRINTS # ========== #
+    app.register_blueprint(root_blueprint)
+    app.register_blueprint(user_analytics_blueprint)
 
-        # ========== # IMPORT FLASK BLUEPRINTS # ========== #
+    # Set up Flask extensions plugins
+    extensions(app)
 
-        # ========== # REGISTER FLASK BLUEPRINTS # ========== #
+    app.json_encoder = JSONEncoder
 
     # Shell context for Flask CLI
     @app.shell_context_processor
@@ -104,6 +107,6 @@ def extensions(app) -> None:
     Returns:
         None.
     """
-    apm.init_app(app)
-    api.init_app(app)
+    for ext in flask_extensions:
+        ext.init_app(app)
     return None

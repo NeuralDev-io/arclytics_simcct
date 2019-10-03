@@ -25,7 +25,12 @@ class CompTable extends Component {
       }
     }
 
-    const err = validate(value, constraints.weight)
+    let err
+    if (symbol === 'C') {
+      err = validate(value, constraints.carbon)
+    } else {
+      err = validate(value, constraints.weight)
+    }
     const error = { ...data.parentError }
     if (err !== undefined) {
       error[symbol] = err

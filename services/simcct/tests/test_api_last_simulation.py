@@ -108,7 +108,7 @@ class TestLastSimulation(BaseTestCase):
     def test_create_last_no_token(self):
         with app.test_client() as client:
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -122,7 +122,7 @@ class TestLastSimulation(BaseTestCase):
             _ = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -136,7 +136,7 @@ class TestLastSimulation(BaseTestCase):
             _ = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': True,
@@ -160,7 +160,7 @@ class TestLastSimulation(BaseTestCase):
             _ = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps({
                     'is_valid': True,
                     'configurations': CONFIGS
@@ -181,7 +181,7 @@ class TestLastSimulation(BaseTestCase):
             configs.pop('grain_size')
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': True,
@@ -206,7 +206,7 @@ class TestLastSimulation(BaseTestCase):
             configs['method'] = 'KirkaldyAndLi2019'
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': True,
@@ -231,7 +231,7 @@ class TestLastSimulation(BaseTestCase):
             configs['nucleation_start'] = -1
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': True,
@@ -259,7 +259,7 @@ class TestLastSimulation(BaseTestCase):
             configs['nucleation_finish'] = 101
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': True,
@@ -287,7 +287,7 @@ class TestLastSimulation(BaseTestCase):
             configs['ms_temp'] = -1
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': True,
@@ -324,7 +324,7 @@ class TestLastSimulation(BaseTestCase):
             }
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': True,
@@ -361,7 +361,7 @@ class TestLastSimulation(BaseTestCase):
             }
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': True,
@@ -397,7 +397,7 @@ class TestLastSimulation(BaseTestCase):
             }
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': True,
@@ -437,7 +437,7 @@ class TestLastSimulation(BaseTestCase):
             }
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': True,
@@ -463,7 +463,7 @@ class TestLastSimulation(BaseTestCase):
             configs['nucleation_start'] = -1
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': False,
@@ -507,7 +507,7 @@ class TestLastSimulation(BaseTestCase):
             }
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': False,
@@ -536,7 +536,7 @@ class TestLastSimulation(BaseTestCase):
             _ = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': True,
@@ -559,7 +559,7 @@ class TestLastSimulation(BaseTestCase):
     def test_get_detail_last_no_token(self):
         with app.test_client() as client:
             res = client.get(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -583,7 +583,7 @@ class TestLastSimulation(BaseTestCase):
             _ = test_login(client, user.email, 'Subatomic!')
 
             res = client.get(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -612,7 +612,7 @@ class TestLastSimulation(BaseTestCase):
             test_login(client, user.email, 'Subatomic!')
 
             res = client.get(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -658,7 +658,7 @@ class TestLastSimulation(BaseTestCase):
             # configurations or alloy store saved, then they will get the
             # default during login with the `SimSessionService.new_session`
             res = client.get(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -684,7 +684,7 @@ class TestLastSimulation(BaseTestCase):
         with app.test_client() as client:
             test_login(client, self.tony.email, self._tony_pw)
             res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': False,
@@ -709,7 +709,7 @@ class TestLastSimulation(BaseTestCase):
             self.assertDictEqual(user.last_simulation_results, {})
 
             res = client.get(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -722,7 +722,7 @@ class TestLastSimulation(BaseTestCase):
             test_login(client, self.tony.email, self._tony_pw)
 
             post_res = client.post(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 data=json.dumps(
                     {
                         'is_valid': True,
@@ -737,7 +737,7 @@ class TestLastSimulation(BaseTestCase):
             self.assertEqual(data['message'], 'Saved Last Simulation Data.')
 
             res = client.get(
-                '/api/v1/sim/user/last/simulation',
+                '/v1/sim/user/last/simulation',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())

@@ -226,5 +226,5 @@ class SaveSimulationDetail(Resource):
         return {'status': 'success'}, 202
 
 
-api.add_resource(SaveSimulationList, '/api/v1/sim/user/simulation')
-api.add_resource(SaveSimulationDetail, '/api/v1/sim/user/simulation/<sim_id>')
+api.add_resource(SaveSimulationList, '/v1/sim/user/simulation')
+api.add_resource(SaveSimulationDetail, '/v1/sim/user/simulation/<sim_id>')

@@ -69,7 +69,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, mace.email, 'ThisPartysOver')
             resp = client.post(
-                'api/v1/sim/user/rating',
+                '/v1/sim/user/rating',
                 data=json.dumps(''),
                 content_type='application/json'
             )
@@ -93,7 +93,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, plo.email, 'WhenYouAskForTrouble')
             resp = client.post(
-                '/api/v1/sim/user/rating',
+                '/v1/sim/user/rating',
                 data=json.dumps({'invalid_key': 'some_value'}),
                 content_type='application/json'
             )
@@ -117,7 +117,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, jhonny.email, 'WhenYouAskForTrouble')
             resp = client.post(
-                '/api/v1/sim/user/rating',
+                '/v1/sim/user/rating',
                 data=json.dumps({'rating': '3.5'}),
                 content_type='application/json'
             )
@@ -141,7 +141,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, rex.email, 'ExperienceOutranksEverything')
             resp = client.post(
-                '/api/v1/sim/user/rating',
+                '/v1/sim/user/rating',
                 data=json.dumps({'rating': '5'}),
                 content_type='application/json'
             )
@@ -170,12 +170,12 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, cody.email, 'BlastHim')
         resp_1 = client.post(
-            '/api/v1/sim/user/rating',
+            '/v1/sim/user/rating',
             data=json.dumps({'rating': '3'}),
             content_type='application/json'
         )
         resp_2 = client.post(
-            '/api/v1/sim/user/rating',
+            '/v1/sim/user/rating',
             data=json.dumps({'rating': '5'}),
             content_type='application/json'
         )
@@ -211,7 +211,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, echo.email, 'WeGotToFollowOrders')
             resp = client.post(
-                '/api/v1/sim/user/feedback',
+                '/v1/sim/user/feedback',
                 data=json.dumps(''),
                 content_type='application/json'
             )
@@ -235,7 +235,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, fives.email, 'WeAreOneAndTheSame')
             resp = client.post(
-                'api/v1/sim/user/feedback',
+                '/v1/sim/user/feedback',
                 data=json.dumps(
                     {
                         'category': 'Category value',
@@ -264,7 +264,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, hevy.email, 'YouDeserveIt')
             resp = client.post(
-                'api/v1/sim/user/feedback',
+                '/v1/sim/user/feedback',
                 data=json.dumps(
                     {
                         'category': 'Category value',
@@ -294,7 +294,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, hevy.email, 'YouDeserveIt')
             resp = client.post(
-                '/api/v1/sim/user/feedback',
+                '/v1/sim/user/feedback',
                 data=json.dumps(
                     {
                         'category': 'Category value',
@@ -336,7 +336,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps({'sort_on': 'invalid_category_value'}),
                 content_type='application/json'
             )
@@ -368,7 +368,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps({'limit': 'invalid_limit_value'}),
                 content_type='application/json'
             )
@@ -400,7 +400,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps({'limit': -1}),
                 content_type='application/json'
             )
@@ -432,7 +432,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps({'offset': 'invalid_offset_value'}),
                 content_type='application/json'
             )
@@ -464,7 +464,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps({'offset': 100}),
                 content_type='application/json'
             )
@@ -498,7 +498,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps({'offset': -1}),
                 content_type='application/json'
             )
@@ -528,7 +528,7 @@ class TestRatingsService(BaseTestCase):
         with self.client:
             test_login(self.client, vader.email, 'AllTooEasy')
             resp_1 = self.client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps({
                     'limit': 4,
                     'sort_on': 'rating'
@@ -546,7 +546,7 @@ class TestRatingsService(BaseTestCase):
             self.assertEqual(data_1['total_pages'], 3)
 
             resp_2 = self.client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps(
                     {
                         'offset': 5,
@@ -568,7 +568,7 @@ class TestRatingsService(BaseTestCase):
             self.assertEqual(data_2['total_pages'], 3)
 
             resp_3 = self.client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps(
                     {
                         'offset': 9,
@@ -610,7 +610,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = self.client.post(
-                '/api/v1/sim/admin/feedback/list/subscribe',
+                '/v1/sim/admin/feedback/list/subscribe',
                 data=json.dumps({'action': 'subscribe'}),
                 content_type='application/json'
             )
@@ -641,7 +641,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = self.client.post(
-                '/api/v1/sim/admin/feedback/list/subscribe',
+                '/v1/sim/admin/feedback/list/subscribe',
                 data=json.dumps({'action': 'unsubscribe'}),
                 content_type='application/json'
             )
@@ -672,7 +672,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = self.client.post(
-                '/api/v1/sim/admin/feedback/list/subscribe',
+                '/v1/sim/admin/feedback/list/subscribe',
                 data=json.dumps({'action': 'subscribe'}),
                 content_type='application/json'
             )
@@ -708,7 +708,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = self.client.post(
-                '/api/v1/sim/admin/feedback/list/subscribe',
+                '/v1/sim/admin/feedback/list/subscribe',
                 data=json.dumps({'action': 'unsubscribe'}),
                 content_type='application/json'
             )

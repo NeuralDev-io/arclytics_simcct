@@ -43,6 +43,7 @@ from sim_api.models import LoginData, User
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
+from sim_api.auth_service import AuthService
 
 logger = AppLogger(__name__)
 
@@ -203,9 +204,9 @@ def confirm_email_admin(token):
 
     try:
         email = confirm_token(token)
-    except URLTokenError as e:
+    except URLTokenError:
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
-    except URLTokenExpired as e:
+    except URLTokenExpired:
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except Exception as e:
         message = 'An Exception Occured.'
@@ -267,8 +268,9 @@ def register_user() -> Tuple[dict, int]:
     try:
         new_user.save()
 
-        # generate auth token
-        auth_token = new_user.encode_auth_token(new_user.id)
+        # generate auth token and pass the role of the user, which at the
+        # beginning is always the default.
+        auth_token = AuthService().encode_auth_token(new_user.id, role='user')
         # generate the confirmation token for verifying email
         confirmation_token = generate_confirmation_token(email)
         confirm_url = generate_url('auth.confirm_email', confirmation_token)
@@ -303,6 +305,7 @@ def register_user() -> Tuple[dict, int]:
         return jsonify(response), 400
 
 
+# noinspection PyBroadException
 @auth_blueprint.route(rule='/auth/login', methods=['POST'])
 def login() -> any:
     """
@@ -344,8 +347,11 @@ def login() -> any:
 
     user = User.objects.get(email=email)
 
+    # Now let's really check if the User can access our application
     if bcrypt.check_password_hash(user.password, password):
-        auth_token = user.encode_auth_token(user.id)
+        user_role = 'admin' if user.is_admin else 'user'
+        auth_token = AuthService().encode_auth_token(user.id, role=user_role)
+
         if auth_token:
             if not user.active:
                 response['message'] = 'This user account has been disabled.'
@@ -459,9 +465,13 @@ def login() -> any:
                 user.login_data.append(LoginData(ip_address=request_ip))
                 user.save()
 
+            # Store additional information in their session as it will be
+            # required by the server-side session interface to check and
+            # generate other tokens and keys.
             session['jwt'] = auth_token.decode()
-            session['ip_address'] = request.remote_addr
-            session['signed_in'] = True
+            session['ip_address'] = request_ip
+            session['is_admin'] = user.is_admin
+            session['user_id'] = str(user.id)
 
             # We inject the Simulation Session data
             SimSessionService().new_session(user=user)
@@ -530,7 +540,7 @@ def reset_password() -> Tuple[dict, int]:
 
     # Decode either returns bson.ObjectId if successful or a string from an
     # exception
-    resp_or_id = User.decode_password_reset_token(auth_token=token)
+    resp_or_id = AuthService().decode_password_reset_token(auth_token=token)
     if isinstance(resp_or_id, str):
         response['message'] = resp_or_id
         logger.info(response['message'])
@@ -627,7 +637,7 @@ def confirm_reset_password(token):
 
     # We create a JWT token to send to the client-side so they can attach
     # it as part of the next request
-    jwt_token = user.encode_password_reset_token(user_id=user.id).decode()
+    jwt_token = AuthService().encode_password_reset_token(user_id=user.id).decode()
 
     response['status'] = 'success'
     response.pop('message')
@@ -870,15 +880,11 @@ def get_user_status(user) -> Tuple[dict, int]:
     if not user.profile:
         is_profile = False
 
-    sim_session = json.loads(session['simulation'])
-
     response = {
         "status": 'success',
         "isProfile": is_profile,
         "verified": user.verified,
         "active": user.active,
-        "signedIn": session['signed_in'],
-        "simulationValid": sim_session['configurations']['is_valid'],
         "admin": user.is_admin,
     }
     return jsonify(response), 200

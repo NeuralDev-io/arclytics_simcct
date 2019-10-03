@@ -58,7 +58,7 @@ def test_register_user(
     # )
 
 
-def test_login(email: str, password: str):
+def test_login(client, email: str, password: str):
 
     session = requests.Session()
 
@@ -77,16 +77,16 @@ def test_login(email: str, password: str):
     cookie = session.cookies.get_dict()
     print(cookie)
 
-    resp_set_cookie = res.headers.get('Set-Cookie').split(';')
-    expiry_str = str(resp_set_cookie[1]).split('=', 1)
-    expiry_date = datetime.strptime(expiry_str[1], GMT_DATETIME_FORMAT)
+    # Extract the token from the header and set the cookie on the
+    # client.
+    resp_set_cookie = res.headers['Set-Cookie'].split(';')
     domain = str(resp_set_cookie[3]).split('=', 1)
-
-    # This is how the response cookie is set. Copy this.
-    # response.set_cookie(
-    #       SESSION_COOKIE_NAME, session_key, expires=expiry_date,
-    #        httponly=True, domain=self.get_cookie_domain(app)
-    # )
+    expiry_str = resp_set_cookie[1].split('=')[1]
+    expiry_date = datetime.strptime(expiry_str, GMT_DATETIME_FORMAT)
+    auth_token = resp_set_cookie[3].split('=')[2]
+    client.set_cookie(
+        API_TOKEN_NAME, auth_token, expires=expiry_date, httponly=True
+    )
 
     # THIS IS JUST FOR VISUALS. CLIENT AUTOMATICALLY SETS IT.
     cookie = {

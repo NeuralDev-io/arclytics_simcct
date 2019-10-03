@@ -103,7 +103,6 @@ class BaseTestCase(TestCase):
         cls.client.set_cookie(
             API_TOKEN_NAME, auth_token, expires=expiry_date, httponly=True
         )
-        print(cls.client.cookie_jar)
 
     @classmethod
     def tearDownClass(cls) -> None:

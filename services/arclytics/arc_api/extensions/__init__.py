@@ -19,13 +19,16 @@ context of the app.
 
 from flask_restful import Api
 from flask_bcrypt import Bcrypt
+from flask_caching import Cache
 from elasticapm.contrib.flask import ElasticAPM
 
 apm = ElasticAPM()
 api = Api()
 bcrypt = Bcrypt()
+cache = Cache()
 
-flask_extensions = [apm, api, bcrypt]
+# Used by the __init__ module to loop and init_app() for each element
+flask_extensions = [apm, api, bcrypt, cache]
 
 from .utilities import JSONEncoder, API_TOKEN_NAME
 

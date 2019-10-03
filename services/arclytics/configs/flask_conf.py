@@ -6,10 +6,7 @@
 # Attributions:
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = [
-    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
-    'Dinol Shrestha <@dinolsth>'
-]
+__author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
 __version__ = '1.0.0'
 __status__ = 'development'
@@ -36,6 +33,17 @@ class BaseConfig:
     BCRYPT_LOG_ROUNDS = 12
     TOKEN_EXPIRATION_DAYS = 30
     TOKEN_EXPIRATION_SECONDS = 0
+
+    # Flask Caching
+    CACHE_TYPE = 'simple'
+    CACHE_DEFAULT_TIMEOUT = 300
+    # Redis only
+    # CACHE_KEY_PREFIX = 'cache'
+    # CACHE_REDIS_HOST
+    # CACHE_REDIS_PORT
+    # CACHE_REDIS_PASSWORD
+    # CACHE_REDIS_DB
+    # CACHE_REDIS_URL
 
     # Redis Connection
     redis_host = env.get('REDIS_HOST', None)

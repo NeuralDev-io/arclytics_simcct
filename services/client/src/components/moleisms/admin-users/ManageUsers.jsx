@@ -89,7 +89,7 @@ class ManageUsers extends Component {
             </Button>
           </div>
         ),
-        width: 210,
+        width: 337,
       },
     ]
 

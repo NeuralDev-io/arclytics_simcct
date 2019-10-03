@@ -1,8 +1,19 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * File input component.
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React from 'react'
 import PropTypes from 'prop-types'
 
 import styles from './FileInput.module.scss'
-
 
 function FileInput({
   name,

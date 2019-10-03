@@ -117,7 +117,7 @@ class TestSimulationService(BaseTestCase):
     #             self.assertEqual(session_store, 'Session is empty.')
     #
     #         res = client.get(
-    #             '/api/v1/sim/simulate', content_type='application/json'
+    #             '/v1/sim/simulate', content_type='application/json'
     #         )
     #         data = json.loads(res.data.decode())
     #         self.assertEqual(
@@ -147,7 +147,7 @@ class TestSimulationService(BaseTestCase):
     #             session[prefix] = ser_session_data
     #
     #         res = client.get(
-    #             '/api/v1/sim/simulate', content_type='application/json'
+    #             '/v1/sim/simulate', content_type='application/json'
     #         )
     #         data = json.loads(res.data.decode())
     #         self.assertEqual(
@@ -163,22 +163,22 @@ class TestSimulationService(BaseTestCase):
     #
     #         # MUST have AE and MS/BS > 0.0 before we can run simulate
     #         res = client.get(
-    #             '/api/v1/sim/configs/ae', content_type='application/json'
+    #             '/v1/sim/configs/ae', content_type='application/json'
     #         )
     #         self.assert200(res)
     #
     #         res = client.get(
-    #             '/api/v1/sim/configs/ms', content_type='application/json'
+    #             '/v1/sim/configs/ms', content_type='application/json'
     #         )
     #         self.assert200(res)
     #         res = client.get(
-    #             '/api/v1/sim/configs/bs', content_type='application/json'
+    #             '/v1/sim/configs/bs', content_type='application/json'
     #         )
     #         self.assert200(res)
     #
     #         # Now we can run
     #         res = client.get(
-    #             '/api/v1/sim/simulate', content_type='application/json'
+    #             '/v1/sim/simulate', content_type='application/json'
     #         )
     #         data = json.loads(res.data.decode())
     #         self.assertFalse(data.get('message', None))
@@ -234,22 +234,22 @@ class TestSimulationService(BaseTestCase):
 
             # MUST have AE and MS/BS > 0.0 before we can run simulate
             res = client.get(
-                '/api/v1/sim/configs/ae', content_type='application/json'
+                '/v1/sim/configs/ae', content_type='application/json'
             )
             self.assert200(res)
 
             res = client.get(
-                '/api/v1/sim/configs/ms', content_type='application/json'
+                '/v1/sim/configs/ms', content_type='application/json'
             )
             self.assert200(res)
             res = client.get(
-                '/api/v1/sim/configs/bs', content_type='application/json'
+                '/v1/sim/configs/bs', content_type='application/json'
             )
             self.assert200(res)
 
             # Now we can run
             res = client.get(
-                '/api/v1/sim/simulate', content_type='application/json'
+                '/v1/sim/simulate', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             # logger.debug(data)

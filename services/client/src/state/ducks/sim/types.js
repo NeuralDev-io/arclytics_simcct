@@ -10,5 +10,9 @@ export const RUN_SIM = 'sim/RUN_SIM'
 
 export const UPDATE_CCT_INDEX = 'sim/UPDATE_CCT_INDEX'
 export const LOAD_SIM = 'sim/LOAD_SIM'
+export const LOAD_SIM_FROM_FILE = 'sim/LOAD_SIM_FROM_FILE'
 export const LOAD_PERSISTED_SIM = 'sim/LOAD_PERSISTED_SIM'
 export const LOAD_LAST_SIM = 'sim/LOAD_LAST_SIM'
+export const LOAD_SIM_FROM_TIME_MACHINE = 'sim/LOAD_SIM_FROM_TIME_MACHINE'
+
+export const RESET_SIM = 'sim/RESET_SIM'

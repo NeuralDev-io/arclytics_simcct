@@ -3,6 +3,7 @@ import {
   CLOSE_FEEDBACK,
   RESET_FEEDBACK,
 } from './types'
+import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
 import { logError } from '../../../api/LoggingHelper'
 
@@ -26,7 +27,7 @@ export const resetFeedback = () => (dispatch) => {
 
 export const submitFeedback = () => (dispatch, getState) => {
   const { category, rate, message } = getState().feedback
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/feedback`, {
+  fetch(`${SIMCCT_URL}/user/feedback`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -71,7 +72,7 @@ export const submitFeedback = () => (dispatch, getState) => {
 }
 
 export const submitRating = rate => (dispatch, getState) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/rating`, {
+  fetch(`${SIMCCT_URL}/user/rating`, {
     method: 'POST',
     credentials: 'include',
     headers: {

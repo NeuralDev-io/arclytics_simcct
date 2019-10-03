@@ -5,7 +5,7 @@ import UploadIcon from 'react-feather/dist/icons/upload'
 import Button from '../../elements/button'
 import FileInput from '../../elements/file-input/FileInput'
 import { AttachModal } from '../../elements/modal'
-import { loadSim } from '../../../state/ducks/sim/actions'
+import { loadSimFromFile } from '../../../state/ducks/sim/actions'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
 
 import styles from './LoadSimButton.module.scss'
@@ -24,7 +24,7 @@ class LoadSimButton extends Component {
   handleCloseModal = () => this.setState({ visible: false })
 
   handleFileInputChange = (e) => {
-    const { loadSimConnect, addFlashToastConnect } = this.props
+    const { loadSimFromFileConnect, addFlashToastConnect } = this.props
     const file = e.target.files[0]
 
     // check file size
@@ -55,7 +55,7 @@ class LoadSimButton extends Component {
       // TODO: validate sim schema
 
       // load simulations
-      loadSimConnect(sim)
+      loadSimFromFileConnect(sim)
       this.setState({ filename: file.name })
       addFlashToastConnect({
         message: 'File imported successfully',
@@ -102,12 +102,12 @@ class LoadSimButton extends Component {
 
 LoadSimButton.propTypes = {
   // props from connect()
-  loadSimConnect: PropTypes.func.isRequired,
+  loadSimFromFileConnect: PropTypes.func.isRequired,
   addFlashToastConnect: PropTypes.func.isRequired,
 }
 
 const mapDispatchToProps = {
-  loadSimConnect: loadSim,
+  loadSimFromFileConnect: loadSimFromFile,
   addFlashToastConnect: addFlashToast,
 }
 

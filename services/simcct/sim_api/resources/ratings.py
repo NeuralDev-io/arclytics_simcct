@@ -65,9 +65,6 @@ class UserRating(Resource):
         except ValidationError as e:
             response['error'] = str(e.message)
             response['message'] = 'Rating validation error.'
-            log_message = {'message': response['message'], 'error': str(e)}
-            logger.exception(log_message)
-            apm.capture_exception()
             return response, 400
 
         user.ratings.append(Rating(rating=rating))
@@ -126,9 +123,6 @@ class UserFeedback(Resource):
         except ValidationError as e:
             response['error'] = str(e.message)
             response['message'] = 'Feedback validation error.'
-            log_message = {'message': response['message'], 'error': str(e)}
-            logger.exception(log_message)
-            apm.capture_exception()
             return response, 400
 
         feedback_mailing_list = []
@@ -267,6 +261,7 @@ class SubscribeFeedback(Resource):
 
     method_decorators = {'post': [authorize_admin_cookie_restful]}
 
+    # noinspection PyMethodMayBeStatic
     def post(self, user):
         """
         Toggle subscription to the feedback mailing list.
@@ -310,9 +305,9 @@ class SubscribeFeedback(Resource):
             return response, 400
 
 
-api.add_resource(UserRating, '/api/v1/sim/user/rating')
-api.add_resource(UserFeedback, '/api/v1/sim/user/feedback')
-api.add_resource(FeedbackList, '/api/v1/sim/admin/feedback/list')
+api.add_resource(UserRating, '/v1/sim/user/rating')
+api.add_resource(UserFeedback, '/v1/sim/user/feedback')
+api.add_resource(FeedbackList, '/v1/sim/admin/feedback/list')
 api.add_resource(
-    SubscribeFeedback, '/api/v1/sim/admin/feedback/list/subscribe'
+    SubscribeFeedback, '/v1/sim/admin/feedback/list/subscribe'
 )

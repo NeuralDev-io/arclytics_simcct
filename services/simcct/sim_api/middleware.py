@@ -32,6 +32,7 @@ from arc_logging import AppLogger
 from sim_api.extensions.Session.redis_session import SESSION_COOKIE_NAME
 from sim_api.extensions import apm
 from sim_api.models import User
+from sim_api.auth_service import AuthService
 
 logger = AppLogger(__name__)
 
@@ -81,7 +82,7 @@ def authenticate_user_and_cookie_flask(f):
 
         # Decode either returns bson.ObjectId if successful or a string from an
         # exception
-        resp = User.decode_auth_token(auth_token=auth_token)
+        resp = AuthService().decode_auth_token(auth_token=auth_token)
 
         # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):
@@ -151,7 +152,7 @@ def authorize_admin_cookie_flask(f):
 
         # Decode either returns bson.ObjectId if successful or a string
         # from an exception
-        resp = User.decode_auth_token(auth_token=auth_token)
+        resp = AuthService().decode_auth_token(auth_token=auth_token)
 
         # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):
@@ -238,7 +239,7 @@ def authenticate_user_cookie_restful(f):
 
         # Decode either returns bson.ObjectId if successful or a string from an
         # exception
-        resp = User.decode_auth_token(auth_token=auth_token)
+        resp = AuthService().decode_auth_token(auth_token=auth_token)
 
         # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):
@@ -311,7 +312,7 @@ def authorize_admin_cookie_restful(f):
 
         # Decode either returns bson.ObjectId if successful or a string
         # from an exception
-        resp = User.decode_auth_token(auth_token=auth_token)
+        resp = AuthService().decode_auth_token(auth_token=auth_token)
 
         # Either returns an ObjectId User ID or a string response.
         if not isinstance(resp, ObjectId):

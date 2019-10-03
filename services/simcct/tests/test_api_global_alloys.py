@@ -200,7 +200,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.shuri.email, self._shuri_pw)
 
             res = client.get(
-                '/api/v1/sim/global/alloys', content_type='application/json'
+                '/v1/sim/global/alloys', content_type='application/json'
             )
             data = res.json
 
@@ -220,7 +220,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.shuri.email, self._shuri_pw)
 
             res = client.get(
-                '/api/v1/sim/global/alloys', content_type='application/json'
+                '/v1/sim/global/alloys', content_type='application/json'
             )
             data = json.loads(res.data.decode())
 
@@ -238,7 +238,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.okoye.email, self._okoye_pw)
 
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps(
                     {
                         'name': 'Alloy-1',
@@ -258,7 +258,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.shuri.email, self._shuri_pw)
 
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps({}),  # Middleware before View method
                 content_type='application/json'
             )
@@ -275,7 +275,7 @@ class TestAlloyService(BaseTestCase):
             self.assertEqual(len(client.cookie_jar), 0)
 
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -302,7 +302,7 @@ class TestAlloyService(BaseTestCase):
 
             # Logging out should clear the session
             client.get(
-                '/api/v1/sim/auth/logout', content_type='application/json'
+                '/v1/sim/auth/logout', content_type='application/json'
             )
 
             # Clear the cookie from previously although it should be
@@ -314,7 +314,7 @@ class TestAlloyService(BaseTestCase):
             client.set_cookie('localhost', 'SESSION_TOKEN', cookie.value)
 
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -329,7 +329,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.okoye.email, self._okoye_pw)
 
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -344,7 +344,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.okoye.email, self._okoye_pw)
 
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps(
                     {
                         'name': 'Alloy-1',
@@ -385,7 +385,7 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(alloy_id)
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps(duplicate_alloy),
                 content_type='application/json'
             )
@@ -407,7 +407,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.okoye.email, self._okoye_pw)
 
             res = client.get(
-                f'/api/v1/sim/global/alloys/{alloy_id}',
+                f'/v1/sim/global/alloys/{alloy_id}',
                 content_type='application/json'
             )
             data = res.json
@@ -424,7 +424,7 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(ObjectId())
             res = client.get(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -453,7 +453,7 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(ObjectId())
             res = client.patch(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 data=json.dumps(bad_alloy_data),
                 content_type='application/json'
             )
@@ -600,7 +600,7 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(alloy_id)
             res = client.put(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 data=json.dumps(new_alloy_data),
                 content_type='application/json'
             )
@@ -631,7 +631,7 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(ObjectId())
             res = client.put(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 data=json.dumps(bad_alloy_data),
                 content_type='application/json'
             )
@@ -651,7 +651,7 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(ObjectId())
             res = client.put(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 data=json.dumps(alloy_data),
                 content_type='application/json'
             )
@@ -666,7 +666,7 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(ObjectId())
             res = client.put(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -730,7 +730,7 @@ class TestAlloyService(BaseTestCase):
             _id = str(alloy_id)
 
             res = client.delete(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -744,7 +744,7 @@ class TestAlloyService(BaseTestCase):
             _id = str(ObjectId())
 
             res = client.delete(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -767,7 +767,7 @@ class TestAlloyService(BaseTestCase):
             _id = 123456789
 
             res = client.delete(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -776,7 +776,7 @@ class TestAlloyService(BaseTestCase):
             self.assertEqual(data['message'], 'Invalid ObjectId.')
 
             res = client.put(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 data=json.dumps(alloy_data),
                 content_type='application/json'
             )
@@ -786,7 +786,7 @@ class TestAlloyService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
 
             res = client.get(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())

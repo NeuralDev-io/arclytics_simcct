@@ -29,7 +29,10 @@ class UserSavedSimulations extends Component {
   handleLoadSim = (sim) => {
     const { loadSimFromAccountConnect, redirect } = this.props
     loadSimFromAccountConnect(sim)
-    redirect('/')
+    redirect({
+      pathname: '/',
+      state: { loadFromAccount: true },
+    })
   }
 
   handleViewSim = (sim) => {

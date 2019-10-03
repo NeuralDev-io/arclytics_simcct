@@ -39,20 +39,27 @@ class SaveSimButton extends Component {
   }
 
   saveSimAsFile = () => {
-    const { sim } = this.props
+    const {
+      sim: {
+        configurations: {
+          error,
+          ...otherConfigs
+        },
+        alloys: {
+          parentError,
+          isLoading,
+          ...otherAlloys
+        },
+        results: {
+          cctIndex,
+          ...otherResults
+        },
+      },
+    } = this.props
     const savedSim = {
-      configurations: sim.configurations,
-      alloys: {
-        alloyOption: sim.alloys.alloyOption,
-        parent: sim.alloys.parent,
-        weld: sim.alloys.weld,
-        mix: sim.alloys.mix,
-      },
-      results: {
-        USER: sim.results.USER,
-        CCT: sim.results.CCT,
-        TTT: sim.results.TTT,
-      },
+      configurations: otherConfigs,
+      alloys: otherAlloys,
+      results: otherResults,
     }
     const blob = new Blob([JSON.stringify(savedSim)], { type: 'text/plain;charset=utf-8' })
     FileSaver.saveAs(blob, `arc_sim_${new Date().toISOString()}.json`)
@@ -102,17 +109,15 @@ SaveSimButton.propTypes = {
   // props from connect()
   saveSimulationConnect: PropTypes.func.isRequired,
   sim: PropTypes.shape({
-    configurations: PropTypes.shape({}),
+    configurations: PropTypes.shape({
+      error: PropTypes.shape({}),
+    }),
     results: PropTypes.shape({
-      USER: PropTypes.shape({}),
-      CCT: PropTypes.shape({}),
-      TTT: PropTypes.shape({}),
+      cctIndex: PropTypes.number,
     }),
     alloys: PropTypes.shape({
-      alloyOption: PropTypes.string,
-      parent: PropTypes.shape({}),
-      weld: PropTypes.shape({}),
-      mix: PropTypes.array,
+      parentError: PropTypes.shape({}),
+      isLoading: PropTypes.bool,
     }),
   }).isRequired,
   addFlashToastConnect: PropTypes.func.isRequired,

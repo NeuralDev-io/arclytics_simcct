@@ -27,7 +27,7 @@ def log_test_user_in(self, user: User, password: str) -> str:
     """Log in a test user and return their token"""
     with self.client:
         resp_login = self.client.post(
-            '/api/v1/sim/auth/login',
+            '/v1/sim/auth/login',
             data=json.dumps({
                 'email': user.email,
                 'password': password
@@ -124,7 +124,7 @@ class TestUserService(BaseTestCase):
             test_login(client, tony.email, 'IAmTheRealIronMan')
 
             resp = client.get(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 content_type='application/json',
             )
             data = json.loads(resp.data.decode())
@@ -134,7 +134,7 @@ class TestUserService(BaseTestCase):
     def test_user_status(self):
         with self.client:
             test_login(self.client, self.tony.email, self._tony_pw)
-            response = self.client.get('/api/v1/sim/auth/status')
+            response = self.client.get('/v1/sim/auth/status')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
             self.assertIsNone(data.get('message', None))
@@ -142,14 +142,12 @@ class TestUserService(BaseTestCase):
             self.assertTrue(data['active'])
             self.assertTrue(data['admin'])
             self.assertTrue(data['isProfile'])
-            self.assertFalse(data['simulationValid'])
-            self.assertTrue(data['signedIn'])
             self.assertTrue(data['verified'])
 
     def test_single_user_not_active(self):
         """
         Ensure if user is not active they can't use authenticated endpoints
-        like get: /api/v1/sim/user
+        like get: /v1/sim/user
         """
         clint = User(
             **{
@@ -169,7 +167,7 @@ class TestUserService(BaseTestCase):
             clint.save()
 
             resp = self.client.get(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 content_type='application/json',
             )
 
@@ -183,7 +181,7 @@ class TestUserService(BaseTestCase):
     def test_single_user_no_cookie(self):
         """Ensure error is thrown if there is no cookie provided."""
         with self.client:
-            response = self.client.get('/api/v1/sim/user')
+            response = self.client.get('/v1/sim/user')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 401)
             self.assertIn('Session token is not valid.', data['message'])
@@ -206,7 +204,7 @@ class TestUserService(BaseTestCase):
 
             # Logging out should clear the session
             client.get(
-                '/api/v1/sim/auth/logout', content_type='application/json'
+                '/v1/sim/auth/logout', content_type='application/json'
             )
 
             # Clear the cookie from previously although it should be
@@ -218,7 +216,7 @@ class TestUserService(BaseTestCase):
             client.set_cookie('localhost', 'SESSION_TOKEN', cookie.value)
 
             res = client.get(
-                '/api/v1/sim/user', content_type='application/json'
+                '/v1/sim/user', content_type='application/json'
             )
             data = json.loads(res.data.decode())
 
@@ -256,7 +254,7 @@ class TestUserService(BaseTestCase):
     #         # client.set_cookie('localhost', 'SESSION_TOKEN', cookie.value)
     #         #
     #         res = client.get(
-    #             '/api/v1/sim/user',
+    #             '/v1/sim/user',
     #             content_type='application/json',
     #             environ_base={
     #                 'HTTP_USER_AGENT': 'Chrome',
@@ -294,7 +292,7 @@ class TestUserService(BaseTestCase):
         with self.client:
             test_login(self.client, tony.email, 'IAmTheRealIronMan')
             resp = self.client.get(
-                '/api/v1/sim/users',
+                '/v1/sim/users',
                 content_type='application/json',
             )
             data = json.loads(resp.data.decode())
@@ -334,7 +332,7 @@ class TestUserService(BaseTestCase):
             client.cookie_jar.clear()
             client.set_cookie('localhost', 'BAD_KEY', cookie_value)
 
-            resp = self.client.get('/api/v1/sim/users')
+            resp = self.client.get('/v1/sim/users')
             data = json.loads(resp.data.decode())
             self.assertEqual('fail', data['status'])
             self.assertNotIn('data', data)
@@ -388,7 +386,7 @@ class TestUserService(BaseTestCase):
             test_login(client, self.tony.email, self._tony_pw)
             self.assertTrue(tony.active)
             resp = client.get(
-                '/api/v1/sim/users',
+                '/v1/sim/users',
                 content_type='application/json',
             )
             data = json.loads(resp.data.decode())
@@ -414,7 +412,7 @@ class TestUserService(BaseTestCase):
         with self.client as client:
             test_login(client, obiwan.email, 'HelloThere')
             resp = self.client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'first_name': 'Obi-Wan',
@@ -491,7 +489,7 @@ class TestUserService(BaseTestCase):
         with self.client as client:
             test_login(client, yoda.email, 'DoOrDoNot')
             resp = self.client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'first_name': 'Yoda',
@@ -580,7 +578,7 @@ class TestUserService(BaseTestCase):
         with self.client as client:
             test_login(client, sheev.email, 'IAmTheSenate')
             resp = client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'first_name': 'Emperor',
@@ -630,7 +628,7 @@ class TestUserService(BaseTestCase):
         with self.client as client:
             test_login(client, maul.email, 'AtLastWeWillHaveRevenge')
             resp = self.client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(''),
                 content_type='application/json'
             )
@@ -662,7 +660,7 @@ class TestUserService(BaseTestCase):
             test_login(client, ahsoka.email, 'IAmNoJedi')
 
             resp = client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'last_name': 'Tano',
@@ -725,7 +723,7 @@ class TestUserService(BaseTestCase):
             test_login(client, obiwan.email, 'HelloThere')
 
             resp = client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'lightsaber_colour': 'blue',
@@ -758,7 +756,7 @@ class TestUserService(BaseTestCase):
             test_login(client, obiwan.email, 'HelloThere')
 
             resp = client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'first_name': 'Obi-Wan',
@@ -813,7 +811,7 @@ class TestUserService(BaseTestCase):
             test_login(client, rex.email, 'ExperienceOutranksEverything')
 
             resp = client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'mobile_number': '1234567890',
@@ -866,7 +864,7 @@ class TestUserService(BaseTestCase):
             test_login(client, rex.email, 'ExperienceOutranksEverything')
 
             resp = self.client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'mobile_number': '1234567890',
@@ -898,7 +896,7 @@ class TestUserService(BaseTestCase):
             test_login(client, jabba.email, 'ThereWillBeNoBargain')
 
             resp = self.client.post(
-                '/api/v1/sim/user/profile',
+                '/v1/sim/user/profile',
                 data=json.dumps(
                     {
                         'aim': 'Find Han Solo.',
@@ -944,7 +942,7 @@ class TestUserService(BaseTestCase):
         with self.client as client:
             test_login(client, lando.email, 'TheShieldIsStillUp')
             resp = client.post(
-                '/api/v1/sim/user/profile',
+                '/v1/sim/user/profile',
                 data=json.dumps(''),
                 content_type='application/json'
             )
@@ -970,7 +968,7 @@ class TestUserService(BaseTestCase):
             test_login(client, boba.email, 'NoGoodToMeDead')
 
             resp = client.post(
-                '/api/v1/sim/user/profile',
+                '/v1/sim/user/profile',
                 data=json.dumps(
                     {
                         'highest_education': 'Bounty Hunter Academy.',

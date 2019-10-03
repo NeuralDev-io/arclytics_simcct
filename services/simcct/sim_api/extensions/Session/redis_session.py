@@ -40,6 +40,7 @@ logger = AppLogger(__name__)
 
 SESSION_EXPIRY_MINUTES = 120
 SESSION_COOKIE_NAME = 'SESSION_TOKEN'
+API_TOKEN_NAME = 'JWT_TOKEN'
 
 
 def utctimestamp_by_second(utc_date_time):
@@ -116,18 +117,12 @@ class RedisSessionInterface(SessionInterface):
             return self._new_session()
 
         data = json.loads(redis_value.decode())
-
-        # if str(ip_address) != data.get('ip_address', ''):
-        #     logger.debug(
-        #         f'Some idiot tried to access from a different IP.\n'
-        #         f'Session IP: {data["ip_address"]}\n'
-        #         f'Request IP: {ip_address}'
-        #     )
-        #     return self._new_session()
         return RedisSession(data, sid=sid)
 
     def save_session(self, app, session, response):
         jwt = session.get('jwt')
+        user_id = session.get('user_id')
+        is_admin = session.get('is_admin')
 
         # Initial verification of the Session
 
@@ -152,7 +147,7 @@ class RedisSessionInterface(SessionInterface):
         expiry_date = datetime.utcnow() + expiry_duration
         expires_in_seconds = int(expiry_duration.total_seconds())
 
-        session.sid = self._inject_jwt_in_sid(session.sid, jwt)
+        session.sid = self._inject_uid_in_sid(session.sid, user_id)
         session_key = self._create_session_key(session.sid, expiry_date)
 
         self._write_wrapper(
@@ -175,6 +170,14 @@ class RedisSessionInterface(SessionInterface):
                 httponly=True,
                 domain=self.get_cookie_domain(app)
             )
+            if is_admin:
+                response.set_cookie(
+                    API_TOKEN_NAME,
+                    jwt,
+                    expires=expiry_date,
+                    httponly=True,
+                    domain=self.get_cookie_domain(app)
+                )
         else:
             response.set_cookie(
                 SESSION_COOKIE_NAME,
@@ -184,6 +187,15 @@ class RedisSessionInterface(SessionInterface):
                 secure=True,
                 domain=self.get_cookie_domain(app)
             )
+            if is_admin:
+                response.set_cookie(
+                    API_TOKEN_NAME,
+                    jwt,
+                    expires=expiry_date,
+                    httponly=True,
+                    secure=True,
+                    domain=self.get_cookie_domain(app)
+                )
 
     @staticmethod
     def _new_session():
@@ -311,7 +323,7 @@ class RedisSessionInterface(SessionInterface):
         )
 
     @staticmethod
-    def _inject_jwt_in_sid(sid, jwt):
+    def _inject_uid_in_sid(sid, jwt):
         """We simply inject the JWT into the Session ID to further encode."""
         prefix = "{}.".format(jwt)
         if not sid.startswith(prefix):

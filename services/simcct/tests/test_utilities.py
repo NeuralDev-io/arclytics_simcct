@@ -36,7 +36,7 @@ def convert_json_to_comp(comp_list):
 
 def test_login(client, email: str, password: str):
     resp_login = client.post(
-        '/api/v1/sim/auth/login',
+        '/v1/sim/auth/login',
         data=json.dumps({
             'email': email,
             'password': password

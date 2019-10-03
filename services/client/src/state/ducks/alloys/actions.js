@@ -26,7 +26,8 @@ import {
   DELETE_USER_ALLOY,
 } from './types'
 import { addFlashToast } from '../toast/actions'
-import {logError} from "../../../api/LoggingHelper";
+import { SIMCCT_URL } from '../../../constants'
+import { logError } from '../../../api/LoggingHelper'
 
 // Change the ports for which server
 
@@ -44,7 +45,7 @@ const getAlloys = type => (dispatch) => {
    *   "data": [{"_id": ..., "name": ..., "compositions": [...]}, {...}]
    * }
    */
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys`, {
+  fetch(`${SIMCCT_URL}/${type}/alloys`, {
     method: 'GET',
     credentials: 'include',
     headers: {
@@ -96,7 +97,7 @@ const createAlloy = (type, alloy) => dispatch => (
    *   "data": {"_id": ..., "name": ..., "compositions": [...]}
    * }
    */
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys`, {
+  fetch(`${SIMCCT_URL}/${type}/alloys`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -137,7 +138,7 @@ const createAlloy = (type, alloy) => dispatch => (
 )
 
 const updateAlloy = (type, alloy) => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys/${alloy._id}`, { // eslint-disable-line
+  fetch(`${SIMCCT_URL}/${type}/alloys/${alloy._id}`, { // eslint-disable-line
     method: 'PUT',
     credentials: 'include',
     headers: {
@@ -192,7 +193,7 @@ const deleteAlloy = (type, alloyId) => (dispatch) => {
    *   "status": "success",
    * }
    */
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/${type}/alloys/${alloyId}`, {
+  fetch(`${SIMCCT_URL}/${type}/alloys/${alloyId}`, {
     method: 'DELETE',
     credentials: 'include',
     headers: {

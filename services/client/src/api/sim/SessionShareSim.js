@@ -9,7 +9,7 @@
  * sending an email for sharing configurations via the API in the simcct server.
  */
 
-import { ARC_URL } from '../../constants'
+import { SIMCCT_URL } from '../../constants'
 
 export const getShareUrlLink = (configs, alloyStore, results) => new Promise((resolve, reject) => {
   /**
@@ -21,7 +21,7 @@ export const getShareUrlLink = (configs, alloyStore, results) => new Promise((re
    *   "link": "..."
    * }
    * */
-  fetch(`${ARC_URL}/user/share/simulation/link`, {
+  fetch(`${SIMCCT_URL}/user/share/simulation/link`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -53,7 +53,7 @@ export const sendShareEmail = (emails, message, configurations, alloyStore, resu
      *   "link": "..."
      * }
      * */
-    fetch(`${ARC_URL}/user/share/simulation/email`, {
+    fetch(`${SIMCCT_URL}/user/share/simulation/email`, {
       method: 'POST',
       credentials: 'include',
       headers: {

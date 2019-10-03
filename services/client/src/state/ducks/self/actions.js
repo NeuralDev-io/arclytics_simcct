@@ -8,11 +8,12 @@ import {
   GET_SIM,
   GET_LAST_SIM,
 } from './types'
+import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
 import { logError } from '../../../api/LoggingHelper'
 
 export const getUserProfile = () => (dispatch) => { // eslint-disable-line
-  return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user`, {
+  return fetch(`${SIMCCT_URL}/user`, {
     method: 'GET',
     credentials: 'include',
     headers: {
@@ -49,7 +50,7 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
 }
 
 export const createUserProfile = values => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/profile`, {
+  fetch(`${SIMCCT_URL}/user/profile`, {
     method: 'POST',
     mode: 'cors',
     credentials: 'include',
@@ -88,7 +89,7 @@ export const createUserProfile = values => (dispatch) => {
 }
 
 export const updateUserProfile = values => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user`, {
+  fetch(`${SIMCCT_URL}/user`, {
     method: 'PATCH',
     mode: 'cors',
     credentials: 'include',
@@ -127,7 +128,7 @@ export const updateUserProfile = values => (dispatch) => {
 }
 
 export const updateEmail = values => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/auth/email/change`, {
+  fetch(`${SIMCCT_URL}/auth/email/change`, {
     method: 'PUT',
     mode: 'cors',
     credentials: 'include',
@@ -166,7 +167,7 @@ export const updateEmail = values => (dispatch) => {
 }
 
 export const changePassword = values => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/auth/password/change`, {
+  fetch(`${SIMCCT_URL}/auth/password/change`, {
     method: 'PUT',
     mode: 'cors',
     credentials: 'include',
@@ -240,7 +241,7 @@ export const saveSimulation = () => (dispatch, getState) => {
     grain_size: grain_size_ASTM,
   }
 
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
+  fetch(`${SIMCCT_URL}/user/simulation`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -299,7 +300,7 @@ export const saveSimulation = () => (dispatch, getState) => {
  * }
  */
 export const getSavedSimulations = () => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
+  fetch(`${SIMCCT_URL}/user/simulation`, {
     method: 'GET',
     credentials: 'include',
     headers: {
@@ -370,7 +371,7 @@ export const saveLastSim = () => (dispatch, getState) => {
 
   const isValid = Object.keys(alloyError).length !== 0 && Object.keys(configError) !== 0
 
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/last/simulation`, {
+  fetch(`${SIMCCT_URL}/user/last/simulation`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -394,7 +395,7 @@ export const saveLastSim = () => (dispatch, getState) => {
 }
 
 export const getLastSim = () => dispatch => (
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/last/simulation`, {
+  fetch(`${SIMCCT_URL}/user/last/simulation`, {
     method: 'GET',
     credentials: 'include',
     headers: {

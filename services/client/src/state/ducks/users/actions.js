@@ -1,11 +1,12 @@
 import {
   GET_USERS,
 } from './types'
+import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
 import { logError } from '../../../api/LoggingHelper'
 
 export const getUsers = () => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/users`, {
+  fetch(`${SIMCCT_URL}/users`, {
     method: 'GET',
     credentials: 'include',
     headers: {

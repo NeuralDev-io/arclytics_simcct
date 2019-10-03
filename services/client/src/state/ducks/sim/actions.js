@@ -14,6 +14,7 @@ import {
   LOAD_SIM_FROM_FILE,
   RESET_SIM,
 } from './types'
+import { SIMCCT_URL } from '../../../constants'
 import { ASTM2Dia } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
 import { addSimToTimeMachine } from '../timeMachine/actions'
@@ -46,7 +47,7 @@ export const initSession = (option, type, alloy) => (dispatch) => {
   // Only POST the name and compositions to the server,
   // but _id will also be saved to Redux state to refer to
   // the original alloy
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
+  fetch(`${SIMCCT_URL}/alloys/update`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -128,7 +129,7 @@ export const updateComp = (option, type, alloy, error) => (dispatch) => {
 
   // only make API request if error free
   if (Object.keys(error).length === 0) {
-    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/alloys/update`, {
+    fetch(`${SIMCCT_URL}/alloys/update`, {
       method: 'PATCH',
       credentials: 'include',
       headers: {
@@ -178,7 +179,7 @@ export const updateDilution = val => (dispatch) => {
  * @param {string} value new method
  */
 export const updateConfigMethod = value => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/method/update`, {
+  fetch(`${SIMCCT_URL}/configs/method/update`, {
     method: 'PUT',
     credentials: 'include',
     headers: {
@@ -238,7 +239,7 @@ export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getStat
 
   // only update to server when the grain size is valid
   if (Object.keys(grainSizeError).length === 0 && grainSizeError.constructor === Object) {
-    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
+    fetch(`${SIMCCT_URL}/configs/update`, {
       method: 'PATCH',
       credentials: 'include',
       headers: {
@@ -310,7 +311,7 @@ export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState
 
   // only send update to server when there is no error
   if (Object.keys(valError).length === 0 && valError.constructor === Object) {
-    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
+    fetch(`${SIMCCT_URL}/configs/${name}`, {
       method: 'PUT',
       credentials: 'include',
       headers: {
@@ -357,7 +358,7 @@ export const getMsBsAe = name => (dispatch, getState) => {
     delete error.ae3_temp
   }
 
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/${name}`, {
+  fetch(`${SIMCCT_URL}/configs/${name}`, {
     method: 'GET',
     credentials: 'include',
     headers: {
@@ -425,7 +426,7 @@ export const updateConfig = (name, value, valError) => (dispatch, getState) => {
 
   // only make API request when there is no error
   if (Object.keys(valError).length === 0 && valError.constructor === Object) {
-    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
+    fetch(`${SIMCCT_URL}/configs/update`, {
       method: 'PATCH',
       credentials: 'include',
       headers: {
@@ -474,7 +475,7 @@ export const runSim = () => (dispatch, getState) => {
     start_temp,
   } = getState().sim.configurations
 
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/configs/update`, {
+  fetch(`${SIMCCT_URL}/configs/update`, {
     method: 'PATCH',
     credentials: 'include',
     headers: {
@@ -488,7 +489,7 @@ export const runSim = () => (dispatch, getState) => {
       start_temp,
     }),
   }).catch(err => logError(err.toString(), err.message, 'actions.runSim', err.stack))
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/simulate`, {
+  fetch(`${SIMCCT_URL}/simulate`, {
     method: 'GET',
     credentials: 'include',
     headers: {
@@ -573,7 +574,7 @@ export const loadSimFromFile = sim => (dispatch) => {
 }
 
 export const loadSimFromLink = token => dispatch => (
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/share/simulation/view/${token}`, {
+  fetch(`${SIMCCT_URL}/user/share/simulation/view/${token}`, {
     method: 'GET',
     credentials: 'include',
     headers: {
@@ -687,5 +688,5 @@ export const loadLastSim = () => (dispatch, getState) => {
 }
 
 export const loadSimFromTimeMachine = (sim) => (dispatch) => {
-  
+
 }

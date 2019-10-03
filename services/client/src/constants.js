@@ -10,4 +10,5 @@
  */
 
 export const LOGGER_URL = `${process.env.REACT_APP_FLUENTD_URL}`
-export const ARC_URL = `${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim`
+export const SIMCCT_URL = `${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/v1/sim`
+export const ARC_URL = `${process.env.REACT_APP_ARC_HOST}:${process.env.REACT_APP_ARC_PORT}/v1/arc`

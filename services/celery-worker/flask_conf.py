@@ -54,8 +54,8 @@ class DevelopmentConfig(BaseConfig):
     # CELERY REDIS
     REDIS_HOST = env.get('REDIS_HOST', None)
     REDIS_PORT = env.get('REDIS_PORT', None)
-    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/5'
-    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'
+    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/1'
+    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/2'
 
 
 class TestingConfig(BaseConfig):
@@ -66,8 +66,8 @@ class TestingConfig(BaseConfig):
     # CELERY REDIS
     REDIS_HOST = env.get('REDIS_HOST', None)
     REDIS_PORT = env.get('REDIS_PORT', None)
-    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/5'
-    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'
+    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/1'
+    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/2'
 
 
 class ProductionConfig(BaseConfig):
@@ -77,8 +77,8 @@ class ProductionConfig(BaseConfig):
     REDIS_PORT = env.get('REDIS_PORT', None)
     REDIS_PASSWORD = env.get('REDIS_PASSWORD', None)
     redis_uri = f'redis://user:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}'
-    CELERY_BROKER_URL = f'{redis_uri}/5'
-    CELERY_RESULT_BACKEND = f'{redis_uri}/6'
+    CELERY_BROKER_URL = f'{redis_uri}/1'
+    CELERY_RESULT_BACKEND = f'{redis_uri}/2'
 
     # production elastic application performance monitoring
     ELASTIC_APM = {

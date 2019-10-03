@@ -11,10 +11,20 @@ import {
   LOAD_SIM,
   LOAD_PERSISTED_SIM,
   LOAD_LAST_SIM,
+  LOAD_SIM_FROM_FILE,
+  RESET_SIM,
 } from './types'
 import { ASTM2Dia } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
-import {logError} from "../../../api/LoggingHelper";
+import { addSimToTimeMachine } from '../timeMachine/actions'
+import { logError } from '../../../api/LoggingHelper'
+
+export const resetSession = () => (dispatch) => {
+  // make api call to update session
+  dispatch({
+    type: RESET_SIM,
+  })
+}
 
 /**
  * Initialise a new sim session on the server, then update alloy in
@@ -506,6 +516,7 @@ export const runSim = () => (dispatch, getState) => {
           type: RUN_SIM,
           payload: simRes.data,
         })
+        addSimToTimeMachine()(dispatch, getState)
         // update sim count in localStorage
         const currentSimCount = localStorage.getItem('simCount')
         if (currentSimCount === undefined) {
@@ -538,6 +549,13 @@ export const updateCCTIndex = idx => (dispatch) => {
   })
 }
 
+export const loadSim = sim => (dispatch) => {
+  dispatch({
+    type: LOAD_SIM,
+    payload: sim,
+  })
+}
+
 /**
  * Schema of simulation object passed as arg
  * {
@@ -547,9 +565,9 @@ export const updateCCTIndex = idx => (dispatch) => {
  * }
  * @param {Object} sim simulation object
  */
-export const loadSim = sim => (dispatch) => {
+export const loadSimFromFile = sim => (dispatch) => {
   dispatch({
-    type: LOAD_SIM,
+    type: LOAD_SIM_FROM_FILE,
     payload: sim,
   })
 }
@@ -635,6 +653,7 @@ export const loadSimFromAccount = ({
       },
       configurations: {
         grain_size_ASTM: grain_size,
+        grain_size_diameter: ASTM2Dia(parseFloat(grain_size)),
         ...otherConfig,
       },
       results: simulation_results,
@@ -652,7 +671,7 @@ export const loadPersistedSim = () => (dispatch, getState) => {
 
 export const loadLastSim = () => (dispatch, getState) => {
   const { lastSim } = getState().self
-  const { last_configurations: { grain_size, is_valid, ...otherConfig } } = lastSim
+  const { last_configuration: { grain_size, is_valid, ...otherConfig } } = lastSim
   const convertedConfig = {
     ...otherConfig,
     grain_size_ASTM: grain_size,
@@ -662,7 +681,11 @@ export const loadLastSim = () => (dispatch, getState) => {
     type: LOAD_LAST_SIM,
     payload: {
       ...lastSim,
-      last_configurations: convertedConfig,
+      last_configuration: convertedConfig,
     },
   })
+}
+
+export const loadSimFromTimeMachine = (sim) => (dispatch) => {
+  
 }

@@ -7,7 +7,7 @@
  *
  * Text area component
  *
- * @version 0.1.0
+ * @version 1.0.0
  * @author Andrew Che
  */
 
@@ -15,8 +15,6 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
 import styles from './TextArea.module.scss'
-
-// TODO(andrew@neuraldev.io): Complete documentation.
 
 class TextArea extends Component {
   constructor(props) {

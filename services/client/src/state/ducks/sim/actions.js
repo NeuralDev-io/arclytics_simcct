@@ -216,7 +216,10 @@ export const updateConfigMethod = value => (dispatch) => {
       if (res.status === 'success') {
         dispatch({
           type: UPDATE_CONFIG_METHOD,
-          payload: value,
+          payload: {
+            method: value,
+            config: res.data,
+          },
         })
       }
     })
@@ -228,7 +231,6 @@ export const updateConfigMethod = value => (dispatch) => {
 
 /**
  * Update grain size in the Redux store.
- * Only make API request to update Redis session when there are no errors.
  *
  * @param {string|number} astm ASTM grain size
  * @param {string|number} dia grain size in diameter
@@ -254,44 +256,10 @@ export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getStat
       ...newGrainSize,
     },
   })
-
-  // only update to server when the grain size is valid
-  if (Object.keys(grainSizeError).length === 0 && grainSizeError.constructor === Object) {
-    fetch(`${SIMCCT_URL}/configs/update`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ grain_size: parseFloat(astm) }),
-    })
-      .then((res) => {
-        if (res.status !== 202) {
-          return {
-            status: 'fail',
-            message: 'Something went wrong',
-          }
-        }
-        return res.json()
-      })
-      .then((res) => {
-        if (res.status === 'fail') {
-          addFlashToast({
-            message: res.message,
-            options: { variant: 'error' },
-          }, true)(dispatch)
-        }
-      })
-      .catch((err) => {
-        // log to fluentd
-        logError(err.toString(), err.message, 'actions.updateGrainSize', err.stack)
-      })
-  }
 }
 
 /**
- * Update the transformation limits. Only make API request to
- * update Redis session if there are no errors.
+ * Update the transformation limits.
  * @param {string} name name of the phase - 'ms' | 'bs' | 'ae'
  * @param {string} field field to be updated
  * @param {any} data config object
@@ -334,39 +302,6 @@ export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState
       ...data,
     },
   })
-
-  // only send update to server when there is no error
-  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
-    fetch(`${SIMCCT_URL}/configs/${name}`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(reqBody),
-    })
-      .then((res) => {
-        if (res.status !== 202) {
-          return {
-            status: 'fail',
-            message: 'Something went wrong',
-          }
-        }
-        return res.json()
-      })
-      .then((res) => {
-        if (res.status === 'fail') {
-          addFlashToast({
-            message: res.message,
-            options: { variant: 'error' },
-          }, true)(dispatch)
-        }
-      })
-      .catch((err) => {
-        // log to fluentd
-        logError(err.toString(), err.message, 'actions.updateMsBsAe', err.stack)
-      })
-  }
 }
 
 /**
@@ -400,7 +335,7 @@ export const getMsBsAe = name => (dispatch, getState) => {
       if (res.status !== 200) {
         return {
           status: 'fail',
-          message: 'Something went wrong',
+          message: 'Could not get auto-calculated values',
         }
       }
       return res.json()
@@ -443,7 +378,7 @@ export const setAutoCalculate = (name, value) => (dispatch) => {
 }
 
 /**
- * Update config in Redux state, only submit API requests if there are no errors.
+ * Update config in Redux state
  * @param {string} name name of config field to be updated
  * @param {string|number} value new value
  * @param {any} valError object error
@@ -465,39 +400,6 @@ export const updateConfig = (name, value, valError) => (dispatch, getState) => {
       [name]: value,
     },
   })
-
-  // only make API request when there is no error
-  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
-    fetch(`${SIMCCT_URL}/configs/update`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ [name]: value }),
-    })
-      .then((res) => {
-        if (res.status !== 202) {
-          return {
-            status: 'fail',
-            message: 'Something went wrong',
-          }
-        }
-        return res.json()
-      })
-      .then((res) => {
-        if (res.status === 'fail') {
-          addFlashToast({
-            message: res.message,
-            options: { variant: 'error' },
-          }, true)(dispatch)
-        }
-      })
-      .catch((err) => {
-        // log to fluentd
-        logError(err.toString(), err.message, 'actions.updateConfig', err.stack)
-      })
-  }
 }
 
 /**
@@ -514,40 +416,28 @@ export const toggleDisplayUserCurve = value => (dispatch) => {
 /**
  * Get the simulation results of the current sim session
  */
-export const runSim = () => async (dispatch, getState) => {
+export const runSim = () => (dispatch, getState) => {
   const {
+    error,
     grain_size_ASTM,
-    nucleation_start,
-    nucleation_finish,
-    cct_cooling_rate,
-    start_temp,
+    ...otherConfigs
   } = getState().sim.configurations
 
-  await fetch(`${SIMCCT_URL}/configs/update`, {
-    method: 'PATCH',
+  fetch(`${SIMCCT_URL}/simulate`, {
+    method: 'POST',
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       grain_size: grain_size_ASTM,
-      nucleation_start,
-      nucleation_finish,
-      cct_cooling_rate,
-      start_temp,
+      ...otherConfigs,
     }),
-  }).catch(err => logError(err.toString(), err.message, 'actions.runSim', err.stack))
-  fetch(`${SIMCCT_URL}/simulate`, {
-    method: 'GET',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   })
     .then((res) => {
       if (res.status !== 200) {
         addFlashToast({
-          message: res.message,
+          message: 'Could not get simulation results',
           options: { variant: 'error' },
         }, true)(dispatch)
       }
@@ -557,7 +447,7 @@ export const runSim = () => async (dispatch, getState) => {
       if (simRes.status === 'fail') {
         return {
           status: 'fail',
-          message: 'Something went wrong',
+          message: 'Could not get simulation results',
         }
       }
       if (simRes.status === 'success') {

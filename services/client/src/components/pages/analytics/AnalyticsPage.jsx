@@ -12,6 +12,7 @@ import PropTypes from 'prop-types'
 import { Route } from 'react-router-dom'
 import AppBar from '../../moleisms/appbar'
 import AnalyticsSidebar from '../../moleisms/analytics-sidebar'
+import UsersAnalytics from '../../moleisms/analytics-users'
 
 import styles from './AnalyticsPage.module.scss'
 
@@ -25,7 +26,7 @@ function AnalyticsPage({ history }) {
       </div>
 
       <div className={styles.main}>
-        {/*<Route path="/analytics/users" render={} />*/}
+        <Route path="/analytics/users" render={props => <UsersAnalytics {...props} />} />
       </div>
 
     </React.Fragment>

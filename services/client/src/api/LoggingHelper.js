@@ -73,8 +73,6 @@ export const log = async (log_message, message, label, caller, stack_trace) => {
   return fetch_retry(
     `${LOGGER_URL}/client.${label}`, {
       method: 'POST',
-      mode: 'cors',
-      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },

@@ -3,9 +3,9 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
- * Composition sidebar
+ * Simulation page rendered by '/'
  *
- * @version 0.8.0
+ * @version 1.4.0
  * @author Dalton Le and Andrew Che
  */
 
@@ -135,7 +135,9 @@ class SimulationPage extends Component {
                 isSimulated={isSimulated}
                 isAuthenticated={isAuthenticated}
               />
-              <LoadSimButton />
+              <LoadSimButton
+                isAuthenticated={isAuthenticated}
+              />
             </div>
           </header>
           <div className={styles.configForm} style={{ display: displayConfig ? 'block' : 'none' }}>

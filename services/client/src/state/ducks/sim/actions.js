@@ -19,6 +19,7 @@ import { ASTM2Dia } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
 import { addSimToTimeMachine } from '../timeMachine/actions'
 import { logError } from '../../../api/LoggingHelper'
+import { updateSession } from '../../../api/sim/sessionHelper'
 
 export const resetSession = () => (dispatch) => {
   // make api call to update session
@@ -164,6 +165,15 @@ export const updateComp = (option, type, alloy, error) => (dispatch) => {
   }
 }
 
+/**
+ * [DEPRECATED]
+ *
+ * Update the dilution value and calculate the new mix composition.
+ * NOTE: This function is incomplete but it's fine because the feature
+ * is no longer requried by the client.
+ *
+ * @param {number} val dilution value
+ */
 export const updateDilution = val => (dispatch) => {
   // calculate mix compositions here
 
@@ -216,6 +226,14 @@ export const updateConfigMethod = value => (dispatch) => {
     })
 }
 
+/**
+ * Update grain size in the Redux store.
+ * Only make API request to update Redis session when there are no errors.
+ *
+ * @param {string|number} astm ASTM grain size
+ * @param {string|number} dia grain size in diameter
+ * @param {any} grainSizeError error object
+ */
 export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getState) => {
   const { error } = getState().sim.configurations
   const newGrainSize = { grain_size_ASTM: astm, grain_size_diameter: dia }
@@ -271,6 +289,14 @@ export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getStat
   }
 }
 
+/**
+ * Update the transformation limits. Only make API request to
+ * update Redis session if there are no errors.
+ * @param {string} name name of the phase - 'ms' | 'bs' | 'ae'
+ * @param {string} field field to be updated
+ * @param {any} data config object
+ * @param {any} valError error object
+ */
 export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState) => {
   const { error } = getState().sim.configurations
 
@@ -343,9 +369,14 @@ export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState
   }
 }
 
+/**
+ * Get the autocalculated transformation limits.
+ * @param {string} name name of the phase - 'ms' | 'bs' | 'ae'
+ */
 export const getMsBsAe = name => (dispatch, getState) => {
   const { error } = getState().sim.configurations
   // since data is autocalculated, there should be no input errors
+  // delete all input errors from these fields
   if (name === 'ms') {
     delete error.ms_temp
     delete error.ms_rate_param
@@ -397,6 +428,11 @@ export const getMsBsAe = name => (dispatch, getState) => {
     })
 }
 
+/**
+ * Set auto-calculate of tranformation limits in the Redux state.
+ * @param {string} name name of the phase - 'ms' | 'bs' | 'ae'
+ * @param {boolean} value new value of auto-calculate
+ */
 export const setAutoCalculate = (name, value) => (dispatch) => {
   dispatch({
     type: UPDATE_CONFIG,
@@ -406,6 +442,12 @@ export const setAutoCalculate = (name, value) => (dispatch) => {
   })
 }
 
+/**
+ * Update config in Redux state, only submit API requests if there are no errors.
+ * @param {string} name name of config field to be updated
+ * @param {string|number} value new value
+ * @param {any} valError object error
+ */
 export const updateConfig = (name, value, valError) => (dispatch, getState) => {
   const { error } = getState().sim.configurations
   if (Object.keys(valError).length === 0 && valError.constructor === Object) {
@@ -458,6 +500,10 @@ export const updateConfig = (name, value, valError) => (dispatch, getState) => {
   }
 }
 
+/**
+ * Update whether or not to display user cooling curve
+ * @param {boolean} value whether to display user curve or not
+ */
 export const toggleDisplayUserCurve = value => (dispatch) => {
   dispatch({
     type: UPDATE_DISPLAY_USER_CURVE,
@@ -465,8 +511,10 @@ export const toggleDisplayUserCurve = value => (dispatch) => {
   })
 }
 
-// TODO: Check back of this function
-export const runSim = () => (dispatch, getState) => {
+/**
+ * Get the simulation results of the current sim session
+ */
+export const runSim = () => async (dispatch, getState) => {
   const {
     grain_size_ASTM,
     nucleation_start,
@@ -475,7 +523,7 @@ export const runSim = () => (dispatch, getState) => {
     start_temp,
   } = getState().sim.configurations
 
-  fetch(`${SIMCCT_URL}/configs/update`, {
+  await fetch(`${SIMCCT_URL}/configs/update`, {
     method: 'PATCH',
     credentials: 'include',
     headers: {
@@ -543,17 +591,14 @@ export const runSim = () => (dispatch, getState) => {
     })
 }
 
+/**
+ * Update CCTIndex in Redux store
+ * @param {number} idx new index for the user curve data array
+ */
 export const updateCCTIndex = idx => (dispatch) => {
   dispatch({
     type: UPDATE_CCT_INDEX,
     payload: idx,
-  })
-}
-
-export const loadSim = sim => (dispatch) => {
-  dispatch({
-    type: LOAD_SIM,
-    payload: sim,
   })
 }
 
@@ -564,15 +609,68 @@ export const loadSim = sim => (dispatch) => {
  *  configurations: {...},
  *  results: { USER, CCT, TTT },
  * }
- * @param {Object} sim simulation object
+ * @param {any} sim simulation object
+ * @param {boolean} isAuthenticated if user is authenticated
  */
-export const loadSimFromFile = sim => (dispatch) => {
-  dispatch({
-    type: LOAD_SIM_FROM_FILE,
-    payload: sim,
-  })
+export const loadSimFromFile = (sim, isAuthenticated) => (dispatch) => {
+  const {
+    alloys,
+    configurations: {
+      grain_size_ASTM, grain_size_diameter, ...otherConfigs
+    },
+  } = sim
+
+  if (!isAuthenticated) {
+    dispatch({
+      type: LOAD_SIM_FROM_FILE,
+      payload: sim,
+    })
+  } else {
+    // update Redis session
+    updateSession({
+      alloy_store: {
+        alloy_option: alloys.alloyOption,
+        alloys: {
+          parent: alloys.parent,
+        },
+      },
+      configuration: {
+        grain_size: grain_size_ASTM,
+        ...otherConfigs,
+      },
+    })
+      .then((res) => {
+        if (res.status === 'fail') {
+          addFlashToast({
+            message: res.message,
+            options: { variant: 'error' },
+          }, true)(dispatch)
+          resetSession()(dispatch)
+        }
+        if (res.status === 'success') {
+          dispatch({
+            type: LOAD_SIM_FROM_FILE,
+            payload: sim,
+          })
+        }
+      })
+      .catch((err) => {
+        addFlashToast({
+          message: 'Could not load simulation',
+          options: { variant: 'error' },
+        }, true)(dispatch)
+        resetSession()(dispatch)
+        // log to fluentd
+        logError(err.toString(), err.message, 'actions.loadSimFromFile.updateSession', err.stack)
+      })
+  }
 }
 
+/**
+ * Request a shared simulation by using token and load it
+ * into the app
+ * @param {string} token token to access sim link
+ */
 export const loadSimFromLink = token => dispatch => (
   fetch(`${SIMCCT_URL}/user/share/simulation/view/${token}`, {
     method: 'GET',
@@ -635,33 +733,60 @@ export const loadSimFromLink = token => dispatch => (
     })
 )
 
+/**
+ * Load a saved simulation into the app
+ * @param {any} param0 simulation object
+ */
 export const loadSimFromAccount = ({
   alloy_store, configurations, simulation_results,
 }) => (dispatch) => {
   const { is_valid, grain_size, ...otherConfig } = configurations
-  dispatch({
-    type: LOAD_SIM,
-    payload: {
-      alloys: {
-        alloyOption: alloy_store.alloy_option,
-        parent: alloy_store.alloys.parent,
-        weld: {
-          _id: '',
-          name: '',
-          compositions: [],
-        },
-        mix: [],
-      },
-      configurations: {
-        grain_size_ASTM: grain_size,
-        grain_size_diameter: ASTM2Dia(parseFloat(grain_size)),
-        ...otherConfig,
-      },
-      results: simulation_results,
+
+  // update session
+  updateSession({
+    alloy_store,
+    configuration: {
+      grain_size,
+      ...otherConfig,
     },
   })
+    .then((response) => {
+      if (response.status === 'fail') {
+        addFlashToast({
+          message: response.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+        dispatch({ type: RESET_SIM })
+      }
+      if (response.status === 'success') {
+        dispatch({
+          type: LOAD_SIM,
+          payload: {
+            alloys: {
+              alloyOption: alloy_store.alloy_option,
+              parent: alloy_store.alloys.parent,
+              weld: {
+                _id: '',
+                name: '',
+                compositions: [],
+              },
+              mix: [],
+            },
+            configurations: {
+              grain_size_ASTM: grain_size,
+              grain_size_diameter: ASTM2Dia(parseFloat(grain_size)),
+              ...otherConfig,
+            },
+            results: simulation_results,
+          },
+        })
+      }
+    })
 }
 
+/**
+ * Load most recent simulation saved in localStorage into the app
+ */
 export const loadPersistedSim = () => (dispatch, getState) => {
   const { lastSim } = getState().persist
   dispatch({
@@ -670,6 +795,10 @@ export const loadPersistedSim = () => (dispatch, getState) => {
   })
 }
 
+/**
+ * Load the last simulation tied to an account into the app.
+ * This will be called when a user logs back in after a period of time > 2 hours.
+ */
 export const loadLastSim = () => (dispatch, getState) => {
   const { lastSim } = getState().self
   const { last_configuration: { grain_size, is_valid, ...otherConfig } } = lastSim
@@ -685,8 +814,4 @@ export const loadLastSim = () => (dispatch, getState) => {
       last_configuration: convertedConfig,
     },
   })
-}
-
-export const loadSimFromTimeMachine = (sim) => (dispatch) => {
-
 }

@@ -1,3 +1,15 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * User page rendered by '/user'
+ *
+ * @version 1.0.0
+ * @author Dalton Le, Andrew Che
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Route } from 'react-router-dom'
@@ -8,8 +20,6 @@ import { getUserProfile } from '../../../state/ducks/self/actions'
 import AppBar from '../../moleisms/appbar'
 import UserSidebar from '../../moleisms/user-sidebar'
 import ProfilePage from '../../moleisms/user-profile'
-import UserAlloys from '../../moleisms/user-alloys'
-import UserSavedSimulations from '../../moleisms/user-sim'
 
 import styles from './UserPage.module.scss'
 

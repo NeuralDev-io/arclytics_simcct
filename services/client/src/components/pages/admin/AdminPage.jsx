@@ -1,3 +1,15 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * AdminPage rendered by '/admin'
+ *
+ * @version 1.1.0
+ * @author Dalton Le, Andrew Che
+ */
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Route } from 'react-router-dom'

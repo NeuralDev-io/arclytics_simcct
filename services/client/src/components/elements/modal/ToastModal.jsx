@@ -1,3 +1,16 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * ToastModal component. The modal that pops up from the bottom of the
+ * screen, often used for a banner/announcement.
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React from 'react'
 import PropTypes from 'prop-types'
 import XIcon from 'react-feather/dist/icons/x'

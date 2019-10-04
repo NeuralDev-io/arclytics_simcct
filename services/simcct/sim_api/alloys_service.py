@@ -33,7 +33,6 @@ logger = AppLogger(__name__)
 
 class AlloysService(object):
     """Service layer where the application logic resides."""
-
     def __init__(self, client=AlloyAbstract(adapter=MongoAlloys)):
         """Simply connects the service to the MongoAlloys through an adapter."""
         self.client = client

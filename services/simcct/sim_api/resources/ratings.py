@@ -308,6 +308,4 @@ class SubscribeFeedback(Resource):
 api.add_resource(UserRating, '/v1/sim/user/rating')
 api.add_resource(UserFeedback, '/v1/sim/user/feedback')
 api.add_resource(FeedbackList, '/v1/sim/admin/feedback/list')
-api.add_resource(
-    SubscribeFeedback, '/v1/sim/admin/feedback/list/subscribe'
-)
+api.add_resource(SubscribeFeedback, '/v1/sim/admin/feedback/list/subscribe')

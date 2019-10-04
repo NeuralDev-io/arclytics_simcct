@@ -299,9 +299,7 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            err = (
-                "{'ms_temp': ['Cannot be negative.']}"
-            )
+            err = ("{'ms_temp': ['Cannot be negative.']}")
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
             self.assertEqual(data['status'], 'fail')
@@ -745,7 +743,8 @@ class TestLastSimulation(BaseTestCase):
             self.assertTrue(data.get('data', None))
             self.assertDictEqual(data['data']['last_configuration'], CONFIGS)
 
-            _name = data['data']['last_alloy_store']['alloys']['parent']['name']
+            _name = data['data']['last_alloy_store']['alloys']['parent']['name'
+                                                                         ]
             self.assert200(res)
             self.assertEqual(
                 data['data']['last_alloy_store']['alloys']['parent']['name'],

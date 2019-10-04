@@ -1,1 +1,6 @@
-export { PrivateRoute, AdminRoute, DemoRoute } from './Route'
+export {
+  PrivateRoute,
+  AdminRoute,
+  DemoRoute,
+  ShareRoute,
+} from './Route'

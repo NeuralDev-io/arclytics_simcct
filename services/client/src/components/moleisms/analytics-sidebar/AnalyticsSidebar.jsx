@@ -42,15 +42,15 @@ class AnalyticsSidebar extends Component {
           <span>Users</span>
         </Link>
 
-        <Link
-          id="alloys"
-          to="/analytics/alloys"
-          onClick={() => this.setState({ active: 'alloys' })}
-          className={`${styles.item} ${active === 'alloys' && styles.active}`}
-        >
-          <DatabaseIcon className={styles.icon} />
-          <span>Alloys</span>
-        </Link>
+        {/*<Link*/}
+        {/*  id="alloys"*/}
+        {/*  to="/analytics/alloys"*/}
+        {/*  onClick={() => this.setState({ active: 'alloys' })}*/}
+        {/*  className={`${styles.item} ${active === 'alloys' && styles.active}`}*/}
+        {/*>*/}
+        {/*  <DatabaseIcon className={styles.icon} />*/}
+        {/*  <span>Alloys</span>*/}
+        {/*</Link>*/}
 
         <Link
           id="application"

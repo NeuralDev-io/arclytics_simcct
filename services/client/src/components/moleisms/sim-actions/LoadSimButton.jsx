@@ -1,3 +1,15 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Load button with AttachModal to load a simulation from a file
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -24,8 +36,10 @@ class LoadSimButton extends Component {
   handleCloseModal = () => this.setState({ visible: false })
 
   handleFileInputChange = (e) => {
-    const { loadSimFromFileConnect, addFlashToastConnect } = this.props
+    const { loadSimFromFileConnect, addFlashToastConnect, isAuthenticated } = this.props
     const file = e.target.files[0]
+
+    if (file === null || file === undefined) return
 
     // check file size
     if (file.size > 200000) {
@@ -55,7 +69,7 @@ class LoadSimButton extends Component {
       // TODO: validate sim schema
 
       // load simulations
-      loadSimFromFileConnect(sim)
+      loadSimFromFileConnect(sim, isAuthenticated)
       this.setState({ filename: file.name })
       addFlashToastConnect({
         message: 'File imported successfully',
@@ -65,6 +79,7 @@ class LoadSimButton extends Component {
     }
 
     reader.readAsText(file)
+    e.target.value = null
   }
 
   render() {

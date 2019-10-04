@@ -1,3 +1,16 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Group of button that allows user to go back and forth between
+ * simulations in a short-term history (current browser session)
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -12,7 +25,7 @@ import { buttonize } from '../../../utils/accessibility'
 
 import styles from './TimeTravelButtons.module.scss'
 
-export class TimeTravelButtons extends Component {
+class TimeTravelButtons extends Component {
   constructor(props) {
     super(props)
     this.state = {

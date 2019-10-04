@@ -1,3 +1,21 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * This file contains several components which are wrapper around the
+ * Route component of 'react-router-dom' to provide extra protection
+ * using authorisation checking endpoint.
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
+
+/**
+* PrivateRoute only allows authenticated users to access
+*/
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Route, Redirect } from 'react-router-dom'
@@ -45,6 +63,9 @@ PrivateRoute.propTypes = {
   component: PropTypes.elementType.isRequired,
 }
 
+/**
+ * AdminRoute only allows users with admin privilege to access
+ */
 export class AdminRoute extends React.Component {
   constructor(props) {
     super(props)
@@ -83,6 +104,9 @@ AdminRoute.propTypes = {
   component: PropTypes.elementType.isRequired,
 }
 
+/**
+ * DemoRoute is a special route used for non-users
+ */
 export class DemoRoute extends React.Component {
   constructor(props) {
     super(props)

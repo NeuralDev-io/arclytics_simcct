@@ -100,6 +100,11 @@ class AppBar extends React.Component {
             </Tooltip>
           </a> */}
 
+          <div
+            className={styles.line}
+            style={{ display: isAdmin ? 'flex' : 'none' }}
+          />
+
           <Link
             id="analytics"
             className={`${styles.navIcon} ${active === 'analytics' && styles.active}`}

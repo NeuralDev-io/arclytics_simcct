@@ -13,7 +13,9 @@ __status__ = 'development'
 __date__ = '2019.10.03'
 """mongo_service.py: 
 
-{Description}
+This module provides a service to connect to a MongoDB database with simple 
+methods to either read from the database and collection and convert them to 
+a `pandas.DataFrame`. 
 """
 
 from typing import Union
@@ -23,8 +25,9 @@ import pandas as pd
 from pymongo import MongoClient
 
 
-class MongoService():
+class MongoService(object):
     def __init__(self,):
+        """Simply makes a connection to a MongoDB instance with `pymongo`."""
         if env.get('FLASK_ENV', 'production') == 'production':
             mongo_uri = (
                 'mongodb://{username}:{password}@{host}:{port}/{db}'
@@ -48,7 +51,7 @@ class MongoService():
             query: dict = None,
             projections: dict = None,
     ) -> Union[pd.DataFrame, None]:
-
+        """Read from a database and collection with a simple query."""
         if query is None:
             return None
 
@@ -64,7 +67,8 @@ class MongoService():
 
     def read_aggregation(
             self, db_name: str, collection: str, pipeline: list = None
-    ):
+    ) -> Union[pd.DataFrame, None]:
+        """Read from a database and collection with an aggregation pipeline."""
 
         if not pipeline:
             return None

@@ -56,6 +56,13 @@ class UserProfileData(Resource):
     # method_decorators = {'get': [authorize_admin_cookie_restful]}
 
     def get(self) -> Tuple[dict, int]:
+        """Uses MongoDB Aggregation Pipeline to get all Profile data from
+        the `users` collection and then transforms that to allow building
+        a bar chart with `plotly.graph_objects.Bar` traces.
+
+        Returns:
+            A valid HTTP Response with a dictionary of data and a status code.
+        """
 
         pipeline = [
             {'$unwind': '$profile'},
@@ -71,7 +78,30 @@ class UserProfileData(Resource):
         ]
 
         df = MongoService().read_aggregation('arc_dev', 'users', pipeline)
-        return {'profiles': df.to_dict()}, 200
+
+        response = {
+            'status': 'success',
+            'plotly_chart_type': 'bar',
+            'data': {
+                'aim': {
+                    'x': list(df['aim'].unique()),
+                    'y': list(df['aim'].value_counts())
+                },
+                'highest_education': {
+                    'x': list(df['highest_education'].unique()),
+                    'y': list(df['highest_education'].value_counts())
+                },
+                'sci_tech_exp': {
+                    'x': list(df['sci_tech_exp'].unique()),
+                    'y': list(df['sci_tech_exp'].value_counts())
+                },
+                'phase_transform_exp': {
+                    'x': list(df['phase_transform_exp'].unique()),
+                    'y': list(df['phase_transform_exp'].value_counts())
+                }
+            }
+        }
+        return response, 200
 
 
 api.add_resource(UserLoginData, '/v1/arc/users/login/live')

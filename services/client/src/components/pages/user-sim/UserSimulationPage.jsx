@@ -1,3 +1,15 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * User saved simulation page rendered by '/user/simulations'
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React from 'react'
 import PropTypes from 'prop-types'
 import AppBar from '../../moleisms/appbar'

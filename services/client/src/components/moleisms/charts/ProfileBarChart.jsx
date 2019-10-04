@@ -13,30 +13,36 @@ import PropTypes from 'prop-types'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { layout, config } from './utils/chartConfig'
-
 import { getColor } from '../../../utils/theming'
+
 import styles from './ProfileBarChart.module.scss'
 
-const ProfileBarChart = ({ data }) => {
-  let chartData = []
+const ProfileBarChart = ({ title, name, data, color }) => {
+  let traceData = []
   if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
-    chartData = [
+    traceData = [
       {
-        x: data,
-        y: data,
-        name: '',
-        type: 'scatter',
-        mode: 'bar',
-        line: {
-          // TODO(andrew@neuraldev.io): Make this dynamic enough to change colours
-          color: getColor('--br500'),
-          shape: 'spline',
+        type: 'bar',
+        x: data.x,
+        y: data.y,
+        name: name,
+        text: data.y.map(String),
+        textposition: 'inside',
+        hoverinfo: 'none',
+        marker: {
+          color: getColor(color)
         },
+        opacity: 0.7,
+        textfont: {
+          family: 'Open Sans',
+          size: 16,
+          // color: getColor('--arc500')
+        }
       },
     ]
   }
 
-  if (chartData.length === 0) {
+  if (traceData.length === 0) {
     return <div className={styles.noData}>No data.</div>
   }
 
@@ -45,24 +51,38 @@ const ProfileBarChart = ({ data }) => {
       {({ height, width }) => {
         const defaultLayout = { ...layout(height, width) }
         // TODO(andrew@neuraldev.io): Add more layout configs if needed
-        const profileLayout = { ...defaultLayout }
+        const profileLayout = {
+          ...defaultLayout,
+          showlegend: false
+        }
         return (
           <Plot
-            data={chartData}
+            data={traceData}
+
             layout={{
               ...profileLayout,
+              title: title,
               xaxis: {
                 ...profileLayout.xaxis,
-                title: '',
-                type: '',
               },
               yaxis: {
                 ...profileLayout.yaxis,
-                title: '',
-                type: '',
+                title: 'Number of Answers',
+                gridwidth: 0
               },
             }}
-            config={config}
+
+            config={{
+              modeBarButtonsToRemove: [
+                'toImage', 'sendDataToCloud', 'select2d', 'lasso2d', 'toggleSpikelines',
+                'scrollZoom', 'hoverCompareCartesian', 'hoverClosestCartesian', 'autoScale2d'
+              ],
+              staticPlot: true,
+              editable: false,
+              displaylogo: false,
+              displayModeBar: 'hover',
+              showTips: true
+            }}
           />
         )
       }}
@@ -71,8 +91,10 @@ const ProfileBarChart = ({ data }) => {
 }
 
 ProfileBarChart.propTypes = {
-  // TODO(andrew@neuraldev.io): Check the data again.
-  data: PropTypes.shape({}),
+  data: PropTypes.shape({
+    x: PropTypes.arrayOf(PropTypes.string),
+    y: PropTypes.arrayOf(PropTypes.number)
+  }),
 }
 
 ProfileBarChart.defaultProps = {

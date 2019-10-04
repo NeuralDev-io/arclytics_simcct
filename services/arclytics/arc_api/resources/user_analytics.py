@@ -47,7 +47,19 @@ class UserLoginData(Resource):
         # matching this pattern which means they have logged in.
         keys = redis_client.keys(pattern=u'session*')
 
-        return {'status': 'success', 'value': len(keys)}, 200
+        return {'status': 'success', 'data': len(keys)}, 200
+
+    # def get(self) -> Tuple[dict, int]:
+    #
+    #     pipeline = [
+    #         {'$unwind': '$profile'},
+    #     ]
+    #
+    #     response = {
+    #         'status': 'success',
+    #         'plotly_chart_type': ''
+    #     }
+    #     return response, 200
 
 
 # noinspection PyMethodMayBeStatic

@@ -424,14 +424,14 @@ class Rating(EmbeddedDocument):
 
 
 class LoginData(EmbeddedDocument):
-    time = DateTimeField(default=datetime.utcnow(), required=True)
+    created_datetime = DateTimeField(default=datetime.utcnow(), required=True)
     country = StringField()
     state = StringField()
     ip_address = StringField()
 
     def to_dict(self):
         return {
-            'time': str(self.time),
+            'created_datetime': str(self.created_datetime.isoformat()),
             'country': self.country,
             'state': self.state,
             'ip_address': self.ip_address

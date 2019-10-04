@@ -603,17 +603,6 @@ export const updateCCTIndex = idx => (dispatch) => {
 }
 
 /**
- * Load a sim into the app
- * @param {any} sim simulation object
- */
-export const loadSim = sim => (dispatch) => {
-  dispatch({
-    type: LOAD_SIM,
-    payload: sim,
-  })
-}
-
-/**
  * Schema of simulation object passed as arg
  * {
  *  alloys: { alloyOption, parent, weld, mix },
@@ -735,27 +724,47 @@ export const loadSimFromAccount = ({
   alloy_store, configurations, simulation_results,
 }) => (dispatch) => {
   const { is_valid, grain_size, ...otherConfig } = configurations
-  dispatch({
-    type: LOAD_SIM,
-    payload: {
-      alloys: {
-        alloyOption: alloy_store.alloy_option,
-        parent: alloy_store.alloys.parent,
-        weld: {
-          _id: '',
-          name: '',
-          compositions: [],
-        },
-        mix: [],
-      },
-      configurations: {
-        grain_size_ASTM: grain_size,
-        grain_size_diameter: ASTM2Dia(parseFloat(grain_size)),
-        ...otherConfig,
-      },
-      results: simulation_results,
+
+  // update session
+  updateSession({
+    alloy_store,
+    configuration: {
+      grain_size,
+      ...otherConfig,
     },
   })
+    .then((response) => {
+      if (response.status === 'fail') {
+        addFlashToast({
+          message: response.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+        dispatch({ type: RESET_SIM })
+      }
+      if (response.status === 'success') {
+        dispatch({
+          type: LOAD_SIM,
+          payload: {
+            alloys: {
+              alloyOption: alloy_store.alloy_option,
+              parent: alloy_store.alloys.parent,
+              weld: {
+                _id: '',
+                name: '',
+                compositions: [],
+              },
+              mix: [],
+            },
+            configurations: {
+              grain_size_ASTM: grain_size,
+              grain_size_diameter: ASTM2Dia(parseFloat(grain_size)),
+              ...otherConfig,
+            },
+            results: simulation_results,
+          },
+        })
+      }
+    })
 }
 
 /**

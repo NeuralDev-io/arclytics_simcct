@@ -222,4 +222,95 @@ class Simulation(Resource):
         return response, 200
 
 
+class Ae3Equilibrium(Resource):
+    method_decorators = {'get': [authenticate_user_cookie_restful]}
+
+    # noinspection PyMethodMayBeStatic
+    def get(self, _):
+        response = {'status': 'fail'}
+
+        # First we need to make sure they logged in and are in a current session
+        session_store = SimSessionService().load_session()
+
+        if isinstance(session_store, str):
+            response['message'] = session_store
+            logger.error(response['message'])
+            apm.capture_message(response['message'])
+            return response, 500
+
+        session_configs = session_store.get('configurations')
+        if not session_configs:
+            response['message'] = 'No previous session configurations was set.'
+            return response, 404
+
+        configs = ConfigurationsSchema().load(session_configs)
+
+        # By default, the session alloy store is single and parent but the
+        # parent alloy is set to none.
+        sess_alloy_store = session_store.get('alloy_store')
+        if (
+                not sess_alloy_store['alloys']['parent']
+                and not sess_alloy_store['alloys']['weld']
+                and not sess_alloy_store['alloys']['mix']
+        ) or not sess_alloy_store:
+            response['message'] = 'No previous session alloy was set.'
+            return response, 404
+
+        alloy_store = AlloyStoreSchema().load(sess_alloy_store)
+
+        # We need to validate ae1, ae3, ms, and bs temperatures because if we do
+        # the calculations for CCT/TTT will cause many problems.
+        if not configs['ae1_temp'] > 0.0 or not configs['ae3_temp'] > 0.0:
+            response['message'] = 'Ae1 and Ae3 value cannot be less than 0.0.'
+            return response, 400
+
+        if not configs['ms_temp'] > 0.0 or not configs['bs_temp'] > 0.0:
+            response['message'] = 'MS and BS value cannot be less than 0.0.'
+            return response, 400
+
+        alloy = None
+        if alloy_store.get('alloy_option') == 'single':
+            alloy = alloy_store['alloys']['parent']
+        else:
+            # DECISION:
+            # We will not implement this as it adds too much complexity to
+            # the logical path of the system state. This was not a core
+            # requirement and Dr. Bendeich often said he did not want this
+            # implemented at all.
+            pass
+
+        sim_configs = SimConfiguration(
+            configs=configs, compositions=alloy['compositions']
+        )
+
+        try:
+            results_mat, ferrite_phase_frac, eutectic_composition_carbon = \
+                sim_configs.xfe_method2(
+                    comp_list=alloy['compositions'], ae1=configs['ae1_temp'],
+                    plot=True
+                )
+        except ZeroDivisionError as e:
+            response['error'] = str(e)
+            response['message'] = 'Zero Division Error.'
+            response['configs'] = sim_configs.configs.__dict__
+            return response, 500
+        # TODO(davidmatthews1004@gmail.com) Find if its possible for any other
+        #  kind of exceptions to occur and handle them appropriately.
+        except Exception as e:
+            response['error'] = str(e)
+            response['message'] = 'An Exception has occurred.'
+            return response, 400
+
+        data = {
+            'ferrite_phase_frac': ferrite_phase_frac,
+            'eutectic_composition_carbon': eutectic_composition_carbon,
+            'results_mat': results_mat.tolist()
+        }
+
+        response['status'] = 'success'
+        response['data'] = data
+        return response, 200
+
+
 api.add_resource(Simulation, '/v1/sim/simulate')
+api.add_resource(Ae3Equilibrium, '/v1/sim/ae3equilibrium')

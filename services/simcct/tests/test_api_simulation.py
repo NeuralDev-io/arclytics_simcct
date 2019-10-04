@@ -254,6 +254,102 @@ class TestSimulationService(BaseTestCase):
             data = json.loads(res.data.decode())
             # logger.debug(data)
 
+    def test_ae3equilibrium_no_prev_configs(self):
+        """
+        Ensure that a request for the ae3euquilibrium data fails if no prev
+        config is available.
+        """
+        with app.test_client() as client:
+            self.login_client(client)
+
+            # We change the session by making a transaction on it within context
+            # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
+            #  is set because otherwise opening a transaction will not use
+            #  a standard HTTP request environ_base.
+            with client.session_transaction(
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ) as session:
+                # Setting the `simulation` key in the session to None will clear
+                # out any config data so we can test the behaviour of the
+                # endpoint when it is unable to retrieve the config data from
+                # the session.
+                session['simulation'] = None
+            with client.session_transaction(
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ):
+                # At this point the session transaction has been updated so
+                # we can check the session within the context
+                session_store = SimSessionService().load_session()
+                self.assertIsInstance(session_store, str)
+                self.assertEqual(session_store, 'Session is empty.')
+
+            res = client.get(
+                '/v1/sim/ae3equilibrium', content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'], 'Cannot retrieve data from Session store.'
+            )
+            self.assertEqual(data['status'], 'fail')
+            self.assertStatus(res, 500)
+
+    def test_ae3equilibrium_no_prev_alloy(self):
+        """
+        Ensure that a request for the ae3equilibrium data fails if no prev alloy
+        is available.
+        """
+        with app.test_client() as client:
+            self.login_client(client)
+
+            # We change the session by making a transaction on it within context
+            # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
+            #  is set because otherwise opening a transaction will not use
+            #  a standard HTTP request environ_base.
+            with client.session_transaction(
+                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
+            ) as session:
+                # Override the session data and set the alloy information to
+                # None.
+                session_store = json.loads(session['simulation'])
+                session_store['alloy_store']['alloys']['parent'] = None
+                ser_session_data = json.dumps(session_store)
+                prefix = SimSessionService.SESSION_PREFIX
+                session[prefix] = ser_session_data
+
+            res = client.get(
+                '/v1/sim/ae3equilibrium', content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(
+                data['message'], 'No previous session alloy was set.'
+            )
+            self.assert404(res)
+            self.assertEqual(data['status'], 'fail')
+
+    def test_ae3equilibrium_with_login(self):
+        with app.test_client() as client:
+            self.login_client(client)
+
+            # MUST have AE and MS/BS > 0.0 before we can run simulate
+            res = client.get(
+                '/v1/sim/configs/ae', content_type='application/json'
+            )
+            self.assert200(res)
+
+            res = client.get(
+                '/v1/sim/configs/ms', content_type='application/json'
+            )
+            self.assert200(res)
+            res = client.get(
+                '/v1/sim/configs/bs', content_type='application/json'
+            )
+            self.assert200(res)
+
+            res = client.get(
+                '/v1/sim/ae3equilibrium', content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+
 
 if __name__ == '__main__':
     unittest.main()

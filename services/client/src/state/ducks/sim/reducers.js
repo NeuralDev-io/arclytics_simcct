@@ -88,6 +88,19 @@ const reducer = (state = initialState, action) => {
       }
       if (action.status === 'success') {
         // set new alloy and auto-calculated fields in state
+        const { config } = action
+        const newConfig = {}
+        if (state.configurations.auto_calculate_ae) {
+          newConfig.ae1_temp = config.ae1_temp
+          newConfig.ae3_temp = config.ae3_temp
+        }
+        if (state.configurations.auto_calculate_bs) {
+          newConfig.bs_temp = config.bs_temp
+        }
+        if (state.configurations.auto_calculate_ms) {
+          newConfig.ms_rate_param = config.ms_rate_param
+          newConfig.ms_temp = config.ms_temp
+        }
         return ({
           ...state,
           isInitialised: true,
@@ -98,7 +111,7 @@ const reducer = (state = initialState, action) => {
           },
           configurations: {
             ...state.configurations,
-            ...action.config,
+            ...newConfig,
           },
           isSimulated: false,
           results: { ...initialState.results },
@@ -127,8 +140,22 @@ const reducer = (state = initialState, action) => {
         isSimulated: false,
         results: { ...initialState.results },
       }
-    case UPDATE_COMP:
-      // set new alloy comp and auto-calculated fields in state
+    case UPDATE_COMP: {
+      // set new alloy and auto-calculated fields in state
+      const { config } = action
+      const newConfig = {}
+      if (state.configurations.auto_calculate_ae) {
+        newConfig.ae1_temp = config.ae1_temp
+        newConfig.ae3_temp = config.ae3_temp
+      }
+      if (state.configurations.auto_calculate_bs) {
+        newConfig.bs_temp = config.bs_temp
+      }
+      if (state.configurations.auto_calculate_ms) {
+        newConfig.ms_rate_param = config.ms_rate_param
+        newConfig.ms_temp = config.ms_temp
+      }
+
       return ({
         ...state,
         alloys: {
@@ -138,11 +165,12 @@ const reducer = (state = initialState, action) => {
         },
         configurations: {
           ...state.configurations,
-          ...action.config,
+          ...newConfig,
         },
         isSimulated: false,
         results: { ...initialState.results },
       })
+    }
     case UPDATE_DILUTION:
       return {
         ...state,
@@ -153,16 +181,33 @@ const reducer = (state = initialState, action) => {
         isSimulated: false,
         results: { ...initialState.results },
       }
-    case UPDATE_CONFIG_METHOD:
+    case UPDATE_CONFIG_METHOD: {
+      // set new config method and auto-calculated fields in state
+      const { config } = action.payload
+      const newConfig = {}
+      if (state.configurations.auto_calculate_ae) {
+        newConfig.ae1_temp = config.ae1_temp
+        newConfig.ae3_temp = config.ae3_temp
+      }
+      if (state.configurations.auto_calculate_bs) {
+        newConfig.bs_temp = config.bs_temp
+      }
+      if (state.configurations.auto_calculate_ms) {
+        newConfig.ms_rate_param = config.ms_rate_param
+        newConfig.ms_temp = config.ms_temp
+      }
+
       return {
         ...state,
         configurations: {
           ...state.configurations,
-          method: action.payload,
+          method: action.payload.method,
+          ...newConfig,
         },
         isSimulated: false,
         results: { ...initialState.results },
       }
+    }
     case UPDATE_CONFIG:
       return {
         ...state,

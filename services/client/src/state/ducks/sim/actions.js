@@ -29,6 +29,86 @@ export const resetSession = () => (dispatch) => {
 }
 
 /**
+ * Get the autocalculated transformation limits.
+ * @param {string} name name of the phase - 'ms' | 'bs' | 'ae'
+ */
+export const getMsBsAe = name => (dispatch, getState) => {
+  const { error, method } = getState().sim.configurations
+  const { parentError, alloyOption, parent } = getState().sim.alloys
+
+  // since data is autocalculated, there should be no input errors
+  // delete all input errors from these fields
+  if (name === 'ms') {
+    delete error.ms_temp
+    delete error.ms_rate_param
+  }
+  if (name === 'bs') {
+    delete error.bs_temp
+  }
+  if (name === 'ae') {
+    delete error.ae1_temp
+    delete error.ae3_temp
+  }
+
+  if (Object.keys(parentError).length !== 0) {
+    addFlashToast({
+      message: 'Enter valid alloy composition to turn on auto-calculate',
+      options: { variant: 'error' },
+    }, true)
+  } else {
+    fetch(`${SIMCCT_URL}/configs/${name}`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        alloy_store: {
+          alloy_option: alloyOption,
+          alloys: {
+            parent: {
+              name: parent.name,
+              compositions: parent.compositions,
+            },
+          },
+        },
+        method,
+      }),
+    })
+      .then((res) => {
+        if (res.status !== 200) {
+          return {
+            status: 'fail',
+            message: 'Could not get auto-calculated values',
+          }
+        }
+        return res.json()
+      })
+      .then((res) => {
+        if (res.status === 'fail') {
+          addFlashToast({
+            message: res.message,
+            options: { variant: 'error' },
+          }, true)(dispatch)
+        }
+        if (res.status === 'success') {
+          dispatch({
+            type: UPDATE_CONFIG,
+            payload: {
+              ...res.data,
+              error,
+            },
+          })
+        }
+      })
+      .catch((err) => {
+        // log to fluentd
+        logError(err.toString(), err.message, 'actions.getMsBsAe', err.stack)
+      })
+  }
+}
+
+/**
  * Initialise a new sim session on the server, then update alloy in
  * Redux state and use the response to update auto-calculated fields.
  *
@@ -45,57 +125,12 @@ export const initSession = (option, type, alloy) => (dispatch) => {
     status: 'started',
   })
 
-  // Only POST the name and compositions to the server,
-  // but _id will also be saved to Redux state to refer to
-  // the original alloy
-  fetch(`${SIMCCT_URL}/alloys/update`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      alloy_option: option,
-      alloy_type: type,
-      alloy: {
-        name: alloy.name,
-        compositions: alloy.compositions,
-      },
-    }),
+  dispatch({
+    type: INIT_SESSION,
+    status: 'success',
+    alloyType: type,
+    alloy,
   })
-    .then((res) => {
-      if (res.status !== 201) {
-        return {
-          status: 'fail',
-          message: 'Something went wrong',
-        }
-      }
-      return res.json()
-    })
-    .then((res) => {
-      if (res.status === 'fail') {
-        addFlashToast({
-          message: res.message,
-          options: { variant: 'error' },
-        }, true)(dispatch)
-      }
-      if (res.status === 'success') {
-        dispatch({
-          type: INIT_SESSION,
-          status: 'success',
-          config: res.data,
-          alloyType: type,
-          alloy,
-        })
-      }
-    })
-    .catch((err) => {
-      dispatch({
-        type: INIT_SESSION,
-        status: 'fail',
-      })
-      logError(err.toString(), err.message, 'actions.initSession', err.stack)
-    })
 }
 
 /**
@@ -119,49 +154,24 @@ export const updateAlloyOption = option => (dispatch) => {
  * @param {string} error
  * @param {object} alloy alloy to be updated
  */
-export const updateComp = (option, type, alloy, error) => (dispatch) => {
+export const updateComp = (option, type, alloy, error) => (dispatch, getState) => {
   dispatch({
     type: UPDATE_COMP,
-    config: {},
     alloyType: type,
     alloy,
     parentError: error,
   })
 
-  // only make API request if error free
+  // auto-calculate transformation limits if there are no errors
   if (Object.keys(error).length === 0) {
-    fetch(`${SIMCCT_URL}/alloys/update`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        alloy_option: option,
-        alloy_type: type,
-        alloy,
-      }),
-    })
-      .then((res) => {
-        if (res.status !== 200) {
-          return {
-            status: 'fail',
-            message: 'Something went wrong',
-          }
-        }
-        return res.json()
-      })
-      .then((res) => {
-        if (res.status === 'fail') {
-          addFlashToast({
-            message: res.message,
-            options: { variant: 'error' },
-          }, true)(dispatch)
-        }
-      })
-      .catch((err) => {
-        logError(err.toString(), err.message, 'actions.updateComp', err.stack)
-      })
+    const {
+      auto_calculate_ae,
+      auto_calculate_bs,
+      auto_calculate_ms,
+    } = getState().sim.configurations
+    if (auto_calculate_ae) getMsBsAe('ae')(dispatch)
+    if (auto_calculate_bs) getMsBsAe('bs')(dispatch)
+    if (auto_calculate_ms) getMsBsAe('ms')(dispatch)
   }
 }
 
@@ -188,47 +198,25 @@ export const updateDilution = val => (dispatch) => {
  * Update CCT/TTT method.
  * @param {string} value new method
  */
-export const updateConfigMethod = value => (dispatch) => {
-  fetch(`${SIMCCT_URL}/configs/method/update`, {
-    method: 'PUT',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ method: value }),
+export const updateConfigMethod = value => (dispatch, getState) => {
+  dispatch({
+    type: UPDATE_CONFIG_METHOD,
+    payload: value,
   })
-    .then((res) => {
-      if (res.status !== 200) {
-        return {
-          status: 'fail',
-          message: 'Something went wrong',
-        }
-      }
-      return res.json()
-    })
-    .then((res) => {
-      if (res.status === 'fail') {
-        addFlashToast({
-          message: res.message,
-          options: { variant: 'error' },
-        }, true)(dispatch)
-      }
-      if (res.status === 'success') {
-        dispatch({
-          type: UPDATE_CONFIG_METHOD,
-          payload: value,
-        })
-      }
-    })
-    .catch((err) => {
-      // log to fluentd
-      logError(err.toString(), err.message, 'actions.updateConfigMethod', err.stack)
-    })
+
+  // get the new auto-calculated transformation limits
+  const {
+    auto_calculate_ae,
+    auto_calculate_bs,
+    auto_calculate_ms,
+  } = getState().sim.configurations
+  if (auto_calculate_ae) getMsBsAe('ae')(dispatch)
+  if (auto_calculate_bs) getMsBsAe('bs')(dispatch)
+  if (auto_calculate_ms) getMsBsAe('ms')(dispatch)
 }
 
 /**
  * Update grain size in the Redux store.
- * Only make API request to update Redis session when there are no errors.
  *
  * @param {string|number} astm ASTM grain size
  * @param {string|number} dia grain size in diameter
@@ -254,44 +242,10 @@ export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getStat
       ...newGrainSize,
     },
   })
-
-  // only update to server when the grain size is valid
-  if (Object.keys(grainSizeError).length === 0 && grainSizeError.constructor === Object) {
-    fetch(`${SIMCCT_URL}/configs/update`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ grain_size: parseFloat(astm) }),
-    })
-      .then((res) => {
-        if (res.status !== 202) {
-          return {
-            status: 'fail',
-            message: 'Something went wrong',
-          }
-        }
-        return res.json()
-      })
-      .then((res) => {
-        if (res.status === 'fail') {
-          addFlashToast({
-            message: res.message,
-            options: { variant: 'error' },
-          }, true)(dispatch)
-        }
-      })
-      .catch((err) => {
-        // log to fluentd
-        logError(err.toString(), err.message, 'actions.updateGrainSize', err.stack)
-      })
-  }
 }
 
 /**
- * Update the transformation limits. Only make API request to
- * update Redis session if there are no errors.
+ * Update the transformation limits.
  * @param {string} name name of the phase - 'ms' | 'bs' | 'ae'
  * @param {string} field field to be updated
  * @param {any} data config object
@@ -334,98 +288,6 @@ export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState
       ...data,
     },
   })
-
-  // only send update to server when there is no error
-  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
-    fetch(`${SIMCCT_URL}/configs/${name}`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(reqBody),
-    })
-      .then((res) => {
-        if (res.status !== 202) {
-          return {
-            status: 'fail',
-            message: 'Something went wrong',
-          }
-        }
-        return res.json()
-      })
-      .then((res) => {
-        if (res.status === 'fail') {
-          addFlashToast({
-            message: res.message,
-            options: { variant: 'error' },
-          }, true)(dispatch)
-        }
-      })
-      .catch((err) => {
-        // log to fluentd
-        logError(err.toString(), err.message, 'actions.updateMsBsAe', err.stack)
-      })
-  }
-}
-
-/**
- * Get the autocalculated transformation limits.
- * @param {string} name name of the phase - 'ms' | 'bs' | 'ae'
- */
-export const getMsBsAe = name => (dispatch, getState) => {
-  const { error } = getState().sim.configurations
-  // since data is autocalculated, there should be no input errors
-  // delete all input errors from these fields
-  if (name === 'ms') {
-    delete error.ms_temp
-    delete error.ms_rate_param
-  }
-  if (name === 'bs') {
-    delete error.bs_temp
-  }
-  if (name === 'ae') {
-    delete error.ae1_temp
-    delete error.ae3_temp
-  }
-
-  fetch(`${SIMCCT_URL}/configs/${name}`, {
-    method: 'GET',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then((res) => {
-      if (res.status !== 200) {
-        return {
-          status: 'fail',
-          message: 'Something went wrong',
-        }
-      }
-      return res.json()
-    })
-    .then((res) => {
-      if (res.status === 'fail') {
-        addFlashToast({
-          message: res.message,
-          options: { variant: 'error' },
-        }, true)(dispatch)
-      }
-      if (res.status === 'success') {
-        dispatch({
-          type: UPDATE_CONFIG,
-          payload: {
-            ...res.data,
-            error,
-          },
-        })
-      }
-    })
-    .catch((err) => {
-      // log to fluentd
-      logError(err.toString(), err.message, 'actions.getMsBsAe', err.stack)
-    })
 }
 
 /**
@@ -443,7 +305,7 @@ export const setAutoCalculate = (name, value) => (dispatch) => {
 }
 
 /**
- * Update config in Redux state, only submit API requests if there are no errors.
+ * Update config in Redux state
  * @param {string} name name of config field to be updated
  * @param {string|number} value new value
  * @param {any} valError object error
@@ -465,39 +327,6 @@ export const updateConfig = (name, value, valError) => (dispatch, getState) => {
       [name]: value,
     },
   })
-
-  // only make API request when there is no error
-  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
-    fetch(`${SIMCCT_URL}/configs/update`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ [name]: value }),
-    })
-      .then((res) => {
-        if (res.status !== 202) {
-          return {
-            status: 'fail',
-            message: 'Something went wrong',
-          }
-        }
-        return res.json()
-      })
-      .then((res) => {
-        if (res.status === 'fail') {
-          addFlashToast({
-            message: res.message,
-            options: { variant: 'error' },
-          }, true)(dispatch)
-        }
-      })
-      .catch((err) => {
-        // log to fluentd
-        logError(err.toString(), err.message, 'actions.updateConfig', err.stack)
-      })
-  }
 }
 
 /**
@@ -514,40 +343,28 @@ export const toggleDisplayUserCurve = value => (dispatch) => {
 /**
  * Get the simulation results of the current sim session
  */
-export const runSim = () => async (dispatch, getState) => {
+export const runSim = () => (dispatch, getState) => {
   const {
+    error,
     grain_size_ASTM,
-    nucleation_start,
-    nucleation_finish,
-    cct_cooling_rate,
-    start_temp,
+    ...otherConfigs
   } = getState().sim.configurations
 
-  await fetch(`${SIMCCT_URL}/configs/update`, {
-    method: 'PATCH',
+  fetch(`${SIMCCT_URL}/simulate`, {
+    method: 'POST',
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       grain_size: grain_size_ASTM,
-      nucleation_start,
-      nucleation_finish,
-      cct_cooling_rate,
-      start_temp,
+      ...otherConfigs,
     }),
-  }).catch(err => logError(err.toString(), err.message, 'actions.runSim', err.stack))
-  fetch(`${SIMCCT_URL}/simulate`, {
-    method: 'GET',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   })
     .then((res) => {
       if (res.status !== 200) {
         addFlashToast({
-          message: res.message,
+          message: 'Could not get simulation results',
           options: { variant: 'error' },
         }, true)(dispatch)
       }
@@ -557,7 +374,7 @@ export const runSim = () => async (dispatch, getState) => {
       if (simRes.status === 'fail') {
         return {
           status: 'fail',
-          message: 'Something went wrong',
+          message: 'Could not get simulation results',
         }
       }
       if (simRes.status === 'success') {
@@ -610,60 +427,12 @@ export const updateCCTIndex = idx => (dispatch) => {
  *  results: { USER, CCT, TTT },
  * }
  * @param {any} sim simulation object
- * @param {boolean} isAuthenticated if user is authenticated
  */
-export const loadSimFromFile = (sim, isAuthenticated) => (dispatch) => {
-  const {
-    alloys,
-    configurations: {
-      grain_size_ASTM, grain_size_diameter, ...otherConfigs
-    },
-  } = sim
-
-  if (!isAuthenticated) {
-    dispatch({
-      type: LOAD_SIM_FROM_FILE,
-      payload: sim,
-    })
-  } else {
-    // update Redis session
-    updateSession({
-      alloy_store: {
-        alloy_option: alloys.alloyOption,
-        alloys: {
-          parent: alloys.parent,
-        },
-      },
-      configuration: {
-        grain_size: grain_size_ASTM,
-        ...otherConfigs,
-      },
-    })
-      .then((res) => {
-        if (res.status === 'fail') {
-          addFlashToast({
-            message: res.message,
-            options: { variant: 'error' },
-          }, true)(dispatch)
-          resetSession()(dispatch)
-        }
-        if (res.status === 'success') {
-          dispatch({
-            type: LOAD_SIM_FROM_FILE,
-            payload: sim,
-          })
-        }
-      })
-      .catch((err) => {
-        addFlashToast({
-          message: 'Could not load simulation',
-          options: { variant: 'error' },
-        }, true)(dispatch)
-        resetSession()(dispatch)
-        // log to fluentd
-        logError(err.toString(), err.message, 'actions.loadSimFromFile.updateSession', err.stack)
-      })
-  }
+export const loadSimFromFile = (sim) => (dispatch) => {
+  dispatch({
+    type: LOAD_SIM_FROM_FILE,
+    payload: sim,
+  })
 }
 
 /**
@@ -741,47 +510,27 @@ export const loadSimFromAccount = ({
   alloy_store, configurations, simulation_results,
 }) => (dispatch) => {
   const { is_valid, grain_size, ...otherConfig } = configurations
-
-  // update session
-  updateSession({
-    alloy_store,
-    configuration: {
-      grain_size,
-      ...otherConfig,
+  dispatch({
+    type: LOAD_SIM,
+    payload: {
+      alloys: {
+        alloyOption: alloy_store.alloy_option,
+        parent: alloy_store.alloys.parent,
+        weld: {
+          _id: '',
+          name: '',
+          compositions: [],
+        },
+        mix: [],
+      },
+      configurations: {
+        grain_size_ASTM: grain_size,
+        grain_size_diameter: ASTM2Dia(parseFloat(grain_size)),
+        ...otherConfig,
+      },
+      results: simulation_results,
     },
   })
-    .then((response) => {
-      if (response.status === 'fail') {
-        addFlashToast({
-          message: response.message,
-          options: { variant: 'error' },
-        }, true)(dispatch)
-        dispatch({ type: RESET_SIM })
-      }
-      if (response.status === 'success') {
-        dispatch({
-          type: LOAD_SIM,
-          payload: {
-            alloys: {
-              alloyOption: alloy_store.alloy_option,
-              parent: alloy_store.alloys.parent,
-              weld: {
-                _id: '',
-                name: '',
-                compositions: [],
-              },
-              mix: [],
-            },
-            configurations: {
-              grain_size_ASTM: grain_size,
-              grain_size_diameter: ASTM2Dia(parseFloat(grain_size)),
-              ...otherConfig,
-            },
-            results: simulation_results,
-          },
-        })
-      }
-    })
 }
 
 /**

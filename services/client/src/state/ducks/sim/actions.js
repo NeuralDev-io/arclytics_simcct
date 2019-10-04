@@ -610,8 +610,9 @@ export const updateCCTIndex = idx => (dispatch) => {
  *  results: { USER, CCT, TTT },
  * }
  * @param {any} sim simulation object
+ * @param {boolean} isAuthenticated if user is authenticated
  */
-export const loadSimFromFile = sim => (dispatch) => {
+export const loadSimFromFile = (sim, isAuthenticated) => (dispatch) => {
   const {
     alloys,
     configurations: {
@@ -619,34 +620,50 @@ export const loadSimFromFile = sim => (dispatch) => {
     },
   } = sim
 
-  // update Redis session
-  updateSession({
-    alloy_store: {
-      alloy_option: alloys.alloyOption,
-      alloys: {
-        parent: alloys.parent,
+  if (!isAuthenticated) {
+    dispatch({
+      type: LOAD_SIM_FROM_FILE,
+      payload: sim,
+    })
+  } else {
+    // update Redis session
+    updateSession({
+      alloy_store: {
+        alloy_option: alloys.alloyOption,
+        alloys: {
+          parent: alloys.parent,
+        },
       },
-    },
-    configuration: {
-      grain_size: grain_size_ASTM,
-      ...otherConfigs,
-    },
-  })
-    .then((res) => {
-      if (res.status === 'fail') {
+      configuration: {
+        grain_size: grain_size_ASTM,
+        ...otherConfigs,
+      },
+    })
+      .then((res) => {
+        if (res.status === 'fail') {
+          addFlashToast({
+            message: res.message,
+            options: { variant: 'error' },
+          }, true)(dispatch)
+          resetSession()(dispatch)
+        }
+        if (res.status === 'success') {
+          dispatch({
+            type: LOAD_SIM_FROM_FILE,
+            payload: sim,
+          })
+        }
+      })
+      .catch((err) => {
         addFlashToast({
-          message: res.message,
+          message: 'Could not load simulation',
           options: { variant: 'error' },
         }, true)(dispatch)
-        dispatch({ type: RESET_SIM })
-      }
-      if (res.status === 'success') {
-        dispatch({
-          type: LOAD_SIM_FROM_FILE,
-          payload: sim,
-        })
-      }
-    })
+        resetSession()(dispatch)
+        // log to fluentd
+        logError(err.toString(), err.message, 'actions.loadSimFromFile.updateSession', err.stack)
+      })
+  }
 }
 
 /**

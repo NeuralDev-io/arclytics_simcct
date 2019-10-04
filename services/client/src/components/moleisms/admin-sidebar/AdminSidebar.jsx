@@ -33,15 +33,6 @@ class AdminSidebar extends Component {
       <div className={styles.sidebar}>
         <h4>Dashboard</h4>
         <Link
-          id="analytics"
-          to="/admin/analytics"
-          onClick={() => this.setState({ active: 'analytics' })}
-          className={`${styles.item} ${active === 'analytics' && styles.active}`}
-        >
-          <ActivityIcon className={styles.icon} />
-          <span>Analytics</span>
-        </Link>
-        <Link
           id="alloys"
           to="/admin/alloys"
           onClick={() => this.setState({ active: 'alloys' })}

@@ -98,9 +98,9 @@ class AlloyStore(Resource):
             response['message'] = 'No alloy type was provided.'
             return response, 400
 
-        if alloy_type not in {'parent', 'weld', 'mix'}:
+        if alloy_type not in {'parent', 'mix'}:
             response['message'] = (
-                'Alloy type not one of ["parent" | "weld" | "mix"].'
+                'Alloy type not one of ["parent" | "mix"].'
             )
             return response, 400
 

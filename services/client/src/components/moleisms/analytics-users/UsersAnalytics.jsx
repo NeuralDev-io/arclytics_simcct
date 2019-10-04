@@ -9,19 +9,68 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { getProfileAnalyticsData } from '../../../api/Analytics'
+import { logError, logInfo } from '../../../api/LoggingHelper'
 import ProfileBarChart from '../charts/ProfileBarChart'
 
 import styles from './UsersAnalytics.module.scss'
 
+/*
+  * This is what the returned data looks like.
+  *
+  * 'plotly_chart_type': 'bar',
+  * 'data': {
+  *     'aim': {
+  *         'x': list(df['aim'].unique()),
+  *         'y': list(df['aim'].value_counts())
+  *     },
+  *     'highest_education': {
+  *         'x': list(df['highest_education'].unique()),
+  *         'y': list(df['highest_education'].value_counts())
+  *     },
+  *     'sci_tech_exp': {
+  *         'x': list(df['sci_tech_exp'].unique()),
+  *         'y': list(df['sci_tech_exp'].value_counts())
+  *     },
+  *     'phase_transform_exp': {
+  *         'x': list(df['phase_transform_exp'].unique()),
+  *         'y': list(df['phase_transform_exp'].value_counts())
+  *     }
+  * }
+  * */
+
 class UsersAnalytics extends Component {
   constructor(props) {
     super(props)
-    this.state = {}
+    this.state = {
+      data: undefined
+    }
   }
 
-  componentDidMount = () => {}
+  componentDidMount = () => {
+    this.getProfileAnalytics()
+  }
+
+  getProfileAnalytics = () => {
+    getProfileAnalyticsData().then((res) => {
+      this.setState({ data: res.data })
+    })
+      .catch((err) => logError(
+        err.toString(),
+        err.message,
+        'UsersAnalytics.getProfileAnalytics',
+        err.stack
+      ))
+  }
 
   render() {
+
+    const { data } = this.state
+
+    /*
+    * Colors: --l300, --g300, --m300, --r300, --o300
+    * */
+
     return (
       <div className={styles.container}>
         <h3>All About Users</h3>
@@ -31,9 +80,46 @@ class UsersAnalytics extends Component {
 
         <h5>Users Profiles</h5>
 
-        <div>
-          <ProfileBarChart />
+        <div className={styles.charts}>
+
+          <div className={styles.line}>
+            <ProfileBarChart
+              title="What sentence best describes you?"
+              name="Aim"
+              data={(data !== undefined) ? data.aim : undefined}
+              color="--b500"
+            />
+          </div>
+
+          <div className={styles.line}>
+            <ProfileBarChart
+              title="What is the highest level of education have you studied?"
+              name="Highest Education"
+              data={(data !== undefined) ? data.highest_education : undefined}
+              color="--o500"
+            />
+          </div>
+
+          <div className={styles.line}>
+            <ProfileBarChart
+              title="What is your experience with solid-state phase transformation?"
+              name="Highest Education"
+              data={(data !== undefined) ? data.sci_tech_exp : undefined}
+              color="--g500"
+            />
+          </div>
+
+          <div className={styles.line}>
+            <ProfileBarChart
+              title="What is your experience with scientific software?"
+              name="Highest Education"
+              data={(data !== undefined) ? data.phase_transform_exp : undefined}
+              color="--r500"
+            />
+          </div>
+
         </div>
+
 
         <br/><br/>
 
@@ -42,6 +128,6 @@ class UsersAnalytics extends Component {
   }
 }
 
-UsersAnalytics.propTypes = {}
+// UsersAnalytics.propTypes = {}
 
 export default UsersAnalytics

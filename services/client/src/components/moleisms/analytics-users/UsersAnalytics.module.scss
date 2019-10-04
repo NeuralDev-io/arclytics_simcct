@@ -1,22 +1,30 @@
 .container {
-  width: 80%;
+  width: 85%;
   margin: auto;
 
   h3 {
     margin-bottom: 2.5rem;
   }
 
-  .tools {
+  .charts {
     display: flex;
+    margin: 1.5rem;
     flex-flow: row wrap;
-    align-items: center;
     justify-content: space-between;
-    margin-bottom: 1.5rem;
-  }
-}
+    align-items: center;
 
-.actions {
-  display: flex;
-  flex-flow: row wrap;
-  align-items: center;
+    .line {
+      display: flex;
+      flex-basis: 60%;
+      margin: 0 1.5rem;
+      min-height: 22rem;
+      max-height: 32rem;
+      position: relative;
+      flex-flow: row;
+
+      & > div {
+        flex-grow: 1;
+      }
+    }
+  }
 }

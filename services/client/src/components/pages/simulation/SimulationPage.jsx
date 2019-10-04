@@ -135,7 +135,9 @@ class SimulationPage extends Component {
                 isSimulated={isSimulated}
                 isAuthenticated={isAuthenticated}
               />
-              <LoadSimButton />
+              <LoadSimButton
+                isAuthenticated={isAuthenticated}
+              />
             </div>
           </header>
           <div className={styles.configForm} style={{ display: displayConfig ? 'block' : 'none' }}>

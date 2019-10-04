@@ -38,7 +38,6 @@ SIMULATION_RESULTS = _TEST_JSON['simulation_results']
 
 class TestShareService(BaseTestCase):
     """Test for sharing simulations via link and email"""
-
     def setUp(self) -> None:
         assert app.config['TESTING'] is True
         self.mongo = get_db('default')

@@ -33,7 +33,6 @@ _TEST_CONFIGS_PATH = Path(os.getcwd()) / 'tests' / 'sim_configs.json'
 
 class TestUserModel(BaseTestCase):
     """Run direct tests on the User model without an API call."""
-
     def tearDown(self) -> None:
         db = get_db('default')
         self.assertTrue(db.name, 'arc_test')
@@ -124,10 +123,16 @@ class TestUserModel(BaseTestCase):
             'alloy_option': 'single',
             'alloys': {
                 'parent': {
-                    'name': 'Selvigium',
+                    'name':
+                    'Selvigium',
                     'compositions': [
-                        {'symbol': 'C', 'weight': 0.044},
-                        {'symbol': 'Mn', 'weight': 1.73}
+                        {
+                            'symbol': 'C',
+                            'weight': 0.044
+                        }, {
+                            'symbol': 'Mn',
+                            'weight': 1.73
+                        }
                     ]
                 },
                 'weld': None,

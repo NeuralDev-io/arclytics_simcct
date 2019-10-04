@@ -408,7 +408,8 @@ def login() -> any:
                 location_data = reader.city(str(request_ip))
 
                 country = location_data.country.names['en']
-                state = location_data.subdivisions[0].names['en']
+                if location_data.subdivisions:
+                    state = location_data.subdivisions[0].names['en']
 
                 reader.close()
             except FileNotFoundError as e:
@@ -470,6 +471,8 @@ def login() -> any:
             session['ip_address'] = request_ip
             session['is_admin'] = user.is_admin
             session['user_id'] = str(user.id)
+            session['state'] = state
+            session['country'] = country
 
             # We inject the Simulation Session data
             SimSessionService().new_session(user=user)

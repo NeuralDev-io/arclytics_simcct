@@ -19,6 +19,7 @@ import { ASTM2Dia } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
 import { addSimToTimeMachine } from '../timeMachine/actions'
 import { logError } from '../../../api/LoggingHelper'
+import { updateSession } from '../../../api/sim/sessionHelper'
 
 export const resetSession = () => (dispatch) => {
   // make api call to update session
@@ -622,10 +623,41 @@ export const loadSim = sim => (dispatch) => {
  * @param {any} sim simulation object
  */
 export const loadSimFromFile = sim => (dispatch) => {
-  dispatch({
-    type: LOAD_SIM_FROM_FILE,
-    payload: sim,
+  const {
+    alloys,
+    configurations: {
+      grain_size_ASTM, grain_size_diameter, ...otherConfigs
+    },
+  } = sim
+
+  // update Redis session
+  updateSession({
+    alloy_store: {
+      alloy_option: alloys.alloyOption,
+      alloys: {
+        parent: alloys.parent,
+      },
+    },
+    configuration: {
+      grain_size: grain_size_ASTM,
+      ...otherConfigs,
+    },
   })
+    .then((res) => {
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+        dispatch({ type: RESET_SIM })
+      }
+      if (res.status === 'success') {
+        dispatch({
+          type: LOAD_SIM_FROM_FILE,
+          payload: sim,
+        })
+      }
+    })
 }
 
 /**

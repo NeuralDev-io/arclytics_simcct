@@ -18,7 +18,6 @@ login, logout, and any additional endpoints that require authentication and
 authorisation purposes..
 """
 
-import json
 import os
 from datetime import datetime
 from typing import Tuple
@@ -55,7 +54,6 @@ class SimCCTBadServerLogout(Exception):
     A custom exception to be raised by a synchronous call to logout on the
     SimCCT server if the response is not what we are expecting.
     """
-
     def __init__(self, msg: str):
         super(SimCCTBadServerLogout, self).__init__(msg)
 
@@ -114,7 +112,6 @@ def confirm_email(token):
 @auth_blueprint.route('/confirm/resend', methods=['GET'])
 @authenticate_user_and_cookie_flask
 def confirm_email_resend(user):
-
     response = {'status': 'fail', 'message': 'Bad request'}
 
     if user.verified:
@@ -148,7 +145,6 @@ def confirm_email_resend(user):
 
 @auth_blueprint.route('/confirm/register/resend', methods=['PUT'])
 def confirm_email_resend_after_registration() -> Tuple[dict, int]:
-
     response = {'status': 'success'}
 
     data = request.get_json()
@@ -345,6 +341,9 @@ def login() -> any:
         response['message'] = 'User does not exist'
         return jsonify(response), 404
 
+    # Let's save some stats for later
+    login_datetime = datetime.utcnow()
+
     user = User.objects.get(email=email)
 
     # Now let's really check if the User can access our application
@@ -363,11 +362,6 @@ def login() -> any:
                 )
                 apm.capture_message('Unauthorised access.')
                 return jsonify(response), 403
-
-            # Let's save some stats for later
-            user.last_login = datetime.utcnow()
-
-            user.save()
 
             # First we check if there is a proxy or other network service
             # that forwards the IP address. If it is not the case,
@@ -399,6 +393,9 @@ def login() -> any:
             par_dir = os.path.dirname(os.path.abspath(__file__))
             db_path = Path(par_dir) / 'GeoLite2-City' / 'GeoLite2-City.mmdb'
 
+            # If we can't record this data, we will store it as a Null
+            country, state = None, None
+
             try:
                 if not db_path.exists():
                     raise FileNotFoundError(
@@ -409,27 +406,11 @@ def login() -> any:
                 reader = geoip2.database.Reader(db_path.as_posix())
 
                 location_data = reader.city(str(request_ip))
-                # location_data = reader.city('203.10.91.88')
+
                 country = location_data.country.names['en']
                 state = location_data.subdivisions[0].names['en']
-                ip_address = location_data.traits.ip_address
 
-                user.login_data.append(
-                    LoginData(
-                        country=country, state=state, ip_address=ip_address
-                    )
-                )
-                logger.info(
-                    {
-                        'message': 'User logged in.',
-                        'user': user.email,
-                        'country': country,
-                        'state': state,
-                        'ip_address': ip_address
-                    }
-                )
                 reader.close()
-                user.save()
             except FileNotFoundError as e:
                 apm.capture_exception()
                 logger.critical(
@@ -461,8 +442,25 @@ def login() -> any:
                 # error and allow the response.
                 apm.capture_exception()
             finally:
-                user.reload()
-                user.login_data.append(LoginData(ip_address=request_ip))
+                logger.info(
+                    {
+                        'message': 'User logged in.',
+                        'user': user.email,
+                        'country': country,
+                        'state': state,
+                        'ip_address': request_ip
+                    }
+                )
+                login_data = LoginData(
+                    **{
+                        'ip_address': request_ip,
+                        'created_datetime': login_datetime,
+                        'country': country,
+                        'state': state
+                    }
+                )
+                user.last_login = login_datetime
+                user.login_data.append(login_data)
                 user.save()
 
             # Store additional information in their session as it will be
@@ -637,7 +635,8 @@ def confirm_reset_password(token):
 
     # We create a JWT token to send to the client-side so they can attach
     # it as part of the next request
-    jwt_token = AuthService().encode_password_reset_token(user_id=user.id).decode()
+    jwt_token = AuthService().encode_password_reset_token(user_id=user.id
+                                                          ).decode()
 
     response['status'] = 'success'
     response.pop('message')
@@ -861,12 +860,14 @@ def change_email(user) -> Tuple[dict, int]:
 def logout(_) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
 
-    # Clear all keys in the session
-    for key in session.keys():
-        session.pop(key)
+    # TODO(andrew@neuraldev.io): Take a look at this again, it's not clearing
 
     # Remove the data from the user's current session.
     session.clear()
+
+    # Clear all keys in the session
+    # for key in session.keys():
+    #     session.pop(key)
 
     response = {'status': 'success', 'message': 'Successfully logged out.'}
     return jsonify(response), 202

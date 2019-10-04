@@ -427,60 +427,12 @@ export const updateCCTIndex = idx => (dispatch) => {
  *  results: { USER, CCT, TTT },
  * }
  * @param {any} sim simulation object
- * @param {boolean} isAuthenticated if user is authenticated
  */
-export const loadSimFromFile = (sim, isAuthenticated) => (dispatch) => {
-  const {
-    alloys,
-    configurations: {
-      grain_size_ASTM, grain_size_diameter, ...otherConfigs
-    },
-  } = sim
-
-  if (!isAuthenticated) {
-    dispatch({
-      type: LOAD_SIM_FROM_FILE,
-      payload: sim,
-    })
-  } else {
-    // update Redis session
-    updateSession({
-      alloy_store: {
-        alloy_option: alloys.alloyOption,
-        alloys: {
-          parent: alloys.parent,
-        },
-      },
-      configuration: {
-        grain_size: grain_size_ASTM,
-        ...otherConfigs,
-      },
-    })
-      .then((res) => {
-        if (res.status === 'fail') {
-          addFlashToast({
-            message: res.message,
-            options: { variant: 'error' },
-          }, true)(dispatch)
-          resetSession()(dispatch)
-        }
-        if (res.status === 'success') {
-          dispatch({
-            type: LOAD_SIM_FROM_FILE,
-            payload: sim,
-          })
-        }
-      })
-      .catch((err) => {
-        addFlashToast({
-          message: 'Could not load simulation',
-          options: { variant: 'error' },
-        }, true)(dispatch)
-        resetSession()(dispatch)
-        // log to fluentd
-        logError(err.toString(), err.message, 'actions.loadSimFromFile.updateSession', err.stack)
-      })
-  }
+export const loadSimFromFile = (sim) => (dispatch) => {
+  dispatch({
+    type: LOAD_SIM_FROM_FILE,
+    payload: sim,
+  })
 }
 
 /**
@@ -558,47 +510,27 @@ export const loadSimFromAccount = ({
   alloy_store, configurations, simulation_results,
 }) => (dispatch) => {
   const { is_valid, grain_size, ...otherConfig } = configurations
-
-  // update session
-  updateSession({
-    alloy_store,
-    configuration: {
-      grain_size,
-      ...otherConfig,
+  dispatch({
+    type: LOAD_SIM,
+    payload: {
+      alloys: {
+        alloyOption: alloy_store.alloy_option,
+        parent: alloy_store.alloys.parent,
+        weld: {
+          _id: '',
+          name: '',
+          compositions: [],
+        },
+        mix: [],
+      },
+      configurations: {
+        grain_size_ASTM: grain_size,
+        grain_size_diameter: ASTM2Dia(parseFloat(grain_size)),
+        ...otherConfig,
+      },
+      results: simulation_results,
     },
   })
-    .then((response) => {
-      if (response.status === 'fail') {
-        addFlashToast({
-          message: response.message,
-          options: { variant: 'error' },
-        }, true)(dispatch)
-        dispatch({ type: RESET_SIM })
-      }
-      if (response.status === 'success') {
-        dispatch({
-          type: LOAD_SIM,
-          payload: {
-            alloys: {
-              alloyOption: alloy_store.alloy_option,
-              parent: alloy_store.alloys.parent,
-              weld: {
-                _id: '',
-                name: '',
-                compositions: [],
-              },
-              mix: [],
-            },
-            configurations: {
-              grain_size_ASTM: grain_size,
-              grain_size_diameter: ASTM2Dia(parseFloat(grain_size)),
-              ...otherConfig,
-            },
-            results: simulation_results,
-          },
-        })
-      }
-    })
 }
 
 /**

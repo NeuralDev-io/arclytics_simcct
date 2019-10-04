@@ -101,5 +101,5 @@ class ResetSimulationSetting(Resource):
 
 
 
-api.add_resource(SimulationSession, '/api/v1/sim/session/update')
-api.add_resource(ResetSimulationSetting, '/api/v1/sim/session/reset')
+api.add_resource(SimulationSession, '/v1/sim/session/update')
+api.add_resource(ResetSimulationSetting, '/v1/sim/session/reset')

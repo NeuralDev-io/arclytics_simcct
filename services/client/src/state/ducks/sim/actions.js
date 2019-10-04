@@ -513,7 +513,7 @@ export const toggleDisplayUserCurve = value => (dispatch) => {
 /**
  * Get the simulation results of the current sim session
  */
-export const runSim = () => (dispatch, getState) => {
+export const runSim = () => async (dispatch, getState) => {
   const {
     grain_size_ASTM,
     nucleation_start,
@@ -522,7 +522,7 @@ export const runSim = () => (dispatch, getState) => {
     start_temp,
   } = getState().sim.configurations
 
-  fetch(`${SIMCCT_URL}/configs/update`, {
+  await fetch(`${SIMCCT_URL}/configs/update`, {
     method: 'PATCH',
     credentials: 'include',
     headers: {

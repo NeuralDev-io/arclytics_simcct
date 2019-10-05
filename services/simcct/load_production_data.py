@@ -30,7 +30,7 @@ from geoip2.errors import AddressNotFoundError
 from maxminddb.errors import InvalidDatabaseError
 from mongoengine import connect, disconnect_all, get_connection, get_db
 from pymongo import MongoClient
-
+from prettytable import PrettyTable
 from sim_api import create_app, init_db
 from sim_api.extensions.utilities import get_mongo_uri
 from sim_api.models import AdminProfile, Feedback, LoginData, SavedSimulation, \
@@ -46,6 +46,7 @@ user_data_path = (
         Path(BASE_DIR) / 'production_data' / 'production_user_data.json'
 )
 alloy_data_path = Path(BASE_DIR) / 'production_data' / 'production_alloy_data.json'
+global_alloy_data_path = Path(BASE_DIR) / 'production_data' / 'production_global_alloys_data.json'
 simulation_data_path = Path(BASE_DIR) / 'production_data' / 'production_simulation_data.json'
 feedback_data_path = Path(BASE_DIR) / 'production_data' / 'production_feedback_data.json'
 
@@ -55,6 +56,9 @@ if os.path.isfile(user_data_path):
 if os.path.isfile(alloy_data_path):
     with open(alloy_data_path) as f:
         alloy_data = json.load(f)
+if os.path.isfile(global_alloy_data_path):
+    with open(global_alloy_data_path) as f:
+        global_alloy_data = json.load(f)
 if os.path.isfile(simulation_data_path):
     with open(simulation_data_path) as f:
         simulation_data = json.load(f)
@@ -116,6 +120,30 @@ print(f'MongoDB Client: \n{client}\n', file=stderr)
 print(f'MongoDB Database: \n{db}\n', file=stderr)
 
 random.seed(100000)
+
+# loading global alloy's
+with app.app_context():
+    json_data = global_alloy_data
+    from sim_api.schemas import AlloySchema
+
+    data = AlloySchema(many=True).load(json_data['alloys'])
+
+    print(
+        'Seeding global alloys to <{}> database:'.format(db.name),
+        file=sys.stderr
+    )
+    # Check the correct database -- arc_dev
+    db.alloys.insert_many(data)
+
+tbl = PrettyTable(['Symbol', 'Weight'])
+
+for alloy in db.alloys.find():
+    print(f"Alloy name: {alloy['name']}")
+    for el in alloy['compositions']:
+        tbl.add_row((el['symbol'], el['weight']))
+    print(tbl)
+    tbl.clear_rows()
+
 # STAY INSIDE THE FLASK APPLICATION CONTEXT
 with app.app_context():
     for user in user_data:

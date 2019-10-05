@@ -421,7 +421,8 @@ def login() -> any:
                 if location_data.location:
                     accuracy_radius = location_data.location.accuracy_radius
                     geopoint = {
-                        'type': 'Point',
+                        'type':
+                        'Point',
                         'coordinates': [
                             location_data.location.latitude,
                             location_data.location.longitude

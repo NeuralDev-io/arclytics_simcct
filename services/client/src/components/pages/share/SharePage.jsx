@@ -23,7 +23,10 @@ class SharePage extends Component {
       .then(() => {
         const { isAuthenticated } = this.props
         if (isAuthenticated) {
-          history.push('/')
+          history.push({
+            pathname: '/',
+            state: { loadFromShare: true },
+          })
         } else {
           history.push('/demo')
         }

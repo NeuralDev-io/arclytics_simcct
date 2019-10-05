@@ -25,6 +25,17 @@
       margin-bottom: 1.5rem;
     }
 
+    & > .line {
+      background-color: var(--n500);
+      height: 3px;
+      width: 2rem;
+      margin-bottom: 2.5rem;
+      padding: 0;
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      box-shadow: none;
+    }
+
     & > .navIcon {
       width: 2rem;
       height: 2rem;

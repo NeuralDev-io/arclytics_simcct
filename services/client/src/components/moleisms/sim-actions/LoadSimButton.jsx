@@ -36,7 +36,7 @@ class LoadSimButton extends Component {
   handleCloseModal = () => this.setState({ visible: false })
 
   handleFileInputChange = (e) => {
-    const { loadSimFromFileConnect, addFlashToastConnect, isAuthenticated } = this.props
+    const { loadSimFromFileConnect, addFlashToastConnect } = this.props
     const file = e.target.files[0]
 
     if (file === null || file === undefined) return
@@ -69,7 +69,7 @@ class LoadSimButton extends Component {
       // TODO: validate sim schema
 
       // load simulations
-      loadSimFromFileConnect(sim, isAuthenticated)
+      loadSimFromFileConnect(sim)
       this.setState({ filename: file.name })
       addFlashToastConnect({
         message: 'File imported successfully',

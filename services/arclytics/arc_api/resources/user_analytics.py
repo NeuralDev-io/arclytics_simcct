@@ -49,17 +49,63 @@ class UserLoginData(Resource):
 
         return {'status': 'success', 'data': len(keys)}, 200
 
-    # def get(self) -> Tuple[dict, int]:
-    #
-    #     pipeline = [
-    #         {'$unwind': '$profile'},
-    #     ]
-    #
-    #     response = {
-    #         'status': 'success',
-    #         'plotly_chart_type': ''
-    #     }
-    #     return response, 200
+
+class UserNerdyData(Resource):
+    def get(self):
+        # Get total numbers
+        # Get total shares
+        # Get total simulations
+        pass
+
+
+# noinspection PyMethodMayBeStatic
+class UserLoginLocationData(Resource):
+
+    # method_decorators = {'get': [authorize_admin_cookie_restful]}
+
+    def get(self):
+        pipeline = [
+            {'$unwind': '$login_data'},
+            {'$project': {
+                '_id': 0,
+                'state': '$login_data.state',
+                'country': '$login_data.country',
+                'continent': '$login_data.continent',
+                'timezone': '$login_data.timezone',
+                'latitude': {
+                    '$arrayElemAt': ['$login_data.geo_point.coordinates', 0]},
+                'longitude': {
+                    '$arrayElemAt': ['$login_data.geo_point.coordinates', 1]},
+            }
+            },
+        ]
+
+        df = MongoService().read_aggregation('arc_dev', 'users', pipeline)
+        df.dropna(subset=['latitude', 'longitude'], axis=0, inplace=True)
+
+        df = df.groupby(
+            [
+                'latitude',
+                'longitude',
+                'country',
+                'continent'
+            ]
+        ).size().to_frame('count').reset_index()
+
+        token = env.get('MAPBOX_TOKEN', None)
+
+        response = {
+            'status': 'success',
+            'mapbox_token': token,
+            'data': {
+                'latitude': df['latitude'].tolist(),
+                'longitude': df['longitude'].tolist(),
+                'country': df['country'].tolist(),
+                'continent': df['continent'].tolist(),
+                'count': df['count'].tolist()
+            }
+        }
+        return response, 200
 
 
 # noinspection PyMethodMayBeStatic
@@ -116,5 +162,7 @@ class UserProfileData(Resource):
         return response, 200
 
 
+api.add_resource(UserNerdyData, '/v1/arc/users/stats')
 api.add_resource(UserLoginData, '/v1/arc/users/login/live')
+api.add_resource(UserLoginLocationData, '/v1/arc/users/login/map')
 api.add_resource(UserProfileData, '/v1/arc/users/profile')

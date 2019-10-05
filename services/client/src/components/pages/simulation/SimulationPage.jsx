@@ -55,7 +55,9 @@ class SimulationPage extends Component {
     window.addEventListener('beforeunload', persistSimConnect)
 
     // if sim already loaded from account, then don't load any cached sim
-    if (location.state !== undefined && location.state.loadFromAccount) return
+    if (location.state !== undefined && (
+      location.state.loadFromAccount || location.state.loadFromShare
+    )) return
 
     const persistedTime = Date.parse(persistedSimTime)
     const now = new Date()
@@ -135,9 +137,7 @@ class SimulationPage extends Component {
                 isSimulated={isSimulated}
                 isAuthenticated={isAuthenticated}
               />
-              <LoadSimButton
-                isAuthenticated={isAuthenticated}
-              />
+              <LoadSimButton />
             </div>
           </header>
           <div className={styles.configForm} style={{ display: displayConfig ? 'block' : 'none' }}>
@@ -212,6 +212,7 @@ SimulationPage.propTypes = {
   location: PropTypes.shape({
     state: PropTypes.shape({
       loadFromAccount: PropTypes.bool,
+      loadFromShare: PropTypes.bool,
     }),
   }).isRequired,
   isInitialised: PropTypes.bool.isRequired,

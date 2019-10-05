@@ -14,6 +14,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
+import ActivityIcon from 'react-feather/dist/icons/activity'
 import HardDriveIcon from 'react-feather/dist/icons/hard-drive'
 // import HelpIcon from 'react-feather/dist/icons/help-circle'
 import MonitorIcon from 'react-feather/dist/icons/monitor'
@@ -98,6 +99,24 @@ class AppBar extends React.Component {
               <p>Help</p>
             </Tooltip>
           </a> */}
+
+          <div
+            className={styles.line}
+            style={{ display: isAdmin ? 'flex' : 'none' }}
+          />
+
+          <Link
+            id="analytics"
+            className={`${styles.navIcon} ${active === 'analytics' && styles.active}`}
+            style={{ display: isAdmin ? 'flex' : 'none' }}
+            to="/analytics/users"
+          >
+            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+              <ActivityIcon className={styles.icon} />
+              <p>Data & Analytics</p>
+            </Tooltip>
+          </Link>
+
           <Link
             id="admin"
             className={`${styles.navIcon} ${active === 'admin' && styles.active}`}

@@ -640,6 +640,8 @@ class SharedSimulation(Document):
         document_type=SimulationResults, required=True, null=False
     )
 
+    meta = {'collection': 'shared_simulations'}
+
     def to_dict(self):
         return {
             'owner_email': self.owner_email,

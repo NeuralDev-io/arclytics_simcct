@@ -223,6 +223,7 @@ class Simulation(Resource):
 
 
 class Ae3Equilibrium(Resource):
+
     method_decorators = {'get': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
@@ -284,7 +285,8 @@ class Ae3Equilibrium(Resource):
         )
 
         try:
-            results_mat, ferrite_phase_frac, eutectic_composition_carbon = \
+            # xfe is ferrite_phase_frac and ceut is eutectic_composition_carbon
+            results_plot, results_mat, xfe, ceut = \
                 sim_configs.xfe_method2(
                     comp_list=alloy['compositions'], ae1=configs['ae1_temp'],
                     plot=True
@@ -292,20 +294,35 @@ class Ae3Equilibrium(Resource):
         except ZeroDivisionError as e:
             response['error'] = str(e)
             response['message'] = 'Zero Division Error.'
-            response['configs'] = sim_configs.configs.__dict__
+            response['configs'] = sim_configs.__dict__
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 500
         # TODO(davidmatthews1004@gmail.com) Find if its possible for any other
         #  kind of exceptions to occur and handle them appropriately.
         except Exception as e:
             response['error'] = str(e)
-            response['message'] = 'An Exception has occurred.'
-            return response, 400
+            response['message'] = 'Exception.'
+            response['configs'] = sim_configs.__dict__
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
+            return response, 500
 
-        data = {
-            'ferrite_phase_frac': ferrite_phase_frac,
-            'eutectic_composition_carbon': eutectic_composition_carbon,
-            'results_mat': results_mat.tolist()
-        }
+        try:
+            data = {
+                'ferrite_phase_frac': xfe,
+                'eutectic_composition_carbon': ceut,
+                'results_plot': results_plot
+                # 'results_mat': results_mat.tolist()
+            }
+        # Not sure if this is possible for the ae3 equilibrium results but
+        # putting it in just in case.
+        except AssertionError as e:
+            response['error'] = str(e)
+            response['message'] = 'Assertion error building response data.'
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
+            return response, 500
 
         response['status'] = 'success'
         response['data'] = data

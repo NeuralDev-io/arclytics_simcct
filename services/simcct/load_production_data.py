@@ -198,7 +198,6 @@ with app.app_context():
 
             # If we can't record this data, we will store it as a Null
             country, state, continent = None, None, None
-            country_iso_code, continent_iso_code = None, None
             geopoint, timezone = None, None
             accuracy_radius = 0
 
@@ -216,14 +215,12 @@ with app.app_context():
 
                 if location_data.country:
                     country = location_data.country.names['en']
-                    country_iso_code = location_data.country.iso_code
 
                 if location_data.subdivisions:
                     state = location_data.subdivisions[0].names['en']
 
                 if location_data.continent:
                     continent = location_data.continent.names['en']
-                    continent_iso_code = location_data.continent.code
 
                 if location_data.location:
                     accuracy_radius = location_data.location.accuracy_radius
@@ -250,9 +247,7 @@ with app.app_context():
                     **{
                         'created_datetime': varied_date[index],
                         'continent': continent,
-                        'continent_iso_code': continent_iso_code,
                         'country': country,
-                        'country_iso_code': country_iso_code,
                         'state': state,
                         'accuracy_radius': accuracy_radius,
                         'geo_point': geopoint,

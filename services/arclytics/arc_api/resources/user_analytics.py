@@ -49,17 +49,13 @@ class UserLoginData(Resource):
 
         return {'status': 'success', 'data': len(keys)}, 200
 
-    # def get(self) -> Tuple[dict, int]:
-    #
-    #     pipeline = [
-    #         {'$unwind': '$profile'},
-    #     ]
-    #
-    #     response = {
-    #         'status': 'success',
-    #         'plotly_chart_type': ''
-    #     }
-    #     return response, 200
+
+class UserNerdyData(Resource):
+    def get(self):
+        # Get total numbers
+        # Get total shares
+        # Get total simulations
+        pass
 
 
 # noinspection PyMethodMayBeStatic
@@ -106,6 +102,7 @@ class UserLoginLocationData(Resource):
                 'longitude': df['longitude'].tolist(),
                 'country': df['country'].tolist(),
                 'continent': df['continent'].tolist(),
+                'count': df['count'].tolist()
             }
         }
         return response, 200
@@ -165,6 +162,7 @@ class UserProfileData(Resource):
         return response, 200
 
 
+api.add_resource(UserNerdyData, '/v1/arc/users/stats')
 api.add_resource(UserLoginData, '/v1/arc/users/login/live')
 api.add_resource(UserLoginLocationData, '/v1/arc/users/login/map')
 api.add_resource(UserProfileData, '/v1/arc/users/profile')

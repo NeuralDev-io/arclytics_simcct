@@ -9,52 +9,47 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { getProfileAnalyticsData } from '../../../api/Analytics'
+import { getProfileAnalyticsData, getLoginLocationData } from '../../../api/Analytics'
 import { logError, logInfo } from '../../../api/LoggingHelper'
-import ProfileBarChart from '../charts/ProfileBarChart'
+import { ProfileBarChart, LoginLocationMapbox } from '../charts'
 import Card from '../../elements/card'
 
 import styles from './UsersAnalytics.module.scss'
-
-/*
-  * This is what the returned data looks like.
-  *
-  * 'plotly_chart_type': 'bar',
-  * 'data': {
-  *     'aim': {
-  *         'x': list(df['aim'].unique()),
-  *         'y': list(df['aim'].value_counts())
-  *     },
-  *     'highest_education': {
-  *         'x': list(df['highest_education'].unique()),
-  *         'y': list(df['highest_education'].value_counts())
-  *     },
-  *     'sci_tech_exp': {
-  *         'x': list(df['sci_tech_exp'].unique()),
-  *         'y': list(df['sci_tech_exp'].value_counts())
-  *     },
-  *     'phase_transform_exp': {
-  *         'x': list(df['phase_transform_exp'].unique()),
-  *         'y': list(df['phase_transform_exp'].value_counts())
-  *     }
-  * }
-  * */
 
 class UsersAnalytics extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      data: undefined
+      profileData: undefined,
+      mapboxToken: '',
+      mapboxData: undefined,
     }
   }
 
   componentDidMount = () => {
     this.getProfileAnalytics()
+    this.getLoginLocationMap()
   }
 
   getProfileAnalytics = () => {
     getProfileAnalyticsData().then((res) => {
-      this.setState({ data: res.data })
+      this.setState({ profileData: res.data })
+    })
+      .catch((err) => logError(
+        err.toString(),
+        err.message,
+        'UsersAnalytics.getProfileAnalytics',
+        err.stack
+      ))
+  }
+
+  getLoginLocationMap = () => {
+    getLoginLocationData().then((res) => {
+      // noinspection JSUnresolvedVariable
+      this.setState({
+        mapboxData: res.data,
+        mapboxToken: res.mapbox_token
+      })
     })
       .catch((err) => logError(
         err.toString(),
@@ -66,7 +61,11 @@ class UsersAnalytics extends Component {
 
   render() {
 
-    const { data } = this.state
+    const {
+      profileData,
+      mapboxToken,
+      mapboxData,
+    } = this.state
 
     /*
     * Colors: --l300, --g300, --m300, --r300, --o300
@@ -74,47 +73,60 @@ class UsersAnalytics extends Component {
 
     return (
       <div className={styles.container}>
-        <h3>All About Users</h3>
+        <h3>Dashboard - All About Users</h3>
 
-        <h5>Live Logged In Users</h5>
-        <br/><br/>
+        <h5>Some <strike>nerdy stats</strike> number about users.</h5>
+        <div className={styles.liveData}>
+          <Card className={styles.liveDataCard}>
 
-        <h5>Users Profiles</h5>
+          </Card>
+        </div>
 
+        <h5>Where are users located?</h5>
+        <div className={styles.map}>
+          <Card className={styles.mapCard}>
+            <LoginLocationMapbox
+              token={mapboxToken}
+              data={(mapboxData !== undefined) ? mapboxData : undefined}
+            />
+          </Card>
+        </div>
+
+        <h5>What do users say about themselves?</h5>
         <div className={styles.charts}>
 
-          <Card>
+          <Card className={styles.profileCard}>
             <ProfileBarChart
               title="Aim"
               name="Aim"
-              data={(data !== undefined) ? data.aim : undefined}
+              data={(profileData !== undefined) ? profileData.aim : undefined}
               color="--b500"
             />
           </Card>
 
-          <Card>
+          <Card className={styles.profileCard}>
             <ProfileBarChart
               title="Highest Education"
               name="Highest Education"
-              data={(data !== undefined) ? data.highest_education : undefined}
+              data={(profileData !== undefined) ? profileData.highest_education : undefined}
               color="--o500"
             />
           </Card>
 
-          <Card>
+          <Card className={styles.profileCard}>
             <ProfileBarChart
             title="Scientific Software Experience"
             name="Scientific Software Experience"
-            data={(data !== undefined) ? data.sci_tech_exp : undefined}
+            data={(profileData !== undefined) ? profileData.sci_tech_exp : undefined}
             color="--g500"
           />
           </Card>
 
-          <Card>
+          <Card className={styles.profileCard}>
             <ProfileBarChart
               title="Phase Transformation Experience"
               name="Phase Transformation Experience"
-              data={(data !== undefined) ? data.phase_transform_exp : undefined}
+              data={(profileData !== undefined) ? profileData.phase_transform_exp : undefined}
               color="--r500"
             />
           </Card>

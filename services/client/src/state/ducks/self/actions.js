@@ -423,7 +423,16 @@ export const getLastSim = () => dispatch => (
       'Content-Type': 'application/json',
     },
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status === 404) { return { status: 'fail', data: {} } }
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Couldn\'t retrieve saved simulations',
+        }
+      }
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'success') {
         dispatch({

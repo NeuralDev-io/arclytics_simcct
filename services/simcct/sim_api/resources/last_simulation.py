@@ -100,6 +100,7 @@ class LastSimulation(Resource):
             # Save everything that we're given which has no validation since
             # `models.User` is using `mongoengine.DictField` for all these.
             user.last_configuration = post_configs if post_configs else {}
+            user.last_configuration['is_valid'] = is_valid
             user.last_alloy_store = post_alloy_store if post_alloy_store else {}
             user.last_simulation_results = post_results if post_results else {}
             user.last_simulation_invalid_fields = (

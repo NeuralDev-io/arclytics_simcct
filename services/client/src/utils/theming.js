@@ -1,5 +1,5 @@
 /**
- * Get a colour varialble from CSS
+ * Get a colour variable from CSS
  * @param {string} color colour variable name
  */
 export const getColor = color => getComputedStyle(document.documentElement).getPropertyValue(color)

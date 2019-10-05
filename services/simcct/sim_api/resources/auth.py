@@ -394,7 +394,9 @@ def login() -> any:
             db_path = Path(par_dir) / 'GeoLite2-City' / 'GeoLite2-City.mmdb'
 
             # If we can't record this data, we will store it as a Null
-            country, state = None, None
+            country, state, continent, timezone = None, None, None, None
+            geopoint = None
+            accuracy_radius = 0
 
             try:
                 if not db_path.exists():
@@ -407,9 +409,25 @@ def login() -> any:
 
                 location_data = reader.city(str(request_ip))
 
-                country = location_data.country.names['en']
+                if location_data.country:
+                    country = location_data.country.names['en']
+
                 if location_data.subdivisions:
                     state = location_data.subdivisions[0].names['en']
+
+                if location_data.continent:
+                    continent = location_data.continent.names['en']
+
+                if location_data.location:
+                    accuracy_radius = location_data.location.accuracy_radius
+                    geopoint = {
+                        'type': 'Point',
+                        'coordinates': [
+                            location_data.location.latitude,
+                            location_data.location.longitude
+                        ]
+                    }
+                    timezone = location_data.location.time_zone
 
                 reader.close()
             except FileNotFoundError as e:
@@ -456,8 +474,12 @@ def login() -> any:
                     **{
                         'ip_address': request_ip,
                         'created_datetime': login_datetime,
+                        'continent': continent,
                         'country': country,
-                        'state': state
+                        'state': state,
+                        'accuracy_radius': accuracy_radius,
+                        'geo_point': geopoint,
+                        'timezone': timezone,
                     }
                 )
                 user.last_login = login_datetime
@@ -471,8 +493,7 @@ def login() -> any:
             session['ip_address'] = request_ip
             session['is_admin'] = user.is_admin
             session['user_id'] = str(user.id)
-            session['state'] = state
-            session['country'] = country
+            session['location'] = login_data.to_dict()
 
             # We inject the Simulation Session data
             SimSessionService().new_session(user=user)

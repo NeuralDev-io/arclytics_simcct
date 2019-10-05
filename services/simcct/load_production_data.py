@@ -177,13 +177,13 @@ with app.app_context():
 
         if IP_check[0] == 1:
             IP = random.sample(nsw_ip, 5)
-            state = "NSW"
+            state = ""
         if IP_check[0] == 2:
             IP = random.sample(vic_ip, 5)
-            state = "VIC"
+            state = ""
         if IP_check[0] == 3:
             IP = random.sample(qld_ip, 5)
-            state = "QLD"
+            state = ""
         # adding login and rating
         for index, var_date in enumerate(varied_date):
             ratings_int = random.randint(1, 5)

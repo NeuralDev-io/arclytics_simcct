@@ -18,7 +18,12 @@ import { Route, Switch } from 'react-router-dom'
 import { SnackbarProvider } from 'notistack'
 import { makeStyles } from '@material-ui/core/styles'
 import store from './state/store'
-import { PrivateRoute, AdminRoute, DemoRoute } from './components/moleisms/routers'
+import {
+  PrivateRoute,
+  AdminRoute,
+  DemoRoute,
+  ShareRoute,
+} from './components/moleisms/routers'
 import Toaster from './components/moleisms/toaster'
 import FeedbackModal, { RatingModal } from './components/moleisms/feedback'
 import ErrorBoundary from './components/pages/error-boundary/ErrorBoundary'
@@ -35,6 +40,7 @@ import UserAlloyPage from './components/pages/user-alloys'
 import PasswordResetPage from './components/pages/password-reset'
 import SharePage from './components/pages/share'
 import Healthy from './components/moleisms/healthy/Healthy'
+import AnalyticsPage from './components/pages/analytics'
 
 import './App.scss'
 
@@ -97,6 +103,10 @@ function App() {
                 component={ProfileQuestionsPage}
               />
               <AdminRoute
+                path="/analytics"
+                component={AnalyticsPage}
+              />
+              <AdminRoute
                 path="/admin"
                 component={AdminPage}
               />
@@ -114,7 +124,7 @@ function App() {
                 render={(props) => (<TestRoute {...props} />)}
               />
 
-              <DemoRoute
+              <ShareRoute
                 path="/share/simulation/:token"
                 component={SharePage}
               />

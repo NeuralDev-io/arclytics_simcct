@@ -34,7 +34,7 @@ const ToastModal = ({
       <IconButton
         onClick={onClose}
         Icon={props => <XIcon {...props} />}
-        className={styles.closeButton}
+        className={{ button: styles.closeButton }}
       />
     )}
   </div>

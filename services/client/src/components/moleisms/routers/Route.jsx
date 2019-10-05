@@ -105,7 +105,9 @@ AdminRoute.propTypes = {
 }
 
 /**
- * DemoRoute is a special route used for non-users
+ * DemoRoute is a special route used for non-users.
+ * Everyone can access DemoRoutes, but authenticated users will be
+ * redirected to the root route at '/'
  */
 export class DemoRoute extends React.Component {
   constructor(props) {
@@ -146,5 +148,49 @@ export class DemoRoute extends React.Component {
 }
 
 DemoRoute.propTypes = {
+  component: PropTypes.elementType.isRequired,
+}
+
+/**
+ * ShareRoute is a special route used for sharing links
+ */
+export class ShareRoute extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      isLoading: true,
+      isAuthenticated: false,
+    }
+  }
+
+  componentDidMount = () => {
+    checkAuthStatus()
+      .then((res) => {
+        if (res.status === 'success') {
+          this.setState({
+            isLoading: false,
+            isAuthenticated: true,
+          })
+        }
+        this.setState({ isLoading: false })
+      })
+  }
+
+  render() {
+    const { component: Component, ...rest } = this.props
+    const { isAuthenticated, isLoading } = this.state
+    if (isLoading) return <div />
+    return (
+      <Route
+        {...rest}
+        render={props => (
+          <Component {...props} isAdmin={false} isAuthenticated={isAuthenticated} />
+        )}
+      />
+    )
+  }
+}
+
+ShareRoute.propTypes = {
   component: PropTypes.elementType.isRequired,
 }

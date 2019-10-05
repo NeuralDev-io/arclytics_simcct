@@ -169,6 +169,7 @@ services:
       - FLUENTD_PORT=24224
       - FLUENTD_PREFIX_TAG=arclytics
       - ELASTIC_APM_SERVER_URL=http://apm-server:8200
+      - MAPBOX_TOKEN=${MAPBOX_TOKEN}
     depends_on:
       - fluentd
     networks:

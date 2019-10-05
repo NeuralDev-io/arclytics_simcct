@@ -1,5 +1,7 @@
 @import '../../../styles/colors.scss';
 
+$break-small: 1366px;
+
 .container {
   width: 90%;
   margin: auto;
@@ -34,7 +36,7 @@
 
     .mapCard {
       background-color: var(--n0);
-      min-height: 30rem;
+      min-height: 35rem;
       min-width: 90%;
       margin: 0;
 
@@ -53,11 +55,21 @@
     margin-top: 1.25rem;
     flex-flow: row wrap;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    flex-basis: 50%;
 
     .profileCard {
       background-color: var(--n0);
-      min-width: 45%;
+
+      @media screen and (max-width: $break-small) {
+        min-width: 100%;
+      }
+
+      @media screen and (min-width: $break-small) {
+        min-width: 45%;
+      }
+
+      width: 48%;
       margin: 0.25rem;
       min-height: 24rem;
       max-height: 32rem;

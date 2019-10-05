@@ -64,6 +64,15 @@ class UserLoginLocationData(Resource):
     # method_decorators = {'get': [authorize_admin_cookie_restful]}
 
     def get(self):
+        """Use a MongoDB Pipeline to get all the `LoginData` embedded
+        documents from Users and generate a count of their location at
+        Login time. We provide the data that allows the front-end to generate
+        a MapBox map. That's why we also have to pass the `mapbox_token` in
+        the response.
+
+        Returns:
+            A valid HTTP Response with a dictionary of data and a status code.
+        """
         pipeline = [
             {'$unwind': '$login_data'},
             {'$project': {
@@ -76,13 +85,18 @@ class UserLoginLocationData(Resource):
                     '$arrayElemAt': ['$login_data.geo_point.coordinates', 0]},
                 'longitude': {
                     '$arrayElemAt': ['$login_data.geo_point.coordinates', 1]},
-            }
-            },
+            }},
         ]
 
         df = MongoService().read_aggregation('arc_dev', 'users', pipeline)
+
+        # Because our Plotly Mapbox requires a latitude and longitude input
+        # values, we need to ensure we clean up the missing values.
         df.dropna(subset=['latitude', 'longitude'], axis=0, inplace=True)
 
+        # Do a `groupby` on the `dataframe` to ensure we get a count of
+        # the values that are grouped with the following properties:
+        # [`latitude`, `longitude`, 'country`, `continent`].
         df = df.groupby(
             [
                 'latitude',
@@ -92,6 +106,8 @@ class UserLoginLocationData(Resource):
             ]
         ).size().to_frame('count').reset_index()
 
+        # This token should be stored in the backend and only sent to the
+        # front-end when a request for a Mapbox layer is needed.
         token = env.get('MAPBOX_TOKEN', None)
 
         response = {
@@ -137,6 +153,8 @@ class UserProfileData(Resource):
 
         df = MongoService().read_aggregation('arc_dev', 'users', pipeline)
 
+        # Not much data cleanup and transformation required as that was mostly
+        # done in the Mongo pipeline already.
         response = {
             'status': 'success',
             'plotly_chart_type': 'bar',

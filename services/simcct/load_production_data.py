@@ -24,6 +24,7 @@ from datetime import datetime,   timedelta
 from os import environ as env
 from pathlib import Path
 from sys import stderr
+from pprint import pprint
 
 import geoip2
 from geoip2.errors import AddressNotFoundError
@@ -135,14 +136,14 @@ with app.app_context():
     # Check the correct database -- arc_dev
     db.alloys.insert_many(data)
 
-tbl = PrettyTable(['Symbol', 'Weight'])
+# tbl = PrettyTable(['Symbol', 'Weight'])
 
-for alloy in db.alloys.find():
-    print(f"Alloy name: {alloy['name']}")
-    for el in alloy['compositions']:
-        tbl.add_row((el['symbol'], el['weight']))
-    print(tbl)
-    tbl.clear_rows()
+# for alloy in db.alloys.find():
+#     print(f"Alloy name: {alloy['name']}")
+#     for el in alloy['compositions']:
+#         tbl.add_row((el['symbol'], el['weight']))
+#     print(tbl)
+#     tbl.clear_rows()
 
 # STAY INSIDE THE FLASK APPLICATION CONTEXT
 with app.app_context():
@@ -156,7 +157,7 @@ with app.app_context():
             }
         )
         new_user.set_password(user['password'])
-        print(new_user.to_dict())
+        # print(new_user.to_dict())
 
         # generate random permutation of alloy for each user
         user_type = random.sample(type_of_user, 1)
@@ -177,13 +178,10 @@ with app.app_context():
 
         if IP_check[0] == 1:
             IP = random.sample(nsw_ip, 5)
-            state = ""
         if IP_check[0] == 2:
             IP = random.sample(vic_ip, 5)
-            state = ""
         if IP_check[0] == 3:
             IP = random.sample(qld_ip, 5)
-            state = ""
         # adding login and rating
         for index, var_date in enumerate(varied_date):
             ratings_int = random.randint(1, 5)
@@ -199,7 +197,9 @@ with app.app_context():
             )
 
             # If we can't record this data, we will store it as a Null
-            country, state = None, None
+            country, state, continent = None, None, None
+            geopoint, timezone = None, None
+            accuracy_radius = 0
 
             try:
                 if not db_path.exists():
@@ -213,9 +213,25 @@ with app.app_context():
 
                 location_data = reader.city(str(IP[index]))
 
-                country = location_data.country.names['en']
+                if location_data.country:
+                    country = location_data.country.names['en']
+
                 if location_data.subdivisions:
                     state = location_data.subdivisions[0].names['en']
+
+                if location_data.continent:
+                    continent = location_data.continent.names['en']
+
+                if location_data.location:
+                    accuracy_radius = location_data.location.accuracy_radius
+                    geopoint = {
+                        'type': 'Point',
+                        'coordinates': [
+                            location_data.location.latitude,
+                            location_data.location.longitude
+                        ]
+                    }
+                    timezone = location_data.location.time_zone
 
                 reader.close()
             except (FileNotFoundError, ValueError):
@@ -230,8 +246,12 @@ with app.app_context():
                 login_data = LoginData(
                     **{
                         'created_datetime': varied_date[index],
+                        'continent': continent,
                         'country': country,
                         'state': state,
+                        'accuracy_radius': accuracy_radius,
+                        'geo_point': geopoint,
+                        'timezone': timezone,
                         'ip_address': IP[index]
                     }
                 )

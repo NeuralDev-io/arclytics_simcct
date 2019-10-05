@@ -12,6 +12,7 @@ import PropTypes from 'prop-types'
 import { getProfileAnalyticsData } from '../../../api/Analytics'
 import { logError, logInfo } from '../../../api/LoggingHelper'
 import ProfileBarChart from '../charts/ProfileBarChart'
+import Card from '../../elements/card'
 
 import styles from './UsersAnalytics.module.scss'
 
@@ -82,47 +83,43 @@ class UsersAnalytics extends Component {
 
         <div className={styles.charts}>
 
-          <div className={styles.line}>
+          <Card>
             <ProfileBarChart
-              title="What sentence best describes you?"
+              title="Aim"
               name="Aim"
               data={(data !== undefined) ? data.aim : undefined}
               color="--b500"
             />
-          </div>
+          </Card>
 
-          <div className={styles.line}>
+          <Card>
             <ProfileBarChart
-              title="What is the highest level of education have you studied?"
+              title="Highest Education"
               name="Highest Education"
               data={(data !== undefined) ? data.highest_education : undefined}
               color="--o500"
             />
-          </div>
+          </Card>
 
-          <div className={styles.line}>
+          <Card>
             <ProfileBarChart
-              title="What is your experience with solid-state phase transformation?"
-              name="Highest Education"
-              data={(data !== undefined) ? data.sci_tech_exp : undefined}
-              color="--g500"
-            />
-          </div>
+            title="Scientific Software Experience"
+            name="Scientific Software Experience"
+            data={(data !== undefined) ? data.sci_tech_exp : undefined}
+            color="--g500"
+          />
+          </Card>
 
-          <div className={styles.line}>
+          <Card>
             <ProfileBarChart
-              title="What is your experience with scientific software?"
-              name="Highest Education"
+              title="Phase Transformation Experience"
+              name="Phase Transformation Experience"
               data={(data !== undefined) ? data.phase_transform_exp : undefined}
               color="--r500"
             />
-          </div>
+          </Card>
 
         </div>
-
-
-        <br/><br/>
-
       </div>
     )
   }

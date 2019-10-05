@@ -1,5 +1,7 @@
+@import '../../../styles/colors.scss';
+
 .container {
-  width: 85%;
+  width: 90%;
   margin: auto;
 
   h3 {
@@ -8,23 +10,9 @@
 
   .charts {
     display: flex;
-    margin: 1.5rem;
+    margin-top: 1.5rem;
     flex-flow: row wrap;
     justify-content: space-between;
     align-items: center;
-
-    .line {
-      display: flex;
-      flex-basis: 60%;
-      margin: 0 1.5rem;
-      min-height: 22rem;
-      max-height: 32rem;
-      position: relative;
-      flex-flow: row;
-
-      & > div {
-        flex-grow: 1;
-      }
-    }
   }
 }

@@ -426,9 +426,7 @@ class LoginData(EmbeddedDocument):
     created_datetime = DateTimeField(default=datetime.utcnow(), required=True)
     state = StringField()
     country = StringField()
-    country_iso_code = StringField()
     continent = StringField()
-    continent_iso_code = StringField()
     accuracy_radius = IntField()
     geo_point = PointField()
     timezone = StringField()
@@ -439,9 +437,7 @@ class LoginData(EmbeddedDocument):
             'created_datetime': str(self.created_datetime.isoformat()),
             'state': self.state,
             'country': self.country,
-            'country_iso_code': self.country_iso_code,
             'continent': self.continent,
-            'continent_iso_code': self.continent_iso_code,
             'accuracy_radius': self.accuracy_radius,
             'geo_point': self.geo_point,
             'timezone': self.timezone,

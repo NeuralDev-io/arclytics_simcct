@@ -244,44 +244,398 @@ class TestSimConfigurations(BaseTestCase):
             self.assert200(res)
             self.assertEqual(session_configs['method'], method)
 
+    def test_auto_update_ms_invalid_payloads(self):
+        """Ensure we get the correct error messages for invalid payloads."""
+        with app.test_client() as client:
+            self.login_client(client)
+
+            # Empty payload
+            res = client.post(
+                '/v1/sim/configs/ms',
+                data=json.dumps({}),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Invalid payload.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+            # No alloy store payload
+            res = client.post(
+                '/v1/sim/configs/ms',
+                data=json.dumps({
+                    'method': 'Li98'
+                }),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Alloy store required.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+            # No method payload
+            res = client.post(
+                '/v1/sim/configs/ms',
+                data=json.dumps({
+                    'alloy_store': ALLOY_STORE
+                }),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Method required.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+            # Wrong method payload
+            res = client.post(
+                '/v1/sim/configs/ms',
+                data=json.dumps({
+                    'method': 'LiAndKirkaldy',
+                    'alloy_store': ALLOY_STORE
+                }),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            msg = 'Method must be one of ["Li98" | "Kirkaldy83"].'
+            self.assertEqual(data['message'], msg)
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+    def test_auto_update_ms_invalid_alloys(self):
+        """Ensure we get the correct error messages for bad alloy payloads."""
+        with app.test_client() as client:
+            self.login_client(client)
+
+            # Missing carbon elements
+            alloy_store = deepcopy(ALLOY_STORE)
+            alloy_store['alloys']['parent']['compositions'].pop(0)
+
+            res = client.post(
+                '/v1/sim/configs/ms',
+                data=json.dumps(
+                    {
+                        'method': 'Li98',
+                        'alloy_store': alloy_store
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Missing element error.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+            # Bad symbol elements
+            alloy_store = deepcopy(ALLOY_STORE)
+            alloy_store['alloys']['parent']['compositions'][0]['symbol'] = 'Cx'
+
+            res = client.post(
+                '/v1/sim/configs/ms',
+                data=json.dumps(
+                    {
+                        'method': 'Li98',
+                        'alloy_store': alloy_store
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Invalid element symbol error.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+            # Bad Carbon weight elements
+            alloy_store = deepcopy(ALLOY_STORE)
+            alloy_store['alloys']['parent']['compositions'][0]['weight'] = 0.9
+
+            res = client.post(
+                '/v1/sim/configs/ms',
+                data=json.dumps(
+                    {
+                        'method': 'Li98',
+                        'alloy_store': alloy_store
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Invalid element weight error.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+            # Bad symbol key elements
+            alloy_store = deepcopy(ALLOY_STORE)
+            alloy_store['alloys']['parent']['compositions'][0].pop('symbol')
+
+            res = client.post(
+                '/v1/sim/configs/ms',
+                data=json.dumps(
+                    {
+                        'method': 'Li98',
+                        'alloy_store': alloy_store
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Invalid element error.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
     def test_auto_update_ms(self):
         """Ensure we get the correct calculations for MS given the alloy."""
         with app.test_client() as client:
             self.login_client(client)
 
-            res = client.get(
-                '/v1/sim/configs/ms', content_type='application/json'
+            res = client.post(
+                '/v1/sim/configs/ms',
+                data=json.dumps(
+                    {
+                        'method': 'Li98',
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
+                content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            session_store = SimSessionService().load_session()
-            sess_configs = session_store.get('configurations')
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
-            self.assertTrue(sess_configs['auto_calculate_ms'])
             ms_temp = np.float32(data['data']['ms_temp'])
             ms_rate_param = np.float32(data['data']['ms_rate_param'])
-            self.assertAlmostEqual(sess_configs['ms_temp'], 464.1792, 2)
-            self.assertAlmostEqual(sess_configs['ms_rate_param'], 0.020691, 2)
             self.assertAlmostEqual(ms_temp, 464.1792, 2)
             self.assertAlmostEqual(ms_rate_param, 0.020691, 2)
+
+    def test_auto_update_ms_kirkaldy_method(self):
+        """Ensure we get the correct calculations for MS with Kirkaldy83."""
+        with app.test_client() as client:
+            self.login_client(client)
+
+            res = client.post(
+                '/v1/sim/configs/ms',
+                data=json.dumps(
+                    {
+                        'method': 'Kirkaldy83',
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assert200(res)
+            self.assertEqual(data['status'], 'success')
+            ms_temp = np.float32(data['data']['ms_temp'])
+            ms_rate_param = np.float32(data['data']['ms_rate_param'])
+            self.assertAlmostEqual(ms_temp, 477.5753, 2)
+            self.assertAlmostEqual(ms_rate_param, 0.02069, 2)
+
+    def test_deprecated_update_ms(self):
+        """Check that updating Ms has been deprecated."""
+        with app.test_client() as client:
+            self.login_client(client)
+
+            res = client.put(
+                '/v1/sim/configs/ms',
+                data=json.dumps({}),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Method Not Allowed.')
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(res.status_code, 405)
+
+    # TODO
+    def test_auto_update_bs_invalid_payloads(self):
+        """Ensure we get the correct error messages for invalid payloads."""
+        with app.test_client() as client:
+            self.login_client(client)
+
+            # Empty payload
+            res = client.post(
+                '/v1/sim/configs/bs',
+                data=json.dumps({}),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Invalid payload.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+            # No alloy store payload
+            res = client.post(
+                '/v1/sim/configs/bs',
+                data=json.dumps({
+                    'method': 'Li98'
+                }),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Alloy store required.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+            # No method payload
+            res = client.post(
+                '/v1/sim/configs/bs',
+                data=json.dumps({
+                    'alloy_store': ALLOY_STORE
+                }),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Method required.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+            # Wrong method payload
+            res = client.post(
+                '/v1/sim/configs/bs',
+                data=json.dumps({
+                    'method': 'LiAndKirkaldy',
+                    'alloy_store': ALLOY_STORE
+                }),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            msg = 'Method must be one of ["Li98" | "Kirkaldy83"].'
+            self.assertEqual(data['message'], msg)
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+    def test_auto_update_bs_invalid_alloys(self):
+        """Ensure we get the correct error messages for bad alloy payloads."""
+        with app.test_client() as client:
+            self.login_client(client)
+
+            # Missing carbon elements
+            alloy_store = deepcopy(ALLOY_STORE)
+            alloy_store['alloys']['parent']['compositions'].pop(0)
+
+            res = client.post(
+                '/v1/sim/configs/bs',
+                data=json.dumps(
+                    {
+                        'method': 'Li98',
+                        'alloy_store': alloy_store
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Missing element error.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+            # Bad symbol elements
+            alloy_store = deepcopy(ALLOY_STORE)
+            alloy_store['alloys']['parent']['compositions'][0]['symbol'] = 'Cx'
+
+            res = client.post(
+                '/v1/sim/configs/bs',
+                data=json.dumps(
+                    {
+                        'method': 'Li98',
+                        'alloy_store': alloy_store
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Invalid element symbol error.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+            # Bad Carbon weight elements
+            alloy_store = deepcopy(ALLOY_STORE)
+            alloy_store['alloys']['parent']['compositions'][0]['weight'] = 0.9
+
+            res = client.post(
+                '/v1/sim/configs/bs',
+                data=json.dumps(
+                    {
+                        'method': 'Li98',
+                        'alloy_store': alloy_store
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Invalid element weight error.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
+
+            # Bad symbol key elements
+            alloy_store = deepcopy(ALLOY_STORE)
+            alloy_store['alloys']['parent']['compositions'][0].pop('symbol')
+
+            res = client.post(
+                '/v1/sim/configs/bs',
+                data=json.dumps(
+                    {
+                        'method': 'Li98',
+                        'alloy_store': alloy_store
+                    }
+                ),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Invalid element error.')
+            self.assertEqual(data['status'], 'fail')
+            self.assert400(res)
 
     def test_auto_update_bs(self):
         """Ensure we get the correct calculations for BS given the alloy."""
         with app.test_client() as client:
             self.login_client(client)
 
-            res = client.get(
-                '/v1/sim/configs/bs', content_type='application/json'
+            res = client.post(
+                '/v1/sim/configs/bs',
+                data=json.dumps({
+                    'method': 'Li98',
+                    'alloy_store': ALLOY_STORE
+                }),
+                content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            session_store = SimSessionService().load_session()
-            sess_configs = session_store.get('configurations')
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
-            self.assertTrue(sess_configs['auto_calculate_bs'])
             ms_temp = np.float32(data['data']['bs_temp'])
-            self.assertAlmostEqual(sess_configs['bs_temp'], 563.2208, 2)
             self.assertAlmostEqual(ms_temp, 563.2208, 2)
+
+    def test_auto_update_bs_kirkaldy_method(self):
+        """Ensure we get the correct calculations for BS given Kirkaldy83
+        method testing configs and the testing compositions.
+        """
+        with app.test_client() as client:
+            self.login_client(client)
+
+            res = client.post(
+                '/v1/sim/configs/bs',
+                data=json.dumps({
+                    'method': 'Kirkaldy83',
+                    'alloy_store': ALLOY_STORE
+                }),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assert200(res)
+            self.assertEqual(data['status'], 'success')
+            bs_temp = np.float32(data['data']['bs_temp'])
+            self.assertAlmostEqual(bs_temp, 565.723, 2)
+
+    def test_deprecated_update_bs(self):
+        """Check that updating Bs has been deprecated."""
+        with app.test_client() as client:
+            self.login_client(client)
+
+            res = client.put(
+                '/v1/sim/configs/ae',
+                data=json.dumps({}),
+                content_type='application/json'
+            )
+            data = json.loads(res.data.decode())
+            self.assertEqual(data['message'], 'Method Not Allowed.')
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(res.status_code, 405)
 
     def test_auto_update_ae_invalid_payloads(self):
         """Ensure we get the correct error messages for invalid payloads."""
@@ -444,7 +798,7 @@ class TestSimConfigurations(BaseTestCase):
             self.assertAlmostEqual(ae1, 700.8947, 2)
             self.assertAlmostEqual(ae3, 845.8189, 2)
 
-    def test_update_ae(self):
+    def test_deprecated_update_ae(self):
         """Check that updating Ae has been deprecated."""
         with app.test_client() as client:
             self.login_client(client)
@@ -584,63 +938,6 @@ class TestSimConfigurations(BaseTestCase):
             self.assert401(res)
             self.assertEqual(data['status'], 'fail')
 
-    def test_auto_update_ms_kirkaldy_method(self):
-        """Ensure we get the correct calculations for MS and BS given Kirkaldy83
-        method testing configs and the testing compositions.
-        """
-        with app.test_client() as client:
-            self.login_client(client)
-
-            res_method_update = client.put(
-                '/v1/sim/configs/method/update',
-                data=json.dumps({'method': 'Kirkaldy83'}),
-                content_type='application/json'
-            )
-            self.assert200(res_method_update)
-
-            res = client.get(
-                '/v1/sim/configs/ms', content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            session_store = SimSessionService().load_session()
-            sess_configs = session_store.get('configurations')
-            self.assert200(res)
-            self.assertEqual(data['status'], 'success')
-            self.assertTrue(sess_configs['auto_calculate_ms'])
-            ms_temp = np.float32(data['data']['ms_temp'])
-            ms_rate_param = np.float32(data['data']['ms_rate_param'])
-            self.assertAlmostEqual(sess_configs['ms_temp'], 477.5753, 3)
-            self.assertAlmostEqual(sess_configs['ms_rate_param'], 0.02069, 2)
-            self.assertAlmostEqual(ms_temp, 477.5753, 2)
-            self.assertAlmostEqual(ms_rate_param, 0.02069, 2)
-
-    def test_auto_update_bs_kirkaldy_method(self):
-        """Ensure we get the correct calculations for BS given Kirkaldy83
-        method testing configs and the testing compositions.
-        """
-        with app.test_client() as client:
-            self.login_client(client)
-
-            res_method_update = client.put(
-                '/v1/sim/configs/method/update',
-                data=json.dumps({'method': 'Kirkaldy83'}),
-                content_type='application/json'
-            )
-            self.assert200(res_method_update)
-
-            res = client.get(
-                '/v1/sim/configs/bs', content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            session_store = SimSessionService().load_session()
-            sess_configs = session_store['configurations']
-            self.assert200(res)
-            self.assertEqual(data['status'], 'success')
-            self.assertTrue(sess_configs['auto_calculate_bs'])
-            bs_temp = np.float32(data['data']['bs_temp'])
-            self.assertAlmostEqual(sess_configs['bs_temp'], 565.723, 2)
-            self.assertAlmostEqual(bs_temp, 565.723, 2)
-
     def test_on_configs_change(self):
         """Ensure that if we send new configurations we store it in session."""
         with app.test_client() as client:
@@ -728,169 +1025,6 @@ class TestSimConfigurations(BaseTestCase):
             self.assertEqual(
                 data['message'], 'Payload does not have any valid keys.'
             )
-
-    def test_update_ms_empty_payload(self):
-        """Ensure an empty payload for MS does not pass."""
-        with app.test_client() as client:
-            self.login_client(client)
-            res = client.put(
-                '/v1/sim/configs/ms',
-                data=json.dumps({}),
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(res.status_code, 400)
-            self.assertEquals(data['message'], 'Invalid payload.')
-            self.assertEquals(data['status'], 'fail')
-
-    def test_update_bs_empty_payload(self):
-        """Ensure an empty payload for BS does not pass."""
-        with app.test_client() as client:
-            self.login_client(client)
-
-            res = client.put(
-                '/v1/sim/configs/bs',
-                data=json.dumps({}),
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(res.status_code, 400)
-            self.assertEquals(data['status'], 'fail')
-            self.assertEquals(data['message'], 'Invalid payload.')
-
-    def test_update_ms_missing_ms_payload(self):
-        """Ensure an missing ms_temp payload does not pass."""
-        with app.test_client() as client:
-            self.login_client(client)
-            ms_configs = {'ms_rate_param': 0.9}
-
-            res = client.put(
-                '/v1/sim/configs/ms',
-                data=json.dumps(ms_configs),
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(res.status_code, 400)
-            self.assertEquals(data['status'], 'fail')
-            self.assertEquals(data['message'], 'MS temperature is required.')
-
-    def test_update_ms_no_prev_configs(self):
-        """Ensure if there is no prev. configs MS payload does not pass."""
-        with app.test_client() as client:
-            # We login to get a cookie
-            _, _ = self.login_client(client)
-
-            # We change the session by making a transaction on it within context
-            # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
-            #  is set because otherwise opening a transaction will not use
-            #  a standard HTTP request environ_base.
-            with client.session_transaction(
-                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
-            ) as session:
-                session['simulation'] = None
-            with client.session_transaction(
-                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
-            ):
-                # At this point the session transaction has been updated so
-                # we can check the session within the context
-                session_store = SimSessionService().load_session()
-                self.assertIsInstance(session_store, str)
-                self.assertEqual(session_store, 'Session is empty.')
-
-            ms_configs = {
-                'ms_temp': 464.196,
-                'ms_rate_param': 0.0168,
-            }
-
-            res = client.put(
-                '/v1/sim/configs/ms',
-                data=json.dumps(ms_configs),
-                content_type='application/json',
-                environ_base={'REMOTE_ADDR': '127.0.0.1'}
-            )
-            data = json.loads(res.data.decode())
-            self.assertEquals(
-                data['message'], 'Cannot retrieve data from Session store.'
-            )
-            self.assertEqual(res.status_code, 500)
-            self.assertEquals(data['status'], 'fail')
-
-    def test_update_bs_no_prev_configs(self):
-        """Ensure if there is no prev. configs BS payload does not pass."""
-        with app.test_client() as client:
-            # We login to get a cookie
-            _, _ = self.login_client(client)
-
-            # We change the session by making a transaction on it within context
-            # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
-            #  is set because otherwise opening a transaction will not use
-            #  a standard HTTP request environ_base.
-            with client.session_transaction(
-                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
-            ) as session:
-                session['simulation'] = None
-            with client.session_transaction(
-                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
-            ):
-                # At this point the session transaction has been updated so
-                # we can check the session within the context
-                session_store = SimSessionService().load_session()
-                self.assertIsInstance(session_store, str)
-                self.assertEqual(session_store, 'Session is empty.')
-
-            bs_configs = {'bs_temp': 563.238}
-
-            res = client.put(
-                '/v1/sim/configs/bs',
-                data=json.dumps(bs_configs),
-                content_type='application/json',
-                environ_base={'REMOTE_ADDR': '127.0.0.1'}
-            )
-            data = json.loads(res.data.decode())
-            self.assertEquals(
-                data['message'], 'Cannot retrieve data from Session store.'
-            )
-            self.assertEquals(data['status'], 'fail')
-            self.assertEqual(res.status_code, 500)
-
-    def test_update_ms(self):
-        """Ensure a valid payload of MS will do just as we expect."""
-        with app.test_client() as client:
-            self.login_client(client)
-            configs = {
-                'ms_temp': 464.196,
-                'ms_rate_param': 0.0168,
-            }
-
-            res = client.put(
-                '/v1/sim/configs/ms',
-                data=json.dumps(configs),
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(data['status'], 'success')
-            self.assertEqual(res.status_code, 202)
-            session_store = SimSessionService().load_session()
-            sess = session_store.get('configurations')
-            self.assertEquals(sess['ms_temp'], configs['ms_temp'])
-            self.assertEquals(sess['ms_rate_param'], configs['ms_rate_param'])
-
-    def test_update_bs(self):
-        """Ensure a valid payload of BS will do just as we expect."""
-        with app.test_client() as client:
-            self.login_client(client)
-
-            res = client.put(
-                '/v1/sim/configs/bs',
-                data=json.dumps({'bs_temp': 563.238}),
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(data['status'], 'success')
-            self.assertEqual(res.status_code, 202)
-            session_store = SimSessionService().load_session()
-            sess = session_store.get('configurations')
-            self.assertEquals(sess['bs_temp'], 563.238)
 
 
 if __name__ == '__main__':

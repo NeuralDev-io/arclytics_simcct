@@ -140,9 +140,7 @@ class TestSimConfigurations(BaseTestCase):
             # No alloy store payload
             res = client.post(
                 '/v1/sim/configs/ms',
-                data=json.dumps({
-                    'method': 'Li98'
-                }),
+                data=json.dumps({'method': 'Li98'}),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -153,9 +151,7 @@ class TestSimConfigurations(BaseTestCase):
             # No method payload
             res = client.post(
                 '/v1/sim/configs/ms',
-                data=json.dumps({
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps({'alloy_store': ALLOY_STORE}),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -166,10 +162,12 @@ class TestSimConfigurations(BaseTestCase):
             # Wrong method payload
             res = client.post(
                 '/v1/sim/configs/ms',
-                data=json.dumps({
-                    'method': 'LiAndKirkaldy',
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps(
+                    {
+                        'method': 'LiAndKirkaldy',
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -339,9 +337,7 @@ class TestSimConfigurations(BaseTestCase):
             # No alloy store payload
             res = client.post(
                 '/v1/sim/configs/bs',
-                data=json.dumps({
-                    'method': 'Li98'
-                }),
+                data=json.dumps({'method': 'Li98'}),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -352,9 +348,7 @@ class TestSimConfigurations(BaseTestCase):
             # No method payload
             res = client.post(
                 '/v1/sim/configs/bs',
-                data=json.dumps({
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps({'alloy_store': ALLOY_STORE}),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -365,10 +359,12 @@ class TestSimConfigurations(BaseTestCase):
             # Wrong method payload
             res = client.post(
                 '/v1/sim/configs/bs',
-                data=json.dumps({
-                    'method': 'LiAndKirkaldy',
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps(
+                    {
+                        'method': 'LiAndKirkaldy',
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -465,10 +461,12 @@ class TestSimConfigurations(BaseTestCase):
 
             res = client.post(
                 '/v1/sim/configs/bs',
-                data=json.dumps({
-                    'method': 'Li98',
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps(
+                    {
+                        'method': 'Li98',
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -486,10 +484,12 @@ class TestSimConfigurations(BaseTestCase):
 
             res = client.post(
                 '/v1/sim/configs/bs',
-                data=json.dumps({
-                    'method': 'Kirkaldy83',
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps(
+                    {
+                        'method': 'Kirkaldy83',
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -532,9 +532,7 @@ class TestSimConfigurations(BaseTestCase):
             # No alloy store payload
             res = client.post(
                 '/v1/sim/configs/ae',
-                data=json.dumps({
-                    'method': 'Li98'
-                }),
+                data=json.dumps({'method': 'Li98'}),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -545,9 +543,7 @@ class TestSimConfigurations(BaseTestCase):
             # No method payload
             res = client.post(
                 '/v1/sim/configs/ae',
-                data=json.dumps({
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps({'alloy_store': ALLOY_STORE}),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -558,10 +554,12 @@ class TestSimConfigurations(BaseTestCase):
             # Wrong method payload
             res = client.post(
                 '/v1/sim/configs/ae',
-                data=json.dumps({
-                    'method': 'LiAndKirkaldy',
-                    'alloy_store': ALLOY_STORE
-                }),
+                data=json.dumps(
+                    {
+                        'method': 'LiAndKirkaldy',
+                        'alloy_store': ALLOY_STORE
+                    }
+                ),
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())

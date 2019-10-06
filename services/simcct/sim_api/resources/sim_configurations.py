@@ -176,16 +176,16 @@ class Martensite(Resource):
             msg = 'Calculating Ms and Ms rate param error.'
             logger.exception(msg)
             apm.capture_exception(msg)
-            response.update({
-                'message': msg,
-                'error': str(e)
-            })
+            response.update({'message': msg, 'error': str(e)})
             return response, 500
 
         # Just overwrite the response instead of changing it.
         response = {
             'status': 'success',
-            'data': {'ms_temp': ms_temp, 'ms_rate_param': ms_rate_param}
+            'data': {
+                'ms_temp': ms_temp,
+                'ms_rate_param': ms_rate_param
+            }
         }
 
         return response, 200
@@ -337,17 +337,11 @@ class Bainite(Resource):
             msg = 'Calculating Bs error.'
             logger.exception(msg)
             apm.capture_exception(msg)
-            response.update({
-                'message': msg,
-                'error': str(e)
-            })
+            response.update({'message': msg, 'error': str(e)})
             return response, 500
 
         # Just overwrite the response instead of changing it.
-        response = {
-            'status': 'success',
-            'data': {'bs_temp': bs_temp}
-        }
+        response = {'status': 'success', 'data': {'bs_temp': bs_temp}}
         return response, 200
 
     # [DEPRECATED]
@@ -494,16 +488,16 @@ class Austenite(Resource):
             msg = 'Calculating Ae1 and Ae3 error.'
             logger.exception(msg)
             apm.capture_exception(msg)
-            response.update({
-                'message': msg,
-                'error': str(e)
-            })
+            response.update({'message': msg, 'error': str(e)})
             return response, 500
 
         # Just overwrite the response instead of changing it.
         response = {
             'status': 'success',
-            'data': {'ae1_temp': ae1, 'ae3_temp': ae3}
+            'data': {
+                'ae1_temp': ae1,
+                'ae3_temp': ae3
+            }
         }
         return response, 200
 

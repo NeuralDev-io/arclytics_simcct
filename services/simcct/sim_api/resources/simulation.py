@@ -21,16 +21,17 @@ This module defines and implements the endpoints for CCT and TTT simulations.
 """
 
 import time
-from os import environ as env
-# import threading
-import concurrent.futures
 
-from flask import Blueprint, json
+from flask import Blueprint, request
 from flask_restful import Resource
-from arc_logging import AppLogger
+from marshmallow import ValidationError
 
+from arc_logging import AppLogger
 from sim_api.extensions import api, apm
-from sim_api.extensions.SimSession import SimSessionService
+from sim_api.extensions.utilities import (
+    DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
+    ElementWeightInvalid, MissingElementError
+)
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.schemas import AlloyStoreSchema, ConfigurationsSchema
 from simulation.phasesimulation import PhaseSimulation
@@ -44,116 +45,157 @@ sim_blueprint = Blueprint('simulation', __name__)
 
 class Simulation(Resource):
 
-    method_decorators = {'get': [authenticate_user_cookie_restful]}
+    method_decorators = {'post': [authenticate_user_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
-    def get(self, _):
+    def post(self, _):
         response = {'status': 'fail'}
 
-        # First we need to make sure they logged in and are in a current session
-        session_store = SimSessionService().load_session()
+        post_data = request.get_json()
 
-        if isinstance(session_store, str):
-            response['message'] = session_store
-            logger.error(response['message'])
-            apm.capture_message(response['message'])
-            return response, 500
-
-        log_msg = json.dumps(
-            {
-                'message': 'Session Store',
-                **session_store['configurations']
-            }
-        )
-        logger.debug(log_msg)
-
-        session_configs = session_store.get('configurations')
-        if not session_configs:
-            response['message'] = 'No previous session configurations was set.'
-            return response, 404
-
-        configs = ConfigurationsSchema().load(session_configs)
-
-        # If the configs are considered valid, then they must have run a
-        # previous Simulation successfully.
-        # if configs.get('is_valid', False):
-        #     response['status'] = 'success'
-        #     response['data'] = session_store['results']
-        #     return response, 200
-
-        # By default, the session alloy store is single and parent but the
-        # parent alloy is set to none.
-        sess_alloy_store = session_store.get('alloy_store')
-        if (
-            not sess_alloy_store['alloys']['parent']
-            and not sess_alloy_store['alloys']['weld']
-            and not sess_alloy_store['alloys']['mix']
-        ) or not sess_alloy_store:
-            response['message'] = 'No previous session alloy was set.'
-            return response, 404
-
-        alloy_store = AlloyStoreSchema().load(sess_alloy_store)
-
-        # We need to validate ae1, ae3, ms, and bs temperatures because if we do
-        # the calculations for CCT/TTT will cause many problems.
-        if not configs['ae1_temp'] > 0.0 or not configs['ae3_temp'] > 0.0:
-            response['message'] = 'Ae1 and Ae3 value cannot be less than 0.0.'
+        if not post_data:
             return response, 400
 
-        if not configs['ms_temp'] > 0.0 or not configs['bs_temp'] > 0.0:
-            response['message'] = 'MS and BS value cannot be less than 0.0.'
+        alloy_store = post_data.get('alloy_store', None)
+        configurations = post_data.get('configurations', None)
+
+        # ===== # Validation Checks of POST BODY # ===== #
+        if not alloy_store:
+            response.update({'message': 'Alloy store required.'})
+            return response, 400
+
+        # We need to validate the Configurations matches our expected schema
+        try:
+            valid_configs = ConfigurationsSchema().load(configurations)
+        except ValidationError as e:
+            # All other validation errors
+            response['error'] = str(e.messages)
+            response['message'] = 'Model schema validation error.'
+            apm.capture_exception()
+            return response, 400
+
+        # We need to validate the Alloy Store that matches our expected schema
+        try:
+            valid_store = AlloyStoreSchema().load(alloy_store)
+        except ElementSymbolInvalid as e:
+            # Where the symbol used for the element is not valid meaning it
+            # does not exist in a Periodic Table.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element symbol error.'
+            return response, 400
+        except ElementInvalid as e:
+            # If no "symbol" or "weight" passed as an Element object.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element error.'
+            return response, 400
+        except ElementWeightInvalid as e:
+            # If `C` weight is more than 0.8
+            response['error'] = str(e)
+            response['message'] = 'Invalid element weight error.'
+            return response, 400
+        except MissingElementError as e:
+            # Where the alloy is missing elements we expect to always be
+            # available as they are required downstream in the algorithm.
+            response['error'] = str(e)
+            response['message'] = 'Missing element error.'
+            return response, 400
+        except DuplicateElementError as e:
+            # One of the alloys contains two or more elements with the same
+            # chemical symbol.
+            response['error'] = str(e)
+            response['message'] = 'Alloy contains a duplicate element.'
+            return response, 400
+        except ValidationError as e:
+            # All other validation errors
+            response['error'] = str(e.messages)
+            response['message'] = 'Model schema validation error.'
+            apm.capture_exception()
             return response, 400
 
         alloy = None
         if alloy_store.get('alloy_option') == 'single':
             alloy = alloy_store['alloys']['parent']
-        else:
+        elif valid_store['alloy_option'] == 'mix':
             # DECISION:
             # We will not implement this as it adds too much complexity to
             # the logical path of the system state. This was not a core
             # requirement and Dr. Bendeich often said he did not want this
             # implemented at all.
-            pass
-
-        # dask_client = Client(
-        #     address=env.get('DASK_SCHEDULER_ADDRESS'), processes=False
-        # )
+            response.update({'message': 'Mix option not allowed.'})
+            return response, 400
 
         # TIMER START
         start = time.time()
 
-        # No we can do the calculations for CCT and TTT
-        sim_configs = SimConfiguration(
-            configs=configs, compositions=alloy['compositions']
-        )
-
-        # stop_configs_time = time.time()
-        # sim_configs_time = stop_configs_time - start
-
-        # TODO(andrew@neuraldev.io) Validate for Carbon < 0.7
+        # Here we need to create a `SimConfiguration` instance that does some
+        # more checks of the values and converts the compositions to a
+        # structured `numpy.ndarray` that the simulation package users.
+        # It also prepares a Integral matrix for the simulation algorithm.
+        try:
+            sim_configs = SimConfiguration(
+                configs=valid_configs, compositions=alloy['compositions']
+            )
+        except ValueError as e:
+            # We know that at certain times, the algorithms cannot calculate
+            # the integral matrix because there can be a Math Domain Error
+            # with trying to a log of a negative number. This mostly occurs
+            # when Carbon weight content is less than 0.8 in certain cases.
+            # Whilst we have already checked for this in validating the alloy,
+            # it is possible the error might occur again for other weight
+            # values so we want to catch it appropriately and let the frontend
+            # know that we cannot do the calculation.
+            msg = 'ValueError in preparing SimConfiguration instance.'
+            logger.exception(msg)
+            apm.capture_exception(msg)
+            response.update({'message': msg, 'error': str(e)})
+            return response, 500
+        except ConfigurationError as e:
+            # Both of these are raised manually if any error occurs that
+            # we have specifically caught.
+            response['error'] = str(e)
+            response['message'] = 'Configuration error.'
+            logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
+            return response, 400
+        except Exception as e:
+            # This is to make sure the client knows there has been some
+            # calculation error which is potentially something to do with
+            # our back-end code or, more likely, a value in the alloy
+            # composition that does not work with this algorithm.
+            msg = 'SimConfiguration intialisation error.'
+            logger.exception(msg)
+            apm.capture_exception(msg)
+            response.update({'message': msg, 'error': str(e)})
+            return response, 500
 
         try:
             sim = PhaseSimulation(sim_configs=sim_configs)
         except ConfigurationError as e:
+            # Both of these are raised manually if any error occurs that
+            # we have specifically caught.
             response['error'] = str(e)
             response['message'] = 'Configuration error.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
             return response, 400
         except SimulationError as e:
+            # Both of these are raised manually if any error occurs that
+            # we have specifically caught.
             response['error'] = str(e)
             response['message'] = 'Simulation error.'
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
             return response, 400
-
-        log_msg = json.dumps(
-            {
-                'message': 'SimConfigs Instance',
-                **sim.configs.__dict__
-            }
-        )
-        logger.debug(log_msg)
+        except Exception as e:
+            # This is to make sure the client knows there has been some
+            # calculation error which is potentially something to do with
+            # our back-end code or, more likely, a value in the alloy
+            # composition that does not work with this algorithm.
+            msg = 'PhaseSimulation intialisation error.'
+            logger.exception(msg)
+            apm.capture_exception(msg)
+            response.update({'message': msg, 'error': str(e)})
+            return response, 500
 
         # Now we do the simulation part but catch all exceptions and return it
         try:
@@ -171,8 +213,11 @@ class Simulation(Resource):
             # ttt_future = dask_client.submit(sim.ttt)
             # user_cc_future = dask_client.submit(sim.user_cooling_profile)
         except ZeroDivisionError as e:
+            # We know that a zero division error can occur during the
+            # calculations so we need to catch it and return to the client
+            # to deal with it.
             response['error'] = str(e)
-            response['message'] = 'Zero Division Error.'
+            response['message'] = 'Zero division error.'
             response['configs'] = sim.configs.__dict__
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
@@ -193,11 +238,6 @@ class Simulation(Resource):
                 'CCT': cct_results,
                 'USER': user_cooling_curve_results
             }
-            # data = {
-            #     'TTT': ttt_future.result(),
-            #     'CCT': cct_future.result(),
-            #     'USER': user_future.result()
-            # }
         except AssertionError as e:
             response['error'] = str(e)
             response['message'] = 'Assertion error building response data.'
@@ -212,13 +252,8 @@ class Simulation(Resource):
         # logger.debug(f'Total Simulation Time: {simulation_time}')
         logger.debug('Simulation Total Time: {}'.format(finish - start))
 
-        # If a valid simulation has been run, the configurations are now valid.
-        session_store['configurations']['is_valid'] = True
-        session_store['results'] = data
-        SimSessionService().save_session(session_store)
-
-        response['status'] = 'success'
-        response['data'] = data
+        # Just overwrite the response instead of changing it.
+        response = {'status': 'success', 'data': data}
         return response, 200
 
 

@@ -16,6 +16,7 @@ import unittest
 
 from flask import current_app
 from itsdangerous import URLSafeTimedSerializer
+from mongoengine import get_db
 
 from arc_logging import AppLogger
 from sim_api.extensions.utilities import get_mongo_uri
@@ -32,6 +33,21 @@ logger = AppLogger(__name__)
 
 class TestAdminCreateService(BaseTestCase):
     """Tests for Admin creation and disable account endpoints"""
+
+    def tearDown(self) -> None:
+        db = get_db('default')
+        self.assertTrue(db.name, 'arc_test')
+        db.users.drop()
+        db.feedback.drop()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """On finishing, we should delete users collection so no conflict."""
+        db = get_db('default')
+        assert db.name == 'arc_test'
+        db.users.drop()
+        db.feedback.drop()
+
     def test_disable_account(self):
         """Test disable account is successful"""
         user = User(
@@ -1141,6 +1157,209 @@ class TestAdminCreateService(BaseTestCase):
     #         redirect_url = \
     #             f'http://{client_host}/admin/create/verify/tokenexpired'
     #         self.assertRedirects(resp, redirect_url)
+
+    def test_enable_account_empty_payload(self):
+        """Ensure an enable account request with an empty payload fails"""
+        vader = User(
+            **{
+                'email': 'vader@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
+        )
+        vader.set_password('AllTooEasy')
+        vader.admin_profile = AdminProfile(
+            **{
+                'position': 'Position',
+                'mobile_number': None,
+                'verified': True,
+                'promoted_by': None
+            }
+        )
+        vader.save()
+
+        with self.client as client:
+            cookie = test_login(client, vader.email, 'AllTooEasy')
+
+            resp_disable = client.put(
+                '/v1/sim/enable/user',
+                data=json.dumps(''),
+                content_type='application/json'
+            )
+
+            disable_data = json.loads(resp_disable.data.decode())
+            self.assertEqual(resp_disable.status_code, 400)
+            self.assertEqual(disable_data['status'], 'fail')
+            self.assertEqual(
+                disable_data['message'], 'Invalid payload.'
+            )
+
+    def test_enable_account_no_email(self):
+        """Ensure an enable account request with no email key fails"""
+        vader = User(
+            **{
+                'email': 'lordvader@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
+        )
+        vader.set_password('AllTooEasy')
+        vader.admin_profile = AdminProfile(
+            **{
+                'position': 'Position',
+                'mobile_number': None,
+                'verified': True,
+                'promoted_by': None
+            }
+        )
+        vader.save()
+
+        with self.client as client:
+            cookie = test_login(client, vader.email, 'AllTooEasy')
+
+            resp_disable = client.put(
+                '/v1/sim/enable/user',
+                data=json.dumps({'some_key': 'some_value'}),
+                content_type='application/json'
+            )
+
+            disable_data = json.loads(resp_disable.data.decode())
+            self.assertEqual(resp_disable.status_code, 400)
+            self.assertEqual(disable_data['status'], 'fail')
+            self.assertEqual(
+                disable_data['message'], 'No email provided.'
+            )
+
+    def test_enable_account_user_dne(self):
+        """Ensure an enable account request on an unknown user fails"""
+        vader = User(
+            **{
+                'email': 'darklordofthesith@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
+        )
+        vader.set_password('AllTooEasy')
+        vader.admin_profile = AdminProfile(
+            **{
+                'position': 'Position',
+                'mobile_number': None,
+                'verified': True,
+                'promoted_by': None
+            }
+        )
+        vader.save()
+
+        with self.client as client:
+            cookie = test_login(client, vader.email, 'AllTooEasy')
+
+            resp_disable = client.put(
+                '/v1/sim/enable/user',
+                data=json.dumps({'email': 'cal_kestis@arclytics.io'}),
+                content_type='application/json'
+            )
+
+            disable_data = json.loads(resp_disable.data.decode())
+            self.assertEqual(resp_disable.status_code, 404)
+            self.assertEqual(disable_data['status'], 'fail')
+            self.assertEqual(
+                disable_data['message'], 'User does not exist.'
+            )
+
+    def test_enable_account_user_not_disabled(self):
+        """
+        Ensure an enable account request on an account that is not disabled
+        fails
+        """
+        vader = User(
+            **{
+                'email': 'chosenone@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
+        )
+        vader.set_password('AllTooEasy')
+        vader.admin_profile = AdminProfile(
+            **{
+                'position': 'Position',
+                'mobile_number': None,
+                'verified': True,
+                'promoted_by': None
+            }
+        )
+        vader.save()
+
+        cal = User(
+            **{
+                'email': 'calkestis_jk@arclytics.io',
+                'first_name': 'Cal',
+                'last_name': 'Kestis'
+            }
+        )
+        cal.set_password('trustnoone')
+        cal.save()
+
+        with self.client as client:
+            cookie = test_login(client, vader.email, 'AllTooEasy')
+
+            resp_disable = client.put(
+                '/v1/sim/enable/user',
+                data=json.dumps({'email': 'calkestis_jk@arclytics.io'}),
+                content_type='application/json'
+            )
+
+            disable_data = json.loads(resp_disable.data.decode())
+            self.assertEqual(resp_disable.status_code, 400)
+            self.assertEqual(disable_data['status'], 'fail')
+            self.assertEqual(
+                disable_data['message'], 'Account is not disabled.'
+            )
+
+    def test_enable_account_success(self):
+        """Ensure a valid enable account request is successful"""
+        vader = User(
+            **{
+                'email': 'vadersfist@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
+        )
+        vader.set_password('AllTooEasy')
+        vader.admin_profile = AdminProfile(
+            **{
+                'position': 'Position',
+                'mobile_number': None,
+                'verified': True,
+                'promoted_by': None
+            }
+        )
+        vader.save()
+
+        ahsoka = User(
+            **{
+                # 'email': 'davidmatthews1004@gmail.com',
+                'email': 'ahsokatano@arclytics.io',
+                'first_name': 'Cal',
+                'last_name': 'Kestis'
+            }
+        )
+        ahsoka.set_password('iamnojedi')
+        ahsoka.active = False
+        ahsoka.save()
+
+        with self.client as client:
+            cookie = test_login(client, vader.email, 'AllTooEasy')
+
+            resp_disable = client.put(
+                '/v1/sim/enable/user',
+                # data=json.dumps({'email': 'davidmatthews1004@gmail.com'}),
+                data=json.dumps({'email': 'ahsokatano@arclytics.io'}),
+                content_type='application/json'
+            )
+
+            disable_data = json.loads(resp_disable.data.decode())
+            self.assertEqual(resp_disable.status_code, 200)
+            self.assertEqual(disable_data['status'], 'success')
 
 
 if __name__ == '__main__':

@@ -527,6 +527,34 @@ class EnableAccount(Resource):
 
         user = User.objects.get(email=valid_email)
 
+        # Ensure user's account is actually disbaled
+        if user.active == True:
+            response['message'] = 'Account is not disabled.'
+            return response, 400
+
+        # Reenable user account
+        user.active = True
+        user.save()
+
+        from sim_api.email_service import send_email
+        send_email(
+            to=[user.email],
+            subject_suffix='Your Account has been enabled again',
+            html_template=render_template(
+                'account_enabled.html',
+                user_name=f'{user.first_name} {user.last_name}'
+            ),
+            text_template=render_template(
+                'account_enabled.txt',
+                user_name=f'{user.first_name} {user.last_name}'
+            )
+        )
+
+        response['status'] = 'success'
+        response.pop('message')
+        return response, 200
+
 
 api.add_resource(AdminCreate, '/v1/sim/admin/create')
 api.add_resource(DisableAccount, '/v1/sim/disable/user')
+api.add_resource(EnableAccount, '/v1/sim/enable/user')

@@ -18,15 +18,7 @@ import { SIMCCT_URL } from '../../../constants'
 import { ASTM2Dia } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
 import { addSimToTimeMachine } from '../timeMachine/actions'
-import { logError } from '../../../api/LoggingHelper'
-import { updateSession } from '../../../api/sim/sessionHelper'
-
-export const resetSession = () => (dispatch) => {
-  // make api call to update session
-  dispatch({
-    type: RESET_SIM,
-  })
-}
+import { logError, logDebug } from '../../../api/LoggingHelper'
 
 /**
  * Get the autocalculated transformation limits.
@@ -350,6 +342,20 @@ export const runSim = () => (dispatch, getState) => {
     ...otherConfigs
   } = getState().sim.configurations
 
+  // TODO(dalton@neuraldev.io): So it works like this but I'm sure you need
+  //  to make this better.
+  //  From Andrew (andrew@neuraldev.io)
+  const { alloys } = getState().sim
+
+  const alloyStore = {
+    alloy_option: alloys.alloyOption,
+    alloys: {
+      parent: alloys.parent,
+      weld: alloys.parent,
+      mix: alloys.parent,
+    },
+  }
+
   fetch(`${SIMCCT_URL}/simulate`, {
     method: 'POST',
     credentials: 'include',
@@ -357,8 +363,11 @@ export const runSim = () => (dispatch, getState) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      grain_size: grain_size_ASTM,
-      ...otherConfigs,
+      alloy_store: alloyStore,
+      configurations: {
+        grain_size: grain_size_ASTM,
+        ...otherConfigs
+      },
     }),
   })
     .then((res) => {
@@ -372,6 +381,7 @@ export const runSim = () => (dispatch, getState) => {
     })
     .then((simRes) => {
       if (simRes.status === 'fail') {
+        logDebug(simRes, 'actions.runSim')
         return {
           status: 'fail',
           message: 'Could not get simulation results',

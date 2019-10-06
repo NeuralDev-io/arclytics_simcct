@@ -30,6 +30,18 @@ _TEST_CONFIGS_PATH = Path(BASE_DIR) / 'tests' / 'sim_configs.json'
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     test_json = json.load(f)
 
+ALLOY_STORE = {
+    'alloy_option': 'single',
+    'alloys': {
+        'parent': {
+            'name': 'Arc_Stark',
+            'compositions': test_json['compositions']
+        }
+    }
+}
+
+CONFIGS = test_json['configurations']
+
 
 class TestSimAlloys(BaseTestCase):
     _email = None
@@ -198,42 +210,6 @@ class TestSimAlloys(BaseTestCase):
         with app.test_client() as client:
             configs, alloy_store = self.login_client(client)
 
-            # By default the auto calculate bools are all true so we need to
-            # set them to false to get this working.
-            client.put(
-                '/v1/sim/configs/ms',
-                data=json.dumps(
-                    {
-                        'ms_temp': 464.196,
-                        'ms_rate_param': 0.0168,
-                    }
-                ),
-                content_type='application/json'
-            )
-            client.put(
-                '/v1/sim/configs/bs',
-                data=json.dumps({'bs_temp': 563.238}),
-                content_type='application/json'
-            )
-            client.put(
-                '/v1/sim/configs/ae',
-                data=json.dumps({
-                    'ae1_temp': 700.902,
-                    'ae3_temp': 845.838
-                }),
-                content_type='application/json'
-            )
-            session_store: dict = SimSessionService().load_session()
-            self.assertFalse(
-                session_store['configurations']['auto_calculate_ms']
-            )
-            self.assertFalse(
-                session_store['configurations']['auto_calculate_bs']
-            )
-            self.assertFalse(
-                session_store['configurations']['auto_calculate_ae']
-            )
-
             new_alloy_store = {
                 'alloy_option': 'single',
                 'alloy_type': 'parent',
@@ -329,15 +305,9 @@ class TestSimAlloys(BaseTestCase):
             configs, alloy_store = self.login_client(client)
 
             # We need to make auto_calculate true by using the endpoints
-            client.get(
-                '/v1/sim/configs/ms', content_type='application/json'
-            )
-            client.get(
-                '/v1/sim/configs/ae', content_type='application/json'
-            )
-            client.get(
-                '/v1/sim/configs/bs', content_type='application/json'
-            )
+            client.get('/v1/sim/configs/ms', content_type='application/json')
+            client.get('/v1/sim/configs/ae', content_type='application/json')
+            client.get('/v1/sim/configs/bs', content_type='application/json')
 
             session_store = SimSessionService().load_session()
             sess_configs = session_store.get('configurations')

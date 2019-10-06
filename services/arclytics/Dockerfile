@@ -14,6 +14,8 @@ RUN conda install --yes --freeze-installed -q \
     conda-forge::pip \
     nomkl \
     numpy==1.17.2 \
+    pandas==0.25.1 \
+    gunicorn==19.9.0 \
     conda-forge::flask==1.0.2 \
     && conda clean -tipsy \
     && find /opt/conda/ -type f,l -name '*.a' -delete \

@@ -299,9 +299,7 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            err = (
-                "{'ms_temp': ['Cannot be negative.']}"
-            )
+            err = ("{'ms_temp': ['Cannot be negative.']}")
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
             self.assertEqual(data['status'], 'fail')
@@ -460,6 +458,7 @@ class TestLastSimulation(BaseTestCase):
         with app.test_client() as client:
             test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(CONFIGS)
+            configs['is_valid'] = False
             configs['nucleation_start'] = -1
 
             res = client.post(
@@ -683,6 +682,7 @@ class TestLastSimulation(BaseTestCase):
         """Ensure we can get a last configuration that is invalid."""
         with app.test_client() as client:
             test_login(client, self.tony.email, self._tony_pw)
+
             res = client.post(
                 '/v1/sim/user/last/simulation',
                 data=json.dumps(
@@ -704,8 +704,11 @@ class TestLastSimulation(BaseTestCase):
             user = self.tony
             user.reload()
 
+            configs = deepcopy(CONFIGS)
+            configs.update({'is_valid': False})
+
             self.assertDictEqual(user.last_alloy_store, ALLOY_STORE)
-            self.assertDictEqual(user.last_configuration, CONFIGS)
+            self.assertDictEqual(user.last_configuration, configs)
             self.assertDictEqual(user.last_simulation_results, {})
 
             res = client.get(
@@ -715,7 +718,7 @@ class TestLastSimulation(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
             self.assertTrue(data.get('data', None))
-            self.assertDictEqual(data['data']['last_configuration'], CONFIGS)
+            self.assertDictEqual(data['data']['last_configuration'], configs)
 
     def test_get_detail_last_success(self):
         with app.test_client() as client:
@@ -745,7 +748,8 @@ class TestLastSimulation(BaseTestCase):
             self.assertTrue(data.get('data', None))
             self.assertDictEqual(data['data']['last_configuration'], CONFIGS)
 
-            _name = data['data']['last_alloy_store']['alloys']['parent']['name']
+            _name = data['data']['last_alloy_store']['alloys']['parent']['name'
+                                                                         ]
             self.assert200(res)
             self.assertEqual(
                 data['data']['last_alloy_store']['alloys']['parent']['name'],

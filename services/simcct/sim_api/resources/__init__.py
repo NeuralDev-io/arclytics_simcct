@@ -7,7 +7,6 @@ from .save_simulation import save_sim_blueprint
 from .share import share_blueprint
 from .sim_alloys import sim_alloys_blueprint
 from .sim_configurations import configs_blueprint
-from .sim_sessions import sessions_blueprint
 from .simulation import sim_blueprint
 from .user_alloys import user_alloys_blueprint
 from .users import users_blueprint

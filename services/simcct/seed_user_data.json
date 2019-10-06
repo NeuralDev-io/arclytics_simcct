@@ -9,7 +9,6 @@
             "highest_education": "Masters Degree",
             "sci_tech_exp": "Advanced",
             "phase_transform_exp": "Advanced"
-
         },
         "is_admin": true,
         "admin_profile": {
@@ -23,7 +22,12 @@
         "password": "RedInMyLedger",
         "first_name": "Natasha",
         "last_name": "Romanoff",
-        "profile": {},
+        "profile": {
+            "aim": "Engineering Work",
+            "highest_education": "High School",
+            "sci_tech_exp": "Advanced",
+            "phase_transform_exp": "Beginner"
+        },
         "is_admin": false,
         "admin_profile": null
     },

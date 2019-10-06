@@ -203,9 +203,7 @@ class TestUserService(BaseTestCase):
             )
 
             # Logging out should clear the session
-            client.get(
-                '/v1/sim/auth/logout', content_type='application/json'
-            )
+            client.get('/v1/sim/auth/logout', content_type='application/json')
 
             # Clear the cookie from previously although it should be
             # cleared by logout
@@ -215,9 +213,7 @@ class TestUserService(BaseTestCase):
             # We set the old Cookie back and see if it works
             client.set_cookie('localhost', 'SESSION_TOKEN', cookie.value)
 
-            res = client.get(
-                '/v1/sim/user', content_type='application/json'
-            )
+            res = client.get('/v1/sim/user', content_type='application/json')
             data = json.loads(res.data.decode())
 
             self.assertEqual(data['message'], 'Session is invalid.')

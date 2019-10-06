@@ -21,7 +21,6 @@ Service such as PyMongo connector client.
 
 class AlloyAbstract(object):
     """This is an abstract class to be used as an adapter for Alloy Models."""
-
     def __init__(self, adapter=None):
         self.client = adapter()
 

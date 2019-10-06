@@ -35,6 +35,7 @@ from sim_api.extensions.utilities import (
 )
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.schemas import AlloyStoreSchema, ConfigurationsSchema
+from sim_api.extensions.SimSession import SimSessionService
 from simulation.phasesimulation import PhaseSimulation
 from simulation.simconfiguration import SimConfiguration
 from simulation.utilities import ConfigurationError, SimulationError

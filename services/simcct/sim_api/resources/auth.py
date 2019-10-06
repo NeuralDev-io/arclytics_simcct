@@ -421,7 +421,8 @@ def login() -> any:
                 if location_data.location:
                     accuracy_radius = location_data.location.accuracy_radius
                     geopoint = {
-                        'type': 'Point',
+                        'type':
+                        'Point',
                         'coordinates': [
                             location_data.location.latitude,
                             location_data.location.longitude
@@ -461,15 +462,15 @@ def login() -> any:
                 # error and allow the response.
                 apm.capture_exception()
             finally:
-                logger.info(
-                    {
-                        'message': 'User logged in.',
-                        'user': user.email,
-                        'country': country,
-                        'state': state,
-                        'ip_address': request_ip
-                    }
-                )
+                # logger.info(
+                #     {
+                #         'message': 'User logged in.',
+                #         'user': user.email,
+                #         'country': country,
+                #         'state': state,
+                #         'ip_address': request_ip
+                #     }
+                # )
                 login_data = LoginData(
                     **{
                         'ip_address': request_ip,

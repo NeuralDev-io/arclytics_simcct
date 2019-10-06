@@ -100,6 +100,5 @@ class ResetSimulationSetting(Resource):
         return response, 200
 
 
-
 api.add_resource(SimulationSession, '/v1/sim/session/update')
 api.add_resource(ResetSimulationSetting, '/v1/sim/session/reset')

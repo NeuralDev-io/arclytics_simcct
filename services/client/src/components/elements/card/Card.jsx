@@ -11,19 +11,22 @@
  */
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Card } from '@material-ui/core'
+import { Card, withStyles } from '@material-ui/core'
 import clsx from 'clsx'
 
-import styles from './Card.module.scss'
+const defaultStyles = {
+  root: {
+    minHeight: '24rem',
+    maxHeight: '35rem'
+  }
+}
 
 function CardComponent(props) {
   const { classes, children, className, ...other } = props
 
   return (
-    <Card className={clsx(styles.root, className)} {...other}>
-      <div className={clsx(styles.content, className)}>
-        {children || ''}
-      </div>
+    <Card className={clsx(classes.root, className)} {...other}>
+      {children || ''}
     </Card>
   )
 }
@@ -33,4 +36,4 @@ CardComponent.propTypes = {
   children: PropTypes.node
 }
 
-export default CardComponent
+export default withStyles(defaultStyles)(CardComponent)

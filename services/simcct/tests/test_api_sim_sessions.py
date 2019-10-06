@@ -52,7 +52,7 @@ class TestSimSessionsService(BaseTestCase):
             test_login(client, cal.email, 'dontstandout')
 
             resp = client.put(
-                '/api/v1/sim/session/update',
+                '/v1/sim/session/update',
                 data=json.dumps(''),
                 content_type='application/json'
             )
@@ -77,7 +77,7 @@ class TestSimSessionsService(BaseTestCase):
             test_login(client, cal.email, 'dontstandout')
 
             resp = client.put(
-                '/api/v1/sim/session/update',
+                '/v1/sim/session/update',
                 data=json.dumps({'alloy_store': 'something'}),
                 content_type='application/json'
             )
@@ -102,7 +102,7 @@ class TestSimSessionsService(BaseTestCase):
             test_login(client, cal.email, 'dontstandout')
 
             resp = client.put(
-                '/api/v1/sim/session/update',
+                '/v1/sim/session/update',
                 data=json.dumps({'configuration': 21}),
                 content_type='application/json'
             )
@@ -129,7 +129,7 @@ class TestSimSessionsService(BaseTestCase):
             test_login(client, cal.email, 'dontstandout')
 
             resp = client.put(
-                '/api/v1/sim/session/update',
+                '/v1/sim/session/update',
                 data=json.dumps({'configuration': {
                     'some_key': 'some_value'
                 }}),
@@ -156,7 +156,7 @@ class TestSimSessionsService(BaseTestCase):
             test_login(client, cal.email, 'dontstandout')
 
             resp = client.put(
-                '/api/v1/sim/session/update',
+                '/v1/sim/session/update',
                 data=json.dumps(
                     {
                         'configuration': {
@@ -190,7 +190,7 @@ class TestSimSessionsService(BaseTestCase):
             test_login(client, cal.email, 'dontstandout')
 
             resp = client.put(
-                '/api/v1/sim/session/update',
+                '/v1/sim/session/update',
                 data=json.dumps(
                     {
                         'configuration': {
@@ -224,7 +224,7 @@ class TestSimSessionsService(BaseTestCase):
             test_login(client, cal.email, 'dontstandout')
 
             resp = client.delete(
-                '/api/v1/sim/session/reset', content_type='application/json'
+                '/v1/sim/session/reset', content_type='application/json'
             )
 
             data = json.loads(resp.data.decode())

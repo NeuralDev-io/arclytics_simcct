@@ -586,7 +586,7 @@ class TestAdminCreateService(BaseTestCase):
         quigon.save()
 
         with self.client as client:
-            cookie = test_login(client, quigon.email, 'ShortNegotiations')
+            test_login(client, quigon.email, 'ShortNegotiations')
 
             resp = client.post(
                 '/v1/sim/admin/create',

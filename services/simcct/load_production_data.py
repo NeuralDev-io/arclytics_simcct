@@ -73,12 +73,12 @@ if os.path.isfile(feedback_data_path):
 
 # test data for rating and login
 varied_date = [
-    datetime.utcnow() - timedelta(days=10),
-    datetime.utcnow(),
-    datetime.utcnow() - timedelta(days=603),
-    datetime.utcnow() - timedelta(days=365),
-    datetime.utcnow() - timedelta(days=900)]
-random_ip = [2, 3, 4, 5,6]
+    datetime.utcnow() - timedelta(days=1),
+    datetime.utcnow() - timedelta(days=2),
+    datetime.utcnow() - timedelta(days=3),
+    datetime.utcnow() - timedelta(days=4),
+    datetime.utcnow() - timedelta(days=5)]
+random_ip = [2, 3, 4, 5, 6]
 
 type_of_user = [1, 2, 3]
 
@@ -318,13 +318,13 @@ with app.app_context():
 with app.app_context():
     for x in db.users.find({}, {"_id"}):
         # to use later(to randomise rating)
-        no_of_feedback = random.randint(0, 2)
+        no_of_feedback = random.randint(0, 15)
         feedback = random.sample(feedback_data, no_of_feedback)
 
         for feedback_to_add in feedback:
             new_user3 = Feedback(
                 **{
-                    'user': feedback_to_add['user'],
+                    'user': x['_id'],
                     'category': feedback_to_add['category'],
                     'rating': feedback_to_add['rating'],
                     'comment': feedback_to_add['comment']

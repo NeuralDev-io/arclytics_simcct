@@ -73,11 +73,14 @@ if os.path.isfile(feedback_data_path):
 
 # test data for rating and login
 varied_date = [
+    datetime.utcnow(),
     datetime.utcnow() - timedelta(days=1),
     datetime.utcnow() - timedelta(days=2),
     datetime.utcnow() - timedelta(days=3),
     datetime.utcnow() - timedelta(days=4),
-    datetime.utcnow() - timedelta(days=5)]
+    datetime.utcnow() - timedelta(days=5),
+    datetime.utcnow() - timedelta(days=6),
+    datetime.utcnow() - timedelta(days=7)]
 random_ip = [2, 3, 4, 5, 6]
 
 type_of_user = [1, 2, 3]
@@ -185,15 +188,16 @@ with app.app_context():
         IP_check = random.sample(random_ip, 1)
 
         if IP_check[0] == 2:
-            IP = random.sample(vic_ip, 5)
+            IP = random.sample(vic_ip, 8)
         if IP_check[0] == 3:
-            IP = random.sample(qld_ip, 5)
+            IP = random.sample(qld_ip, 8)
         if IP_check[0] == 4:
-            IP = random.sample(ip_set1, 5)
+            IP = random.sample(ip_set1, 8)
         if IP_check[0] == 5:
-            IP = random.sample(ip_set2, 5)
+            IP = random.sample(ip_set2, 8)
         if IP_check[0] == 6:
-            IP = random.sample(ip_set3, 5)
+            IP = random.sample(ip_set3, 8)
+
         # adding login and rating
         for index, var_date in enumerate(varied_date):
             ratings_int = random.randint(1, 5)

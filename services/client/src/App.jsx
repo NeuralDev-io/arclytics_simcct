@@ -40,6 +40,7 @@ import UserAlloyPage from './components/pages/user-alloys'
 import PasswordResetPage from './components/pages/password-reset'
 import SharePage from './components/pages/share'
 import Healthy from './components/moleisms/healthy/Healthy'
+import AnalyticsPage from './components/pages/analytics'
 
 import './App.scss'
 
@@ -100,6 +101,10 @@ function App() {
               <PrivateRoute
                 path="/profileQuestions"
                 component={ProfileQuestionsPage}
+              />
+              <AdminRoute
+                path="/analytics"
+                component={AnalyticsPage}
               />
               <AdminRoute
                 path="/admin"

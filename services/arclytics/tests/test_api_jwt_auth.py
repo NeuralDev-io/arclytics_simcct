@@ -12,13 +12,20 @@ __date__ = '2019.07.05'
 
 import unittest
 
+from flask import json
 import requests
 
 from tests.test_base import BaseTestCase, app
 
 
-class MyTestCase(BaseTestCase):
+class TestRootResources(BaseTestCase):
     """This module tests the cross server authentication and middleware."""
+
+    def test_healthy(self):
+        with app.test_client() as client:
+            res = client.get('/healthy')
+            self.assert200(res)
+
     def test_user_registration(self):
         with app.test_client() as client:
             pass

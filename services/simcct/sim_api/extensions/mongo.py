@@ -26,7 +26,6 @@ class MongoAlloys(object):
     """
     This is a concrete definition of Alloys as a data access layer.
     """
-
     def __init__(self):
         # Instead of making another connection to Mongo, we use the one defined
         # in `app.py` extension `MongoSingleton` by calling the `MongoEngine`

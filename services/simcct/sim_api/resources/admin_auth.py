@@ -488,5 +488,73 @@ def confirm_disable_account(token):
     return redirect(f'{redirect_url}/', code=302)
 
 
+class EnableAccount(Resource):
+    """Route for Admins to re-enable disabled user accounts"""
+
+    method_decorators = {'put': [authorize_admin_cookie_restful]}
+
+    def put(self, admin):
+        post_data = request.get_json()
+
+        # Validating empty payload
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+        if not post_data:
+            return response, 400
+
+        # Extract the request body data
+        email = post_data.get('email', None)
+
+        if not email:
+            response['message'] = 'No email provided.'
+            return response, 400
+
+        # Verify it is actually a valid email
+        try:
+            # validate and get info
+            v = validate_email(email)
+            # replace with normalized form
+            valid_email = v['email']
+        except EmailNotValidError as e:
+            # email is not valid, exception message is human-readable
+            response['error'] = str(e)
+            response['message'] = 'Invalid email.'
+            return response, 400
+
+        # Validation checks
+        if not User.objects(email=valid_email):
+            response['message'] = 'User does not exist.'
+            return response, 404
+
+        user = User.objects.get(email=valid_email)
+
+        # Ensure user's account is actually disbaled
+        if user.active == True:
+            response['message'] = 'Account is not disabled.'
+            return response, 400
+
+        # Reenable user account
+        user.active = True
+        user.save()
+
+        from sim_api.email_service import send_email
+        send_email(
+            to=[user.email],
+            subject_suffix='Your Account has been enabled again',
+            html_template=render_template(
+                'account_enabled.html',
+                user_name=f'{user.first_name} {user.last_name}'
+            ),
+            text_template=render_template(
+                'account_enabled.txt',
+                user_name=f'{user.first_name} {user.last_name}'
+            )
+        )
+
+        response['status'] = 'success'
+        response.pop('message')
+        return response, 200
+
+
 api.add_resource(AdminCreate, '/v1/sim/admin/create')
 api.add_resource(DisableAccount, '/v1/sim/disable/user')
+api.add_resource(EnableAccount, '/v1/sim/enable/user')

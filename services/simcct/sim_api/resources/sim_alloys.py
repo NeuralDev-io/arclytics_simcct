@@ -28,6 +28,7 @@ from marshmallow import ValidationError
 
 from arc_logging import AppLogger
 from sim_api.extensions import api, apm
+from sim_api.routes import Routes
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
     MissingElementError, ElementWeightInvalid
@@ -268,4 +269,4 @@ class AlloyStore(Resource):
         return {'message': 'Method Not Allowed.', 'status': 'fail'}, 405
 
 
-api.add_resource(AlloyStore, '/v1/sim/alloys/update')
+api.add_resource(AlloyStore, Routes.alloy_store.value)

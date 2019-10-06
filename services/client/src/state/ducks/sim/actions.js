@@ -366,7 +366,7 @@ export const runSim = () => (dispatch, getState) => {
       alloy_store: alloyStore,
       configurations: {
         grain_size: grain_size_ASTM,
-        ...otherConfigs
+        ...otherConfigs,
       },
     }),
   })

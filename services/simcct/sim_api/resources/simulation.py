@@ -280,10 +280,14 @@ class Ae3Equilibrium(Resource):
             # implemented at all.
             pass
 
+        # Create a configuration object based off the session config and comp
+        # so we can perform ae3 equilibrium calculations on it.
         sim_configs = SimConfiguration(
             configs=configs, compositions=alloy['compositions']
         )
 
+        # Call the xfe_method2 function to calculate the ae3 equilibrium
+        # graph data.
         try:
             # xfe is ferrite_phase_frac and ceut is eutectic_composition_carbon
             results_plot, results_mat, xfe, ceut = \
@@ -317,6 +321,9 @@ class Ae3Equilibrium(Resource):
             }
         # Not sure if this is possible for the ae3 equilibrium results but
         # putting it in just in case.
+        # This is to try and catch the following:
+        # Converting the TTT and CCT `numpy.ndarray` will raise an
+        # AssertionError if the shape of the ndarray is not correct.
         except AssertionError as e:
             response['error'] = str(e)
             response['message'] = 'Assertion error building response data.'

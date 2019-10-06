@@ -15,6 +15,7 @@ __license__ = 'MIT'
 __version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.07.13'
+
 """sim_configurations.py: 
 
 This module deals with all the endpoints for setting and updating the 
@@ -36,9 +37,8 @@ from sim_api.extensions.utilities import (
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.schemas import AlloyStoreSchema
 
-configs_blueprint = Blueprint('sim_configurations', __name__)
-
 logger = AppLogger(__name__)
+configs_blueprint = Blueprint('sim_configurations', __name__)
 
 
 # noinspection PyMethodMayBeStatic,DuplicatedCode
@@ -341,8 +341,7 @@ class Bainite(Resource):
             return response, 500
 
         # Just overwrite the response instead of changing it.
-        response = {'status': 'success', 'data': {'bs_temp': bs_temp}}
-        return response, 200
+        return {'status': 'success', 'data': {'bs_temp': bs_temp}}, 200
 
     # [DEPRECATED]
     def put(self, _):

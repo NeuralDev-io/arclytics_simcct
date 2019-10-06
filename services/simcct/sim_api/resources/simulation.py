@@ -12,9 +12,10 @@ __author__ = [
 ]
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'MIT'
-__version__ = '1.0.0'
+__version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.07.17'
+
 """simulation.py: 
 
 This module defines and implements the endpoints for CCT and TTT simulations.
@@ -39,15 +40,19 @@ from simulation.simconfiguration import SimConfiguration
 from simulation.utilities import ConfigurationError, SimulationError
 
 logger = AppLogger(__name__)
-
 sim_blueprint = Blueprint('simulation', __name__)
 
 
+# noinspection PyMethodMayBeStatic
 class Simulation(Resource):
+    """
+    This Resource is used to call the main simulation algorithm which uses
+    the `arc_simulation.simulation` package to run the Algorithm provided by
+    Dr. Bendeich and optimized by the NeuralDev team.
+    """
 
     method_decorators = {'post': [authenticate_user_cookie_restful]}
 
-    # noinspection PyMethodMayBeStatic
     def post(self, _):
         response = {'status': 'fail'}
 
@@ -62,6 +67,16 @@ class Simulation(Resource):
         # ===== # Validation Checks of POST BODY # ===== #
         if not alloy_store:
             response.update({'message': 'Alloy store required.'})
+            return response, 400
+
+        if not alloy_store.get('alloy_option') in {'single', 'mix'}:
+            response.update(
+                {'message': 'Alloy option must be one of ["single" | "mix"]'}
+            )
+            return response, 400
+
+        if not configurations:
+            response.update({'message': 'Configurations required.'})
             return response, 400
 
         # We need to validate the Configurations matches our expected schema
@@ -202,30 +217,18 @@ class Simulation(Resource):
             ttt_results = sim.ttt()
             user_cooling_curve_results = sim.user_cooling_profile()
             cct_results = sim.cct()
-            # with concurrent.futures.ThreadPoolExecutor() as executor:
-            #     ttt_future = executor.submit(sim.ttt)
-            #     user_future = executor.submit(sim.user_cooling_profile)
-            #     cct_future = executor.submit(sim.cct)
-
-            # We send the three simulation functions off to a Dask Worker to
-            # compute as a background thread.
-            # cct_future = dask_client.submit(sim.cct)
-            # ttt_future = dask_client.submit(sim.ttt)
-            # user_cc_future = dask_client.submit(sim.user_cooling_profile)
         except ZeroDivisionError as e:
             # We know that a zero division error can occur during the
             # calculations so we need to catch it and return to the client
             # to deal with it.
             response['error'] = str(e)
             response['message'] = 'Zero division error.'
-            response['configs'] = sim.configs.__dict__
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
             return response, 500
         except Exception as e:
             response['error'] = str(e)
             response['message'] = 'Exception.'
-            response['configs'] = sim.configs.__dict__
             logger.exception(response['message'], exc_info=True)
             apm.capture_exception()
             return response, 500
@@ -247,14 +250,10 @@ class Simulation(Resource):
 
         finish = time.time()
 
-        # logger.debug(f'Configurations Setup Time: {sim_configs_time}')
-        # logger.debug(f'Integral Matrix Time: {integral_mat_time}')
-        # logger.debug(f'Total Simulation Time: {simulation_time}')
         logger.debug('Simulation Total Time: {}'.format(finish - start))
 
         # Just overwrite the response instead of changing it.
-        response = {'status': 'success', 'data': data}
-        return response, 200
+        return {'status': 'success', 'data': data}, 200
 
 
 api.add_resource(Simulation, '/v1/sim/simulate')

@@ -462,15 +462,15 @@ def login() -> any:
                 # error and allow the response.
                 apm.capture_exception()
             finally:
-                logger.info(
-                    {
-                        'message': 'User logged in.',
-                        'user': user.email,
-                        'country': country,
-                        'state': state,
-                        'ip_address': request_ip
-                    }
-                )
+                # logger.info(
+                #     {
+                #         'message': 'User logged in.',
+                #         'user': user.email,
+                #         'country': country,
+                #         'state': state,
+                #         'ip_address': request_ip
+                #     }
+                # )
                 login_data = LoginData(
                     **{
                         'ip_address': request_ip,

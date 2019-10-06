@@ -12,7 +12,7 @@ __author__ = [
 ]
 __credits__ = ['Dr. Philip Bendeich', 'Dr. Ondrej Muransky']
 __license__ = 'MIT'
-__version__ = '1.0.0'
+__version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.07.13'
 """sim_configurations.py: 

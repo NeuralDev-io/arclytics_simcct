@@ -21,6 +21,344 @@ import { addSimToTimeMachine } from '../timeMachine/actions'
 import { logError, logDebug } from '../../../api/LoggingHelper'
 
 /**
+ * Initialise a new sim session on the server, then update alloy in
+ * Redux state and use the response to update auto-calculated fields.
+ *
+ * Call this function to update state when alloy1 or alloy2 is changed.
+ * At the moment, only pass in 'single' for option and 'parent' for type.
+ *
+ * @param {string} option 'single' | 'mix'
+ * @param {string} type 'parent' | 'weld'
+ * @param {object} alloy alloy to be used
+ */
+export const initSession = (option, type, alloy) => (dispatch, getState) => {
+  const {
+    method,
+    auto_calculate_ae,
+    auto_calculate_bs,
+    auto_calculate_ms,
+  } = getState().sim.configurations
+
+  dispatch({
+    type: INIT_SESSION,
+    status: 'started',
+  })
+
+  // send request if any of the auto-calculated fields are checked
+  if (auto_calculate_ae || auto_calculate_bs || auto_calculate_ms) {
+    fetch(`${SIMCCT_URL}/alloys/update`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        alloy_store: {
+          alloy_option: option,
+          alloys: {
+            [type]: alloy,
+          },
+        },
+        method,
+        auto_calculate_ae,
+        auto_calculate_bs,
+        auto_calculate_ms,
+      }),
+    })
+      .then((res) => {
+        if (res.status !== 200) throw new Error('Couldn\'t update composition')
+        return res.json()
+      })
+      .then((res) => {
+        if (res.status === 'fail') {
+          throw new Error(res.message)
+        }
+        if (res.status === 'success') {
+          dispatch({
+            type: UPDATE_CONFIG,
+            payload: res.data,
+          })
+          dispatch({
+            type: INIT_SESSION,
+            status: 'success',
+            alloyType: type,
+            alloy,
+          })
+        }
+      })
+      .catch((err) => {
+        // log to fluentd
+        logError(err.toString(), err.message, 'actions.updateAlloy', err.stack)
+        addFlashToast({
+          message: err.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+        dispatch({ type: INIT_SESSION, status: 'fail' })
+      })
+  } else {
+    dispatch({
+      type: INIT_SESSION,
+      status: 'success',
+      alloyType: type,
+      alloy,
+    })
+  }
+}
+
+/**
+ * Update alloy option in state.
+ *
+ * @param {string} option 'single' | 'mix'
+ */
+export const updateAlloyOption = option => (dispatch) => {
+  dispatch({
+    type: UPDATE_ALLOY_OPTION,
+    payload: option,
+  })
+}
+
+/**
+ * Update alloy in session state. Call this function when alloy
+ * composition is changed.
+ *
+ * @param {string} option 'single' | 'mix'
+ * @param {string} type 'parent' | 'weld'
+ * @param {string} error
+ * @param {object} alloy alloy to be updated
+ */
+export const updateComp = (option, type, alloy, error) => (dispatch, getState) => {
+  if (Object.keys(error).length !== 0) {
+    dispatch({
+      type: UPDATE_COMP,
+      alloyType: type,
+      alloy,
+      parentError: error,
+    })
+    return
+  }
+
+  // auto-calculate transformation limits if there are no errors
+  const {
+    method,
+    auto_calculate_ae,
+    auto_calculate_bs,
+    auto_calculate_ms,
+  } = getState().sim.configurations
+
+  // only send request if any of the auto-calculated fields are checked
+  if (auto_calculate_ae || auto_calculate_bs || auto_calculate_ms) {
+    fetch(`${SIMCCT_URL}/alloys/update`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        alloy_store: {
+          alloy_option: option,
+          alloys: {
+            [type]: alloy,
+          },
+        },
+        method,
+        auto_calculate_ae,
+        auto_calculate_bs,
+        auto_calculate_ms,
+      }),
+    })
+      .then((res) => {
+        if (res.status !== 200) throw new Error('Couldn\'t update composition')
+        return res.json()
+      })
+      .then((res) => {
+        if (res.status === 'fail') {
+          throw new Error(res.message)
+        }
+        if (res.status === 'success') {
+          dispatch({
+            type: UPDATE_CONFIG,
+            payload: res.data,
+          })
+          dispatch({
+            type: UPDATE_COMP,
+            alloyType: type,
+            alloy,
+            parentError: error,
+          })
+        }
+      })
+      .catch((err) => {
+        // log to fluentd
+        logError(err.toString(), err.message, 'actions.updateComp', err.stack)
+        addFlashToast({
+          message: err.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      })
+  }
+}
+
+/**
+ * [DEPRECATED]
+ *
+ * Update the dilution value and calculate the new mix composition.
+ * NOTE: This function is incomplete but it's fine because the feature
+ * is no longer requried by the client.
+ *
+ * @param {number} val dilution value
+ */
+export const updateDilution = val => (dispatch) => {
+  // calculate mix compositions here
+
+  // now dispatch
+  dispatch({
+    type: UPDATE_DILUTION,
+    payload: val,
+  })
+}
+
+/**
+ * Update CCT/TTT method.
+ * @param {string} value new method
+ */
+export const updateConfigMethod = value => (dispatch, getState) => {
+  // get the new auto-calculated transformation limits
+  const {
+    auto_calculate_ae,
+    auto_calculate_bs,
+    auto_calculate_ms,
+  } = getState().sim.configurations
+  const {
+    alloyOption,
+    parent,
+  } = getState().sim.alloys
+
+  if (auto_calculate_ae || auto_calculate_bs || auto_calculate_ms) {
+    fetch(`${SIMCCT_URL}/alloys/update`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        alloy_store: {
+          alloy_option: alloyOption,
+          alloys: {
+            parent,
+          },
+        },
+        method: value,
+        auto_calculate_ae,
+        auto_calculate_bs,
+        auto_calculate_ms,
+      }),
+    })
+      .then((res) => {
+        if (res.status !== 200) throw new Error('Couldn\'t update method')
+        return res.json()
+      })
+      .then((res) => {
+        if (res.status === 'fail') {
+          throw new Error(res.message)
+        }
+        if (res.status === 'success') {
+          dispatch({
+            type: UPDATE_CONFIG,
+            payload: res.data,
+          })
+          dispatch({
+            type: UPDATE_CONFIG_METHOD,
+            payload: value,
+          })
+        }
+      })
+      .catch((err) => {
+        // log to fluentd
+        logError(err.toString(), err.message, 'actions.updateMethod', err.stack)
+        addFlashToast({
+          message: err.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      })
+  }
+}
+
+/**
+ * Update grain size in the Redux store.
+ *
+ * @param {string|number} astm ASTM grain size
+ * @param {string|number} dia grain size in diameter
+ * @param {any} grainSizeError error object
+ */
+export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getState) => {
+  const { error } = getState().sim.configurations
+  const newGrainSize = { grain_size_ASTM: astm, grain_size_diameter: dia }
+
+  if (Object.keys(grainSizeError).length === 0 && grainSizeError.constructor === Object) {
+    delete error.astm
+    delete error.dia
+  }
+
+  // update grain size value in redux store
+  dispatch({
+    type: UPDATE_CONFIG,
+    payload: {
+      error: {
+        ...error,
+        ...grainSizeError,
+      },
+      ...newGrainSize,
+    },
+  })
+}
+
+/**
+ * Update the transformation limits.
+ * @param {string} name name of the phase - 'ms' | 'bs' | 'ae'
+ * @param {string} field field to be updated
+ * @param {any} data config object
+ * @param {any} valError error object
+ */
+export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState) => {
+  const { error } = getState().sim.configurations
+
+  // parse values into floats
+  const reqBody = {}
+  Object.keys(data).forEach((key) => { reqBody[key] = parseFloat(data[key]) })
+
+  // remove error from store error
+  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
+    if (field === '') {
+      // if field is empty string, it means all values are updated with autocalculated data
+      // hence there should be no errors
+      if (name === 'ms') {
+        delete error.ms_temp
+        delete error.ms_rate_param
+      }
+      if (name === 'bs') {
+        delete error.bs_temp
+      }
+      if (name === 'ae') {
+        delete error.ae1_temp
+        delete error.ae3_temp
+      }
+    } else delete error[field]
+  }
+
+  // update config in redux store
+  dispatch({
+    type: UPDATE_CONFIG,
+    payload: {
+      error: {
+        ...error,
+        ...valError,
+      },
+      ...data,
+    },
+  })
+}
+
+/**
  * Get the autocalculated transformation limits.
  * @param {string} name name of the phase - 'ms' | 'bs' | 'ae'
  */
@@ -98,188 +436,6 @@ export const getMsBsAe = name => (dispatch, getState) => {
         logError(err.toString(), err.message, 'actions.getMsBsAe', err.stack)
       })
   }
-}
-
-/**
- * Initialise a new sim session on the server, then update alloy in
- * Redux state and use the response to update auto-calculated fields.
- *
- * Call this function to update state when alloy1 or alloy2 is changed.
- * At the moment, only pass in 'single' for option and 'parent' for type.
- *
- * @param {string} option 'single' | 'mix'
- * @param {string} type 'parent' | 'weld'
- * @param {object} alloy alloy to be used
- */
-export const initSession = (option, type, alloy) => (dispatch) => {
-  dispatch({
-    type: INIT_SESSION,
-    status: 'started',
-  })
-
-  dispatch({
-    type: INIT_SESSION,
-    status: 'success',
-    alloyType: type,
-    alloy,
-  })
-}
-
-/**
- * Update alloy option in state.
- *
- * @param {string} option 'single' | 'mix'
- */
-export const updateAlloyOption = option => (dispatch) => {
-  dispatch({
-    type: UPDATE_ALLOY_OPTION,
-    payload: option,
-  })
-}
-
-/**
- * Update alloy in session state. Call this function when alloy
- * composition is changed.
- *
- * @param {string} option 'single' | 'mix'
- * @param {string} type 'parent' | 'weld'
- * @param {string} error
- * @param {object} alloy alloy to be updated
- */
-export const updateComp = (option, type, alloy, error) => (dispatch, getState) => {
-  dispatch({
-    type: UPDATE_COMP,
-    alloyType: type,
-    alloy,
-    parentError: error,
-  })
-
-  // auto-calculate transformation limits if there are no errors
-  if (Object.keys(error).length === 0) {
-    const {
-      auto_calculate_ae,
-      auto_calculate_bs,
-      auto_calculate_ms,
-    } = getState().sim.configurations
-    if (auto_calculate_ae) getMsBsAe('ae')(dispatch)
-    if (auto_calculate_bs) getMsBsAe('bs')(dispatch)
-    if (auto_calculate_ms) getMsBsAe('ms')(dispatch)
-  }
-}
-
-/**
- * [DEPRECATED]
- *
- * Update the dilution value and calculate the new mix composition.
- * NOTE: This function is incomplete but it's fine because the feature
- * is no longer requried by the client.
- *
- * @param {number} val dilution value
- */
-export const updateDilution = val => (dispatch) => {
-  // calculate mix compositions here
-
-  // now dispatch
-  dispatch({
-    type: UPDATE_DILUTION,
-    payload: val,
-  })
-}
-
-/**
- * Update CCT/TTT method.
- * @param {string} value new method
- */
-export const updateConfigMethod = value => (dispatch, getState) => {
-  dispatch({
-    type: UPDATE_CONFIG_METHOD,
-    payload: value,
-  })
-
-  // get the new auto-calculated transformation limits
-  const {
-    auto_calculate_ae,
-    auto_calculate_bs,
-    auto_calculate_ms,
-  } = getState().sim.configurations
-  if (auto_calculate_ae) getMsBsAe('ae')(dispatch)
-  if (auto_calculate_bs) getMsBsAe('bs')(dispatch)
-  if (auto_calculate_ms) getMsBsAe('ms')(dispatch)
-}
-
-/**
- * Update grain size in the Redux store.
- *
- * @param {string|number} astm ASTM grain size
- * @param {string|number} dia grain size in diameter
- * @param {any} grainSizeError error object
- */
-export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getState) => {
-  const { error } = getState().sim.configurations
-  const newGrainSize = { grain_size_ASTM: astm, grain_size_diameter: dia }
-
-  if (Object.keys(grainSizeError).length === 0 && grainSizeError.constructor === Object) {
-    delete error.astm
-    delete error.dia
-  }
-
-  // update grain size value in redux store
-  dispatch({
-    type: UPDATE_CONFIG,
-    payload: {
-      error: {
-        ...error,
-        ...grainSizeError,
-      },
-      ...newGrainSize,
-    },
-  })
-}
-
-/**
- * Update the transformation limits.
- * @param {string} name name of the phase - 'ms' | 'bs' | 'ae'
- * @param {string} field field to be updated
- * @param {any} data config object
- * @param {any} valError error object
- */
-export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState) => {
-  const { error } = getState().sim.configurations
-
-  // parse values into floats
-  const reqBody = {}
-  Object.keys(data).forEach((key) => { reqBody[key] = parseFloat(data[key]) })
-
-  // remove error from store error
-  if (Object.keys(valError).length === 0 && valError.constructor === Object) {
-    if (field === '') {
-      // if field is empty string, it means all values are updated with autocalculated data
-      // hence there should be no errors
-      if (name === 'ms') {
-        delete error.ms_temp
-        delete error.ms_rate_param
-      }
-      if (name === 'bs') {
-        delete error.bs_temp
-      }
-      if (name === 'ae') {
-        delete error.ae1_temp
-        delete error.ae3_temp
-      }
-    } else delete error[field]
-  }
-
-  // update config in redux store
-  dispatch({
-    type: UPDATE_CONFIG,
-    payload: {
-      error: {
-        ...error,
-        ...valError,
-      },
-      ...data,
-    },
-  })
 }
 
 /**

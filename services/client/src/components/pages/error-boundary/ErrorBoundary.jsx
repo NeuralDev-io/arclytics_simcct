@@ -46,7 +46,6 @@ class ErrorBoundary extends React.Component {
       error,
       errorInfo,
     })
-    // TODO(andrew@neuraldev.io): Check what type `error` and `errorInfo` are
     logError(error.toString(), error.message, 'ErrorBoundary', error.stack)
   }
 

@@ -21,7 +21,7 @@ import os
 from datetime import datetime
 from typing import Tuple
 
-from email_validator import EmailNotValidError, validate_email
+from email_validator import EmailNotValidError
 from flask import Blueprint, jsonify, redirect, render_template, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
@@ -30,7 +30,7 @@ from arc_logging import AppLogger
 from sim_api.extensions import api, apm
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
-    MissingElementError
+    MissingElementError, arc_validate_email
 )
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import (
@@ -187,7 +187,7 @@ class ShareSimulationEmail(Resource):
         valid_email_list = []
         if len(email_list) == 1:
             try:
-                v = validate_email(email_list[0])
+                v = arc_validate_email(email_list[0])
                 valid_email_list.append(v['email'])
             except EmailNotValidError as e:
                 response['error'] = str(e)
@@ -196,7 +196,7 @@ class ShareSimulationEmail(Resource):
         else:
             for email in email_list:
                 try:
-                    v = validate_email(email)
+                    v = arc_validate_email(email)
                     valid_email_list.append(v['email'])
                 except EmailNotValidError as e:
                     response['error'] = str(e)

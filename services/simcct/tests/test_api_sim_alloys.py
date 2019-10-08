@@ -55,7 +55,7 @@ class TestSimAlloys(BaseTestCase):
         # Tony is an admin
         cls.user = User(
             **{
-                'email': 'antman@pymindustries.io',
+                'email': 'antman@avengers.io',
                 'first_name': 'Hank',
                 'last_name': 'Pym'
             }
@@ -84,7 +84,7 @@ class TestSimAlloys(BaseTestCase):
         cls._email = cls.user.email
 
         mongo = get_db('default')
-        user = mongo.users.find_one({'email': 'antman@pymindustries.io'})
+        user = mongo.users.find_one({'email': 'antman@avengers.io'})
         assert user is not None
 
     @classmethod

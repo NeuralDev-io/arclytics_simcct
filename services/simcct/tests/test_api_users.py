@@ -101,7 +101,8 @@ class TestUserService(BaseTestCase):
 
     def test_ping(self):
         """Ensure the /ping route behaves correctly."""
-        res = self.client.get('/ping')
+        from sim_api.routes import PREFIX
+        res = self.client.get(f'{PREFIX}/ping')
         data = json.loads(res.data.decode())
         self.assertEqual(res.status_code, 200)
         self.assertIn('success', data['status'])
@@ -556,7 +557,7 @@ class TestUserService(BaseTestCase):
         """Test update only some of the user's details"""
         sheev = User(
             **{
-                'email': 'sheev@palpatine.io',
+                'email': 'sheev@arclytics.io',
                 'first_name': 'Sheev',
                 'last_name': 'Palpatine'
             }
@@ -613,7 +614,7 @@ class TestUserService(BaseTestCase):
         """Try update a user without any data for the update"""
         maul = User(
             **{
-                'email': 'maul@sith.io',
+                'email': 'maul@arclytics.io',
                 'first_name': 'Darth',
                 'last_name': 'Maul'
             }
@@ -927,7 +928,7 @@ class TestUserService(BaseTestCase):
         """Test empty post is unsuccessful"""
         lando = User(
             **{
-                'email': 'lando@calrissian.io',
+                'email': 'lando@arclytics.io',
                 'first_name': 'Lando',
                 'last_name': 'Calrissian'
             }

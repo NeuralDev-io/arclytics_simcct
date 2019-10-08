@@ -118,16 +118,17 @@ def arc_validate_email(email: str) -> dict:
     Custom email validator that uses the email-validator library.
     """
     # Check for the arclytics.io domain
-    # First split the email into username and domain
-    email_split = email.split('@')
-    # Ensure both keys are present
-    if len(email_split) == 2:
-        # Check the domain
-        if email_split[1] == 'arclytics.io':
-            return {
-                'msg': 'Email has arclytics.io as the domain.',
-                'email': email
-            }
+    if isinstance(email, str):
+        # First split the email into username and domain
+        email_split = email.split('@')
+        # Ensure both keys are present
+        if len(email_split) == 2:
+            # Check the domain
+            if email_split[1] == 'arclytics.io':
+                return {
+                    'msg': 'Email has arclytics.io as the domain.',
+                    'email': email
+                }
     # Otherwise we validate normally. `validate_email` will raise
     # EmailNotValidError if the email is invalid.
     valid_email_dict = validate_email(email)

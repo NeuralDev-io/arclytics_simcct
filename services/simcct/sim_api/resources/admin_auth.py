@@ -20,13 +20,13 @@ Sharing endpoints using the Flask Resource inheritance model.
 import os
 from datetime import datetime
 
-from email_validator import EmailNotValidError, validate_email
+from email_validator import EmailNotValidError
 from flask import Blueprint, redirect, render_template, request
 from flask_restful import Resource
 
 from arc_logging import AppLogger
 from sim_api.extensions import api, apm
-from sim_api.extensions.utilities import URLTokenExpired
+from sim_api.extensions.utilities import URLTokenExpired, arc_validate_email
 from sim_api.middleware import authorize_admin_cookie_restful
 from sim_api.models import (AdminProfile, User)
 from sim_api.token import (
@@ -62,6 +62,11 @@ class AdminCreate(Resource):
         if not email:
             response['message'] = 'No email provided.'
             return response, 400
+        # We
+        # if not isinstance(email, str):
+        #     response['message'] = 'Email data type is invalid.'
+        #     return response, 400
+        # email = email.lower()
         if not position:
             response['message'] = 'No position provided.'
             return response, 400
@@ -69,7 +74,7 @@ class AdminCreate(Resource):
         # Verify it is actually a valid email
         try:
             # validate and get info
-            v = validate_email(email)
+            v = arc_validate_email(email)
             # replace with normalized form
             valid_email = v['email']
         except EmailNotValidError as e:
@@ -381,7 +386,7 @@ class DisableAccount(Resource):
         # Verify it is actually a valid email
         try:
             # validate and get info
-            v = validate_email(email)
+            v = arc_validate_email(email)
             # replace with normalized form
             valid_email = v['email']
         except EmailNotValidError as e:
@@ -511,7 +516,7 @@ class EnableAccount(Resource):
         # Verify it is actually a valid email
         try:
             # validate and get info
-            v = validate_email(email)
+            v = arc_validate_email(email)
             # replace with normalized form
             valid_email = v['email']
         except EmailNotValidError as e:

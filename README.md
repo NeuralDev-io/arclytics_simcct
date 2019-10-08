@@ -1,15 +1,31 @@
-# Arclytics Sim
+# Arclytics SimCCT
 
-This is the CSIT321 Arclytics Sim source code repository.
+This is the CSIT321 Arclytics SimCCT source code repository.
 
-Arclytics Sim (pronounced *ark-lit-icks*) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation web application tool.
+Arclytics Sim (pronounced *ark-lit-icks*) is a project in collaboration with the Australian Nuclear Science and Technology Organisation (ANSTO) to provide a Phase Transformation scientific web application tool.
 
-The API provides mathematical algorithms for computing both the Li (98) and Kirkaldi (83) methods for Phase Transformation simulations. The React client will provide the user interface and user interaction for the web browser. Additional Flask microservices as the project progresses.
+Arclytics SimCCT is built using a Microservices Client-Server Architecture. To manage our application during the development phase, we use Docker containers to maintain our microservices. During deployment, we use Kubernetes as our preferred container orchestration tool. 
+
+Using a microservices architecture has allowed our team to take advantages of modern-day web development, including:
+
+* Smaller code bases
+* Separation of Concerns with Modularity
+* Interoperability
+* Portability 
+* Reproducibility
+* Scalability
+
+Our application architecture can be described by the following:
+
+![App Architecture](./docs/assets/Arclytics Sim App Architecture_transparent.png)
 
 
-[**Play with the tool »**]()  
 
-[Website](https://uow.neuraldev.io) · [API Documentation](https://bitbucket.org/neuraldev/arclytics_sim/wiki/Home) · [LICENSE](https://bitbucket.org/neuraldev/arclytics_sim/src/master/LICENSE)
+
+
+[**Play with the tool »**](https://app.arclytics.io)  
+
+[Website](https://arclytics.io) · [LICENSE](https://bitbucket.org/neuraldev/arclytics_sim/src/master/LICENSE)
 
 
 

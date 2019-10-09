@@ -63,7 +63,7 @@ class UserList(Resource):
         # Validate sort parameters
         if sort_on:
             valid_sort_keys = [
-                'email', '-email', 'admin', '-admmin', 'verified', '-verified',
+                'email', '-email', 'admin', '-admin', 'verified', '-verified',
                 'fullname', '-fullname'
             ]
             sort_valid = False

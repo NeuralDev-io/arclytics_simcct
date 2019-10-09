@@ -22,7 +22,7 @@ import UserIcon from 'react-feather/dist/icons/user'
 import LogOutIcon from 'react-feather/dist/icons/log-out'
 import DatabaseIcon from 'react-feather/dist/icons/database'
 import SlidersIcon from 'react-feather/dist/icons/sliders'
-import { ReactComponent as AnstoLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
+import { ReactComponent as ANSTOLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import Tooltip from '../../elements/tooltip'
 import store from '../../../state/store'
@@ -30,22 +30,27 @@ import { logout } from '../../../api/AuthenticationHelper'
 import { buttonize } from '../../../utils/accessibility'
 import { saveLastSim } from '../../../state/ducks/self/actions'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
+import { logError } from '../../../api/LoggingHelper'
 
 import styles from './AppBar.module.scss'
 
 class AppBar extends React.Component {
   handleLogout = () => {
-    const { addFlashToastConnect, saveLastSimConnect, redirect } = this.props
-    saveLastSimConnect()
+    // const { addFlashToastConnect, saveLastSimConnect, redirect } = this.props
+    const { addFlashToastConnect, redirect } = this.props
+    // saveLastSimConnect()
     logout()
       .then(() => {
         redirect('/signin')
         store.dispatch({ type: 'USER_LOGOUT' })
       })
-      .catch(() => addFlashToastConnect({
-        message: 'We couldn\'t log you out. Please try again',
-        options: { variant: 'error' },
-      }, true))
+      .catch((err) => {
+        logError(err.toString(), err.messages, 'AppBar.handleLogout', err.stack_trace)
+        addFlashToastConnect({
+          message: 'We couldn\'t log you out. Please try again',
+          options: { variant: 'error' },
+        }, true)
+      })
   }
 
   render() {
@@ -58,7 +63,7 @@ class AppBar extends React.Component {
     return (
       <nav className={styles.navContainer}>
         <div>
-          <AnstoLogo className={styles.anstoLogo} />
+          <ANSTOLogo className={styles.anstoLogo} />
           <Link
             id="sim"
             className={`${styles.navIcon} ${active === 'sim' && styles.active}`}
@@ -91,7 +96,8 @@ class AppBar extends React.Component {
           </Link>
           {/* <a
             id="help"
-            className={`${styles.navIcon} ${active === 'edu' && styles.active} ${!isAuthenticated && styles.disabled}`}
+            className={`${styles.navIcon} ${active === 'edu' && styles.active}
+            ${!isAuthenticated && styles.disabled}`}
             href={isAuthenticated ? '/' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">

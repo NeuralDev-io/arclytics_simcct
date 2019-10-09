@@ -35,7 +35,6 @@ from mongoengine.errors import NotUniqueError, ValidationError
 
 from arc_logging import AppLogger
 from sim_api.extensions import bcrypt, apm
-from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
 from sim_api.middleware import (authenticate_user_and_cookie_flask)
 from sim_api.models import LoginData, User
@@ -496,11 +495,9 @@ def login() -> any:
             session['user_id'] = str(user.id)
             session['location'] = login_data.to_dict()
 
-            # We inject the Simulation Session data
-            SimSessionService().new_session(user=user)
-
-            response['status'] = 'success'
-            response['message'] = 'Successfully logged in.'
+            response.update(
+                {'status': 'success', 'message': 'Successfully logged in.'}
+            )
             return jsonify(response), 200
 
     response['message'] = 'Email or password combination incorrect.'
@@ -855,8 +852,8 @@ def change_email(user) -> Tuple[dict, int]:
     user.verified = False
     user.save()
 
-    confirm_token = generate_confirmation_token(valid_new_email)
-    confirm_url = generate_url('auth.confirm_email', confirm_token)
+    _confirm_token = generate_confirmation_token(valid_new_email)
+    confirm_url = generate_url('auth.confirm_email', _confirm_token)
 
     from sim_api.email_service import send_email
     send_email(
@@ -882,18 +879,16 @@ def change_email(user) -> Tuple[dict, int]:
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])
 @authenticate_user_and_cookie_flask
-def logout(_) -> Tuple[dict, int]:
+def logout(_):
     """Log the user out and invalidate the auth token."""
 
-    # TODO(andrew@neuraldev.io): Take a look at this again, it's not clearing
+    # Ensure we remove the JWT from the session dict.
+    session.pop('jwt')
 
     # Remove the data from the user's current session.
     session.clear()
 
-    # Clear all keys in the session
-    # for key in session.keys():
-    #     session.pop(key)
-
+    # logger.debug({'session': session})
     response = {'status': 'success', 'message': 'Successfully logged out.'}
     return jsonify(response), 202
 

@@ -58,6 +58,10 @@ class RedisSession(CallbackDict, SessionMixin):
         self.new = new
         self.modified = False
 
+    def clear(self) -> None:
+        """Clear the Session dictionary."""
+        super().clear()
+
 
 class RedisSessionInterface(SessionInterface):
     def __init__(self, app=None, use_signer=True):
@@ -126,16 +130,15 @@ class RedisSessionInterface(SessionInterface):
 
         # Initial verification of the Session
 
-        # Checking session is not empty or it hasn't been modified
-        def session_is_modified_empty():
-            return not session and session.modified
+        # If the session is modified to be empty, remove the cookie.
+        # If the session is empty, return without setting the cookie.
+        if not session:
+            if session.modified:
+                self._clean_redis_and_cookie(app, response, session)
+            return
 
         # Checking if this session has a JWT or not
-        def session_is_invalid():
-            return not jwt
-
-        # If either of those fails
-        if session_is_modified_empty() or session_is_invalid():
+        if not jwt:
             self._clean_redis_and_cookie(app, response, session)
             return
 
@@ -333,6 +336,9 @@ class RedisSessionInterface(SessionInterface):
     def _clean_redis_and_cookie(self, app, response, session):
         """If the Cookie is bad, we clear out the Cookie and Redis store."""
         self._write_wrapper(self.redis.delete, self._redis_key(session.sid))
+        response.delete_cookie(
+            API_TOKEN_NAME, domain=self.get_cookie_domain(app)
+        )
         response.delete_cookie(
             SESSION_COOKIE_NAME, domain=self.get_cookie_domain(app)
         )

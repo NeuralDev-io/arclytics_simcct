@@ -36,9 +36,9 @@ import styles from './AppBar.module.scss'
 
 class AppBar extends React.Component {
   handleLogout = () => {
-    // const { addFlashToastConnect, saveLastSimConnect, redirect } = this.props
-    const { addFlashToastConnect, redirect } = this.props
-    // saveLastSimConnect()
+    const { addFlashToastConnect, saveLastSimConnect, redirect } = this.props
+    // const { addFlashToastConnect, redirect } = this.props
+    saveLastSimConnect()
     logout()
       .then(() => {
         redirect('/signin')

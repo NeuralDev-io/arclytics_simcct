@@ -32,6 +32,7 @@ from flask import (
 from geoip2.errors import AddressNotFoundError
 from maxminddb.errors import InvalidDatabaseError
 from mongoengine.errors import NotUniqueError, ValidationError
+from redis import ReadOnlyError
 
 from arc_logging import AppLogger
 from sim_api.extensions import bcrypt, apm, redis_session
@@ -43,8 +44,9 @@ from sim_api.token import (
 )
 from sim_api.auth_service import AuthService
 
-auth_blueprint = Blueprint('auth', __name__)
 logger = AppLogger(__name__)
+
+auth_blueprint = Blueprint('auth', __name__)
 
 
 class SimCCTBadServerLogout(Exception):
@@ -888,6 +890,8 @@ def logout(_):
 
     # Remove the data from the user's current session.
     session.clear()
+    session.modified = True
+    session.sid = None
 
     # Remove the session stored in Redis so that the next time the user
     # tries to use an endpoint with a deleted cookie, there will be no
@@ -899,8 +903,15 @@ def logout(_):
     redis = r_sess_interface.redis
     # We need to include the prefix that we use to store the Session in Redis
     redis_session_key = r_sess_interface.redis_key(sid)
-    # Use the wrapper to delete it
-    r_sess_interface.write_wrapper(redis.delete, redis_session_key)
+    # Delete the Redis storage to ensure the cookie is not valid anymore
+    try:
+        redis.delete(redis_session_key)
+    except ReadOnlyError:
+        logger.exception('Redis read error in logout.')
+        apm.capture_exception()
+        redis.connection_pool.reset()
+
+    logger.debug({'msg': redis.get(redis_session_key)})
 
     # logger.debug({'session': session})
     response = {'status': 'success', 'message': 'Successfully logged out.'}

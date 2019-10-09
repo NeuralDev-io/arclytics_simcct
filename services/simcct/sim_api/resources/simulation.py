@@ -53,7 +53,15 @@ class Simulation(Resource):
 
     method_decorators = {'post': [authenticate_user_cookie_restful]}
 
-    def post(self, _):
+    def post(self, user):
+        """Run a CCT and TTT Simulation with a User Cooling Profile.
+
+        Args:
+            user: an instance of a `models.User` passed from the middleware.
+
+        Returns:
+            A valid HTTP Response with the results and a status code.
+        """
         response = {'status': 'fail'}
 
         post_data = request.get_json()
@@ -250,17 +258,23 @@ class Simulation(Resource):
 
         finish = time.time()
 
-        logger.debug('Simulation Total Time: {}'.format(finish - start))
+        # we increase the counter for the user for analytics purposes
+        user.simulations_count += 1
+        user.save()
+
+        logger.debug('Simulation {} Total Time: {}'.format(
+            user.simulations_count, finish - start
+        ))
 
         # Just overwrite the response instead of changing it.
         return {'status': 'success', 'data': data}, 200
 
 
+# noinspection PyMethodMayBeStatic
 class Ae3Equilibrium(Resource):
 
     method_decorators = {'get': [authenticate_user_cookie_restful]}
 
-    # noinspection PyMethodMayBeStatic
     def get(self, _):
         response = {'status': 'fail'}
 

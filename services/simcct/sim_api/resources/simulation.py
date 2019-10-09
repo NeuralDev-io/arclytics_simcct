@@ -15,7 +15,6 @@ __license__ = 'MIT'
 __version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.07.17'
-
 """simulation.py: 
 
 This module defines and implements the endpoints for CCT and TTT simulations.
@@ -285,9 +284,9 @@ class Ae3Equilibrium(Resource):
         # parent alloy is set to none.
         sess_alloy_store = session_store.get('alloy_store')
         if (
-                not sess_alloy_store['alloys']['parent']
-                and not sess_alloy_store['alloys']['weld']
-                and not sess_alloy_store['alloys']['mix']
+            not sess_alloy_store['alloys']['parent']
+            and not sess_alloy_store['alloys']['weld']
+            and not sess_alloy_store['alloys']['mix']
         ) or not sess_alloy_store:
             response['message'] = 'No previous session alloy was set.'
             return response, 404

@@ -15,7 +15,6 @@ __license__ = 'MIT'
 __version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.07.13'
-
 """sim_configurations.py: 
 
 This module deals with all the endpoints for setting and updating the 

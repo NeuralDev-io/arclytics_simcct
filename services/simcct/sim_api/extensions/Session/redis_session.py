@@ -221,7 +221,9 @@ class RedisSessionInterface(SessionInterface):
         if not self._secret_key:
             return None
         return itsdangerous.Signer(
-            secret_key=self._secret_key, salt=self._salt, key_derivation='hmac'
+            secret_key=self._secret_key,
+            salt=self._salt,
+            key_derivation='hmac'
         )
 
     def write_wrapper(self, write_method, *args, **kwargs) -> None:

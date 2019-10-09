@@ -96,10 +96,12 @@ class TestSimulationService(BaseTestCase):
 
             self.assert200(res)
 
-            configs.update({
-                'ae1_temp': data['data']['ae1_temp'],
-                'ae3_temp': data['data']['ae3_temp'],
-            })
+            configs.update(
+                {
+                    'ae1_temp': data['data']['ae1_temp'],
+                    'ae3_temp': data['data']['ae3_temp'],
+                }
+            )
 
             res = client.post(
                 '/v1/sim/configs/ms',
@@ -115,10 +117,12 @@ class TestSimulationService(BaseTestCase):
 
             self.assert200(res)
 
-            configs.update({
-                'ms_temp': data['data']['ms_temp'],
-                'ms_rate_param': data['data']['ms_rate_param'],
-            })
+            configs.update(
+                {
+                    'ms_temp': data['data']['ms_temp'],
+                    'ms_rate_param': data['data']['ms_rate_param'],
+                }
+            )
 
             res = client.post(
                 '/v1/sim/configs/bs',

@@ -868,7 +868,10 @@ def login() -> any:
             session['location'] = login_data.to_dict()
 
             response.update(
-                {'status': 'success', 'message': 'Successfully logged in.'}
+                {
+                    'status': 'success',
+                    'message': 'Successfully logged in.'
+                }
             )
             return jsonify(response), 200
 
@@ -909,8 +912,7 @@ def logout(_):
         apm.capture_exception()
         redis.connection_pool.reset()
 
-    logger.debug({'msg': redis.get(redis_session_key)})
-
+    # logger.debug({'msg': redis.get(redis_session_key)})
     # logger.debug({'session': session})
     response = {'status': 'success', 'message': 'Successfully logged out.'}
     return jsonify(response), 202

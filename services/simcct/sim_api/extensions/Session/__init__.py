@@ -41,6 +41,7 @@ class FlaskRedisSession(object):
     def interface(self):
         return self._redis_session_interface
 
+
 __all__ = [
     'FlaskRedisSession', 'RedisSessionInterface', 'SESSION_COOKIE_NAME',
     'API_TOKEN_NAME'

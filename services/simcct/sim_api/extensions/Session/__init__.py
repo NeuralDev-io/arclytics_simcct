@@ -20,14 +20,28 @@ as a server-side storage and to customise the way we want to encode our
 Session ID and Session Key.
 """
 
-from .redis_session import RedisSessionInterface
+from .redis_session import (
+    RedisSessionInterface, API_TOKEN_NAME, SESSION_COOKIE_NAME
+)
 
 
 class FlaskRedisSession(object):
+    _redis_session_interface = None
+
     def __init__(self, app=None):
         if app is not None:
             self.init_app(app)
 
-    @staticmethod
-    def init_app(app):
-        app.session_interface = RedisSessionInterface(app=app)
+    @classmethod
+    def init_app(cls, app):
+        cls._redis_session_interface = RedisSessionInterface(app=app)
+        app.session_interface = cls._redis_session_interface
+
+    @property
+    def interface(self):
+        return self._redis_session_interface
+
+__all__ = [
+    'FlaskRedisSession', 'RedisSessionInterface', 'SESSION_COOKIE_NAME',
+    'API_TOKEN_NAME'
+]

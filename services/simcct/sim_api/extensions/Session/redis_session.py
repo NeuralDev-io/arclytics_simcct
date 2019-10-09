@@ -66,10 +66,14 @@ class RedisSession(CallbackDict, SessionMixin):
 class RedisSessionInterface(SessionInterface):
     def __init__(self, app=None, use_signer=True):
         if app is not None:
-            self.redis = app.config.get('SESSION_REDIS')
-            self.secret_key = app.config.get('SECRET_KEY', None)
-            self.salt = app.config.get('SECURITY_PASSWORD_SALT', None)
+            self._redis = app.config.get('SESSION_REDIS')
+            self._secret_key = app.config.get('SECRET_KEY', None)
+            self._salt = app.config.get('SECURITY_PASSWORD_SALT', None)
             self.use_signer = use_signer
+
+    @property
+    def redis(self):
+        return self._redis
 
     def open_session(self, app, request) -> Union[None, RedisSession]:
         """This method is called at the beginning of every request in the
@@ -153,9 +157,9 @@ class RedisSessionInterface(SessionInterface):
         session.sid = self._inject_uid_in_sid(session.sid, user_id)
         session_key = self._create_session_key(session.sid, expiry_date)
 
-        self._write_wrapper(
+        self.write_wrapper(
             self.redis.setex,
-            name=self._redis_key(session.sid),
+            name=self.redis_key(session.sid),
             value=redis_value,
             time=expires_in_seconds
         )
@@ -211,17 +215,17 @@ class RedisSessionInterface(SessionInterface):
         return timedelta(minutes=SESSION_EXPIRY_MINUTES)
 
     @staticmethod
-    def _redis_key(sid):
+    def redis_key(sid):
         return 'session:{}'.format(sid)
 
     def _get_signer(self):
-        if not self.secret_key:
+        if not self._secret_key:
             return None
         return itsdangerous.Signer(
-            secret_key=self.secret_key, salt=self.salt, key_derivation='hmac'
+            secret_key=self._secret_key, salt=self._salt, key_derivation='hmac'
         )
 
-    def _write_wrapper(self, write_method, *args, **kwargs) -> None:
+    def write_wrapper(self, write_method, *args, **kwargs) -> None:
         """A basic wrapper to call redis-py methods but allows us to set a
         retry of 3 attempts if there are Redis ReadOnlyErrors.
 
@@ -253,7 +257,7 @@ class RedisSessionInterface(SessionInterface):
         Returns:
             A tuple of results.
         """
-        redis_key = self._redis_key(sid)
+        redis_key = self.redis_key(sid)
         pipeline = self.redis.pipeline()
         pipeline.get(redis_key)
         pipeline.ttl(redis_key)
@@ -286,11 +290,11 @@ class RedisSessionInterface(SessionInterface):
             A Tuple of (str, None) if there is any errors or (str, int).
         """
         s = itsdangerous.TimedJSONWebSignatureSerializer(
-            secret_key=self.secret_key
+            secret_key=self._secret_key
         )
 
         try:
-            res = s.loads(session_key, salt=self.salt)
+            res = s.loads(session_key, salt=self._salt)
         except BadSignature:
             logger.exception('Bad Signature.')
             apm.capture_exception()
@@ -316,13 +320,13 @@ class RedisSessionInterface(SessionInterface):
         """
         expiry_in_seconds = utctimestamp_by_second(expiry_date)
         s = itsdangerous.TimedJSONWebSignatureSerializer(
-            secret_key=self.secret_key, expires_in=expiry_in_seconds
+            secret_key=self._secret_key, expires_in=expiry_in_seconds
         )
         return s.dumps(
             {
                 'sid': sid,
                 'expiry_seconds': expiry_in_seconds
-            }, salt=self.salt
+            }, salt=self._salt
         )
 
     @staticmethod
@@ -335,7 +339,7 @@ class RedisSessionInterface(SessionInterface):
 
     def _clean_redis_and_cookie(self, app, response, session):
         """If the Cookie is bad, we clear out the Cookie and Redis store."""
-        self._write_wrapper(self.redis.delete, self._redis_key(session.sid))
+        self.write_wrapper(self.redis.delete, self.redis_key(session.sid))
         response.delete_cookie(
             API_TOKEN_NAME, domain=self.get_cookie_domain(app)
         )

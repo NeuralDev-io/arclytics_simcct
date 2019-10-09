@@ -890,8 +890,6 @@ def logout(_):
 
     # Remove the data from the user's current session.
     session.clear()
-    session.modified = True
-    session.sid = None
 
     # Remove the session stored in Redis so that the next time the user
     # tries to use an endpoint with a deleted cookie, there will be no

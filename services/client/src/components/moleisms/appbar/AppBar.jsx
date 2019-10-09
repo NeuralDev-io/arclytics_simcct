@@ -38,7 +38,7 @@ class AppBar extends React.Component {
   handleLogout = () => {
     const { addFlashToastConnect, saveLastSimConnect, redirect } = this.props
     // const { addFlashToastConnect, redirect } = this.props
-    saveLastSimConnect()
+    // saveLastSimConnect()
     logout()
       .then(() => {
         redirect('/signin')

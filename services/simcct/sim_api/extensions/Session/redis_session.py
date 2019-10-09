@@ -129,7 +129,6 @@ class RedisSessionInterface(SessionInterface):
 
     def save_session(self, app, session, response):
         jwt = session.get('jwt')
-        user_id = session.get('user_id')
         is_admin = session.get('is_admin')
 
         # Initial verification of the Session
@@ -154,7 +153,7 @@ class RedisSessionInterface(SessionInterface):
         expiry_date = datetime.utcnow() + expiry_duration
         expires_in_seconds = int(expiry_duration.total_seconds())
 
-        session.sid = self._inject_uid_in_sid(session.sid, user_id)
+        session.sid = self._inject_jwt_in_sid(session.sid, jwt)
         session_key = self._create_session_key(session.sid, expiry_date)
 
         self.write_wrapper(
@@ -330,7 +329,7 @@ class RedisSessionInterface(SessionInterface):
         )
 
     @staticmethod
-    def _inject_uid_in_sid(sid, jwt):
+    def _inject_jwt_in_sid(sid, jwt):
         """We simply inject the JWT into the Session ID to further encode."""
         prefix = "{}.".format(jwt)
         if not sid.startswith(prefix):

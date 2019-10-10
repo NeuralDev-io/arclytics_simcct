@@ -19,11 +19,29 @@ import Pagination from './Pagination'
 
 import './Table.scss'
 
+// Custom no-data component. This component won't display if table is
+// loading data.
+const CustomNoDataComponent = ({ loading }) => (
+  loading
+    ? null
+    : (
+      <div className="rt-noData">
+        No data
+      </div>
+    )
+)
+
+CustomNoDataComponent.propTypes = {
+  loading: PropTypes.bool.isRequired,
+}
+
+// Table component
 const Table = (props) => {
   const {
     hideDivider = false,
     condensed = false,
     className = '',
+    loading = false,
     ...otherProps
   } = props
   return (
@@ -31,6 +49,9 @@ const Table = (props) => {
       {...otherProps}
       className={`${hideDivider ? 'rt-hide-divider' : ''} ${condensed ? 'condensed' : ''} ${className}`}
       PaginationComponent={Pagination}
+      loading={loading}
+      getNoDataProps={noDataProps => ({ loading: noDataProps.loading })}
+      NoDataComponent={CustomNoDataComponent}
     />
   )
 }
@@ -39,12 +60,14 @@ Table.propTypes = {
   hideDivider: PropTypes.bool,
   condensed: PropTypes.bool,
   className: PropTypes.string,
+  loading: PropTypes.bool,
 }
 
 Table.defaultProps = {
   hideDivider: false,
   condensed: false,
   className: '',
+  loading: false,
 }
 
 export default Table

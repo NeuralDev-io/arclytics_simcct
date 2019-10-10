@@ -931,7 +931,6 @@ def get_user_status(user) -> Tuple[dict, int]:
         "isProfile": is_profile,
         "verified": user.verified,
         "active": user.active,
-        "simulationsCount": user.simulations_count,
         "admin": user.is_admin,
     }
     return jsonify(response), 200

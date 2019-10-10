@@ -30,6 +30,7 @@ from sim_api.middleware import (
     authenticate_user_cookie_restful, authorize_admin_cookie_restful
 )
 from sim_api.models import (User, UserProfile)
+from sim_api.routes import Routes
 
 logger = AppLogger(__name__)
 users_blueprint = Blueprint('users', __name__)
@@ -364,6 +365,6 @@ class UserProfiles(Resource):
         return response, 201
 
 
-api.add_resource(UserList, '/v1/sim/users')
-api.add_resource(Users, '/v1/sim/user')
-api.add_resource(UserProfiles, '/v1/sim/user/profile')
+api.add_resource(UserList, Routes.user_list.value)
+api.add_resource(Users, Routes.users.value)
+api.add_resource(UserProfiles, Routes.user_profiles.value)

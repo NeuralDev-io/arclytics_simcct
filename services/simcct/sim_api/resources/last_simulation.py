@@ -31,6 +31,7 @@ from sim_api.extensions.utilities import (
     MissingElementError, ElementWeightInvalid
 )
 from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.routes import Routes
 from sim_api.schemas import (
     ConfigurationsSchema, AlloyStoreSchema, SimulationResultsSchema
 )
@@ -332,4 +333,4 @@ class LastSimulation(Resource):
         return response, 200
 
 
-api.add_resource(LastSimulation, '/v1/sim/user/last/simulation')
+api.add_resource(LastSimulation, Routes.last_simulation.value)

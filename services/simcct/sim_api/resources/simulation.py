@@ -34,6 +34,7 @@ from sim_api.extensions.utilities import (
     ElementWeightInvalid, MissingElementError
 )
 from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.routes import Routes
 from sim_api.schemas import AlloyStoreSchema, ConfigurationsSchema
 from sim_api.extensions.SimSession import SimSessionService
 from simulation.phasesimulation import PhaseSimulation
@@ -371,5 +372,5 @@ class Ae3Equilibrium(Resource):
         return response, 200
 
 
-api.add_resource(Simulation, '/v1/sim/simulate')
-api.add_resource(Ae3Equilibrium, '/v1/sim/ae3equilibrium')
+api.add_resource(Simulation, Routes.simulation.value)
+api.add_resource(Ae3Equilibrium, Routes.ae3_equilibrium.value)

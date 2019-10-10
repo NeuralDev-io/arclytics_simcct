@@ -32,6 +32,7 @@ from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import (
     AlloyStore, Configuration, SavedSimulation, SimulationResults
 )
+from sim_api.routes import Routes
 
 logger = AppLogger(__name__)
 
@@ -226,5 +227,5 @@ class SaveSimulationDetail(Resource):
         return {'status': 'success'}, 202
 
 
-api.add_resource(SaveSimulationList, '/v1/sim/user/simulation')
-api.add_resource(SaveSimulationDetail, '/v1/sim/user/simulation/<sim_id>')
+api.add_resource(SaveSimulationList, Routes.save_simulation_list.value)
+api.add_resource(SaveSimulationDetail, Routes.save_simulation_detail.value)

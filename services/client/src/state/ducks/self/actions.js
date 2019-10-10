@@ -389,7 +389,7 @@ export const saveLastSim = () => (dispatch, getState) => {
 
   const isValid = Object.keys(alloyError).length !== 0 && Object.keys(configError) !== 0
 
-  fetch(`${SIMCCT_URL}/user/last/simulation`, {
+  return fetch(`${SIMCCT_URL}/user/last/simulation`, {
     method: 'POST',
     credentials: 'include',
     headers: {

@@ -35,10 +35,9 @@ import { logError } from '../../../api/LoggingHelper'
 import styles from './AppBar.module.scss'
 
 class AppBar extends React.Component {
-  handleLogout = () => {
+  handleLogout = async () => {
     const { addFlashToastConnect, saveLastSimConnect, redirect } = this.props
-    // const { addFlashToastConnect, redirect } = this.props
-    // saveLastSimConnect()
+    await saveLastSimConnect()
     logout()
       .then(() => {
         redirect('/signin')

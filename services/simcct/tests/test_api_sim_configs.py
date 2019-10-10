@@ -21,7 +21,6 @@ from mongoengine import get_db
 
 from arc_logging import AppLogger
 from manage import BASE_DIR
-from sim_api.extensions.SimSession import SimSessionService
 from sim_api.models import User
 from sim_api.schemas import AlloyStoreSchema, ConfigurationsSchema
 from tests.test_api_base import BaseTestCase, app
@@ -106,12 +105,6 @@ class TestSimConfigurations(BaseTestCase):
     def login_client(self, client):
         """Set up a User for the simulation."""
         test_login(client, self._email, self._user_pw)
-
-        session_store: dict = SimSessionService().load_session()
-        configs: dict = session_store['configurations']
-        alloy_store: dict = session_store['alloy_store']
-
-        return configs, alloy_store
 
     def logout_client(self, client):
         resp_login = client.get(

@@ -41,7 +41,7 @@ class BaseConfig:
     # Session variables for Flask
     SESSION_COOKIE_NAME = 'session'
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_PERMANENT = True
+    SESSION_PERMANENT = False
     SESSION_TYPE = 'redis'
     SESSION_USE_SIGNER = True
 

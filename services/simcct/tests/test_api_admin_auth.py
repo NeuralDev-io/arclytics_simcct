@@ -33,7 +33,6 @@ logger = AppLogger(__name__)
 
 class TestAdminCreateService(BaseTestCase):
     """Tests for Admin creation and disable account endpoints"""
-
     def tearDown(self) -> None:
         db = get_db('default')
         self.assertTrue(db.name, 'arc_test')
@@ -1190,9 +1189,7 @@ class TestAdminCreateService(BaseTestCase):
             disable_data = json.loads(resp_disable.data.decode())
             self.assertEqual(resp_disable.status_code, 400)
             self.assertEqual(disable_data['status'], 'fail')
-            self.assertEqual(
-                disable_data['message'], 'Invalid payload.'
-            )
+            self.assertEqual(disable_data['message'], 'Invalid payload.')
 
     def test_enable_account_no_email(self):
         """Ensure an enable account request with no email key fails"""
@@ -1226,9 +1223,7 @@ class TestAdminCreateService(BaseTestCase):
             disable_data = json.loads(resp_disable.data.decode())
             self.assertEqual(resp_disable.status_code, 400)
             self.assertEqual(disable_data['status'], 'fail')
-            self.assertEqual(
-                disable_data['message'], 'No email provided.'
-            )
+            self.assertEqual(disable_data['message'], 'No email provided.')
 
     def test_enable_account_user_dne(self):
         """Ensure an enable account request on an unknown user fails"""
@@ -1262,9 +1257,7 @@ class TestAdminCreateService(BaseTestCase):
             disable_data = json.loads(resp_disable.data.decode())
             self.assertEqual(resp_disable.status_code, 404)
             self.assertEqual(disable_data['status'], 'fail')
-            self.assertEqual(
-                disable_data['message'], 'User does not exist.'
-            )
+            self.assertEqual(disable_data['message'], 'User does not exist.')
 
     def test_enable_account_user_not_disabled(self):
         """

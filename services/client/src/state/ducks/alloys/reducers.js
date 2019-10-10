@@ -10,72 +10,152 @@ import {
 } from './types'
 
 const initialState = {
-  global: [],
-  user: [],
+  global: {
+    isFetched: false,
+    isLoading: false,
+    data: [],
+  },
+  user: {
+    isFetched: false,
+    isLoading: false,
+    data: [],
+  },
 }
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case GET_GLOBAL_ALLOYS:
-      return {
-        ...state,
-        global: action.payload,
+    case GET_GLOBAL_ALLOYS: {
+      if (action.status === 'started') {
+        return {
+          ...state,
+          global: {
+            ...state.global,
+            isLoading: true,
+          },
+        }
       }
+      if (action.status === 'success') {
+        return {
+          ...state,
+          global: {
+            ...state.global,
+            isLoading: false,
+            isFetched: true,
+            data: action.payload,
+          },
+        }
+      }
+      if (action.status === 'fail') {
+        return {
+          ...state,
+          global: {
+            ...state.global,
+            isLoading: false,
+          },
+        }
+      }
+      break
+    }
     case CREATE_GLOBAL_ALLOY: {
       const newAlloys = [
-        ...state.global,
+        ...state.global.data,
         action.payload,
       ]
       return {
         ...state,
-        global: newAlloys,
+        global: {
+          ...state.global,
+          data: newAlloys,
+        },
       }
     }
     case UPDATE_GLOBAL_ALLOY: {
-      const newAlloys = [...state.global]
+      const newAlloys = [...state.global.data]
       const idx = newAlloys.findIndex(a => a._id === action.payload._id) // eslint-disable-line
       newAlloys[idx] = action.payload
       return {
         ...state,
-        global: newAlloys,
+        global: {
+          ...state.global,
+          data: newAlloys,
+        },
       }
     }
     case DELETE_GLOBAL_ALLOY: {
-      const newAlloys = state.global.filter(a => a._id !== action.payload) // eslint-disable-line
+      const newAlloys = state.global.data.filter(a => a._id !== action.payload) // eslint-disable-line
       return {
         ...state,
-        global: newAlloys,
+        global: {
+          ...state.global,
+          data: newAlloys,
+        },
       }
     }
-    case GET_USER_ALLOYS:
-      return {
-        ...state,
-        user: action.payload,
+    case GET_USER_ALLOYS: {
+      if (action.status === 'started') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isLoading: true,
+          },
+        }
       }
+      if (action.status === 'success') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isLoading: false,
+            isFetched: true,
+            data: action.payload,
+          },
+        }
+      }
+      if (action.status === 'fail') {
+        return {
+          ...state,
+          user: {
+            ...state.user,
+            isLoading: false,
+          },
+        }
+      }
+      break
+    }
     case CREATE_USER_ALLOY: {
       const newAlloys = [
-        ...state.user,
+        ...state.user.data,
         action.payload,
       ]
       return {
         ...state,
-        user: newAlloys,
+        user: {
+          ...state.user,
+          data: newAlloys,
+        },
       }
     }
     case UPDATE_USER_ALLOY: {
-      const newAlloys = [...state.user]
+      const newAlloys = [...state.user.data]
       const idx = newAlloys.findIndex(a => a._id === action.payload._id) // eslint-disable-line
       newAlloys[idx] = action.payload
       return {
         ...state,
-        user: newAlloys,
+        user: {
+          ...state.user,
+          data: newAlloys,
+        },
       }
     }
     case DELETE_USER_ALLOY: {
-      const newAlloys = state.user.filter(a => a._id !== action.payload) // eslint-disable-line
+      const newAlloys = state.user.data.filter(a => a._id !== action.payload) // eslint-disable-line
       return {
         ...state,
-        user: newAlloys,
+        user: {
+          ...state.user,
+          data: newAlloys,
+        },
       }
     }
     default:

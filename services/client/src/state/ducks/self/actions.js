@@ -3,7 +3,6 @@ import {
   CREATE_USER_PROFILE,
   UPDATE_USER_PROFILE,
   UPDATE_EMAIL,
-  CHANGE_PASSWORD,
   SAVE_SIM,
   GET_SIM,
   GET_LAST_SIM,
@@ -12,6 +11,9 @@ import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
 import { logError } from '../../../api/LoggingHelper'
 
+/**
+ * Make API request to retrieve user profile.
+ */
 export const getUserProfile = () => (dispatch) => { // eslint-disable-line
   return fetch(`${SIMCCT_URL}/user`, {
     method: 'GET',
@@ -49,6 +51,10 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
     })
 }
 
+/**
+ * Post user profile to the API
+ * @param {any} values user profile object
+ */
 export const createUserProfile = values => (dispatch) => {
   fetch(`${SIMCCT_URL}/user/profile`, {
     method: 'POST',
@@ -88,6 +94,10 @@ export const createUserProfile = values => (dispatch) => {
     })
 }
 
+/**
+ * Update user profile
+ * @param {any} values user profile object
+ */
 export const updateUserProfile = values => (dispatch) => {
   fetch(`${SIMCCT_URL}/user`, {
     method: 'PATCH',
@@ -127,6 +137,10 @@ export const updateUserProfile = values => (dispatch) => {
     })
 }
 
+/**
+ * Update user email
+ * @param {any} values object that contains email field
+ */
 export const updateEmail = values => (dispatch) => {
   fetch(`${SIMCCT_URL}/auth/email/change`, {
     method: 'PUT',
@@ -166,6 +180,10 @@ export const updateEmail = values => (dispatch) => {
     })
 }
 
+/**
+ * Update user password
+ * @param {any} values object containing password fields
+ */
 export const changePassword = values => (dispatch) => {
   fetch(`${SIMCCT_URL}/auth/password/change`, {
     method: 'PUT',
@@ -191,12 +209,6 @@ export const changePassword = values => (dispatch) => {
           message: data.message,
           options: { variant: 'error' },
         }, true)(dispatch)
-      }
-      if (data.status === 'success') {
-        dispatch({
-          type: CHANGE_PASSWORD,
-          payload: data.data,
-        })
       }
     })
     .catch((err) => {
@@ -336,6 +348,12 @@ export const getSavedSimulations = () => (dispatch) => {
     })
 }
 
+/**
+ * Save the current sim to a user in the backend.
+ * This function is called before a user logs out, so the next time they
+ * log in, the sim can be loaded up and the user can continue where
+ * they left off.
+ */
 export const saveLastSim = () => (dispatch, getState) => {
   // first, get sim alloys and configs from state
   const { configurations, alloys, results } = getState().sim
@@ -394,6 +412,9 @@ export const saveLastSim = () => (dispatch, getState) => {
     })
 }
 
+/**
+ * Get the last sim saved to a user in the backend
+ */
 export const getLastSim = () => dispatch => (
   fetch(`${SIMCCT_URL}/user/last/simulation`, {
     method: 'GET',

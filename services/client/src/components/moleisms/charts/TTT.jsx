@@ -1,3 +1,16 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * TTT chart. This component takes TTT sim data from Redux store
+ * and plots them
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'

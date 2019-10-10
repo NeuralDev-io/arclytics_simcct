@@ -3,7 +3,6 @@ import {
   CREATE_USER_PROFILE,
   UPDATE_USER_PROFILE,
   UPDATE_EMAIL,
-  CHANGE_PASSWORD,
   SAVE_SIM,
   GET_SIM,
   GET_LAST_SIM,
@@ -52,14 +51,6 @@ const reducer = (state = initialState, action) => {
         },
       }
     case UPDATE_EMAIL:
-      return {
-        ...state,
-        user: {
-          ...state.user,
-          ...action.payload,
-        },
-      }
-    case CHANGE_PASSWORD:
       return {
         ...state,
         user: {

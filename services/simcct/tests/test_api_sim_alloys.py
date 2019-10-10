@@ -373,8 +373,6 @@ class TestSimAlloys(BaseTestCase):
         with app.test_client() as client:
             _, _ = self.login_client(client)
 
-            session_store = SimSessionService().load_session()
-            prev_sess_comp = session_store.get('alloy_store')
             res = client.patch(
                 '/v1/sim/alloys/update',
                 data=json.dumps(
@@ -395,9 +393,6 @@ class TestSimAlloys(BaseTestCase):
             )
             self.assert400(res)
             self.assertEqual(data['status'], 'fail')
-            session_store = SimSessionService().load_session()
-            after_sess_comp = session_store.get('alloy_store')
-            self.assertEqual(prev_sess_comp, after_sess_comp)
 
     # def test_on_comp_change_only_auto_ms_bs(self):
     #     with current_app.test_client() as client:

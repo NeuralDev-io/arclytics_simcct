@@ -17,12 +17,14 @@ import clsx from 'clsx'
 const defaultStyles = {
   root: {
     minHeight: '24rem',
-    maxHeight: '35rem'
-  }
+    maxHeight: '35rem',
+  },
 }
 
 function CardComponent(props) {
-  const { classes, children, className, ...other } = props
+  const {
+    classes, children, className, ...other
+  } = props
 
   return (
     <Card className={clsx(classes.root, className)} {...other}>
@@ -33,7 +35,12 @@ function CardComponent(props) {
 
 CardComponent.propTypes = {
   className: PropTypes.string,
-  children: PropTypes.node
+  children: PropTypes.node.isRequired,
+  classes: PropTypes.node.isRequired,
+}
+
+CardComponent.defaultProps = {
+  className: undefined,
 }
 
 export default withStyles(defaultStyles)(CardComponent)

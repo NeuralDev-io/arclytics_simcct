@@ -15,7 +15,6 @@ __license__ = 'MIT'
 __version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.08.03'
-
 """sim_alloys.py: 
 
 This module defines the View methods for setting an Alloy in the frontend to
@@ -28,6 +27,7 @@ from marshmallow import ValidationError
 
 from arc_logging import AppLogger
 from sim_api.extensions import api, apm
+from sim_api.routes import Routes
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
     MissingElementError, ElementWeightInvalid
@@ -205,7 +205,10 @@ class AlloyStore(Resource):
                 )
                 ms_rate_param = SimConfig.get_ms_alpha(comp=comp_np_arr)
                 data.update(
-                    {'ms_temp': ms_temp, 'ms_rate_param': ms_rate_param}
+                    {
+                        'ms_temp': ms_temp,
+                        'ms_rate_param': ms_rate_param
+                    }
                 )
             except Exception as e:
                 # This is to make sure the client knows there has been some
@@ -268,4 +271,4 @@ class AlloyStore(Resource):
         return {'message': 'Method Not Allowed.', 'status': 'fail'}, 405
 
 
-api.add_resource(AlloyStore, '/v1/sim/alloys/update')
+api.add_resource(AlloyStore, Routes.alloy_store.value)

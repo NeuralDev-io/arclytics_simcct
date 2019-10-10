@@ -492,7 +492,13 @@ class User(Document):
     login_data = EmbeddedDocumentListField(document_type=LoginData)
 
     # Define the collection and indexing for this document
-    meta = {'collection': 'users', 'indexes': ['last_login', '#email']}
+    meta = {
+        'collection': 'users',
+        'indexes': [
+            'last_login',
+            '#email'
+        ]
+    }
 
     def set_password(self, raw_password: str) -> None:
         """

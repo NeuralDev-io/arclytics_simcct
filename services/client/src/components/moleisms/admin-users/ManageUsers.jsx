@@ -20,6 +20,8 @@ import PromoteIcon from 'react-feather/dist/icons/user-check'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import Table from '../../elements/table'
+import SecureConfirmModal from '../confirm-modal/SecureConfirmModal'
+import Modal from '../../elements/modal'
 import { getUsers, promoteAdmin } from '../../../state/ducks/users/actions'
 
 import styles from './ManageUsers.module.scss'
@@ -29,6 +31,7 @@ class ManageUsers extends Component {
     super(props)
     this.state = {
       searchEmail: '',
+      promoteConfirmModal: false,
     }
   }
 
@@ -37,14 +40,52 @@ class ManageUsers extends Component {
     if (users.length === 0) getUsersConnect()
   }
 
-  async handlePromote (email) {
+  handlePromote (email) {
     const { getUsersConnect, promoteAdminConnect} = this.props
-    await promoteAdminConnect(email)
-    await getUsersConnect()
+    // promoteAdminConnect(email)
+    return (
+      <SecureConfirmModal
+        // this.handlePromote(original.email)
+        onClick={() => {this.handlePromote(email)}}
+        show
+        onClose={() => {this.setState({ promoteConfirmModal: false})}}
+      >
+        <div>
+          sucks to suck
+        </div>
+      </SecureConfirmModal>
+    )
   }
+
+  handleChange = (name, value) => {
+    this.setState({
+      [name]: value,
+    })
+  }
+
+  handleShowConfirmModal = (name, email) => {
+    const { promoteConfirmModal } = this.state
+
+     if (promoteConfirmModal) {
+       return (
+           <SecureConfirmModal
+             // this.handlePromote(original.email)
+             onClick={() => {this.handlePromote(email)}}
+             show
+             onClose={() => {this.setState({ promoteConfirmModal: false})}}
+           >
+             <div>
+               sucks to suck
+             </div>
+           </SecureConfirmModal>
+         )
+     }
+
+  }
+
   render() {
-    const { searchEmail } = this.state
-    const { users } = this.props
+    const { searchEmail, promoteConfirmModal } = this.state
+    const { users, } = this.props
     const tableData = users.filter(u => u.email.includes(searchEmail))
 
     const columns = [
@@ -80,15 +121,24 @@ class ManageUsers extends Component {
             >
               Edit
             </Button>
-
             <Button
-              onClick={() => {this.handlePromote(original.email)}}
+              onClick={() => {this.setState({promoteConfirmModal: true})}}
               appearance="text"
               IconComponent={props => <PromoteIcon {...props}/>}
               isDisabled={original.admin}
             >
               Promote
             </Button>
+
+            <SecureConfirmModal
+              onClick={() => {this.handlePromote(original.email)}}
+              show={promoteConfirmModal}
+              onClose={() => {this.setState({ promoteConfirmModal: false})}}
+            >
+              <div>
+                Do you want to promote the user {original.first}&nbsp;{original.last}?
+              </div>
+            </SecureConfirmModal>
 
             <Button
               onClick={() => console.log(original)}

@@ -5,7 +5,7 @@
  * Error Boundary
  *
  * @version 1.0.0
- * @author Arvy Salazar, Andrew Che
+ * @author Arvy Salazar, Andrew Che, Dalton Le
  *
  * This component is a default catch all for 404 errors within the application.
  * Additionally, for every error caught, we will send an API request to the

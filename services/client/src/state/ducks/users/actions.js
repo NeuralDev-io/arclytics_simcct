@@ -6,6 +6,10 @@ import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
 import { logError } from '../../../api/LoggingHelper'
 
+/**
+ * Get a list of users.
+ * This function is only available if the current user is an admin.
+ */
 export const getUsers = () => (dispatch) => {
   fetch(`${SIMCCT_URL}/users`, {
     method: 'GET',

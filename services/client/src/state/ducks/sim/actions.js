@@ -164,6 +164,15 @@ export const updateComp = (option, type, alloy, error) => (dispatch) => {
   }
 }
 
+/**
+ * [DEPRECATED]
+ *
+ * Update the dilution value and calculate the new mix composition.
+ * NOTE: This function is incomplete but it's fine because the feature
+ * is no longer requried by the client.
+ *
+ * @param {number} val dilution value
+ */
 export const updateDilution = val => (dispatch) => {
   // calculate mix compositions here
 
@@ -216,6 +225,14 @@ export const updateConfigMethod = value => (dispatch) => {
     })
 }
 
+/**
+ * Update grain size in the Redux store.
+ * Only make API request to update Redis session when there are no errors.
+ *
+ * @param {string|number} astm ASTM grain size
+ * @param {string|number} dia grain size in diameter
+ * @param {any} grainSizeError error object
+ */
 export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getState) => {
   const { error } = getState().sim.configurations
   const newGrainSize = { grain_size_ASTM: astm, grain_size_diameter: dia }
@@ -271,6 +288,14 @@ export const updateGrainSize = (astm, dia, grainSizeError) => (dispatch, getStat
   }
 }
 
+/**
+ * Update the transformation limits. Only make API request to
+ * update Redis session if there are no errors.
+ * @param {string} name name of the phase - 'ms' | 'bs' | 'ae'
+ * @param {string} field field to be updated
+ * @param {any} data config object
+ * @param {any} valError error object
+ */
 export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState) => {
   const { error } = getState().sim.configurations
 
@@ -343,9 +368,14 @@ export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState
   }
 }
 
+/**
+ * Get the autocalculated transformation limits.
+ * @param {string} name name of the phase - 'ms' | 'bs' | 'ae'
+ */
 export const getMsBsAe = name => (dispatch, getState) => {
   const { error } = getState().sim.configurations
   // since data is autocalculated, there should be no input errors
+  // delete all input errors from these fields
   if (name === 'ms') {
     delete error.ms_temp
     delete error.ms_rate_param
@@ -397,6 +427,11 @@ export const getMsBsAe = name => (dispatch, getState) => {
     })
 }
 
+/**
+ * Set auto-calculate of tranformation limits in the Redux state.
+ * @param {string} name name of the phase - 'ms' | 'bs' | 'ae'
+ * @param {boolean} value new value of auto-calculate
+ */
 export const setAutoCalculate = (name, value) => (dispatch) => {
   dispatch({
     type: UPDATE_CONFIG,
@@ -406,6 +441,12 @@ export const setAutoCalculate = (name, value) => (dispatch) => {
   })
 }
 
+/**
+ * Update config in Redux state, only submit API requests if there are no errors.
+ * @param {string} name name of config field to be updated
+ * @param {string|number} value new value
+ * @param {any} valError object error
+ */
 export const updateConfig = (name, value, valError) => (dispatch, getState) => {
   const { error } = getState().sim.configurations
   if (Object.keys(valError).length === 0 && valError.constructor === Object) {
@@ -458,6 +499,10 @@ export const updateConfig = (name, value, valError) => (dispatch, getState) => {
   }
 }
 
+/**
+ * Update whether or not to display user cooling curve
+ * @param {boolean} value whether to display user curve or not
+ */
 export const toggleDisplayUserCurve = value => (dispatch) => {
   dispatch({
     type: UPDATE_DISPLAY_USER_CURVE,
@@ -465,7 +510,9 @@ export const toggleDisplayUserCurve = value => (dispatch) => {
   })
 }
 
-// TODO: Check back of this function
+/**
+ * Get the simulation results of the current sim session
+ */
 export const runSim = () => (dispatch, getState) => {
   const {
     grain_size_ASTM,
@@ -543,6 +590,10 @@ export const runSim = () => (dispatch, getState) => {
     })
 }
 
+/**
+ * Update CCTIndex in Redux store
+ * @param {number} idx new index for the user curve data array
+ */
 export const updateCCTIndex = idx => (dispatch) => {
   dispatch({
     type: UPDATE_CCT_INDEX,
@@ -550,6 +601,10 @@ export const updateCCTIndex = idx => (dispatch) => {
   })
 }
 
+/**
+ * Load a sim into the app
+ * @param {any} sim simulation object
+ */
 export const loadSim = sim => (dispatch) => {
   dispatch({
     type: LOAD_SIM,
@@ -564,7 +619,7 @@ export const loadSim = sim => (dispatch) => {
  *  configurations: {...},
  *  results: { USER, CCT, TTT },
  * }
- * @param {Object} sim simulation object
+ * @param {any} sim simulation object
  */
 export const loadSimFromFile = sim => (dispatch) => {
   dispatch({
@@ -573,6 +628,11 @@ export const loadSimFromFile = sim => (dispatch) => {
   })
 }
 
+/**
+ * Request a shared simulation by using token and load it
+ * into the app
+ * @param {string} token token to access sim link
+ */
 export const loadSimFromLink = token => dispatch => (
   fetch(`${SIMCCT_URL}/user/share/simulation/view/${token}`, {
     method: 'GET',
@@ -635,6 +695,10 @@ export const loadSimFromLink = token => dispatch => (
     })
 )
 
+/**
+ * Load a saved simulation into the app
+ * @param {any} param0 simulation object
+ */
 export const loadSimFromAccount = ({
   alloy_store, configurations, simulation_results,
 }) => (dispatch) => {
@@ -662,6 +726,9 @@ export const loadSimFromAccount = ({
   })
 }
 
+/**
+ * Load most recent simulation saved in localStorage into the app
+ */
 export const loadPersistedSim = () => (dispatch, getState) => {
   const { lastSim } = getState().persist
   dispatch({
@@ -670,6 +737,10 @@ export const loadPersistedSim = () => (dispatch, getState) => {
   })
 }
 
+/**
+ * Load the last simulation tied to an account into the app.
+ * This will be called when a user logs back in after a period of time > 2 hours.
+ */
 export const loadLastSim = () => (dispatch, getState) => {
   const { lastSim } = getState().self
   const { last_configuration: { grain_size, is_valid, ...otherConfig } } = lastSim
@@ -685,8 +756,4 @@ export const loadLastSim = () => (dispatch, getState) => {
       last_configuration: convertedConfig,
     },
   })
-}
-
-export const loadSimFromTimeMachine = (sim) => (dispatch) => {
-
 }

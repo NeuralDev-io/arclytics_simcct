@@ -312,6 +312,11 @@ export const saveSimulation = () => (dispatch, getState) => {
  * }
  */
 export const getSavedSimulations = () => (dispatch) => {
+  dispatch({
+    type: GET_SIM,
+    status: 'started',
+  })
+
   fetch(`${SIMCCT_URL}/user/simulation`, {
     method: 'GET',
     credentials: 'include',
@@ -334,10 +339,15 @@ export const getSavedSimulations = () => (dispatch) => {
           message: res.message,
           options: { variant: 'error' },
         }, true)(dispatch)
+        dispatch({
+          type: GET_SIM,
+          status: 'fail',
+        })
       }
       if (res.status === 'success') {
         dispatch({
           type: GET_SIM,
+          status: 'success',
           payload: res.data,
         })
       }

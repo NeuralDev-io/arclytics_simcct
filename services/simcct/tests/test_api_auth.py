@@ -158,7 +158,7 @@ class TestAuthEndpoints(BaseTestCase):
             )
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 400)
-            self.assertIn('The user cannot be validated.', data['message'])
+            self.assertIn('Invalid email.', data['message'])
             self.assertIn('fail', data['status'])
 
     def test_user_registration_invalid_json_keys_no_password(self):
@@ -256,7 +256,7 @@ class TestAuthEndpoints(BaseTestCase):
         with self.client:
             peter = User(
                 **{
-                    'email': 'spiderman@newavenger.io',
+                    'email': 'spiderman@avengers.io',
                     'first_name': 'Peter',
                     'last_name': 'Parker'
                 }
@@ -277,7 +277,7 @@ class TestAuthEndpoints(BaseTestCase):
                 '/v1/sim/auth/login',
                 data=json.dumps(
                     {
-                        'email': 'spiderman@newavenger.io',
+                        'email': 'spiderman@avengers.io',
                         'password': 'SpideySenses'
                     }
                 ),
@@ -403,7 +403,7 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertTrue(data['status'] == 'fail')
             self.assertNotIn('token', data)
             self.assertTrue(response.content_type == 'application/json')
-            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.status_code, 400)
 
     def test_not_registered_user_login(self):
         with self.client:
@@ -419,14 +419,16 @@ class TestAuthEndpoints(BaseTestCase):
             )
             data = json.loads(response.data.decode())
             self.assertTrue(data['status'] == 'fail')
-            self.assertTrue(data['message'] == 'User does not exist.')
+            self.assertEqual(
+                data['message'], 'Email or password combination incorrect.'
+            )
             self.assertTrue(response.content_type == 'application/json')
-            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.status_code, 400)
 
     def test_bad_auth_token_encoding(self):
         user = User(
             **{
-                'email': 'metal_arm@newavengers.io',
+                'email': 'metal_arm@avengers.io',
                 'first_name': 'Bucky',
                 'last_name': 'Barnes'
             }
@@ -438,7 +440,7 @@ class TestAuthEndpoints(BaseTestCase):
                 '/v1/sim/auth/login',
                 data=json.dumps(
                     {
-                        'email': 'metal_arm@newavengers.io',
+                        'email': 'metal_arm@avengers.io',
                         'password': '<html>wrongpassword</html>'
                     }
                 ),
@@ -451,12 +453,12 @@ class TestAuthEndpoints(BaseTestCase):
             self.assertTrue(data['status'] == 'fail')
             self.assertNotIn('token', data)
             self.assertTrue(response.content_type == 'application/json')
-            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.status_code, 400)
 
     def test_valid_logout(self):
         user = User(
             **{
-                'email': 'falcon@newavengers.io',
+                'email': 'falcon@avengers.io',
                 'first_name': 'Sam',
                 'last_name': 'Wilson'
             }
@@ -471,7 +473,7 @@ class TestAuthEndpoints(BaseTestCase):
                 '/v1/sim/auth/login',
                 data=json.dumps(
                     {
-                        'email': 'falcon@newavengers.io',
+                        'email': 'falcon@avengers.io',
                         'password': 'NewCaptainAmerica'
                     }
                 ),
@@ -491,7 +493,7 @@ class TestAuthEndpoints(BaseTestCase):
     # def test_invalid_logout_expired_token(self):
     #     user = User(
     #         **{
-    #             'email': 'tchalla@newavengers.io',
+    #             'email': 'tchalla@avengers.io',
     #             'first_name': "T'challa",
     #             'last_name': 'Wakandan'
     #         }
@@ -504,7 +506,7 @@ class TestAuthEndpoints(BaseTestCase):
     #             '/v1/sim/auth/login',
     #             data=json.dumps(
     #                 {
-    #                     'email': 'tchalla@newavengers.io',
+    #                     'email': 'tchalla@avengers.io',
     #                     'password': 'SomebodyGetThatManAShield!'
     #                 }
     #             ),

@@ -21,7 +21,7 @@ import os
 from datetime import datetime
 from typing import Tuple
 
-from email_validator import EmailNotValidError, validate_email
+from email_validator import EmailNotValidError
 from flask import Blueprint, jsonify, redirect, render_template, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
@@ -30,12 +30,13 @@ from arc_logging import AppLogger
 from sim_api.extensions import api, apm
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
-    MissingElementError
+    MissingElementError, arc_validate_email
 )
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import (
     AlloyStore, Configuration, SharedSimulation, SimulationResults
 )
+from sim_api.routes import Routes
 from sim_api.token import (
     URLTokenError, confirm_simulation_token, generate_shared_simulation_token,
     generate_url
@@ -187,7 +188,7 @@ class ShareSimulationEmail(Resource):
         valid_email_list = []
         if len(email_list) == 1:
             try:
-                v = validate_email(email_list[0])
+                v = arc_validate_email(email_list[0])
                 valid_email_list.append(v['email'])
             except EmailNotValidError as e:
                 response['error'] = str(e)
@@ -196,7 +197,7 @@ class ShareSimulationEmail(Resource):
         else:
             for email in email_list:
                 try:
-                    v = validate_email(email)
+                    v = arc_validate_email(email)
                     valid_email_list.append(v['email'])
                 except EmailNotValidError as e:
                     response['error'] = str(e)
@@ -306,7 +307,7 @@ class ShareSimulationEmail(Resource):
 
 
 @share_blueprint.route(
-    '/user/share/simulation/request/<token>', methods=['GET']
+    Routes.request_shared_simulation.value, methods=['GET']
 )
 def request_shared_simulation(token):
     """
@@ -324,7 +325,7 @@ def request_shared_simulation(token):
     return redirect(f'{redirect_url}/share/simulation/{token}')
 
 
-@share_blueprint.route('/user/share/simulation/view/<token>', methods=['GET'])
+@share_blueprint.route(Routes.view_shared_simulation.value, methods=['GET'])
 def view_shared_simulation(token):
     """
     Requests to this endpoint should be sent by the blank page described in
@@ -372,5 +373,5 @@ def view_shared_simulation(token):
     return jsonify(response), 200
 
 
-api.add_resource(ShareSimulationLink, '/v1/sim/user/share/simulation/link')
-api.add_resource(ShareSimulationEmail, '/v1/sim/user/share/simulation/email')
+api.add_resource(ShareSimulationLink, Routes.share_simulation_link.value)
+api.add_resource(ShareSimulationEmail, Routes.share_simulation_email.value)

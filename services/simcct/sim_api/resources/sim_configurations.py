@@ -34,6 +34,7 @@ from sim_api.extensions.utilities import (
     MissingElementError, ElementWeightInvalid
 )
 from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.routes import Routes
 from sim_api.schemas import AlloyStoreSchema
 
 logger = AppLogger(__name__)
@@ -512,6 +513,6 @@ class Austenite(Resource):
         return {'message': 'Method Not Allowed.', 'status': 'fail'}, 405
 
 
-api.add_resource(Martensite, '/v1/sim/configs/ms')
-api.add_resource(Bainite, '/v1/sim/configs/bs')
-api.add_resource(Austenite, '/v1/sim/configs/ae')
+api.add_resource(Martensite, Routes.martensite.value)
+api.add_resource(Bainite, Routes.bainite.value)
+api.add_resource(Austenite, Routes.austenite.value)

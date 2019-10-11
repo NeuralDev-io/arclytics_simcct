@@ -56,7 +56,7 @@ class TestSimulationService(BaseTestCase):
 
         cls.user = User(
             **{
-                'email': 'jane@culver.edu.us',
+                'email': 'janefoster@arclytics.io',
                 'first_name': 'Jane',
                 'last_name': 'Foster',
             }
@@ -67,7 +67,7 @@ class TestSimulationService(BaseTestCase):
         cls._email = cls.user.email
 
         mongo = get_db('default')
-        user = mongo.users.find_one({'email': 'jane@culver.edu.us'})
+        user = mongo.users.find_one({'email': 'janefoster@arclytics.io'})
         assert user is not None
 
     @classmethod

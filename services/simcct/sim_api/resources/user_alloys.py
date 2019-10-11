@@ -38,6 +38,7 @@ from sim_api.extensions.utilities import (
 )
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import Alloy, User
+from sim_api.routes import Routes
 
 logger = AppLogger(__name__)
 
@@ -419,5 +420,5 @@ class UserAlloy(Resource):
         return response, 202
 
 
-api.add_resource(UserAlloysList, '/v1/sim/user/alloys')
-api.add_resource(UserAlloy, '/v1/sim/user/alloys/<alloy_id>')
+api.add_resource(UserAlloysList, Routes.user_alloy_list.value)
+api.add_resource(UserAlloy, Routes.user_alloy.value)

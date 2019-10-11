@@ -262,9 +262,11 @@ class Simulation(Resource):
         # and send the data.
         user.simulations_count += 1
 
-        logger.debug('Simulation {} Total Time: {}'.format(
-            user.simulations_count, finish - start
-        ))
+        logger.debug(
+            'Simulation {} Total Time: {}'.format(
+                user.simulations_count, finish - start
+            )
+        )
 
         # Just overwrite the response instead of changing it.
         response = {
@@ -320,7 +322,9 @@ class Ae3Equilibrium(Resource):
             return response, 400
 
         if ae1_temp <= 0:
-            response.update({'message': 'Ae1 temperature must be more than 0.'})
+            response.update(
+                {'message': 'Ae1 temperature must be more than 0.'}
+            )
             return response, 400
 
         # We need to validate the Alloy Store that matches our expected schema
@@ -386,9 +390,7 @@ class Ae3Equilibrium(Resource):
         try:
             # xfe is ferrite_phase_frac and ceut is eutectic_composition_carbon
             results_plot, xfe, ceut = SimConfig.xfe_method2(
-                comp=comp_np_arr,
-                ae1=ae1_temp,
-                plot=True
+                comp=comp_np_arr, ae1=ae1_temp, plot=True
             )
         except ZeroDivisionError as e:
             response.update(

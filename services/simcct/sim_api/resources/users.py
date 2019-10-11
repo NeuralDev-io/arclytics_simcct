@@ -108,17 +108,18 @@ class UserList(Resource):
             # Get the objects starting at the offset, limit the number of
             # results and sort on the sort_on value.
             if sort_on == 'fullname':
-                query_set = User.objects[
-                            offset - 1: offset + limit - 1
-                            ].order_by('last_name', 'first_name')
+                query_set = User.objects[offset - 1:offset + limit -
+                                         1].order_by(
+                                             'last_name', 'first_name'
+                                         )
             elif sort_on == '-fullname':
-                query_set = User.objects[
-                            offset - 1: offset + limit - 1
-                            ].order_by('-last_name', '-first_name')
+                query_set = User.objects[offset - 1:offset + limit -
+                                         1].order_by(
+                                             '-last_name', '-first_name'
+                                         )
             else:
-                query_set = User.objects[
-                            offset - 1: offset + limit - 1
-                            ].order_by(sort_on)
+                query_set = User.objects[offset - 1:offset + limit -
+                                         1].order_by(sort_on)
         else:
             query_set = User.objects[offset - 1:offset + limit - 1]
 

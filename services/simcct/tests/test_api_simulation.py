@@ -227,6 +227,5 @@ class TestSimulationService(BaseTestCase):
             self.assert200(res)
 
 
-
 if __name__ == '__main__':
     unittest.main()

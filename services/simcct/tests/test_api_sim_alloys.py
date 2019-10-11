@@ -229,9 +229,6 @@ class TestSimAlloys(BaseTestCase):
             )
             data = res.json
 
-            self.assertEqual(
-                data['message'], 'Compositions and other values updated.'
-            )
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
             self.assertTrue(data['data'])

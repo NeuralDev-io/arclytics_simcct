@@ -389,7 +389,7 @@ class Ae3Equilibrium(Resource):
         # graph data.
         try:
             # xfe is ferrite_phase_frac and ceut is eutectic_composition_carbon
-            results_plot, xfe, ceut = SimConfig.xfe_method2(
+            results_plot, cf, xfe, ceut = SimConfig.xfe_method2(
                 comp=comp_np_arr, ae1=ae1_temp, plot=True
             )
         except ZeroDivisionError as e:
@@ -417,6 +417,7 @@ class Ae3Equilibrium(Resource):
             data = {
                 'ferrite_phase_frac': xfe,
                 'eutectic_composition_carbon': ceut,
+                'cf': cf,
                 'results_plot': results_plot
             }
         # Not sure if this is possible for the ae3 equilibrium results but

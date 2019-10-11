@@ -1246,11 +1246,11 @@ class TestAdminCreateService(BaseTestCase):
         vader.save()
 
         with self.client as client:
-            cookie = test_login(client, vader.email, 'AllTooEasy')
+            test_login(client, vader.email, 'AllTooEasy')
 
             resp_disable = client.put(
                 '/v1/sim/enable/user',
-                data=json.dumps({'email': 'cal_kestis@arclytics.io'}),
+                data=json.dumps({'email': 'cal_kestis@neuraldev.io'}),
                 content_type='application/json'
             )
 
@@ -1297,7 +1297,7 @@ class TestAdminCreateService(BaseTestCase):
 
             resp_disable = client.put(
                 '/v1/sim/enable/user',
-                data=json.dumps({'email': 'calkestis_jk@arclytics.io'}),
+                data=json.dumps({'email': 'calkestis_jk@neuraldev.io'}),
                 content_type='application/json'
             )
 

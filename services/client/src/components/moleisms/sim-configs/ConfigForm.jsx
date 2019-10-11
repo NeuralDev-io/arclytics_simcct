@@ -197,7 +197,7 @@ class ConfigForm extends Component {
           <div className="input-col">
             <div className={styles.headerContainer}>
               <h6>CCT/TTT method</h6>
-              <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="right">
+              <Tooltip className={{ tooltip: `${styles.infoTip} ${styles.methodTooltip}`, container: styles.infoTipContainer }} position="right">
                 <InfoIcon className={styles.infoIcon} />
                 <p>
                   J.S.Krikaldy, et al., &quot;Prediction of microstructure and hardenability in

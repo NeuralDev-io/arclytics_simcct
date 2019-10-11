@@ -44,17 +44,16 @@ class SecureConfirmModal extends Component {
   render() {
     const {
       show,
-      onClick,
-      children,
+      messageTitle,
+      actionButtonName,
     } = this.props
     const { password } = this.state
 
     return (
-      <Modal show={show} className={`${styles.modal} ${styles.className}` } withCloseIcon onClose={this.handleClose}>
+      <Modal show={show} className={`${styles.modal} ${styles.className}`} withCloseIcon onClose={this.handleClose}>
         <form className={styles.content} onSubmit={this.handleSubmit}>
           <div className={styles.header}>
-            {/*<h6>Are you sure you want to delete this alloy?</h6>*/}
-            {children[1].props.children}
+            <h6> {messageTitle} </h6>
             <span>Please enter password to confirm.</span>
           </div>
           <TextField
@@ -83,7 +82,7 @@ class SecureConfirmModal extends Component {
               color="dangerous"
               isDisabled={password === ''}
             >
-              Confirm Delete
+              {actionButtonName}
             </Button>
           </div>
         </form>
@@ -93,11 +92,9 @@ class SecureConfirmModal extends Component {
 }
 
 SecureConfirmModal.propTypes = {
-  // alloyId: PropTypes.string.isRequired,
   show: PropTypes.bool.isRequired,
-  onSubmit: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
   successMessage: PropTypes.string,
   addFlashToastConnect: PropTypes.func.isRequired,
 }

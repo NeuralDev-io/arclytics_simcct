@@ -11,8 +11,8 @@
  * @author Dalton Le
  */
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
-import ActivityIcon from 'react-feather/dist/icons/activity'
+import PropTypes from 'prop-types'
+import { Link, Redirect } from 'react-router-dom'
 import DatabaseIcon from 'react-feather/dist/icons/database'
 import UsersIcon from 'react-feather/dist/icons/users'
 
@@ -27,20 +27,20 @@ class AdminSidebar extends Component {
     }
   }
 
+  componentDidMount = () => {
+    const { active } = this.state
+    const { redirect } = this.props
+    if (!['alloys', 'users'].includes(active)) {
+      this.setState({ active: 'alloys' })
+      redirect('/admin/alloys')
+    }
+  }
+
   render() {
     const { active } = this.state
     return (
       <div className={styles.sidebar}>
         <h4>Dashboard</h4>
-        <Link
-          id="analytics"
-          to="/admin/analytics"
-          onClick={() => this.setState({ active: 'analytics' })}
-          className={`${styles.item} ${active === 'analytics' && styles.active}`}
-        >
-          <ActivityIcon className={styles.icon} />
-          <span>Analytics</span>
-        </Link>
         <Link
           id="alloys"
           to="/admin/alloys"
@@ -62,6 +62,10 @@ class AdminSidebar extends Component {
       </div>
     )
   }
+}
+
+AdminSidebar.propTypes = {
+  redirect: PropTypes.func.isRequired,
 }
 
 export default AdminSidebar

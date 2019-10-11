@@ -39,6 +39,8 @@ class LoadSimButton extends Component {
     const { loadSimFromFileConnect, addFlashToastConnect } = this.props
     const file = e.target.files[0]
 
+    if (file === null || file === undefined) return
+
     // check file size
     if (file.size > 200000) {
       addFlashToastConnect({
@@ -77,6 +79,7 @@ class LoadSimButton extends Component {
     }
 
     reader.readAsText(file)
+    e.target.value = null
   }
 
   render() {

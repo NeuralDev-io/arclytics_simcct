@@ -87,7 +87,7 @@ const reducer = (state = initialState, action) => {
         })
       }
       if (action.status === 'success') {
-        // set new alloy and auto-calculated fields in state
+        // set new alloy
         return ({
           ...state,
           isInitialised: true,
@@ -95,10 +95,6 @@ const reducer = (state = initialState, action) => {
             ...state.alloys,
             [action.alloyType]: action.alloy,
             isLoading: false,
-          },
-          configurations: {
-            ...state.configurations,
-            ...action.config,
           },
           isSimulated: false,
           results: { ...initialState.results },
@@ -127,8 +123,8 @@ const reducer = (state = initialState, action) => {
         isSimulated: false,
         results: { ...initialState.results },
       }
-    case UPDATE_COMP:
-      // set new alloy comp and auto-calculated fields in state
+    case UPDATE_COMP: {
+      // set new alloy
       return ({
         ...state,
         alloys: {
@@ -136,13 +132,10 @@ const reducer = (state = initialState, action) => {
           parentError: action.parentError,
           [action.alloyType]: action.alloy,
         },
-        configurations: {
-          ...state.configurations,
-          ...action.config,
-        },
         isSimulated: false,
         results: { ...initialState.results },
       })
+    }
     case UPDATE_DILUTION:
       return {
         ...state,
@@ -153,7 +146,7 @@ const reducer = (state = initialState, action) => {
         isSimulated: false,
         results: { ...initialState.results },
       }
-    case UPDATE_CONFIG_METHOD:
+    case UPDATE_CONFIG_METHOD: {
       return {
         ...state,
         configurations: {
@@ -163,6 +156,7 @@ const reducer = (state = initialState, action) => {
         isSimulated: false,
         results: { ...initialState.results },
       }
+    }
     case UPDATE_CONFIG:
       return {
         ...state,

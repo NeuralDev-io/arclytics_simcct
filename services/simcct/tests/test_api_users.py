@@ -101,7 +101,7 @@ class TestUserService(BaseTestCase):
 
     def test_ping(self):
         """Ensure the /ping route behaves correctly."""
-        res = self.client.get('/ping')
+        res = self.client.get('/v1/sim/ping')
         data = json.loads(res.data.decode())
         self.assertEqual(res.status_code, 200)
         self.assertIn('success', data['status'])
@@ -203,9 +203,7 @@ class TestUserService(BaseTestCase):
             )
 
             # Logging out should clear the session
-            client.get(
-                '/v1/sim/auth/logout', content_type='application/json'
-            )
+            client.get('/v1/sim/auth/logout', content_type='application/json')
 
             # Clear the cookie from previously although it should be
             # cleared by logout
@@ -215,9 +213,7 @@ class TestUserService(BaseTestCase):
             # We set the old Cookie back and see if it works
             client.set_cookie('localhost', 'SESSION_TOKEN', cookie.value)
 
-            res = client.get(
-                '/v1/sim/user', content_type='application/json'
-            )
+            res = client.get('/v1/sim/user', content_type='application/json')
             data = json.loads(res.data.decode())
 
             self.assertEqual(data['message'], 'Session is invalid.')
@@ -377,6 +373,33 @@ class TestUserService(BaseTestCase):
         nat.set_password('IveGotRedInMyLedger')
         nat.verified = True
         nat.save()
+        thor = User(
+            **{
+                'email': 'thor@avengers.io',
+                'first_name': 'Thor',
+                'last_name': 'Odinson'
+            }
+        )
+        thor.set_password('BringMeThanos')
+        thor.save()
+        hulk = User(
+            **{
+                'email': 'hulk@avengers.io',
+                'first_name': 'Bruce',
+                'last_name': 'Banner'
+            }
+        )
+        hulk.set_password('HulkOut')
+        hulk.save()
+        hawkeye = User(
+            **{
+                'email': 'hawkeye@avengers.io',
+                'first_name': 'Clint',
+                'last_name': 'Barton'
+            }
+        )
+        hawkeye.set_password('AndIHaveABowAndArrow')
+        hawkeye.save()
 
         db = get_db('default')
         self.assertEqual(db.name, 'arc_test')
@@ -387,15 +410,23 @@ class TestUserService(BaseTestCase):
             self.assertTrue(tony.active)
             resp = client.get(
                 '/v1/sim/users',
+                data=json.dumps({
+                    'sort_on': 'email',
+                    'limit': 2,
+                    'offset': 3
+                }),
                 content_type='application/json',
             )
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
-            self.assertEqual(len(data['data']['users']), num_users)
-            self.assertTrue(data['data']['users'][0]['admin'])
-            self.assertTrue(data['data']['users'][1]['admin'])
-            self.assertFalse(data['data']['users'][2]['admin'])
-            self.assertIn('success', data['status'])
+            self.assertEqual(data['sort_on'], 'email')
+            self.assertEqual(data['next_offset'], 5)
+            self.assertEqual(data['prev_offset'], 1)
+            self.assertEqual(data['limit'], 2)
+            self.assertEqual(data['current_page'], 2)
+            self.assertEqual(data['total_pages'], 4)
+            self.assertEqual(data['data'][0]['email'], 'ironman@avengers.com')
+            self.assertEqual(data['data'][1]['email'], 'nat@shield.gov.us')
 
     def test_patch_user(self):
         """Test update user details"""
@@ -560,7 +591,7 @@ class TestUserService(BaseTestCase):
         """Test update only some of the user's details"""
         sheev = User(
             **{
-                'email': 'sheev@palpatine.io',
+                'email': 'sheev@arclytics.io',
                 'first_name': 'Sheev',
                 'last_name': 'Palpatine'
             }
@@ -617,7 +648,7 @@ class TestUserService(BaseTestCase):
         """Try update a user without any data for the update"""
         maul = User(
             **{
-                'email': 'maul@sith.io',
+                'email': 'maul@arclytics.io',
                 'first_name': 'Darth',
                 'last_name': 'Maul'
             }
@@ -931,7 +962,7 @@ class TestUserService(BaseTestCase):
         """Test empty post is unsuccessful"""
         lando = User(
             **{
-                'email': 'lando@calrissian.io',
+                'email': 'lando@arclytics.io',
                 'first_name': 'Lando',
                 'last_name': 'Calrissian'
             }

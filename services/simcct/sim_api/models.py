@@ -19,21 +19,20 @@ Sim database using MongoDB. Here we define the `mongoengine.Document` and
 microservice.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Tuple, Union
 
-import jwt
 from bson import ObjectId
 from flask import current_app, json
 from mongoengine import (
     BooleanField, DO_NOTHING, DateTimeField, DictField, Document, EmailField,
     EmbeddedDocument, EmbeddedDocumentField, EmbeddedDocumentListField,
     FloatField, IntField, ObjectIdField, ReferenceField, StringField,
-    ValidationError, queryset_manager
+    LongField, PointField, ValidationError, queryset_manager
 )
 
 from arc_logging import AppLogger
-from sim_api.extensions import bcrypt, apm
+from sim_api.extensions import bcrypt
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid, JSONEncoder,
     MissingElementError, PasswordValidationError, PeriodicTable
@@ -424,16 +423,24 @@ class Rating(EmbeddedDocument):
 
 
 class LoginData(EmbeddedDocument):
-    time = DateTimeField(default=datetime.utcnow(), required=True)
-    country = StringField()
+    created_datetime = DateTimeField(default=datetime.utcnow(), required=True)
     state = StringField()
+    country = StringField()
+    continent = StringField()
+    accuracy_radius = IntField()
+    geo_point = PointField()
+    timezone = StringField()
     ip_address = StringField()
 
     def to_dict(self):
         return {
-            'time': str(self.time),
-            'country': self.country,
+            'created_datetime': str(self.created_datetime.isoformat()),
             'state': self.state,
+            'country': self.country,
+            'continent': self.continent,
+            'accuracy_radius': self.accuracy_radius,
+            'geo_point': self.geo_point,
+            'timezone': self.timezone,
             'ip_address': self.ip_address
         }
 
@@ -463,6 +470,10 @@ class User(Document):
     last_simulation_results = DictField(default=None)
     last_simulation_invalid_fields = DictField(default=None)
 
+    # Store the number of simulations the user has run
+    simulations_count = LongField(default=0)
+
+    # Store alloys for the user
     saved_alloys = EmbeddedDocumentListField(document_type=Alloy)
 
     # Some rather useful metadata information that's not core to the
@@ -632,6 +643,8 @@ class SharedSimulation(Document):
     simulation_results = EmbeddedDocumentField(
         document_type=SimulationResults, required=True, null=False
     )
+
+    meta = {'collection': 'shared_simulations'}
 
     def to_dict(self):
         return {

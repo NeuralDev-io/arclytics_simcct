@@ -19,6 +19,7 @@ a microservice to retrieve logs, metrics, and data from data stores such as
 MongoDB, Redis, and Elasticsearch for analytics purposes.
 """
 
+import logging
 from os import environ as env
 
 from flask import Flask
@@ -33,6 +34,26 @@ DATE_FMT = '%Y-%m-%d'
 # Environment Variable Flask Configurations object path to use or by default
 # use production configurations because it is the most secure and restrictive.
 app_settings = env.get('APP_SETTINGS', 'configs.flask_conf.ProductionConfig')
+
+
+def extensions(app) -> None:
+    """Registers 0 or more extensions for Flask and then mutates the app
+    instance passed in.
+
+    Args:
+        app: A Flask app instance.
+
+    Returns:
+        None.
+    """
+    # This one gets a special initialisation because it requires a logging
+    # level.
+    log_level = logging.ERROR if app.env == 'production' else True
+    apm.init_app(app, logging=log_level)
+
+    for ext in flask_extensions:
+        ext.init_app(app)
+    return None
 
 
 def create_app(configs_path=app_settings) -> Flask:
@@ -95,18 +116,3 @@ def create_app(configs_path=app_settings) -> Flask:
         return {'app': app}
 
     return app
-
-
-def extensions(app) -> None:
-    """Registers 0 or more extensions for Flask and then mutates the app
-    instance passed in.
-
-    Args:
-        app: A Flask app instance.
-
-    Returns:
-        None.
-    """
-    for ext in flask_extensions:
-        ext.init_app(app)
-    return None

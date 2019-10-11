@@ -45,6 +45,12 @@ const getAlloys = type => (dispatch) => {
    *   "data": [{"_id": ..., "name": ..., "compositions": [...]}, {...}]
    * }
    */
+
+  dispatch({
+    type: type === 'global' ? GET_GLOBAL_ALLOYS : GET_USER_ALLOYS,
+    status: 'started',
+  })
+
   fetch(`${SIMCCT_URL}/${type}/alloys`, {
     method: 'GET',
     credentials: 'include',
@@ -68,11 +74,16 @@ const getAlloys = type => (dispatch) => {
           message: res.message,
           options: { variant: 'error' },
         }, true)(dispatch)
+        dispatch({
+          type: type === 'global' ? GET_GLOBAL_ALLOYS : GET_USER_ALLOYS,
+          status: 'fail',
+        })
       }
       if (res.status === 'success') {
         dispatch({
           type: type === 'global' ? GET_GLOBAL_ALLOYS : GET_USER_ALLOYS,
           payload: res.data || [],
+          status: 'success',
         })
       }
     })

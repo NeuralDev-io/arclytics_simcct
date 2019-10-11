@@ -236,8 +236,8 @@ CompForm.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  globalAlloys: state.alloys.global,
-  userAlloys: state.alloys.user,
+  globalAlloys: state.alloys.global.data,
+  userAlloys: state.alloys.user.data,
   simAlloys: state.sim.alloys,
 })
 

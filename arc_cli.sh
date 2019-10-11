@@ -693,6 +693,10 @@ run() {
         if [[ ${DETACH_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
             docker-compose -f "${DOCKER_COMPOSE_PATH}" up -d --build ${CONTAINER_ARGS}
+
+            if [[ ${JUPYTER_FLAG} == 1 ]]; then
+              docker-compose logs jupyter
+            fi
         else
             generalMessage "docker-compose up --build ${CONTAINER_ARGS}"
             docker-compose -f "${DOCKER_COMPOSE_PATH}" up --build ${CONTAINER_ARGS}

@@ -25,7 +25,7 @@ from pathlib import Path
 
 import geoip2
 import geoip2.database
-from email_validator import EmailNotValidError, validate_email
+from email_validator import EmailNotValidError
 from flask import (
     Blueprint, jsonify, redirect, render_template, request, session
 )
@@ -35,8 +35,11 @@ from mongoengine.errors import NotUniqueError, ValidationError
 from redis import ReadOnlyError
 
 from arc_logging import AppLogger
-from sim_api.extensions import bcrypt, apm, redis_session
-from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
+from sim_api.extensions import bcrypt, apm
+from sim_api.extensions.SimSession.sim_session_service import SimSessionService
+from sim_api.extensions.utilities import (
+    URLTokenError, URLTokenExpired, arc_validate_email
+)
 from sim_api.middleware import (authenticate_user_and_cookie_flask)
 from sim_api.models import LoginData, User
 from sim_api.token import (
@@ -99,8 +102,14 @@ def confirm_email(token):
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     # We ensure there is a user for this email
-    user = User.objects.get(email=email)
+    if not User.objects(email=email):
+        log_message = {'message': 'User does not exist.'}
+        logger.error(log_message)
+        apm.capture_message(log_message)
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
+
     # And do the real work confirming their status
+    user = User.objects.get(email=email)
     user.verified = True
     user.save()
 
@@ -211,6 +220,12 @@ def confirm_email_admin(token):
         apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
+    if not User.objects(email=email):
+        log_message = {'message': 'User does not exist.'}
+        logger.error(log_message)
+        apm.capture_message(log_message)
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
+
     user = User.objects.get(email=email)
     user.admin_profile.verified = True
     user.save()
@@ -250,10 +265,19 @@ def register_user() -> Tuple[dict, int]:
         response['message'] = 'The password is invalid.'
         return jsonify(response), 400
 
+    # Verify email is valid
+    try:
+        v = arc_validate_email(email)
+        valid_email = v['email']
+    except EmailNotValidError as e:
+        response['error'] = str(e)
+        response['message'] = 'Invalid email.'
+        return response, 400
+
     # Create a Mongo User object if one doesn't exists
-    if not User.objects(email=email):
+    if not User.objects(email=valid_email):
         new_user = User(
-            email=email, first_name=first_name, last_name=last_name
+            email=valid_email, first_name=first_name, last_name=last_name
         )
         # ensure we set an encrypted password.
         new_user.set_password(raw_password=password)
@@ -268,12 +292,12 @@ def register_user() -> Tuple[dict, int]:
         # beginning is always the default.
         auth_token = AuthService().encode_auth_token(new_user.id, role='user')
         # generate the confirmation token for verifying email
-        confirmation_token = generate_confirmation_token(email)
+        confirmation_token = generate_confirmation_token(valid_email)
         confirm_url = generate_url('auth.confirm_email', confirmation_token)
 
         from sim_api.email_service import send_email
         send_email(
-            to=[email],
+            to=[valid_email],
             subject_suffix='Please Confirm Your Email',
             html_template=render_template(
                 'activate.html',
@@ -299,6 +323,225 @@ def register_user() -> Tuple[dict, int]:
     except NotUniqueError:
         response['message'] = 'The users details already exists.'
         return jsonify(response), 400
+
+
+# noinspection PyBroadException
+@auth_blueprint.route(rule='/auth/login', methods=['POST'])
+def login() -> any:
+    """
+    Blueprint route for registration of users with a returned JWT if successful.
+    """
+
+    # Get the post data
+    post_data = request.get_json()
+
+    # Validating empty payload
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+    if not post_data:
+        return jsonify(response), 400
+
+    # Extract the request data required for login
+    email = post_data.get('email', '')
+    password = post_data.get('password', '')
+
+    # Validate some of these
+    if not email:
+        response['message'] = 'You must provide an email.'
+        return jsonify(response), 400
+
+    if not password:
+        response['message'] = 'You must provide a password.'
+        return jsonify(response), 400
+
+    if len(str(password)) < 6 or len(str(password)) > 254:
+        response['message'] = 'Email or password combination incorrect.'
+        return jsonify(response), 400
+
+    # Validate email and set domain to lowercase (case insensitive)
+    try:
+        # validate and get info
+        v = arc_validate_email(email)
+        # replace with normalized form
+        valid_email = v['email']
+    except EmailNotValidError as e:
+        response['message'] = 'Email or password combination incorrect.'
+        return response, 400
+
+    try:
+        if not User.objects(email=valid_email):
+            # For security reasons we do not return a 404
+            response['message'] = 'Email or password combination incorrect.'
+            return jsonify(response), 400
+    except Exception:
+        response['message'] = 'Email or password combination incorrect.'
+        return jsonify(response), 400
+
+    # Let's save some stats for later
+    login_datetime = datetime.utcnow()
+
+    user = User.objects.get(email=valid_email)
+
+    # Now let's really check if the User can access our application
+    if bcrypt.check_password_hash(user.password, password):
+        user_role = 'admin' if user.is_admin else 'user'
+        auth_token = AuthService().encode_auth_token(user.id, role=user_role)
+
+        if auth_token:
+            if not user.active:
+                response['message'] = 'This user account has been disabled.'
+                logger.info(
+                    {
+                        'message': response['message'],
+                        'user': user.email
+                    }
+                )
+                apm.capture_message('Unauthorised access.')
+                return jsonify(response), 403
+
+            # First we check if there is a proxy or other network service
+            # that forwards the IP address. If it is not the case,
+            # we can check for the HTTP_X_REAL_IP which is part of
+            # the header and is often used in a proxy.
+            if not request.headers.get('X-Forwarded-For', None):
+                # If HTTP_X_REAL_IP not found, we can then fall back
+                # to use the `request.remote_addr` even though it is
+                # unlikely to be a real address.
+                request_ip = request.environ.get(
+                    'HTTP_X_REAL_IP', request.remote_addr
+                )
+            else:
+                # If we have a forwarded IP, it usually can be split
+                # We want the first one because the syntax is as follows:
+                # X-Forwarded-For: <client>, <proxy1>, <proxy2>
+                # Refer to:
+                # https://developer.mozilla.org/en-US/docs/Web/HTTP/
+                # Headers/X-Forwarded-For
+                # "The X-Forwarded-For (XFF) header is a de-facto standard
+                # header for identifying the originating IP address of a
+                # client connecting to a web server through an HTTP proxy
+                # or a load balancer."
+                forwarded_ip = request.headers.get('X-Forwarded-For')
+                request_ip = str(forwarded_ip).split(',')[0]
+
+            # Get the relative path of the database from the current path
+            # Applying dirname to a directory yields the parent directory
+            par_dir = os.path.dirname(os.path.abspath(__file__))
+            db_path = Path(par_dir) / 'GeoLite2-City' / 'GeoLite2-City.mmdb'
+
+            # If we can't record this data, we will store it as a Null
+            country, state, continent, timezone = None, None, None, None
+            geopoint = None
+            accuracy_radius = 0
+
+            try:
+                if not db_path.exists():
+                    raise FileNotFoundError(
+                        f'MaxMind DB file not found in {db_path.as_posix()}.'
+                    )
+                # Read from a MaxMind DB  that we have stored as so the
+                # `geoip2` library cna look for the IP address location.
+                reader = geoip2.database.Reader(db_path.as_posix())
+
+                location_data = reader.city(str(request_ip))
+
+                if location_data.country:
+                    country = location_data.country.names['en']
+
+                if location_data.subdivisions:
+                    state = location_data.subdivisions[0].names['en']
+
+                if location_data.continent:
+                    continent = location_data.continent.names['en']
+
+                if location_data.location:
+                    accuracy_radius = location_data.location.accuracy_radius
+                    geopoint = {
+                        'type':
+                        'Point',
+                        'coordinates': [
+                            location_data.location.latitude,
+                            location_data.location.longitude
+                        ]
+                    }
+                    timezone = location_data.location.time_zone
+
+                reader.close()
+            except FileNotFoundError as e:
+                apm.capture_exception()
+                logger.critical(
+                    {
+                        'message': 'File not found error.',
+                        'error': str(e)
+                    }
+                )
+            except ValueError as e:
+                apm.capture_exception()
+                logger.exception(
+                    {
+                        'message': 'geoip2 Read error.',
+                        'error': str(e)
+                    }
+                )
+            except InvalidDatabaseError as e:
+                apm.capture_exception()
+                logger.exception(
+                    {
+                        'message': 'Invalid MaxMind DB error.',
+                        'error': str(e)
+                    }
+                )
+            except AddressNotFoundError:
+                # If our library cannot find a location based on the IP address
+                # usually because we're in a localhost testing environment or
+                # if the address is somehow bad, then we need to handle this
+                # error and allow the response.
+                apm.capture_exception()
+            finally:
+                # logger.info(
+                #     {
+                #         'message': 'User logged in.',
+                #         'user': user.email,
+                #         'country': country,
+                #         'state': state,
+                #         'ip_address': request_ip
+                #     }
+                # )
+                login_data = LoginData(
+                    **{
+                        'ip_address': request_ip,
+                        'created_datetime': login_datetime,
+                        'continent': continent,
+                        'country': country,
+                        'state': state,
+                        'accuracy_radius': accuracy_radius,
+                        'geo_point': geopoint,
+                        'timezone': timezone,
+                    }
+                )
+                user.last_login = login_datetime
+                user.login_data.append(login_data)
+                user.save()
+
+            # Store additional information in their session as it will be
+            # required by the server-side session interface to check and
+            # generate other tokens and keys.
+            session['jwt'] = auth_token.decode()
+            session['ip_address'] = request_ip
+            session['is_admin'] = user.is_admin
+            session['user_id'] = str(user.id)
+            session['location'] = login_data.to_dict()
+
+            # We inject the Simulation Session data
+            SimSessionService().new_session(user=user)
+
+            response['status'] = 'success'
+            response['message'] = 'Successfully logged in.'
+            return jsonify(response), 200
+
+    response['message'] = 'Email or password combination incorrect.'
+    logger.info(response['message'])
+    apm.capture_message(response['message'])
+    return jsonify(response), 400
 
 
 @auth_blueprint.route(rule='/auth/password/check', methods=['POST'])
@@ -447,6 +690,14 @@ def confirm_reset_password(token):
             f'{redirect_url}/password/reset?tokenexpired=true', code=302
         )
 
+    # Ensure the user exists
+    if not User.objects(email=email):
+        logger.error('User does not exist.')
+        apm.capture_message('User does not exist.')
+        return redirect(
+            f'{redirect_url}/password/reset?tokenexpired=true', code=302
+        )
+
     # Confirm and validate that the user exists
     user = User.objects.get(email=email)
 
@@ -490,7 +741,7 @@ def reset_password_email() -> Tuple[dict, int]:
     # Verify it is actually a valid email
     try:
         # validate and get info
-        v = validate_email(post_email)
+        v = arc_validate_email(post_email)
         # replace with normalized form
         valid_email = v['email']
     except EmailNotValidError as e:
@@ -636,7 +887,7 @@ def change_email(user) -> Tuple[dict, int]:
 
     # Validate new email address.
     try:
-        v = validate_email(new_email)
+        v = arc_validate_email(new_email)
         valid_new_email = v['email']
     except EmailNotValidError as e:
         response['error'] = str(e)

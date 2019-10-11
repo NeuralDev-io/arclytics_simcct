@@ -16,6 +16,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
+import { InlineSpinner } from '../../elements/spinner'
 import { layout, config } from './utils/chartConfig'
 
 import { getColor } from '../../../utils/theming'
@@ -23,6 +24,7 @@ import styles from './CCT.module.scss'
 
 const CCT = ({
   data,
+  isLoading,
   userData,
   displayUserCurve,
   cctIndex,
@@ -145,6 +147,13 @@ const CCT = ({
   }
 
   if (chartData.length === 0) {
+    if (isLoading) {
+      return (
+        <div className={styles.noData}>
+          <InlineSpinner />
+        </div>
+      )
+    }
     return <div className={styles.noData}>No data.</div>
   }
 
@@ -194,6 +203,7 @@ CCT.propTypes = {
     bainite_completion: linePropTypes,
     martensite: linePropTypes,
   }),
+  isLoading: PropTypes.bool.isRequired,
   userData: PropTypes.shape({
     user_cooling_curve: linePropTypes,
     user_phase_fraction_data: PropTypes.shape({}),
@@ -211,6 +221,7 @@ CCT.defaultProps = {
 
 const mapStateToProps = state => ({
   data: state.sim.results.CCT,
+  isLoading: state.sim.results.isLoading,
   userData: state.sim.results.USER,
   cctIndex: state.sim.results.cctIndex,
   displayUserCurve: state.sim.displayUserCurve,

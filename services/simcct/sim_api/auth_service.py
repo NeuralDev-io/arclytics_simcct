@@ -11,7 +11,6 @@ __license__ = 'MIT'
 __version__ = '1.0.0'
 __status__ = 'production'
 __date__ = '2019.10.02'
-
 """auth_service.py: 
 
 This module provides an authentication and authorisation service that can 
@@ -33,9 +32,8 @@ logger = AppLogger(__name__)
 
 class AuthService(object):
     @staticmethod
-    def encode_auth_token(
-            user_id: ObjectId, role: str = 'user'
-    ) -> Union[bytes, None]:
+    def encode_auth_token(user_id: ObjectId,
+                          role: str = 'user') -> Union[bytes, None]:
         """Generates JWT auth token that is returned as bytes.
 
         Args:
@@ -48,16 +46,16 @@ class AuthService(object):
         try:
             payload = {
                 'exp':
-                    datetime.utcnow() + timedelta(
-                        days=app.config.get('TOKEN_EXPIRATION_DAYS', 0),
-                        seconds=app.config.get('TOKEN_EXPIRATION_SECONDS', 0)
-                    ),
+                datetime.utcnow() + timedelta(
+                    days=app.config.get('TOKEN_EXPIRATION_DAYS', 0),
+                    seconds=app.config.get('TOKEN_EXPIRATION_SECONDS', 0)
+                ),
                 'iat':
-                    datetime.utcnow(),
+                datetime.utcnow(),
                 'sub':
-                    user_id,
+                user_id,
                 'role':
-                    role
+                role
             }
 
             return jwt.encode(
@@ -72,9 +70,8 @@ class AuthService(object):
             return None
 
     @staticmethod
-    def decode_auth_token(
-            auth_token: Union[bytes, str]
-    ) -> Union[ObjectId, str]:
+    def decode_auth_token(auth_token: Union[bytes, str]
+                          ) -> Union[ObjectId, str]:
         """Decodes the JWT auth token.
 
         Args:

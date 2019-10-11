@@ -299,9 +299,7 @@ class TestLastSimulation(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            err = (
-                "{'ms_temp': ['Cannot be negative.']}"
-            )
+            err = ("{'ms_temp': ['Cannot be negative.']}")
             self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Model schema validation error.')
             self.assertEqual(data['status'], 'fail')
@@ -460,6 +458,7 @@ class TestLastSimulation(BaseTestCase):
         with app.test_client() as client:
             test_login(client, self.tony.email, self._tony_pw)
             configs = deepcopy(CONFIGS)
+            configs['is_valid'] = False
             configs['nucleation_start'] = -1
 
             res = client.post(
@@ -623,66 +622,11 @@ class TestLastSimulation(BaseTestCase):
             )
             user.delete()
 
-    def test_get_last_alloy_default_values(self):
-        """Ensure we can save a last configuration that is the default."""
-
-        default_alloy_store = {
-            'alloy_option': 'single',
-            'alloys': {
-                'parent': None,
-                'weld': None,
-                'mix': None
-            }
-        }
-        default_configuration = {
-            'is_valid': False,
-            'method': 'Li98',
-            'grain_size': 8.0,
-            'nucleation_start': 1.0,
-            'nucleation_finish': 99.90,
-            'auto_calculate_ms': True,
-            'ms_temp': 0.0,
-            'ms_rate_param': 0.0,
-            'auto_calculate_bs': True,
-            'bs_temp': 0.0,
-            'auto_calculate_ae': True,
-            'ae1_temp': 0.0,
-            'ae3_temp': 0.0,
-            'start_temp': 900,
-            'cct_cooling_rate': 10
-        }
-
-        with app.test_client() as client:
-            test_login(client, self.tony.email, self._tony_pw)
-            # By default, when the user logs in and they have no previous
-            # configurations or alloy store saved, then they will get the
-            # default during login with the `SimSessionService.new_session`
-            res = client.get(
-                '/v1/sim/user/last/simulation',
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'],
-                'User does not have a last configurations or alloy store.'
-            )
-            self.assertEqual(data['status'], 'fail')
-            self.assertIsNone(data.get('data', None))
-            self.assert404(res)
-            from sim_api.extensions.SimSession import SimSessionService
-            session_store = SimSessionService().load_session()
-            self.assertDictEqual(
-                session_store['configurations'], default_configuration
-            )
-            self.assertDictEqual(
-                session_store['alloy_store'], default_alloy_store
-            )
-            self.assertFalse(session_store['results'])
-
     def test_get_last_alloy_invalid_save(self):
         """Ensure we can get a last configuration that is invalid."""
         with app.test_client() as client:
             test_login(client, self.tony.email, self._tony_pw)
+
             res = client.post(
                 '/v1/sim/user/last/simulation',
                 data=json.dumps(
@@ -704,8 +648,11 @@ class TestLastSimulation(BaseTestCase):
             user = self.tony
             user.reload()
 
+            configs = deepcopy(CONFIGS)
+            configs.update({'is_valid': False})
+
             self.assertDictEqual(user.last_alloy_store, ALLOY_STORE)
-            self.assertDictEqual(user.last_configuration, CONFIGS)
+            self.assertDictEqual(user.last_configuration, configs)
             self.assertDictEqual(user.last_simulation_results, {})
 
             res = client.get(
@@ -715,7 +662,7 @@ class TestLastSimulation(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
             self.assertTrue(data.get('data', None))
-            self.assertDictEqual(data['data']['last_configuration'], CONFIGS)
+            self.assertDictEqual(data['data']['last_configuration'], configs)
 
     def test_get_detail_last_success(self):
         with app.test_client() as client:
@@ -745,7 +692,8 @@ class TestLastSimulation(BaseTestCase):
             self.assertTrue(data.get('data', None))
             self.assertDictEqual(data['data']['last_configuration'], CONFIGS)
 
-            _name = data['data']['last_alloy_store']['alloys']['parent']['name']
+            _name = data['data']['last_alloy_store']['alloys']['parent']['name'
+                                                                         ]
             self.assert200(res)
             self.assertEqual(
                 data['data']['last_alloy_store']['alloys']['parent']['name'],

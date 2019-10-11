@@ -38,7 +38,6 @@ SIMULATION_RESULTS = _TEST_JSON['simulation_results']
 
 class TestShareService(BaseTestCase):
     """Test for sharing simulations via link and email"""
-
     def setUp(self) -> None:
         assert app.config['TESTING'] is True
         self.mongo = get_db('default')
@@ -80,7 +79,7 @@ class TestShareService(BaseTestCase):
 
         luke = User(
             **{
-                'email': 'luke@skywalker.io',
+                'email': 'luke@arclytics.io',
                 'first_name': 'Luke',
                 'last_name': 'Skywalker'
             }
@@ -106,7 +105,7 @@ class TestShareService(BaseTestCase):
             self.assertEqual(data['status'], 'success')
             self.assertEqual(resp.status_code, 201)
             shared_simulation = SharedSimulation.objects.get(
-                owner_email='luke@skywalker.io'
+                owner_email='luke@arclytics.io'
             )
             sim_token = generate_shared_simulation_token(
                 str(shared_simulation.id)
@@ -196,7 +195,7 @@ class TestShareService(BaseTestCase):
 
         luke = User(
             **{
-                'email': 'luke@skywalker.ioe',
+                'email': 'luke@arclytics.io',
                 'first_name': 'Luke',
                 'last_name': 'Skywalker'
             }
@@ -237,7 +236,7 @@ class TestShareService(BaseTestCase):
 
         luke = User(
             **{
-                'email': 'luke@skywallker.io',
+                'email': 'luke@arclytics.io',
                 'first_name': 'Luke',
                 'last_name': 'Skywalker'
             }
@@ -468,7 +467,7 @@ class TestShareService(BaseTestCase):
 
         luke = User(
             **{
-                'email': 'luke@skywolker.io',
+                'email': 'luke@arclytics.io',
                 'first_name': 'Luke',
                 'last_name': 'Skywalker'
             }
@@ -667,7 +666,7 @@ class TestShareService(BaseTestCase):
 
         luke = User(
             **{
-                'email': 'luke@skylwalker.io',
+                'email': 'luke@arclytics.io',
                 'first_name': 'Luke',
                 'last_name': 'Skywalker'
             }
@@ -748,7 +747,7 @@ class TestShareService(BaseTestCase):
         """
         luke = User(
             **{
-                'email': 'luke@skylwalker.io',
+                'email': 'luke@arclytics.io',
                 'first_name': 'Luke',
                 'last_name': 'Skywalker'
             }

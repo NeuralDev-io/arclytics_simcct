@@ -1,0 +1,16 @@
+@import '../../../styles/colors.scss';
+
+.root {
+  background-color: var(--n0);
+  min-height: 20rem;
+  min-width: 45%;
+  margin: 0.25rem;
+
+  .content {
+    background-color: var(--n0);
+
+    min-height: 24rem;
+    max-height: 32rem;
+    padding: 1.5rem 0.75rem 0 0.75rem;
+  }
+}

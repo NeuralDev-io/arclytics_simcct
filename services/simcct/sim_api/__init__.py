@@ -149,14 +149,14 @@ def create_app(configs_path=app_settings) -> Flask:
         redis = Redis(
             host=env.get('REDIS_HOST'),
             port=int(env.get('REDIS_PORT')),
-            db=1,
+            db=0,
         )
     else:
         redis = Redis(
             host=env.get('REDIS_HOST'),
             port=int(env.get('REDIS_PORT')),
             password=env.get('REDIS_PASSWORD'),
-            db=1,
+            db=0,
         )
 
     # Mongo Client interface with MongoEngine as Object Document Mapper (ODM)

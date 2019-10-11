@@ -354,8 +354,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = str(user.saved_alloys[0].oid)
 
             res = client.get(
-                f'/v1/sim/user/alloys/{_id}',
-                content_type='application/json'
+                f'/v1/sim/user/alloys/{_id}', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
@@ -374,8 +373,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = str(user.saved_alloys[0].oid)
 
             res = client.get(
-                f'/v1/sim/user/alloys/{_id}',
-                content_type='application/json'
+                f'/v1/sim/user/alloys/{_id}', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
@@ -392,8 +390,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = ObjectId()
 
             res = client.get(
-                f'/v1/sim/user/alloys/{_id}',
-                content_type='application/json'
+                f'/v1/sim/user/alloys/{_id}', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['message'], 'Alloy does not exist.')
@@ -462,8 +459,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = str(user.saved_alloys[0].oid)
 
             res = client.delete(
-                f'/v1/sim/user/alloys/{_id}',
-                content_type='application/json'
+                f'/v1/sim/user/alloys/{_id}', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(res.status_code, 202)
@@ -495,8 +491,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = ObjectId()
 
             res = client.delete(
-                f'/v1/sim/user/alloys/{_id}',
-                content_type='application/json'
+                f'/v1/sim/user/alloys/{_id}', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['message'], 'No alloy found.')
@@ -513,8 +508,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = ObjectId()
 
             res = client.delete(
-                f'/v1/sim/user/alloys/{_id}',
-                content_type='application/json'
+                f'/v1/sim/user/alloys/{_id}', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(res.status_code, 404)

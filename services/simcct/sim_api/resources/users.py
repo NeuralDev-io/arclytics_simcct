@@ -30,6 +30,7 @@ from sim_api.middleware import (
     authenticate_user_cookie_restful, authorize_admin_cookie_restful
 )
 from sim_api.models import (User, UserProfile)
+from sim_api.routes import Routes
 
 logger = AppLogger(__name__)
 users_blueprint = Blueprint('users', __name__)
@@ -43,8 +44,108 @@ class UserList(Resource):
     # noinspection PyMethodMayBeStatic
     def get(self, _) -> Tuple[dict, int]:
         """Get all users only available to admins."""
-        user_list = User.as_dict
-        response = {'status': 'success', 'data': {'users': user_list}}
+        # user_list = User.as_dict
+        # response = {'status': 'success', 'data': {'users': user_list}}
+        # return response, 200
+
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+        data = request.get_json()
+
+        if isinstance(data, dict):
+            sort_on = data.get('sort_on', None)
+            offset = data.get('offset', None)
+            limit = data.get('limit', None)
+        else:
+            sort_on = None
+            offset = None
+            limit = None
+
+        # Validate sort parameters
+        if sort_on:
+            valid_sort_keys = [
+                'email', '-email', 'admin', '-admin', 'verified', '-verified',
+                'fullname', '-fullname'
+            ]
+            sort_valid = False
+            for k in valid_sort_keys:
+                if k == sort_on:
+                    sort_valid = True
+                    break
+
+            if not sort_valid:
+                response['message'] = 'Sort value is invalid.'
+                return response, 400
+
+        # Validate limit:
+        if limit:
+            if not isinstance(limit, int):
+                response['message'] = 'Limit value is invalid.'
+                return response, 400
+            if not limit >= 1:
+                response['message'] = 'Limit must be > 1.'
+                return response, 400
+        else:
+            limit = 10
+
+        # Validate offset
+        user_size = User.objects.count()
+        if offset:
+            if not isinstance(offset, int):
+                response['message'] = 'Offset value is invalid.'
+                return response, 400
+            if offset > user_size + 1:
+                response['message'] = 'Offset value exceeds number of records.'
+                return response, 400
+            if offset < 1:
+                response['message'] = 'Offset must be > 1.'
+                return response, 400
+        else:
+            offset = 1
+
+        # Query
+        if sort_on:
+            # Get the objects starting at the offset, limit the number of
+            # results and sort on the sort_on value.
+            if sort_on == 'fullname':
+                query_set = User.objects[offset - 1:offset + limit -
+                                         1].order_by(
+                                             'last_name', 'first_name'
+                                         )
+            elif sort_on == '-fullname':
+                query_set = User.objects[offset - 1:offset + limit -
+                                         1].order_by(
+                                             '-last_name', '-first_name'
+                                         )
+            else:
+                query_set = User.objects[offset - 1:offset + limit -
+                                         1].order_by(sort_on)
+        else:
+            query_set = User.objects[offset - 1:offset + limit - 1]
+
+        response['sort_on'] = sort_on
+        # Next offset is the offset for the next page of results. Prev is for
+        # the previous.
+        response['next_offset'] = None
+        response['prev_offset'] = None
+        response['limit'] = limit
+
+        if offset + limit - 1 < user_size:
+            response['next_offset'] = offset + limit
+        if offset - limit >= 1:
+            response['prev_offset'] = offset - limit
+
+        if user_size % limit == 0:
+            total_pages = int(user_size / limit)
+        else:
+            total_pages = int(user_size / limit) + 1
+        current_page = int(offset / limit) + 1
+
+        response.pop('message')
+        response['status'] = 'success'
+        response['current_page'] = current_page
+        response['total_pages'] = total_pages
+        response['data'] = [obj.to_dict() for obj in query_set]
         return response, 200
 
 
@@ -265,6 +366,6 @@ class UserProfiles(Resource):
         return response, 201
 
 
-api.add_resource(UserList, '/v1/sim/users')
-api.add_resource(Users, '/v1/sim/user')
-api.add_resource(UserProfiles, '/v1/sim/user/profile')
+api.add_resource(UserList, Routes.user_list.value)
+api.add_resource(Users, Routes.users.value)
+api.add_resource(UserProfiles, Routes.user_profiles.value)

@@ -41,7 +41,7 @@ class BaseConfig:
     # Session variables for Flask
     SESSION_COOKIE_NAME = 'session'
     SESSION_COOKIE_HTTPONLY = True
-    SESSION_PERMANENT = True
+    SESSION_PERMANENT = False
     SESSION_TYPE = 'redis'
     SESSION_USE_SIGNER = True
 
@@ -50,8 +50,8 @@ class BaseConfig:
     redis_port = env.get('REDIS_PORT', None)
 
     # CELERY REDIS
-    CELERY_BROKER_URL = f'redis://{redis_host}:{redis_port}/5'
-    CELERY_RESULT_BACKEND = f'redis://{redis_host}:{redis_port}/6'
+    CELERY_BROKER_URL = f'redis://{redis_host}:{redis_port}/1'
+    CELERY_RESULT_BACKEND = f'redis://{redis_host}:{redis_port}/2'
 
     # fluentd
     FLUENTD_HOST = env.get('FLUENTD_HOST', 'localhost')
@@ -86,7 +86,6 @@ class TestingConfig(BaseConfig):
     PRESERVE_CONTEXT_ON_EXCEPTION = False
 
     SESSION_PERMANENT = False
-    REDIS_DB = 2
 
 
 class ProductionConfig(BaseConfig):
@@ -105,8 +104,8 @@ class ProductionConfig(BaseConfig):
     redis_uri = f'redis://user:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}'
 
     # Production Celery
-    CELERY_BROKER_URL = f'{redis_uri}/5'
-    CELERY_RESULT_BACKEND = f'{redis_uri}/6'
+    CELERY_BROKER_URL = f'{redis_uri}/1'
+    CELERY_RESULT_BACKEND = f'{redis_uri}/2'
 
     # production elastic application performance monitoring
     ELASTIC_APM = {

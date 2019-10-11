@@ -32,6 +32,7 @@ from sim_api.extensions.utilities import (
 from sim_api.middleware import (
     authenticate_user_cookie_restful, authorize_admin_cookie_restful
 )
+from sim_api.routes import Routes
 from sim_api.schemas import AlloySchema
 
 logger = AppLogger(__name__)
@@ -417,5 +418,5 @@ class Alloys(Resource):
         return response, 202
 
 
-api.add_resource(Alloys, '/v1/sim/global/alloys/<alloy_id>')
-api.add_resource(AlloysList, '/v1/sim/global/alloys')
+api.add_resource(Alloys, Routes.alloys.value)
+api.add_resource(AlloysList, Routes.alloys_list.value)

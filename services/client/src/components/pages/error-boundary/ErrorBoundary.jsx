@@ -36,24 +36,23 @@ class ErrorBoundary extends React.Component {
     return { error }
   }
 
+  handleRefreshPage = () => {
+    window.location.reload()
+  }
+
   componentDidCatch(error, errorInfo) {
     // Catch errors in any components below and re-render with error message
     this.setState({
       error,
       errorInfo,
     })
-    // TODO(andrew@neuraldev.io): Check what type `error` and `errorInfo` are
     logError(error.toString(), error.message, 'ErrorBoundary', error.stack)
   }
 
-  handleRefreshPage = () => {
-    window.location.reload()
-  }
-
   render() {
-    const { errorInfo } = this.state
+    const { error, errorInfo } = this.state
     const { children } = this.props
-    if (errorInfo) {
+    if (errorInfo || error) {
       // Error path
       return (
         <div>

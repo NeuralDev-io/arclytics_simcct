@@ -301,9 +301,7 @@ class TestAlloyService(BaseTestCase):
             )
 
             # Logging out should clear the session
-            client.get(
-                '/v1/sim/auth/logout', content_type='application/json'
-            )
+            client.get('/v1/sim/auth/logout', content_type='application/json')
 
             # Clear the cookie from previously although it should be
             # cleared by logout
@@ -360,12 +358,12 @@ class TestAlloyService(BaseTestCase):
 
             self.assertEqual(res.status_code, 400)
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(
-                data['message'], 'Invalid element error.'
-            )
+            self.assertEqual(data['message'], 'Invalid element error.')
             self.assertTrue(data['error'])
-            err = ('ValidationError (Element) (Field is required: '
-                   '["Element.symbol"].)')
+            err = (
+                'ValidationError (Element) (Field is required: '
+                '["Element.symbol"].)'
+            )
             self.assertEqual(data['error'], err)
 
     def test_create_duplicate_name_alloy(self):

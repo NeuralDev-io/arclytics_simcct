@@ -25,12 +25,12 @@ from mongoengine import ValidationError as MEValidationError
 
 from arc_logging import AppLogger
 from sim_api.extensions import api, apm
-from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
     MissingElementError, ElementWeightInvalid
 )
 from sim_api.middleware import authenticate_user_cookie_restful
+from sim_api.routes import Routes
 from sim_api.schemas import (
     ConfigurationsSchema, AlloyStoreSchema, SimulationResultsSchema
 )
@@ -99,7 +99,11 @@ class LastSimulation(Resource):
         if not is_valid:
             # Save everything that we're given which has no validation since
             # `models.User` is using `mongoengine.DictField` for all these.
-            user.last_configuration = post_configs if post_configs else {}
+            if post_configs:
+                user.last_configuration = post_configs
+                user.last_configuration['is_valid'] = is_valid
+            else:
+                user.last_configuration = {}
             user.last_alloy_store = post_alloy_store if post_alloy_store else {}
             user.last_simulation_results = post_results if post_results else {}
             user.last_simulation_invalid_fields = (
@@ -289,13 +293,7 @@ class LastSimulation(Resource):
         # Build up our response data as we go.
         data = {}
 
-        # Get our session storage back from the Session instance which
-        # is retrieved from Redis and converted to a dictionary for us
-        # by the `SimSessionService`
-        session_store = SimSessionService().load_session()
-
         if user.last_configuration:
-            session_store['configurations'] = user.last_configuration
             is_valid = user.last_configuration['is_valid']
             data.update(
                 {
@@ -305,11 +303,9 @@ class LastSimulation(Resource):
             )
 
         if user.last_alloy_store:
-            session_store['alloy_store'] = user.last_alloy_store
             data.update({'last_alloy_store': user.last_alloy_store})
 
         if user.last_simulation_results:
-            session_store['simulation_results'] = user.last_simulation_results
             data.update(
                 {'last_simulation_results': user.last_simulation_results}
             )
@@ -322,10 +318,8 @@ class LastSimulation(Resource):
                 }
             )
 
-        SimSessionService().save_session(session_store)
-
         response.update({'status': 'success', 'data': data})
         return response, 200
 
 
-api.add_resource(LastSimulation, '/v1/sim/user/last/simulation')
+api.add_resource(LastSimulation, Routes.last_simulation.value)

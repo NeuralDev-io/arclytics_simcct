@@ -14,6 +14,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
+import ActivityIcon from 'react-feather/dist/icons/activity'
 import HardDriveIcon from 'react-feather/dist/icons/hard-drive'
 // import HelpIcon from 'react-feather/dist/icons/help-circle'
 import MonitorIcon from 'react-feather/dist/icons/monitor'
@@ -21,7 +22,7 @@ import UserIcon from 'react-feather/dist/icons/user'
 import LogOutIcon from 'react-feather/dist/icons/log-out'
 import DatabaseIcon from 'react-feather/dist/icons/database'
 import SlidersIcon from 'react-feather/dist/icons/sliders'
-import { ReactComponent as AnstoLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
+import { ReactComponent as ANSTOLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import Tooltip from '../../elements/tooltip'
 import store from '../../../state/store'
@@ -29,22 +30,26 @@ import { logout } from '../../../api/AuthenticationHelper'
 import { buttonize } from '../../../utils/accessibility'
 import { saveLastSim } from '../../../state/ducks/self/actions'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
+import { logError } from '../../../api/LoggingHelper'
 
 import styles from './AppBar.module.scss'
 
 class AppBar extends React.Component {
-  handleLogout = () => {
+  handleLogout = async () => {
     const { addFlashToastConnect, saveLastSimConnect, redirect } = this.props
-    saveLastSimConnect()
+    await saveLastSimConnect()
     logout()
       .then(() => {
         redirect('/signin')
         store.dispatch({ type: 'USER_LOGOUT' })
       })
-      .catch(() => addFlashToastConnect({
-        message: 'We couldn\'t log you out. Please try again',
-        options: { variant: 'error' },
-      }, true))
+      .catch((err) => {
+        logError(err.toString(), err.messages, 'AppBar.handleLogout', err.stack_trace)
+        addFlashToastConnect({
+          message: 'We couldn\'t log you out. Please try again',
+          options: { variant: 'error' },
+        }, true)
+      })
   }
 
   render() {
@@ -57,7 +62,7 @@ class AppBar extends React.Component {
     return (
       <nav className={styles.navContainer}>
         <div>
-          <AnstoLogo className={styles.anstoLogo} />
+          <ANSTOLogo className={styles.anstoLogo} />
           <Link
             id="sim"
             className={`${styles.navIcon} ${active === 'sim' && styles.active}`}
@@ -90,7 +95,8 @@ class AppBar extends React.Component {
           </Link>
           {/* <a
             id="help"
-            className={`${styles.navIcon} ${active === 'edu' && styles.active} ${!isAuthenticated && styles.disabled}`}
+            className={`${styles.navIcon} ${active === 'edu' && styles.active}
+            ${!isAuthenticated && styles.disabled}`}
             href={isAuthenticated ? '/' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
@@ -98,6 +104,24 @@ class AppBar extends React.Component {
               <p>Help</p>
             </Tooltip>
           </a> */}
+
+          <div
+            className={styles.line}
+            style={{ display: isAdmin ? 'flex' : 'none' }}
+          />
+
+          <Link
+            id="analytics"
+            className={`${styles.navIcon} ${active === 'analytics' && styles.active}`}
+            style={{ display: isAdmin ? 'flex' : 'none' }}
+            to="/analytics/users"
+          >
+            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+              <ActivityIcon className={styles.icon} />
+              <p>Data & Analytics</p>
+            </Tooltip>
+          </Link>
+
           <Link
             id="admin"
             className={`${styles.navIcon} ${active === 'admin' && styles.active}`}

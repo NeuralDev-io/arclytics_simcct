@@ -75,6 +75,7 @@ class SaveAlloyModal extends Component {
           <Button
             onClick={this.handleSaveAlloy}
             length="long"
+            isDisabled={savedAlloy === undefined || savedAlloy === ''}
           >
             Save
           </Button>

@@ -25,6 +25,7 @@ from typing import Optional
 
 import numpy as np
 from bson import ObjectId
+from email_validator import validate_email, EmailNotValidError
 
 from simulation.utilities import Method
 
@@ -64,7 +65,6 @@ RESPONSE_HEADERS = {
 
 class JSONEncoder(json.JSONEncoder):
     """Extends the json-encoder to properly convert dates and bson.ObjectId"""
-
     def default(self, o):
         if isinstance(o, Method):
             return o.name
@@ -92,7 +92,6 @@ class PasswordValidationError(Exception):
     Raises an Exception if now password was set before trying to save
     the User model.
     """
-
     def __init__(self):
         super(PasswordValidationError,
               self).__init__('A password must be set before saving.')
@@ -102,7 +101,6 @@ class URLTokenError(Exception):
     """
     A custom exception to be raised from any itsdangerous package exceptions.
     """
-
     def __init__(self, msg: str = None):
         super(URLTokenError, self).__init__(msg)
 
@@ -111,9 +109,30 @@ class URLTokenExpired(Exception):
     """
     Custom exception to be raised from any `itsdangerous` package exceptions.
     """
-
     def __init__(self, msg: str = None):
         super(URLTokenExpired, self).__init__(msg)
+
+
+def arc_validate_email(email: str) -> dict:
+    """
+    Custom email validator that uses the email-validator library.
+    """
+    # Check for the arclytics.io domain
+    if isinstance(email, str):
+        # First split the email into username and domain
+        email_split = email.split('@')
+        # Ensure both keys are present
+        if len(email_split) == 2:
+            # Check the domain
+            if email_split[1] == 'arclytics.io':
+                return {
+                    'msg': 'Email has arclytics.io as the domain.',
+                    'email': email
+                }
+    # Otherwise we validate normally. `validate_email` will raise
+    # EmailNotValidError if the email is invalid.
+    valid_email_dict = validate_email(email)
+    return valid_email_dict
 
 
 class ElementSymbolInvalid(Exception):

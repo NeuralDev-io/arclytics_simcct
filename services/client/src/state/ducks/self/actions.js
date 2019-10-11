@@ -312,6 +312,11 @@ export const saveSimulation = () => (dispatch, getState) => {
  * }
  */
 export const getSavedSimulations = () => (dispatch) => {
+  dispatch({
+    type: GET_SIM,
+    status: 'started',
+  })
+
   fetch(`${SIMCCT_URL}/user/simulation`, {
     method: 'GET',
     credentials: 'include',
@@ -334,10 +339,15 @@ export const getSavedSimulations = () => (dispatch) => {
           message: res.message,
           options: { variant: 'error' },
         }, true)(dispatch)
+        dispatch({
+          type: GET_SIM,
+          status: 'fail',
+        })
       }
       if (res.status === 'success') {
         dispatch({
           type: GET_SIM,
+          status: 'success',
           payload: res.data,
         })
       }
@@ -389,7 +399,7 @@ export const saveLastSim = () => (dispatch, getState) => {
 
   const isValid = Object.keys(alloyError).length !== 0 && Object.keys(configError) !== 0
 
-  fetch(`${SIMCCT_URL}/user/last/simulation`, {
+  return fetch(`${SIMCCT_URL}/user/last/simulation`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -423,7 +433,16 @@ export const getLastSim = () => dispatch => (
       'Content-Type': 'application/json',
     },
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status === 404) { return { status: 'fail', data: {} } }
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Couldn\'t retrieve saved simulations',
+        }
+      }
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'success') {
         dispatch({

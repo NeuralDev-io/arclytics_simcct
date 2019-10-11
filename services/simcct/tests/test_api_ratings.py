@@ -40,7 +40,6 @@ def load_test_feedback(self, user: User):
 
 class TestRatingsService(BaseTestCase):
     """Tests for Ratings and feedback endpoints"""
-
     def tearDown(self) -> None:
         db = get_db('default')
         self.assertTrue(db.name, 'arc_test')

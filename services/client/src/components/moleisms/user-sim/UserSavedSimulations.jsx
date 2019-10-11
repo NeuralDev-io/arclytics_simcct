@@ -34,8 +34,8 @@ class UserSavedSimulations extends Component {
   }
 
   componentDidMount = () => {
-    const { data = [], getSavedSimulationsConnect } = this.props
-    if (data.length === 0) getSavedSimulationsConnect()
+    const { data = [], dataFetched = false, getSavedSimulationsConnect } = this.props
+    if (data.length === 0 || !dataFetched) getSavedSimulationsConnect()
   }
 
   handleLoadSim = (sim) => {
@@ -70,7 +70,10 @@ class UserSavedSimulations extends Component {
 
   render() {
     const { showSideView, currentSim: { _id, ...currentSimContent } } = this.state
-    const { data = [] } = this.props
+    let { data = [] } = this.props
+    const { dataFetched, dataLoading } = this.props
+    if (!dataFetched) data = []
+
     const columns = [
       {
         Header: 'ID',
@@ -110,6 +113,7 @@ class UserSavedSimulations extends Component {
             className="-highlight"
             data={data}
             columns={columns}
+            loading={dataLoading}
             pageSize={data.length > 10 ? 10 : data.length}
             showPageSizeOptions={false}
             showPagination={data.length !== 0}
@@ -159,12 +163,16 @@ UserSavedSimulations.propTypes = {
   redirect: PropTypes.func.isRequired,
   // props from connect()
   data: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
+  dataFetched: PropTypes.bool.isRequired,
+  dataLoading: PropTypes.bool.isRequired,
   getSavedSimulationsConnect: PropTypes.func.isRequired,
   loadSimFromAccountConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
-  data: state.self.savedSimulations,
+  data: state.self.savedSimulations.data,
+  dataFetched: state.self.savedSimulations.fetched,
+  dataLoading: state.self.savedSimulations.isLoading,
 })
 
 const mapDispatchToProps = {

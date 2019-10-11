@@ -48,8 +48,8 @@ class AdminAlloys extends Component {
   }
 
   componentDidMount = () => {
-    const { globalAlloys = [], getGlobalAlloysConnect } = this.props
-    if (!globalAlloys || globalAlloys.length === 0) getGlobalAlloysConnect()
+    const { globalAlloys = [], dataFetched = false, getGlobalAlloysConnect } = this.props
+    if (!globalAlloys || globalAlloys.length === 0 || !dataFetched) getGlobalAlloysConnect()
   }
 
   handleShowModal = type => this.setState({ [`${type}Modal`]: true })
@@ -131,7 +131,9 @@ class AdminAlloys extends Component {
   }))
 
   render() {
-    const { globalAlloys } = this.props
+    const { dataFetched, dataLoading } = this.props
+    let { globalAlloys } = this.props
+    if (!dataFetched) globalAlloys = []
     const {
       alloyId,
       currentAlloy,
@@ -139,7 +141,6 @@ class AdminAlloys extends Component {
       addModal,
       deleteModal,
       editModal,
-      error,
     } = this.state
 
     const tableData = globalAlloys.filter(
@@ -215,6 +216,7 @@ class AdminAlloys extends Component {
           className="-highlight"
           data={tableData}
           columns={columns}
+          loading={dataLoading}
           pageSize={tableData.length > 10 ? 10 : tableData.length}
           showPageSizeOptions={false}
           showPagination={tableData.length !== 0}
@@ -258,6 +260,8 @@ AdminAlloys.propTypes = {
       weight: PropTypes.number,
     })),
   })).isRequired,
+  dataFetched: PropTypes.bool.isRequired,
+  dataLoading: PropTypes.bool.isRequired,
   getGlobalAlloysConnect: PropTypes.func.isRequired,
   createGlobalAlloyConnect: PropTypes.func.isRequired,
   updateGlobalAlloyConnect: PropTypes.func.isRequired,
@@ -266,7 +270,9 @@ AdminAlloys.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  globalAlloys: state.alloys.global,
+  globalAlloys: state.alloys.global.data,
+  dataFetched: state.alloys.global.isFetched,
+  dataLoading: state.alloys.global.isLoading,
 })
 
 const mapDispatchToProps = {

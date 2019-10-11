@@ -24,7 +24,7 @@ const AdminPage = ({ history }) => (
   <React.Fragment>
     <AppBar active="admin" redirect={history.push} isAdmin isAuthenticated />
     <div className={styles.sidebar}>
-      <AdminSidebar />
+      <AdminSidebar redirect={history.push} />
     </div>
     <div className={styles.main}>
       <Route path="/admin/alloys" render={props => <AdminAlloys {...props} />} />

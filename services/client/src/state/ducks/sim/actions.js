@@ -594,11 +594,12 @@ export const updateCCTIndex = idx => (dispatch) => {
  * }
  * @param {any} sim simulation object
  */
-export const loadSimFromFile = (sim) => (dispatch) => {
+export const loadSimFromFile = (sim) => (dispatch, getState) => {
   dispatch({
     type: LOAD_SIM_FROM_FILE,
     payload: sim,
   })
+  addSimToTimeMachine()(dispatch, getState)
 }
 
 /**
@@ -606,7 +607,7 @@ export const loadSimFromFile = (sim) => (dispatch) => {
  * into the app
  * @param {string} token token to access sim link
  */
-export const loadSimFromLink = token => dispatch => (
+export const loadSimFromLink = token => (dispatch, getState) => (
   fetch(`${SIMCCT_URL}/user/share/simulation/view/${token}`, {
     method: 'GET',
     credentials: 'include',
@@ -660,6 +661,7 @@ export const loadSimFromLink = token => dispatch => (
             results: simulation_results,
           },
         })
+        addSimToTimeMachine()(dispatch, getState)
       }
     })
     .catch((err) => {
@@ -674,7 +676,7 @@ export const loadSimFromLink = token => dispatch => (
  */
 export const loadSimFromAccount = ({
   alloy_store, configurations, simulation_results,
-}) => (dispatch) => {
+}) => (dispatch, getState) => {
   const { is_valid, grain_size, ...otherConfig } = configurations
   dispatch({
     type: LOAD_SIM,
@@ -697,6 +699,7 @@ export const loadSimFromAccount = ({
       results: simulation_results,
     },
   })
+  addSimToTimeMachine()(dispatch, getState)
 }
 
 /**
@@ -708,6 +711,7 @@ export const loadPersistedSim = () => (dispatch, getState) => {
     type: LOAD_PERSISTED_SIM,
     payload: lastSim,
   })
+  addSimToTimeMachine()(dispatch, getState)
 }
 
 /**
@@ -729,4 +733,5 @@ export const loadLastSim = () => (dispatch, getState) => {
       last_configuration: convertedConfig,
     },
   })
+  addSimToTimeMachine()(dispatch, getState)
 }

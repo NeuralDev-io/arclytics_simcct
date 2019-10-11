@@ -51,8 +51,8 @@ class UserAlloys extends Component {
   }
 
   componentDidMount = () => {
-    const { userAlloys = [], getUserAlloysConnect } = this.props
-    if (!userAlloys || userAlloys.length === 0) getUserAlloysConnect()
+    const { userAlloys = [], dataFetched = false, getUserAlloysConnect } = this.props
+    if (!userAlloys || userAlloys.length === 0 || !dataFetched) getUserAlloysConnect()
   }
 
   handleShowModal = type => this.setState({ [`${type}Modal`]: true })
@@ -132,7 +132,10 @@ class UserAlloys extends Component {
   }))
 
   render() {
-    const { userAlloys } = this.props
+    const { dataFetched, dataLoading } = this.props
+    let { userAlloys } = this.props
+    if (!dataFetched) userAlloys = []
+
     const {
       alloyId,
       currentAlloy,
@@ -215,6 +218,7 @@ class UserAlloys extends Component {
           className="-highlight"
           data={tableData}
           columns={columns}
+          loading={dataLoading}
           pageSize={tableData.length > 10 ? 10 : tableData.length}
           showPageSizeOptions={false}
           showPagination={tableData.length !== 0}
@@ -258,6 +262,8 @@ UserAlloys.propTypes = {
       weight: PropTypes.number,
     })),
   })).isRequired,
+  dataLoading: PropTypes.bool.isRequired,
+  dataFetched: PropTypes.bool.isRequired,
   getUserAlloysConnect: PropTypes.func.isRequired,
   createUserAlloyConnect: PropTypes.func.isRequired,
   updateUserAlloyConnect: PropTypes.func.isRequired,
@@ -266,7 +272,9 @@ UserAlloys.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  userAlloys: state.alloys.user,
+  userAlloys: state.alloys.user.data,
+  dataLoading: state.alloys.user.isLoading,
+  dataFetched: state.alloys.user.isFetched,
 })
 
 const mapDispatchToProps = {

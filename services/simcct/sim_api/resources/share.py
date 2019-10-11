@@ -306,9 +306,7 @@ class ShareSimulationEmail(Resource):
         return response, 201
 
 
-@share_blueprint.route(
-    Routes.request_shared_simulation.value, methods=['GET']
-)
+@share_blueprint.route(Routes.request_shared_simulation.value, methods=['GET'])
 def request_shared_simulation(token):
     """
     When the user clicks on a link to view a shared configuration, we need to

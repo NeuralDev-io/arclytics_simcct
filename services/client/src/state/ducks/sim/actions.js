@@ -499,6 +499,11 @@ export const runSim = () => (dispatch, getState) => {
     ...otherConfigs
   } = getState().sim.configurations
 
+  dispatch({
+    type: RUN_SIM,
+    status: 'started',
+  })
+
   // TODO(dalton@neuraldev.io): So it works like this but I'm sure you need
   //  to make this better.
   //  From Andrew (andrew@neuraldev.io)
@@ -539,6 +544,10 @@ export const runSim = () => (dispatch, getState) => {
     .then((simRes) => {
       if (simRes.status === 'fail') {
         logDebug(simRes, 'actions.runSim')
+        dispatch({
+          type: RUN_SIM,
+          status: 'fail',
+        })
         return {
           status: 'fail',
           message: 'Could not get simulation results',
@@ -547,6 +556,7 @@ export const runSim = () => (dispatch, getState) => {
       if (simRes.status === 'success') {
         dispatch({
           type: RUN_SIM,
+          status: 'success',
           payload: simRes.data,
         })
         addSimToTimeMachine()(dispatch, getState)

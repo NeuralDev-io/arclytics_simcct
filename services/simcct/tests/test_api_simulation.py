@@ -207,9 +207,7 @@ class TestSimulationService(BaseTestCase):
 
             self.assertTrue(data.get('data'))
             self.assert200(res)
-
             ae1_temp = data['data']['ae1_temp']
-            logger.debug(ae1_temp)
 
             res = client.get(
                 '/v1/sim/ae3equilibrium',
@@ -222,9 +220,15 @@ class TestSimulationService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-
-            logger.debug(data)
             self.assert200(res)
+
+            ceut = float(data['data']['eutectic_composition_carbon'])
+            xfe = float(data['data']['ferrite_phase_frac'])
+            cf = float(data['data']['cf'])
+            self.assertEqual(ceut, 0.83)
+            self.assertAlmostEqual(xfe, 0.9462, 4)
+            self.assertEqual(cf, 0.012)
+            logger.debug(data['data']['results_plot'])
 
 
 if __name__ == '__main__':

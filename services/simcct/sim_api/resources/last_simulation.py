@@ -25,7 +25,6 @@ from mongoengine import ValidationError as MEValidationError
 
 from arc_logging import AppLogger
 from sim_api.extensions import api, apm
-from sim_api.extensions.SimSession.sim_session_service import SimSessionService
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
     MissingElementError, ElementWeightInvalid
@@ -294,13 +293,7 @@ class LastSimulation(Resource):
         # Build up our response data as we go.
         data = {}
 
-        # Get our session storage back from the Session instance which
-        # is retrieved from Redis and converted to a dictionary for us
-        # by the `SimSessionService`
-        session_store = SimSessionService().load_session()
-
         if user.last_configuration:
-            session_store['configurations'] = user.last_configuration
             is_valid = user.last_configuration['is_valid']
             data.update(
                 {
@@ -310,11 +303,9 @@ class LastSimulation(Resource):
             )
 
         if user.last_alloy_store:
-            session_store['alloy_store'] = user.last_alloy_store
             data.update({'last_alloy_store': user.last_alloy_store})
 
         if user.last_simulation_results:
-            session_store['simulation_results'] = user.last_simulation_results
             data.update(
                 {'last_simulation_results': user.last_simulation_results}
             )
@@ -326,8 +317,6 @@ class LastSimulation(Resource):
                     user.last_simulation_invalid_fields
                 }
             )
-
-        SimSessionService().save_session(session_store)
 
         response.update({'status': 'success', 'data': data})
         return response, 200

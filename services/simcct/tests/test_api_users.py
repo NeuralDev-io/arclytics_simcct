@@ -101,8 +101,7 @@ class TestUserService(BaseTestCase):
 
     def test_ping(self):
         """Ensure the /ping route behaves correctly."""
-        from sim_api.routes import PREFIX
-        res = self.client.get(f'{PREFIX}/ping')
+        res = self.client.get('/v1/sim/ping')
         data = json.loads(res.data.decode())
         self.assertEqual(res.status_code, 200)
         self.assertIn('success', data['status'])

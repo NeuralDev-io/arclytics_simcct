@@ -28,6 +28,7 @@ import { TTT, CCT } from '../../moleisms/charts'
 import { loadPersistedSim, loadLastSim } from '../../../state/ducks/sim/actions'
 import { getLastSim } from '../../../state/ducks/self/actions'
 import { persistSim } from '../../../state/ducks/persist/actions'
+import { logError } from '../../../api/LoggingHelper'
 
 import styles from './SimulationPage.module.scss'
 
@@ -64,7 +65,7 @@ class SimulationPage extends Component {
     const diff = now - persistedTime
 
     // if the last sim session is less than 1 hour ago, load it instead
-    // otherise, load the last sim saved in the account
+    // otherwise, load the last sim saved in the account
     if (diff / 60000 < 60 && Object.keys(persistedSim).length !== 0) {
       loadPersistedSimConnect()
     } else if (lastSim === undefined || Object.keys(lastSim).length === 0) {
@@ -74,6 +75,9 @@ class SimulationPage extends Component {
             loadLastSimConnect()
           }
         })
+        .catch((err) => logError(
+          err.toString(), err.message, 'SimulationPage.componentDidMount', err.stack_trace)
+        )
     }
   }
 

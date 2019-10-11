@@ -28,7 +28,7 @@ from mongoengine import (
     BooleanField, DO_NOTHING, DateTimeField, DictField, Document, EmailField,
     EmbeddedDocument, EmbeddedDocumentField, EmbeddedDocumentListField,
     FloatField, IntField, ObjectIdField, ReferenceField, StringField,
-    PointField, ValidationError, queryset_manager
+    LongField, PointField, ValidationError, queryset_manager
 )
 
 from arc_logging import AppLogger
@@ -470,6 +470,10 @@ class User(Document):
     last_simulation_results = DictField(default=None)
     last_simulation_invalid_fields = DictField(default=None)
 
+    # Store the number of simulations the user has run
+    simulations_count = LongField(default=0)
+
+    # Store alloys for the user
     saved_alloys = EmbeddedDocumentListField(document_type=Alloy)
 
     # Some rather useful metadata information that's not core to the

@@ -25,7 +25,7 @@ from pathlib import Path
 
 import geoip2
 import geoip2.database
-from email_validator import EmailNotValidError, validate_email
+from email_validator import EmailNotValidError
 from flask import (
     Blueprint, jsonify, redirect, render_template, request, session
 )
@@ -36,7 +36,9 @@ from redis import ReadOnlyError
 
 from arc_logging import AppLogger
 from sim_api.extensions import bcrypt, apm, redis_session
-from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
+from sim_api.extensions.utilities import (
+    URLTokenError, URLTokenExpired, arc_validate_email
+)
 from sim_api.middleware import (authenticate_user_and_cookie_flask)
 from sim_api.models import LoginData, User
 from sim_api.token import (
@@ -99,8 +101,14 @@ def confirm_email(token):
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     # We ensure there is a user for this email
-    user = User.objects.get(email=email)
+    if not User.objects(email=email):
+        log_message = {'message': 'User does not exist.'}
+        logger.error(log_message)
+        apm.capture_message(log_message)
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
+
     # And do the real work confirming their status
+    user = User.objects.get(email=email)
     user.verified = True
     user.save()
 
@@ -211,6 +219,12 @@ def confirm_email_admin(token):
         apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
+    if not User.objects(email=email):
+        log_message = {'message': 'User does not exist.'}
+        logger.error(log_message)
+        apm.capture_message(log_message)
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
+
     user = User.objects.get(email=email)
     user.admin_profile.verified = True
     user.save()
@@ -250,10 +264,19 @@ def register_user() -> Tuple[dict, int]:
         response['message'] = 'The password is invalid.'
         return jsonify(response), 400
 
+    # Verify email is valid
+    try:
+        v = arc_validate_email(email)
+        valid_email = v['email']
+    except EmailNotValidError as e:
+        response['error'] = str(e)
+        response['message'] = 'Invalid email.'
+        return response, 400
+
     # Create a Mongo User object if one doesn't exists
-    if not User.objects(email=email):
+    if not User.objects(email=valid_email):
         new_user = User(
-            email=email, first_name=first_name, last_name=last_name
+            email=valid_email, first_name=first_name, last_name=last_name
         )
         # ensure we set an encrypted password.
         new_user.set_password(raw_password=password)
@@ -268,12 +291,12 @@ def register_user() -> Tuple[dict, int]:
         # beginning is always the default.
         auth_token = AuthService().encode_auth_token(new_user.id, role='user')
         # generate the confirmation token for verifying email
-        confirmation_token = generate_confirmation_token(email)
+        confirmation_token = generate_confirmation_token(valid_email)
         confirm_url = generate_url('auth.confirm_email', confirmation_token)
 
         from sim_api.email_service import send_email
         send_email(
-            to=[email],
+            to=[valid_email],
             subject_suffix='Please Confirm Your Email',
             html_template=render_template(
                 'activate.html',
@@ -447,6 +470,14 @@ def confirm_reset_password(token):
             f'{redirect_url}/password/reset?tokenexpired=true', code=302
         )
 
+    # Ensure the user exists
+    if not User.objects(email=email):
+        logger.error('User does not exist.')
+        apm.capture_message('User does not exist.')
+        return redirect(
+            f'{redirect_url}/password/reset?tokenexpired=true', code=302
+        )
+
     # Confirm and validate that the user exists
     user = User.objects.get(email=email)
 
@@ -490,7 +521,7 @@ def reset_password_email() -> Tuple[dict, int]:
     # Verify it is actually a valid email
     try:
         # validate and get info
-        v = validate_email(post_email)
+        v = arc_validate_email(post_email)
         # replace with normalized form
         valid_email = v['email']
     except EmailNotValidError as e:
@@ -636,7 +667,7 @@ def change_email(user) -> Tuple[dict, int]:
 
     # Validate new email address.
     try:
-        v = validate_email(new_email)
+        v = arc_validate_email(new_email)
         valid_new_email = v['email']
     except EmailNotValidError as e:
         response['error'] = str(e)
@@ -715,7 +746,7 @@ def login() -> any:
     # Let's save some stats for later
     login_datetime = datetime.utcnow()
 
-    user = User.objects.get(email=email)
+    user = User.objects.get(email=str(email).lower())
 
     # Now let's really check if the User can access our application
     if bcrypt.check_password_hash(user.password, password):

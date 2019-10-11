@@ -622,62 +622,6 @@ class TestLastSimulation(BaseTestCase):
             )
             user.delete()
 
-    def test_get_last_alloy_default_values(self):
-        """Ensure we can save a last configuration that is the default."""
-
-        default_alloy_store = {
-            'alloy_option': 'single',
-            'alloys': {
-                'parent': None,
-                'weld': None,
-                'mix': None
-            }
-        }
-        default_configuration = {
-            'is_valid': False,
-            'method': 'Li98',
-            'grain_size': 8.0,
-            'nucleation_start': 1.0,
-            'nucleation_finish': 99.90,
-            'auto_calculate_ms': True,
-            'ms_temp': 0.0,
-            'ms_rate_param': 0.0,
-            'auto_calculate_bs': True,
-            'bs_temp': 0.0,
-            'auto_calculate_ae': True,
-            'ae1_temp': 0.0,
-            'ae3_temp': 0.0,
-            'start_temp': 900,
-            'cct_cooling_rate': 10
-        }
-
-        with app.test_client() as client:
-            test_login(client, self.tony.email, self._tony_pw)
-            # By default, when the user logs in and they have no previous
-            # configurations or alloy store saved, then they will get the
-            # default during login with the `SimSessionService.new_session`
-            res = client.get(
-                '/v1/sim/user/last/simulation',
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'],
-                'User does not have a last configurations or alloy store.'
-            )
-            self.assertEqual(data['status'], 'fail')
-            self.assertIsNone(data.get('data', None))
-            self.assert404(res)
-            from sim_api.extensions.SimSession import SimSessionService
-            session_store = SimSessionService().load_session()
-            self.assertDictEqual(
-                session_store['configurations'], default_configuration
-            )
-            self.assertDictEqual(
-                session_store['alloy_store'], default_alloy_store
-            )
-            self.assertFalse(session_store['results'])
-
     def test_get_last_alloy_invalid_save(self):
         """Ensure we can get a last configuration that is invalid."""
         with app.test_client() as client:

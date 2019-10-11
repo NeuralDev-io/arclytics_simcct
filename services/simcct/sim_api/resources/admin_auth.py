@@ -20,15 +20,16 @@ Sharing endpoints using the Flask Resource inheritance model.
 import os
 from datetime import datetime
 
-from email_validator import EmailNotValidError, validate_email
+from email_validator import EmailNotValidError
 from flask import Blueprint, redirect, render_template, request
 from flask_restful import Resource
 
 from arc_logging import AppLogger
 from sim_api.extensions import api, apm
-from sim_api.extensions.utilities import URLTokenExpired
+from sim_api.extensions.utilities import URLTokenExpired, arc_validate_email
 from sim_api.middleware import authorize_admin_cookie_restful
 from sim_api.models import (AdminProfile, User)
+from sim_api.routes import Routes
 from sim_api.token import (
     URLTokenError, confirm_token, generate_confirmation_token,
     generate_promotion_confirmation_token, generate_url
@@ -62,6 +63,11 @@ class AdminCreate(Resource):
         if not email:
             response['message'] = 'No email provided.'
             return response, 400
+        # We
+        # if not isinstance(email, str):
+        #     response['message'] = 'Email data type is invalid.'
+        #     return response, 400
+        # email = email.lower()
         if not position:
             response['message'] = 'No position provided.'
             return response, 400
@@ -69,7 +75,7 @@ class AdminCreate(Resource):
         # Verify it is actually a valid email
         try:
             # validate and get info
-            v = validate_email(email)
+            v = arc_validate_email(email)
             # replace with normalized form
             valid_email = v['email']
         except EmailNotValidError as e:
@@ -166,7 +172,7 @@ class AdminCreate(Resource):
         return response, 202
 
 
-@admin_blueprint.route('/admin/create/cancel/<token>', methods=['GET'])
+@admin_blueprint.route(Routes.cancel_promotion.value, methods=['GET'])
 def cancel_promotion(token):
     """
     Allow an admin to cancel their promotion of another user
@@ -265,7 +271,7 @@ def cancel_promotion(token):
     return redirect(f'{redirect_url}/signin', code=302)
 
 
-@admin_blueprint.route('/admin/create/verify/<token>', methods=['GET'])
+@admin_blueprint.route(Routes.verify_promotion.value, methods=['GET'])
 def verify_promotion(token):
     """
     Allow a user to acknowledge their promotion and in doing so verify their
@@ -381,7 +387,7 @@ class DisableAccount(Resource):
         # Verify it is actually a valid email
         try:
             # validate and get info
-            v = validate_email(email)
+            v = arc_validate_email(email)
             # replace with normalized form
             valid_email = v['email']
         except EmailNotValidError as e:
@@ -426,7 +432,7 @@ class DisableAccount(Resource):
         return response, 200
 
 
-@admin_blueprint.route('/disable/user/confirm/<token>', methods=['GET'])
+@admin_blueprint.route(Routes.confirm_disable_account.value, methods=['GET'])
 def confirm_disable_account(token):
     """
     Allow an Admin user to confirm that they want to disable a user's account
@@ -511,7 +517,7 @@ class EnableAccount(Resource):
         # Verify it is actually a valid email
         try:
             # validate and get info
-            v = validate_email(email)
+            v = arc_validate_email(email)
             # replace with normalized form
             valid_email = v['email']
         except EmailNotValidError as e:
@@ -555,6 +561,6 @@ class EnableAccount(Resource):
         return response, 200
 
 
-api.add_resource(AdminCreate, '/v1/sim/admin/create')
-api.add_resource(DisableAccount, '/v1/sim/disable/user')
-api.add_resource(EnableAccount, '/v1/sim/enable/user')
+api.add_resource(AdminCreate, Routes.admin_create.value)
+api.add_resource(DisableAccount, Routes.disable_account.value)
+api.add_resource(EnableAccount, Routes.enable_account.value)

@@ -39,8 +39,9 @@ class Routes(enum.Enum):
     subscribe_feedback = f'{PREFIX}/admin/feedback/list/subscribe'
     save_simulation_list = f'{PREFIX}/user/simulation'
     save_simulation_detail = f'{PREFIX}/user/simulation/<sim_id>'
-    request_shared_simulation = \
+    request_shared_simulation = (
         f'{PREFIX}/user/share/simulation/request/<token>'
+    )
     view_shared_simulation = f'{PREFIX}/user/share/simulation/view/<token>'
     share_simulation_link = f'{PREFIX}/user/share/simulation/link'
     share_simulation_email = f'{PREFIX}/user/share/simulation/email'
@@ -64,4 +65,3 @@ class Routes(enum.Enum):
     # = f'{PREFIX}/'
     # = f'{PREFIX}/'
     # = f'{PREFIX}/'
-

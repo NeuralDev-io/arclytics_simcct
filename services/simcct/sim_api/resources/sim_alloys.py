@@ -15,7 +15,6 @@ __license__ = 'MIT'
 __version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.08.03'
-
 """sim_alloys.py: 
 
 This module defines the View methods for setting an Alloy in the frontend to
@@ -206,7 +205,10 @@ class AlloyStore(Resource):
                 )
                 ms_rate_param = SimConfig.get_ms_alpha(comp=comp_np_arr)
                 data.update(
-                    {'ms_temp': ms_temp, 'ms_rate_param': ms_rate_param}
+                    {
+                        'ms_temp': ms_temp,
+                        'ms_rate_param': ms_rate_param
+                    }
                 )
             except Exception as e:
                 # This is to make sure the client knows there has been some

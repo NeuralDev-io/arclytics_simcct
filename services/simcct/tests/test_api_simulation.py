@@ -36,7 +36,9 @@ ALLOY_STORE = {
         'parent': {
             'name': 'Arc_Stark',
             'compositions': test_json['compositions']
-        }
+        },
+        'weld': None,
+        'mix': None
     }
 }
 
@@ -96,10 +98,12 @@ class TestSimulationService(BaseTestCase):
 
             self.assert200(res)
 
-            configs.update({
-                'ae1_temp': data['data']['ae1_temp'],
-                'ae3_temp': data['data']['ae3_temp'],
-            })
+            configs.update(
+                {
+                    'ae1_temp': data['data']['ae1_temp'],
+                    'ae3_temp': data['data']['ae3_temp'],
+                }
+            )
 
             res = client.post(
                 '/v1/sim/configs/ms',
@@ -115,10 +119,12 @@ class TestSimulationService(BaseTestCase):
 
             self.assert200(res)
 
-            configs.update({
-                'ms_temp': data['data']['ms_temp'],
-                'ms_rate_param': data['data']['ms_rate_param'],
-            })
+            configs.update(
+                {
+                    'ms_temp': data['data']['ms_temp'],
+                    'ms_rate_param': data['data']['ms_rate_param'],
+                }
+            )
 
             res = client.post(
                 '/v1/sim/configs/bs',
@@ -148,7 +154,7 @@ class TestSimulationService(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            logger.debug(data)
+            # logger.debug(data)
             self.assertFalse(data.get('message', None))
             self.assert200(res)
             self.assertEqual(data['status'], 'success')
@@ -182,101 +188,47 @@ class TestSimulationService(BaseTestCase):
                 len(data['data']['CCT']['martensite']['temp'])
             )
 
-    def test_ae3equilibrium_no_prev_configs(self):
-        """
-        Ensure that a request for the ae3euquilibrium data fails if no prev
-        config is available.
-        """
+    def test_ae3_equilibrium_results(self):
         with app.test_client() as client:
-            self.login_client(client)
+            test_login(client, self._email, self._user_pw)
 
-            # We change the session by making a transaction on it within context
-            # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
-            #  is set because otherwise opening a transaction will not use
-            #  a standard HTTP request environ_base.
-            with client.session_transaction(
-                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
-            ) as session:
-                # Setting the `simulation` key in the session to None will clear
-                # out any config data so we can test the behaviour of the
-                # endpoint when it is unable to retrieve the config data from
-                # the session.
-                session['simulation'] = None
-            with client.session_transaction(
-                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
-            ):
-                # At this point the session transaction has been updated so
-                # we can check the session within the context
-                session_store = SimSessionService().load_session()
-                self.assertIsInstance(session_store, str)
-                self.assertEqual(session_store, 'Session is empty.')
-
-            res = client.get(
-                '/v1/sim/ae3equilibrium', content_type='application/json'
+            # We need to get Ae1 before we can run.
+            res = client.post(
+                '/v1/sim/configs/ae',
+                data=json.dumps(
+                    {
+                        'alloy_store': ALLOY_STORE,
+                        'method': 'Li98'
+                    }
+                ),
+                content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'], 'Cannot retrieve data from Session store.'
-            )
-            self.assertEqual(data['status'], 'fail')
-            self.assertStatus(res, 500)
 
-    def test_ae3equilibrium_no_prev_alloy(self):
-        """
-        Ensure that a request for the ae3equilibrium data fails if no prev alloy
-        is available.
-        """
-        with app.test_client() as client:
-            self.login_client(client)
-
-            # We change the session by making a transaction on it within context
-            # Note: ENSURE that `environ_overrides={'REMOTE_ADDR': '127.0.0.1'}`
-            #  is set because otherwise opening a transaction will not use
-            #  a standard HTTP request environ_base.
-            with client.session_transaction(
-                environ_overrides={'REMOTE_ADDR': '127.0.0.1'}
-            ) as session:
-                # Override the session data and set the alloy information to
-                # None.
-                session_store = json.loads(session['simulation'])
-                session_store['alloy_store']['alloys']['parent'] = None
-                ser_session_data = json.dumps(session_store)
-                prefix = SimSessionService.SESSION_PREFIX
-                session[prefix] = ser_session_data
+            self.assertTrue(data.get('data'))
+            self.assert200(res)
+            ae1_temp = data['data']['ae1_temp']
 
             res = client.get(
-                '/v1/sim/ae3equilibrium', content_type='application/json'
+                '/v1/sim/ae3equilibrium',
+                data=json.dumps(
+                    {
+                        'alloy_store': ALLOY_STORE,
+                        'ae1_temp': ae1_temp
+                    }
+                ),
+                content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(
-                data['message'], 'No previous session alloy was set.'
-            )
-            self.assert404(res)
-            self.assertEqual(data['status'], 'fail')
-
-    def test_ae3equilibrium_with_login(self):
-        with app.test_client() as client:
-            self.login_client(client)
-
-            # MUST have AE and MS/BS > 0.0 before we can run simulate
-            res = client.get(
-                '/v1/sim/configs/ae', content_type='application/json'
-            )
             self.assert200(res)
 
-            res = client.get(
-                '/v1/sim/configs/ms', content_type='application/json'
-            )
-            self.assert200(res)
-            res = client.get(
-                '/v1/sim/configs/bs', content_type='application/json'
-            )
-            self.assert200(res)
-
-            res = client.get(
-                '/v1/sim/ae3equilibrium', content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
+            ceut = float(data['data']['eutectic_composition_carbon'])
+            xfe = float(data['data']['ferrite_phase_frac'])
+            cf = float(data['data']['cf'])
+            self.assertEqual(ceut, 0.83)
+            self.assertAlmostEqual(xfe, 0.9462, 4)
+            self.assertEqual(cf, 0.012)
+            logger.debug(data['data']['results_plot'])
 
 
 if __name__ == '__main__':

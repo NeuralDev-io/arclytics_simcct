@@ -11,8 +11,8 @@
  * @author Dalton Le
  */
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
-import ActivityIcon from 'react-feather/dist/icons/activity'
+import PropTypes from 'prop-types'
+import { Link, Redirect } from 'react-router-dom'
 import DatabaseIcon from 'react-feather/dist/icons/database'
 import UsersIcon from 'react-feather/dist/icons/users'
 
@@ -24,6 +24,15 @@ class AdminSidebar extends Component {
     const pathArr = window.location.pathname.split('/')
     this.state = {
       active: pathArr[pathArr.length - 1],
+    }
+  }
+
+  componentDidMount = () => {
+    const { active } = this.state
+    const { redirect } = this.props
+    if (!['alloys', 'users'].includes(active)) {
+      this.setState({ active: 'alloys' })
+      redirect('/admin/alloys')
     }
   }
 
@@ -53,6 +62,10 @@ class AdminSidebar extends Component {
       </div>
     )
   }
+}
+
+AdminSidebar.propTypes = {
+  redirect: PropTypes.func.isRequired,
 }
 
 export default AdminSidebar

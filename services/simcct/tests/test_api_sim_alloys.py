@@ -98,8 +98,10 @@ class TestSimAlloys(BaseTestCase):
                             'alloy_option': 'single',
                             'alloys': {
                                 'parent': {
-                                    'name': 'Bad Alloy',
-                                    'compositions': [{
+                                    'name':
+                                    'Bad Alloy',
+                                    'compositions':
+                                    [{
                                         'symbol': 'C',
                                         'weight': 0.7
                                     }]

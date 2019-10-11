@@ -259,15 +259,22 @@ class Simulation(Resource):
         finish = time.time()
 
         # we increase the counter for the user for analytics purposes
+        # and send the data.
         user.simulations_count += 1
-        user.save()
 
         logger.debug('Simulation {} Total Time: {}'.format(
             user.simulations_count, finish - start
         ))
 
         # Just overwrite the response instead of changing it.
-        return {'status': 'success', 'data': data}, 200
+        response = {
+            'status': 'success',
+            'data': data,
+            'count': user.simulations_count
+        }
+        user.save()
+
+        return response, 200
 
 
 # noinspection PyMethodMayBeStatic

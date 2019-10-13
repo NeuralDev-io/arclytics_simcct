@@ -376,19 +376,33 @@ def reset_password() -> Tuple[dict, int]:
 
     token = auth_header.split(' ')[1]
 
+    request_data = request.get_json()
+    if not request_data:
+        response['message'] = 'Invalid payload.'
+        return jsonify(response), 400
+
+    user_email = request_data.get('email', None)
+    if not user_email:
+        response['message'] = 'No email address provided.'
+        return jsonify(response), 400
+
+    if not User.objects(email=user_email):
+        response['message'] = 'Email is incorrect.'
+        return jsonify(response), 400
+
+    user = User.objects.get(email=user_email)
+    key = user.password + '-' + str(user.created)
+
     # Decode either returns bson.ObjectId if successful or a string from an
     # exception
-    resp_or_id = AuthService().decode_password_reset_token(auth_token=token)
+    resp_or_id = AuthService().decode_password_reset_token(
+        auth_token=token, key=key
+    )
     if isinstance(resp_or_id, str):
         response['message'] = resp_or_id
         logger.info(response['message'])
         apm.capture_message(response['message'])
         return jsonify(response), 401
-
-    request_data = request.get_json()
-    if not request_data:
-        response['message'] = 'Invalid payload.'
-        return jsonify(response), 400
 
     # validate the passwords
     password = request_data.get('password', None)
@@ -407,10 +421,14 @@ def reset_password() -> Tuple[dict, int]:
         return jsonify(response), 400
 
     # Validate the user is active
-    user = User.objects.get(id=resp_or_id)
+    # user = User.objects.get(id=resp_or_id)
     if not user or not user.active:
-        response['message'] = 'User does not exist.'
-        return jsonify(response), 401
+        # For security reasons we send back successful even if the user exists.
+        # response['message'] = 'User does not exist.'
+        # return jsonify(response), 401
+        response['status'] = 'success'
+        response.pop('message')
+        return jsonify(response), 202
 
     # The email to notify the user that their password has been changed.
     from sim_api.email_service import send_email
@@ -480,11 +498,12 @@ def confirm_reset_password(token):
 
     # Confirm and validate that the user exists
     user = User.objects.get(email=email)
+    key = user.password + '-' + str(user.created)
 
     # We create a JWT token to send to the client-side so they can attach
     # it as part of the next request
-    jwt_token = AuthService().encode_password_reset_token(user_id=user.id
-                                                          ).decode()
+    jwt_token = AuthService().encode_password_reset_token(user_email=email,
+                                                          key=key).decode()
 
     response['status'] = 'success'
     response.pop('message')
@@ -532,8 +551,12 @@ def reset_password_email() -> Tuple[dict, int]:
 
     # Verify the email matches a user in the database
     if not User.objects(email=valid_email):
-        response['message'] = 'User does not exist.'
-        return jsonify(response), 404
+        # For security reasons we send back 'success'
+        response['status'] = 'success'
+        response.pop('message')
+        return jsonify(response), 202
+        # response['message'] = 'User does not exist.'
+        # return jsonify(response), 404
 
     # If there is a user with this email address, we must send to that email
     user = User.objects.get(email=valid_email)
@@ -737,11 +760,19 @@ def login() -> any:
 
     try:
         if not User.objects(email=email):
-            response['message'] = 'User does not exist.'
-            return jsonify(response), 404
+            # response['message'] = 'User does not exist.'
+            # return jsonify(response), 404
+            # For security reasons we do not responsed with 'user does not
+            # exist'
+            response['message'] = 'Email or password combination incorrect.'
+            return jsonify(response), 400
     except Exception:
-        response['message'] = 'User does not exist'
-        return jsonify(response), 404
+        # response['message'] = 'User does not exist'
+        # return jsonify(response), 404
+        # For security reasons we do not responsed with 'user does not
+        # exist'
+        response['message'] = 'Email or password combination incorrect.'
+        return jsonify(response), 400
 
     # Let's save some stats for later
     login_datetime = datetime.utcnow()
@@ -909,7 +940,7 @@ def login() -> any:
     response['message'] = 'Email or password combination incorrect.'
     logger.info(response['message'])
     apm.capture_message(response['message'])
-    return jsonify(response), 404
+    return jsonify(response), 400
 
 
 @auth_blueprint.route('/auth/logout', methods=['GET'])

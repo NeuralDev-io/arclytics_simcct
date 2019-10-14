@@ -24,18 +24,18 @@ from datetime import datetime, timedelta
 from os import environ as env
 from pathlib import Path
 from sys import stderr
-from pprint import pprint
 
 import geoip2
 from geoip2.errors import AddressNotFoundError
 from maxminddb.errors import InvalidDatabaseError
 from mongoengine import connect, disconnect_all, get_connection, get_db
 from pymongo import MongoClient
-from prettytable import PrettyTable
 from sim_api import create_app, init_db
 from sim_api.extensions.utilities import get_mongo_uri
-from sim_api.models import AdminProfile, Feedback, LoginData, SavedSimulation, \
-    User, UserProfile
+from sim_api.models import (
+    AdminProfile, Feedback, LoginData, SavedSimulation, User, UserProfile,
+    SharedSimulation
+)
 
 DEBUG = True
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -58,6 +58,9 @@ simulation_data_path = Path(
 feedback_data_path = Path(
     BASE_DIR
 ) / 'production_data' / 'production_feedback_data.json'
+shared_sim_data_path = Path(
+    BASE_DIR
+) / 'production_data' / 'production_shared_sim_data.json'
 
 if os.path.isfile(user_data_path):
     with open(user_data_path) as f:
@@ -74,6 +77,9 @@ if os.path.isfile(simulation_data_path):
 if os.path.isfile(feedback_data_path):
     with open(feedback_data_path) as f:
         feedback_data = json.load(f)
+if os.path.isfile(shared_sim_data_path):
+    with open(shared_sim_data_path) as f:
+        shared_sim_data = json.load(f)
 
 # test data for rating and login
 varied_date = [
@@ -147,29 +153,21 @@ print(f'MongoDB Database: \n{db}\n', file=stderr)
 random.seed(100000)
 
 # loading global alloy's
+print(
+    'Seeding global alloys to <{}> database:'.format(db.name), file=sys.stderr
+)
 with app.app_context():
     json_data = global_alloy_data
     from sim_api.schemas import AlloySchema
 
     data = AlloySchema(many=True).load(json_data['alloys'])
-
-    print(
-        'Seeding global alloys to <{}> database:'.format(db.name),
-        file=sys.stderr
-    )
     # Check the correct database -- arc_dev
     db.alloys.insert_many(data)
 
-# tbl = PrettyTable(['Symbol', 'Weight'])
-
-# for alloy in db.alloys.find():
-#     print(f"Alloy name: {alloy['name']}")
-#     for el in alloy['compositions']:
-#         tbl.add_row((el['symbol'], el['weight']))
-#     print(tbl)
-#     tbl.clear_rows()
-
 # STAY INSIDE THE FLASK APPLICATION CONTEXT
+print(
+    'Seeding users to <{}> database:'.format(db.name), file=sys.stderr
+)
 with app.app_context():
     for user in user_data:
         # BASE USER DETAILS
@@ -318,8 +316,30 @@ with app.app_context():
             new_user.save()
 
 # adding saved simulation to test data
+print(
+    'Seeding saved and shared simulations to <{}> database:'.format(db.name),
+    file=sys.stderr
+)
 with app.app_context():
     for user in User.objects:
+        # 0-3 number of shared sim per user.
+        n_shared_sim = random.randint(0, 3)
+        if n_shared_sim != 0:
+            # Make a random sample based on the number of shared simulations.
+            sim_data = random.sample(shared_sim_data, n_shared_sim)
+
+            for s in sim_data:
+                user_shared = SharedSimulation(
+                    **{
+                        'owner_email': user.email,
+                        'configuration': s['configuration'],
+                        'alloy_store': s['alloy_store'],
+                        'simulation_results': s['simulation_results']
+                    }
+                )
+                user_shared.save()
+
+        # Just count the number of simulations by
         sim_count = 0
         for count, val in enumerate(simulation_data):
             sim_count = (count + 1)
@@ -336,6 +356,9 @@ with app.app_context():
         user.save()
 
 # adding feedback to test data
+print(
+    'Seeding feedback to <{}> database:'.format(db.name), file=sys.stderr
+)
 with app.app_context():
     for x in db.users.find({}, {"_id"}):
         # to use later(to randomise rating)

@@ -109,17 +109,17 @@ class UserList(Resource):
             # results and sort on the sort_on value.
             if sort_on == 'fullname':
                 query_set = User.objects[offset - 1:offset + limit -
-                                         1].order_by(
-                                             'last_name', 'first_name'
-                                         )
+                                                    1].order_by(
+                    'last_name', 'first_name'
+                )
             elif sort_on == '-fullname':
                 query_set = User.objects[offset - 1:offset + limit -
-                                         1].order_by(
-                                             '-last_name', '-first_name'
-                                         )
+                                                    1].order_by(
+                    '-last_name', '-first_name'
+                )
             else:
                 query_set = User.objects[offset - 1:offset + limit -
-                                         1].order_by(sort_on)
+                                                    1].order_by(sort_on)
         else:
             query_set = User.objects[offset - 1:offset + limit - 1]
 
@@ -145,6 +145,188 @@ class UserList(Resource):
         response['status'] = 'success'
         response['current_page'] = current_page
         response['total_pages'] = total_pages
+        response['data'] = [obj.to_dict() for obj in query_set]
+        return response, 200
+
+
+class SearchUsers(Resource):
+    """Alloys administrators to search the database for a user/users"""
+
+    method_decorators = {'get': [authorize_admin_cookie_restful]}
+
+    def get(self, _) -> Tuple[dict, int]:
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+
+        data = request.get_json()
+
+        if isinstance(data, dict):
+            sort_on = data.get('sort_on', None)
+            offset = data.get('offset', None)
+            limit = data.get('limit', None)
+            search_on = data.get('search_on', None)
+            search_for = data.get('search_for', None)
+        else:
+            sort_on = None
+            offset = None
+            limit = None
+            search_on = None
+            search_for = None
+
+        # Ensure search parameters have been given, otherwise there is nothing
+        # to search for.
+        if not search_on or not search_for:
+            response['message'] = 'No search parameters provided.'
+            return response, 400
+
+        # Validate search parameters
+        valid_search_on_keys = [
+            'email', 'first_name', 'last_name'
+        ]
+        search_on_valid = False
+        for k in valid_search_on_keys:
+            if k == search_on:
+                search_on_valid = True
+                break
+
+        if not search_on_valid:
+            response['message'] = (
+                    'Invalid search on attribute: ' + str(search_on)
+            )
+            return response, 400
+
+        # Validate sort parameters
+        if sort_on:
+            valid_sort_keys = [
+                'email', '-email', 'admin', '-admin', 'verified', '-verified',
+                'fullname', '-fullname'
+            ]
+            sort_valid = False
+            for k in valid_sort_keys:
+                if k == sort_on:
+                    sort_valid = True
+                    break
+
+            if not sort_valid:
+                response['message'] = 'Sort value is invalid.'
+                return response, 400
+
+        # Validate limit:
+        if limit:
+            if not isinstance(limit, int):
+                response['message'] = 'Limit value is invalid.'
+                return response, 400
+            if not limit >= 1:
+                response['message'] = 'Limit must be > 1.'
+                return response, 400
+        else:
+            limit = 10
+
+        # Validate offset
+        user_size = User.objects.count()
+        if offset:
+            if not isinstance(offset, int):
+                response['message'] = 'Offset value is invalid.'
+                return response, 400
+            if offset > user_size + 1:
+                response['message'] = 'Offset value exceeds number of records.'
+                return response, 400
+            if offset < 1:
+                response['message'] = 'Offset must be > 1.'
+                return response, 400
+        else:
+            offset = 1
+
+        if sort_on == 'fullname':
+            if search_on == 'email':
+                query_set = User.objects(
+                    email__icontains=search_for
+                )[offset - 1:offset + limit - 1].order_by(
+                    'last_name', 'first_name'
+                )
+            elif search_on == 'first_name':
+                query_set = User.objects(
+                    first_name__icontains=search_for
+                )[offset - 1:offset + limit - 1].order_by(
+                    'last_name', 'first_name'
+                )
+            elif search_on == 'last_name':
+                query_set = User.objects(
+                    last_name__icontains=search_for
+                )[offset - 1:offset + limit - 1].order_by(
+                    'last_name', 'first_name'
+                )
+            else:
+                response['message'] = (
+                        'Invalid search on attribute: ' + str(search_on)
+                )
+                return response, 400
+        elif sort_on == '-fullname':
+            if search_on == 'email':
+                query_set = User.objects(
+                    email__icontains=search_for
+                )[offset - 1:offset + limit - 1].order_by(
+                    '-last_name', '-first_name'
+                )
+            elif search_on == 'first_name':
+                query_set = User.objects(
+                    first_name__icontains=search_for
+                )[offset - 1:offset + limit - 1].order_by(
+                    '-last_name', '-first_name'
+                )
+            elif search_on == 'last_name':
+                query_set = User.objects(
+                    last_name__icontains=search_for
+                )[offset - 1:offset + limit - 1].order_by(
+                    '-last_name', '-first_name'
+                )
+            else:
+                response['message'] = (
+                        'Invalid search on attribute: ' + str(search_on)
+                )
+                return response, 400
+        elif sort_on:
+            if search_on == 'email':
+                query_set = User.objects(email__icontains=search_for
+                                         )[offset - 1:offset + limit -
+                                                      1].order_by(sort_on)
+            elif search_on == 'first_name':
+                query_set = User.objects(first_name__icontains=search_for
+                                         )[offset - 1:offset + limit -
+                                                      1].order_by(sort_on)
+            elif search_on == 'last_name':
+                query_set = User.objects(last_name__icontains=search_for
+                                         )[offset - 1:offset + limit -
+                                                      1].order_by(sort_on)
+            else:
+                response['message'] = (
+                        'Invalid search on attribute: ' + str(search_on)
+                )
+                return response, 400
+        else:
+            if search_on == 'email':
+                query_set = User.objects(email__icontains=search_for)[
+                            offset - 1:offset + limit - 1
+                            ]
+            elif search_on == 'first_name':
+                query_set = User.objects(first_name__icontains=search_for)[
+                            offset - 1:offset + limit - 1
+                            ]
+            elif search_on == 'last_name':
+                query_set = User.objects(last_name__icontains=search_for)[
+                            offset - 1:offset + limit - 1
+                            ]
+            else:
+                response['message'] = (
+                        'Invalid search on attribute: ' + str(search_on)
+                )
+                return response, 400
+
+        if not query_set:
+            response['message'] = 'No Results were found.'
+            return response, 400
+
+        response.pop('message')
+        response['status'] = 'success'
         response['data'] = [obj.to_dict() for obj in query_set]
         return response, 200
 
@@ -209,8 +391,8 @@ class Users(Resource):
             # If we do not have all the profile fields, we will need to reject
             # the request as we are unable to create a profile object.
             if (
-                not aim or not highest_education or not sci_tech_exp
-                or not phase_transform_exp
+                    not aim or not highest_education or not sci_tech_exp
+                    or not phase_transform_exp
             ):
                 response.pop('data')
                 response['message'] = (
@@ -367,5 +549,6 @@ class UserProfiles(Resource):
 
 
 api.add_resource(UserList, Routes.user_list.value)
+api.add_resource(SearchUsers, Routes.search_users.value)
 api.add_resource(Users, Routes.users.value)
 api.add_resource(UserProfiles, Routes.user_profiles.value)

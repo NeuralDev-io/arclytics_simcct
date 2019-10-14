@@ -25,4 +25,4 @@ RUN python setup.py install
 
 WORKDIR /usr/src/app
 
-ENTRYPOINT celery worker -A celery_worker.celery -l debug --uid 0 --gid 0
+ENTRYPOINT celery worker -A celery_worker.celery -l debug --uid 0 --gid 0 -B

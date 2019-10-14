@@ -22,27 +22,29 @@ instance that connects to the Redis datastore for polling of tasks to run and
 storage of the results.
 """
 
+import logging
 import os
 import sys
-import logging
+import datetime
+from os import environ as env
+
 from celery import Celery
+from elasticapm.contrib.flask import ElasticAPM
 from flask import Flask
 from flask_mail import Mail
-from elasticapm.contrib.flask import ElasticAPM
+from redis import Redis
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 
 # Define the modules that contain Celery tasks
-CELERY_TASK_LIST = [
-    'tasks',
-]
+CELERY_TASK_LIST = ['tasks']
 
 # instantiate the application
 app = Flask(__name__)
 
 # Setup the configuration for Flask
-app_settings = os.getenv('APP_SETTINGS')
+app_settings = env.get('APP_SETTINGS')
 app.config.from_object(app_settings)
 
 # ========== # INIT FLASK EXTENSIONS # ========== #
@@ -73,3 +75,39 @@ class ContextTask(TaskBase):
 
 # noinspection PyPropertyAccess
 celery.Task = ContextTask
+
+
+# ========== # CELERY BEAT # ========== #
+# Setup the Redis client to a different database
+redis_host = env.get('REDIS_HOST', None)
+redis_port = env.get('REDIS_PORT', None)
+if app.env == 'production':
+    redis_password = env.get('REDIS_PASSWORD', None)
+    redis_uri = f'redis://user:{redis_password}@{redis_host}:{redis_port}/0'
+else:
+    redis_uri = f'redis://{redis_host}:{redis_port}/0'
+redis_client = Redis.from_url(redis_uri)
+
+
+@celery.on_after_configure.connect
+def setup_periodic_tasks(sender, **kwargs):
+    # Testing hello every 10 seconds
+    sender.add_periodic_task(
+        30.0,
+        get_logged_users_total.s(),
+        name='Get logged in users every 30 secs'
+    )
+
+
+# Periodic tasks
+@celery.task()
+def get_logged_users_total():
+    keys = redis_client.keys(pattern=u'session*')
+    current_timestamp = datetime.datetime.utcnow()
+    print(
+        'Logged in users: {} ({})'.format(
+            len(keys),
+            current_timestamp
+        )
+    )
+

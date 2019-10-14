@@ -55,6 +55,7 @@ class UserNerdyData(Resource):
         # Get total numbers
         # Get total shares
         # Get total simulations
+        # Get total saved alloys
         pass
 
 

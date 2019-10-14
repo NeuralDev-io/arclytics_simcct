@@ -24,6 +24,8 @@ from datetime import datetime, timedelta
 from os import environ as env
 from pathlib import Path
 from sys import stderr
+import numpy as np
+from tqdm import tqdm
 
 import geoip2
 from geoip2.errors import AddressNotFoundError
@@ -54,7 +56,7 @@ global_alloy_data_path = Path(
 ) / 'production_data' / 'production_global_alloys_data.json'
 simulation_data_path = Path(
     BASE_DIR
-) / 'production_data' / 'production_simulation_data.json'
+) / 'production_data' / 'production_saved_sim_data.json'
 feedback_data_path = Path(
     BASE_DIR
 ) / 'production_data' / 'production_feedback_data.json'
@@ -151,6 +153,7 @@ print(f'MongoDB Client: \n{client}\n', file=stderr)
 print(f'MongoDB Database: \n{db}\n', file=stderr)
 
 random.seed(100000)
+np.random.seed(3000)
 
 # loading global alloy's
 print(
@@ -169,8 +172,8 @@ print(
     'Seeding users to <{}> database:'.format(db.name), file=sys.stderr
 )
 with app.app_context():
-    for user in user_data:
-        # BASE USER DETAILS
+    for user in tqdm(user_data):
+        # ==================== # NEW USER BASE DETAILS # =================== #
         new_user = User(
             **{
                 'email': user['email'],
@@ -181,21 +184,23 @@ with app.app_context():
         new_user.set_password(user['password'])
         # print(new_user.to_dict())
 
-        # generate random permutation of alloy for each user
+        # Get from a list of [1, 2, 3] what type of user this user is.
         user_type = random.sample(type_of_user, 1)
 
         if user_type[0] == 1:
-            no_of_alloy = random.randint(0, 5)
+            n_user_alloys = random.randint(0, 5)
         if user_type[0] == 2:
-            no_of_alloy = random.randint(5, 15)
+            n_user_alloys = random.randint(5, 15)
         if user_type[0] == 3:
-            no_of_alloy = random.randint(15, 30)
+            n_user_alloys = random.randint(15, 30)
 
-        alloy = random.sample(alloy_data['alloys'], no_of_alloy)
+        # ==================== # USER SAVED ALLOYS # =================== #
+        alloy = random.sample(alloy_data['alloys'], n_user_alloys)
         # adding alloys
         for alloy_to_add in alloy:
             new_user.saved_alloys.create(**alloy_to_add)
 
+        # ==================== # LOGIN AND RATINGS DATA # =================== #
         IP_check = random.sample(random_ip, 1)
 
         if IP_check[0] == 2:
@@ -209,11 +214,19 @@ with app.app_context():
         if IP_check[0] == 6:
             IP = random.sample(ip_set3, 8)
 
+        # Our ratings options from 1-5
+        ratings_options = np.arange(2, 6, 1)
+        # Make each of the last elements 15x more likely
+        prob = [1.0] * (len(ratings_options) - 1) + [15.0] * 1
+        # Normalising to 1.0
+        prob /= np.sum(prob)
+
         # adding login and rating
         for index, var_date in enumerate(varied_date):
-            ratings_int = random.randint(1, 5)
+            # Use the skewed probability to skew it more than 3.
+            ratings_val = np.random.choice(ratings_options, 1, p=prob)
             ratings_info = {
-                'rating': ratings_int,
+                'rating': ratings_val,
                 'created_date': varied_date[index]
             }
             new_user.ratings.create(**ratings_info)
@@ -315,15 +328,12 @@ with app.app_context():
         if DEBUG:
             new_user.save()
 
-# adding saved simulation to test data
-print(
-    'Seeding saved and shared simulations to <{}> database:'.format(db.name),
-    file=sys.stderr
-)
-with app.app_context():
-    for user in User.objects:
+        # ==================== # SHARED SIMULATIONS # =================== #
+        # Reload the data for the user so we have an ObjectId
+        new_user.reload()
+        # adding saved simulation to test data
         # 0-3 number of shared sim per user.
-        n_shared_sim = random.randint(0, 3)
+        n_shared_sim = random.randint(0, 4)
         if n_shared_sim != 0:
             # Make a random sample based on the number of shared simulations.
             sim_data = random.sample(shared_sim_data, n_shared_sim)
@@ -331,7 +341,7 @@ with app.app_context():
             for s in sim_data:
                 user_shared = SharedSimulation(
                     **{
-                        'owner_email': user.email,
+                        'owner_email': new_user.email,
                         'configuration': s['configuration'],
                         'alloy_store': s['alloy_store'],
                         'simulation_results': s['simulation_results']
@@ -339,28 +349,50 @@ with app.app_context():
                 )
                 user_shared.save()
 
-        # Just count the number of simulations by
+        # ==================== # SAVED SIMULATIONS # =================== #
+        # Just count the number of simulations
         sim_count = 0
-        for count, val in enumerate(simulation_data):
-            sim_count = (count + 1)
+
+        # Based on the user type, we generate the appropriate number of saved
+        # simulations for them.
+        if user_type[0] == 1:
+            n_saved_sim = random.randint(0, 3)
+        elif user_type[0] == 2:
+            n_saved_sim = random.randint(4, 7)
+        else:
+            n_saved_sim = random.randint(8, 10)
+
+        saved_sim_list = random.sample(simulation_data, n_saved_sim)
+        # adding
+        for s in saved_sim_list:
             saved_sim = SavedSimulation(
                 **{
-                    'user': user.id,
-                    'configurations': val['configurations'],
-                    'alloy_store': val['alloy_store'],
-                    'simulation_results': val['simulation_results']
+                    'user': new_user.id,
+                    'configurations': s['configurations'],
+                    'alloy_store': s['alloy_store'],
+                    'simulation_results': s['simulation_results']
                 }
             )
             saved_sim.save()
-        user.simulations_count = sim_count
-        user.save()
+        # Just randomly multiple their number of simulation count.
+        # Based on the user type, we multiple their saved simulations by the
+        # number we think they would run simulations.
+        if user_type[0] == 1:
+            sim_multiply_factor = random.randint(1, 3)
+        elif user_type[0] == 2:
+            sim_multiply_factor = random.randint(4, 6)
+        else:
+            sim_multiply_factor = random.randint(7, 9)
+        new_user.simulations_count = n_saved_sim * sim_multiply_factor
+        new_user.save()
 
 # adding feedback to test data
 print(
     'Seeding feedback to <{}> database:'.format(db.name), file=sys.stderr
 )
 with app.app_context():
-    for x in db.users.find({}, {"_id"}):
+    cursor = db.users.find({}, {"_id"})
+    for x in tqdm(list(cursor)):
         # to use later(to randomise rating)
         no_of_feedback = random.randint(0, 15)
         feedback = random.sample(feedback_data, no_of_feedback)

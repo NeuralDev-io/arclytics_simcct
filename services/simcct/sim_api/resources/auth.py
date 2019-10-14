@@ -376,33 +376,19 @@ def reset_password() -> Tuple[dict, int]:
 
     token = auth_header.split(' ')[1]
 
-    request_data = request.get_json()
-    if not request_data:
-        response['message'] = 'Invalid payload.'
-        return jsonify(response), 400
-
-    user_email = request_data.get('email', None)
-    if not user_email:
-        response['message'] = 'No email address provided.'
-        return jsonify(response), 400
-
-    if not User.objects(email=user_email):
-        response['message'] = 'Email is incorrect.'
-        return jsonify(response), 400
-
-    user = User.objects.get(email=user_email)
-    key = user.password + '-' + str(user.created)
-
     # Decode either returns bson.ObjectId if successful or a string from an
     # exception
-    resp_or_id = AuthService().decode_password_reset_token(
-        auth_token=token, key=key
-    )
+    resp_or_id = AuthService().decode_password_reset_token(auth_token=token)
     if isinstance(resp_or_id, str):
         response['message'] = resp_or_id
         logger.info(response['message'])
         apm.capture_message(response['message'])
         return jsonify(response), 401
+
+    request_data = request.get_json()
+    if not request_data:
+        response['message'] = 'Invalid payload.'
+        return jsonify(response), 400
 
     # validate the passwords
     password = request_data.get('password', None)
@@ -421,7 +407,7 @@ def reset_password() -> Tuple[dict, int]:
         return jsonify(response), 400
 
     # Validate the user is active
-    # user = User.objects.get(id=resp_or_id)
+    user = User.objects.get(id=resp_or_id)
     if not user or not user.active:
         # For security reasons we send back successful even if the user exists.
         # response['message'] = 'User does not exist.'
@@ -498,12 +484,11 @@ def confirm_reset_password(token):
 
     # Confirm and validate that the user exists
     user = User.objects.get(email=email)
-    key = user.password + '-' + str(user.created)
 
     # We create a JWT token to send to the client-side so they can attach
     # it as part of the next request
-    jwt_token = AuthService().encode_password_reset_token(user_email=email,
-                                                          key=key).decode()
+    jwt_token = AuthService().encode_password_reset_token(user_id=user.id
+                                                          ).decode()
 
     response['status'] = 'success'
     response.pop('message')

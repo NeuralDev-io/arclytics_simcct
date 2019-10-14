@@ -93,8 +93,7 @@ class AuthService(object):
             return 'Invalid token. Please log in again.'
 
     @staticmethod
-    def encode_password_reset_token(user_email: str, key: str
-                                    ) -> Union[bytes, None]:
+    def encode_password_reset_token(user_id: ObjectId) -> Union[bytes, None]:
         """Encode a timed JWT token of 30 minutes to send to the client-side
         so we can verify which user has requested to reset their password.
 
@@ -109,13 +108,12 @@ class AuthService(object):
             payload = {
                 'exp': datetime.utcnow() + timedelta(minutes=30),
                 'iat': datetime.utcnow(),
-                'sub': user_email
+                'sub': user_id
             }
 
             return jwt.encode(
                 payload=payload,
-                # key=app.config.get('SECRET_KEY', None),
-                key=key,
+                key=app.config.get('SECRET_KEY', None),
                 algorithm='HS256',
                 json_encoder=JSONEncoder
             )
@@ -127,8 +125,7 @@ class AuthService(object):
             return None
 
     @staticmethod
-    def decode_password_reset_token(auth_token: bytes, key: str
-                                    ) -> Union[dict, str]:
+    def decode_password_reset_token(auth_token: bytes) -> Union[ObjectId, str]:
         """Decodes the JWT auth token for the password reset.
 
         Args:
@@ -140,10 +137,9 @@ class AuthService(object):
         try:
             payload = jwt.decode(
                 jwt=auth_token,
-                # key=app.config.get('SECRET_KEY', None)
-                key=key
+                key=app.config.get('SECRET_KEY', None)
             )
-            return {'email': payload['sub']}
+            return ObjectId(payload['sub'])
         except jwt.ExpiredSignatureError:
             return 'Signature expired. Please get a new token.'
         except jwt.InvalidTokenError:

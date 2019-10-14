@@ -255,19 +255,10 @@ class TestForgotPassword(BaseTestCase):
     def test_reset_password_invalid_token(self):
         """Ensure if we provide an invalid token we get the message."""
         token = ''
-        user = User(
-            **{
-                'email': 'evilastromech@arclytics.io',
-                'first_name': 'R3',
-                'last_name': 'S6'
-            }
-        )
-        user.set_password('IAmGoldie')
-        user.save()
         with app.test_client() as client:
             res = client.put(
                 '/v1/sim/auth/password/reset',
-                data=json.dumps({'email': 'evilastromech@arclytics.io'}),
+                data=json.dumps({}),
                 headers={'Authorization': f'Bearer {token}'},
                 content_type='application/json'
             )
@@ -304,7 +295,6 @@ class TestForgotPassword(BaseTestCase):
             res1 = client.put(
                 '/v1/sim/auth/password/reset',
                 data=json.dumps({
-                    'email': 'punisher@arclytics.neuraldev.io',
                     'password': 'IDontNeedToConfirm'
                 }),
                 headers={'Authorization': f'Bearer {jwt_token}'},
@@ -313,7 +303,6 @@ class TestForgotPassword(BaseTestCase):
             res2 = client.put(
                 '/v1/sim/auth/password/reset',
                 data=json.dumps({
-                    'email': 'punisher@arclytics.neuraldev.io',
                     'confirm_password': 'IDontNeedToConfirm'
                 }),
                 headers={'Authorization': f'Bearer {jwt_token}'},
@@ -331,7 +320,6 @@ class TestForgotPassword(BaseTestCase):
                 '/v1/sim/auth/password/reset',
                 data=json.dumps(
                     {
-                        'email': 'punisher@arclytics.neuraldev.io',
                         'password': 'short',
                         'confirm_password': 'short'
                     }
@@ -352,7 +340,6 @@ class TestForgotPassword(BaseTestCase):
                 '/v1/sim/auth/password/reset',
                 data=json.dumps(
                     {
-                        'email': 'punisher@arclytics.neuraldev.io',
                         'password': 'NewPassword',
                         'confirm_password': 'NewPasword'
                     }
@@ -375,7 +362,6 @@ class TestForgotPassword(BaseTestCase):
                 '/v1/sim/auth/password/reset',
                 data=json.dumps(
                     {
-                        'email': 'punisher@arclytics.neuraldev.io',
                         'password': 'NewPassword',
                         'confirm_password': 'NewPassword'
                     }
@@ -401,7 +387,6 @@ class TestForgotPassword(BaseTestCase):
                 '/v1/sim/auth/password/reset',
                 data=json.dumps(
                     {
-                        'email': 'punisher@arclytics.neuraldev.io',
                         'password': new_pw,
                         'confirm_password': new_pw
                     }
@@ -438,38 +423,6 @@ class TestForgotPassword(BaseTestCase):
             data = json.loads(res.data.decode())
             self.assertEqual(res.status_code, 202)
             self.assertEqual(data['status'], 'success')
-
-    def test_change_password_after_valid_reset(self):
-        """Ensure a password reset token is 1 time use only"""
-        with app.test_client() as client:
-            # We do some setup first to get a valid token.
-            _, jwt_token, user = self.preprocess_reset_password(client)
-            original_pw = 'IAmThePunisher!!!'
-            new_pw = 'IAmFrankCastelleone'
-
-            user = User.objects.get(email='punisher@arclytics.neuraldev.io')
-            user.set_password('IAmFrankCastelleone')
-            user.save()
-
-            res = client.put(
-                '/v1/sim/auth/password/reset',
-                data=json.dumps(
-                    {
-                        'email': 'punisher@arclytics.neuraldev.io',
-                        'password': 'bad_request',
-                        'confirm_password': 'bad_request'
-                    }
-                ),
-                headers={'Authorization': f'Bearer {jwt_token}'},
-                content_type='application/json'
-            )
-            data = json.loads(res.data.decode())
-            self.assertEqual(res.status_code, 401)
-            self.assertEqual(data['status'], 'fail')
-            self.assertEqual(
-                data['message'], 'Invalid token. Please get a new token.'
-            )
-
 
 
 if __name__ == '__main__':

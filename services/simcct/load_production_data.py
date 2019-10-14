@@ -44,16 +44,20 @@ sys.path.append(BASE_DIR)
 app = create_app()
 # LOAD FROM JSON FILE BY NAME
 user_data_path = (
-        Path(BASE_DIR) / 'production_data' / 'production_user_data.json'
+    Path(BASE_DIR) / 'production_data' / 'production_user_data.json'
 )
 alloy_data_path = Path(
-    BASE_DIR) / 'production_data' / 'production_alloy_data.json'
+    BASE_DIR
+) / 'production_data' / 'production_alloy_data.json'
 global_alloy_data_path = Path(
-    BASE_DIR) / 'production_data' / 'production_global_alloys_data.json'
+    BASE_DIR
+) / 'production_data' / 'production_global_alloys_data.json'
 simulation_data_path = Path(
-    BASE_DIR) / 'production_data' / 'production_simulation_data.json'
+    BASE_DIR
+) / 'production_data' / 'production_simulation_data.json'
 feedback_data_path = Path(
-    BASE_DIR) / 'production_data' / 'production_feedback_data.json'
+    BASE_DIR
+) / 'production_data' / 'production_feedback_data.json'
 
 if os.path.isfile(user_data_path):
     with open(user_data_path) as f:
@@ -80,25 +84,34 @@ varied_date = [
     datetime.utcnow() - timedelta(days=4),
     datetime.utcnow() - timedelta(days=5),
     datetime.utcnow() - timedelta(days=6),
-    datetime.utcnow() - timedelta(days=7)]
+    datetime.utcnow() - timedelta(days=7)
+]
 random_ip = [2, 3, 4, 5, 6]
 
 type_of_user = [1, 2, 3]
 
-vic_ip = ["103.224.88.150L", "1.152.105.58", "101.181.99.103", "103.1.205.85",
-          "27.253.2.2", "27.253.2.5", "58.108.194.247", "13.77.50.96"]
+vic_ip = [
+    "103.224.88.150L", "1.152.105.58", "101.181.99.103", "103.1.205.85",
+    "27.253.2.2", "27.253.2.5", "58.108.194.247", "13.77.50.96"
+]
 qld_ip = [
     "61.69.158.62", "120.22.10.205", "61.87.176.0", "220.240.228.236",
     "203.220.77.101", "110.174.244.180", "1.132.96.140", "1.132.96.120",
     "1.132.96.2"
 ]
-ip_set1 = ["110.174.244.180", "185.220.102.7", "185.220.102.8", "185.225.16.14",
-           "185.225.69.52", "185.225.69.60", "1.37.0.0", "188.213.49.176"]
-ip_set2 = ["27.34.0.0", "192.42.116.15", "192.82.198", "192.32.216",
-           "14.224.0.0", "14.224.0.1", "2.32.0.0", "192.12.111"]
-ip_set3 = ["61.69.158.62", "3.128.0.0", "61.87.176.0", "220.240.228.236",
-           "203.220.77.101", "24.232.0.0", "1.132.96.140", "1.132.96.120",
-           "1.132.96.2"]
+ip_set1 = [
+    "110.174.244.180", "185.220.102.7", "185.220.102.8", "185.225.16.14",
+    "185.225.69.52", "185.225.69.60", "1.37.0.0", "188.213.49.176"
+]
+ip_set2 = [
+    "27.34.0.0", "192.42.116.15", "192.82.198", "192.32.216", "14.224.0.0",
+    "14.224.0.1", "2.32.0.0", "192.12.111"
+]
+ip_set3 = [
+    "61.69.158.62", "3.128.0.0", "61.87.176.0", "220.240.228.236",
+    "203.220.77.101", "24.232.0.0", "1.132.96.140", "1.132.96.120",
+    "1.132.96.2"
+]
 # initialising pymongo connection
 mongo_client = MongoClient(get_mongo_uri())
 db = mongo_client['arc_dev']
@@ -208,8 +221,8 @@ with app.app_context():
             new_user.ratings.create(**ratings_info)
 
             db_path = (
-                    Path(BASE_DIR) / 'sim_api' / 'resources' / 'GeoLite2-City'
-                    / 'GeoLite2-City.mmdb'
+                Path(BASE_DIR) / 'sim_api' / 'resources' / 'GeoLite2-City' /
+                'GeoLite2-City.mmdb'
             )
 
             # If we can't record this data, we will store it as a Null
@@ -241,7 +254,8 @@ with app.app_context():
                 if location_data.location:
                     accuracy_radius = location_data.location.accuracy_radius
                     geopoint = {
-                        'type': 'Point',
+                        'type':
+                        'Point',
                         'coordinates': [
                             location_data.location.latitude,
                             location_data.location.longitude
@@ -279,8 +293,8 @@ with app.app_context():
                     'aim': user['profile']['aim'],
                     'highest_education': user['profile']['highest_education'],
                     'sci_tech_exp': user['profile']['sci_tech_exp'],
-                    'phase_transform_exp': user['profile'][
-                        'phase_transform_exp'],
+                    'phase_transform_exp': user['profile']
+                    ['phase_transform_exp'],
                 }
             )
             new_user.profile = profile
@@ -305,18 +319,21 @@ with app.app_context():
 
 # adding saved simulation to test data
 with app.app_context():
-    for x in db.users.find({}, {"_id"}):
-
-        for val in simulation_data:
-            new_user2 = SavedSimulation(
+    for user in User.objects:
+        sim_count = 0
+        for count, val in enumerate(simulation_data):
+            sim_count = (count + 1)
+            saved_sim = SavedSimulation(
                 **{
-                    'user': x['_id'],
+                    'user': user.id,
                     'configurations': val['configurations'],
                     'alloy_store': val['alloy_store'],
                     'simulation_results': val['simulation_results']
                 }
             )
-            new_user2.save()
+            saved_sim.save()
+        user.simulations_count = sim_count
+        user.save()
 
 # adding feedback to test data
 with app.app_context():

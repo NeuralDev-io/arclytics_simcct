@@ -195,7 +195,7 @@ class UsersAnalytics extends Component {
               *
             */ }
             <LoginLocationMapbox
-              // Other options include: Electric, Viridis, Hot, Jet, YIGnBu, YIOrRd
+              // Other options include: Electric, Viridis, Hot, Jet, YIGnBu, YIOrRd, Picnic
               colorScale={(mapboxData !== undefined) ? 'YIGnBu' : colorScale}
               mapBoxStyle={'light'}  // Can also pass in 'dark' for dark mode.
               token={mapboxToken}

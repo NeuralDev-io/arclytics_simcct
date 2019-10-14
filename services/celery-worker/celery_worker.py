@@ -102,12 +102,20 @@ def setup_periodic_tasks(sender, **kwargs):
 # Periodic tasks
 @celery.task()
 def get_logged_users_total():
+    """Simply get the number of logged in users by Session in Redis."""
+
+    # Get the number of keys using the pattern that we defined
+    # in `services.simcct.sim_api.extensions.Session.redis_session`
+    # as being `session:{session id}`. We just get all the keys
+    # matching this pattern which means they have logged in.
     keys = redis_client.keys(pattern=u'session*')
+
     current_timestamp = datetime.datetime.utcnow()
+
     print(
         'Logged in users: {} ({})'.format(
             len(keys),
             current_timestamp
         )
     )
-
+    # TODO(andrew@neuraldev.io): Add this data to MongoDB.

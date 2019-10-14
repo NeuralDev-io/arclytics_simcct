@@ -39,15 +39,7 @@ class UserLoginData(Resource):
     # method_decorators = {'get': [authorize_admin_cookie_restful]}
 
     def get(self) -> Tuple[dict, int]:
-        """Simply get the number of logged in users by Session in Redis."""
-
-        # Get the number of keys using the pattern that we defined
-        # in `services.simcct.sim_api.extensions.Session.redis_session`
-        # as being `session:{session id}`. We just get all the keys
-        # matching this pattern which means they have logged in.
-        keys = redis_client.keys(pattern=u'session*')
-
-        return {'status': 'success', 'data': len(keys)}, 200
+        return {'status': 'success', 'data': {}}, 200
 
 
 class UserNerdyData(Resource):

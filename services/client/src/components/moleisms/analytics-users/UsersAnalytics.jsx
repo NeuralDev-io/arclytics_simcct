@@ -28,6 +28,39 @@ import Card from '../../elements/card'
 
 import styles from './UsersAnalytics.module.scss'
 
+const colorScale = [
+  // Let first 10% (0.1) of the values have color rgb(0, 0, 0)
+  [0, 'rgb(0, 0, 0)'],
+  [0.1, 'rgb(0, 0, 0)'],
+  // Let values between 10-20% of the min and max of z have color rgb(20, 20, 20)
+  [0.1, 'rgb(20, 20, 20)'],
+  [0.2, 'rgb(20, 20, 20)'],
+  // Values between 20-30% of the min and max of z have color rgb(40, 40, 40)
+  [0.2, 'rgb(40, 40, 40)'],
+  [0.3, 'rgb(40, 40, 40)'],
+
+  [0.3, 'rgb(60, 60, 60)'],
+  [0.4, 'rgb(60, 60, 60)'],
+
+  [0.4, 'rgb(80, 80, 80)'],
+  [0.5, 'rgb(80, 80, 80)'],
+
+  [0.5, 'rgb(100, 100, 100)'],
+  [0.6, 'rgb(100, 100, 100)'],
+
+  [0.6, 'rgb(120, 120, 120)'],
+  [0.7, 'rgb(120, 120, 120)'],
+
+  [0.7, 'rgb(140, 140, 140)'],
+  [0.8, 'rgb(140, 140, 140)'],
+
+  [0.8, 'rgb(160, 160, 160)'],
+  [0.9, 'rgb(160, 160, 160)'],
+
+  [0.9, 'rgb(180, 180, 180)'],
+  [1.0, 'rgb(180, 180, 180)']
+]
+
 class UsersAnalytics extends Component {
   constructor(props) {
     super(props)
@@ -156,7 +189,15 @@ class UsersAnalytics extends Component {
         <h5>Where are users located?</h5>
         <div className={styles.map}>
           <Card className={styles.mapCard}>
+            {/*
+              * TODO(andrew@neuraldev.io): The custom colorScale is not working.
+              *  It seems to delete on re-render for some reason.
+              *
+            */ }
             <LoginLocationMapbox
+              // Other options include: Electric, Viridis, Hot, Jet, YIGnBu, YIOrRd
+              colorScale={(mapboxData !== undefined) ? 'YIGnBu' : colorScale}
+              mapBoxStyle={'light'}  // Can also pass in 'dark' for dark mode.
               token={mapboxToken}
               data={(mapboxData !== undefined) ? mapboxData : undefined}
             />

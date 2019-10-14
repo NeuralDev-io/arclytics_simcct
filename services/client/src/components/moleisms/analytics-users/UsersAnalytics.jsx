@@ -75,7 +75,7 @@ class UsersAnalytics extends Component {
       <div className={styles.container}>
         <h3>Dashboard - All About Users</h3>
 
-        <h5>Some <strike>nerdy stats</strike> number about users.</h5>
+        <h5>Some <strike>nerdy stats</strike> numbers about users.</h5>
         <div className={styles.liveData}>
           <Card className={styles.liveDataCard}>
 

@@ -52,11 +52,98 @@ class UserLoginData(Resource):
 
 class UserNerdyData(Resource):
     def get(self):
-        # Get total numbers
-        # Get total shares
+
+        db_name = 'arc_dev'
+
+        # Get total user count
+        users_count = MongoService().find(
+            db_name=db_name,
+            collection='users',
+            query={}
+        ).count()
+
+        # Get total saved simulations count
+        saved_sim_count = MongoService().find(
+            db_name=db_name,
+            collection='saved_simulations',
+            query={}
+        ).count()
+
+        # Get total shares count
+        shares_count = MongoService().find(
+            db_name=db_name,
+            collection='shared_simulations',
+            query={}
+        ).count()
+
+        # Get total feedback count
+        feedback_count = MongoService().find(
+            db_name=db_name,
+            collection='feedback',
+            query={}
+        ).count()
+
         # Get total simulations
+        pipeline = [
+            {
+                '$group': {
+                    '_id': None,
+                    'total': {
+                        '$sum': '$simulations_count'
+                    }
+                }
+            }
+        ]
+        sim_df = MongoService().read_aggregation(db_name, 'users', pipeline)
+
         # Get total saved alloys
-        pass
+        pipeline = [
+            {
+                '$group': {
+                    '_id': None,
+                    'total': {
+                        '$sum': {'$size': '$saved_alloys'}
+                    }
+                }
+            }
+        ]
+        saved_alloys_df = MongoService().read_aggregation(
+            db_name, 'users', pipeline
+        )
+
+        # Get total ratings average
+
+        pipeline = [
+            {'$unwind': '$ratings'},
+            {
+                '$group': {
+                    '_id': None,
+                    'count': {'$sum': 1},
+                    'average': {'$avg': {'$sum': '$ratings.rating'}}
+                }
+            }
+        ]
+        ratings_df = MongoService().read_aggregation(db_name, 'users', pipeline)
+
+        response = {
+            'status': 'success',
+            'data': {
+                'count': {
+                    'users': users_count,
+                    'saved_simulations': saved_sim_count,
+                    'shared_simulations': shares_count,
+                    'simulations': sim_df['total'][0],
+                    'feedback': feedback_count,
+                    'saved_alloys': saved_alloys_df['total'][0],
+                    'ratings': ratings_df['count'][0]
+                },
+                'average': {
+                    'ratings': ratings_df['average'][0]
+                }
+            }
+        }
+
+        return response, 200
 
 
 # noinspection PyMethodMayBeStatic

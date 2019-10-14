@@ -1032,6 +1032,69 @@ class TestUserService(BaseTestCase):
         kylo.set_password('LetStarWarsDie')
         kylo.save()
 
+    def test_search_users(self):
+        """NOT A REAL UNIT TEST, just using to help me make the endpoint"""
+        alice = User(
+            **{
+                'email': 'alice@arclytics.io',
+                'first_name': 'Alice',
+                'last_name': 'Adams'
+            }
+        )
+        alice.set_password('password1')
+        alice.save()
+        bob = User(
+            **{
+                'email': 'bob@arclytics.io',
+                'first_name': 'Bob',
+                'last_name': 'Barber'
+            }
+        )
+        bob.set_password('password2')
+        bob.save()
+        carol = User(
+            **{
+                'email': 'carol@arclytics.io',
+                'first_name': 'Carol',
+                'last_name': 'Combe'
+            }
+        )
+        carol.set_password('password3')
+        carol.save()
+        tony = User(
+            **{
+                'email': 'tony@starkindustries.com',
+                'first_name': 'Tony',
+                'last_name': 'Stark'
+            }
+        )
+        tony.set_password('IAmTheRealIronMan')
+        # tony.is_admin = True
+        tony.admin_profile = AdminProfile(
+            position='Position',
+            mobile_number=None,
+            verified=True,
+            promoted_by=None
+        )
+        tony.verified = True
+        tony.save()
+
+        with self.client as client:
+            test_login(client, self.tony.email, self._tony_pw)
+            self.assertTrue(tony.active)
+            resp = client.get(
+                '/v1/sim/users/search',
+                data=json.dumps({
+                    'search_on': 'email',
+                    'search_for': 'arclytics',
+                    'sort_on': '-fullname'
+                }),
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            print(data)
+
+
 
 if __name__ == '__main__':
     unittest.main()

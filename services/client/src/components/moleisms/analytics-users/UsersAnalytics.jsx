@@ -9,9 +9,21 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { getProfileAnalyticsData, getLoginLocationData } from '../../../api/Analytics'
+import UsersIcon from 'react-feather/dist/icons/users'
+import DatabaseIcon from 'react-feather/dist/icons/database'
+import Share2Icon from 'react-feather/dist/icons/share-2'
+import SaveIcon from 'react-feather/dist/icons/save'
+import PlayCircleIcon from 'react-feather/dist/icons/play-circle'
+import StarIcon from 'react-feather/dist/icons/star'
+import HeartIcon from 'react-feather/dist/icons/heart'
+import {
+  getProfileAnalyticsData,
+  getLoginLocationData,
+  getNerdyStatsData
+} from '../../../api/Analytics'
 import { logError, logInfo } from '../../../api/LoggingHelper'
 import { ProfileBarChart, LoginLocationMapbox } from '../charts'
+import { getColor } from '../../../utils/theming'
 import Card from '../../elements/card'
 
 import styles from './UsersAnalytics.module.scss'
@@ -20,6 +32,7 @@ class UsersAnalytics extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      statsData: undefined,
       profileData: undefined,
       mapboxToken: '',
       mapboxData: undefined,
@@ -27,8 +40,21 @@ class UsersAnalytics extends Component {
   }
 
   componentDidMount = () => {
+    this.getNerdyStatsAnalytics()
     this.getProfileAnalytics()
     this.getLoginLocationMap()
+  }
+
+  getNerdyStatsAnalytics = () => {
+    getNerdyStatsData().then((res) => {
+      this.setState({ statsData: res.data })
+    })
+      .catch((err) => logError(
+          err.toString(),
+          err.message,
+          'UsersAnalytics.getNerdyStatsAnalytics',
+          err.stack
+      ))
   }
 
   getProfileAnalytics = () => {
@@ -62,10 +88,13 @@ class UsersAnalytics extends Component {
   render() {
 
     const {
+      statsData,
       profileData,
       mapboxToken,
       mapboxData,
     } = this.state
+
+    console.log(statsData)
 
     /*
     * Colors: --l300, --g300, --m300, --r300, --o300
@@ -76,8 +105,50 @@ class UsersAnalytics extends Component {
         <h3>Dashboard - All About Users</h3>
 
         <h5>Some <strike>nerdy stats</strike> numbers about users.</h5>
-        <div className={styles.liveData}>
-          <Card className={styles.liveDataCard}>
+        <div className={styles.nerdyData}>
+          <Card className={styles.nerdyDataCard}>
+
+            <div className={styles.nerdyDataItem}>
+              <UsersIcon color={getColor('--r400')} size={36} />
+              <h5>{(statsData !== undefined) ? statsData.count.users : "0"}</h5>
+              <p>Users</p>
+            </div>
+
+            <div className={styles.nerdyDataItem}>
+              <DatabaseIcon color={getColor('--o400')} size={36} />
+              <h5>{(statsData !== undefined) ? statsData.count.saved_alloys : "0"}</h5>
+              <p>Saved Alloys</p>
+            </div>
+
+            <div className={styles.nerdyDataItem}>
+              <PlayCircleIcon color={getColor('--g400')} size={36} />
+              <h5>{(statsData !== undefined) ? statsData.count.simulations : "0"}</h5>
+              <p>Run Simulations</p>
+            </div>
+
+            <div className={styles.nerdyDataItem}>
+              <SaveIcon color={getColor('--t400')} size={36} />
+              <h5>{(statsData !== undefined) ? statsData.count.saved_simulations : "0"}</h5>
+              <p>Saved Simulations</p>
+            </div>
+
+            <div className={styles.nerdyDataItem}>
+              <Share2Icon color={getColor('--b400')} size={36} />
+              <h5>{(statsData !== undefined) ? statsData.count.shared_simulations : "0"}</h5>
+              <p>Shared Simulations</p>
+            </div>
+
+            <div className={styles.nerdyDataItem}>
+              <StarIcon color={getColor('--i400')} size={36} />
+              <h5>{(statsData !== undefined) ? statsData.count.ratings : "0"}</h5>
+              <p>Ratings</p>
+            </div>
+
+            <div className={styles.nerdyDataItem}>
+              <HeartIcon color={getColor('--i400')} size={36} />
+              <h5>{(statsData !== undefined) ? statsData.count.feedback : "0"}</h5>
+              <p>Feedback</p>
+            </div>
 
           </Card>
         </div>

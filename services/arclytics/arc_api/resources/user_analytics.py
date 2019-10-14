@@ -88,9 +88,7 @@ class UserNerdyData(Resource):
             {
                 '$group': {
                     '_id': None,
-                    'total': {
-                        '$sum': '$simulations_count'
-                    }
+                    'count': {'$sum': '$simulations_count'}
                 }
             }
         ]
@@ -101,9 +99,7 @@ class UserNerdyData(Resource):
             {
                 '$group': {
                     '_id': None,
-                    'total': {
-                        '$sum': {'$size': '$saved_alloys'}
-                    }
+                    'count': {'$sum': {'$size': '$saved_alloys'}}
                 }
             }
         ]
@@ -114,12 +110,10 @@ class UserNerdyData(Resource):
         # Get total ratings average
 
         pipeline = [
-            {'$unwind': '$ratings'},
             {
                 '$group': {
                     '_id': None,
-                    'count': {'$sum': 1},
-                    'average': {'$avg': {'$sum': '$ratings.rating'}}
+                    'count': {'$sum': {'$size': '$ratings'}}
                 }
             }
         ]
@@ -132,13 +126,10 @@ class UserNerdyData(Resource):
                     'users': users_count,
                     'saved_simulations': saved_sim_count,
                     'shared_simulations': shares_count,
-                    'simulations': sim_df['total'][0],
+                    'simulations': sim_df['count'][0],
                     'feedback': feedback_count,
-                    'saved_alloys': saved_alloys_df['total'][0],
+                    'saved_alloys': saved_alloys_df['count'][0],
                     'ratings': ratings_df['count'][0]
-                },
-                'average': {
-                    'ratings': ratings_df['average'][0]
                 }
             }
         }

@@ -23,7 +23,7 @@ services:
     depends_on:
       - elasticsearch
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   client:
     build:
@@ -57,7 +57,7 @@ services:
       - simcct
       - fluentd
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   nginx:
     build:
@@ -82,7 +82,7 @@ services:
       - simcct
       - apm-server
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   simcct:
     build:
@@ -131,7 +131,7 @@ services:
       - elasticsearch
       - apm-server
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   arclytics:
     build:
@@ -140,11 +140,11 @@ services:
       labels:
         arclytics.io: "development"
     image: neuraldev/arclytics_service:0.9
-#    logging:
-#      driver: fluentd
-#      options:
-#        fluentd-address: localhost:24224
-#        tag: arclytics.docker.access
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: arclytics.docker.access
     volumes:
       - ./services/arclytics:/usr/src/app
     ports:
@@ -172,8 +172,9 @@ services:
       - MAPBOX_TOKEN=${MAPBOX_TOKEN}
     depends_on:
       - fluentd
+      - elasticsearch
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   celery-worker:
     build:
@@ -202,14 +203,19 @@ services:
       - MAIL_USE_TLS=${MAIL_USE_TLS}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - MONGO_APP_DB=arc_dev
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - ELASTIC_APM_SERVER_URL=http://apm-server:8200
     depends_on:
       - redis
       - fluentd
+      - elasticsearch
+      - mongodb
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   redis:
     build:
@@ -231,7 +237,7 @@ services:
     depends_on:
       - fluentd
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   mongodb:
     build:
@@ -258,7 +264,7 @@ services:
     depends_on:
       - fluentd
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   elasticsearch:
     build:
@@ -285,7 +291,7 @@ services:
         soft: -1
         hard: -1
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   apm-server:
     build:
@@ -308,7 +314,7 @@ services:
     depends_on:
       - elasticsearch
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   kibana:
     build:
@@ -327,7 +333,7 @@ services:
       - elasticsearch
       - fluentd
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   swagger:
     build:
@@ -343,7 +349,7 @@ services:
     environment:
       - URL=swagger.yaml
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   # ============================== # DASK MICROSERVICES # ============================== #
   dask-scheduler:
@@ -363,7 +369,7 @@ services:
     # Entrypoint command needs to be set here because Dockerfile shared with `dask-worker`
     command: ['dask-scheduler']
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   dask-worker:
     build:
@@ -375,7 +381,7 @@ services:
     hostname: dask-worker
     command: ['dask-worker', 'tcp://dask-scheduler:8786', '--no-nanny']
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   jupyter:
     build:
@@ -404,7 +410,7 @@ services:
       - MONGO_URI=mongodb://mongodb:27017
       - REDIS_URI=redis://redis:6379
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   # ============================== # TEST MICROSERVICES # ============================== #
   # Both these services were created for testing purposes and a proof-of-concept for
@@ -432,7 +438,7 @@ services:
     depends_on:
       - fluentd
     networks:
-      - arclytics_subnet
+      - dev_subnet
 
   fluent-react:
     build:
@@ -453,11 +459,11 @@ services:
     depends_on:
       - fluentd
     networks:
-      - arclytics_subnet
+      - dev_subnet
   # =================================================================================== #
 
 networks:
-  arclytics_subnet:
+  dev_subnet:
     driver: bridge
     labels:
       arclytics.io: "development"

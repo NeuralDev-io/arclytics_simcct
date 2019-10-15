@@ -17,7 +17,7 @@ __date__ = '2019.10.15'
 This module provides the resources for analytical querying, manipulation and 
 transformations to display interesting data about the application itself. 
 """
-
+from os import environ as env
 from typing import Tuple
 
 from flask import Blueprint
@@ -31,6 +31,8 @@ from arc_logging import AppLogger
 
 app_analytics_blueprint = Blueprint('user_analytics', __name__)
 logger = AppLogger(__name__)
+
+DATABASE = env.get('MONGO_APP_DB')
 
 
 # noinspection PyMethodMayBeStatic

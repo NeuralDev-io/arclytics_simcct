@@ -501,7 +501,7 @@ flushAndSeedDb() {
     headerMessage "SEED AND FLUSH BACK-END MICROSERVICES (WITH PRODUCTION DATA)"
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
     generalMessage "docker-compose exec simcct python manage.py flush_all"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush_all
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
     echoSpace
     generalMessage "Seeding simcct microservice database with global alloys"
     generalMessage "docker-compose exec simcct python manage.py seed_db"
@@ -511,7 +511,7 @@ flushAndSeedDb() {
     headerMessage "SEED AND FLUSH BACK-END MICROSERVICES"
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
     generalMessage "docker-compose exec simcct python manage.py flush_all"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush_all
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
     echoSpace
     generalMessage "Seeding simcct microservice database with global alloys"
     generalMessage "docker-compose exec simcct python manage.py seed_db"

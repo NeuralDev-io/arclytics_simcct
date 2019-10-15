@@ -715,7 +715,9 @@ export const loadPersistedSim = () => (dispatch, getState) => {
     type: LOAD_PERSISTED_SIM,
     payload: lastSim,
   })
-  addSimToTimeMachine()(dispatch, getState)
+  if (lastSim.isSimulated) {
+    addSimToTimeMachine()(dispatch, getState)
+  }
 }
 
 /**
@@ -737,5 +739,7 @@ export const loadLastSim = () => (dispatch, getState) => {
       last_configuration: convertedConfig,
     },
   })
-  addSimToTimeMachine()(dispatch, getState)
+  if (lastSim.isSimulated) {
+    addSimToTimeMachine()(dispatch, getState)
+  }
 }

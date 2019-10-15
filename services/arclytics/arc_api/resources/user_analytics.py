@@ -80,17 +80,6 @@ class UserNerdyData(Resource):
             query={}
         ).count()
 
-        # Get total simulations
-        pipeline = [
-            {
-                '$group': {
-                    '_id': None,
-                    'count': {'$sum': '$simulations_count'}
-                }
-            }
-        ]
-        sim_df = MongoService().read_aggregation(DATABASE, 'users', pipeline)
-
         # Get total saved alloys
         pipeline = [
             {
@@ -104,18 +93,6 @@ class UserNerdyData(Resource):
             DATABASE, 'users', pipeline
         )
 
-        # Get total ratings average
-
-        pipeline = [
-            {
-                '$group': {
-                    '_id': None,
-                    'count': {'$sum': {'$size': '$ratings'}}
-                }
-            }
-        ]
-        ratings_df = MongoService().read_aggregation(DATABASE, 'users', pipeline)
-
         response = {
             'status': 'success',
             'data': {
@@ -123,10 +100,8 @@ class UserNerdyData(Resource):
                     'users': users_count,
                     'saved_simulations': saved_sim_count,
                     'shared_simulations': shares_count,
-                    'simulations': sim_df['count'][0],
                     'feedback': feedback_count,
                     'saved_alloys': saved_alloys_df['count'][0],
-                    'ratings': ratings_df['count'][0]
                 }
             }
         }

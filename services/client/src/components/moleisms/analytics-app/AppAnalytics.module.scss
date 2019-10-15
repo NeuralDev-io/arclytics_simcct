@@ -41,14 +41,20 @@ $break-small: 1366px;
     }
   }
 
-  .liveLoginChart {
+  .chart {
     margin-top: 1.25rem;
+    min-height: 35rem;
 
     .liveLoginCard {
       background-color: var(--n0);
       min-height: 35rem;
-      min-width: 90%;
+      //min-width: 90%;
       margin: 0;
+
+      //.liveLoginChart {
+      //  min-height: 35rem;
+      //  position: relative;
+      //}
     }
   }
 

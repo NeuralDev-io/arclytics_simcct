@@ -139,11 +139,14 @@ class Equilibrium extends React.Component {
                   ...defaultLayout.xaxis,
                   title: 'C (wt%)',
                   autorange: true,
+                  tickvals: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+                  ticktext: ['0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.0'],
                 },
                 yaxis: {
                   ...defaultLayout.yaxis,
                   title: 'Temperature (°C)',
                   autorange: true,
+                  rangemode: 'nonnegative',
                 },
               }}
               config={config}

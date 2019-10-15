@@ -1032,68 +1032,203 @@ class TestUserService(BaseTestCase):
         kylo.set_password('LetStarWarsDie')
         kylo.save()
 
-    def test_search_users(self):
-        """NOT A REAL UNIT TEST, just using to help me make the endpoint"""
-        alice = User(
+    def test_search_users_no_search_on(self):
+        """Ensure a search request with no search_on value fails"""
+        vos = User(
             **{
-                'email': 'alice@arclytics.io',
-                'first_name': 'Alice',
-                'last_name': 'Adams'
+                'email': 'quinlan@arclytics.io',
+                'first_name': 'Quinlan',
+                'last_name': 'Vos'
             }
         )
-        alice.set_password('password1')
-        alice.save()
-        bob = User(
-            **{
-                'email': 'bob@arclytics.io',
-                'first_name': 'Bob',
-                'last_name': 'Barber'
-            }
-        )
-        bob.set_password('password2')
-        bob.save()
-        carol = User(
-            **{
-                'email': 'carol@arclytics.io',
-                'first_name': 'Carol',
-                'last_name': 'Combe'
-            }
-        )
-        carol.set_password('password3')
-        carol.save()
-        tony = User(
-            **{
-                'email': 'tony@starkindustries.com',
-                'first_name': 'Tony',
-                'last_name': 'Stark'
-            }
-        )
-        tony.set_password('IAmTheRealIronMan')
-        # tony.is_admin = True
-        tony.admin_profile = AdminProfile(
+        vos.set_password('expertTracker')
+        vos.admin_profile = AdminProfile(
             position='Position',
             mobile_number=None,
             verified=True,
             promoted_by=None
         )
-        tony.verified = True
-        tony.save()
+        vos.verified = True
+        vos.save()
 
         with self.client as client:
-            test_login(client, self.tony.email, self._tony_pw)
-            self.assertTrue(tony.active)
+            test_login(client, vos.email, 'expertTracker')
             resp = client.get(
                 '/v1/sim/users/search',
                 data=json.dumps({
-                    'search_on': 'email',
-                    'search_for': 'arclytics',
                     'sort_on': '-fullname'
                 }),
                 content_type='application/json'
             )
             data = json.loads(resp.data.decode())
-            print(data)
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['message'], 'No search parameters provided.')
 
+    def test_search_users_invalid_search_on(self):
+        """Ensure a search request with an invalid search_on value fails"""
+        vos = User(
+            **{
+                'email': 'quinlan@arclytics.io',
+                'first_name': 'Quinlan',
+                'last_name': 'Vos'
+            }
+        )
+        vos.set_password('expertTracker')
+        vos.admin_profile = AdminProfile(
+            position='Position',
+            mobile_number=None,
+            verified=True,
+            promoted_by=None
+        )
+        vos.verified = True
+        vos.save()
+
+        with self.client as client:
+            test_login(client, vos.email, 'expertTracker')
+            resp = client.get(
+                '/v1/sim/users/search',
+                data=json.dumps({
+                    'search_on': 'force abilities',
+                    'search_for': 'Force Speed'
+                }),
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(
+                data['message'], 'Invalid search on attribute: force abilities.'
+            )
+
+    def test_search_users_success(self):
+        """Ensure valid search requests on the users database are successful"""
+        vos = User(
+            **{
+                'email': 'quinlan@arclytics.io',
+                'first_name': 'Quinlan',
+                'last_name': 'Vos'
+            }
+        )
+        vos.set_password('expertTracker')
+        vos.admin_profile = AdminProfile(
+            position='Position',
+            mobile_number=None,
+            verified=True,
+            promoted_by=None
+        )
+        vos.verified = True
+        vos.save()
+        kenobi = User(
+            **{
+                'email': 'obiwan@arclytics.io',
+                'first_name': 'Obi Wan',
+                'last_name': 'Kenobi'
+            }
+        )
+        kenobi.set_password('HelloThere')
+        kenobi.save()
+        skywalker = User(
+            **{
+                'email': 'anakin@arclytics.io',
+                'first_name': 'Anakin',
+                'last_name': 'Skywalker'
+            }
+        )
+        skywalker.set_password('YouUnderestimateMyPower')
+        skywalker.save()
+        ahsoka = User(
+            **{
+                'email': 'ahsoka@gmail.com',
+                'first_name': 'Ahsoka',
+                'last_name': 'Tano'
+            }
+        )
+        ahsoka.set_password('YouAlwaysBlameTheShip')
+        ahsoka.save()
+        plo = User(
+            **{
+                'email': 'plokoon@gmail.com',
+                'first_name': 'Plo',
+                'last_name': 'Koon'
+            }
+        )
+        plo.set_password('WhenYouAskForTrouble')
+        plo.save()
+        aayla = User(
+            **{
+                'email': 'aalya@arclytics.io',
+                'first_name': 'Aayla',
+                'last_name': 'Secura'
+            }
+        )
+        aayla.set_password('AStrongBelief')
+        aayla.save()
+        yoda = User(
+            **{
+                'email': 'yoda@gmail.com',
+                'first_name': 'Master',
+                'last_name': 'Yoda'
+            }
+        )
+        yoda.set_password('DoOrDoNot')
+        yoda.save()
+        mace = User(
+            **{
+                'email': 'mace@arclytics.io',
+                'first_name': 'Mace',
+                'last_name': 'Windu'
+            }
+        )
+        mace.set_password('ThisPartysOver')
+        mace.save()
+
+        with self.client as client:
+            test_login(client, vos.email, 'expertTracker')
+            resp = client.get(
+                '/v1/sim/users/search',
+                data=json.dumps({
+                    'search_on': 'email',
+                    'search_for': 'arclytics',
+                    'sort_on': 'fullname',
+                    'limit': 2
+                }),
+                content_type='application/json'
+            )
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(data['data'][0]['email'], 'obiwan@arclytics.io')
+            self.assertEqual(data['sort_on'], 'fullname')
+            self.assertEqual(data['search_on'], 'email')
+            self.assertEqual(data['search_for'], 'arclytics')
+            self.assertEqual(data['next_offset'], 3)
+            self.assertEqual(data['prev_offset'], None)
+            self.assertEqual(data['limit'], 2)
+            self.assertEqual(data['current_page'], 1)
+            self.assertEqual(data['total_pages'], 3)
+
+            resp2 = client.get(
+                '/v1/sim/users/search',
+                data=json.dumps({
+                    'search_on': 'first_name',
+                    'search_for': 'o',
+                    'sort_on': 'fullname',
+                    'limit': 2,
+                    'offset': 3
+                }),
+                content_type='application/json'
+            )
+            data2 = json.loads(resp2.data.decode())
+            self.assertEqual(resp2.status_code, 200)
+            self.assertEqual(data2['status'], 'success')
+            self.assertEqual(data2['data'][1]['email'], 'ahsoka@gmail.com')
+            self.assertEqual(data2['sort_on'], 'fullname')
+            self.assertEqual(data2['search_on'], 'first_name')
+            self.assertEqual(data2['search_for'], 'o')
+            self.assertEqual(data2['next_offset'], None)
+            self.assertEqual(data2['prev_offset'], 1)
+            self.assertEqual(data2['limit'], 2)
+            self.assertEqual(data2['current_page'], 2)
+            self.assertEqual(data2['total_pages'], 2)
 
 
 if __name__ == '__main__':

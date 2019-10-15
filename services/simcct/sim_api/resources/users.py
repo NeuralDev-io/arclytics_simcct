@@ -159,6 +159,8 @@ class SearchUsers(Resource):
 
         data = request.get_json()
 
+        # Get the query parameters if they were provided, otherwise set them to
+        # None
         if isinstance(data, dict):
             sort_on = data.get('sort_on', None)
             offset = data.get('offset', None)
@@ -190,7 +192,7 @@ class SearchUsers(Resource):
 
         if not search_on_valid:
             response['message'] = (
-                    'Invalid search on attribute: ' + str(search_on)
+                    'Invalid search on attribute: ' + str(search_on) + '.'
             )
             return response, 400
 
@@ -221,7 +223,9 @@ class SearchUsers(Resource):
         else:
             limit = 10
 
-        # Validate offset
+        # Validate offset - we don't know how big the query set will be so for
+        # now we will just make sure the offset is not bigger than the size of
+        # the users list.
         user_size = User.objects.count()
         if offset:
             if not isinstance(offset, int):
@@ -236,97 +240,81 @@ class SearchUsers(Resource):
         else:
             offset = 1
 
-        if sort_on == 'fullname':
-            if search_on == 'email':
-                query_set = User.objects(
-                    email__icontains=search_for
-                )[offset - 1:offset + limit - 1].order_by(
-                    'last_name', 'first_name'
-                )
-            elif search_on == 'first_name':
-                query_set = User.objects(
-                    first_name__icontains=search_for
-                )[offset - 1:offset + limit - 1].order_by(
-                    'last_name', 'first_name'
-                )
-            elif search_on == 'last_name':
-                query_set = User.objects(
-                    last_name__icontains=search_for
-                )[offset - 1:offset + limit - 1].order_by(
-                    'last_name', 'first_name'
-                )
+        # If we are sorting on fullname, we will need a second parameter to go
+        # into the order_by() when we query. If we are not sorting on fullname
+        # we can set it to None and the query will ignore it.
+        response['sort_on'] = sort_on
+        if sort_on:
+            if sort_on == 'fullname':
+                sort_on = 'last_name'
+                sort_on_2 = 'first_name'
+            elif sort_on == '-fullname':
+                sort_on = '-last_name',
+                sort_on_2 = '-first_name'
             else:
-                response['message'] = (
-                        'Invalid search on attribute: ' + str(search_on)
-                )
-                return response, 400
-        elif sort_on == '-fullname':
-            if search_on == 'email':
-                query_set = User.objects(
-                    email__icontains=search_for
-                )[offset - 1:offset + limit - 1].order_by(
-                    '-last_name', '-first_name'
-                )
-            elif search_on == 'first_name':
-                query_set = User.objects(
-                    first_name__icontains=search_for
-                )[offset - 1:offset + limit - 1].order_by(
-                    '-last_name', '-first_name'
-                )
-            elif search_on == 'last_name':
-                query_set = User.objects(
-                    last_name__icontains=search_for
-                )[offset - 1:offset + limit - 1].order_by(
-                    '-last_name', '-first_name'
-                )
-            else:
-                response['message'] = (
-                        'Invalid search on attribute: ' + str(search_on)
-                )
-                return response, 400
-        elif sort_on:
-            if search_on == 'email':
-                query_set = User.objects(email__icontains=search_for
-                                         )[offset - 1:offset + limit -
-                                                      1].order_by(sort_on)
-            elif search_on == 'first_name':
-                query_set = User.objects(first_name__icontains=search_for
-                                         )[offset - 1:offset + limit -
-                                                      1].order_by(sort_on)
-            elif search_on == 'last_name':
-                query_set = User.objects(last_name__icontains=search_for
-                                         )[offset - 1:offset + limit -
-                                                      1].order_by(sort_on)
-            else:
-                response['message'] = (
-                        'Invalid search on attribute: ' + str(search_on)
-                )
-                return response, 400
+                sort_on_2 = None
+
+        # When we query, we get the set of results we want to return based off
+        # which page we are on. However, we need to query to get the full set so
+        # we know how many pages of results there are in total.
+        if search_on == 'email':
+            full_set = User.objects(email__icontains=search_for)
+            query_set = User.objects(
+                email__icontains=search_for
+            )[offset - 1:offset + limit - 1].order_by(
+                sort_on, sort_on_2
+            )
+        elif search_on == 'first_name':
+            full_set = User.objects(first_name__icontains=search_for)
+            query_set = User.objects(
+                first_name__icontains=search_for
+            )[offset - 1:offset + limit - 1].order_by(
+                sort_on, sort_on_2
+            )
+        elif search_on == 'last_name':
+            full_set = User.objects(last_name__icontains=search_for)
+            query_set = User.objects(
+                last_name__icontains=search_for
+            )[offset - 1:offset + limit - 1].order_by(
+                sort_on, sort_on_2
+            )
         else:
-            if search_on == 'email':
-                query_set = User.objects(email__icontains=search_for)[
-                            offset - 1:offset + limit - 1
-                            ]
-            elif search_on == 'first_name':
-                query_set = User.objects(first_name__icontains=search_for)[
-                            offset - 1:offset + limit - 1
-                            ]
-            elif search_on == 'last_name':
-                query_set = User.objects(last_name__icontains=search_for)[
-                            offset - 1:offset + limit - 1
-                            ]
-            else:
-                response['message'] = (
-                        'Invalid search on attribute: ' + str(search_on)
-                )
-                return response, 400
+            response['message'] = (
+                    'Invalid search on attribute: ' + str(search_on)
+            )
+            response.pop('sort_on')
+            return response, 400
 
         if not query_set:
             response['message'] = 'No Results were found.'
+            response.pop('sort_on')
             return response, 400
+
+        # Return the query/search parameters so that the client can request
+        # different pages in the future
+        response['search_on'] = search_on
+        response['search_for'] = search_for
+        response['next_offset'] = None
+        response['prev_offset'] = None
+        response['limit'] = limit
+
+        # Check if there is a valid next and previous offset
+        if offset + limit - 1 < len(full_set):
+            response['next_offset'] = offset + limit
+        if offset - limit >= 1:
+            response['prev_offset'] = offset - limit
+
+        # Return the Current Page Number and Total number of pages
+        if len(full_set) % limit == 0:
+            total_pages = int(len(full_set) / limit)
+        else:
+            total_pages = int(len(full_set) / limit) + 1
+        current_page = int(offset / limit) + 1
 
         response.pop('message')
         response['status'] = 'success'
+        response['current_page'] = current_page
+        response['total_pages'] = total_pages
         response['data'] = [obj.to_dict() for obj in query_set]
         return response, 200
 

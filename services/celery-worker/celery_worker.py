@@ -22,17 +22,20 @@ instance that connects to the Redis datastore for polling of tasks to run and
 storage of the results.
 """
 
-import logging
 import os
 import sys
 import datetime
+from logging import ERROR
 from os import environ as env
 
 from celery import Celery
+from celery.schedules import crontab
 from elasticapm.contrib.flask import ElasticAPM
 from flask import Flask
 from flask_mail import Mail
 from redis import Redis
+
+from .mongo_service import MongoService
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
@@ -49,7 +52,7 @@ app.config.from_object(app_settings)
 
 # ========== # INIT FLASK EXTENSIONS # ========== #
 mail = Mail(app)
-apm = ElasticAPM(app, logging=logging.ERROR)
+apm = ElasticAPM(app, logging=ERROR)
 
 # We make a new Celery subsystem instance with the configs using Redis
 # as the Message Queue broker and also to store results.
@@ -89,17 +92,18 @@ else:
 redis_client = Redis.from_url(redis_uri)
 
 
+# noinspection PyUnusedLocal
 @celery.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
     # Testing hello every 10 seconds
     sender.add_periodic_task(
-        30.0,
+        crontab(),
         get_logged_users_total.s(),
         name='Get logged in users every 30 secs'
     )
 
 
-# Periodic tasks
+# PERIODIC TASKS
 @celery.task()
 def get_logged_users_total():
     """Simply get the number of logged in users by Session in Redis."""
@@ -110,12 +114,45 @@ def get_logged_users_total():
     # matching this pattern which means they have logged in.
     keys = redis_client.keys(pattern=u'session*')
 
-    current_timestamp = datetime.datetime.utcnow()
+    # Documents will be stored on size bucketing with day as the key so
+    # we need to get the date using the ISO Date format.
+    # Using an ISO Date creates an optimal index.
+    date = datetime.datetime.utcnow().strftime('%Y-%m-%d')
 
+    # We need to store the timestamp for when this entry was created
+    now = datetime.datetime.utcnow()
+    timestamp = datetime.datetime.timestamp(now)
+
+    # Testing for now.
     print(
-        'Logged in users: {} ({})'.format(
-            len(keys),
-            current_timestamp
+        'Logged in users: {} (date: {}, timestamp: {})'.format(
+            len(keys), date, timestamp
         )
     )
-    # TODO(andrew@neuraldev.io): Add this data to MongoDB.
+
+    # Every sample in the document will be a value for how many users are
+    # logged in the application at the current timestamp.
+    # We use timestamp for an easy comparison to create the first and last
+    # recorded samples of the day and because UNIX timestamps are 32 bits
+    # versus an ISODate which is 64 bits.
+    sample = {'timestamp': timestamp, 'value': len(keys)}
+    # We use the query to find the document or make a new one if it does not
+    # exist when we pass in `upsert=True`
+    # As new data samples are added it is simply appended to the document
+    # until the number of samples hit 1000
+    q = {'date': date, '$n_samples': {'$lt': 1000}}
+    # Make some updates on the document based by doing:
+    #  - Insert the new sample into the `logged_in` key which is an array.
+    #  - Get the `min` for the day by checking the `sample.timestamp` and store
+    #    it as the `first` key.
+    #  - Get the `max` for the day by checking the `sample.timestamp` and store
+    #    it as the `last` key.
+    #  - Increment the `n_samples` key by `.
+    u = {
+        '$push': {'logged_in': sample},
+        '$min': {'first': 'sample.timestamp'},
+        '$max': {'last': 'sample.timestamp'},
+        '$inc': {'n_samples': 1},
+    }
+
+    MongoService().update_one(query=q, update=u, upsert=True)

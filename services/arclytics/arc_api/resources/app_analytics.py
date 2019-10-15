@@ -76,7 +76,7 @@ class GeneralData(Resource):
             {
                 '$group': {
                     '_id': None,
-                    'count': { '$sum': 1 },
+                    'count': {'$sum': 1},
                     'average': {'$avg': {'$sum': '$ratings.rating'}}
                 }
             }

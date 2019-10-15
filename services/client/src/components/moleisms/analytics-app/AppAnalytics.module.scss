@@ -36,6 +36,7 @@ $break-small: 1366px;
       display: flex;
       flex-flow: row nowrap;
       flex-basis: 30%;
+      flex-flow: column nowrap;
       justify-content: center;
       align-items: center;
     }

@@ -13,7 +13,6 @@ import React, { Component } from 'react'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { getColor } from '../../../utils/theming'
-import { layout, config } from './utils/chartConfig'
 import { getLiveLoginData } from '../../../api/Analytics'
 import { logError } from '../../../api/LoggingHelper'
 
@@ -30,7 +29,7 @@ class LiveLoginTimeSeries extends Component {
 
   componentDidMount = () => {
     this.getTimeSeriesData()
-    this.timer = setInterval(this.getTimeSeriesData, 10000)
+    this.timer = setInterval(this.getTimeSeriesData, 60000)
   }
 
   componentWillUnmount = () => {

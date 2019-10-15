@@ -14,7 +14,8 @@ __date__ = '2019.10.02'
 
 """user_analytics.py: 
 
-{Description}
+This module provides the resources for analytical querying, manipulation and 
+transformations to display interesting data about Users of the application. 
 """
 
 from os import environ as env
@@ -24,21 +25,13 @@ from flask import Blueprint
 from flask_restful import Resource
 
 from arc_api.extensions import api
+from arc_api.routes import Routes
 from arc_api.mongo_service import MongoService
 from arc_api.middleware import authorize_admin_cookie_restful
 from arc_logging import AppLogger
 
 user_analytics_blueprint = Blueprint('user_analytics', __name__)
 logger = AppLogger(__name__)
-
-
-# noinspection PyMethodMayBeStatic
-class UserLoginData(Resource):
-
-    # method_decorators = {'get': [authorize_admin_cookie_restful]}
-
-    def get(self) -> Tuple[dict, int]:
-        return {'status': 'success', 'data': {}}, 200
 
 
 # noinspection PyMethodMayBeStatic
@@ -263,7 +256,6 @@ class UserProfileData(Resource):
         return response, 200
 
 
-api.add_resource(UserNerdyData, '/v1/arc/users/stats')
-api.add_resource(UserLoginData, '/v1/arc/users/login/live')
-api.add_resource(UserLoginLocationData, '/v1/arc/users/login/map')
-api.add_resource(UserProfileData, '/v1/arc/users/profile')
+api.add_resource(UserNerdyData, Routes.UserNerdyData.value)
+api.add_resource(UserLoginLocationData, Routes.UserLoginLocationData.value)
+api.add_resource(UserProfileData, Routes.UserProfileData.value)

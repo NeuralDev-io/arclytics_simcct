@@ -64,7 +64,7 @@ class Equilibrium extends React.Component {
           type: 'scatter',
           mode: 'lines',
           line: {
-            color: getColor('--l500'),
+            color: getColor('--g500'),
             shape: 'spline',
           },
         },
@@ -75,21 +75,21 @@ class Equilibrium extends React.Component {
           type: 'scatter',
           mode: 'lines',
           line: {
-            color: getColor('--g500'),
+            color: getColor('--v500'),
             shape: 'spline',
           },
         },
-        // {
-        //   x: data.bainite_nucleation.time,
-        //   y: data.bainite_nucleation.temp,
-        //   name: 'C-wt',
-        //   type: 'scatter',
-        //   mode: 'lines',
-        //   line: {
-        //     color: getColor('--m500'),
-        //     shape: 'spline',
-        //   },
-        // },
+        {
+          x: data.c_wt.x,
+          y: data.c_wt.y,
+          name: 'C-wt',
+          type: 'scatter',
+          mode: 'lines',
+          line: {
+            color: getColor('--m500'),
+            shape: 'spline',
+          },
+        },
       ]
     }
 
@@ -149,6 +149,7 @@ Equilibrium.propTypes = {
     ae3: linePropTypes,
     t0: linePropTypes,
     cf: linePropTypes,
+    c_wt: linePropTypes,
   }),
   isLoading: PropTypes.bool.isRequired,
   isInitialised: PropTypes.bool.isRequired,

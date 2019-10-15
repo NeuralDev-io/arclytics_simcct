@@ -40,7 +40,7 @@ export const getEquilibriumValues = () => (dispatch, getState) => {
     status: 'started',
   })
 
-  fetch(`${SIMCCT_URL}//alloys`, {
+  fetch(`${SIMCCT_URL}/ae3equilibrium`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -49,12 +49,17 @@ export const getEquilibriumValues = () => (dispatch, getState) => {
     body: JSON.stringify({
       alloy_store: {
         alloy_option: alloys.alloyOption,
-        parent: alloys.parent,
+        alloys: {
+          parent: alloys.parent,
+          weld: null,
+          mix: null,
+        },
       },
       ae1_temp,
     }),
   })
     .then((res) => {
+      console.log(res)
       if (res.status !== 200) {
         return {
           status: 'fail',

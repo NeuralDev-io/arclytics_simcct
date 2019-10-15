@@ -80,7 +80,6 @@ class ContextTask(TaskBase):
 # noinspection PyPropertyAccess
 celery.Task = ContextTask
 
-
 # ========== # CELERY BEAT # ========== #
 # Setup the Redis client to a different database
 redis_host = env.get('REDIS_HOST', None)
@@ -136,8 +135,12 @@ def get_logged_users_total():
     #  - Insert the new sample into the `logged_in` key which is an array.
     #  - Increment the `n_samples` key by `.
     u = {
-        '$push': {'logged_in': sample},
-        '$inc': {'n_samples': 1},
+        '$push': {
+            'logged_in': sample
+        },
+        '$inc': {
+            'n_samples': 1
+        },
     }
 
     MongoService().update_one(query=q, update=u, upsert=True)

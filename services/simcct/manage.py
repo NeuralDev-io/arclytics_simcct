@@ -92,10 +92,7 @@ def flush():
 
     # List of collections to drop
     collections = [
-        'users',
-        'feedback',
-        'saved_simulations',
-        'shared_simulations',
+        'users', 'feedback', 'saved_simulations', 'shared_simulations',
         'alloys'
     ]
 

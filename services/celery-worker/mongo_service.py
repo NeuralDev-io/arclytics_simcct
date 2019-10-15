@@ -20,7 +20,6 @@ write or read as needed.
 from os import environ as env
 from pymongo import MongoClient
 
-
 COLLECTION_NAME = 'celery_beat'
 
 
@@ -29,20 +28,18 @@ class MongoService(object):
         """Simply makes a connection to a MongoDB instance with `pymongo`."""
         self.db_name = env.get('MONGO_APP_DB')
         if env.get('FLASK_ENV', 'production') == 'production':
-            mongo_uri = (
-                'mongodb://{username}:{password}@{host}:{port}/{db}'
-            ).format(
-                username=env.get('MONGO_APP_USER'),
-                password=env.get('MONGO_APP_USER_PASSWORD'),
-                host=env.get('MONGO_HOST', 'localhost'),
-                port=env.get('MONGO_PORT', 27017),
-                db=self.db_name
-            )
+            mongo_uri = ('mongodb://{username}:{password}@{host}:{port}/{db}'
+                         ).format(
+                             username=env.get('MONGO_APP_USER'),
+                             password=env.get('MONGO_APP_USER_PASSWORD'),
+                             host=env.get('MONGO_HOST', 'localhost'),
+                             port=env.get('MONGO_PORT', 27017),
+                             db=self.db_name
+                         )
             self.conn = MongoClient(mongo_uri)
         else:
             self.conn = MongoClient(
-                host=env.get('MONGO_HOST'),
-                port=int(env.get('MONGO_PORT'))
+                host=env.get('MONGO_HOST'), port=int(env.get('MONGO_PORT'))
             )
 
         self.db = self.conn[self.db_name]

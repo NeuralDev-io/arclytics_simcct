@@ -20,11 +20,10 @@ __date__ = '2019.10.02'
 from os import environ as env
 from typing import Tuple
 
-import pandas as pd
 from flask import Blueprint
 from flask_restful import Resource
 
-from arc_api.extensions import api, redis_client
+from arc_api.extensions import api
 from arc_api.mongo_service import MongoService
 from arc_api.middleware import authorize_admin_cookie_restful
 from arc_logging import AppLogger
@@ -42,8 +41,21 @@ class UserLoginData(Resource):
         return {'status': 'success', 'data': {}}, 200
 
 
+# noinspection PyMethodMayBeStatic
 class UserNerdyData(Resource):
+
+    # method_decorators = {'get': [authorize_admin_cookie_restful]}
+
     def get(self):
+        """Uses various MongoDB Queries and Aggregation Pipeline to get some
+        interesting aggregation totals on certain collections and embedded
+        documents from the `users` collection. Returns all the values from
+        these queries so they can be displayed in the "Nerdy Stats" section.
+
+        Returns:
+            A valid HTTP Response with a dictionary of data and a
+            status code.
+        """
 
         db_name = 'arc_dev'
 

@@ -21,7 +21,10 @@ const EquiPage = ({ history }) => (
   <React.Fragment>
     <AppBar active="equilibrium" redirect={history.push} isAdmin isAuthenticated />
     <div className={styles.main}>
-      <Equilibrium />
+      <h4>Ae3 equilibrium</h4>
+      <div className={styles.chart}>
+        <Equilibrium />
+      </div>
     </div>
   </React.Fragment>
 )

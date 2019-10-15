@@ -36,8 +36,8 @@ class Equilibrium extends React.Component {
     if (isInitialised && data !== undefined && data !== null && Object.keys(data).length !== 0) {
       chartData = [
         {
-          x: data.ae3.time,
-          y: data.ae3.temp,
+          x: data.ae3.x,
+          y: data.ae3.y,
           name: 'Ae3',
           type: 'scatter',
           mode: 'lines',
@@ -47,8 +47,8 @@ class Equilibrium extends React.Component {
           },
         },
         {
-          x: data.t0.time,
-          y: data.t0.temp,
+          x: data.t0.x,
+          y: data.t0.y,
           name: 'T0',
           type: 'scatter',
           mode: 'lines',
@@ -58,8 +58,8 @@ class Equilibrium extends React.Component {
           },
         },
         {
-          x: data.cf.time,
-          y: data.cf.temp,
+          x: data.cf.x,
+          y: data.cf.y,
           name: 'Cf',
           type: 'scatter',
           mode: 'lines',
@@ -69,8 +69,8 @@ class Equilibrium extends React.Component {
           },
         },
         {
-          x: data.ae1.time,
-          y: data.ae1.temp,
+          x: data.ae1.x,
+          y: data.ae1.y,
           name: 'Ae1',
           type: 'scatter',
           mode: 'lines',
@@ -138,8 +138,8 @@ class Equilibrium extends React.Component {
 }
 
 const linePropTypes = PropTypes.shape({
-  temp: PropTypes.arrayOf(PropTypes.number),
-  time: PropTypes.arrayOf(PropTypes.number),
+  x: PropTypes.arrayOf(PropTypes.number),
+  y: PropTypes.arrayOf(PropTypes.number),
 })
 
 Equilibrium.propTypes = {

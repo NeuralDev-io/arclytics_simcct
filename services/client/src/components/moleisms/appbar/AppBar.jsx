@@ -74,6 +74,16 @@ class AppBar extends React.Component {
             </Tooltip>
           </Link>
           <Link
+            id="equilibrium"
+            className={`${styles.navIcon} ${active === 'equilibrium' && styles.active}`}
+            to="/equilibrium"
+          >
+            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+              <SlidersIcon className={styles.icon} />
+              <p>Equilibrium</p>
+            </Tooltip>
+          </Link>
+          <Link
             id="savedSimulations"
             className={`${styles.navIcon} ${active === 'savedSimulations' && styles.active} ${!isAuthenticated && styles.disabled}`}
             to={isAuthenticated ? '/user/simulations' : ''}

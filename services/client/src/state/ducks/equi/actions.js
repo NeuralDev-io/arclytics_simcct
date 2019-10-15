@@ -12,7 +12,7 @@
  */
 
 
-import { GET_EQUI_VALUES } from './types'
+import { GET_EQUI_VALUES, RESET_EQUI_VALUES } from './types'
 import { addFlashToast } from '../toast/actions'
 import { SIMCCT_URL } from '../../../constants'
 import { logError } from '../../../api/LoggingHelper'
@@ -32,7 +32,6 @@ import { logError } from '../../../api/LoggingHelper'
  *    }
  * }
  */
-// eslint-disable-next-line
 export const getEquilibriumValues = () => (dispatch, getState) => {
   const { alloys, configurations: { ae1_temp } } = getState().sim
   dispatch({
@@ -55,7 +54,7 @@ export const getEquilibriumValues = () => (dispatch, getState) => {
           mix: null,
         },
       },
-      ae1_temp,
+      ae1_temp: parseFloat(ae1_temp),
     }),
   })
     .then((res) => {
@@ -95,4 +94,10 @@ export const getEquilibriumValues = () => (dispatch, getState) => {
       // log to fluentd
       logError(err.toString(), err.message, 'equi.actions.getEquilibriumValues', err.stack)
     })
+}
+
+export const resetEquilibriumValues = () => (dispatch) => {
+  dispatch({
+    type: RESET_EQUI_VALUES,
+  })
 }

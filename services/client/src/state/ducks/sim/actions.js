@@ -19,6 +19,7 @@ import { ASTM2Dia } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
 import { updateFeedback } from '../feedback/actions'
 import { addSimToTimeMachine } from '../timeMachine/actions'
+import { resetEquilibriumValues } from '../equi/actions'
 import { logError, logDebug } from '../../../api/LoggingHelper'
 
 /**
@@ -104,6 +105,8 @@ export const initSession = (option, type, alloy) => (dispatch, getState) => {
       alloy,
     })
   }
+
+  resetEquilibriumValues()(dispatch)
 }
 
 /**
@@ -357,6 +360,8 @@ export const updateMsBsAe = (name, field, data, valError) => (dispatch, getState
       ...data,
     },
   })
+
+  resetEquilibriumValues()(dispatch)
 }
 
 /**
@@ -437,6 +442,8 @@ export const getMsBsAe = name => (dispatch, getState) => {
         logError(err.toString(), err.message, 'actions.getMsBsAe', err.stack)
       })
   }
+
+  resetEquilibriumValues()(dispatch)
 }
 
 /**
@@ -451,6 +458,8 @@ export const setAutoCalculate = (name, value) => (dispatch) => {
       [name]: value,
     },
   })
+
+  resetEquilibriumValues()(dispatch)
 }
 
 /**

@@ -25,7 +25,9 @@ import styles from './Equilibrium.module.scss'
 class Equilibrium extends React.Component {
   componentDidMount = () => {
     const { data, isInitialised, getEquilibriumValuesConnect } = this.props
+    console.log('just mounted')
     if (isInitialised && (data === undefined || data === null || Object.keys(data).length === 0)) {
+      console.log('getting data')
       getEquilibriumValuesConnect()
     }
   }
@@ -42,6 +44,7 @@ class Equilibrium extends React.Component {
 
     // only make API request if an alloy was chosen
     if (isInitialised && (prevProps.alloys !== alloys || prevProps.ae1Temp !== ae1Temp)) {
+      console.log('getting data after updated')
       getEquilibriumValuesConnect()
     }
   }
@@ -51,6 +54,17 @@ class Equilibrium extends React.Component {
     let chartData = []
     if (isInitialised && data !== undefined && data !== null && Object.keys(data).length !== 0) {
       chartData = [
+        {
+          x: data.ae1.x,
+          y: data.ae1.y,
+          name: 'Ae1',
+          type: 'scatter',
+          mode: 'lines',
+          line: {
+            color: getColor('--v500'),
+            shape: 'spline',
+          },
+        },
         {
           x: data.ae3.x,
           y: data.ae3.y,
@@ -85,20 +99,9 @@ class Equilibrium extends React.Component {
           },
         },
         {
-          x: data.ae1.x,
-          y: data.ae1.y,
-          name: 'Ae1',
-          type: 'scatter',
-          mode: 'lines',
-          line: {
-            color: getColor('--v500'),
-            shape: 'spline',
-          },
-        },
-        {
           x: data.c_wt.x,
           y: data.c_wt.y,
-          name: 'C-wt',
+          name: 'Carbon weight percentage',
           type: 'scatter',
           mode: 'lines',
           line: {
@@ -134,14 +137,16 @@ class Equilibrium extends React.Component {
                 ...defaultLayout,
                 xaxis: {
                   ...defaultLayout.xaxis,
-                  title: 'Time (s)',
-                  type: 'log',
+                  title: 'C (wt%)',
                   autorange: true,
+                  tickvals: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+                  ticktext: ['0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.0'],
                 },
                 yaxis: {
                   ...defaultLayout.yaxis,
                   title: 'Temperature (°C)',
                   autorange: true,
+                  rangemode: 'nonnegative',
                 },
               }}
               config={config}

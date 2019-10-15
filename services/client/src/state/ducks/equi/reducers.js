@@ -1,4 +1,4 @@
-import { GET_EQUI_VALUES } from './types'
+import { GET_EQUI_VALUES, RESET_EQUI_VALUES } from './types'
 
 const initialState = {
   isLoading: false,
@@ -32,6 +32,8 @@ const reducer = (state = initialState, action) => {
       }
       break
     }
+    case RESET_EQUI_VALUES:
+      return { ...initialState }
     default:
       return state
   }

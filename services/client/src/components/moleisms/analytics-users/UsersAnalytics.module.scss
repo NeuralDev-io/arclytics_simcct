@@ -20,14 +20,28 @@ $break-small: 1366px;
     margin-bottom: 0.75rem;
   }
 
-  .liveData {
-    .liveDataCard {
+  .nerdyData {
+    .nerdyDataCard {
       background-color: var(--n0);
       min-width: 90%;
-      min-height: 8rem;
-      max-height: 10rem;
+      min-height: 10rem;
+      max-height: 12rem;
       margin: 0;
       padding: 0;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
+      align-items: center;
+
+      .nerdyDataItem {
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: center;
+        align-items: center;
+        padding: 0.25rem;
+      }
+      .nerdyDataItem:first-of-type { margin-left: 1.25rem; }
+      .nerdyDataItem:last-of-type { margin-right: 1.25rem; }
     }
   }
 

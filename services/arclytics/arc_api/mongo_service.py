@@ -44,6 +44,18 @@ class MongoService(object):
                 host=env.get('MONGO_HOST'), port=int(env.get('MONGO_PORT'))
             )
 
+    def find(
+            self,
+            db_name: str = 'arc_dev',
+            collection: str = '',
+            query: dict = None,
+    ):
+        if query is None:
+            return None
+        db = self.conn[db_name]
+
+        return db[collection].find(query)
+
     def read_mongo(
             self,
             db_name: str = 'arc_dev',

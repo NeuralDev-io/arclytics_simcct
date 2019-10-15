@@ -11,7 +11,7 @@ servers:
 
 
 paths:
-  /ping:
+  /v1/sim/ping:
     get:
       summary: "Just a sanity check"
       tags:
@@ -30,9 +30,33 @@ paths:
                   message:
                     type: string
                     description: "The message response"
+                  container_id:
+                    type: string
+                    description: "Id of the container"
               example:
                 status: "success"
                 message: "pong!"
+  /v1/sim/healthy:
+    get:
+      summary: "Readiness probe for GCP Ingress."
+      tags:
+        - Users
+      requestBody:
+        description: "RequestBody for health status"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Connection:
+                  type: string
+                  format: "Connection"
+                  example: "Close"
+                Keep-Alive:
+                  type: string
+                  format: "Keep-Alive"
+                  example: "timeout=0"
   /users:
     get:
       summary: "Returns all users"

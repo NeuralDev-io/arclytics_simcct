@@ -158,9 +158,12 @@ class ShareSimulationEmail(Resource):
         """Generate a link for a shared sim object and send it to the list of
         email address provided.
 
-        :param owner: User object for the owner of the shared simulation object
-        returned by the authenticate middleware
-        :return: Returns a json response
+        Args:
+            owner: User object for the owner of the shared simulation object
+            returned by the authenticate middleware
+
+        Returns:
+            Returns a json response
         """
         # Get post data
         data = request.get_json()

@@ -55,6 +55,17 @@ class Equilibrium extends React.Component {
     if (isInitialised && data !== undefined && data !== null && Object.keys(data).length !== 0) {
       chartData = [
         {
+          x: data.ae1.x,
+          y: data.ae1.y,
+          name: 'Ae1',
+          type: 'scatter',
+          mode: 'lines',
+          line: {
+            color: getColor('--v500'),
+            shape: 'spline',
+          },
+        },
+        {
           x: data.ae3.x,
           y: data.ae3.y,
           name: 'Ae3',
@@ -88,20 +99,9 @@ class Equilibrium extends React.Component {
           },
         },
         {
-          x: data.ae1.x,
-          y: data.ae1.y,
-          name: 'Ae1',
-          type: 'scatter',
-          mode: 'lines',
-          line: {
-            color: getColor('--v500'),
-            shape: 'spline',
-          },
-        },
-        {
           x: data.c_wt.x,
           y: data.c_wt.y,
-          name: 'C-wt',
+          name: 'Carbon weight',
           type: 'scatter',
           mode: 'lines',
           line: {

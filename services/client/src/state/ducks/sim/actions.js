@@ -17,6 +17,7 @@ import {
 import { SIMCCT_URL } from '../../../constants'
 import { ASTM2Dia } from '../../../utils/grainSizeConverter'
 import { addFlashToast } from '../toast/actions'
+import { updateFeedback } from '../feedback/actions'
 import { addSimToTimeMachine } from '../timeMachine/actions'
 import { logError, logDebug } from '../../../api/LoggingHelper'
 
@@ -498,6 +499,11 @@ export const runSim = () => (dispatch, getState) => {
     ...otherConfigs
   } = getState().sim.configurations
 
+  dispatch({
+    type: RUN_SIM,
+    status: 'started',
+  })
+
   // TODO(dalton@neuraldev.io): So it works like this but I'm sure you need
   //  to make this better.
   //  From Andrew (andrew@neuraldev.io)
@@ -538,6 +544,10 @@ export const runSim = () => (dispatch, getState) => {
     .then((simRes) => {
       if (simRes.status === 'fail') {
         logDebug(simRes, 'actions.runSim')
+        dispatch({
+          type: RUN_SIM,
+          status: 'fail',
+        })
         return {
           status: 'fail',
           message: 'Could not get simulation results',
@@ -546,25 +556,19 @@ export const runSim = () => (dispatch, getState) => {
       if (simRes.status === 'success') {
         dispatch({
           type: RUN_SIM,
+          status: 'success',
           payload: simRes.data,
         })
         addSimToTimeMachine()(dispatch, getState)
-        // update sim count in localStorage
-        const currentSimCount = localStorage.getItem('simCount')
-        if (currentSimCount === undefined) {
-          localStorage.setItem('simCount', 1)
-        } else {
-          let simCount
-          try {
-            simCount = parseFloat(currentSimCount) + 1
-          } catch (err) {
-            // do nothing
-          }
-          if (Number.isNaN(simCount)) {
-            simCount = 1
-          }
-          localStorage.setItem('simCount', simCount)
-          localStorage.setItem('gotFeedback', false)
+        // display feedback modal
+        let { count = '-1' } = simRes
+        count = parseInt(count, 10)
+        // alternate asking for feedback or rating every 7 simulations
+        if (count % 7 === 0 && count % 14 !== 0) {
+          updateFeedback({ feedbackVisible: true, givingFeedback: false })(dispatch)
+        }
+        if (count % 14 === 0) {
+          updateFeedback({ ratingVisible: true, givingFeedback: false })(dispatch)
         }
       }
     })
@@ -711,7 +715,9 @@ export const loadPersistedSim = () => (dispatch, getState) => {
     type: LOAD_PERSISTED_SIM,
     payload: lastSim,
   })
-  addSimToTimeMachine()(dispatch, getState)
+  if (lastSim.isSimulated) {
+    addSimToTimeMachine()(dispatch, getState)
+  }
 }
 
 /**
@@ -733,5 +739,7 @@ export const loadLastSim = () => (dispatch, getState) => {
       last_configuration: convertedConfig,
     },
   })
-  addSimToTimeMachine()(dispatch, getState)
+  if (lastSim.isSimulated) {
+    addSimToTimeMachine()(dispatch, getState)
+  }
 }

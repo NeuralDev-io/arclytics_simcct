@@ -17,6 +17,7 @@ import { connect } from 'react-redux'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import VerticalSlider from '../../elements/slider'
+import { InlineSpinner } from '../../elements/spinner'
 import { config } from './utils/chartConfig'
 import { roundTo } from '../../../utils/math'
 import { getColor } from '../../../utils/theming'
@@ -70,6 +71,7 @@ class PhaseFractions extends Component {
         },
         slider_max = -1,
       },
+      isLoading,
       cctIndex,
     } = this.props
 
@@ -136,7 +138,7 @@ class PhaseFractions extends Component {
         </div>
         <div className={styles.pie}>
           {
-            !hasData ? <div className={styles.noData}>No data.</div>
+            !hasData ? <div className={styles.noData}>{isLoading ? <InlineSpinner /> : 'No data.'}</div>
               : (
                 <AutoSizer>
                   {({ height, width }) => (
@@ -192,6 +194,7 @@ PhaseFractions.propTypes = {
     slider_temp_field: PropTypes.number,
     slider_max: PropTypes.number,
   }),
+  isLoading: PropTypes.bool.isRequired,
   cctIndex: PropTypes.number.isRequired,
   updateCCTIndexConnect: PropTypes.func.isRequired,
 }
@@ -202,6 +205,7 @@ PhaseFractions.defaultProps = {
 
 const mapStateToProps = state => ({
   data: state.sim.results.USER,
+  isLoading: state.sim.results.isLoading,
   cctIndex: state.sim.results.cctIndex,
 })
 

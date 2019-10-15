@@ -76,8 +76,8 @@ class SimulationPage extends Component {
           }
         })
         .catch((err) => logError(
-          err.toString(), err.message, 'SimulationPage.componentDidMount', err.stack_trace)
-        )
+          err.toString(), err.message, 'SimulationPage.componentDidMount', err.stack_trace,
+        ))
     }
   }
 

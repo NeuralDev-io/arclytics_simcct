@@ -98,7 +98,7 @@ redis_client = Redis.from_url(redis_uri)
 def setup_periodic_tasks(sender, **kwargs):
     # Testing hello every 10 seconds
     sender.add_periodic_task(
-        crontab(),
+        crontab(),  # By default this occurs on the minute
         get_logged_users_total.s(),
         name='Get logged in users every 30 secs'
     )
@@ -134,10 +134,6 @@ def get_logged_users_total():
     q = {'date': date, 'n_samples': {'$lt': 2000}}
     # Make some updates on the document based by doing:
     #  - Insert the new sample into the `logged_in` key which is an array.
-    #  - Get the `min` for the day by checking the `sample.timestamp` and store
-    #    it as the `first` key.
-    #  - Get the `max` for the day by checking the `sample.timestamp` and store
-    #    it as the `last` key.
     #  - Increment the `n_samples` key by `.
     u = {
         '$push': {'logged_in': sample},

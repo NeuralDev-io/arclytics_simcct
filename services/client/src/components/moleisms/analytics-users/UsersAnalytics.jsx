@@ -127,12 +127,6 @@ class UsersAnalytics extends Component {
       mapboxData,
     } = this.state
 
-    console.log(statsData)
-
-    /*
-    * Colors: --l300, --g300, --m300, --r300, --o300
-    * */
-
     return (
       <div className={styles.container}>
         <h3>Dashboard - All About Users</h3>
@@ -154,12 +148,6 @@ class UsersAnalytics extends Component {
             </div>
 
             <div className={styles.nerdyDataItem}>
-              <PlayCircleIcon color={getColor('--g400')} size={36} />
-              <h5>{(statsData !== undefined) ? statsData.count.simulations : "0"}</h5>
-              <p>Run Simulations</p>
-            </div>
-
-            <div className={styles.nerdyDataItem}>
               <SaveIcon color={getColor('--t400')} size={36} />
               <h5>{(statsData !== undefined) ? statsData.count.saved_simulations : "0"}</h5>
               <p>Saved Simulations</p>
@@ -169,12 +157,6 @@ class UsersAnalytics extends Component {
               <Share2Icon color={getColor('--b400')} size={36} />
               <h5>{(statsData !== undefined) ? statsData.count.shared_simulations : "0"}</h5>
               <p>Shared Simulations</p>
-            </div>
-
-            <div className={styles.nerdyDataItem}>
-              <StarIcon color={getColor('--i400')} size={36} />
-              <h5>{(statsData !== undefined) ? statsData.count.ratings : "0"}</h5>
-              <p>Ratings</p>
             </div>
 
             <div className={styles.nerdyDataItem}>
@@ -205,7 +187,7 @@ class UsersAnalytics extends Component {
         </div>
 
         <h5>What do users say about themselves?</h5>
-        <div className={styles.charts}>
+        <div className={styles.profileCharts}>
 
           <Card className={styles.profileCard}>
             <ProfileBarChart

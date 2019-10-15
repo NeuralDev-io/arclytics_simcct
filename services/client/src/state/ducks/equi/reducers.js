@@ -2,9 +2,9 @@ import { GET_EQUI_VALUES } from './types'
 
 const initialState = {
   isLoading: false,
-  xfe: '',
-  ceut: '',
-  cf: '',
+  xfe: 0,
+  ceut: 0,
+  cf: 0,
   plot: {},
 }
 

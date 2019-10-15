@@ -168,9 +168,7 @@ with app.app_context():
     db.alloys.insert_many(data)
 
 # STAY INSIDE THE FLASK APPLICATION CONTEXT
-print(
-    'Seeding users to <{}> database:'.format(db.name), file=sys.stderr
-)
+print('Seeding users to <{}> database:'.format(db.name), file=sys.stderr)
 with app.app_context():
     for user in tqdm(user_data):
         # ==================== # NEW USER BASE DETAILS # =================== #
@@ -387,9 +385,7 @@ with app.app_context():
         new_user.save()
 
 # adding feedback to test data
-print(
-    'Seeding feedback to <{}> database:'.format(db.name), file=sys.stderr
-)
+print('Seeding feedback to <{}> database:'.format(db.name), file=sys.stderr)
 with app.app_context():
     cursor = db.users.find({}, {"_id"})
     for x in tqdm(list(cursor)):

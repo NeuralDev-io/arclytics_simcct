@@ -13,8 +13,6 @@ import UsersIcon from 'react-feather/dist/icons/users'
 import DatabaseIcon from 'react-feather/dist/icons/database'
 import Share2Icon from 'react-feather/dist/icons/share-2'
 import SaveIcon from 'react-feather/dist/icons/save'
-import PlayCircleIcon from 'react-feather/dist/icons/play-circle'
-import StarIcon from 'react-feather/dist/icons/star'
 import HeartIcon from 'react-feather/dist/icons/heart'
 import {
   getProfileAnalyticsData,

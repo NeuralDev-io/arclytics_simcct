@@ -93,7 +93,7 @@ class GeneralData(Resource):
                     'global_alloys': alloys_count,
                     'ratings': ratings_df['count'][0],
                 },
-                'averages': {
+                'average': {
                     'ratings': ratings_df['average'][0]
                 }
             }

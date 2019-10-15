@@ -33,6 +33,8 @@ from arc_logging import AppLogger
 user_analytics_blueprint = Blueprint('user_analytics', __name__)
 logger = AppLogger(__name__)
 
+DATABASE = env.get('MONGO_APP_DB')
+
 
 # noinspection PyMethodMayBeStatic
 class UserNerdyData(Resource):
@@ -50,32 +52,30 @@ class UserNerdyData(Resource):
             status code.
         """
 
-        db_name = 'arc_dev'
-
         # Get total user count
         users_count = MongoService().find(
-            db_name=db_name,
+            db_name=DATABASE,
             collection='users',
             query={}
         ).count()
 
         # Get total saved simulations count
         saved_sim_count = MongoService().find(
-            db_name=db_name,
+            db_name=DATABASE,
             collection='saved_simulations',
             query={}
         ).count()
 
         # Get total shares count
         shares_count = MongoService().find(
-            db_name=db_name,
+            db_name=DATABASE,
             collection='shared_simulations',
             query={}
         ).count()
 
         # Get total feedback count
         feedback_count = MongoService().find(
-            db_name=db_name,
+            db_name=DATABASE,
             collection='feedback',
             query={}
         ).count()
@@ -89,7 +89,7 @@ class UserNerdyData(Resource):
                 }
             }
         ]
-        sim_df = MongoService().read_aggregation(db_name, 'users', pipeline)
+        sim_df = MongoService().read_aggregation(DATABASE, 'users', pipeline)
 
         # Get total saved alloys
         pipeline = [
@@ -101,7 +101,7 @@ class UserNerdyData(Resource):
             }
         ]
         saved_alloys_df = MongoService().read_aggregation(
-            db_name, 'users', pipeline
+            DATABASE, 'users', pipeline
         )
 
         # Get total ratings average
@@ -114,7 +114,7 @@ class UserNerdyData(Resource):
                 }
             }
         ]
-        ratings_df = MongoService().read_aggregation(db_name, 'users', pipeline)
+        ratings_df = MongoService().read_aggregation(DATABASE, 'users', pipeline)
 
         response = {
             'status': 'success',
@@ -164,7 +164,7 @@ class UserLoginLocationData(Resource):
             }},
         ]
 
-        df = MongoService().read_aggregation('arc_dev', 'users', pipeline)
+        df = MongoService().read_aggregation(DATABASE, 'users', pipeline)
 
         # Because our Plotly Mapbox requires a latitude and longitude input
         # values, we need to ensure we clean up the missing values.
@@ -227,7 +227,7 @@ class UserProfileData(Resource):
             },
         ]
 
-        df = MongoService().read_aggregation('arc_dev', 'users', pipeline)
+        df = MongoService().read_aggregation(DATABASE, 'users', pipeline)
 
         # Not much data cleanup and transformation required as that was mostly
         # done in the Mongo pipeline already.

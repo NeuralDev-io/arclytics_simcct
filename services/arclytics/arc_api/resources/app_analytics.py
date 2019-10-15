@@ -39,6 +39,7 @@ DATABASE = env.get('MONGO_APP_DB')
 
 # noinspection PyMethodMayBeStatic
 class GeneralData(Resource):
+
     # method_decorators = {'get': [authorize_admin_cookie_restful]}
 
     def get(self) -> Tuple[dict, int]:
@@ -143,4 +144,5 @@ class LiveLoginData(Resource):
 
         return response, 200
 
+api.add_resource(GeneralData, Routes.GeneralData.value)
 api.add_resource(LiveLoginData, Routes.LiveLoginData.value)

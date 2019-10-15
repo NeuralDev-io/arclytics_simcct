@@ -29,4 +29,5 @@ class Routes(enum.Enum):
     UserNerdyData = f'{PREFIX}/users/stats'
     UserLoginLocationData = f'{PREFIX}/users/login/map'
     UserProfileData = f'{PREFIX}/users/profile'
+    GeneralData = f'{PREFIX}/app/general_data'
     LiveLoginData = f'{PREFIX}/app/logged_in_data'

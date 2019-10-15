@@ -59,7 +59,6 @@ export const getEquilibriumValues = () => (dispatch, getState) => {
     }),
   })
     .then((res) => {
-      console.log(res)
       if (res.status !== 200) {
         return {
           status: 'fail',

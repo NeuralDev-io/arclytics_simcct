@@ -1,21 +1,22 @@
-.sidebar {
-  width: 15vw;
-  height: 100vh;
-  margin-left: 4rem;
-  position: fixed;
-
-  @media screen and (max-width: 1720px) {
-    width: 250px;
-  }
+.main {
+  margin-left: calc(4rem);
+  width: calc(100vw - calc(4rem));
+  padding: 2.5rem 2.5rem;
 }
 
-.main {
-  margin-left: calc(4rem + 15vw);
-  width: calc(100vw - calc(4rem + 15vw));
-  padding: 2.5rem 0;
+.chart {
+  min-height: 35rem;
+  // max-height: 45rem;
+  max-width: 60%;
+  // position: relative;
+  // display: flex;
+  // flex-flow: column;
 
-  @media screen and (max-width: 1720px) {
-    margin-left: calc(4rem + 250px);
-    width: calc(100% - calc(4rem + 250px));
-  }
+  // & > h5 {
+  //   margin-bottom: .5rem;
+  // }
+
+  // & > div {
+  //   flex-grow: 1;
+  // }
 }

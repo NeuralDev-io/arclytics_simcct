@@ -101,7 +101,7 @@ class Equilibrium extends React.Component {
         {
           x: data.c_wt.x,
           y: data.c_wt.y,
-          name: 'Carbon weight',
+          name: 'Carbon weight percentage',
           type: 'scatter',
           mode: 'lines',
           line: {

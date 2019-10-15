@@ -72,10 +72,11 @@ class GeneralData(Resource):
 
         # Get total ratings average
         pipeline = [
+            {'$unwind': '$ratings'},
             {
                 '$group': {
                     '_id': None,
-                    'count': {'$sum': {'$size': '$ratings'}},
+                    'count': { '$sum': 1 },
                     'average': {'$avg': {'$sum': '$ratings.rating'}}
                 }
             }

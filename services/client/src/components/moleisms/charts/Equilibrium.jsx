@@ -134,8 +134,7 @@ class Equilibrium extends React.Component {
                 ...defaultLayout,
                 xaxis: {
                   ...defaultLayout.xaxis,
-                  title: 'Time (s)',
-                  type: 'log',
+                  title: 'C (wt%)',
                   autorange: true,
                 },
                 yaxis: {

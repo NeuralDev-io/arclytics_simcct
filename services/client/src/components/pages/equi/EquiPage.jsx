@@ -79,11 +79,11 @@ class EquiPage extends React.Component {
             <h4>Configurations</h4>
             <div className={styles.configs}>
               <div>
-                <h6 className={styles.configLabel}>Xfe</h6>
+                <h6 className={styles.configLabel}>Ferrite phase fraction</h6>
                 <span>{xfe}</span>
               </div>
               <div>
-                <h6 className={styles.configLabel}>Ceut</h6>
+                <h6 className={styles.configLabel}>Eutectic Carbon content wt.</h6>
                 <span>{ceut}</span>
               </div>
               <div>

@@ -21,6 +21,9 @@ from os import environ as env
 from pymongo import MongoClient
 
 
+COLLECTION_NAME = 'celery_beat'
+
+
 class MongoService(object):
     def __init__(self, collection='celery_beat'):
         """Simply makes a connection to a MongoDB instance with `pymongo`."""
@@ -39,15 +42,13 @@ class MongoService(object):
         else:
             self.conn = MongoClient(
                 host=env.get('MONGO_HOST'),
-                port=int(env.get('MONGO_PORT')),
-                db=self.db_name
+                port=int(env.get('MONGO_PORT'))
             )
 
-        self.db = self.conn[collection]
-
+        self.db = self.conn[self.db_name]
         # Implement an index to expire after two weeks: 14 * 24 * 60 * 60
-        self.db.create_index('date', expireAfterSeconds=1209600)
+        self.db.celery_beat.create_index('date', expireAfterSeconds=1209600)
 
     def update_one(self, query: dict, update: dict, upsert: bool = False):
         """Do an updateOne query on the Mongo collection."""
-        self.db.updateOne(query, update, upsert=upsert)
+        self.db.celery_beat.update_one(query, update, upsert=upsert)

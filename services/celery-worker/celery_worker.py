@@ -24,6 +24,10 @@ storage of the results.
 
 import os
 import sys
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(BASE_DIR)
+
 import datetime
 from logging import ERROR
 from os import environ as env
@@ -35,10 +39,7 @@ from flask import Flask
 from flask_mail import Mail
 from redis import Redis
 
-from .mongo_service import MongoService
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(BASE_DIR)
+from mongo_service import MongoService
 
 # Define the modules that contain Celery tasks
 CELERY_TASK_LIST = ['tasks']
@@ -140,7 +141,7 @@ def get_logged_users_total():
     # exist when we pass in `upsert=True`
     # As new data samples are added it is simply appended to the document
     # until the number of samples hit 1000
-    q = {'date': date, '$n_samples': {'$lt': 1000}}
+    q = {'date': date, 'n_samples': {'$lt': 1000}}
     # Make some updates on the document based by doing:
     #  - Insert the new sample into the `logged_in` key which is an array.
     #  - Get the `min` for the day by checking the `sample.timestamp` and store
@@ -150,8 +151,8 @@ def get_logged_users_total():
     #  - Increment the `n_samples` key by `.
     u = {
         '$push': {'logged_in': sample},
-        '$min': {'first': 'sample.timestamp'},
-        '$max': {'last': 'sample.timestamp'},
+        '$min': {'first': '$logged_in.timestamp'},
+        '$max': {'last': '$logged_in.timestamp'},
         '$inc': {'n_samples': 1},
     }
 

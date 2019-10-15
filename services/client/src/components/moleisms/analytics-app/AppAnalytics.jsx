@@ -12,30 +12,21 @@ import PropTypes from 'prop-types'
 import { logError, logInfo } from '../../../api/LoggingHelper'
 import { getColor } from '../../../utils/theming'
 import Card from '../../elements/card'
+import LiveLoginTimeSeries from '../charts/LiveLoginTimeSeries'
 
 import styles from './AppAnalytics.module.scss'
 
 class AppAnalytics extends Component {
   constructor(props) {
     super(props)
-    this.state = {
-      statsData: undefined,
-      profileData: undefined,
-      mapboxToken: '',
-      mapboxData: undefined,
-    }
+    this.state = {}
   }
 
   componentDidMount = () => {}
 
   render() {
 
-    const {
-      statsData,
-      profileData,
-      mapboxToken,
-      mapboxData,
-    } = this.state
+    // const {} = this.state
 
     return (
       <div className={styles.container}>
@@ -60,15 +51,11 @@ class AppAnalytics extends Component {
         </div>
 
         <h5>Users currently logged in</h5>
-        <div className={styles.charts}>
-
+        <div className={styles.chart}>
           <Card className={styles.liveLoginCard}>
-            {/*<ProfileBarChart*/}
-            {/*  title="Aim"*/}
-            {/*  name="Aim"*/}
-            {/*  data={(profileData !== undefined) ? profileData.aim : undefined}*/}
-            {/*  color="--b500"*/}
-            {/*/>*/}
+            {/*<div className={styles.liveLoginChart}>*/}
+              <LiveLoginTimeSeries />
+            {/*</div>*/}
           </Card>
         </div>
       </div>

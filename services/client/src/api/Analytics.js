@@ -119,3 +119,76 @@ export const getLoginLocationData = async () => {
   }
   return call
 }
+
+export const getGeneralStatsData = async () => {
+  let call
+  try {
+    call = await fetch(`${ARC_URL}/app/stats`, {
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((res) => {
+        if (res.status === 401 || res.status === 403)  {
+          throw new Error('Unauthorised')
+        }
+        return res.json()
+      })
+      .then(res => res)
+
+  } catch (e) {
+
+    logError(
+      e.toString(),
+      e.message,
+      'Analytics.getGeneralStatsData',
+      e.stack
+    )
+    return {
+      status: 'fail',
+      data: undefined
+    }
+
+  }
+  return call
+}
+
+
+export const getLiveLoginData = async () => {
+  let call
+  try {
+    call = await fetch(`${ARC_URL}/app/logged_in_data`, {
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((res) => {
+        if (res.status === 401 || res.status === 403)  {
+          throw new Error('Unauthorised')
+        }
+        return res.json()
+      })
+      .then(res => res)
+
+  } catch (e) {
+
+    logError(
+      e.toString(),
+      e.message,
+      'Analytics.getLiveLoginData',
+      e.stack
+    )
+    return {
+      status: 'fail',
+      data: undefined
+    }
+
+  }
+  return call
+}

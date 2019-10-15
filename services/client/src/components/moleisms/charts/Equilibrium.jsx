@@ -30,6 +30,22 @@ class Equilibrium extends React.Component {
     }
   }
 
+  // If alloys or ae1_temp is updated (because a cached sim was loaded from persisted storage
+  // or account), get the plot results with new alloys/ae1_temp.
+  componentDidUpdate = (prevProps) => {
+    const {
+      isInitialised,
+      alloys,
+      ae1Temp,
+      getEquilibriumValuesConnect,
+    } = this.props
+
+    // only make API request if an alloy was chosen
+    if (isInitialised && (prevProps.alloys !== alloys || prevProps.ae1Temp !== ae1Temp)) {
+      getEquilibriumValuesConnect()
+    }
+  }
+
   render() {
     const { data, isLoading, isInitialised } = this.props
     let chartData = []
@@ -154,6 +170,11 @@ Equilibrium.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   isInitialised: PropTypes.bool.isRequired,
   getEquilibriumValuesConnect: PropTypes.func.isRequired,
+  alloys: PropTypes.shape({}).isRequired,
+  ae1Temp: PropTypes.oneOfType([
+    PropTypes.number,
+    PropTypes.string,
+  ]).isRequired,
 }
 
 Equilibrium.defaultProps = {
@@ -164,6 +185,8 @@ const mapStateToProps = state => ({
   data: state.equi.plot,
   isLoading: state.equi.isLoading,
   isInitialised: state.sim.isInitialised,
+  alloys: state.sim.alloys,
+  ae1Temp: state.sim.configurations.ae1_temp,
 })
 
 const mapDispatchToProps = {

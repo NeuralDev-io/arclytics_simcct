@@ -129,7 +129,7 @@ class LiveLoginData(Resource):
 
         df = MongoService().read_aggregation(DATABASE, 'celery_beat', pipeline)
 
-        df.dropna(inplace=True)
+        # df.dropna(inplace=True)
         # Convert the Python `datetime.datetime` object to a timestamp as
         # defined by Pandas.DatetimeIndex
         df['timestamp'] = pd.to_datetime(df['datetime'])
@@ -138,6 +138,7 @@ class LiveLoginData(Resource):
         response = {
             'status': 'success',
             'data': {
+                'date': date,
                 'x': df.index.tolist(),
                 'y': df['logged_in_users'].tolist()
             }

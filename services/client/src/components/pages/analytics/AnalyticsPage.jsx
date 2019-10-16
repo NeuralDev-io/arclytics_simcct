@@ -37,8 +37,8 @@ function AnalyticsPage({ history }) {
 
 AnalyticsPage.propTypes = {
   history: PropTypes.shape(
-    { push: PropTypes.func.isRequired }
-  ).isRequired
+    { push: PropTypes.func.isRequired },
+  ).isRequired,
 }
 
 export default AnalyticsPage

@@ -31,8 +31,8 @@ class AnalyticsSidebar extends Component {
     const { active } = this.state
     const { redirect } = this.props
     if (!['application', 'users'].includes(active)) {
-      this.setState({ active: 'users' })
-      redirect('/analytics/users')
+      this.setState({ active: 'application' })
+      redirect('/analytics/app')
     }
   }
 

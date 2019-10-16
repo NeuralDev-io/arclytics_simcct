@@ -57,7 +57,7 @@ paths:
                   type: string
                   format: "Keep-Alive"
                   example: "timeout=0"
-  /users:
+  /v1/sim/users:
     get:
       summary: "Returns all users"
       tags:
@@ -107,6 +107,17 @@ paths:
                     last_updated: '2019-07-08T12:40:55.948000+00:00'
                     last_login: None
                     profile: None
+        400:
+          description: "An invalid request body has been sent."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid Payload."
         '401':
           description: "The user is not authenticated to perform this request."
           content:
@@ -121,11 +132,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No token provided':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -134,7 +149,7 @@ paths:
                     status: "fail"
                     message: "Invalid token. Please log in again."
         403:
-          description: "Unauthorized access to endpoint."
+          description: "Unauthorized access."
           content:
             application/json:
               schema:
@@ -145,6 +160,10 @@ paths:
                   message:
                     type: string
               examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
                 'Non Admin User':
                   value:
                     status: "fail"
@@ -158,8 +177,21 @@ paths:
               examples:
                 'No User':
                   value:
+                    data:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
   /user:
     get:
       summary: "Returns a user based on a single user ID"
@@ -594,7 +626,8 @@ paths:
                   value:
                     status: success
                     data:
-                      last_alloy: '#/components/examples/alloyExample'
+                      last_alloy:
+                        $ref: '#/components/examples/alloyExample'
                       last_configurations: '#/components/examples/configurationsExample'
                       last_results: null
         400:
@@ -5332,6 +5365,16 @@ components:
         result:
           $ref: '#/components/schemas/Graphs'
   examples:
+    try:
+      value:
+        'Account Disabled':
+          value:
+            status: "fail"
+            message: "This user account has been disabled."
+          'Non Admin User':
+            value:
+              status: "fail"
+              message: "Not authorized."
     configurationsExample:
       summary: "A valid Configurations example."
       value:

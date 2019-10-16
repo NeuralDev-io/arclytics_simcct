@@ -99,9 +99,6 @@ class LiveLoginTimeSeries extends Component {
                   r: 64,
                   // pad: 12,
                 },
-                /*padding: {
-                  r: 0,
-                },*/
                 xaxis: {
                   title: 'Date and Time',
                   titlefont: {
@@ -119,7 +116,7 @@ class LiveLoginTimeSeries extends Component {
                   type: 'date',
                   // range: [rangeStart, rangeFinish],
                   rangeslider: {
-                    range: [rangeStart],
+                    range: [rangeStart, rangeFinish],
                   },
                   rangeselector: {
                     buttons: [
@@ -127,19 +124,31 @@ class LiveLoginTimeSeries extends Component {
                         count: 10,
                         label: '10m',
                         step: 'minute',
-                        stepmode: 'backward'
+                        stepmode: 'backward',
                       },
                       {
                         count: 1,
                         label: '1h',
                         step: 'hour',
-                        stepmode: 'backward'
+                        stepmode: 'backward',
+                      },
+                      {
+                        count: 6,
+                        label: '6h',
+                        step: 'hour',
+                        stepmode: 'backward',
+                      },
+                      {
+                        count: 12,
+                        label: '12h',
+                        step: 'hour',
+                        stepmode: 'backward',
                       },
                       {
                         step: 'all',
                       },
-                    ]
-                  }
+                    ],
+                  },
                 },
                 yaxis: {
                   title: 'Count',

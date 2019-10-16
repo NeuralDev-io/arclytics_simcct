@@ -219,6 +219,12 @@ class RedisSessionInterface(SessionInterface):
 
     def _get_signer(self):
         if not self._secret_key:
+            apm.capture_message('Secret key not set.')
+            logger.error({'message': 'Secret key not set.'})
+            return None
+        if not self._salt:
+            apm.capture_message('Salt not set.')
+            logger.error({'message': 'Salt not set.'})
             return None
         return itsdangerous.Signer(
             secret_key=self._secret_key,

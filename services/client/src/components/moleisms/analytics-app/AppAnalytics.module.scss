@@ -29,13 +29,13 @@ $break-small: 1366px;
 
     .generalDataCard {
       background-color: var(--n0);
-      min-height: 12rem;
-      max-height: 15rem;
+      min-height: 10rem;
+      max-height: 12rem;
       margin: 0;
       padding: 0;
       display: flex;
       flex-flow: row nowrap;
-      flex-basis: 30%;
+      flex-basis: 22.5%;
       flex-flow: column nowrap;
       justify-content: center;
       align-items: center;

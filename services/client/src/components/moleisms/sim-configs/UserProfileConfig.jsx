@@ -45,7 +45,7 @@ class UserProfileConfig extends Component {
       isInitialised,
     } = this.props
     return (
-      <React.Fragment>
+      <>
         <Checkbox
           className={styles.checkbox}
           name="displayUserCurve"
@@ -81,7 +81,7 @@ class UserProfileConfig extends Component {
             error={configurations.error.cct_cooling_rate}
           />
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

@@ -66,7 +66,7 @@ class EquiPage extends React.Component {
       cf,
     } = this.props
     return (
-      <React.Fragment>
+      <>
         <AppBar active="equilibrium" redirect={history.push} isAdmin isAuthenticated />
         <div className={styles.main}>
           <section>
@@ -93,7 +93,7 @@ class EquiPage extends React.Component {
             </div>
           </section>
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

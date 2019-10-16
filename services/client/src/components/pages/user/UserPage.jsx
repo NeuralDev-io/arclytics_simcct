@@ -38,7 +38,7 @@ class UserPage extends Component {
     // this.props.getUserProfileConnect()
     const { history, user, isAdmin } = this.props
     return (
-      <React.Fragment>
+      <>
         <AppBar active="user" redirect={history.push} isAdmin={isAdmin} isAuthenticated />
         <div className={styles.sidebar}>
           {/* A sidebar with the sub navigation for the children components. */}
@@ -48,7 +48,7 @@ class UserPage extends Component {
           {/* Define the routes for the right panel. */}
           <Route path="/user/profile" render={props => <ProfilePage {...props} userProf={user} />} />
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

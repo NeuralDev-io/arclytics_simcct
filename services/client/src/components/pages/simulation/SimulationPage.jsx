@@ -106,7 +106,7 @@ class SimulationPage extends Component {
     } = this.props
 
     return (
-      <React.Fragment>
+      <>
         <AppBar active="sim" redirect={history.push} isAdmin={isAdmin} isAuthenticated={isAuthenticated} />
         <div className={styles.compSidebar}>
           <CompSidebar
@@ -195,7 +195,7 @@ class SimulationPage extends Component {
           <SaveAlloyModal handleClose={this.handleCloseModal} />
         </Modal>
         <SignupModal show={!isAuthenticated} redirect={history.push} />
-      </React.Fragment>
+      </>
     )
   }
 }

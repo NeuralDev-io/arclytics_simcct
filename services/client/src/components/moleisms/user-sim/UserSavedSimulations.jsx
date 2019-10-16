@@ -106,7 +106,7 @@ class UserSavedSimulations extends Component {
     ]
 
     return (
-      <React.Fragment>
+      <>
         <div className={`${styles.mainview} ${showSideView ? styles.shrink : ''}`}>
           <h3>Saved simulations</h3>
           <Table
@@ -154,7 +154,7 @@ class UserSavedSimulations extends Component {
             </Button>
           </div>
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

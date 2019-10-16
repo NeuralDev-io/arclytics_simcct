@@ -23,7 +23,7 @@ function AnalyticsPage({ history }) {
       <AppBar active="analytics" redirect={history.push} isAdmin isAuthenticated />
 
       <div className={styles.sidebar}>
-        <AnalyticsSidebar />
+        <AnalyticsSidebar redirect={history.push} />
       </div>
 
       <div className={styles.main}>

@@ -31,6 +31,7 @@ class Routes(enum.Enum):
     healthy = f'{PREFIX}/healthy'
     alloy_store = f'{PREFIX}/alloys/update'
     user_list = f'{PREFIX}/users'
+    search_users = f'{PREFIX}/users/search'
     users = f'{PREFIX}/user'
     user_profiles = f'{PREFIX}/user/profile'
     user_rating = f'{PREFIX}/user/rating'

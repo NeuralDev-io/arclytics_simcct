@@ -739,10 +739,15 @@ paths:
             schema:
               type: object
               properties:
+                is_valid:
+                  type: boolean
+                  default: true
                 last_configurations:
                   $ref: '#/components/schemas/Configurations'
                 last_alloy_store:
-                  $ref: '#/components/schemas/Alloy'
+                  $ref: '#/components/schemas/Alloy Store'
+                simulation_results:
+                  $ref: '#/components/schemas/Saved Simulation'
       responses:
         201:
           description: "Successfully saved the configurations."
@@ -764,13 +769,15 @@ paths:
               examples:
                 'Valid':
                   value:
-                    status: success
+                    status: "success"
+                    message: "Saved Last Simulation Data."
                     data:
-                      last_alloy:
-                        $ref: '#/components/examples/alloyExample1'
                       last_configurations:
                         $ref: '#/components/examples/configurationsExample'
-                      last_results: null
+                      last_alloy_store:
+                        $ref: '#/components/examples/Alloy Store'
+                      last_simulation_results:
+                        $ref: '#/components/schemas/Saved Simulation'
         400:
           description: "An invalid payload has been sent in the request."
           content:
@@ -782,6 +789,10 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid payload."
+                'Validity Should Be Defined':
+                  value:
+                    status: "fail"
+                    message: "Validity must be defined."
                 'Missing Configurations':
                   value:
                     status: "fail"
@@ -805,6 +816,11 @@ paths:
                     status: "fail"
                     error: "string"
                     message: "Invalid element symbol error."
+                'Invalid Element Weight':
+                  value:
+                    status: fail
+                    error: "Error .."
+                    message: "Invalid element weight error."
                 'Element Invalid':
                   value:
                     status: "fail"
@@ -834,11 +850,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -846,7 +866,19 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
@@ -860,7 +892,23 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+                'Mongo Validation':
+                  value:
+                    status: "fail"
+                    message: "Mongoengine Validation error."
   /user/simulation:
     get:
       summary: "Retrieve the list of Configurations saved in the User's document."

@@ -33,7 +33,7 @@ bcrypt = Bcrypt()
 # These are local extensions that must be imported first as some of them
 # rely on the third-party extensions above.
 from .Session import FlaskRedisSession
-from .mongo import MongoAlloys
+from .mongo_alloys import MongoAlloys
 from .mongodb import MongoSingleton
 from .utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid, JSONEncoder,
@@ -41,6 +41,7 @@ from .utilities import (
     RESPONSE_HEADERS, SimpleUTC, URLTokenError, URLTokenExpired, get_mongo_uri,
     ElementWeightInvalid
 )
+from .mongo import Mongo
 
 redis_session = FlaskRedisSession()
 # To use add flask-talisman==0.7.0 to requirements.txt

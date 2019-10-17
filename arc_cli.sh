@@ -26,6 +26,7 @@ SCALE_CONTAINERS_ARGS=""
 DOCKER_DOWN_FLAG=0
 SWAGGER_FLAG=0
 JUPYTER_FLAG=0
+PRODUCTION_DATA=0
 
 MONGO_USERNAME=""
 MONGO_PASSWORD=""
@@ -496,16 +497,28 @@ flushDb() {
 
 # Flush and seed database
 flushAndSeedDb() {
+  if [[ $PRODUCTION_DATA == 1 ]]; then
+    headerMessage "SEED AND FLUSH BACK-END MICROSERVICES (WITH PRODUCTION DATA)"
+    generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
+    generalMessage "docker-compose exec simcct python manage.py flush_all"
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
+    echoSpace
+    generalMessage "Seeding simcct microservice database with global alloys"
+    generalMessage "docker-compose exec simcct python manage.py seed_db"
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python load_production_data.py
+    echoSpace
+  else
     headerMessage "SEED AND FLUSH BACK-END MICROSERVICES"
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
     generalMessage "docker-compose exec simcct python manage.py flush_all"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush_all
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
     echoSpace
     generalMessage "Seeding simcct microservice database with global alloys"
     generalMessage "docker-compose exec simcct python manage.py seed_db"
     docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py seed_db
     docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py seed_alloys_db
     echoSpace
+  fi
 }
 
 getLatestKubeVersion() {
@@ -999,6 +1012,14 @@ while [[ "$1" != "" ]] ; do
       flushDb
       ;;
     seed )
+      while [[ "$2" != "" ]] ; do
+        case $2 in
+          -p | --prod | --production )
+            PRODUCTION_DATA=1
+            ;;
+        esac
+        shift
+      done
       flushAndSeedDb
       ;;
     dir )

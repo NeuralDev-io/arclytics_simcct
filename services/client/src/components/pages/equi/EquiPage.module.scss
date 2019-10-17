@@ -1,0 +1,54 @@
+.compSidebar {
+  width: 20rem;
+  height: 100vh;
+  margin-left: 4rem;
+  position: fixed;
+  z-index: 9999;
+}
+
+.main {
+  margin-left: calc(4rem);
+  width: calc(100vw - calc(4rem));
+  padding: 2.5rem 10%;
+
+  display: flex;
+  flex-direction: row;
+
+  & > section:first-of-type { 
+    min-width: 60%;
+    margin-right: 7rem;
+  }
+}
+
+.chart {
+  min-height: 35rem;
+  position: relative;
+}
+
+section.configs {
+  & > h4 {
+    margin-bottom: 1.5rem;
+  }
+
+  & > .configs {
+    // background-color: var(--n10);
+    // padding: 1.5rem 1.75rem;
+    // border-radius: 6px;
+
+    & > div {
+      margin-bottom: .5rem;
+      display: flex;
+      flex-direction: row;
+
+      &:last-of-type {
+        margin-bottom: 0;
+      }
+
+      .configLabel {
+        width: 13rem;
+        // width: 3rem;
+        margin-right: 1rem;
+      }
+    }
+  }
+}

@@ -104,6 +104,7 @@ def create_app(configs_path=app_settings) -> Flask:
     # ========== # REGISTER FLASK BLUEPRINTS # ========== #
     app.register_blueprint(root_blueprint)
     app.register_blueprint(user_analytics_blueprint)
+    app.register_blueprint(app_analytics_blueprint)
 
     # Set up Flask extensions plugins
     extensions(app)

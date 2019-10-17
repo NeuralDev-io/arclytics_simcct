@@ -14,17 +14,18 @@ __date__ = '2019.10.02'
 
 """user_analytics.py: 
 
-{Description}
+This module provides the resources for analytical querying, manipulation and 
+transformations to display interesting data about Users of the application. 
 """
 
 from os import environ as env
 from typing import Tuple
 
-import pandas as pd
 from flask import Blueprint
 from flask_restful import Resource
 
-from arc_api.extensions import api, redis_client
+from arc_api.extensions import api
+from arc_api.routes import Routes
 from arc_api.mongo_service import MongoService
 from arc_api.middleware import authorize_admin_cookie_restful
 from arc_logging import AppLogger
@@ -32,30 +33,80 @@ from arc_logging import AppLogger
 user_analytics_blueprint = Blueprint('user_analytics', __name__)
 logger = AppLogger(__name__)
 
+DATABASE = env.get('MONGO_APP_DB')
+
 
 # noinspection PyMethodMayBeStatic
-class UserLoginData(Resource):
+class UserNerdyData(Resource):
 
     # method_decorators = {'get': [authorize_admin_cookie_restful]}
 
-    def get(self) -> Tuple[dict, int]:
-        """Simply get the number of logged in users by Session in Redis."""
-
-        # Get the number of keys using the pattern that we defined
-        # in `services.simcct.sim_api.extensions.Session.redis_session`
-        # as being `session:{session id}`. We just get all the keys
-        # matching this pattern which means they have logged in.
-        keys = redis_client.keys(pattern=u'session*')
-
-        return {'status': 'success', 'data': len(keys)}, 200
-
-
-class UserNerdyData(Resource):
     def get(self):
-        # Get total numbers
-        # Get total shares
-        # Get total simulations
-        pass
+        """Uses various MongoDB Queries and Aggregation Pipeline to get some
+        interesting aggregation totals on certain collections and embedded
+        documents from the `users` collection. Returns all the values from
+        these queries so they can be displayed in the "Nerdy Stats" section.
+
+        Returns:
+            A valid HTTP Response with a dictionary of data and a
+            status code.
+        """
+
+        # Get total user count
+        users_count = MongoService().find(
+            db_name=DATABASE,
+            collection='users',
+            query={}
+        ).count()
+
+        # Get total saved simulations count
+        saved_sim_count = MongoService().find(
+            db_name=DATABASE,
+            collection='saved_simulations',
+            query={}
+        ).count()
+
+        # Get total shares count
+        shares_count = MongoService().find(
+            db_name=DATABASE,
+            collection='shared_simulations',
+            query={}
+        ).count()
+
+        # Get total feedback count
+        feedback_count = MongoService().find(
+            db_name=DATABASE,
+            collection='feedback',
+            query={}
+        ).count()
+
+        # Get total saved alloys
+        pipeline = [
+            {
+                '$group': {
+                    '_id': None,
+                    'count': {'$sum': {'$size': '$saved_alloys'}}
+                }
+            }
+        ]
+        saved_alloys_df = MongoService().read_aggregation(
+            DATABASE, 'users', pipeline
+        )
+
+        response = {
+            'status': 'success',
+            'data': {
+                'count': {
+                    'users': users_count,
+                    'saved_simulations': saved_sim_count,
+                    'shared_simulations': shares_count,
+                    'feedback': feedback_count,
+                    'saved_alloys': saved_alloys_df['count'][0],
+                }
+            }
+        }
+
+        return response, 200
 
 
 # noinspection PyMethodMayBeStatic
@@ -88,7 +139,7 @@ class UserLoginLocationData(Resource):
             }},
         ]
 
-        df = MongoService().read_aggregation('arc_dev', 'users', pipeline)
+        df = MongoService().read_aggregation(DATABASE, 'users', pipeline)
 
         # Because our Plotly Mapbox requires a latitude and longitude input
         # values, we need to ensure we clean up the missing values.
@@ -151,7 +202,7 @@ class UserProfileData(Resource):
             },
         ]
 
-        df = MongoService().read_aggregation('arc_dev', 'users', pipeline)
+        df = MongoService().read_aggregation(DATABASE, 'users', pipeline)
 
         # Not much data cleanup and transformation required as that was mostly
         # done in the Mongo pipeline already.
@@ -180,7 +231,6 @@ class UserProfileData(Resource):
         return response, 200
 
 
-api.add_resource(UserNerdyData, '/v1/arc/users/stats')
-api.add_resource(UserLoginData, '/v1/arc/users/login/live')
-api.add_resource(UserLoginLocationData, '/v1/arc/users/login/map')
-api.add_resource(UserProfileData, '/v1/arc/users/profile')
+api.add_resource(UserNerdyData, Routes.UserNerdyData.value)
+api.add_resource(UserLoginLocationData, Routes.UserLoginLocationData.value)
+api.add_resource(UserProfileData, Routes.UserProfileData.value)

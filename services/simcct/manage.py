@@ -78,11 +78,44 @@ cli = FlaskGroup(create_app=create_app)
 @cli.command('flush')
 def flush():
     """Drop all collections in the database."""
-    db = get_db('default')
-    print(
-        'Dropping <{}.{}> database:'.format(db.name, 'users'), file=sys.stderr
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        print('You should not flush the database in production.')
+        return
+
+    client = MongoClient(
+        host=os.environ.get('MONGO_HOST'),
+        port=int(os.environ.get('MONGO_PORT'))
     )
-    db.users.drop()
+    redis_client = redis.Redis(
+        host=os.environ.get('REDIS_HOST'), port=os.environ.get('REDIS_PORT')
+    )
+
+    # List of collections to drop
+    collections = [
+        'users', 'feedback', 'saved_simulations', 'shared_simulations',
+        'alloys'
+    ]
+
+    # Start dropping those collections for each of our dev environments.
+    print(
+        'Dropping collections in <{}> database:'.format('arc_dev'),
+        file=sys.stderr
+    )
+
+    for c in collections:
+        client['arc_dev'].drop_collection(c)
+
+    print(
+        'Dropping collections in <{}> database:'.format('arc_test'),
+        file=sys.stderr
+    )
+
+    for c in collections:
+        client['arc_dev'].drop_collection(c)
+
+    dbs_created = redis_client.config_get('databases')
+    print('Flushing Redis: {}'.format(dbs_created), file=sys.stderr)
+    redis_client.flushall()
 
 
 @cli.command('flush_all')

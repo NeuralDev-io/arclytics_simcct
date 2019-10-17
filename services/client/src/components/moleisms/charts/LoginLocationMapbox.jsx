@@ -16,7 +16,7 @@ import { getColor } from '../../../utils/theming'
 
 import styles from './LoginLocationMapbox.module.scss'
 
-const LoginLocationMapbox = ({ token, data }) => {
+const LoginLocationMapbox = ({ token, data, mapBoxStyle, colorScale }) => {
   let traceData = []
   if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
     traceData = [
@@ -27,6 +27,7 @@ const LoginLocationMapbox = ({ token, data }) => {
         z: data.count,
         radius: 15,
         text: data.count.map(String),
+        colorscale: colorScale,
         colorbar: {
           thickness: 15,
           xpad: 5,
@@ -59,7 +60,7 @@ const LoginLocationMapbox = ({ token, data }) => {
               height,
               width,
               mapbox: {
-                style: 'light',
+                style: mapBoxStyle,
                 center: {
                   lon: 140,
                   lat: -15

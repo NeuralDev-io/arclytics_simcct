@@ -150,7 +150,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Offset must be > 1."
-        '401':
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -909,7 +909,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Mongoengine Validation error."
-  /user/simulation:
+  /v1/sim/user/simulation:
     get:
       summary: "Retrieve the list of Configurations saved in the User's document."
       tags:
@@ -938,8 +938,10 @@ paths:
                         $ref: '#/components/schemas/Configurations'
                       alloy_store:
                         $ref: '#/components/schemas/Alloy Store'
+                      simulation_results:
+                        $ref: '#/components/schemas/Saved Simulation'
                       created: '2019/08/05'
-        '401':
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -953,11 +955,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -965,25 +971,54 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
         404:
-          description: "The user does not exist in the database or cannot be found."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'User Does Not Exist':
+                'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
-                'No Simulation':
+                'No Saved Simulation':
                   value:
                     status: "fail"
                     message: "No saved simulations found"
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+
     post:
           summary: "Save the list of Configuration."
           tags:

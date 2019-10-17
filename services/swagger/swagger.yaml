@@ -619,7 +619,7 @@ paths:
                   value:
                     status: "fail"
                     message: "No JWT stored in Session."
-  /user/last/simulation:
+  /v1/sim/user/last/simulation:
     get:
       summary: "Returns the user's last Alloy and Configurations used, and CCT/TTT results (if any)"
       tags:
@@ -640,12 +640,13 @@ paths:
                   data:
                     type: object
                     properties:
-                      last_alloy:
-                        $ref: '#/components/schemas/Alloy'
                       last_configurations:
                         $ref: '#/components/schemas/Configurations'
+                      is_valid:
+                        type: boolean
+                        default: false
                       last_alloy_store:
-                        $ref: '#/components/schemas/Alloy'
+                        $ref: '#/components/schemas/Alloy Store'
                       last_results:
                         type: object
                         nullable: true
@@ -665,11 +666,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -677,7 +682,19 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
@@ -691,15 +708,23 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
-                'No last configurations':
+                'No Last Configuration Or Alloy Store':
                   value:
                     status: "fail"
-                    message: "User does not have a last configurations."
-                'No last alloy':
+                    message: "User does not have a last configurations or alloy store."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "User does not have a last alloy stored."
+                    message: "No JWT stored in Session."
     post:
       summary: "Save user's last Alloy and Configurations used, and CCT/TTT results"
       tags:
@@ -4988,6 +5013,11 @@ components:
       type: http
       scheme: bearer
   schemas:
+    isValid:
+      properties:
+        is_valid:
+          type: boolean
+          default: false
     'User':
       description: "A document type as the complete User schema with all values."
       properties:
@@ -5159,20 +5189,11 @@ components:
       to generate a CCT or TTT graph."
       type: object
       properties:
-        is_valid:
-          description: "Whether the configurations have been validated."
-          type: boolean
-          default: false
-          example: true
         method:
           description: "A string that is a choice of either of the following enums [Li98 | Kirkaldy83]"
           type: string
           format: string
           example: "Li98"
-        gran_size:
-          description: "The ASTM value for grain size always."
-          type: number
-          format: float
         nucleation_start:
           type: number
           format: float
@@ -5183,21 +5204,21 @@ components:
         auto_calculate_ms:
           type: boolean
           default: true
+        auto_calculate_bs:
+          type: boolean
+          default: true
+        auto_calculate_ae:
+          type: boolean
+          default: true
         ms_temp:
           type: number
           format: float
         ms_rate_param:
           type: number
           format: float
-        auto_calculate_bs:
-          type: boolean
-          default: true
         bs_temp:
           type: number
           format: float
-        auto_calculate_ae:
-          type: boolean
-          default: true
         ae1_temp:
           type: number
           format: float
@@ -5208,6 +5229,15 @@ components:
           type: integer
         cct_cooling_rate:
           type: integer
+        grain_size:
+          description: "The ASTM value for grain size always."
+          type: number
+          format: float
+        is_valid:
+          description: "Whether the configurations have been validated."
+          type: boolean
+          default: false
+          example: true
       required:
         - is_valid
         - method

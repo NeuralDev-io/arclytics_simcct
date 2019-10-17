@@ -134,16 +134,20 @@ paths:
               examples:
                 'Invalid Session':
                   value:
-                    $ref: '#components/examples/admin_cookie_restful_401_1'
+                    status: "fail"
+                    message: "Session is invalid."
                 'Session Token Invalid':
                   value:
-                    $ref: '#components/examples/admin_cookie_restful_401_2'
+                    status: "fail"
+                    message: "Session token is not valid."
                 'Signature Expired':
                   value:
-                    $ref: '#components/examples/admin_cookie_restful_401_3'
+                    status: "fail"
+                    message: "Signature expired. Please login again."
                 'Invalid Token':
                   value:
-                    $ref: '#components/examples/admin_cookie_restful_401_4'
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
         403:
           description: "Unauthorized access."
           content:
@@ -158,10 +162,12 @@ paths:
               examples:
                 'Account Disabled':
                   value:
-                    $ref: '#components/examples/admin_cookie_restful_403_1'
+                    status: "fail"
+                    message: "This user account has been disabled."
                 'Non Admin User':
                   value:
-                    $ref: '#components/examples/admin_cookie_restful_403_2'
+                    status: "fail"
+                    message: "Not authorized."
         404:
           description: "The user cannot be found."
           content:
@@ -171,7 +177,9 @@ paths:
               examples:
                 'No User':
                   value:
-                    $ref: '#components/examples/admin_cookie_restful_404'
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
         500:
           description: "An internal server error has occurred."
           content:
@@ -181,7 +189,8 @@ paths:
               examples:
                 'Internal Server Error':
                   value:
-                    $ref: '#components/examples/admin_cookie_restful_500'
+                    status: "fail"
+                    message: "No JWT stored in Session."
   /user:
     get:
       summary: "Returns a user based on a single user ID"
@@ -5356,31 +5365,6 @@ components:
         result:
           $ref: '#/components/schemas/Graphs'
   examples:
-    admin_cookie_restful_401_1:
-      status: "fail"
-      message: "Session is invalid."
-    admin_cookie_restful_401_2:
-      status: "fail"
-      message: "Session token is not valid."
-    admin_cookie_restful_401_3:
-      status: "fail"
-      message: "Signature expired. Please login again."
-    admin_cookie_restful_401_4:
-      status: "fail"
-      message: "Invalid token. Please log in again."
-    admin_cookie_restful_403_1:
-      status: "fail"
-      message: "This user account has been disabled."
-    admin_cookie_restful_403_2:
-      status: "fail"
-      message: "Not authorized."
-    admin_cookie_restful_404:
-      status: "fail"
-      error: "error"
-      message: "User does not exist."
-    admin_cookie_restful_500:
-      status: "fail"
-      message: "No JWT stored in Session."
     configurationsExample:
       summary: "A valid Configurations example."
       value:

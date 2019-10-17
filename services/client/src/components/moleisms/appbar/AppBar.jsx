@@ -20,10 +20,11 @@ import { faUser } from '@fortawesome/pro-light-svg-icons/faUser'
 import { faAnalytics } from '@fortawesome/pro-light-svg-icons/faAnalytics'
 import { faQuestionCircle } from '@fortawesome/pro-light-svg-icons'
 import { faUserCog } from '@fortawesome/pro-light-svg-icons/faUserCog'
-import HardDriveIcon from 'react-feather/dist/icons/hard-drive'
 // import HelpIcon from 'react-feather/dist/icons/help-circle'
-import DatabaseIcon from 'react-feather/dist/icons/database'
-import SlidersIcon from 'react-feather/dist/icons/sliders'
+import { faSlidersV } from '@fortawesome/pro-light-svg-icons/faSlidersV'
+import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
+import { ReactComponent as SimulationIcon } from '../../../assets/simulation icon.svg'
+import { faFileChartLine } from '@fortawesome/pro-light-svg-icons/faFileChartLine'
 import { ReactComponent as ANSTOLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import Tooltip from '../../elements/tooltip'
@@ -71,7 +72,8 @@ class AppBar extends React.Component {
             to="/"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <SlidersIcon className={styles.icon} />
+              {/*<SlidersIcon className={styles.icon} />*/}
+              <SimulationIcon className={styles.icon}/>
               <p>Simulation</p>
             </Tooltip>
           </Link>
@@ -81,7 +83,7 @@ class AppBar extends React.Component {
             to="/equilibrium"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <SlidersIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faSlidersV} className={styles.icon} size="lg" />
               <p>Equilibrium</p>
             </Tooltip>
           </Link>
@@ -91,7 +93,8 @@ class AppBar extends React.Component {
             to={isAuthenticated ? '/user/simulations' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <HardDriveIcon className={styles.icon} />
+              {/*<HardDriveIcon className={styles.icon} />*/}
+              <FontAwesomeIcon icon={faFileChartLine} className={styles.icon} size="lg" />
               <p>Saved simulations</p>
             </Tooltip>
           </Link>
@@ -101,7 +104,7 @@ class AppBar extends React.Component {
             to={isAuthenticated ? '/user/alloys' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <DatabaseIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faDatabase} className={styles.icon} size="lg" />
               <p>Alloy database</p>
             </Tooltip>
           </Link>

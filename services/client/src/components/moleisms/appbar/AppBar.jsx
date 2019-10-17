@@ -14,12 +14,14 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import ActivityIcon from 'react-feather/dist/icons/activity'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSignOut } from '@fortawesome/pro-light-svg-icons/faSignOut'
+import { faUser } from '@fortawesome/pro-light-svg-icons/faUser'
+import { faAnalytics } from '@fortawesome/pro-light-svg-icons/faAnalytics'
+import { faQuestionCircle } from '@fortawesome/pro-light-svg-icons'
+import { faUserCog } from '@fortawesome/pro-light-svg-icons/faUserCog'
 import HardDriveIcon from 'react-feather/dist/icons/hard-drive'
 // import HelpIcon from 'react-feather/dist/icons/help-circle'
-import MonitorIcon from 'react-feather/dist/icons/monitor'
-import UserIcon from 'react-feather/dist/icons/user'
-import LogOutIcon from 'react-feather/dist/icons/log-out'
 import DatabaseIcon from 'react-feather/dist/icons/database'
 import SlidersIcon from 'react-feather/dist/icons/sliders'
 import { ReactComponent as ANSTOLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
@@ -30,8 +32,8 @@ import { logout } from '../../../api/AuthenticationHelper'
 import { buttonize } from '../../../utils/accessibility'
 import { saveLastSim } from '../../../state/ducks/self/actions'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
-import { logError } from '../../../api/LoggingHelper'
 
+import { logError } from '../../../api/LoggingHelper'
 import styles from './AppBar.module.scss'
 
 class AppBar extends React.Component {
@@ -74,6 +76,16 @@ class AppBar extends React.Component {
             </Tooltip>
           </Link>
           <Link
+            id="equilibrium"
+            className={`${styles.navIcon} ${active === 'equilibrium' && styles.active}`}
+            to="/equilibrium"
+          >
+            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+              <SlidersIcon className={styles.icon} />
+              <p>Equilibrium</p>
+            </Tooltip>
+          </Link>
+          <Link
             id="savedSimulations"
             className={`${styles.navIcon} ${active === 'savedSimulations' && styles.active} ${!isAuthenticated && styles.disabled}`}
             to={isAuthenticated ? '/user/simulations' : ''}
@@ -112,12 +124,12 @@ class AppBar extends React.Component {
 
           <Link
             id="analytics"
-            className={`${styles.navIcon} ${active === 'analytics' && styles.active}`}
+            className={`${styles.navIcon} ${active === 'analytiActivityIconcs' && styles.active}`}
             style={{ display: isAdmin ? 'flex' : 'none' }}
             to="/analytics/users"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <ActivityIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faAnalytics} className={styles.icon} size="lg" />
               <p>Data & Analytics</p>
             </Tooltip>
           </Link>
@@ -129,7 +141,7 @@ class AppBar extends React.Component {
             to="/admin/analytics"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <MonitorIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faUserCog} className={styles.icon} size="lg" />
               <p>Admin</p>
             </Tooltip>
           </Link>
@@ -141,7 +153,7 @@ class AppBar extends React.Component {
             to={isAuthenticated ? '/user/profile' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <UserIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faUser} className={styles.icon} size="lg" />
               <p>Account</p>
             </Tooltip>
           </Link>
@@ -154,10 +166,25 @@ class AppBar extends React.Component {
             })()}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <LogOutIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faSignOut} className={styles.icon} size="lg" />
               <p>Logout</p>
             </Tooltip>
           </div>
+
+          <div
+            id="about"
+            className={`${styles.navIcon} ${!isAuthenticated && styles.disabled}`}
+            {...(() => {
+              if (isAuthenticated) return buttonize(this.handleLogout)
+              return {}
+            })()}
+          >
+            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+              <FontAwesomeIcon icon={faQuestionCircle} className={styles.icon} size="lg" />
+              <p>About</p>
+            </Tooltip>
+          </div>
+
           <Logo className={styles.logo} />
         </div>
       </nav>

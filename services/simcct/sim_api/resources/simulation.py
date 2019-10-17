@@ -282,9 +282,9 @@ class Simulation(Resource):
 # noinspection PyMethodMayBeStatic
 class Ae3Equilibrium(Resource):
 
-    method_decorators = {'get': [authenticate_user_cookie_restful]}
+    method_decorators = {'post': [authenticate_user_cookie_restful]}
 
-    def get(self, _):
+    def post(self, _):
         """Run an Ae3 Equilibrium simulation using the para-equilibrium
         methodology to predict the Ae3 values with increasing carbon content
         to find the intercept with Ae1 (from simplified method) to determine

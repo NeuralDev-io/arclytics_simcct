@@ -24,6 +24,7 @@ ENV REACT_APP_FLUENTD_URL ${REACT_APP_FLUENTD_URL}
 #RUN which react-scripts
 
 COPY ./package.json /app/package.json
+COPY ./.npmrc /app/.npmrc
 RUN npm install --silent --only=prod
 COPY . /app
 

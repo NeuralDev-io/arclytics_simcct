@@ -29,4 +29,4 @@ WORKDIR /usr/src/app
 RUN touch /usr/src/app/healthy
 
 
-ENTRYPOINT celery worker -A celery_worker.celery -l info --uid 0 --gid 0
+ENTRYPOINT celery worker -A celery_worker.celery -l info --uid 0 --gid 0 -B

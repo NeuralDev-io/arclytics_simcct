@@ -22,10 +22,12 @@ import Button from '../../elements/button'
 import Table from '../../elements/table'
 import SecureConfirmModal from '../confirm-modal/SecureConfirmModal'
 import Modal from '../../elements/modal'
-import { getUsers, promoteAdmin, deactivateUser, enableUser } from '../../../state/ducks/users/actions'
+import {
+  getUsers, promoteAdmin, deactivateUser, enableUser,
+} from '../../../state/ducks/users/actions'
 
 import styles from './ManageUsers.module.scss'
-import ProfilePage from "../user-profile";
+import ProfilePage from '../user-profile'
 
 class ManageUsers extends Component {
   constructor(props) {
@@ -40,7 +42,7 @@ class ManageUsers extends Component {
   }
 
   componentDidMount = () => {
-    const {users, getUsersConnect} = this.props
+    const { users, getUsersConnect } = this.props
     if (users.length === 0) getUsersConnect()
   }
 
@@ -49,6 +51,7 @@ class ManageUsers extends Component {
       [name]: value,
     })
   }
+
   /**
    *
    * @param name - optional
@@ -56,7 +59,7 @@ class ManageUsers extends Component {
    */
   handleShowPromoteModal = (name, email) => {
     const { showPromoteModal } = this.state
-    if (showPromoteModal === false){
+    if (showPromoteModal === false) {
       this.setState({
         promoteName: name,
         promoteEmail: email,
@@ -67,31 +70,32 @@ class ManageUsers extends Component {
 
 
   handlePromoteSubmit = (email) => {
-    const {getUsersConnect, promoteAdminConnect} = this.props
-    console.log(email)
+    const { getUsersConnect, promoteAdminConnect } = this.props
     promoteAdminConnect(email)
-    this.setState( {
+    this.setState({
       promoteName: '',
       promoteEmail: '',
-      showPromoteModal: false
+      showPromoteModal: false,
     })
   }
 
   handleActivateSubmit = (email, isActive) => {
     const { deactivateUserConnect, getUsersConnect, enableUserConnect } = this.props
     console.log(email)
-    if (isActive){
+    if (isActive) {
       deactivateUserConnect(email)
       getUsersConnect()
-    } else if (!isActive){
+    } else if (!isActive) {
       enableUserConnect(email)
     }
   }
 
 
   render() {
-    const {searchEmail, showPromoteModal, promoteName, deactivateUserConnect } = this.state
-    const {users,} = this.props
+    const {
+      searchEmail, showPromoteModal, promoteName, deactivateUserConnect,
+    } = this.state
+    const { users } = this.props
     const tableData = users.filter(u => u.email.includes(searchEmail))
 
     const columns = [
@@ -101,23 +105,23 @@ class ManageUsers extends Component {
       },
       {
         Header: 'Full name',
-        Cell: ({original}) => <span>{[original.first_name, original.last_name].join(' ')}</span>,
+        Cell: ({ original }) => <span>{[original.first_name, original.last_name].join(' ')}</span>,
       },
       {
         Header: 'Admin',
         accessor: 'admin',
-        Cell: ({value}) => <span>{value ? 'Yes' : 'No'}</span>,
+        Cell: ({ value }) => <span>{value ? 'Yes' : 'No'}</span>,
         width: 80,
       },
       {
         Header: 'Verified',
         accessor: 'verified',
-        Cell: ({value}) => <span>{value ? 'Yes' : 'No'}</span>,
+        Cell: ({ value }) => <span>{value ? 'Yes' : 'No'}</span>,
         width: 80,
       },
       {
         Header: '',
-        Cell: ({original}) => (
+        Cell: ({ original }) => (
           <div className={styles.actions}>
             <Button
               onClick={() => console.log(original)}
@@ -133,7 +137,7 @@ class ManageUsers extends Component {
                 this.handleShowPromoteModal(`${original.first_name} ${original.last_name}`, original.email)
               }}
               appearance="text"
-              IconComponent={props => <PromoteIcon {...props}/>}
+              IconComponent={props => <PromoteIcon {...props} />}
               isDisabled={original.admin}
             >
               Promote
@@ -166,7 +170,7 @@ class ManageUsers extends Component {
               name="searchEmail"
               placeholder="Email..."
               value={searchEmail}
-              onChange={value => this.setState({searchEmail: value})}
+              onChange={value => this.setState({ searchEmail: value })}
             />
           </div>
           <Button
@@ -196,8 +200,8 @@ class ManageUsers extends Component {
           show={showPromoteModal}
           messageTitle={`Promote '${this.state.promoteName}' to admin ?`}
           actionButtonName="Confirm Promote"
-          onSubmit = {() => this.handlePromoteSubmit(this.state.promoteEmail)}
-          onClose = {() => this.setState({showPromoteModal: false})}
+          onSubmit={() => this.handlePromoteSubmit(this.state.promoteEmail)}
+          onClose={() => this.setState({ showPromoteModal: false })}
         />
       </div>
     )

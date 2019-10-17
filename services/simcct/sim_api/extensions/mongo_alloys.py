@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# alloys.py
+# mongo_alloys.py
 #
 # Attributions:
 # [1]
@@ -11,7 +11,7 @@ __license__ = 'MIT'
 __version__ = '1.0.0'
 __status__ = 'production'
 __date__ = '2019.07.14'
-"""alloys.py: 
+"""mongo_alloys.py: 
 
 This module contains the MongoDB mapper for the Alloy schema and document.
 """

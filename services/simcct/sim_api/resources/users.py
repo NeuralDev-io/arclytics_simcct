@@ -31,6 +31,7 @@ from sim_api.middleware import (
 )
 from sim_api.models import (User, UserProfile)
 from sim_api.routes import Routes
+from sim_api.search_service import SearchService
 
 logger = AppLogger(__name__)
 users_blueprint = Blueprint('users', __name__)
@@ -146,6 +147,180 @@ class UserList(Resource):
         response['current_page'] = current_page
         response['total_pages'] = total_pages
         response['data'] = [obj.to_dict() for obj in query_set]
+        return response, 200
+
+
+# noinspection PyMethodMayBeStatic
+class SearchUsers(Resource):
+    """Alloys administrators to search the database for a user/users"""
+
+    method_decorators = {'get': [authorize_admin_cookie_restful]}
+
+    def get(self, _) -> Tuple[dict, int]:
+        """
+
+        Args:
+            _:
+
+        Returns:
+
+        """
+
+        response = {'status': 'fail', 'message': 'Invalid parameters.'}
+
+        # Check the param args if there are any
+        if not request.args:
+            return response, 400
+
+        # TODO(andrew@neuraldev.io): Add pagination if the results is more
+        #  than 50 options.
+        query, sort = None, None
+        if request.args:
+            query = request.args.get('query', None)
+            sort = request.args.get('sort', None)
+
+        # Limit of 0 is unlimited
+        try:
+            limit = int(request.args.get('limit', 0))
+        except ValueError:
+            response.update({'message': 'Invalid limit parameter.'})
+            return response, 400
+
+        # Ensure query parameters have been given, otherwise there is nothing
+        # to search for.
+        if not query:
+            response.update({'message': 'No query parameters provided.'})
+            return response, 400
+
+        # Validate sort parameter options
+        if sort:
+            valid_sort_keys = {
+                'email', '-email', 'admin', '-admin', 'verified', '-verified',
+                'fullname', '-fullname', 'first_name', '-first_name',
+                'last_name', '-last_name'
+            }
+            if sort not in valid_sort_keys:
+                response.update({'message': 'Sort value is invalid.'})
+                return response, 400
+
+        # Validate limit:
+        if limit:
+            if not limit >= 1:
+                response['message'] = 'Limit must be > 1.'
+                return response, 400
+
+        # If our sorting value begins with a "-" in the string, then we know
+        # we are doing a DESCENDING sort so we will appropriately set the
+        # sort direction
+        sort_direction = 1
+        if str(sort).startswith('-'):
+            sort_direction = -1
+
+        # Pymongo can take a list of queries as objects so we initially just
+        # use the one we're given.
+        sort_query = [(sort, sort_direction)]
+        # If we are sorting on fullname, we will need to split the sort query
+        # into a 2 element list so we
+        if sort in {'full_name', '-full_name'}:
+            sort_query = [
+                ('first_name', sort_direction), ('last_name', sort_direction)
+            ]
+
+        # We need to ensure we only get a certain amount of information for
+        # the user
+        projections = {
+            '_id': 0,
+            'password': 0,
+            'saved_alloys': 0,
+            'simulations_count': 0,
+            'ratings': 0,
+            'last_updated': 0,
+            'disable_admin': 0,
+            'login_data': 0,
+            'last_configuration': 0,
+            'last_alloy_store': 0,
+            'last_simulation_results': 0,
+            'last_simulation_invalid_fields': 0,
+        }
+        query_selector = {
+            '$text': {
+                '$search': query,
+                '$language': 'none',
+                '$caseSensitive': False
+            }
+        }
+
+        # Check if the user is trying to search for an email by doing a rather
+        # simple check if the `@` symbol is in the string. If it is, we
+        # will try to search for an email instead.
+        # Thus:
+        #  - Searching for ironman@avengers.io will only return 1 result.
+        #  - Searching for ironman@ will fail
+        #  - Searching for ironman will return all emails with that substring
+        #    in the email.
+        if '@' in str(query):
+            data = SearchService().find(
+                query={'email': query},
+                sort=sort_query,
+                limit=limit,
+                projections=projections
+            )
+
+            n_results = len(data)
+
+            if n_results > 0:
+                # We found a user with this email so let's return that
+                return {
+                    'query': query,
+                    'limit': limit,
+                    'data': data,
+                    'total_results': n_results
+                }, 200
+
+            # we failed to find via email to lets do a string search by going
+            # to the next call.
+
+        # Use MongoDB string search on a compound index we created in the
+        # `sim_api.models.py` to ensure this is possible for first_name,
+        # last_name, and email.
+        data = SearchService().find(
+            query=query_selector,
+            sort=sort_query,
+            limit=limit,
+            projections=projections
+        )
+
+        if not data:
+            response['message'] = 'No results found.'
+            return response, 400
+
+        # Return the query/search parameters so that the client can request
+        # different pages in the future
+        response.pop('message')
+        n_results = len(data)
+        response.update(
+            {
+                'query': query,
+                'limit': limit,
+                'data': data,
+                'total_results': n_results
+            }
+        )
+
+        # Check if there is a valid next and previous offset
+        # if offset + limit - 1 < len(full_set):
+        #     response['next_offset'] = offset + limit
+        # if offset - limit >= 1:
+        #     response['prev_offset'] = offset - limit
+
+        # Return the Current Page Number and Total number of pages
+        # if len(full_set) % limit == 0:
+        #     total_pages = int(len(full_set) / limit)
+        # else:
+        #     total_pages = int(len(full_set) / limit) + 1
+        # current_page = int(offset / limit) + 1
+
+        # response['data'] = [obj.to_dict() for obj in query_set]
         return response, 200
 
 
@@ -367,5 +542,6 @@ class UserProfiles(Resource):
 
 
 api.add_resource(UserList, Routes.user_list.value)
+api.add_resource(SearchUsers, Routes.search_users.value)
 api.add_resource(Users, Routes.users.value)
 api.add_resource(UserProfiles, Routes.user_profiles.value)

@@ -64,10 +64,12 @@ class EquiPage extends React.Component {
       xfe,
       ceut,
       cf,
+      isAdmin,
+      isAuthenticated
     } = this.props
     return (
       <React.Fragment>
-        <AppBar active="equilibrium" redirect={history.push} isAdmin isAuthenticated />
+        <AppBar active="equilibrium" redirect={history.push} isAdmin={isAdmin} isAuthenticated={isAuthenticated} />
         <div className={styles.main}>
           <section>
             <h4>Ae3 equilibrium</h4>
@@ -111,6 +113,8 @@ EquiPage.propTypes = {
   persistedSim: PropTypes.shape({}).isRequired,
   persistedSimTime: PropTypes.string.isRequired,
   lastSim: PropTypes.shape({}).isRequired,
+  isAdmin: PropTypes.bool.isRequired,
+  isAuthenticated: PropTypes.bool.isRequired,
 }
 
 const mapStateToProps = (state) => ({

@@ -75,19 +75,28 @@ paths:
                   $ref: '#/components/schemas/User Profile'
                 example:
                   status: "success"
+                  sort_on:
+                  next_offset: 11
+                  prev_offset:
+                  limit: 10
+                  current_page: 1
+                  total_pages: 22
                   data:
-                  - _id: "5d2339db2d789ae1a9f15a9e"
-                    email: "iron_man@avengers.io"
+                  - email: "iron_man@avengers.io"
                     first_name: "Tony"
                     last_name: "Stark"
                     active: true
                     admin: true
+                    verified: true
                     created: '2019-07-08T12:40:55.948000+00:00'
                     last_updated: '2019-07-08T12:40:55.948000+00:00'
                     last_login: '2019-07-08T12:40:59.168000+00:00'
                     profile: None
-                  - _id: "5d2339db2d789ae1a9f15a9f"
-                    email: "captain_america@avengers.io"
+                    admin_profile:
+                      position: "Manager"
+                      mobile_number: "0432888524"
+                      verified: true
+                  - email: "captain_america@avengers.io"
                     first_name: "Steve"
                     last_name: "Rogers"
                     active: false
@@ -96,8 +105,7 @@ paths:
                     last_updated: '2019-07-08T12:40:55.948000+00:00'
                     last_login: None
                     profile: None
-                  - _id: "5d2339db2d789ae1a9f15aa0"
-                    email: "black_widow@avengers.io"
+                  - email: "black_widow@avengers.io"
                     first_name: "Natasha"
                     last_name: "Romanoff"
                     active: false
@@ -118,6 +126,30 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid Payload."
+                'Invalid Sort':
+                  value:
+                    status: "fail"
+                    message: "Sort value is invalid."
+                'Invalid Limit':
+                  value:
+                    status: "fail"
+                    message: "Limit value is invalid."
+                'Limit Should > 1':
+                  value:
+                    status: "fail"
+                    message: "Limit must be > 1."
+                'Invalid Offset Value':
+                  value:
+                    status: "fail"
+                    message: "Offset value is invalid."
+                'Offset Value Exceeds':
+                  value:
+                    status: "fail"
+                    message: "Offset value exceeds number of records."
+                'Offset Should > 1':
+                  value:
+                    status: "fail"
+                    message: "Offset must be > 1."
         '401':
           description: "The user is not authenticated to perform this request."
           content:

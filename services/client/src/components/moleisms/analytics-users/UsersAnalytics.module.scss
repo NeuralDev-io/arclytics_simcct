@@ -1,6 +1,6 @@
 @import '../../../styles/colors.scss';
 
-$break-small: 1366px;
+$break-small: 1450px;
 
 .container {
   width: 90%;
@@ -21,31 +21,38 @@ $break-small: 1366px;
   }
 
   .nerdyData {
+    display: flex;
+    margin-top: 1.25rem;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: center;
+
     .nerdyDataCard {
       background-color: var(--n0);
-      min-width: 90%;
-      min-height: 10rem;
-      max-height: 12rem;
-      margin: 0;
+      min-height: 12rem;
+      max-height: 15rem;
+      margin-top: 1.25rem;
       padding: 0;
       display: flex;
-      flex-flow: row nowrap;
-      justify-content: space-between;
+      min-width: 15%;
+      flex-flow: column wrap;
+      justify-content: center;
       align-items: center;
 
-      .nerdyDataItem {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: center;
-        align-items: center;
-        padding: 0.25rem;
-        & > .cardIcon{
-          width: 3rem;
-          height: 3rem;
-        }
+      & > .cardIcon {
+        width: 2.25rem;
+        height: 2.25rem;
       }
-      .nerdyDataItem:first-of-type { margin-left: 1.75rem; }
-      .nerdyDataItem:last-of-type { margin-right: 1.75rem; }
+
+      @media screen and (min-width: $break-small) {
+        width: 15%;
+      }
+
+      @media screen and (max-width: $break-small) {
+        flex-basis: 32.5%;
+        width: 25%;
+      }
+
     }
   }
 

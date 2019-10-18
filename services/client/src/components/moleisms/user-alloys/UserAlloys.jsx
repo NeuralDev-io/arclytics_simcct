@@ -13,10 +13,11 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import PlusIcon from 'react-feather/dist/icons/plus'
-import LoadIcon from 'react-feather/dist/icons/upload'
-import EditIcon from 'react-feather/dist/icons/edit-3'
-import TrashIcon from 'react-feather/dist/icons/trash-2'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus } from '@fortawesome/pro-light-svg-icons/faPlus'
+import { faUpload } from '@fortawesome/pro-light-svg-icons/faUpload'
+import { faEdit } from '@fortawesome/pro-light-svg-icons/faEdit'
+import { faTrashAlt } from '@fortawesome/pro-light-svg-icons/faTrashAlt'
 import Table from '../../elements/table'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
@@ -163,7 +164,7 @@ class UserAlloys extends Component {
               onClick={() => this.handleLoadAlloy(original)}
               appearance="text"
               length="short"
-              IconComponent={props => <LoadIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faUpload} {...props} />}
             >
               Load
             </Button>
@@ -171,7 +172,7 @@ class UserAlloys extends Component {
               onClick={() => this.showEditAlloy(original)}
               appearance="text"
               length="short"
-              IconComponent={props => <EditIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faEdit}{...props} />}
             >
               Edit
             </Button>
@@ -180,7 +181,7 @@ class UserAlloys extends Component {
               appearance="text"
               color="dangerous"
               length="short"
-              IconComponent={props => <TrashIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faTrashAlt} {...props} />}
             >
               Delete
             </Button>
@@ -208,7 +209,7 @@ class UserAlloys extends Component {
           <Button
             appearance="outline"
             onClick={this.showAddAlloy}
-            IconComponent={props => <PlusIcon {...props} />}
+            IconComponent={props => <FontAwesomeIcon icon={faPlus} {...props} />}
             length="short"
           >
             Add

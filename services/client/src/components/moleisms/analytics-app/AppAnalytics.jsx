@@ -9,10 +9,11 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import DatabaseIcon from 'react-feather/dist/icons/database'
-import PlayCircleIcon from 'react-feather/dist/icons/play-circle'
-import StarIcon from 'react-feather/dist/icons/star'
-import CodeIcon from 'react-feather/dist/icons/code'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
+import { faPlayCircle } from '@fortawesome/pro-light-svg-icons/faPlayCircle'
+import { faStar } from '@fortawesome/pro-light-svg-icons/faStar'
+import { faCode } from '@fortawesome/pro-light-svg-icons/faCode'
 import { logError, logInfo } from '../../../api/LoggingHelper'
 import { getColor } from '../../../utils/theming'
 import Card from '../../elements/card'
@@ -57,19 +58,19 @@ class AppAnalytics extends Component {
         <div className={styles.generalData}>
 
           <Card className={styles.generalDataCard}>
-            <PlayCircleIcon color={getColor('--arc500')} size={36} />
+            <FontAwesomeIcon icon={faPlayCircle} color={getColor('--arc500')}  className={styles.cardIcon} />
             <h5>{(statsData !== undefined) ? statsData.count.simulations : '0'}</h5>
             <p>Run simulation</p>
           </Card>
 
           <Card className={styles.generalDataCard}>
-            <DatabaseIcon color={getColor('--arc500')} size={36} />
+            <FontAwesomeIcon icon={faDatabase}color={getColor('--arc500')} className={styles.cardIcon} />
             <h5>{(statsData !== undefined) ? statsData.count.global_alloys : '0'}</h5>
             <p>Global alloys</p>
           </Card>
 
           <Card className={styles.generalDataCard}>
-            <StarIcon color={getColor('--arc500')} size={36} />
+            <FontAwesomeIcon icon={faStar} color={getColor('--arc500')} className={styles.cardIcon} />
             <h5>
               {
               (statsData !== undefined) ? roundTo(parseFloat(statsData.average.ratings), 2) : '0'
@@ -79,7 +80,7 @@ class AppAnalytics extends Component {
           </Card>
 
           <Card className={styles.generalDataCard}>
-            <CodeIcon color={getColor('--arc500')} size={36} />
+            <FontAwesomeIcon icon={faCode} color={getColor('--arc500')} className={styles.cardIcon} />
             <h5>0</h5>
             <p>More stuff</p>
           </Card>

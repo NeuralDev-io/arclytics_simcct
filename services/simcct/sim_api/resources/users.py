@@ -152,7 +152,7 @@ class UserListQuery(Resource):
         if request.args:
             sort = request.args.get('sort', None)
 
-        # skip/offset of 0 is unlimited
+        # Skip/offset of 0 is unlimited
         try:
             offset = int(request.args.get('offset', 0))
         except ValueError:
@@ -186,7 +186,7 @@ class UserListQuery(Resource):
                 sort_direction = -1
 
             valid_sort_keys = {
-                'email', '-email', 'admin', '-admin', 'verified','-verified',
+                'email', '-email', 'admin', '-admin', 'verified', '-verified',
                 'full_name', '-full_name', 'first_name', '-first_name',
                 'last_name', '-last_name'
             }
@@ -195,102 +195,90 @@ class UserListQuery(Resource):
                 return response, 400
 
             # If we are sorting on fullname, we will need to split the
-            # sort query
-            # into a 2 element list so we
+            # sort query into a 2 element list so we
             if sort in {'full_name', '-full_name'}:
                 sort_query.append(('first_name', sort_direction))
                 sort_query.append(('last_name', sort_direction))
             else:
                 sort_query.append((sort, sort_direction))
 
+        # We need the full list to check for pagination
+        n_total_documents = SearchService().count(limit=0)
+
         # Validate offset
         if offset > 0:
-            total_documents = SearchService().count(limit=limit)
-            if offset >= total_documents:
+            if offset >= n_total_documents:
                 response.update(
-                    {'message': 'Offset value exceeds number of documents.'}
+                    {
+                        'message': 'Offset value exceeds number of documents.',
+                        'sort': sort,
+                        'offset': offset,
+                        'limit': limit
+                    }
                 )
                 return response, 400
 
-            # Because we want a full list returned, we will not have a query
-            # selector.
-            users_list = SearchService().find_slice(
-                query={},
-                projections=PROJECTIONS,
-                skip=offset,
-                limit=limit,
-                sort=sort_query
-            )
-        else:
-            # Because we want a full list returned, we will not have a query
-            # selector.
-            users_list = SearchService().find_slice(
-                query={},
-                projections=PROJECTIONS,
-                skip=offset,
-                limit=limit,
-                sort=sort_query
-            )
+        # Because we want a full list returned, we will not have a query
+        # selector.
+        users_list = SearchService().find_slice(
+            query={},
+            projections=PROJECTIONS,
+            skip=offset,
+            limit=limit,
+            sort=sort_query
+        )
 
         n_documents = len(users_list)
-        if n_documents > 0:
-            response.update({'data': users_list})
+        if n_documents <= 0:
+            response.update({'message': 'No results found.'})
+            return response, 404
 
-        # Query
-        # if sort:
-        #     # Get the objects starting at the offset, limit the number of
-        #     # results and sort on the sort_on value.
-        #     if sort == 'fullname':
-        #         query_set = User.objects[offset - 1:offset + limit -
-        #                                  1].order_by(
-        #                                      'last_name', 'first_name'
-        #                                  )
-        #     elif sort == '-fullname':
-        #         query_set = User.objects[offset - 1:offset + limit -
-        #                                  1].order_by(
-        #                                      '-last_name', '-first_name'
-        #                                  )
-        #     else:
-        #         query_set = User.objects[offset - 1:offset + limit -
-        #                                  1].order_by(sort)
-        # else:
-        #     query_set = User.objects[offset - 1:offset + limit - 1]
+        # If there are no values for getting the next or previous offset (i.e.
+        # no limit has been provided, we just return null for them.
+        response.update({
+            'status': 'success',
+            'sort': sort,
+            'offset': offset,
+            'limit': limit,
+            'next_offset': None,
+            'prev_offset': None,
+            'n_results': n_documents,
+            'data': users_list,
+        })
+        response.pop('message')
+
+        # A limit of 0, meaning the client does not want any subset of the
+        # full list so there is no need to worry about offsets and pages.
+        # Plus we can avoid a divide by zero error from below.
+        if limit == 0:
+            return response, 200
 
         # Next offset is the offset for the next page of results. Prev is for
         # the previous.
-        response.update({
-            'sort': sort,
-            'offset': offset,
-            'next_offset': None,
-            'prev_offset': None,
-            'limit': limit,
-            'n_retrieved': n_documents
-        })
+        if offset + limit - 1 < n_total_documents:
+            response.update({'next_offset': offset + limit})
+        if offset - limit >= 0:
+            response.update({'prev_offset': offset - limit})
 
-        # if offset + limit - 1 < user_size:
-        #     response['next_offset'] = offset + limit
-        # if offset - limit >= 1:
-        #     response['prev_offset'] = offset - limit
-        #
-        # if user_size % limit == 0:
-        #     total_pages = int(user_size / limit)
-        # else:
-        #     total_pages = int(user_size / limit) + 1
-        # current_page = int(offset / limit) + 1
+        if n_total_documents % limit == 0:
+            total_pages = int(n_total_documents / limit)
+        else:
+            total_pages = int(n_total_documents / limit) + 1
+        current_page = int(offset / limit) + 1
 
-        response.pop('message')
-        response['status'] = 'success'
-        # response['current_page'] = current_page
-        # response['total_pages'] = total_pages
+        response.update(
+            {'current_page': current_page, 'total_pages': total_pages}
+        )
+
         return response, 200
 
 
-# noinspection PyMethodMayBeStatic
 class SearchUsers(Resource):
     """Alloys administrators to search the database for a user/users"""
 
     method_decorators = {'get': [authorize_admin_cookie_restful]}
 
+    # noinspection PyMethodMayBeStatic
     def get(self, _) -> Tuple[dict, int]:
         """
 
@@ -410,7 +398,7 @@ class SearchUsers(Resource):
         )
 
         if not data:
-            response['message'] = 'No results found.'
+            response.update({'message': 'No results found.'})
             return response, 404
 
         # Return the query/search parameters so that the client can request

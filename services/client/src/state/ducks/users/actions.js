@@ -36,7 +36,7 @@ export const getUsers = () => (dispatch) => {
       if (res.status === 'success') {
         dispatch({
           type: GET_USERS,
-          payload: res.data.users || [],
+          payload: res.data || [],
         })
       }
     })

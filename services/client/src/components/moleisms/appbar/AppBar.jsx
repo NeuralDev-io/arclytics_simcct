@@ -20,19 +20,18 @@ import { faUser } from '@fortawesome/pro-light-svg-icons/faUser'
 import { faAnalytics } from '@fortawesome/pro-light-svg-icons/faAnalytics'
 import { faQuestionCircle } from '@fortawesome/pro-light-svg-icons'
 import { faUserCog } from '@fortawesome/pro-light-svg-icons/faUserCog'
-// import HelpIcon from 'react-feather/dist/icons/help-circle'
 import { faSlidersV } from '@fortawesome/pro-light-svg-icons/faSlidersV'
 import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
-import { ReactComponent as SimulationIcon } from '../../../assets/simulation icon.svg'
+import { ReactComponent as SimulationIcon } from '../../../assets/simulation_icon.svg'
 import { faFileChartLine } from '@fortawesome/pro-light-svg-icons/faFileChartLine'
 import { ReactComponent as ANSTOLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
-import Tooltip from '../../elements/tooltip'
 import store from '../../../state/store'
-import { logout } from '../../../api/AuthenticationHelper'
+import Tooltip from '../../elements/tooltip'
 import { buttonize } from '../../../utils/accessibility'
-import { saveLastSim } from '../../../state/ducks/self/actions'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
+import { saveLastSim } from '../../../state/ducks/self/actions'
+import { logout } from '../../../api/AuthenticationHelper'
 
 import { logError } from '../../../api/LoggingHelper'
 import styles from './AppBar.module.scss'
@@ -72,8 +71,7 @@ class AppBar extends React.Component {
             to="/"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              {/*<SlidersIcon className={styles.icon} />*/}
-              <SimulationIcon className={styles.icon}/>
+              <SimulationIcon className={styles.simIcon}/>
               <p>Simulation</p>
             </Tooltip>
           </Link>
@@ -93,7 +91,6 @@ class AppBar extends React.Component {
             to={isAuthenticated ? '/user/simulations' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              {/*<HardDriveIcon className={styles.icon} />*/}
               <FontAwesomeIcon icon={faFileChartLine} className={styles.icon} size="lg" />
               <p>Saved simulations</p>
             </Tooltip>
@@ -127,13 +124,13 @@ class AppBar extends React.Component {
 
           <Link
             id="analytics"
-            className={`${styles.navIcon} ${active === 'analytiActivityIconcs' && styles.active}`}
+            className={`${styles.navIcon} ${active === 'analytics' && styles.active}`}
             style={{ display: isAdmin ? 'flex' : 'none' }}
             to="/analytics/users"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
               <FontAwesomeIcon icon={faAnalytics} className={styles.icon} size="lg" />
-              <p>Data & Analytics</p>
+              <p>Data & analytics</p>
             </Tooltip>
           </Link>
 

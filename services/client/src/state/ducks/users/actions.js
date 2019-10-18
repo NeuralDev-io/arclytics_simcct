@@ -2,7 +2,7 @@ import {
   GET_USERS,
   PROMOTE_ADMIN,
   DEACTIVATE_USER,
-  ENABLE_USER
+  ENABLE_USER,
 } from './types'
 import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'

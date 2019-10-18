@@ -29,14 +29,16 @@ class Mongo(object):
     def __init__(self):
         """Simply makes a connection to a MongoDB instance with `pymongo`."""
         if env.get('FLASK_ENV', 'production') == 'production':
-            mongo_uri = ('mongodb://{username}:{password}@{host}:{port}/{db}'
-                         ).format(
-                             username=env.get('MONGO_APP_USER'),
-                             password=env.get('MONGO_APP_USER_PASSWORD'),
-                             host=env.get('MONGO_HOST', 'localhost'),
-                             port=env.get('MONGO_PORT', 27017),
-                             db=env.get('MONGO_APP_DB')
-                         )
+            mongo_uri = (
+                'mongodb://{username}:{password}@{host}:{port}/{db}'
+                '?authSource=admin&authMechanism=SCRAM-SHA-1'
+            ).format(
+                username=env.get('MONGO_APP_USER'),
+                password=env.get('MONGO_APP_USER_PASSWORD'),
+                host=env.get('MONGO_HOST', 'localhost'),
+                port=env.get('MONGO_PORT', 27017),
+                db=env.get('MONGO_APP_DB')
+            )
             self.conn = MongoClient(mongo_uri)
         else:
             self.conn = MongoClient(

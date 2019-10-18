@@ -68,10 +68,12 @@ class UsersAnalytics extends Component {
       profileData: undefined,
       mapboxToken: '',
       mapboxData: undefined,
+      isLoading: false,
     }
   }
 
   componentDidMount = () => {
+    this.setState({isLoading: true})
     this.getNerdyStatsAnalytics()
     this.getProfileAnalytics()
     this.getLoginLocationMap()
@@ -106,7 +108,8 @@ class UsersAnalytics extends Component {
       // noinspection JSUnresolvedVariable
       this.setState({
         mapboxData: res.data,
-        mapboxToken: res.mapbox_token
+        mapboxToken: res.mapbox_token,
+        isLoading: false,
       })
     })
       .catch((err) => logError(
@@ -124,6 +127,7 @@ class UsersAnalytics extends Component {
       profileData,
       mapboxToken,
       mapboxData,
+      isLoading,
     } = this.state
 
     return (
@@ -177,13 +181,16 @@ class UsersAnalytics extends Component {
               *  It seems to delete on re-render for some reason.
               *
             */ }
-            <LoginLocationMapbox
-              // Other options include: Electric, Viridis, Hot, Jet, YIGnBu, YIOrRd, Picnic
-              colorScale={(mapboxData !== undefined) ? 'YIGnBu' : colorScale}
-              mapBoxStyle={'light'}  // Can also pass in 'dark' for dark mode.
-              token={mapboxToken}
-              data={(mapboxData !== undefined) ? mapboxData : undefined}
-            />
+            <div>
+              <LoginLocationMapbox
+                // Other options include: Electric, Viridis, Hot, Jet, YIGnBu, YIOrRd, Picnic
+                colorScale={(mapboxData !== undefined) ? 'YIGnBu' : colorScale}
+                mapBoxStyle={'light'}  // Can also pass in 'dark' for dark mode.
+                isLoading={isLoading}
+                token={mapboxToken}
+                data={(mapboxData !== undefined) ? mapboxData : undefined}
+              />
+            </div>
           </Card>
         </div>
 

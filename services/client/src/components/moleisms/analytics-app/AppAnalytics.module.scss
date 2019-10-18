@@ -47,19 +47,25 @@ $break-small: 1366px;
   }
 
   .chart {
+    background-color: var(--n0);
     margin-top: 1.25rem;
     min-height: 35rem;
 
     .liveLoginCard {
       background-color: var(--n0);
+      flex-basis: 90%;
       min-height: 35rem;
-      //min-width: 90%;
+      max-height: 42rem;
+      min-width: 90%;
       margin: 0;
+      z-index: 1001;
+      position: relative;
+      display: flex;
+      flex-flow: column;
 
-      //.liveLoginChart {
-      //  min-height: 35rem;
-      //  position: relative;
-      //}
+      & > div {
+        flex-grow: 1;
+      }
     }
   }
 

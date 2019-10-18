@@ -97,7 +97,9 @@ class AppAnalytics extends Component {
         <h5>Users currently logged in</h5>
         <div className={styles.chart}>
           <Card className={styles.liveLoginCard}>
-            <LiveLoginTimeSeries />
+            <div>
+              <LiveLoginTimeSeries />
+            </div>
           </Card>
         </div>
       </div>

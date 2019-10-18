@@ -19,7 +19,7 @@ import styles from './AnalyticsPage.module.scss'
 
 function AnalyticsPage({ history }) {
   return (
-    <React.Fragment>
+    <>
       <AppBar active="analytics" redirect={history.push} isAdmin isAuthenticated />
 
       <div className={styles.sidebar}>
@@ -31,7 +31,7 @@ function AnalyticsPage({ history }) {
         <Route path="/analytics/app" render={props => <AppAnalytics {...props} />} />
       </div>
 
-    </React.Fragment>
+    </>
   )
 }
 

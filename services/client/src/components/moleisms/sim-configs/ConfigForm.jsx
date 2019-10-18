@@ -192,7 +192,7 @@ class ConfigForm extends Component {
     ]
 
     return (
-      <React.Fragment>
+      <>
         <div className={styles.first}>
           <div className="input-col">
             <div className={styles.headerContainer}>
@@ -494,7 +494,7 @@ class ConfigForm extends Component {
             </div>
           </div>
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

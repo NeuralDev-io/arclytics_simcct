@@ -94,7 +94,7 @@ class FeedbackModal extends Component {
     const { categoryOptions } = this.state
 
     return (
-      <React.Fragment>
+      <>
         <div
           className={`${styles.backdrop} ${backdrop ? styles.show : ''}`}
           {...buttonize(this.handleClose)}
@@ -171,7 +171,7 @@ class FeedbackModal extends Component {
               )
           }
         </ToastModal>
-      </React.Fragment>
+      </>
     )
   }
 }

@@ -22,13 +22,14 @@ import os
 
 from flask import Blueprint, Response
 
+from arc_api.routes import Routes
 from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 root_blueprint = Blueprint('root', __name__)
 
 
-@root_blueprint.route('/', methods=['GET'])
+@root_blueprint.route(Routes.index.value, methods=['GET'])
 def index():
     resp_string = f'Container: {os.uname()[1]}'
     response = Response(resp_string)
@@ -38,7 +39,7 @@ def index():
     return response
 
 
-@root_blueprint.route('/healthy', methods=['GET'])
+@root_blueprint.route(Routes.readiness_probe.value, methods=['GET'])
 def readiness_probe():
     """Readiness probe for GCP Ingress."""
     response = Response('')

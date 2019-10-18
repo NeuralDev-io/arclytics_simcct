@@ -36,7 +36,8 @@ class Routes(enum.Enum):
     """
 
     # root.py
-    Root = '/'
+    index = '/'
+    readiness_probe = '/healthy'
 
     # user_analytics.py
     UserNerdyData = f'{PREFIX}/users/stats'

@@ -38,7 +38,7 @@ class Routes(enum.Enum):
     # root.py
     index = '/'
     ping = f'{PREFIX}/ping'
-    readiness_probe = f'{PREFIX}/healthy'
+    readiness_probe = '/healthy'
 
     # auth.py
     confirm_email = f'{PREFIX}/confirm/<token>'

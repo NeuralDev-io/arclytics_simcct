@@ -42,9 +42,8 @@ from sim_api.token import (
     generate_url
 )
 
-logger = AppLogger(__name__)
-
 share_blueprint = Blueprint('share', __name__)
+logger = AppLogger(__name__)
 
 
 class ShareSimulationLink(Resource):

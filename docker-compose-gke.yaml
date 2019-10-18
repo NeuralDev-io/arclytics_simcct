@@ -114,12 +114,12 @@ services:
       - MAIL_USE_TLS=${MAIL_USE_TLS}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - MONGO_HOST=mongodb
+      - MONGO_HOST=mongo-service
       - MONGO_PORT=27017
-      - MONGO_APP_DB=arc_dev
+      - MONGO_APP_DB=arclytics
       - MONGO_APP_USER=${MONGO_APP_USER}
       - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
-      - REDIS_HOST=redis
+      - REDIS_HOST=redis-service
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - ELASTIC_APM_SERVER_URL=http://apm-service:8200

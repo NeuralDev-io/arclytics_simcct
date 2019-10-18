@@ -1302,7 +1302,7 @@ while [[ "$1" != "" ]] ; do
                   generalMessage "Creating GCE disks"
                   for i in 1 2 3
                   do
-                      gcloud compute disks create --size 30GB \
+                      gcloud compute disks create --size 25GB \
                           --type pd-ssd mongo-ssd-disk-$i \
                           ${LOCATION_COMMAND}
                           # ${REPLICA_ZONE_MONGO}
@@ -1387,9 +1387,10 @@ while [[ "$1" != "" ]] ; do
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_redis:${TAG}
                   ;;
                 create )
-                  gcloud compute disks create --size 30GB \
+                  gcloud compute disks create --size 25GB \
                       --type pd-ssd redis-ssd-disk \
-                      ${LOCATION_COMMAND} ${REPLICA_ZONE_REDIS}
+                      ${LOCATION_COMMAND}
+                      # ${REPLICA_ZONE_REDIS}
                   kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
                   kubectl create -f "${WORKDIR}/kubernetes/redis-gke-svc.yaml" --validate=false
                   kubectl rollout status sts/redis --namespace arclytics

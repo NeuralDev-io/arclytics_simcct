@@ -13,9 +13,9 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link, Redirect } from 'react-router-dom'
-import ServerIcon from 'react-feather/dist/icons/server'
-import UsersIcon from 'react-feather/dist/icons/users'
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faServer } from '@fortawesome/pro-light-svg-icons/faServer'
+import { faUserFriends } from '@fortawesome/pro-light-svg-icons/faUserFriends'
 import styles from './AnalyticsSidebar.module.scss'
 
 class AnalyticsSidebar extends Component {
@@ -48,7 +48,7 @@ class AnalyticsSidebar extends Component {
           onClick={() => this.setState({ active: 'users' })}
           className={`${styles.item} ${active === 'users' && styles.active}`}
         >
-          <UsersIcon className={styles.icon} />
+          <FontAwesomeIcon icon={faUserFriends} className={styles.icon} size="lg"/>
           <span>Users</span>
         </Link>
 
@@ -68,7 +68,7 @@ class AnalyticsSidebar extends Component {
           onClick={() => this.setState({ active: 'application' })}
           className={`${styles.item} ${active === 'application' && styles.active}`}
         >
-          <ServerIcon className={styles.icon} />
+          <FontAwesomeIcon icon={faServer} className={styles.icon} size="lg"/>
           <span>Application</span>
         </Link>
 

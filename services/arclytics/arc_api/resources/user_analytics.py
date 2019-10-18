@@ -39,9 +39,9 @@ DATABASE = env.get('MONGO_APP_DB')
 # noinspection PyMethodMayBeStatic
 class UserNerdyData(Resource):
 
-    # method_decorators = {'get': [authorize_admin_cookie_restful]}
+    method_decorators = {'get': [authorize_admin_cookie_restful]}
 
-    def get(self):
+    def get(self, _):
         """Uses various MongoDB Queries and Aggregation Pipeline to get some
         interesting aggregation totals on certain collections and embedded
         documents from the `users` collection. Returns all the values from
@@ -93,6 +93,19 @@ class UserNerdyData(Resource):
             DATABASE, 'users', pipeline
         )
 
+        # Get total ratings
+        pipeline = [
+            {
+                '$group': {
+                    '_id': None,
+                    'count': {'$sum': {'$size': '$ratings'}}
+                }
+            }
+        ]
+        ratings_df = MongoService().read_aggregation(
+            DATABASE, 'users', pipeline
+        )
+
         response = {
             'status': 'success',
             'data': {
@@ -102,6 +115,7 @@ class UserNerdyData(Resource):
                     'shared_simulations': shares_count,
                     'feedback': feedback_count,
                     'saved_alloys': saved_alloys_df['count'][0],
+                    'ratings': ratings_df['count'][0],
                 }
             }
         }

@@ -16,10 +16,7 @@ import { getColor } from '../../../utils/theming'
 import { getLiveLoginData } from '../../../api/Analytics'
 import { logError } from '../../../api/LoggingHelper'
 
-import styles from './LiveLoginTimeSeries.module.scss'
-
 class LiveLoginTimeSeries extends Component {
-
   constructor(props) {
     super(props)
     this.state = {
@@ -28,15 +25,19 @@ class LiveLoginTimeSeries extends Component {
   }
 
   componentDidMount = () => {
+    // Get the time series data for the first time.
     this.getTimeSeriesData()
-    this.timer = setInterval(this.getTimeSeriesData, 60000)
+    // Set up a timer to poll the time series data every 30 secs
+    this.timer = setInterval(this.getTimeSeriesData, 30000)
   }
 
   componentWillUnmount = () => {
+    // Ensure we cleanup when component un mounts
     clearInterval(this.timer)
   }
 
   getTimeSeriesData = () => {
+    // Call the API fetch method and update the time series data.
     getLiveLoginData().then((res) => {
       this.setState({ data: res.data })
     })

@@ -238,3 +238,5 @@ services/simcct/simulation/
 .mapbox_token
 
 services/client/.npmrc
+
+services/db/production_data/

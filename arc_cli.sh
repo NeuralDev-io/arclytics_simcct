@@ -1588,6 +1588,7 @@ while [[ "$1" != "" ]] ; do
                   kubectl apply -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
+                  kubectl delete -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
                   ;;
               esac
               shift
@@ -1726,10 +1727,10 @@ while [[ "$1" != "" ]] ; do
             echoLine
             gcloud container clusters list
             echoLine
-            generalMessage "Secrets"
-            echoLine
-            kubectl get secrets -o wide --namespace arclytics
-            echoLine
+            #generalMessage "Secrets"
+            #echoLine
+            #kubectl get secrets -o wide --namespace arclytics
+            #echoLine
             generalMessage "GCE Disks"
             echoLine
             gcloud compute disks list

@@ -40,13 +40,12 @@ const LoginLocationMapbox = ({ token, data, mapBoxStyle, colorScale }) => {
             color: getColor('--n500')
           }
         },
-
       },
     ]
   }
 
   if (traceData.length === 0) {
-    return <div className={styles.noData}>No data.</div>
+    return <div>No data.</div>
   }
 
   return (
@@ -81,8 +80,8 @@ const LoginLocationMapbox = ({ token, data, mapBoxStyle, colorScale }) => {
             config={{
               mapboxAccessToken: token,
               modeBarButtonsToRemove: [
-                'toImage', 'select2d', 'lasso2d', 'toggleSpikelines',
-                'scrollZoom', 'hoverCompareCartesian', 'hoverClosestCartesian',
+                'select2d', 'lasso2d', 'toggleSpikelines',
+                'hoverCompareCartesian', 'hoverClosestCartesian',
                 'autoScale2d'
               ],
               displaylogo: false,

@@ -19,21 +19,20 @@ Rating and Feedback endpoints using the Flask Resource inheritance model.
 
 from typing import Tuple
 
-from flask import Blueprint, request, render_template
+from flask import Blueprint, render_template, request
 from flask_restful import Resource
 from mongoengine import ValidationError
 
 from arc_logging import AppLogger
-from sim_api.extensions import api, apm
+from sim_api.extensions import api
 from sim_api.middleware import (
     authenticate_user_cookie_restful, authorize_admin_cookie_restful
 )
 from sim_api.models import Feedback, Rating
 from sim_api.routes import Routes
 
-logger = AppLogger(__name__)
-
 ratings_blueprint = Blueprint('ratings', __name__)
+logger = AppLogger(__name__)
 
 
 class UserRating(Resource):
@@ -306,7 +305,7 @@ class SubscribeFeedback(Resource):
             return response, 400
 
 
-api.add_resource(UserRating, Routes.user_rating.value)
-api.add_resource(UserFeedback, Routes.user_feedback.value)
-api.add_resource(FeedbackList, Routes.feedback_list.value)
-api.add_resource(SubscribeFeedback, Routes.subscribe_feedback.value)
+api.add_resource(UserRating, Routes.UserRating.value)
+api.add_resource(UserFeedback, Routes.UserFeedback.value)
+api.add_resource(FeedbackList, Routes.FeedbackList.value)
+api.add_resource(SubscribeFeedback, Routes.SubscribeFeedback.value)

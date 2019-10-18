@@ -36,9 +36,9 @@ class Routes(enum.Enum):
       - Routes from Flask endpoints will use the function_name.
     """
     # root.py
-    root = '/'
+    index = '/'
     ping = f'{PREFIX}/ping'
-    healthy = f'{PREFIX}/healthy'
+    readiness_probe = f'{PREFIX}/healthy'
 
     # auth.py
     confirm_email = f'{PREFIX}/confirm/<token>'
@@ -58,6 +58,14 @@ class Routes(enum.Enum):
     logout = f'{PREFIX}/auth/logout'
     get_user_status = f'{PREFIX}/auth/status'
 
+    # admin_auth.py
+    AdminCreate = f'{PREFIX}/admin/create'
+    cancel_promotion = f'{PREFIX}/admin/create/cancel/<token>'
+    verify_promotion = f'{PREFIX}/admin/create/verify/<token>'
+    DisableAccount = f'{PREFIX}/disable/user'
+    confirm_disable_account = f'{PREFIX}/disable/user/confirm/<token>'
+    EnableAccount = f'{PREFIX}/enable/user'
+
     # users.py
     UserList = f'{PREFIX}/users'
     UserListQuery = f'{PREFIX}/users/query'
@@ -65,13 +73,15 @@ class Routes(enum.Enum):
     Users = f'{PREFIX}/user'
     UserProfiles = f'{PREFIX}/user/profile'
 
+    # save_simulation.py
     save_simulation_list = f'{PREFIX}/user/simulation'
     save_simulation_detail = f'{PREFIX}/user/simulation/<sim_id>'
 
-    user_rating = f'{PREFIX}/user/rating'
-    user_feedback = f'{PREFIX}/user/feedback'
-    feedback_list = f'{PREFIX}/admin/feedback/list'
-    subscribe_feedback = f'{PREFIX}/admin/feedback/list/subscribe'
+    # ratings.py
+    UserRating = f'{PREFIX}/user/rating'
+    UserFeedback = f'{PREFIX}/user/feedback'
+    FeedbackList = f'{PREFIX}/admin/feedback/list'
+    SubscribeFeedback = f'{PREFIX}/admin/feedback/list/subscribe'
 
     # share.py
     ShareSimulationLink = f'{PREFIX}/user/share/simulation/link'
@@ -81,25 +91,25 @@ class Routes(enum.Enum):
     )
     view_shared_simulation = f'{PREFIX}/user/share/simulation/view/<token>'
 
-    user_alloy_list = f'{PREFIX}/user/alloys'
-    user_alloy = f'{PREFIX}/user/alloys/<alloy_id>'
-    last_simulation = f'{PREFIX}/user/last/simulation'
+    # global_alloys.py
+    AlloysList = f'{PREFIX}/global/alloys'
+    Alloys = f'{PREFIX}/global/alloys/<alloy_id>'
+
+    # user_alloys.py
+    UserAlloysList = f'{PREFIX}/user/alloys'
+    UserAlloy = f'{PREFIX}/user/alloys/<alloy_id>'
+
+    # last_simulation.py
+    LastSimulation = f'{PREFIX}/user/last/simulation'
 
     # simulation.py
     Simulation = f'{PREFIX}/simulate'
     Ae3Equilibrium = f'{PREFIX}/ae3equilibrium'
 
-    cancel_promotion = f'{PREFIX}/admin/create/cancel/<token>'
-    verify_promotion = f'{PREFIX}/admin/create/verify/<token>'
-    confirm_disable_account = f'{PREFIX}/disable/user/confirm/<token>'
-    admin_create = f'{PREFIX}/admin/create'
-    disable_account = f'{PREFIX}/disable/user'
-    enable_account = f'{PREFIX}/enable/user'
-    martensite = f'{PREFIX}/configs/ms'
-    bainite = f'{PREFIX}/configs/bs'
-    austenite = f'{PREFIX}/configs/ae'
-    alloys = f'{PREFIX}/global/alloys/<alloy_id>'
-    alloys_list = f'{PREFIX}/global/alloys'
+    # sim_configurations.py
+    Martensite = f'{PREFIX}/configs/ms'
+    Bainite = f'{PREFIX}/configs/bs'
+    Austenite = f'{PREFIX}/configs/ae'
 
     # sim_alloys.py
     AlloyStore = f'{PREFIX}/alloys/update'

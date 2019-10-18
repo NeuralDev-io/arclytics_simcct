@@ -11,8 +11,8 @@ spec:
   tls:
     - secretName: client-app-https-secret
     - secretName: simcct-app-https-secret
+    - secretName: arclytics-app-https-secret
     - secretName: website-https-secret
-    - secretName: arclytics-https-secret
 #    - secretName: apm-app-https-secret
   backend:
     serviceName: client-service

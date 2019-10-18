@@ -80,29 +80,18 @@ class UserNerdyData(Resource):
             query={}
         ).count()
 
-        # Get total saved alloys
+        # Get total saved alloys and ratings in one call
         pipeline = [
             {
                 '$group': {
                     '_id': None,
-                    'count': {'$sum': {'$size': '$saved_alloys'}}
+                    'count_alloys': {'$sum': {'$size': '$saved_alloys'}},
+                    'count_ratings': {'$sum': {'$size': '$ratings'}},
                 }
             }
         ]
-        saved_alloys_df = MongoService().read_aggregation(
-            DATABASE, 'users', pipeline
-        )
 
-        # Get total ratings
-        pipeline = [
-            {
-                '$group': {
-                    '_id': None,
-                    'count': {'$sum': {'$size': '$ratings'}}
-                }
-            }
-        ]
-        ratings_df = MongoService().read_aggregation(
+        df = MongoService().read_aggregation(
             DATABASE, 'users', pipeline
         )
 
@@ -114,8 +103,8 @@ class UserNerdyData(Resource):
                     'saved_simulations': saved_sim_count,
                     'shared_simulations': shares_count,
                     'feedback': feedback_count,
-                    'saved_alloys': saved_alloys_df['count'][0],
-                    'ratings': ratings_df['count'][0],
+                    'saved_alloys': df['count_alloys'][0],
+                    'ratings': df['count_ratings'][0],
                 }
             }
         }
@@ -163,13 +152,10 @@ class UserLoginLocationData(Resource):
         # the values that are grouped with the following properties:
         # [`latitude`, `longitude`, 'country`, `continent`].
         df = df.groupby(
-            [
-                'latitude',
-                'longitude',
-                'country',
-                'continent'
-            ]
-        ).size().to_frame('count').reset_index()
+            ['latitude', 'longitude']
+        ).size().to_frame(
+            'count'
+        ).reset_index()
 
         # This token should be stored in the backend and only sent to the
         # front-end when a request for a Mapbox layer is needed.
@@ -190,9 +176,9 @@ class UserLoginLocationData(Resource):
 # noinspection PyMethodMayBeStatic
 class UserProfileData(Resource):
 
-    # method_decorators = {'get': [authorize_admin_cookie_restful]}
+    method_decorators = {'get': [authorize_admin_cookie_restful]}
 
-    def get(self) -> Tuple[dict, int]:
+    def get(self, _) -> Tuple[dict, int]:
         """Uses MongoDB Aggregation Pipeline to get all Profile data from
         the `users` collection and then transforms that to allow building
         a bar chart with `plotly.graph_objects.Bar` traces.

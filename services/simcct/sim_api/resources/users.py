@@ -140,7 +140,18 @@ class UserListQuery(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self, _) -> Tuple[dict, int]:
-        """Get all users only available to admins."""
+        """Provides a GET view method to allow clients to retrieve the list
+        of users in the database but with the ability to do pagination and
+        additional queries. This includes the ability to sort, limit and skip
+        the returned results. All pagination values required to retrieve
+        more data will be returned in the response body.
+
+        Args:
+            _: an instance of `models.User` passed from middleware not used.
+
+        Returns:
+            A valid HTTP Response with a JSON body and status code.
+        """
 
         response = {'status': 'fail', 'message': 'Invalid parameters.'}
 
@@ -288,13 +299,16 @@ class SearchUsers(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self, _) -> Tuple[dict, int]:
-        """
+        """Provides a GET view method to allow clients to do a search on the
+        users database if they are are an admin. The method allows them to
+        sort and limit the number of results returned but no pagination will
+        be done.
 
         Args:
-            _:
+            _: an instance of `models.User` passed from middleware not used.
 
         Returns:
-
+            A valid HTTP Response with a JSON body and status code.
         """
 
         response = {'status': 'fail', 'message': 'Invalid parameters.'}

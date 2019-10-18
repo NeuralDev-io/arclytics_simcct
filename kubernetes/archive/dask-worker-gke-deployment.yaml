@@ -20,7 +20,7 @@ spec:
         component: worker
     spec:
       - name: dask-worker-container
-        image: asia.gcr.io/arc-simcct/arc_dask_worker:latest
+        image: asia.gcr.io/arc-sim-testing/arc_dask_worker:latest
         imagePullPolicy: IfNotPresent
         args:
           - 'dask-worker'

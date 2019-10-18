@@ -1136,11 +1136,13 @@ while [[ "$1" != "" ]] ; do
       RESERVED_IP_NAME="arclytics-ip"
       CLIENT_SSL_NAME="client-app-https-cert"
       SIMCCT_SSL_NAME="simcct-app-https-cert"
+      ARC_SSL_NAME="arclytics-app-https-cert"
       WEBSITE_SSL_NAME="website-https-cert"
       CLIENT_HTTPS_TLS_NAME="client-app-https-secret"
       SIMCCT_HTTPS_TLS_NAME="simcct-app-https-secret"
+      ARC_HTTPS_TLS_NAME="arclytics-app-https-secret"
       WEBSITE_HTTPS_TLS_NAME="website-https-secret"
-      CLOUD_STORAGE_BUCKET="asia.artifacts.arc-sim.appspot.com"
+      CLOUD_STORAGE_BUCKET="arclytics"
 
       while [[ "$2" != "" ]] ; do
         case $2 in
@@ -1154,8 +1156,8 @@ while [[ "$1" != "" ]] ; do
             gcloud compute project-info describe --project ${PROJECT_ID}
             #gcloud container clusters describe ${CLUSTER_NAME} --zone ${ZONE}
             gcloud config set project ${PROJECT_ID}
-            #gcloud config set compute/zone ${ZONE}
-            gcloud config set compute/region ${REGION}
+            gcloud config set compute/zone ${ZONE}
+            #gcloud config set compute/region ${REGION}
             gcloud components update
             kubectl config set-context --current --namespace=arclytics
             #gcloud compute project-info add-metadata --metadata google-compute-default-region=australia-southeast1,google-compute-default-zone=australia-southeast1-a
@@ -1232,6 +1234,10 @@ while [[ "$1" != "" ]] ; do
             gcloud compute ssl-certificates create ${SIMCCT_SSL_NAME} \
                 --certificate "${WORKDIR}/certs/io.arclytics.api.crt" \
                 --private-key "${WORKDIR}/certs/io.arclytics.api.key"
+            gcloud compute ssl-certificates create ${ARC_SSL_NAME} \
+                --certificate "${WORKDIR}/certs/io.arclytics.data.crt" \
+                --private-key "${WORKDIR}/certs/io.arclytics.data.key"
+
             gcloud compute ssl-certificates create ${WEBSITE_SSL_NAME} \
                 --certificate "${WORKDIR}/certs/io.arclytics.crt" \
                 --private-key "${WORKDIR}/certs/io.arclytics.key"
@@ -1245,6 +1251,10 @@ while [[ "$1" != "" ]] ; do
             kubectl create secret tls ${SIMCCT_HTTPS_TLS_NAME} \
                --cert "${WORKDIR}/certs/io.arclytics.api.crt" \
                --key "${WORKDIR}/certs/io.arclytics.api.key" \
+               --namespace=arclytics
+            kubectl create secret tls ${SIMCCT_HTTPS_TLS_NAME} \
+               --cert "${WORKDIR}/certs/io.arclytics.data.crt" \
+               --key "${WORKDIR}/certs/io.arclytics.data.key" \
                --namespace=arclytics
             APM_HTTPS_TLS_NAME="apm-app-https-secret"
             kubectl create secret tls ${APM_HTTPS_TLS_NAME} \
@@ -1266,6 +1276,9 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 delete )
                   gcloud compute addresses delete ${RESERVED_IP_NAME} --global
+                  ;;
+                show | ls )
+                  gcloud compute addresses list --global
                   ;;
               esac
               shift

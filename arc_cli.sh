@@ -1118,7 +1118,7 @@ while [[ "$1" != "" ]] ; do
       ;;
     deploy )
       # Some Defaults
-      PROJECT_ID="arc-simcct"
+      PROJECT_ID="arc-sim-testing"
       CLUSTER_NAME="arc-sim-cluster"
       KUBERNETES_MASTER_VERSION="1.13.7-gke.8"
       KUBERNETES_NODE_VERSION=${KUBERNETES_MASTER_VERSION}
@@ -1128,8 +1128,8 @@ while [[ "$1" != "" ]] ; do
       # There are 3 for Australia.
       REGION="australia-southeast1"
       ZONE="australia-southeast1-a"
-      LOCATION_COMMAND="--region=${REGION}"
-      #LOCATION_COMMAND="--zone=${ZONE}"
+      #LOCATION_COMMAND="--region=${REGION}"
+      LOCATION_COMMAND="--zone=${ZONE}"
       REPLICA_ZONE_REDIS="--replica-zones=${ZONE},australia-southeast1-b"
       REPLICA_ZONE_MONGO="--replica-zones=${ZONE},australia-southeast1-c"
       IMAGE_TYPE="UBUNTU"
@@ -1166,7 +1166,7 @@ while [[ "$1" != "" ]] ; do
                 create )
                   # This uses `jq` package to get the latest GKE versions for Kubernetes Master and Nodes
                   getLatestKubeVersion
-                   echo Kubernetes Version: ${LATEST}
+                  echo Kubernetes Version: ${LATEST}
 
                   # Create new GKE Kubernetes cluster (using host node VM images based on Ubuntu
                   # rather than ChromiumOS default & also use slightly larger VMs than default)
@@ -1175,10 +1175,10 @@ while [[ "$1" != "" ]] ; do
                   gcloud container clusters create ${CLUSTER_NAME} \
                       ${LOCATION_COMMAND} \
                       --image-type=${IMAGE_TYPE} \
-                      --machine-type=n1-standard-4 \
+                      --machine-type=n1-standard-2 \
                       --num-nodes=2 \
                       --min-nodes=2 \
-                      --max-nodes=4 \
+                      --max-nodes=8 \
                       --enable-autoscaling \
                       --node-labels=component=arc-nodes \
                       --cluster-version=${LATEST}
@@ -1728,19 +1728,19 @@ while [[ "$1" != "" ]] ; do
             while [[ "$3" != "" ]]; do
               case $3 in
                 upload )
-                  gsutil cp -r ${WORKDIR}/services/simcct/sim_api/static/* gs://${CLOUD_STORAGE_BUCKET}/assets/
+                  gsutil cp -r ${WORKDIR}/services/simcct/sim_api/static/* gs://${CLOUD_STORAGE_BUCKET}/imgs/
                   ;;
                 list | ls )
-                  gsutil ls gs://${CLOUD_STORAGE_BUCKET}/assets/**
+                  gsutil ls gs://${CLOUD_STORAGE_BUCKET}/imgs/**
                   ;;
                 public )
-                  gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/assets/imgs/email_footer_logo.png
+                  gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/imgs/email_footer_logo.png
                   ;;
                 address )
-                  echo https://storage.cloud.google.com/asia.artifacts.arc-sim.appspot.com/assets/imgs/email_footer_logo.png
+                  echo https://storage.googleapis.com/arclytics/imgs/email_footer_logo.png
                   ;;
                 go )
-                  google-chrome https://storage.cloud.google.com/asia.artifacts.arc-sim.appspot.com/assets/imgs/email_footer_logo.png
+                  google-chrome https://storage.googleapis.com/arclytics/imgs/email_footer_logo.png
                   ;;
               esac
               shift

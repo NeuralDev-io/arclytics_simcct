@@ -373,5 +373,5 @@ def view_shared_simulation(token):
     return jsonify(response), 200
 
 
-api.add_resource(ShareSimulationLink, Routes.share_simulation_link.value)
+api.add_resource(ShareSimulationLink, Routes.ShareSimulationLink.value)
 api.add_resource(ShareSimulationEmail, Routes.share_simulation_email.value)

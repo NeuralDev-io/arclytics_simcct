@@ -35,6 +35,7 @@ from mongoengine.errors import NotUniqueError, ValidationError
 from redis import ReadOnlyError
 
 from arc_logging import AppLogger
+from sim_api.routes import Routes
 from sim_api.extensions import bcrypt, apm, redis_session
 from sim_api.extensions.utilities import (
     URLTokenError, URLTokenExpired, arc_validate_email
@@ -51,18 +52,9 @@ logger = AppLogger(__name__)
 auth_blueprint = Blueprint('auth', __name__)
 
 
-class SimCCTBadServerLogout(Exception):
-    """
-    A custom exception to be raised by a synchronous call to logout on the
-    SimCCT server if the response is not what we are expecting.
-    """
-    def __init__(self, msg: str):
-        super(SimCCTBadServerLogout, self).__init__(msg)
-
-
 # noinspection PyBroadException
-@auth_blueprint.route('/confirm/<token>', methods=['GET'])
-def confirm_email(token):
+@auth_blueprint.route(Routes.confirm_email.value, methods=['GET'])
+def confirm_email(token) -> Tuple[dict, int]:
     """This endpoint simply just takes in the token that a user would send
     from going to a link in their confirmation email and attaching the token
     as part of the request parameter.
@@ -117,9 +109,9 @@ def confirm_email(token):
     return redirect(f'{redirect_url}/signin', code=302)
 
 
-@auth_blueprint.route('/confirm/resend', methods=['GET'])
+@auth_blueprint.route(Routes.confirm_email_resend.value, methods=['GET'])
 @authenticate_user_and_cookie_flask
-def confirm_email_resend(user):
+def confirm_email_resend(user) -> Tuple[dict, int]:
     response = {'status': 'fail', 'message': 'Bad request'}
 
     if user.verified:
@@ -151,7 +143,9 @@ def confirm_email_resend(user):
     return jsonify(response), 200
 
 
-@auth_blueprint.route('/confirm/register/resend', methods=['PUT'])
+@auth_blueprint.route(
+    Routes.confirm_email_resend_after_registration.value, methods=['PUT']
+)
 def confirm_email_resend_after_registration() -> Tuple[dict, int]:
     response = {'status': 'success'}
 
@@ -197,8 +191,8 @@ def confirm_email_resend_after_registration() -> Tuple[dict, int]:
     return jsonify(response), 200
 
 
-@auth_blueprint.route('/confirmadmin/<token>', methods=['GET'])
-def confirm_email_admin(token):
+@auth_blueprint.route(Routes.confirm_email_admin.value, methods=['GET'])
+def confirm_email_admin(token) -> Tuple[dict, int]:
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
     protocol = os.environ.get('CLIENT_SCHEME')
@@ -234,7 +228,7 @@ def confirm_email_admin(token):
     return redirect(f'{redirect_url}/signin', code=302)
 
 
-@auth_blueprint.route(rule='/auth/register', methods=['POST'])
+@auth_blueprint.route(Routes.register_user.value, methods=['POST'])
 def register_user() -> Tuple[dict, int]:
     """Blueprint route for registration of users."""
 
@@ -324,7 +318,7 @@ def register_user() -> Tuple[dict, int]:
         return jsonify(response), 400
 
 
-@auth_blueprint.route(rule='/auth/password/check', methods=['POST'])
+@auth_blueprint.route(Routes.check_password.value, methods=['POST'])
 @authenticate_user_and_cookie_flask
 def check_password(user) -> Tuple[dict, int]:
     """
@@ -357,7 +351,7 @@ def check_password(user) -> Tuple[dict, int]:
     return jsonify(response), 400
 
 
-@auth_blueprint.route('/auth/password/reset', methods=['PUT'])
+@auth_blueprint.route(Routes.reset_password.value, methods=['PUT'])
 def reset_password() -> Tuple[dict, int]:
     """The endpoint that resets the password using a password reset token rather
     than the JWT token we usually give for a user. This is only to be used
@@ -444,8 +438,8 @@ def reset_password() -> Tuple[dict, int]:
     return jsonify(response), 202
 
 
-@auth_blueprint.route('/reset/password/confirm/<token>', methods=['GET'])
-def confirm_reset_password(token):
+@auth_blueprint.route(Routes.confirm_reset_password.value, methods=['GET'])
+def confirm_reset_password(token) -> Tuple[dict, int]:
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
     protocol = os.environ.get('CLIENT_SCHEME')
@@ -495,7 +489,7 @@ def confirm_reset_password(token):
     return redirect(f'{redirect_url}/password/reset={jwt_token}', code=302)
 
 
-@auth_blueprint.route('/reset/password', methods=['POST'])
+@auth_blueprint.route(Routes.reset_password_email.value, methods=['POST'])
 def reset_password_email() -> Tuple[dict, int]:
     """This endpoint is to be used by the client-side browser to send the email
     to the API server for validation with the user's details. It will only send
@@ -580,9 +574,9 @@ def reset_password_email() -> Tuple[dict, int]:
     return jsonify(response), 202
 
 
-@auth_blueprint.route('/auth/password/change', methods=['PUT'])
+@auth_blueprint.route(Routes.change_password.value, methods=['PUT'])
 @authenticate_user_and_cookie_flask
-def change_password(user):
+def change_password(user) -> Tuple[dict, int]:
     """The endpoint that allows a user to change password after they have been
     authorized by the authentication middleware.
 
@@ -658,7 +652,7 @@ def change_password(user):
     return jsonify(response), 401
 
 
-@auth_blueprint.route('/auth/email/change', methods=['PUT'])
+@auth_blueprint.route(Routes.change_email.value, methods=['PUT'])
 @authenticate_user_and_cookie_flask
 def change_email(user) -> Tuple[dict, int]:
     response = {'status': 'fail', 'message': 'Invalid payload.'}
@@ -712,7 +706,7 @@ def change_email(user) -> Tuple[dict, int]:
 
 
 # noinspection PyBroadException
-@auth_blueprint.route(rule='/auth/login', methods=['POST'])
+@auth_blueprint.route(Routes.login.value, methods=['POST'])
 def login() -> any:
     """
     Blueprint route for registration of users with a returned JWT if successful.
@@ -928,9 +922,9 @@ def login() -> any:
     return jsonify(response), 400
 
 
-@auth_blueprint.route('/auth/logout', methods=['GET'])
+@auth_blueprint.route(Routes.logout.value, methods=['GET'])
 @authenticate_user_and_cookie_flask
-def logout(_):
+def logout(_) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
     # Save the session ID for later
     sid = session.sid
@@ -965,7 +959,7 @@ def logout(_):
     return jsonify(response), 202
 
 
-@auth_blueprint.route('/auth/status', methods=['GET'])
+@auth_blueprint.route(Routes.get_user_status, methods=['GET'])
 @authenticate_user_and_cookie_flask
 def get_user_status(user) -> Tuple[dict, int]:
     """Get the current session status of the user."""

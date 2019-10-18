@@ -667,8 +667,8 @@ class UserProfiles(Resource):
         return response, 201
 
 
-api.add_resource(UserList, Routes.user_list.value)
-api.add_resource(UserListQuery, Routes.user_list_query.value)
-api.add_resource(SearchUsers, Routes.search_users.value)
-api.add_resource(Users, Routes.users.value)
-api.add_resource(UserProfiles, Routes.user_profiles.value)
+api.add_resource(UserList, Routes.UserList.value)
+api.add_resource(UserListQuery, Routes.UserListQuery.value)
+api.add_resource(SearchUsers, Routes.SearchUsers.value)
+api.add_resource(Users, Routes.Users.value)
+api.add_resource(UserProfiles, Routes.UserProfiles.value)

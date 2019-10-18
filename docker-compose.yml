@@ -93,11 +93,11 @@ services:
     image: neuraldev/arc_sim_service:1.2
     volumes:
       - ./services/simcct:/usr/src/app  # This is a bind mount
-#    logging:
-#      driver: fluentd
-#      options:
-#        fluentd-address: localhost:24224
-#        tag: simcct.docker.access
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: simcct.docker.access
     ports:
       - 8000:8000
     expose:

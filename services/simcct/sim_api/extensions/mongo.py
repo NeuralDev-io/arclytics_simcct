@@ -43,18 +43,40 @@ class Mongo(object):
                 host=env.get('MONGO_HOST'), port=int(env.get('MONGO_PORT'))
             )
 
-    def find(
-        self,
-        db_name: str = 'arc_dev',
-        collection: str = '',
-        query: dict = None,
-        projections: dict = None,
-    ):
+    def find(self, db_name: str = 'arc_dev', collection: str = '',
+             query: dict = None, projections: dict = None,):
+        if not collection:
+            return None
+
         if query is None:
+            return None
+
+        db = self.conn[db_name]
+        return db[collection].find(query, projections)
+
+    # noinspection PyShadowingBuiltins
+    def count(self, db_name: str = 'arc_dev', collection: str = '',
+              filter: dict = None, skip: int = 0, limit: int = 0):
+        if not collection:
+            return None
+
+        db = self.conn[db_name]
+
+        _filter = filter
+        if filter is None:
+            _filter = {}
+
+        # Because limit must be positive in this method, we will validate it
+        # and not use if we don't want to limit the count.
+        if limit <= 0:
+            return db[collection].count_documents(filter, skip=skip)
+
+        return db[collection].count_documents(filter, skip=skip, limit=limit)
+
+    def find_one(self, db_name: str = 'arc_dev', collection: str = 'arc_dev',
+                 query_selector: dict = None, projections: dict = None):
+        if query_selector is None:
             return None
         db = self.conn[db_name]
 
-        return db[collection].find(query, projections)
-
-    def find_one(self, query_selector: dict, projections: dict):
-        return self.db.users.find_one(query_selector, projections)
+        return db[collection].find_one(query_selector, projections)

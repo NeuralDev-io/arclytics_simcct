@@ -59,6 +59,7 @@ $break-medium: 1600px;
   }
 
   .map {
+    background-color: var(--n0);
     margin-top: 1.25rem;
 
     .mapCard {
@@ -67,13 +68,6 @@ $break-medium: 1600px;
       min-width: 90%;
       margin: 0;
 
-      .content {
-        background-color: var(--n0);
-
-        min-height: 24rem;
-        max-height: 32rem;
-        padding: 1.5rem 0.75rem 0 0.75rem;
-      }
     }
   }
 
@@ -97,7 +91,7 @@ $break-medium: 1600px;
       }
 
       width: 48%;
-      margin: 0.25rem;
+      margin: 0.75rem 0;
       min-height: 24rem;
       max-height: 32rem;
       padding: 1.5rem 0.75rem 0 0.75rem;

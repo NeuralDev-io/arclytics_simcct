@@ -76,7 +76,7 @@ class LiveLoginTimeSeries extends Component {
     }
 
     if (traceData.length === 0) {
-      return <div><p>No data.</p></div>
+      return <div>No data.</div>
     }
 
     return (

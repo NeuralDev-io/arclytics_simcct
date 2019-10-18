@@ -144,6 +144,7 @@ class UserListQuery(Resource):
 
         response = {'status': 'fail', 'message': 'Invalid parameters.'}
 
+        # ========== # VALIDATION OF PARAMETERS # ========== #
         # Check whether there are any param args
         if not request.args:
             return response, 400
@@ -161,6 +162,8 @@ class UserListQuery(Resource):
 
         # Limit of 0 is unlimited
         try:
+            # We always want to return a full list if there is no limit
+            # requested so that's why it's 0.
             limit = int(request.args.get('limit', 0))
         except ValueError:
             response.update({'message': 'Invalid limit parameter.'})
@@ -178,13 +181,6 @@ class UserListQuery(Resource):
 
         # Validate sort parameters
         if sort:
-            # If our sorting value begins with a "-" in the string, then we know
-            # we are doing a DESCENDING sort so we will appropriately set the
-            # sort direction
-            sort_direction = 1
-            if str(sort).startswith('-'):
-                sort_direction = -1
-
             valid_sort_keys = {
                 'email', '-email', 'admin', '-admin', 'verified', '-verified',
                 'full_name', '-full_name', 'first_name', '-first_name',
@@ -193,6 +189,14 @@ class UserListQuery(Resource):
             if sort not in valid_sort_keys:
                 response['message'] = 'Sort value is invalid.'
                 return response, 400
+
+            # ========== # SETTING UP SORTING # ========== #
+            # If our sorting value begins with a "-" in the string, then we
+            # know we are doing a DESCENDING sort so we will appropriately set
+            # the sort direction
+            sort_direction = 1
+            if str(sort).startswith('-'):
+                sort_direction = -1
 
             # If we are sorting on fullname, we will need to split the
             # sort query into a 2 element list so we
@@ -218,6 +222,7 @@ class UserListQuery(Resource):
                 )
                 return response, 400
 
+        # ========== # QUERY THE DATABASE # ========== #
         # Because we want a full list returned, we will not have a query
         # selector.
         users_list = SearchService().find_slice(
@@ -233,6 +238,7 @@ class UserListQuery(Resource):
             response.update({'message': 'No results found.'})
             return response, 404
 
+        # ========== # PREPARE RESPONSE # ========== #
         # If there are no values for getting the next or previous offset (i.e.
         # no limit has been provided, we just return null for them.
         response.update({
@@ -249,8 +255,10 @@ class UserListQuery(Resource):
 
         # A limit of 0, meaning the client does not want any subset of the
         # full list so there is no need to worry about offsets and pages.
+        # We also want to just return everything if the limit requested was
+        # way more than what results we found any way.
         # Plus we can avoid a divide by zero error from below.
-        if limit == 0:
+        if limit == 0 or limit > n_total_documents:
             return response, 200
 
         # Next offset is the offset for the next page of results. Prev is for
@@ -291,12 +299,11 @@ class SearchUsers(Resource):
 
         response = {'status': 'fail', 'message': 'Invalid parameters.'}
 
+        # ========== # VALIDATION OF PARAMETERS # ========== #
         # Check the param args if there are any
         if not request.args:
             return response, 400
 
-        # TODO(andrew@neuraldev.io): Add pagination if the results is more
-        #  than 50 options.
         query, sort = None, None
         if request.args:
             query = request.args.get('query', None)
@@ -304,9 +311,15 @@ class SearchUsers(Resource):
 
         # Limit of 0 is unlimited
         try:
-            limit = int(request.args.get('limit', 0))
+            # By default, we limit the number of returned searches to 100.
+            limit = int(request.args.get('limit', 100))
         except ValueError:
             response.update({'message': 'Invalid limit parameter.'})
+            return response, 400
+
+        # Validate limit:
+        if limit < 0:
+            response['message'] = 'Limit must be a positive int.'
             return response, 400
 
         # Ensure query parameters have been given, otherwise there is nothing
@@ -314,6 +327,11 @@ class SearchUsers(Resource):
         if not query:
             response.update({'message': 'No query parameters provided.'})
             return response, 400
+
+        # Pymongo can take a list of queries as objects so we initially just
+        # use an empty list which denotes no sorting required because our
+        # Mongo data access layers requires a chained function sort param.
+        sort_query = []
 
         # Validate sort parameter options
         if sort:
@@ -326,29 +344,26 @@ class SearchUsers(Resource):
                 response.update({'message': 'Sort value is invalid.'})
                 return response, 400
 
-        # Validate limit:
-        if limit:
-            if not limit >= 1:
-                response['message'] = 'Limit must be > 1.'
-                return response, 400
+            # ========== # SETTING UP SORTING # ========== #
+            # If our sorting value begins with a "-" in the string, then we
+            # know we are doing a DESCENDING sort so we will appropriately set
+            # the sort direction
+            sort_direction = 1
+            if str(sort).startswith('-'):
+                sort_direction = -1
 
-        # If our sorting value begins with a "-" in the string, then we know
-        # we are doing a DESCENDING sort so we will appropriately set the
-        # sort direction
-        sort_direction = 1
-        if str(sort).startswith('-'):
-            sort_direction = -1
+            # If we are sorting on fullname, we will need to split the
+            # sort query into a 2 element list so we
+            if sort in {'full_name', '-full_name'}:
+                sort_query.append(('first_name', sort_direction))
+                sort_query.append(('last_name', sort_direction))
+            else:
+                sort_query.append((sort, sort_direction))
 
-        # Pymongo can take a list of queries as objects so we initially just
-        # use the one we're given.
-        sort_query = [(sort, sort_direction)]
-        # If we are sorting on fullname, we will need to split the sort query
-        # into a 2 element list so we
-        if sort in {'full_name', '-full_name'}:
-            sort_query = [
-                ('first_name', sort_direction), ('last_name', sort_direction)
-            ]
-
+        # ========== # QUERY THE DATABASE # ========== #
+        # This is the key advanced text search.
+        # Ensuring no default language helps with searching emails because
+        # of the symbols.
         query_selector = {
             '$text': {
                 '$search': query,
@@ -397,35 +412,27 @@ class SearchUsers(Resource):
             projections=PROJECTIONS
         )
 
-        if not data:
+        n_documents = len(data)
+        if not n_documents:
             response.update({'message': 'No results found.'})
             return response, 404
 
-        # Return the query/search parameters so that the client can request
-        # different pages in the future
+        # ========== # PREPARE RESPONSE # ========== #
+        # No skip/offset with pagination will be provided because it would
+        # take too long to do anyway since you would need to do 2 full searches
+        # or manipulate the returned cursor to limit after the fact to get
+        # a subset of the results from offset/limit.
+        # The best way to avoid this is just to allow the client to limit the
+        # number of returned results.
+        # May be able to do it in the future but for now we will avoid.
+        response.update({
+            'status': 'success',
+            'sort': sort,
+            'limit': limit,
+            'n_results': n_documents,
+            'data': data,
+        })
         response.pop('message')
-        response.update(
-            {
-                'status': 'success',
-                'query': query,
-                'limit': limit,
-                'data': data,
-                'n_documents': len(data)
-            }
-        )
-
-        # Check if there is a valid next and previous offset
-        # if offset + limit - 1 < len(full_set):
-        #     response['next_offset'] = offset + limit
-        # if offset - limit >= 1:
-        #     response['prev_offset'] = offset - limit
-
-        # Return the Current Page Number and Total number of pages
-        # if len(full_set) % limit == 0:
-        #     total_pages = int(len(full_set) / limit)
-        # else:
-        #     total_pages = int(len(full_set) / limit) + 1
-        # current_page = int(offset / limit) + 1
         return response, 200
 
 

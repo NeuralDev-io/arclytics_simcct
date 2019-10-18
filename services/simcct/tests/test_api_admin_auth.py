@@ -1297,7 +1297,7 @@ class TestAdminCreateService(BaseTestCase):
 
             resp_disable = client.put(
                 '/v1/sim/enable/user',
-                data=json.dumps({'email': 'calkestis_jk@neuraldev.io'}),
+                data=json.dumps({'email': 'calkestis_jk@arclytics.io'}),
                 content_type='application/json'
             )
 

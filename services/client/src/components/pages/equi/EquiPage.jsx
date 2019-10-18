@@ -95,7 +95,7 @@ class EquiPage extends React.Component {
             </div>
           </section>
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

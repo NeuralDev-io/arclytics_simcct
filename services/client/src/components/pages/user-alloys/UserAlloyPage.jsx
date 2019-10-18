@@ -18,12 +18,12 @@ import UserAlloys from '../../moleisms/user-alloys'
 import styles from './UserAlloyPage.module.scss'
 
 const UserAlloyPage = ({ history, isAdmin }) => (
-  <React.Fragment>
+  <>
     <AppBar active="userAlloys" redirect={history.push} isAdmin={isAdmin} isAuthenticated />
     <div className={styles.main}>
       <UserAlloys history={history} />
     </div>
-  </React.Fragment>
+  </>
 )
 
 UserAlloyPage.propTypes = {

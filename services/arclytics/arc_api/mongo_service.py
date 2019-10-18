@@ -31,6 +31,7 @@ class MongoService(object):
         if env.get('FLASK_ENV', 'production') == 'production':
             mongo_uri = (
                 'mongodb://{username}:{password}@{host}:{port}/{db}'
+                '?authSource=admin&authMechanism=SCRAM-SHA-1'
             ).format(
                 username=env.get('MONGO_APP_USER'),
                 password=env.get('MONGO_APP_USER_PASSWORD'),

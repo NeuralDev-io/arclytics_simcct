@@ -28,8 +28,10 @@ class MongoService(object):
         """Simply makes a connection to a MongoDB instance with `pymongo`."""
         self.db_name = env.get('MONGO_APP_DB')
         if env.get('FLASK_ENV', 'production') == 'production':
-            mongo_uri = ('mongodb://{username}:{password}@{host}:{port}/{db}'
-                         ).format(
+            mongo_uri = (
+                'mongodb://{username}:{password}@{host}:{port}/{db}'
+                '?authSource=admin&authMechanism=SCRAM-SHA-1'
+                ).format(
                              username=env.get('MONGO_APP_USER'),
                              password=env.get('MONGO_APP_USER_PASSWORD'),
                              host=env.get('MONGO_HOST', 'localhost'),
@@ -41,10 +43,12 @@ class MongoService(object):
             self.conn = MongoClient(
                 host=env.get('MONGO_HOST'), port=int(env.get('MONGO_PORT'))
             )
+            # Implement an index to expire after two weeks: 14 * 24 * 60 * 60
+            # Note this only done during development as it's created by the
+            # Mongo container in production
+            self.db.celery_beat.create_index('date', expireAfterSeconds=1209600)
 
         self.db = self.conn[self.db_name]
-        # Implement an index to expire after two weeks: 14 * 24 * 60 * 60
-        self.db.celery_beat.create_index('date', expireAfterSeconds=1209600)
 
     def update_one(self, query: dict, update: dict, upsert: bool = False):
         """Do an updateOne query on the Mongo collection."""

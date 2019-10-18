@@ -39,6 +39,10 @@ $break-small: 1366px;
       flex-flow: column nowrap;
       justify-content: center;
       align-items: center;
+      & > .cardIcon {
+        width: 2.25rem;
+        height: 2.25rem;
+      }
     }
   }
 

@@ -15,7 +15,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import SaveIcon from 'react-feather/dist/icons/save'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSave } from '@fortawesome/pro-light-svg-icons/faSave'
 import Select from '../../elements/select'
 import Button from '../../elements/button'
 // import { TextFieldExtra } from '../../elements/textfield'
@@ -118,7 +119,7 @@ class CompForm extends Component {
               className={styles.saveButton}
               isDisabled={!sessionIsInitialised || !isAuthenticated}
               appearance="text"
-              IconComponent={props => <SaveIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faSave} {...props} />}
             >
               Save alloy
             </Button>

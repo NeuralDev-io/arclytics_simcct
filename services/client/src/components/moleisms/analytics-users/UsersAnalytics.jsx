@@ -14,6 +14,12 @@ import DatabaseIcon from 'react-feather/dist/icons/database'
 import Share2Icon from 'react-feather/dist/icons/share-2'
 import SaveIcon from 'react-feather/dist/icons/save'
 import HeartIcon from 'react-feather/dist/icons/heart'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUserFriends } from '@fortawesome/pro-light-svg-icons/faUserFriends'
+import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
+import { faSave } from '@fortawesome/pro-light-svg-icons/faSave'
+import { faShareAlt } from '@fortawesome/pro-light-svg-icons/faShareAlt'
+import { faHeart } from '@fortawesome/pro-light-svg-icons/faHeart'
 import {
   getProfileAnalyticsData,
   getLoginLocationData,
@@ -134,31 +140,31 @@ class UsersAnalytics extends Component {
           <Card className={styles.nerdyDataCard}>
 
             <div className={styles.nerdyDataItem}>
-              <UsersIcon color={getColor('--r400')} size={36} />
+              <FontAwesomeIcon icon={faUserFriends} color={getColor('--r400')} className={styles.cardIcon} />
               <h5>{(statsData !== undefined) ? statsData.count.users : "0"}</h5>
               <p>Users</p>
             </div>
 
             <div className={styles.nerdyDataItem}>
-              <DatabaseIcon color={getColor('--o400')} size={36} />
+              <FontAwesomeIcon icon={faDatabase} color={getColor('--o400')} className={styles.cardIcon} />
               <h5>{(statsData !== undefined) ? statsData.count.saved_alloys : "0"}</h5>
               <p>Saved Alloys</p>
             </div>
 
             <div className={styles.nerdyDataItem}>
-              <SaveIcon color={getColor('--t400')} size={36} />
+              <FontAwesomeIcon icon={faSave} color={getColor('--t400')} className={styles.cardIcon} />
               <h5>{(statsData !== undefined) ? statsData.count.saved_simulations : "0"}</h5>
               <p>Saved Simulations</p>
             </div>
 
             <div className={styles.nerdyDataItem}>
-              <Share2Icon color={getColor('--b400')} size={36} />
+              <FontAwesomeIcon icon={faShareAlt} color={getColor('--b400')} className={styles.cardIcon} />
               <h5>{(statsData !== undefined) ? statsData.count.shared_simulations : "0"}</h5>
               <p>Shared Simulations</p>
             </div>
 
             <div className={styles.nerdyDataItem}>
-              <HeartIcon color={getColor('--i400')} size={36} />
+              <FontAwesomeIcon icon={faHeart} color={getColor('--i400')} className={styles.cardIcon} />
               <h5>{(statsData !== undefined) ? statsData.count.feedback : "0"}</h5>
               <p>Feedback</p>
             </div>

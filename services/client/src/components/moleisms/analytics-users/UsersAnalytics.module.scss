@@ -61,13 +61,23 @@ $break-medium: 1600px;
   .map {
     background-color: var(--n0);
     margin-top: 1.25rem;
+    min-height: 35rem;
 
     .mapCard {
       background-color: var(--n0);
+      flex-basis: 90%;
       min-height: 35rem;
+      max-height: 42rem;
       min-width: 90%;
       margin: 0;
+      z-index: 1001;
+      position: relative;
+      display: flex;
+      flex-flow: column;
 
+      & > div {
+        flex-grow: 1;
+      }
     }
   }
 

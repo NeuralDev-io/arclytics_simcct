@@ -13,10 +13,17 @@ import PropTypes from 'prop-types'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { getColor } from '../../../utils/theming'
+import { InlineSpinner } from '../../elements/spinner'
 
 import styles from './LoginLocationMapbox.module.scss'
 
-const LoginLocationMapbox = ({ token, data, mapBoxStyle, colorScale }) => {
+const LoginLocationMapbox = ({
+  token,
+  data,
+  mapBoxStyle,
+  colorScale,
+  isLoading,
+}) => {
   let traceData = []
   if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
     traceData = [
@@ -45,7 +52,12 @@ const LoginLocationMapbox = ({ token, data, mapBoxStyle, colorScale }) => {
   }
 
   if (traceData.length === 0) {
-    return <div>No data.</div>
+    if (isLoading) {
+      return <div className={styles.noData}>
+        <InlineSpinner />
+      </div>
+    }
+    return <div className={styles.noData}>No data.</div>
   }
 
   return (
@@ -98,8 +110,6 @@ LoginLocationMapbox.propTypes = {
   data: PropTypes.shape({
     latitude: PropTypes.arrayOf(PropTypes.number),
     longitude: PropTypes.arrayOf(PropTypes.number),
-    country: PropTypes.arrayOf(PropTypes.string),
-    continent: PropTypes.arrayOf(PropTypes.string),
     count: PropTypes.arrayOf(PropTypes.number),
   }),
 }

@@ -15,16 +15,21 @@ import AutoSizer from 'react-virtualized-auto-sizer'
 import { getColor } from '../../../utils/theming'
 import { getLiveLoginData } from '../../../api/Analytics'
 import { logError } from '../../../api/LoggingHelper'
+import { InlineSpinner } from '../../elements/spinner'
+
+import styles from './LoginLocationMapbox.module.scss'
 
 class LiveLoginTimeSeries extends Component {
   constructor(props) {
     super(props)
     this.state = {
       data: undefined,
+      isLoading: false,
     }
   }
 
   componentDidMount = () => {
+    this.setState({ isLoading: true })
     // Get the time series data for the first time.
     this.getTimeSeriesData()
     // Set up a timer to poll the time series data every 30 secs
@@ -39,7 +44,7 @@ class LiveLoginTimeSeries extends Component {
   getTimeSeriesData = () => {
     // Call the API fetch method and update the time series data.
     getLiveLoginData().then((res) => {
-      this.setState({ data: res.data })
+      this.setState({ data: res.data, isLoading: false })
     })
       .catch((err) => logError(
         err.toString(),
@@ -50,7 +55,7 @@ class LiveLoginTimeSeries extends Component {
   }
 
   render() {
-    const { data } = this.state
+    const { data, isLoading } = this.state
     let traceData = []
     let rangeStart = new Date()
     let rangeFinish = new Date()
@@ -77,7 +82,12 @@ class LiveLoginTimeSeries extends Component {
     }
 
     if (traceData.length === 0) {
-      return <div>No data.</div>
+      if (isLoading) {
+        return <div className={styles.noData}>
+          <InlineSpinner />
+        </div>
+      }
+      return <div className={styles.noData}>No data.</div>
     }
 
     return (
@@ -170,8 +180,8 @@ class LiveLoginTimeSeries extends Component {
               }}
               config={{
                 modeBarButtonsToRemove: [
-                'toImage', 'select2d', 'lasso2d', 'toggleSpikelines',
-                'scrollZoom', 'hoverCompareCartesian', 'hoverClosestCartesian',
+                'select2d', 'lasso2d', 'toggleSpikelines',
+                'hoverCompareCartesian', 'hoverClosestCartesian',
                 'autoScale2d'
                 ],
                 displaylogo: false,

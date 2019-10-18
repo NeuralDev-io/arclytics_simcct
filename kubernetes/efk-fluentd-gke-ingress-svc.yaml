@@ -126,7 +126,7 @@ spec:
               mountPath: /tmp
       containers:
         - name: fluentd-container
-          image: asia.gcr.io/arc-simcct/arc_fluentd:latest
+          image: asia.gcr.io/arc-sim-testing/arc_fluentd:latest
           ports:
             - containerPort: 24224
               hostPort: 24224

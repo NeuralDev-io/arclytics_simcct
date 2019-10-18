@@ -12,7 +12,7 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Link, Redirect } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faServer } from '@fortawesome/pro-light-svg-icons/faServer'
 import { faUserFriends } from '@fortawesome/pro-light-svg-icons/faUserFriends'

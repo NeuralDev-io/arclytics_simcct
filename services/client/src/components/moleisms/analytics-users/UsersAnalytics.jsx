@@ -198,39 +198,47 @@ class UsersAnalytics extends Component {
         <div className={styles.profileCharts}>
 
           <Card className={styles.profileCard}>
-            <ProfileBarChart
-              title="Aim"
-              name="Aim"
-              data={(profileData !== undefined) ? profileData.aim : undefined}
-              color="--b500"
-            />
+            <div>
+              <ProfileBarChart
+                title="Aim"
+                name="Aim"
+                data={(profileData !== undefined) ? profileData.aim : undefined}
+                color="--b500"
+              />
+            </div>
           </Card>
 
           <Card className={styles.profileCard}>
-            <ProfileBarChart
-              title="Highest Education"
-              name="Highest Education"
-              data={(profileData !== undefined) ? profileData.highest_education : undefined}
-              color="--o500"
-            />
+            <div>
+              <ProfileBarChart
+                title="Highest Education"
+                name="Highest Education"
+                data={(profileData !== undefined) ? profileData.highest_education : undefined}
+                color="--o500"
+              />
+            </div>
           </Card>
 
           <Card className={styles.profileCard}>
-            <ProfileBarChart
-            title="Scientific Software Experience"
-            name="Scientific Software Experience"
-            data={(profileData !== undefined) ? profileData.sci_tech_exp : undefined}
-            color="--g500"
-          />
+            <div>
+              <ProfileBarChart
+                title="Scientific Software Experience"
+                name="Scientific Software Experience"
+                data={(profileData !== undefined) ? profileData.sci_tech_exp : undefined}
+                color="--g500"
+              />
+            </div>
           </Card>
 
           <Card className={styles.profileCard}>
-            <ProfileBarChart
-              title="Phase Transformation Experience"
-              name="Phase Transformation Experience"
-              data={(profileData !== undefined) ? profileData.phase_transform_exp : undefined}
-              color="--r500"
-            />
+            <div>
+              <ProfileBarChart
+                title="Phase Transformation Experience"
+                name="Phase Transformation Experience"
+                data={(profileData !== undefined) ? profileData.phase_transform_exp : undefined}
+                color="--r500"
+              />
+            </div>
           </Card>
 
         </div>

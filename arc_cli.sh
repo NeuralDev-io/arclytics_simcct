@@ -1237,7 +1237,6 @@ while [[ "$1" != "" ]] ; do
             gcloud compute ssl-certificates create ${ARC_SSL_NAME} \
                 --certificate "${WORKDIR}/certs/io.arclytics.data.crt" \
                 --private-key "${WORKDIR}/certs/io.arclytics.data.key"
-
             gcloud compute ssl-certificates create ${WEBSITE_SSL_NAME} \
                 --certificate "${WORKDIR}/certs/io.arclytics.crt" \
                 --private-key "${WORKDIR}/certs/io.arclytics.key"
@@ -1252,7 +1251,7 @@ while [[ "$1" != "" ]] ; do
                --cert "${WORKDIR}/certs/io.arclytics.api.crt" \
                --key "${WORKDIR}/certs/io.arclytics.api.key" \
                --namespace=arclytics
-            kubectl create secret tls ${SIMCCT_HTTPS_TLS_NAME} \
+            kubectl create secret tls ${ARC_HTTPS_TLS_NAME} \
                --cert "${WORKDIR}/certs/io.arclytics.data.crt" \
                --key "${WORKDIR}/certs/io.arclytics.data.key" \
                --namespace=arclytics

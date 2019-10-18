@@ -13,10 +13,12 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import PlusIcon from 'react-feather/dist/icons/plus'
-import EditIcon from 'react-feather/dist/icons/edit-3'
-import SlashIcon from 'react-feather/dist/icons/slash'
-import PromoteIcon from 'react-feather/dist/icons/user-check'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus } from '@fortawesome/pro-light-svg-icons/faPlus'
+import { faEdit } from '@fortawesome/pro-light-svg-icons/faEdit'
+import { faUpload } from '@fortawesome/pro-light-svg-icons/faUpload'
+import { faUserSlash } from '@fortawesome/pro-light-svg-icons/faUserSlash'
+import { faUserCheck } from '@fortawesome/pro-light-svg-icons/faUserCheck'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import Table from '../../elements/table'
@@ -123,7 +125,7 @@ class ManageUsers extends Component {
               onClick={() => console.log(original)}
               appearance="text"
               length="short"
-              IconComponent={props => <EditIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faEdit} size="6x" {...props} />}
             >
               Edit
             </Button>
@@ -133,7 +135,7 @@ class ManageUsers extends Component {
                 this.handleShowPromoteModal(`${original.first_name} ${original.last_name}`, original.email)
               }}
               appearance="text"
-              IconComponent={props => <PromoteIcon {...props}/>}
+              IconComponent={props => <FontAwesomeIcon icon={faUserCheck} size="lg" {...props}/>}
               isDisabled={original.admin}
             >
               Promote
@@ -144,7 +146,7 @@ class ManageUsers extends Component {
               appearance="text"
               isDisabled={original.admin}
               color={original.active ? 'dangerous' : 'default'}
-              IconComponent={props => <SlashIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faUserSlash} size="lg" {...props} />}
             >
               {original.active ? 'Deactivate' : 'Activate'}
             </Button>
@@ -172,7 +174,7 @@ class ManageUsers extends Component {
           <Button
             appearance="outline"
             onClick={this.showAddAlloy}
-            IconComponent={props => <PlusIcon {...props} />}
+            IconComponent={props => <FontAwesomeIcon icon={faPlus} size="lg"{...props} />}
             length="short"
           >
             Add

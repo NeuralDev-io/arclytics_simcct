@@ -959,7 +959,7 @@ def logout(_) -> Tuple[dict, int]:
     return jsonify(response), 202
 
 
-@auth_blueprint.route(Routes.get_user_status, methods=['GET'])
+@auth_blueprint.route(Routes.get_user_status.value, methods=['GET'])
 @authenticate_user_and_cookie_flask
 def get_user_status(user) -> Tuple[dict, int]:
     """Get the current session status of the user."""

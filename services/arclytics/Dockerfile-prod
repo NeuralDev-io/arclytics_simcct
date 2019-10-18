@@ -1,26 +1,28 @@
 # base image
-FROM python:3.7.3-alpine
+FROM continuumio/miniconda3:4.6.14
+# note: Using the miniconda base because I want to install numpy with some
+# optimisation C-libraries such as openblas which conda does for you
+# when you install numpy.
 
 LABEL maintainer="Andrew Che <andrew@neuraldev.io>"
 
 # install dependencies
-RUN apk update && \
-    apk add --virtual build-deps gcc && \
-    apk add --no-cache build-base python3-dev && \
-    apk add --no-cache libffi-dev py-pip && \
-    apk add --no-cache netcat-openbsd
-
-# Pillow dependencies
-# RUN apk --no-cache add python-dev  jpeg-dev \
-#                       zlib-dev \
-#                       freetype-dev \
-#                       lcms2-dev \
-#                       openjpeg-dev \
-#                       tiff-dev \
-#                       tk-dev \
-#                       tcl-dev \
-#                       harfbuzz-dev \
-#                       fribidi-dev
+RUN conda install --yes --freeze-installed -q \
+    -c anaconda \
+    python==3.7.3 \
+    python-blosc \
+    cytoolz \
+    conda-forge::pip \
+    nomkl \
+    numpy==1.17.2 \
+    pandas==0.25.1 \
+    gunicorn==19.9.0 \
+    conda-forge::flask==1.0.2 \
+    && conda clean -tipsy \
+    && find /opt/conda/ -type f,l -name '*.a' -delete \
+    && find /opt/conda/ -type f,l -name '*.pyc' -delete \
+    && find /opt/conda/ -type f,l -name '*.js.map' -delete \
+    && rm -rf /opt/conda/pkgs
 
 # set working directory
 RUN mkdir -p /usr/src/app
@@ -28,15 +30,20 @@ WORKDIR /usr/src/app
 
 # add and install requirements
 COPY ./requirements.txt /usr/src/app/requirements.txt
-RUN pip install --quiet --upgrade pip
 RUN pip install --quiet --no-cache-dir -r requirements.txt
 
 # add app
 COPY . /usr/src/app
-RUN rm -rf /usr/src/app/docker-entrypoint.sh
+RUN rm -rf /usr/src/app/entrypoint.sh
 
 # install our arc_logging library
 WORKDIR /usr/src/app/arc_logging
 RUN python setup.py install
 
-CMD ["gunicorn", "-b 0.0.0.0:8000", "manage:app"]
+# go back to app source directory
+WORKDIR /usr/src/app
+
+# Create a file for healthy liveness probe
+RUN touch /usr/src/app/healthy
+
+CMD ["gunicorn", "manage:app", "--keep-alive 15", "--config=configs/gunicorn_conf.py"]

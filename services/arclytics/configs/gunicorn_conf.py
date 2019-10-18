@@ -8,10 +8,7 @@
 # https://medium.com/google-cloud/a-guide-to-deploy-flask-app-on-google-
 # kubernetes-engine-bfbbee5c6fb
 # ----------------------------------------------------------------------------------------------------------------------
-__author__ = [
-    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
-    'Dinol Shrestha <@dinolsth>'
-]
+__author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
 __version__ = '1.0.0'
 __status__ = 'production'
@@ -24,7 +21,7 @@ Configuration file for Gunicorn to be used in Production Environment.
 import multiprocessing
 from os import environ as env
 
-PORT = 8000
+PORT = 8001
 DEBUG_MODE = 1 if env.get('FLASK_ENV') == 'development' else 0
 
 # Gunicorn Configs

@@ -132,7 +132,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "arclytics"
-    image: asia.gcr.io/arc-sim-testing/arc_sim_celery:1.0.0
+    image: asia.gcr.io/arc-sim-testing/arclytics_service:1.0.0
     ports:
       - 8001:8001
     expose:

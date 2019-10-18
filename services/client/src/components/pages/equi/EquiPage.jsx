@@ -68,7 +68,7 @@ class EquiPage extends React.Component {
       isAuthenticated
     } = this.props
     return (
-      <React.Fragment>
+      <>
         <AppBar active="equilibrium" redirect={history.push} isAdmin={isAdmin} isAuthenticated={isAuthenticated} />
         <div className={styles.main}>
           <section>

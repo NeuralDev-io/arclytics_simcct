@@ -136,7 +136,8 @@ class AuthService(object):
         """
         try:
             payload = jwt.decode(
-                jwt=auth_token, key=app.config.get('SECRET_KEY', None)
+                jwt=auth_token,
+                key=app.config.get('SECRET_KEY', None)
             )
             return ObjectId(payload['sub'])
         except jwt.ExpiredSignatureError:

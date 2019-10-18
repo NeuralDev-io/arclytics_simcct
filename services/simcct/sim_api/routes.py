@@ -66,4 +66,3 @@ class Routes(enum.Enum):
     # = f'{PREFIX}/'
     # = f'{PREFIX}/'
     # = f'{PREFIX}/'
-    # = f'{PREFIX}/'

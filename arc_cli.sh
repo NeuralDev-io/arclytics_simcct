@@ -1302,9 +1302,10 @@ while [[ "$1" != "" ]] ; do
                   generalMessage "Creating GCE disks"
                   for i in 1 2 3
                   do
-                      gcloud compute disks create --size 50GB \
+                      gcloud compute disks create --size 30GB \
                           --type pd-ssd mongo-ssd-disk-$i \
-                          ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
+                          ${LOCATION_COMMAND}
+                          # ${REPLICA_ZONE_MONGO}
                           # Only used for REGION
                   done
                   sleep 3
@@ -1563,6 +1564,34 @@ while [[ "$1" != "" ]] ; do
               shift
             done
             ;;
+          arclytics )
+            while [[ "$3" != "" ]]; do
+              case $3 in
+                build )
+                  # Prune to avoid collisions of names:tags output
+                  docker system prune -af --volumes --filter 'label=service=arclytics'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build arclytics
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=arclytics")
+                  docker push asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  ;;
+                create )
+                  kubectl apply -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
+                  ;;
+                update )
+                  docker system prune -af --volumes --filter 'label=service=arclytics'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build arclytics
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=arclytics")
+                  docker push asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  kubectl delete deployment arclytics
+                  sleep 10
+                  kubectl apply -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
+                  ;;
+                delete )
+                  ;;
+              esac
+              shift
+            done
+            ;;
           client )
             while [[ "$3" != "" ]]; do
               case $3 in
@@ -1649,6 +1678,7 @@ while [[ "$1" != "" ]] ; do
             docker system prune -af --volumes --filter 'label=service=simcct'
             docker system prune -af --volumes --filter 'label=service=client'
             docker system prune -af --volumes --filter 'label=service=celery-worker'
+            docker system prune -af --volumes --filter 'label=service=arclytics'
             docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build mongodb
             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=mongodb")
             docker push asia.gcr.io/${PROJECT_ID}/arc_sim_mongo:${TAG}
@@ -1661,6 +1691,9 @@ while [[ "$1" != "" ]] ; do
             docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build celery-worker
             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
             docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build arclytics
+            TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=arclytics")
+            docker push asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
             docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
             docker push asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}

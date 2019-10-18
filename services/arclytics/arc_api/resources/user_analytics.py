@@ -126,9 +126,9 @@ class UserNerdyData(Resource):
 # noinspection PyMethodMayBeStatic
 class UserLoginLocationData(Resource):
 
-    # method_decorators = {'get': [authorize_admin_cookie_restful]}
+    method_decorators = {'get': [authorize_admin_cookie_restful]}
 
-    def get(self):
+    def get(self, _):
         """Use a MongoDB Pipeline to get all the `LoginData` embedded
         documents from Users and generate a count of their location at
         Login time. We provide the data that allows the front-end to generate
@@ -181,8 +181,6 @@ class UserLoginLocationData(Resource):
             'data': {
                 'latitude': df['latitude'].tolist(),
                 'longitude': df['longitude'].tolist(),
-                'country': df['country'].tolist(),
-                'continent': df['continent'].tolist(),
                 'count': df['count'].tolist()
             }
         }

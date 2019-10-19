@@ -80,16 +80,6 @@ class LoginPage extends Component {
     })
   }
 
-  handlePrivacyPolicyLink = () => {
-    const { history } = this.props
-    history.push('/about/privacy')
-  }
-
-  handleDisclaimerLink = () => {
-    const { history } = this.props
-    history.push('/about/disclaimer')
-  }
-
   render() {
     const {
       hasForgotPwd,

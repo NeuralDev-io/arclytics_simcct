@@ -32,6 +32,7 @@ import SignupPage from './components/pages/signup/SignupPage'
 import NoMatchPage from './components/pages/no-match/NoMatchPage'
 import TestRoute from './components/pages/test-route/TestRoute'// TODO(andrew@neuraldev.io): Delete this
 import SimulationPage from './components/pages/simulation'
+import EquiPage from './components/pages/equi/EquiPage'
 import AdminPage from './components/pages/admin'
 import ProfileQuestionsPage from './components/pages/profile-questions'
 import UserPage from './components/pages/user'
@@ -87,6 +88,10 @@ function App() {
                 exact
                 path="/"
                 component={SimulationPage}
+              />
+              <PrivateRoute
+                path="/equilibrium"
+                component={EquiPage}
               />
               <PrivateRoute
                 exact

@@ -40,7 +40,7 @@ spec:
     spec:
       containers:
       - name: web-https-container
-        image: asia.gcr.io/arc-simcct/arc_sim_website:latest
+        image: asia.gcr.io/arc-sim-testing/arc_sim_website:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

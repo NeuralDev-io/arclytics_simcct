@@ -1,0 +1,151 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: arclytics-service
+  namespace: arclytics
+  annotations:
+    cloud.google.com/app-protocols: '{"https-port":"HTTPS", "http-port":"HTTP"}'
+  labels:
+    app: arclytics
+    component: arclytics
+spec:
+  type: NodePort
+  selector:
+    app: arclytics
+  ports:
+  - name: http-port
+    protocol: TCP
+    port: 8001
+    targetPort: 8001
+  - name: https-port
+    protocol: TCP
+    port: 443
+    targetPort: 8001
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: arclytics
+  namespace: arclytics
+  labels:
+    app: arclytics
+    component: arclytics
+    replicaset: ArcRepSet
+spec:
+  selector:
+    matchLabels:
+      app: arclytics
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: arclytics
+        component: arclytics
+    spec:
+      containers:
+        - name: arclytics-container
+          image: asia.gcr.io/arc-sim-testing/arclytics_service:1.0.0
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8001
+          - containerPort: 443
+          readinessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /healthy
+              port: 8001
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 15
+            successThreshold: 2
+            failureThreshold: 5
+          livenessProbe:
+            exec:
+              command:
+                - cat
+                - /usr/src/app/healthy
+            initialDelaySeconds: 5
+            periodSeconds: 60
+          resources:
+            requests:
+              cpu: 750m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          env:
+          - name: FLASK_APP
+            value: "arc_api/__init__.py"
+          - name: FLASK_ENV
+            value: "production"
+          - name: APP_SETTINGS
+            value: "configs.flask_conf.ProductionConfig"
+          - name: SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: secret_key
+          - name: SECURITY_PASSWORD_SALT
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: security_password_salt
+          - name: MONGO_HOST
+            value: "mongo-0.mongo-service.arclytics.svc.cluster.local"
+          - name: MONGO_PORT
+            value: "27017"
+          - name: MONGO_APP_DB
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: mongo_app_db
+          - name: MONGO_APP_USER
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: mongo_app_user
+          - name: MONGO_APP_USER_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: mongo_app_user_password
+          - name: REDIS_HOST
+            value: "redis-service.arclytics.svc.cluster.local"
+          - name: REDIS_PORT
+            value: "6379"
+          - name: REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: redis_password
+          - name: SIMCCT_HOST
+            value: "https://api.arclytics.io/v1/sim"
+          - name: FLUENTD_HOST
+            value: fluentd-service
+          - name: FLUENTD_PREFIX_TAG
+            value: "arclytics"
+          - name: FLUENTD_PORT
+            value: "24224"
+          - name: FLUENTD_SCHEME
+            value: "http"
+          - name: ELASTIC_APM_SERVER_URL
+            value: http://apm-service.arclytics.svc.cluster.local:8200
+          - name: ELASTIC_APM_SECRET_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: elastic_apm_secret_token
+          - name: MAPBOX_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: mapbox_token
+          volumeMounts:
+            - mountPath: /usr/src/app/certs
+              readOnly: true
+              name: secret-volume
+      volumes:
+        - name: secret-volume
+          secret:
+            secretName: arclytics-app-https-secret
+            defaultMode: 256

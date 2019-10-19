@@ -31,7 +31,7 @@ class AccordionSection extends PureComponent {
     const labelId = `label-${id}`
 
     return (
-      <React.Fragment>
+      <>
         <div
           className={styles.title}
           role="button"
@@ -55,7 +55,7 @@ class AccordionSection extends PureComponent {
         >
           {expanded && children}
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

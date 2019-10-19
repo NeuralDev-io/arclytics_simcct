@@ -31,6 +31,7 @@ class MongoService(object):
         if env.get('FLASK_ENV', 'production') == 'production':
             mongo_uri = (
                 'mongodb://{username}:{password}@{host}:{port}/{db}'
+                '?authSource=admin&authMechanism=SCRAM-SHA-1'
             ).format(
                 username=env.get('MONGO_APP_USER'),
                 password=env.get('MONGO_APP_USER_PASSWORD'),
@@ -43,6 +44,18 @@ class MongoService(object):
             self.conn = MongoClient(
                 host=env.get('MONGO_HOST'), port=int(env.get('MONGO_PORT'))
             )
+
+    def find(
+            self,
+            db_name: str = 'arc_dev',
+            collection: str = '',
+            query: dict = None,
+    ):
+        if query is None:
+            return None
+        db = self.conn[db_name]
+
+        return db[collection].find(query)
 
     def read_mongo(
             self,

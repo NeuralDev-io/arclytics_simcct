@@ -40,9 +40,8 @@ from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import Alloy, User
 from sim_api.routes import Routes
 
-logger = AppLogger(__name__)
-
 user_alloys_blueprint = Blueprint('user_alloys', __name__)
+logger = AppLogger(__name__)
 
 
 class UserAlloysList(Resource):
@@ -420,5 +419,5 @@ class UserAlloy(Resource):
         return response, 202
 
 
-api.add_resource(UserAlloysList, Routes.user_alloy_list.value)
-api.add_resource(UserAlloy, Routes.user_alloy.value)
+api.add_resource(UserAlloysList, Routes.UserAlloysList.value)
+api.add_resource(UserAlloy, Routes.UserAlloy.value)

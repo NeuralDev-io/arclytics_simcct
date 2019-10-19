@@ -230,9 +230,13 @@ export const saveSimulation = () => (dispatch, getState) => {
     alloy_option: alloys.alloyOption,
     alloys: {
       parent: alloys.parent,
-      // TODO(daltonle): Change this when weld and mix are added
-      weld: alloys.parent,
-      mix: alloys.parent,
+      /*
+      * DECISION: We will not implement this as it adds too much complexity to
+      * the logical path of the system state. This was not a core requirement
+      * and Dr. Bendeich often said he did not want this implemented at all.
+      * */
+      weld: null,
+      mix: null,
     },
   }
   const simResults = {

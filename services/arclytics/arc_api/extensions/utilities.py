@@ -38,9 +38,17 @@ class JSONEncoder(json.JSONEncoder):
             return o.tolist()
         if isinstance(o, datetime):
             return str(o.isoformat())
+        if isinstance(o, np.int):
+            return int(o)
+        if isinstance(o, np.int16):
+            return int(o)
+        if isinstance(o, np.int32):
+            return int(o)
+        if isinstance(o, np.int64):
+            return int(o)
         if isinstance(o, np.float):
             return str(o)
-        if isinstance(o, np.float32):
+        if isinstance(o, np.float64):
             return str(o)
         if isinstance(o, np.float64):
             return str(o)

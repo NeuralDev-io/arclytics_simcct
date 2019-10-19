@@ -27,6 +27,9 @@ class BaseConfig:
     SECRET_KEY = env.get('SECRET_KEY', '')
     SECURITY_PASSWORD_SALT = env.get('SECURITY_PASSWORD_SALT', '')
 
+    # Celery settings
+    timezone = 'UTC'
+
     # Flask Email
     MAIL_SUBJECT_PREFIX = '[Arclytics]'
     MAIL_DEFAULT_SENDER = 'Arclytics Team <admin@arclytics.io>'

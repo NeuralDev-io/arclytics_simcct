@@ -21,7 +21,7 @@ import AdminAlloys from '../../moleisms/admin-alloys'
 import styles from './AdminPage.module.scss'
 
 const AdminPage = ({ history }) => (
-  <React.Fragment>
+  <>
     <AppBar active="admin" redirect={history.push} isAdmin isAuthenticated />
     <div className={styles.sidebar}>
       <AdminSidebar redirect={history.push} />
@@ -30,7 +30,7 @@ const AdminPage = ({ history }) => (
       <Route path="/admin/alloys" render={props => <AdminAlloys {...props} />} />
       <Route path="/admin/users" render={props => <ManageUsers {...props} />} />
     </div>
-  </React.Fragment>
+  </>
 )
 
 AdminPage.propTypes = {

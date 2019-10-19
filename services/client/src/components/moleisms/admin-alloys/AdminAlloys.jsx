@@ -10,10 +10,12 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import PlusIcon from 'react-feather/dist/icons/plus'
-import LoadIcon from 'react-feather/dist/icons/upload'
-import EditIcon from 'react-feather/dist/icons/edit-3'
-import TrashIcon from 'react-feather/dist/icons/trash-2'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus } from '@fortawesome/pro-light-svg-icons/faPlus'
+import { faUserCog } from '@fortawesome/pro-light-svg-icons/faUserCog'
+import { faUpload } from '@fortawesome/pro-light-svg-icons/faUpload'
+import { faEdit } from '@fortawesome/pro-light-svg-icons/faEdit'
+import { faTrashAlt } from '@fortawesome/pro-light-svg-icons/faTrashAlt'
 import Table from '../../elements/table'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
@@ -29,6 +31,7 @@ import { initSession } from '../../../state/ducks/sim/actions'
 import { DEFAULT_ELEMENTS } from '../../../utils/alloys'
 
 import styles from './AdminAlloys.module.scss'
+import Tooltip from "../../elements/tooltip";
 
 class AdminAlloys extends Component {
   constructor(props) {
@@ -161,7 +164,7 @@ class AdminAlloys extends Component {
               onClick={() => this.handleLoadAlloy(original)}
               appearance="text"
               length="short"
-              IconComponent={props => <LoadIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faUpload} size="lg" {...props} />}
             >
               Load
             </Button>
@@ -169,7 +172,7 @@ class AdminAlloys extends Component {
               onClick={() => this.showEditAlloy(original)}
               appearance="text"
               length="short"
-              IconComponent={props => <EditIcon {...props} />}
+              IconComponent={props =>  <FontAwesomeIcon icon={faEdit} size="lg" {...props} />}
             >
               Edit
             </Button>
@@ -178,7 +181,7 @@ class AdminAlloys extends Component {
               appearance="text"
               color="dangerous"
               length="short"
-              IconComponent={props => <TrashIcon {...props} />}
+              IconComponent={props =>  <FontAwesomeIcon icon={faTrashAlt} size="lg" {...props} />}
             >
               Delete
             </Button>
@@ -206,7 +209,8 @@ class AdminAlloys extends Component {
           <Button
             appearance="outline"
             onClick={this.showAddAlloy}
-            IconComponent={props => <PlusIcon {...props} />}
+            IconComponent={props =><FontAwesomeIcon icon={faPlus} size="lg" {...props} />}
+
             length="short"
           >
             Add

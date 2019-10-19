@@ -13,10 +13,17 @@ import PropTypes from 'prop-types'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { getColor } from '../../../utils/theming'
+import { InlineSpinner } from '../../elements/spinner'
 
 import styles from './LoginLocationMapbox.module.scss'
 
-const LoginLocationMapbox = ({ token, data }) => {
+const LoginLocationMapbox = ({
+  token,
+  data,
+  mapBoxStyle,
+  colorScale,
+  isLoading,
+}) => {
   let traceData = []
   if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
     traceData = [
@@ -27,6 +34,7 @@ const LoginLocationMapbox = ({ token, data }) => {
         z: data.count,
         radius: 15,
         text: data.count.map(String),
+        colorscale: colorScale,
         colorbar: {
           thickness: 15,
           xpad: 5,
@@ -39,12 +47,16 @@ const LoginLocationMapbox = ({ token, data }) => {
             color: getColor('--n500')
           }
         },
-
       },
     ]
   }
 
   if (traceData.length === 0) {
+    if (isLoading) {
+      return <div className={styles.noData}>
+        <InlineSpinner />
+      </div>
+    }
     return <div className={styles.noData}>No data.</div>
   }
 
@@ -59,7 +71,7 @@ const LoginLocationMapbox = ({ token, data }) => {
               height,
               width,
               mapbox: {
-                style: 'light',
+                style: mapBoxStyle,
                 center: {
                   lon: 140,
                   lat: -15
@@ -80,8 +92,8 @@ const LoginLocationMapbox = ({ token, data }) => {
             config={{
               mapboxAccessToken: token,
               modeBarButtonsToRemove: [
-                'toImage', 'select2d', 'lasso2d', 'toggleSpikelines',
-                'scrollZoom', 'hoverCompareCartesian', 'hoverClosestCartesian',
+                'select2d', 'lasso2d', 'toggleSpikelines',
+                'hoverCompareCartesian', 'hoverClosestCartesian',
                 'autoScale2d'
               ],
               displaylogo: false,
@@ -98,8 +110,6 @@ LoginLocationMapbox.propTypes = {
   data: PropTypes.shape({
     latitude: PropTypes.arrayOf(PropTypes.number),
     longitude: PropTypes.arrayOf(PropTypes.number),
-    country: PropTypes.arrayOf(PropTypes.string),
-    continent: PropTypes.arrayOf(PropTypes.string),
     count: PropTypes.arrayOf(PropTypes.number),
   }),
 }

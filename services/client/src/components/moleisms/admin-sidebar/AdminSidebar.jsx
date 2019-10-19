@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -13,8 +11,9 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link, Redirect } from 'react-router-dom'
-import DatabaseIcon from 'react-feather/dist/icons/database'
-import UsersIcon from 'react-feather/dist/icons/users'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
+import { faUserFriends } from '@fortawesome/pro-light-svg-icons/faUserFriends'
 
 import styles from './AdminSidebar.module.scss'
 
@@ -47,7 +46,8 @@ class AdminSidebar extends Component {
           onClick={() => this.setState({ active: 'alloys' })}
           className={`${styles.item} ${active === 'alloys' && styles.active}`}
         >
-          <DatabaseIcon className={styles.icon} />
+          {/*<DatabaseIcon className={styles.icon} />*/}
+          <FontAwesomeIcon icon={faDatabase} className={styles.icon}/>
           <span>Alloy database</span>
         </Link>
         <Link
@@ -56,7 +56,8 @@ class AdminSidebar extends Component {
           onClick={() => this.setState({ active: 'users' })}
           className={`${styles.item} ${active === 'users' && styles.active}`}
         >
-          <UsersIcon className={styles.icon} />
+          {/*<UsersIcon className={styles.icon} />*/}
+          <FontAwesomeIcon icon={faUserFriends} className={styles.icon}/>
           <span>Manage users</span>
         </Link>
       </div>

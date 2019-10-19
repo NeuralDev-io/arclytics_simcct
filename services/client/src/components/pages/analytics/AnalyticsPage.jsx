@@ -13,30 +13,32 @@ import { Route } from 'react-router-dom'
 import AppBar from '../../moleisms/appbar'
 import AnalyticsSidebar from '../../moleisms/analytics-sidebar'
 import UsersAnalytics from '../../moleisms/analytics-users'
+import AppAnalytics from '../../moleisms/analytics-app'
 
 import styles from './AnalyticsPage.module.scss'
 
 function AnalyticsPage({ history }) {
   return (
-    <React.Fragment>
+    <>
       <AppBar active="analytics" redirect={history.push} isAdmin isAuthenticated />
 
       <div className={styles.sidebar}>
-        <AnalyticsSidebar />
+        <AnalyticsSidebar redirect={history.push} />
       </div>
 
       <div className={styles.main}>
         <Route path="/analytics/users" render={props => <UsersAnalytics {...props} />} />
+        <Route path="/analytics/app" render={props => <AppAnalytics {...props} />} />
       </div>
 
-    </React.Fragment>
+    </>
   )
 }
 
 AnalyticsPage.propTypes = {
   history: PropTypes.shape(
-    { push: PropTypes.func.isRequired }
-  ).isRequired
+    { push: PropTypes.func.isRequired },
+  ).isRequired,
 }
 
 export default AnalyticsPage

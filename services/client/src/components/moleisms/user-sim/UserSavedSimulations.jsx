@@ -13,12 +13,14 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import EyeIcon from 'react-feather/dist/icons/eye'
-import UploadIcon from 'react-feather/dist/icons/upload'
-import TrashIcon from 'react-feather/dist/icons/trash-2'
-import XIcon from 'react-feather/dist/icons/x'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEye } from '@fortawesome/pro-light-svg-icons/faEye'
+import { faUpload } from '@fortawesome/pro-light-svg-icons/faUpload'
+import { faTrashAlt } from '@fortawesome/pro-light-svg-icons/faTrashAlt'
+import { faTimes } from '@fortawesome/pro-light-svg-icons/faTimes'
 import Button, { IconButton } from '../../elements/button'
 import Table from '../../elements/table'
+import { getColor } from '../../../utils/theming'
 import { getSavedSimulations } from '../../../state/ducks/self/actions'
 import { loadSimFromAccount } from '../../../state/ducks/sim/actions'
 
@@ -87,7 +89,7 @@ class UserSavedSimulations extends Component {
               onClick={() => this.handleLoadSim(original)}
               length="short"
               appearance="text"
-              IconComponent={props => <UploadIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faUpload} {...props} />}
             >
               Load
             </Button>
@@ -95,7 +97,7 @@ class UserSavedSimulations extends Component {
               onClick={() => this.handleViewSim(original)}
               length="short"
               appearance="text"
-              IconComponent={props => <EyeIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faEye} {...props} />}
             >
               View
             </Button>
@@ -106,7 +108,7 @@ class UserSavedSimulations extends Component {
     ]
 
     return (
-      <React.Fragment>
+      <>
         <div className={`${styles.mainview} ${showSideView ? styles.shrink : ''}`}>
           <h3>Saved simulations</h3>
           <Table
@@ -126,7 +128,7 @@ class UserSavedSimulations extends Component {
             <h5>Sim ID: {_id}</h5>
             <IconButton
               onClick={this.handleCloseSideView}
-              Icon={props => <XIcon {...props} />}
+              Icon={props => <FontAwesomeIcon icon={faTimes} color={getColor('--n500')} {...props} />}
               className={styles.closeButton}
             />
           </header>
@@ -138,7 +140,7 @@ class UserSavedSimulations extends Component {
               onClick={() => {}}
               appearance="text"
               color="dangerous"
-              IconComponent={props => <TrashIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faTrashAlt} {...props} />}
               className={styles.sideButtons}
             >
               Delete
@@ -147,14 +149,14 @@ class UserSavedSimulations extends Component {
               onClick={() => this.handleLoadSim({ _id, ...currentSimContent })}
               appearance="outline"
               length="long"
-              IconComponent={props => <UploadIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faUpload} {...props} />}
               className={styles.sideButtons}
             >
               Load
             </Button>
           </div>
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

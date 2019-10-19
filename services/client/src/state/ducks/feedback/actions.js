@@ -27,7 +27,6 @@ export const closeFeedback = () => (dispatch) => {
   dispatch({
     type: CLOSE_FEEDBACK,
   })
-  localStorage.setItem('gotFeedback', true)
 }
 
 /**
@@ -81,8 +80,6 @@ export const submitFeedback = () => (dispatch, getState) => {
           message: 'Thank you for your feedback.',
           options: { variant: 'success' },
         }, true)(dispatch)
-        // set localStorage so the app stops asking for feedback
-        localStorage.setItem('gotFeedback', true)
       }
     })
     .catch((err) => {
@@ -95,7 +92,7 @@ export const submitFeedback = () => (dispatch, getState) => {
  * Submit a rating to the API
  * @param {number} rate Rating submitted by user
  */
-export const submitRating = rate => (dispatch, getState) => {
+export const submitRating = rate => (dispatch) => {
   fetch(`${SIMCCT_URL}/user/rating`, {
     method: 'POST',
     credentials: 'include',
@@ -131,8 +128,6 @@ export const submitRating = rate => (dispatch, getState) => {
           message: 'Thank you for your feedback.',
           options: { variant: 'success' },
         }, true)(dispatch)
-        // set localStorage so the app stops asking for feedback
-        localStorage.setItem('gotFeedback', true)
       }
     })
     .catch((err) => {

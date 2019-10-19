@@ -1178,10 +1178,11 @@ while [[ "$1" != "" ]] ; do
                       ${LOCATION_COMMAND} \
                       --image-type=${IMAGE_TYPE} \
                       --machine-type=n1-standard-2 \
-                      --num-nodes=2 \
-                      --min-nodes=2 \
+                      --num-nodes=4 \
+                      --min-nodes=4 \
                       --max-nodes=8 \
                       --enable-autoscaling \
+                      --enable-autorepair \
                       --node-labels=component=arc-nodes \
                       --cluster-version=${LATEST}
                       #--cluster-version=${KUBERNETES_NODE_VERSION} \

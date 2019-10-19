@@ -80,6 +80,16 @@ class LoginPage extends Component {
     })
   }
 
+  handlePrivacyPolicyLink = () => {
+    const { history } = this.props
+    history.push('/about/privacy')
+  }
+
+  handleDisclaimerLink = () => {
+    const { history } = this.props
+    history.push('/about/disclaimer')
+  }
+
   render() {
     const {
       hasForgotPwd,
@@ -167,12 +177,20 @@ class LoginPage extends Component {
                         error={errors.password && touched.password && errors.password}
                       />
                     </div>
-                    <h6
-                      className={styles.help}
-                      {...buttonize(() => this.setState({ hasForgotPwd: true }))}
-                    >
-                      Trouble signing in?
-                    </h6>
+                    <div className={styles.otherLinks}>
+                      <h6>
+                        {' '}
+                        Don&apos;t have an account?&nbsp;
+                        <Link className={styles.createAccount} to="/signup">Sign up</Link>
+                        {' '}
+                      </h6>
+                      <h6
+                        className={styles.help}
+                        {...buttonize(() => this.setState({ hasForgotPwd: true }))}
+                      >
+                        Trouble signing in?
+                      </h6>
+                    </div>
                     <div className={styles.clear}>
                       <Button
                         className={styles.signIn}
@@ -184,24 +202,20 @@ class LoginPage extends Component {
                       >
                         SIGN IN
                       </Button>
-                      <h6>
-                        {' '}
-                        Don&apos;t have an account?&nbsp;
-                        <Link className={styles.createAccount} to="/signup">Sign up</Link>
-                        {' '}
-                      </h6>
                     </div>
                   </div>
                 </form>
               </div>
             )}
           </Formik>
+
+          <div className={styles.policy}>
+            <p><Link className={styles.links} to="/about/privacy">Privacy policy</Link></p>
+            <p><Link className={styles.links} to="/about/disclaimer">Disclaimer</Link></p>
+          </div>
         </div>
-        <div
-          className={
-            `${styles.forgotPwdForm} ${fadeForgot}`
-          }
-        >
+
+        <div className={`${styles.forgotPwdForm} ${fadeForgot}`}>
           <ForgotPassword forgotPwdHandler={this.handleForgotPassword} />
         </div>
       </div>

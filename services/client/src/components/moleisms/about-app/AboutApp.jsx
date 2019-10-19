@@ -31,17 +31,16 @@ function AboutApp() {
     <div className={styles.container}>
       <h3>About Arclytics SimCCT</h3>
       <div className={styles.tagline} >
-        <h4>
+        <h5>
           Made with &nbsp;
           <FontAwesomeIcon icon={faHandHoldingHeart} size="1x" className={styles.icon}/>&nbsp;
           by NeuralDev. Powered with &nbsp;
           <FontAwesomeIcon icon={faRadiation} size="1x" className={styles.icon}/>&nbsp;
           by ANSTO.
-        </h4>
+        </h5>
       </div>
       <div className={styles.version}>
-        <h5>Arclytics SimCCT version</h5>&nbsp;
-        <h5>1.3.0</h5>
+        <p><strong>Arclytics SimCCT version</strong> 1.3.0</p>
       </div>
 
       <section>

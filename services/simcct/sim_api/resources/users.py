@@ -36,7 +36,6 @@ from sim_api.search_service import SearchService
 logger = AppLogger(__name__)
 users_blueprint = Blueprint('users', __name__)
 
-
 # We need to ensure we only get a certain amount of information for the user
 # for speed purposes
 PROJECTIONS = {
@@ -110,10 +109,7 @@ class UserList(Resource):
         # In this endpoint, we want to return the full list regardless of any
         # offsets or limits. We are only making sorting available for fun.
         data = SearchService().find(
-            query={},
-            sort=sort_query,
-            limit=0,
-            projections=PROJECTIONS
+            query={}, sort=sort_query, limit=0, projections=PROJECTIONS
         )
 
         if not data:
@@ -252,16 +248,18 @@ class UserListQuery(Resource):
         # ========== # PREPARE RESPONSE # ========== #
         # If there are no values for getting the next or previous offset (i.e.
         # no limit has been provided, we just return null for them.
-        response.update({
-            'status': 'success',
-            'sort': sort,
-            'offset': offset,
-            'limit': limit,
-            'next_offset': None,
-            'prev_offset': None,
-            'n_results': n_documents,
-            'data': users_list,
-        })
+        response.update(
+            {
+                'status': 'success',
+                'sort': sort,
+                'offset': offset,
+                'limit': limit,
+                'next_offset': None,
+                'prev_offset': None,
+                'n_results': n_documents,
+                'data': users_list,
+            }
+        )
         response.pop('message')
 
         # A limit of 0, meaning the client does not want any subset of the
@@ -286,7 +284,10 @@ class UserListQuery(Resource):
         current_page = int(offset / limit) + 1
 
         response.update(
-            {'current_page': current_page, 'total_pages': total_pages}
+            {
+                'current_page': current_page,
+                'total_pages': total_pages
+            }
         )
 
         return response, 200
@@ -439,13 +440,15 @@ class SearchUsers(Resource):
         # The best way to avoid this is just to allow the client to limit the
         # number of returned results.
         # May be able to do it in the future but for now we will avoid.
-        response.update({
-            'status': 'success',
-            'sort': sort,
-            'limit': limit,
-            'n_results': n_documents,
-            'data': data,
-        })
+        response.update(
+            {
+                'status': 'success',
+                'sort': sort,
+                'limit': limit,
+                'n_results': n_documents,
+                'data': data,
+            }
+        )
         response.pop('message')
         return response, 200
 
@@ -510,8 +513,8 @@ class Users(Resource):
             # If we do not have all the profile fields, we will need to reject
             # the request as we are unable to create a profile object.
             if (
-                    not aim or not highest_education or not sci_tech_exp
-                    or not phase_transform_exp
+                not aim or not highest_education or not sci_tech_exp
+                or not phase_transform_exp
             ):
                 response.pop('data')
                 response['message'] = (

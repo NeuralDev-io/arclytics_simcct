@@ -1231,5 +1231,6 @@ class TestUserService(BaseTestCase):
     #         self.assertEqual(data2['total_pages'], 2)
     #
 
+
 if __name__ == '__main__':
     unittest.main()

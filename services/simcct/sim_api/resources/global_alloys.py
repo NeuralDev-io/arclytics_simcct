@@ -35,7 +35,6 @@ from sim_api.middleware import (
 from sim_api.routes import Routes
 from sim_api.schemas import AlloySchema
 
-
 alloys_blueprint = Blueprint('alloys', __name__)
 logger = AppLogger(__name__)
 

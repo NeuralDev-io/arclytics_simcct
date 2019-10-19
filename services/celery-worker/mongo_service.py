@@ -31,13 +31,13 @@ class MongoService(object):
             mongo_uri = (
                 'mongodb://{username}:{password}@{host}:{port}/{db}'
                 '?authSource=admin&authMechanism=SCRAM-SHA-1'
-                ).format(
-                             username=env.get('MONGO_APP_USER'),
-                             password=env.get('MONGO_APP_USER_PASSWORD'),
-                             host=env.get('MONGO_HOST', 'localhost'),
-                             port=env.get('MONGO_PORT', 27017),
-                             db=self.db_name
-                         )
+            ).format(
+                username=env.get('MONGO_APP_USER'),
+                password=env.get('MONGO_APP_USER_PASSWORD'),
+                host=env.get('MONGO_HOST', 'localhost'),
+                port=env.get('MONGO_PORT', 27017),
+                db=self.db_name
+            )
             self.conn = MongoClient(mongo_uri)
         else:
             self.conn = MongoClient(
@@ -46,7 +46,9 @@ class MongoService(object):
             # Implement an index to expire after two weeks: 14 * 24 * 60 * 60
             # Note this only done during development as it's created by the
             # Mongo container in production
-            self.db.celery_beat.create_index('date', expireAfterSeconds=1209600)
+            self.db.celery_beat.create_index(
+                'date', expireAfterSeconds=1209600
+            )
 
         self.db = self.conn[self.db_name]
 

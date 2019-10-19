@@ -15,6 +15,12 @@ import { logError } from './LoggingHelper'
 
 
 export const getNerdyStatsData = async () => {
+  /**
+   * Get the summary stats for the Users Analytics page. This function will
+   * always return a resolved promise with the state being the data in the
+   * response if any.
+   *
+   */
   let call
   try {
 
@@ -50,8 +56,14 @@ export const getNerdyStatsData = async () => {
   return call
 }
 
-// TODO(andrew@neuraldev.io): Ensure this is non-blocking.
+
 export const getProfileAnalyticsData = async () => {
+  /**
+   * Get the profile data to plot bar charts for the Users Analytics page.
+   * This function will always return a resolved promise with the state being
+   * the data in the response if any.
+   *
+   */
   let call
   try {
     call = await fetch(`${ARC_URL}/users/profile`, {
@@ -85,7 +97,14 @@ export const getProfileAnalyticsData = async () => {
   return call
 }
 
+
 export const getLoginLocationData = async () => {
+  /**
+   * Get the data for location data to plot the Mapbox Density chart
+   * on the User Analytics page. This function will always return a
+   * resolved promise with the state being the data in the response if any.
+   *
+   */
   let call
   try {
     call = await fetch(`${ARC_URL}/users/login/map`, {
@@ -120,6 +139,12 @@ export const getLoginLocationData = async () => {
 }
 
 export const getGeneralStatsData = async () => {
+  /**
+   * Get the summary stats for the App Analytics page. This function will
+   * always return a resolved promise with the state being the data in the
+   * response if any.
+   *
+   */
   let call
   try {
     call = await fetch(`${ARC_URL}/app/stats`, {
@@ -156,6 +181,12 @@ export const getGeneralStatsData = async () => {
 
 
 export const getLiveLoginData = async () => {
+  /**
+   * Get the data for the live login location stats to plot the time series chart
+   * on the Application Analytics page. This function will always return a
+   * resolved promise with the state being the data in the response if any.
+   *
+   */
   let call
   try {
     call = await fetch(`${ARC_URL}/app/logged_in_data`, {

@@ -15,6 +15,8 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import XIcon from 'react-feather/dist/icons/x'
 import { IconButton } from '../button'
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+// import {faTimes } from '@fortawesome/pro-light-svg-icons/faTimes'
 
 import styles from './ToastModal.module.scss'
 

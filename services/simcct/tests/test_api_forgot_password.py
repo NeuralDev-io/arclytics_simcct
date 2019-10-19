@@ -294,17 +294,13 @@ class TestForgotPassword(BaseTestCase):
             # Both requests have one or the other required request body
             res1 = client.put(
                 '/v1/sim/auth/password/reset',
-                data=json.dumps({
-                    'password': 'IDontNeedToConfirm'
-                }),
+                data=json.dumps({'password': 'IDontNeedToConfirm'}),
                 headers={'Authorization': f'Bearer {jwt_token}'},
                 content_type='application/json'
             )
             res2 = client.put(
                 '/v1/sim/auth/password/reset',
-                data=json.dumps({
-                    'confirm_password': 'IDontNeedToConfirm'
-                }),
+                data=json.dumps({'confirm_password': 'IDontNeedToConfirm'}),
                 headers={'Authorization': f'Bearer {jwt_token}'},
                 content_type='application/json'
             )

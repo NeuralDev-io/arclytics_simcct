@@ -35,8 +35,13 @@ class SearchService(object):
         self.client = client
         self.db_name = env.get('MONGO_APP_DB')
 
-    def find(self, query: dict = None, projections: dict = None,
-             sort: list = None, limit: int = None):
+    def find(
+        self,
+        query: dict = None,
+        projections: dict = None,
+        sort: list = None,
+        limit: int = None
+    ):
         """Do a `collections.find()` query with projections. Additionally,
         we can also sort or limit the results returned.
 
@@ -78,8 +83,14 @@ class SearchService(object):
 
         return [obj for obj in cursor]
 
-    def find_slice(self, query: dict = None, projections: dict = None,
-                   sort: list = None, limit: int = 0, skip: int = 0):
+    def find_slice(
+        self,
+        query: dict = None,
+        projections: dict = None,
+        sort: list = None,
+        limit: int = 0,
+        skip: int = 0
+    ):
         """Do a `collections.find()` query with projections. Additionally we
         can do a slice on the results by providing the `skip` which will be
         the offset of the first returned result and a `limit` which is the

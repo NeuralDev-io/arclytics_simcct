@@ -17,6 +17,8 @@ import XIcon from 'react-feather/dist/icons/x'
 // import { faTimes } from '@fortawesome/pro-light-svg-icons/faTimes'
 import { IconButton } from '../button'
 import { buttonize } from '../../../utils/accessibility'
+// <FontAwesomeIcon icon={faTimes} className={styles.icon} size="lg" />
+
 
 import styles from './Modal.module.scss'
 
@@ -37,7 +39,6 @@ const Modal = ({
       && (
         <IconButton
           onClick={onClose}
-          {/* <FontAwesomeIcon icon={faTimes} className={styles.icon} size="lg" /> */}
           Icon={props => <XIcon {...props} />}
           className={{ button: styles.closeButton }}
         />

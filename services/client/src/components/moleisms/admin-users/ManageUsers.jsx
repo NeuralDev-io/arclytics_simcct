@@ -196,14 +196,14 @@ class ManageUsers extends Component {
               onChange={value => this.setState({searchEmail: value})}
             />
           </div>
-          <Button
-            appearance="outline"
-            onClick={this.showAddAlloy}
-            IconComponent={props => <FontAwesomeIcon icon={faPlus} size="lg"{...props} />}
-            length="short"
-          >
-            Add
-          </Button>
+          {/*<Button*/}
+          {/*  appearance="outline"*/}
+          {/*  onClick={this.showAddAlloy}*/}
+          {/*  IconComponent={props => <FontAwesomeIcon icon={faPlus} size="lg"{...props} />}*/}
+          {/*  length="short"*/}
+          {/*>*/}
+          {/*  Add*/}
+          {/*</Button>*/}
         </div>
         <Table
           className="-highlight"

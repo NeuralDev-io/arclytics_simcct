@@ -37,7 +37,10 @@ class ManageUsers extends Component {
       showPromoteModal: false,
       promoteName: '',
       promoteEmail: '',
-
+      showStatusModal: false,
+      statusIsActive: '',
+      statusName: '',
+      statusEmail: '',
     }
   }
 
@@ -51,25 +54,20 @@ class ManageUsers extends Component {
       [name]: value,
     })
   }
-  /**
-   *
-   * @param name - optional
-   * @param email - optional
-   */
+
   handleShowPromoteModal = (name, email) => {
     const { showPromoteModal } = this.state
     if (showPromoteModal === false){
       this.setState({
+        showPromoteModal: true,
         promoteName: name,
         promoteEmail: email,
-        showPromoteModal: true,
       })
     }
   }
 
-
   handlePromoteSubmit = (email) => {
-    const {getUsersConnect, promoteAdminConnect} = this.props
+    const { promoteAdminConnect} = this.props
     console.log(email)
     promoteAdminConnect(email)
     this.setState( {
@@ -79,20 +77,47 @@ class ManageUsers extends Component {
     })
   }
 
-  handleActivateSubmit = (email, isActive) => {
+  handleShowStatusModal = (name, email, active) =>{
+    const { showStatusModal } = this.state
+    console.log(active)
+    if (showStatusModal === false){
+      this.setState({
+        showStatusModal: true,
+        statusIsActive: active,
+        statusName: name,
+        statusEmail: email,
+      })
+    }
+  }
+
+  handleStatusSubmit = (email, isActive) => {
     const { deactivateUserConnect, getUsersConnect, enableUserConnect } = this.props
-    console.log(email)
     if (isActive){
       deactivateUserConnect(email)
-      getUsersConnect()
     } else if (!isActive){
       enableUserConnect(email)
+      getUsersConnect()
     }
+    this.setState({
+      showStatusModal: false,
+      statusIsActive: '',
+      statusName: '',
+      statusEmail: '',
+    })
   }
 
 
   render() {
-    const {searchEmail, showPromoteModal, promoteName, deactivateUserConnect } = this.state
+    const {
+      searchEmail,
+      showPromoteModal,
+      promoteName,
+      promoteEmail,
+      showStatusModal,
+      statusIsActive,
+      statusName,
+      statusEmail,
+    } = this.state
     const {users,} = this.props
     const tableData = users.filter(u => u.email.includes(searchEmail))
 
@@ -192,14 +217,22 @@ class ManageUsers extends Component {
         />
 
         <SecureConfirmModal
-          onClick={() => {
-            this.handlePromote()
-          }}
           show={showPromoteModal}
-          messageTitle={`Promote '${this.state.promoteName}' to admin ?`}
+          messageTitle={`Promote '${promoteName}' to admin ?`}
           actionButtonName="Confirm Promote"
-          onSubmit = {() => this.handlePromoteSubmit(this.state.promoteEmail)}
+          onSubmit = {() => this.handlePromoteSubmit(promoteEmail)}
           onClose = {() => this.setState({showPromoteModal: false})}
+        />
+        <SecureConfirmModal
+          show={showStatusModal}
+          messageTitle={
+            statusIsActive ?
+            `Do you want to deactivate '${statusName}' ?` :
+            `Do you want to activate '${statusName}' ?`
+          }
+          actionButtonName={statusIsActive ? 'Deactivate' : 'Activate'}
+          onSubmit = {() => this.handleStatusSubmit(statusEmail, statusIsActive)}
+          onClose = {() => this.setState({showStatusModal: false})}
         />
       </div>
     )

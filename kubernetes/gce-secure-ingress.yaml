@@ -10,7 +10,6 @@ spec:
   tls:
     - secretName: client-app-https-secret
     - secretName: simcct-app-https-secret
-    - secretName: website-https-secret
   backend:
     serviceName: client-service
     servicePort: 8080

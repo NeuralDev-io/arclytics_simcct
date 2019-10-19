@@ -93,8 +93,10 @@ class ProductionConfig(BaseConfig):
     # Ensuring the security of cookies
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
-
     MONGO_DBNAME = env.get('MONGO_APP_DB')
+
+    # Bcrypt
+    TOKEN_EXPIRATION_DAYS = 30
     BCRYPT_LOG_ROUNDS = 12
 
     # Redis Connection

@@ -44,7 +44,7 @@ services:
         - NODE_ENV=production
         - REACT_APP_SIM_HOST=https://api.arclytics.io
         - REACT_APP_SIM_PORT=443
-        - REACT_APP_ARC_HOST=https://data.arclytics.io
+        - REACT_APP_ARC_HOST=https://api.arclytics.io
         - REACT_APP_ARC_PORT=443
         - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logger
       labels:
@@ -59,7 +59,7 @@ services:
       - NODE_ENV=production
       - REACT_APP_SIM_HOST=https://api.arclytics.io
       - REACT_APP_SIM_PORT=443
-      - REACT_APP_ARC_HOST=https://data.arclytics.io
+      - REACT_APP_ARC_HOST=https://api.arclytics.io
       - REACT_APP_ARC_PORT=443
       - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logger
 

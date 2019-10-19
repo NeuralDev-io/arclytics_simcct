@@ -170,8 +170,6 @@ class UserAlloysList(Resource):
         # To avoid running a list comprehension loop, if there's nothing
         # to return we get out of here and notify the client.
         if user.saved_alloys.count() == 0:
-            logger.info({'message': 'No alloys found.'})
-            apm.capture_message({'message': 'No alloys found.'})
             return {'status': 'fail', 'message': 'No alloys found.'}, 404
 
         # Mongo by default returns a Cursor which we must convert to dict

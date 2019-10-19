@@ -27,9 +27,8 @@ export const getNerdyStatsData = async () => {
       },
     })
       .then((res) => {
-        if (res.status === 401 || res.status === 403)  {
-          throw new Error('Unauthorised')
-        }
+        if (res.status === 401) throw new Error('Unauthenticated')
+        if (res.status === 403) throw new Error('Unauthorised')
         return res.json()
       })
       .then(res => res)
@@ -132,9 +131,8 @@ export const getGeneralStatsData = async () => {
       },
     })
       .then((res) => {
-        if (res.status === 401 || res.status === 403)  {
-          throw new Error('Unauthorised')
-        }
+        if (res.status === 401) throw new Error('Unauthenticated')
+        if (res.status === 403) throw new Error('Unauthorised')
         return res.json()
       })
       .then(res => res)

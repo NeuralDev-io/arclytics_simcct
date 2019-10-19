@@ -45,7 +45,7 @@ function AboutApp() {
       </div>
 
       <section>
-        <h5>Purpose</h5>
+        <h4>Purpose</h4>
         <div className={styles.content}>
           <p>
             This software is intended as a general learning tool for estimating the solid state phase transformation
@@ -62,7 +62,7 @@ function AboutApp() {
         </div>
       </section>
       <section>
-        <h5>History</h5>
+        <h4>History</h4>
         <div className={styles.content}>
           <p>
             The initial work carried out with this methodology was applied to welding simulations of ferritic
@@ -90,7 +90,7 @@ function AboutApp() {
       </section>
 
       <section>
-        <h5>Theory</h5>
+        <h4>Theory</h4>
         <p>
           The online Arclytics-SimCCT package utilises the methods and ideas presented in a series of key
           publications. In this section each aspect utilised will be briefly described and the original source
@@ -126,7 +126,7 @@ function AboutApp() {
       </section>
 
       <section>
-        <h5>Acknowledgements</h5>
+        <h4>Acknowledgements</h4>
 
         <div className={styles.acknowledgements}>
           <p>This application was made with the help of the open-source community. Packages include:</p>
@@ -170,7 +170,7 @@ function AboutApp() {
       </section>
 
       <section>
-        <h5>References</h5>
+        <h4>References</h4>
         <ol>
           <li value="1">
             Kirkaldy, J.C. and D. Venugopalan. Prediction of microstructure and hardenability in low alloy

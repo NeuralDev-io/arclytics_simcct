@@ -174,19 +174,16 @@ class AppBar extends React.Component {
             </Tooltip>
           </div>
 
-          <div
+          <Link
             id="about"
-            className={`${styles.navIcon} ${!isAuthenticated && styles.disabled}`}
-            {...(() => {
-              if (isAuthenticated) return buttonize(this.handleLogout)
-              return {}
-            })()}
+            className={`${styles.navIcon} ${active === 'about' && styles.active}`}
+            to="/about/arclytics"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
               <FontAwesomeIcon icon={faQuestionCircle} className={styles.icon} size="lg" />
               <p>About</p>
             </Tooltip>
-          </div>
+          </Link>
 
           <Logo className={styles.logo} />
         </div>

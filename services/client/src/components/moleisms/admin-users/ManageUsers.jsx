@@ -23,6 +23,7 @@ import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import Table from '../../elements/table'
 import SecureConfirmModal from '../confirm-modal/SecureConfirmModal'
+import UserPromoteModal from './UserPromoteModal'
 import Modal from '../../elements/modal'
 import { getUsers, promoteAdmin, deactivateUser, enableUser } from '../../../state/ducks/users/actions'
 
@@ -66,10 +67,9 @@ class ManageUsers extends Component {
     }
   }
 
-  handlePromoteSubmit = (email) => {
+  handlePromoteSubmit = (email, position) => {
     const { promoteAdminConnect} = this.props
-    console.log(email)
-    promoteAdminConnect(email)
+    promoteAdminConnect(email, position)
     this.setState( {
       promoteName: '',
       promoteEmail: '',
@@ -167,7 +167,13 @@ class ManageUsers extends Component {
             </Button>
 
             <Button
-              onClick={() => this.handleActivateSubmit(original.email, original.active)}
+              onClick={() => {
+                this.handleShowStatusModal(
+                  `${original.first_name} ${original.last_name}`,
+                  original.email,
+                  original.active
+                )
+              }}
               appearance="text"
               isDisabled={original.admin}
               color={original.active ? 'dangerous' : 'default'}
@@ -215,12 +221,12 @@ class ManageUsers extends Component {
           resizable={false}
           condensed
         />
-
-        <SecureConfirmModal
+        <UserPromoteModal
           show={showPromoteModal}
           messageTitle={`Promote '${promoteName}' to admin ?`}
           actionButtonName="Confirm Promote"
-          onSubmit = {() => this.handlePromoteSubmit(promoteEmail)}
+          email = {promoteEmail}
+          onSubmit = {(email, position) => this.handlePromoteSubmit(email, position)}
           onClose = {() => this.setState({showPromoteModal: false})}
         />
         <SecureConfirmModal

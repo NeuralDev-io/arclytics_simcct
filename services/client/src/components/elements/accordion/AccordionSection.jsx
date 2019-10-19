@@ -12,8 +12,9 @@
  */
 import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
-import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
-import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronUp } from '@fortawesome/pro-light-svg-icons/faChevronUp'
+import { faChevronDown } from '@fortawesome/pro-light-svg-icons/faChevronDown'
 import { buttonize } from '../../../utils/accessibility'
 
 import styles from './AccordionSection.module.scss'
@@ -42,8 +43,8 @@ class AccordionSection extends PureComponent {
         >
           <h6>{title}</h6>
           <div className={styles.icons}>
-            <ChevronDownIcon className={`${styles.icon} ${expanded ? styles.hidden : ''}`} />
-            <ChevronUpIcon className={`${styles.icon} ${!expanded ? styles.hidden : ''}`} />
+            <FontAwesomeIcon icon={faChevronDown} className={`${styles.icon} ${expanded ? styles.hidden : ''}`} size="1x" />
+            <FontAwesomeIcon icon={faChevronUp} className={`${styles.icon} ${!expanded ? styles.hidden : ''}`} size="1x" />
           </div>
         </div>
         <div

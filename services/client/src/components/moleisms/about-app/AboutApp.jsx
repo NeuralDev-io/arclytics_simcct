@@ -120,7 +120,7 @@ function AboutApp() {
             <strong>M<sub>s</sub></strong> - the temperature limit for Martensite formation.
           </li>
           <li>
-            <strong>G</strong> - Prior Austenite grain size (manually set in this implementation).
+            <strong>G</strong> - prior Austenite grain size (manually set in this implementation).
           </li>
         </ul>
       </section>

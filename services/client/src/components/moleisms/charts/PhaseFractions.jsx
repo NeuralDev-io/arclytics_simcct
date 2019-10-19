@@ -62,6 +62,10 @@ class PhaseFractions extends Component {
     })
   }
 
+  getAnnotationText = (user_cooling_curve, currentIdx, hasData) => {
+    return `${!hasData ? 0 : Math.round(user_cooling_curve.temp[currentIdx])} °C`
+  }
+
   render() {
     const {
       data: {
@@ -158,6 +162,13 @@ class PhaseFractions extends Component {
                         plot_bgcolor: getColor('--n0'),
                         paper_bgcolor: 'transparent',
                         showlegend: false,
+                        annotations: [
+                          {
+                            font: { size: 16, color: getColor('--n500') },
+                            text: `${this.getAnnotationText(user_cooling_curve, currentIdx, hasData)}`,
+                            showarrow: false,
+                          }
+                        ]
                       }}
                       config={{
                         ...config,

@@ -16,6 +16,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUserShield } from '@fortawesome/pro-light-svg-icons/faUserShield'
 import { faInfoSquare } from '@fortawesome/pro-light-svg-icons/faInfoSquare'
 import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons/faExclamationTriangle'
+import { faArrowLeft } from '@fortawesome/pro-light-svg-icons/faArrowLeft'
+import Button from '../../elements/button'
 
 import styles from './AboutSidebar.module.scss'
 
@@ -36,6 +38,11 @@ class AboutSidebar extends Component {
       redirect('/about/application')
     }
 
+  }
+
+  handleBackToApp = () => {
+    const { redirect } = this.props
+    redirect('/')
   }
 
   render() {
@@ -70,6 +77,15 @@ class AboutSidebar extends Component {
           <FontAwesomeIcon icon={faUserShield} className={styles.icon}/>
           <span>Privacy policy</span>
         </Link>
+        <Button
+          appearance="text"
+          length="long"
+          IconComponent={props => <FontAwesomeIcon icon={faArrowLeft} {...props} />}
+          className={styles.back}
+          onClick={this.handleBackToApp}
+        >
+          Back to app
+        </Button>
       </div>
     )
   }

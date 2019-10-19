@@ -1,5 +1,6 @@
 import {
   GET_USERS,
+  UPDATE_USER,
   PROMOTE_ADMIN,
   DEACTIVATE_USER,
   ENABLE_USER
@@ -72,6 +73,10 @@ export const deactivateUser = (email) => (dispatch) => {
     })
     .then((res) => {
       if (res.status === 'success'){
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'success' },
+        }, true)(dispatch)
         dispatch({
           type: DEACTIVATE_USER
         })
@@ -130,7 +135,7 @@ export const enableUser = (email) => (dispatch) => {
 
 }
 
-export const promoteAdmin = (email) => (dispatch) => {
+export const promoteAdmin = (email, position) => (dispatch) => {
   fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/v1/sim/admin/create`, {
     method: 'POST',
     credentials: 'include',
@@ -139,16 +144,35 @@ export const promoteAdmin = (email) => (dispatch) => {
     },
     body: (JSON.stringify({
       email: email,
-      position: 'Administrator',
+      position: position,
     }))
   })
     .then((res) => {
-      //check response
-      if (res.status === 202){
-        console.log('response successful')
+      if (res.status !== 202){
+        return {
+          status: 'fail',
+          message: 'Something went wrong when promoting user',
+        }
       }
-      else{
-        console.log('unsuccessful')
+      return res.json()
+    })
+    .then((res) => {
+      //check response
+      if (res.status === 'success') {
+        console.log('Success')
+        dispatch({
+          type: PROMOTE_ADMIN,
+          payload: {
+            email,
+            position
+          }
+        })
+      }
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
       }
     })
     .catch((err) => {

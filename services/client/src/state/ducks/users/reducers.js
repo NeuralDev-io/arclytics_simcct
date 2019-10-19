@@ -16,7 +16,10 @@ const reducer = (state = initialState, action) => {
     case DEACTIVATE_USER:
       return state
     case ENABLE_USER:
-      return state
+      const newUsers = [...state]
+      const idx = newUsers.findIndex(a => a.email === action.payload)
+      newUsers[idx].active = true
+      return newUsers
     default:
       return state
   }

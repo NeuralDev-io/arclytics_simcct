@@ -62,10 +62,26 @@ export const deactivateUser = (email) => (dispatch) => {
     })
   })
     .then((res) => {
-      console.log(res.status)
-      dispatch({
-        type: DEACTIVATE_USER
-      })
+      if (res.status !== 200){
+        return {
+          status: 'fail',
+          message: 'Something went wrong while deactivating user',
+        }
+      }
+      return res.json()
+    })
+    .then((res) => {
+      if (res.status === 'success'){
+        dispatch({
+          type: DEACTIVATE_USER
+        })
+      }
+      if (res.status === 'fail'){
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
     })
     .catch((err) => {
       // log to fluentd
@@ -74,7 +90,7 @@ export const deactivateUser = (email) => (dispatch) => {
 }
 
 export const enableUser = (email) => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT.env.REACT_APP_SIM_PORT}/v1/sim/enable/user`, {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/v1/sim/enable/user`, {
     method: 'PUT',
     credentials: 'include',
     headers: {
@@ -85,10 +101,27 @@ export const enableUser = (email) => (dispatch) => {
     })
   })
     .then((res) => {
-      console.log(res.status)
-      dispatch({
-        type: ENABLE_USER
-      })
+      if (res.status !== 200){
+        return {
+          status: 'fail',
+          message: 'Something went wrong activating user',
+        }
+      }
+      return res.json()
+    })
+    .then((res) => {
+      if (res.status === 'success'){
+        dispatch({
+          type: ENABLE_USER,
+          payload: email
+        })
+      }
+      if (res.status === 'fail'){
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
     })
     .catch((err) => {
       // log to fluentd
@@ -106,7 +139,7 @@ export const promoteAdmin = (email) => (dispatch) => {
     },
     body: (JSON.stringify({
       email: email,
-      position: 'Site Administrator',
+      position: 'Administrator',
     }))
   })
     .then((res) => {
@@ -117,5 +150,9 @@ export const promoteAdmin = (email) => (dispatch) => {
       else{
         console.log('unsuccessful')
       }
+    })
+    .catch((err) => {
+      // log to fluentd
+      logError(err.toString(), err.message, 'users.actions.promoteAdmin', err.stack)
     })
 }

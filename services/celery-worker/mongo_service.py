@@ -39,6 +39,7 @@ class MongoService(object):
                 db=self.db_name
             )
             self.conn = MongoClient(mongo_uri)
+            self.db = self.conn[self.db_name]
         else:
             self.conn = MongoClient(
                 host=env.get('MONGO_HOST'), port=int(env.get('MONGO_PORT'))
@@ -46,11 +47,10 @@ class MongoService(object):
             # Implement an index to expire after two weeks: 14 * 24 * 60 * 60
             # Note this only done during development as it's created by the
             # Mongo container in production
+            self.db = self.conn[self.db_name]
             self.db.celery_beat.create_index(
                 'date', expireAfterSeconds=1209600
             )
-
-        self.db = self.conn[self.db_name]
 
     def update_one(self, query: dict, update: dict, upsert: bool = False):
         """Do an updateOne query on the Mongo collection."""

@@ -11,8 +11,11 @@ import React, { Component } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { logError } from '../../../api/LoggingHelper'
 import Card from '../../elements/card'
-import SavedAlloysSimilarity from '../charts/SavedAlloysSimilarity'
-import { getSavedAlloysSimilarityData } from '../../../api/Analytics'
+import { getSimulationData } from '../../../api/Analytics'
+import {
+  SavedAlloysSimilarity,
+  MethodsHorizontalBarChart
+} from '../charts'
 
 import styles from './SimAnalytics.module.scss'
 
@@ -22,21 +25,25 @@ class SimAnalytics extends Component {
     super(props)
     this.state = {
       isLoading: false,
+      isLoadingSavedAlloySimilarity: false,
       alloysTSNEData: undefined,
       methodsData: undefined,
     }
   }
 
   componentDidMount = () => {
-    this.setState({isLoading: true})
+    this.setState({
+      isLoading: true,
+      isLoadingSavedAlloySimilarity: true
+    })
+    this.fetchMethodsData()
     this.fetchSavedAlloysSimilarity()
   }
 
-  fetchSavedAlloysSimilarity = () => {
-    getSavedAlloysSimilarityData().then((res) => {
-      console.log(res.parameters)
+  fetchMethodsData = () => {
+    getSimulationData('/sim/methods_data').then((res) => {
       this.setState({
-        alloysTSNEData: res.data,
+        methodsData: res.data,
         isLoading: false,
       })
     })
@@ -48,21 +55,40 @@ class SimAnalytics extends Component {
       ))
   }
 
+  fetchSavedAlloysSimilarity = () => {
+    getSimulationData('/sim/saved_alloys_similarity').then((res) => {
+      this.setState({
+        alloysTSNEData: res.data,
+        isLoadingSavedAlloySimilarity: false,
+      })
+    })
+      .catch((err) => logError(
+        err.toString(),
+        err.message,
+        'SimAnalytics.fetchSavedAlloysSimilarity',
+        err.stack
+      ))
+  }
+
   render() {
-    const { alloysTSNEData, isLoading } = this.state
+    const {
+      alloysTSNEData,
+      methodsData,
+      isLoading,
+      isLoadingSavedAlloySimilarity,
+    } = this.state
 
     return (
       <div className={styles.container}>
         <h3>Dashboard - Simulations</h3>
 
         <h5>Methods used</h5>
-        <div className={styles.chart}>
-          <Card className={styles.alloysTSNEChart}>
+        <div className={styles.methodsChart}>
+          <Card className={styles.chartCard}>
             <div>
-
-              <SavedAlloysSimilarity
+              <MethodsHorizontalBarChart
                 isLoading={isLoading}
-                data={(alloysTSNEData !== undefined) ? alloysTSNEData : undefined}
+                data={(methodsData !== undefined) ? methodsData : undefined}
               />
             </div>
           </Card>
@@ -72,9 +98,8 @@ class SimAnalytics extends Component {
         <div className={styles.chart}>
           <Card className={styles.alloysTSNEChart}>
             <div>
-
               <SavedAlloysSimilarity
-                isLoading={isLoading}
+                isLoading={isLoadingSavedAlloySimilarity}
                 data={(alloysTSNEData !== undefined) ? alloysTSNEData : undefined}
               />
             </div>

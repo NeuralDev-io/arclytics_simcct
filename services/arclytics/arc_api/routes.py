@@ -45,6 +45,7 @@ class Routes(enum.Enum):
     UserProfileData = f'{PREFIX}/users/profile'
 
     # sim_analytics.py
+    MethodCount = f'{PREFIX}/sim/methods_data'
     SavedAlloysSimilarity = f'{PREFIX}/sim/saved_alloys_similarity'
 
     # app_analytics.py

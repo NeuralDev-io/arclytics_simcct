@@ -9,32 +9,16 @@
  * @author Andrew Che
  */
 import React from 'react'
-import PropTypes, { number } from 'prop-types'
+import PropTypes from 'prop-types'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
-import { layout } from './utils/chartConfig'
-import { getColor } from '../../../utils/theming'
+import { layout, COLORS } from './utils/chartConfig'
 
-import styles from './ProfileBarChart.module.scss'
-
-const COLORS = [
-  '#d96060',
-  '#e78c3d',
-  '#a0ae49',
-  '#59ab59',
-  '#47acb8',
-  '#438fc4',
-  '#7b68d9',
-  '#9b5eba',
-  '#c354b1',
-  '#a1746b',
-  '#404041'
-]
+import styles from './Chart.module.scss'
 
 const SavedAlloysByNameHorizontalChart = ({ data }) => {
   let traceData = []
   if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
-    console.log(COLORS)
     traceData = [
       {
         type: 'bar',

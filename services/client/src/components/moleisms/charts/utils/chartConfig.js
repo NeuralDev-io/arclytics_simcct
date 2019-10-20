@@ -1,5 +1,19 @@
 import { getColor } from '../../../../utils/theming'
 
+export const COLORS = [
+  '#d96060',
+  '#e78c3d',
+  '#a0ae49',
+  '#59ab59',
+  '#47acb8',
+  '#438fc4',
+  '#7b68d9',
+  '#9b5eba',
+  '#c354b1',
+  '#a1746b',
+  '#404041'
+]
+
 export const layout = (height, width) => ({
   width,
   height,

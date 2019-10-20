@@ -17,11 +17,10 @@ import PropTypes from 'prop-types'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { InlineSpinner } from '../../elements/spinner'
-import { layout, config } from './utils/chartConfig'
-
-// import { getColor } from '../../../utils/theming'
-import styles from './TTT.module.scss'
+import { layout, config, COLORS } from './utils/chartConfig'
 import { getColor } from '../../../utils/theming'
+
+import styles from './Chart.module.scss'
 
 const SavedAlloysSimilarity = ({ data, isLoading }) => {
   let chartData = []
@@ -35,13 +34,8 @@ const SavedAlloysSimilarity = ({ data, isLoading }) => {
         mode: 'markers',
         marker: {
           size: 8,
-          color: data.color,
-          // line: {
-          //   color: getColor('--b500'),
-          //   width: 4
-          // }
+          color: data.color.map(i => COLORS[i]),
         },
-        // textposition: 'top center',
         textfont: {
           family: 'Open Sans',
           size: 11,

@@ -20,7 +20,7 @@ import { InlineSpinner } from '../../elements/spinner'
 import { layout, config } from './utils/chartConfig'
 
 import { getColor } from '../../../utils/theming'
-import styles from './TTT.module.scss'
+import styles from './Chart.module.scss'
 
 const TTT = ({ data, isLoading }) => {
   let chartData = []

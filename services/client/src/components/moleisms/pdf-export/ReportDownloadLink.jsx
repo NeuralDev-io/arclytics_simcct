@@ -1,3 +1,15 @@
+/**
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * PDF report download link component. This component converts sim charts
+ * to PNG image base64-encoded data URLs and only when all these images
+ * are ready, this component will render PdfReport and pass the URLs to
+ * PdfReport as props.
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'

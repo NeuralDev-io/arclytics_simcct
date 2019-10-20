@@ -1,3 +1,14 @@
+/**
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * PDF report component rendered with the help of React-pdf package.
+ * This component is meant to render only once when all the ingredients
+ * are ready because of a bug in react-pdf.
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React from 'react'
 import {
   Page,

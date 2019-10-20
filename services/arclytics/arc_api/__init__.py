@@ -77,11 +77,13 @@ def create_app(configs_path=app_settings) -> Flask:
     # ========== # IMPORT FLASK BLUEPRINTS # ========== #
     with app.app_context():
         from arc_api.resources import (
-            user_analytics_blueprint, app_analytics_blueprint
+            user_analytics_blueprint, app_analytics_blueprint,
+            sim_analytics_blueprint
         )
         from arc_api.resources.root import root_blueprint
         # ========== # REGISTER FLASK BLUEPRINTS # ========== #
         app.register_blueprint(root_blueprint)
+        app.register_blueprint(sim_analytics_blueprint)
         app.register_blueprint(user_analytics_blueprint)
         app.register_blueprint(app_analytics_blueprint)
 

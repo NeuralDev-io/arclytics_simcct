@@ -13,7 +13,9 @@
 import { ARC_URL } from '../constants'
 import { logError } from './LoggingHelper'
 
-
+/**************************************************************/
+/********************* | User Analytics | *********************/
+/**************************************************************/
 export const getNerdyStatsData = async () => {
   /**
    * Get the summary stats for the Users Analytics page. This function will
@@ -138,6 +140,54 @@ export const getLoginLocationData = async () => {
   return call
 }
 
+/********************************************************************/
+/********************* | Simulation Analytics | *********************/
+/********************************************************************/
+export const getSavedAlloysSimilarityData = async () => {
+  /**
+   * Get the Saved Alloy Similarity stats for the Sim Analytics page. This
+   * function will always return a resolved promise with the state being the
+   * data in the response if any.
+   *
+   */
+  let call
+  try {
+    call = await fetch(`${ARC_URL}/sim/saved_alloys_similarity`, {
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((res) => {
+        if (res.status === 401) throw new Error('Unauthenticated')
+        if (res.status === 403) throw new Error('Unauthorised')
+        return res.json()
+      })
+      .then(res => res)
+
+  } catch (e) {
+
+    logError(
+      e.toString(),
+      e.message,
+      'Analytics.getSavedAlloysSimilarityData',
+      e.stack
+    )
+    return {
+      status: 'fail',
+      data: undefined
+    }
+
+  }
+  return call
+}
+
+
+/*********************************************************************/
+/********************* | Application Analytics | *********************/
+/*********************************************************************/
 export const getGeneralStatsData = async () => {
   /**
    * Get the summary stats for the App Analytics page. This function will

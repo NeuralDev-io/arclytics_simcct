@@ -50,7 +50,6 @@ const ProfileBarChart = ({ title, name, data, color }) => {
     <AutoSizer>
       {({ height, width }) => {
         const defaultLayout = { ...layout(height, width) }
-        // TODO(andrew@neuraldev.io): Add more layout configs if needed
         const profileLayout = {
           ...defaultLayout,
           showlegend: false

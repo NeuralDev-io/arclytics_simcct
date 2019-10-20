@@ -44,6 +44,9 @@ class Routes(enum.Enum):
     UserLoginLocationData = f'{PREFIX}/users/login/map'
     UserProfileData = f'{PREFIX}/users/profile'
 
+    # sim_analytics.py
+    SavedAlloysSimilarity = f'{PREFIX}/sim/saved_alloys_similarity'
+
     # app_analytics.py
     GeneralData = f'{PREFIX}/app/stats'
     LiveLoginData = f'{PREFIX}/app/logged_in_data'

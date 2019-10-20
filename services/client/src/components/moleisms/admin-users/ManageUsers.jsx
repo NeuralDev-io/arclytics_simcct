@@ -23,6 +23,7 @@ import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import Table from '../../elements/table'
 import SecureConfirmModal from '../confirm-modal/SecureConfirmModal'
+import UserPromoteModal from './UserPromoteModal'
 import Modal from '../../elements/modal'
 import {
   getUsers, promoteAdmin, deactivateUser, enableUser,
@@ -39,7 +40,10 @@ class ManageUsers extends Component {
       showPromoteModal: false,
       promoteName: '',
       promoteEmail: '',
-
+      showStatusModal: false,
+      statusIsActive: '',
+      statusName: '',
+      statusEmail: '',
     }
   }
 
@@ -54,50 +58,69 @@ class ManageUsers extends Component {
     })
   }
 
-  /**
-   *
-   * @param name - optional
-   * @param email - optional
-   */
   handleShowPromoteModal = (name, email) => {
     const { showPromoteModal } = this.state
     if (showPromoteModal === false) {
       this.setState({
+        showPromoteModal: true,
         promoteName: name,
         promoteEmail: email,
-        showPromoteModal: true,
       })
     }
   }
 
-
-  handlePromoteSubmit = (email) => {
-    const { getUsersConnect, promoteAdminConnect } = this.props
-    promoteAdminConnect(email)
-    this.setState({
+  handlePromoteSubmit = (email, position) => {
+    const { promoteAdminConnect} = this.props
+    promoteAdminConnect(email, position)
+    this.setState( {
       promoteName: '',
       promoteEmail: '',
       showPromoteModal: false,
     })
   }
 
-  handleActivateSubmit = (email, isActive) => {
-    const { deactivateUserConnect, getUsersConnect, enableUserConnect } = this.props
-    console.log(email)
-    if (isActive) {
-      deactivateUserConnect(email)
-      getUsersConnect()
-    } else if (!isActive) {
-      enableUserConnect(email)
+  handleShowStatusModal = (name, email, active) =>{
+    const { showStatusModal } = this.state
+    console.log(active)
+    if (showStatusModal === false){
+      this.setState({
+        showStatusModal: true,
+        statusIsActive: active,
+        statusName: name,
+        statusEmail: email,
+      })
     }
+  }
+
+  handleStatusSubmit = (email, isActive) => {
+    const { deactivateUserConnect, getUsersConnect, enableUserConnect } = this.props
+    if (isActive){
+      deactivateUserConnect(email)
+    } else if (!isActive){
+      enableUserConnect(email)
+      getUsersConnect()
+    }
+    this.setState({
+      showStatusModal: false,
+      statusIsActive: '',
+      statusName: '',
+      statusEmail: '',
+    })
   }
 
 
   render() {
     const {
-      searchEmail, showPromoteModal, promoteName, deactivateUserConnect,
+      searchEmail,
+      showPromoteModal,
+      promoteName,
+      promoteEmail,
+      showStatusModal,
+      statusIsActive,
+      statusName,
+      statusEmail,
     } = this.state
-    const { users } = this.props
+    const {users,} = this.props
     const tableData = users.filter(u => u.email.includes(searchEmail))
 
     const columns = [
@@ -125,14 +148,14 @@ class ManageUsers extends Component {
         Header: '',
         Cell: ({ original }) => (
           <div className={styles.actions}>
-            <Button
-              onClick={() => console.log(original)}
-              appearance="text"
-              length="short"
-              IconComponent={props => <FontAwesomeIcon icon={faEdit} size="6x" {...props} />}
-            >
-              Edit
-            </Button>
+            {/*<Button*/}
+            {/*  onClick={() => console.log(original)}*/}
+            {/*  appearance="text"*/}
+            {/*  length="short"*/}
+            {/*  IconComponent={props => <FontAwesomeIcon icon={faEdit} size="6x" {...props} />}*/}
+            {/*>*/}
+            {/*  Edit*/}
+            {/*</Button>*/}
 
             <Button
               onClick={() => {
@@ -146,7 +169,13 @@ class ManageUsers extends Component {
             </Button>
 
             <Button
-              onClick={() => this.handleActivateSubmit(original.email, original.active)}
+              onClick={() => {
+                this.handleShowStatusModal(
+                  `${original.first_name} ${original.last_name}`,
+                  original.email,
+                  original.active
+                )
+              }}
               appearance="text"
               isDisabled={original.admin}
               color={original.active ? 'dangerous' : 'default'}
@@ -175,14 +204,14 @@ class ManageUsers extends Component {
               onChange={value => this.setState({ searchEmail: value })}
             />
           </div>
-          <Button
-            appearance="outline"
-            onClick={this.showAddAlloy}
-            IconComponent={props => <FontAwesomeIcon icon={faPlus} size="lg"{...props} />}
-            length="short"
-          >
-            Add
-          </Button>
+          {/*<Button*/}
+          {/*  appearance="outline"*/}
+          {/*  onClick={this.showAddAlloy}*/}
+          {/*  IconComponent={props => <FontAwesomeIcon icon={faPlus} size="lg"{...props} />}*/}
+          {/*  length="short"*/}
+          {/*>*/}
+          {/*  Add*/}
+          {/*</Button>*/}
         </div>
         <Table
           className="-highlight"
@@ -194,16 +223,24 @@ class ManageUsers extends Component {
           resizable={false}
           condensed
         />
-
-        <SecureConfirmModal
-          onClick={() => {
-            this.handlePromote()
-          }}
+        <UserPromoteModal
           show={showPromoteModal}
-          messageTitle={`Promote '${this.state.promoteName}' to admin ?`}
+          messageTitle={`Promote '${promoteName}' to admin ?`}
           actionButtonName="Confirm Promote"
-          onSubmit={() => this.handlePromoteSubmit(this.state.promoteEmail)}
-          onClose={() => this.setState({ showPromoteModal: false })}
+          email = {promoteEmail}
+          onSubmit = {(email, position) => this.handlePromoteSubmit(email, position)}
+          onClose = {() => this.setState({showPromoteModal: false})}
+        />
+        <SecureConfirmModal
+          show={showStatusModal}
+          messageTitle={
+            statusIsActive ?
+            `Do you want to deactivate '${statusName}' ?` :
+            `Do you want to activate '${statusName}' ?`
+          }
+          actionButtonName={statusIsActive ? 'Deactivate' : 'Activate'}
+          onSubmit = {() => this.handleStatusSubmit(statusEmail, statusIsActive)}
+          onClose = {() => this.setState({showStatusModal: false})}
         />
       </div>
     )

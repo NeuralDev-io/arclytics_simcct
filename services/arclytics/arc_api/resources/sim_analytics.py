@@ -205,4 +205,47 @@ class SavedAlloysSimilarity(Resource):
         return response, 200
 
 
+class MethodCount(Resource):
+
+    method_decorators = {'get': [authorize_admin_cookie_restful]}
+
+    def get(self, _) -> Tuple[dict, int]:
+        """The view method to get the count data for the methods used in
+        saved simulations.
+
+        Returns:
+            A valid HTTP Response with a dictionary of data and a status code.
+        """
+        pipeline = [
+            {
+                '$project': {
+                    '_id': 0,
+                    'configs': '$configurations'
+                }
+            },
+            {
+                '$group': {
+                    '_id': '$configs.method',
+                    'count': {'$sum': 1}
+                }
+            },
+        ]
+
+        # Run our querying pipeline and get the result as a `pandas.DataFrame`
+        df = MongoService().read_aggregation(
+            db_name=DATABASE,
+            collection='saved_simulations',
+            pipeline=pipeline
+        )
+
+        response = {
+            'status': 'success',
+            'data': {
+                'x': df['_id'].tolist(),
+                'y': df['count'].tolist()
+            }
+        }
+        return response, 200
+
+api.add_resource(MethodCount, Routes.MethodCount.value)
 api.add_resource(SavedAlloysSimilarity, Routes.SavedAlloysSimilarity.value)

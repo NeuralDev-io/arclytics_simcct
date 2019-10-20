@@ -143,7 +143,7 @@ export const getLoginLocationData = async () => {
 /********************************************************************/
 /********************* | Simulation Analytics | *********************/
 /********************************************************************/
-export const getSavedAlloysSimilarityData = async () => {
+export const getSimulationData = async (path) => {
   /**
    * Get the Saved Alloy Similarity stats for the Sim Analytics page. This
    * function will always return a resolved promise with the state being the
@@ -152,7 +152,7 @@ export const getSavedAlloysSimilarityData = async () => {
    */
   let call
   try {
-    call = await fetch(`${ARC_URL}/sim/saved_alloys_similarity`, {
+    call = await fetch(`${ARC_URL}${path}`, {
       method: 'GET',
       mode: 'cors',
       credentials: 'include',
@@ -172,7 +172,7 @@ export const getSavedAlloysSimilarityData = async () => {
     logError(
       e.toString(),
       e.message,
-      'Analytics.getSavedAlloysSimilarityData',
+      'Analytics.getSimulationData',
       e.stack
     )
     return {

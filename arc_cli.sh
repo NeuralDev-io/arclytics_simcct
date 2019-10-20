@@ -397,20 +397,20 @@ dockerLsFormatted() {
   generalMessage "Containers"
   echoLine
   docker container ls -a --format \
-      "table {{.ID}}\t{{.Image}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}" \
-      --filter "label=arclytics.io"
+    "table {{.ID}}\t{{.Image}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}" \
+    --filter "label=arclytics.io"
   echoLine
   generalMessage "Volumes"
   echoLine
   docker volume ls --format \
-      "table {{.Name}}\t{{.Labels}}\t{{.Driver}}\t{{.Mountpoint}}" \
+    "table {{.Name}}\t{{.Labels}}\t{{.Driver}}\t{{.Mountpoint}}" \
 #      --filter "label=arclytics.io"
   echoLine
   generalMessage "Images"
   echoLine
   docker image ls --format \
-      "table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}" \
-      --filter "label=arclytics.io"
+    "table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}" \
+    --filter "label=arclytics.io"
   echoLine
   completeMessage
   echo
@@ -788,20 +788,20 @@ while [[ "$1" != "" ]] ; do
       dockerPs
       ;;
     ls | list | show )
-        dockerLsFormatted
-        exit 0
-        ;;
+      dockerLsFormatted
+      exit 0
+      ;;
     stats )
-        ARGS=$2
-        while [[ "$3" != "" ]] ; do
-            ARGS="${ARGS} $3"
-            shift
-        done
-        dockerStats
-        ;;
+      ARGS=$2
+      while [[ "$3" != "" ]] ; do
+          ARGS="${ARGS} $3"
+          shift
+      done
+      dockerStats
+      ;;
     prune )
-        dockerSystemPrune
-        ;;
+      dockerSystemPrune
+      ;;
     down )
       while [[ "$2" != "" ]] ; do
         case $2 in

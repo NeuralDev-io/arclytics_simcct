@@ -12,10 +12,9 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
-import { layout, config } from './utils/chartConfig'
-import { getColor } from '../../../utils/theming'
+import { layout, COLORS } from './utils/chartConfig'
 
-import styles from './ProfileBarChart.module.scss'
+import styles from './Chart.module.scss'
 
 const MethodsUsedBarChart = ({ data }) => {
   let traceData = []
@@ -26,7 +25,7 @@ const MethodsUsedBarChart = ({ data }) => {
         x: data.x,
         y: data.y,
         marker: {
-          color: [getColor('--r300'), getColor('--o300')]
+          color: [COLORS[0], COLORS[1]]
         },
         opacity: 0.7,
         textfont: {

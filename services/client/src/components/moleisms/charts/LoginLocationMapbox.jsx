@@ -15,7 +15,7 @@ import AutoSizer from 'react-virtualized-auto-sizer'
 import { getColor } from '../../../utils/theming'
 import { InlineSpinner } from '../../elements/spinner'
 
-import styles from './LoginLocationMapbox.module.scss'
+import styles from './Chart.module.scss'
 
 const LoginLocationMapbox = ({
   token,

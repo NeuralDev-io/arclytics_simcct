@@ -16,8 +16,9 @@ import { getColor } from '../../../utils/theming'
 import { getLiveLoginData } from '../../../api/Analytics'
 import { logError } from '../../../api/LoggingHelper'
 import { InlineSpinner } from '../../elements/spinner'
+import { COLORS } from './utils/chartConfig'
 
-import styles from './LoginLocationMapbox.module.scss'
+import styles from './Chart.module.scss'
 
 class LiveLoginTimeSeries extends Component {
   constructor(props) {
@@ -69,7 +70,8 @@ class LiveLoginTimeSeries extends Component {
           x: data.x,
           y: data.y,
           line: {
-            color: getColor('--b300'),
+            // color: getColor('--b300'),
+            color: data.y.map(idx => COLORS[idx]),
           },
         },
       ]

@@ -46,6 +46,7 @@ class Routes(enum.Enum):
 
     # sim_analytics.py
     MethodCount = f'{PREFIX}/sim/methods_data'
+    AlloyCountByName = f'{PREFIX}/sim/saved_alloys_name_count'
     SavedAlloysSimilarity = f'{PREFIX}/sim/saved_alloys_similarity'
 
     # app_analytics.py

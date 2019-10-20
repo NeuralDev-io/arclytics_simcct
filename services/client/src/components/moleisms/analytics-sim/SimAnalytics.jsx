@@ -14,7 +14,8 @@ import Card from '../../elements/card'
 import { getSimulationData } from '../../../api/Analytics'
 import {
   SavedAlloysSimilarity,
-  MethodsHorizontalBarChart
+  MethodsHorizontalBarChart,
+  SavedAlloysByNameHorizontalChart
 } from '../charts'
 
 import styles from './SimAnalytics.module.scss'
@@ -28,6 +29,7 @@ class SimAnalytics extends Component {
       isLoadingSavedAlloySimilarity: false,
       alloysTSNEData: undefined,
       methodsData: undefined,
+      savedAlloysByNameData: undefined,
     }
   }
 
@@ -36,8 +38,9 @@ class SimAnalytics extends Component {
       isLoading: true,
       isLoadingSavedAlloySimilarity: true
     })
-    this.fetchMethodsData()
     this.fetchSavedAlloysSimilarity()
+    this.fetchMethodsData()
+    this.fetchSavedAlloysByNameData()
   }
 
   fetchMethodsData = () => {
@@ -51,6 +54,21 @@ class SimAnalytics extends Component {
         err.toString(),
         err.message,
         'SimAnalytics.fetchSavedAlloysSimilarity',
+        err.stack
+      ))
+  }
+
+  fetchSavedAlloysByNameData = () => {
+    getSimulationData('/sim/saved_alloys_name_count').then((res) => {
+      this.setState({
+        savedAlloysByNameData: res.data,
+        isLoading: false,
+      })
+    })
+      .catch((err) => logError(
+        err.toString(),
+        err.message,
+        'SimAnalytics.fetchSavedAlloysByNameData',
         err.stack
       ))
   }
@@ -74,6 +92,7 @@ class SimAnalytics extends Component {
     const {
       alloysTSNEData,
       methodsData,
+      savedAlloysByNameData,
       isLoading,
       isLoadingSavedAlloySimilarity,
     } = this.state
@@ -82,7 +101,7 @@ class SimAnalytics extends Component {
       <div className={styles.container}>
         <h3>Dashboard - Simulations</h3>
 
-        <h5>Methods used</h5>
+        <h5>What methods are used in simulations?</h5>
         <div className={styles.methodsChart}>
           <Card className={styles.chartCard}>
             <div>
@@ -94,7 +113,19 @@ class SimAnalytics extends Component {
           </Card>
         </div>
 
-        <h5>Saved alloy similarities</h5>
+        <h5>What alloys are used in simulations?</h5>
+        <div className={styles.savedAlloysNameChart}>
+          <Card className={styles.savedAlloysNameCard}>
+            <div>
+              <SavedAlloysByNameHorizontalChart
+                isLoading={isLoading}
+                data={(savedAlloysByNameData !== undefined) ? savedAlloysByNameData : undefined}
+              />
+            </div>
+          </Card>
+        </div>
+
+        <h5>What similarities do alloys saved by users have?</h5>
         <div className={styles.chart}>
           <Card className={styles.alloysTSNEChart}>
             <div>

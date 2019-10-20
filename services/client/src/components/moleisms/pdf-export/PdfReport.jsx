@@ -1,6 +1,5 @@
 import React from 'react'
 import {
-  PDFViewer,
   Page,
   Text,
   View,
@@ -12,16 +11,16 @@ import {
 import { getColor } from '../../../utils/theming'
 
 // Create styles
-Font.register({
-  family: 'Quicksand',
-  src: 'https://fonts.googleapis.com/css?family=Quicksand',
-})
+// Font.register({
+//   family: 'Quicksand',
+//   src: 'https://fonts.googleapis.com/css?family=Quicksand',
+// })
 
 const styles = StyleSheet.create({
   page: {
     backgroundColor: '#fafafa',
     margin: 20,
-    fontFamily: 'Quicksand',
+    // fontFamily: 'Quicksand',
   },
   section: {
     padding: 10,
@@ -53,24 +52,22 @@ class PdfReport extends React.Component {
   render() {
     const { tttUrl, cctUrl } = this.props
     return (
-      <PDFViewer style={{ width: '700px', height: '1000px' }}>
-        <Document>
-          <Page size="A4" style={styles.page}>
-            <View style={styles.section}>
-              <Text style={styles.h4}>Configurations</Text>
-            </View>
-          </Page>
-          <Page size="A4" style={styles.page}>
-            <View style={styles.section}>
-              <Text style={styles.h4}>Simulation results</Text>
-              <Text style={styles.h5}>TTT</Text>
-              <Image src={tttUrl} style={styles.image} />
-              <Text style={styles.h5}>CCT</Text>
-              <Image src={cctUrl} style={styles.image} />
-            </View>
-          </Page>
-        </Document>
-      </PDFViewer>
+      <Document>
+        <Page size="A4" style={styles.page}>
+          <View style={styles.section}>
+            <Text style={styles.h4}>Configurations</Text>
+          </View>
+        </Page>
+        <Page size="A4" style={styles.page}>
+          <View style={styles.section}>
+            <Text style={styles.h4}>Simulation results</Text>
+            <Text style={styles.h5}>TTT</Text>
+            <Image src={tttUrl} style={styles.image} />
+            <Text style={styles.h5}>CCT</Text>
+            <Image src={cctUrl} style={styles.image} />
+          </View>
+        </Page>
+      </Document>
     )
   }
 }

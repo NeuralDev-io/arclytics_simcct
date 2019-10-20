@@ -2,14 +2,38 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import domtoimage from 'dom-to-image'
+import { PDFDownloadLink } from '@react-pdf/renderer'
 import PdfReport from './PdfReport'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
 import { logError } from '../../../api/LoggingHelper'
+import { getColor } from '../../../utils/theming'
+
+const downloadButtonStyle = {
+  border: 'none',
+  outline: 'none',
+  textDecoration: 'none',
+  width: '10rem',
+  height: '2.5rem',
+  padding: '0 .75rem',
+  borderRadius: 6,
+  transition: 'ease-in-out .4s',
+  cursor: 'pointer',
+
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+
+  fontWeight: 600,
+  letterSpacing: '0.045rem',
+  boxShadow: '0 4px 6px rgba(0, 0, 0, .25)',
+}
 
 class ReportDownloadLink extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
+      hasError: false,
       isReady: false,
       tttUrl: '',
       cctUrl: '',
@@ -18,15 +42,19 @@ class ReportDownloadLink extends React.Component {
 
   render() {
     const { isSimulated, addFlashToastConnect } = this.props
-    const { isReady, tttUrl, cctUrl } = this.state
-    if (!isSimulated) return <div>Nothing</div>
-    if (!isReady) {
+    const {
+      hasError,
+      isReady,
+      tttUrl,
+      cctUrl,
+    } = this.state
+    if (!isSimulated) return <div>No data to genereate report</div>
+    if (!isReady && !hasError) {
       domtoimage.toPng(document.getElementById('ttt_chart'))
         .then((tttDataUrl) => {
-          this.setState({ tttUrl: tttDataUrl })
           domtoimage.toPng(document.getElementById('cct_chart'))
             .then((cctDataUrl) => {
-              this.setState({ cctUrl: cctDataUrl, isReady: true })
+              this.setState({ cctUrl: cctDataUrl, tttUrl: tttDataUrl, isReady: true })
             })
         })
         .catch((err) => {
@@ -36,12 +64,27 @@ class ReportDownloadLink extends React.Component {
           }, true)
           logError(err.toString(), err.message, 'equi.actions.getEquilibriumValues', err.stack)
         })
-      return <div>Nothing</div>
+      return <div>Your report is being prepared</div>
     }
+
+    if (hasError) return <div>Couldn&apos;t generate report</div>
 
     // only render the PDF when all the ingredients are ready
     return (
-      <PdfReport tttUrl={tttUrl} cctUrl={cctUrl} />
+      <PDFDownloadLink
+        document={<PdfReport tttUrl={tttUrl} cctUrl={cctUrl} />}
+        fileName="SimCCT_report.pdf"
+        style={{
+          ...downloadButtonStyle,
+          backgroundColor: getColor('--arc500'),
+          color: getColor('--n0'),
+          border: `2px solid ${getColor('--arc500')}`,
+        }}
+      >
+        {({ loading }) => (
+          loading ? 'Almost ready...' : 'Download report'
+        )}
+      </PDFDownloadLink>
     )
   }
 }

@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faServer } from '@fortawesome/pro-light-svg-icons/faServer'
 import { faUserFriends } from '@fortawesome/pro-light-svg-icons/faUserFriends'
+import { faAtomAlt } from '@fortawesome/pro-light-svg-icons/faAtomAlt'
 import styles from './AnalyticsSidebar.module.scss'
 
 class AnalyticsSidebar extends Component {
@@ -30,7 +31,7 @@ class AnalyticsSidebar extends Component {
   componentDidMount = () => {
     const { active } = this.state
     const { redirect } = this.props
-    if (!['application', 'users'].includes(active)) {
+    if (!['application', 'users', 'simulations'].includes(active)) {
       this.setState({ active: 'application' })
       redirect('/analytics/app')
     }
@@ -52,15 +53,15 @@ class AnalyticsSidebar extends Component {
           <span>Users</span>
         </Link>
 
-        {/* <Link */}
-        {/*  id="alloys" */}
-        {/*  to="/analytics/alloys" */}
-        {/*  onClick={() => this.setState({ active: 'alloys' })} */}
-        {/*  className={`${styles.item} ${active === 'alloys' && styles.active}`} */}
-        {/* > */}
-        {/*  <DatabaseIcon className={styles.icon} /> */}
-        {/*  <span>Alloys</span> */}
-        {/* </Link> */}
+         <Link
+          id="simulations"
+          to="/analytics/simulations"
+          onClick={() => this.setState({ active: 'simulations' })}
+          className={`${styles.item} ${active === 'simulations' && styles.active}`}
+         >
+          <FontAwesomeIcon icon={faAtomAlt} className={styles.icon} size="lg"/>
+          <span>Simulations</span>
+         </Link>
 
         <Link
           id="application"

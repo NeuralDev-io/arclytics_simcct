@@ -146,14 +146,14 @@ class ManageUsers extends Component {
         Header: '',
         Cell: ({original}) => (
           <div className={styles.actions}>
-            <Button
-              onClick={() => console.log(original)}
-              appearance="text"
-              length="short"
-              IconComponent={props => <FontAwesomeIcon icon={faEdit} size="6x" {...props} />}
-            >
-              Edit
-            </Button>
+            {/*<Button*/}
+            {/*  onClick={() => console.log(original)}*/}
+            {/*  appearance="text"*/}
+            {/*  length="short"*/}
+            {/*  IconComponent={props => <FontAwesomeIcon icon={faEdit} size="6x" {...props} />}*/}
+            {/*>*/}
+            {/*  Edit*/}
+            {/*</Button>*/}
 
             <Button
               onClick={() => {

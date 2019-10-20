@@ -153,14 +153,14 @@ class SimulationPage extends Component {
               {/* NOTE: TTT Child Component */}
               <div className={styles.line}>
                 <h5>TTT</h5>
-                <div>
+                <div id="ttt_chart">
                   <TTT />
                 </div>
               </div>
               <div className={styles.line}>
                 {/* NOTE: CCT Child Component */}
                 <h5>CCT</h5>
-                <div>
+                <div id="cct_chart">
                   <CCT />
                 </div>
               </div>

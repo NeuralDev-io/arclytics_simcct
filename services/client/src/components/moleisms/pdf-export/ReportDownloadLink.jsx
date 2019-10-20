@@ -53,7 +53,7 @@ class ReportDownloadLink extends React.Component {
   }
 
   render() {
-    const { isSimulated, addFlashToastConnect } = this.props
+    const { onError, isSimulated, addFlashToastConnect } = this.props
     const {
       hasError,
       isReady,
@@ -75,8 +75,10 @@ class ReportDownloadLink extends React.Component {
             options: { variant: 'error' },
           }, true)
           logError(err.toString(), err.message, 'equi.actions.getEquilibriumValues', err.stack)
+          this.setState({ hasError: true })
+          onError()
         })
-      return <div>Your report is being prepared</div>
+      return <div>Your report is being prepared...</div>
     }
 
     if (hasError) return <div>Couldn&apos;t generate report</div>
@@ -102,6 +104,8 @@ class ReportDownloadLink extends React.Component {
 }
 
 ReportDownloadLink.propTypes = {
+  // onFinish: PropTypes.func.isRequired,
+  onError: PropTypes.func.isRequired,
   // given by redux connect()
   isSimulated: PropTypes.bool.isRequired,
   addFlashToastConnect: PropTypes.func.isRequired,

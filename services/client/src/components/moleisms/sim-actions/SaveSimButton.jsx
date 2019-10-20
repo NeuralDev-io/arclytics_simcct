@@ -45,6 +45,8 @@ class SaveSimButton extends Component {
     }, 100)
   }
 
+  handleCloseDownloadLink = () => this.setState({ showDownload: false })
+
   saveSim = () => {
     const { saveSimulationConnect, addFlashToastConnect, sim: { configurations } } = this.props
     if (Object.keys(configurations.error).length !== 0) {
@@ -140,7 +142,7 @@ class SaveSimButton extends Component {
                     Generate report
                   </Button>
                 )
-                : <ReportDownloadLink />
+                : <ReportDownloadLink onFinish={this.handleCloseModal} onError={this.handleCloseDownloadLink} />
             }
           </div>
         </div>

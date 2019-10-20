@@ -9,25 +9,42 @@
  * @author Andrew Che
  */
 import React from 'react'
-import PropTypes from 'prop-types'
+import PropTypes, { number } from 'prop-types'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
-import { layout, config } from './utils/chartConfig'
+import { layout } from './utils/chartConfig'
 import { getColor } from '../../../utils/theming'
 
 import styles from './ProfileBarChart.module.scss'
 
-const MethodsHorizontalBarChart = ({ data }) => {
+const COLORS = [
+  '#d96060',
+  '#e78c3d',
+  '#a0ae49',
+  '#59ab59',
+  '#47acb8',
+  '#438fc4',
+  '#7b68d9',
+  '#9b5eba',
+  '#c354b1',
+  '#a1746b',
+  '#404041'
+]
+
+const SavedAlloysByNameHorizontalChart = ({ data }) => {
   let traceData = []
   if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
+    console.log(COLORS)
     traceData = [
       {
         type: 'bar',
         x: data.x,
         y: data.y,
         marker: {
-          color: [getColor('--r300'), getColor('--o300')]
+          color: data.colors.map(c => COLORS[c])
+          // color: data.colors
         },
+        orientation: 'h',
         opacity: 0.7,
         textfont: {
           family: 'Open Sans',
@@ -57,11 +74,22 @@ const MethodsHorizontalBarChart = ({ data }) => {
               ...profileLayout,
               xaxis: {
                 ...profileLayout.xaxis,
+                title: 'Count',
+                gridwidth: 0
               },
               yaxis: {
                 ...profileLayout.yaxis,
-                title: 'Count',
-                gridwidth: 0
+                tickangle: 45,
+                ticksuffix: '  ',  // give it a bit of space to the edge
+                position: -1,
+                title: 'Alloy names',
+                type: 'category'
+              },
+              margin: {
+                t: 45,
+                l: 100,
+                r: 0,
+                pad: 12,
               },
             }}
 
@@ -82,15 +110,16 @@ const MethodsHorizontalBarChart = ({ data }) => {
   )
 }
 
-MethodsHorizontalBarChart.propTypes = {
+SavedAlloysByNameHorizontalChart.propTypes = {
   data: PropTypes.shape({
     x: PropTypes.arrayOf(PropTypes.string),
-    y: PropTypes.arrayOf(PropTypes.number)
+    y: PropTypes.arrayOf(PropTypes.number),
+    colors: PropTypes.arrayOf(PropTypes.number),
   }),
 }
 
-MethodsHorizontalBarChart.defaultProps = {
+SavedAlloysByNameHorizontalChart.defaultProps = {
   data: undefined,
 }
 
-export default MethodsHorizontalBarChart
+export default SavedAlloysByNameHorizontalChart

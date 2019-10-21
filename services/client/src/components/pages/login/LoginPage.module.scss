@@ -34,36 +34,70 @@ $bg-img: url('../../../assets/login_register_bg.png');
 }
 
 .help{
-  float:right;
-  cursor:pointer;
-  color:var(--arc500);
-  margin-bottom: 3rem;
-  margin-right: 0.774375rem;
+  //float:right;
+  cursor: pointer;
+  color: var(--arc500);
+  //margin-bottom: 3rem;
+  //margin-right: 0.774375rem;
   outline: 0;
 }
 
 .loginForm{
   position: absolute;
   margin-left: 11.25rem;
-  width: 23.75rem;
+  width: 25rem;
+
   .createAccount{
     color:var(--arc500);
     text-decoration: none;
   }
+
   .email{
     margin-bottom: 1.84375rem;
     height: 2.25rem;
   }
+
   .password{
     margin-bottom: 1.625rem;
     height:2.25rem;
   }
+
+  .otherLinks {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   .signIn{
     margin-bottom: 1rem;
   }
+
   .clear{
     margin-top: 5.1825rem;
   }
+
+  .policy {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    margin-top: 2.25rem;
+    padding-left: 0.15rem;
+
+    p:last-of-type { margin-left: 1em; }
+
+    .links {
+      text-decoration: none;
+      color: var(--n500);
+    }
+  }
+}
+
+.backToSignin {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
 }
 
 .fadeLeftOut{
@@ -87,20 +121,21 @@ $bg-img: url('../../../assets/login_register_bg.png');
   display: flex;
   flex-flow: column;
   justify-content: space-between;
-  span{
+  span {
     margin-bottom: 1rem;
   }
-  .confirmation{
+
+  .confirmation {
     margin-top: 1.5rem;
     margin-bottom: 1rem;
     color: var(--g500);
   }
-  .errors{
+  .errors {
     color: var(--r400);
     margin-top: 1.5rem;
     margin-bottom: 1rem;
   }
-  .forgotSubmit{
+  .forgotSubmit {
     margin-bottom: 1rem;
   }
 }
@@ -164,4 +199,3 @@ $bg-img: url('../../../assets/login_register_bg.png');
 .header{
   margin-bottom: 4.375rem;
 }
-

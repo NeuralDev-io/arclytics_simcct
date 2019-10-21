@@ -12,7 +12,6 @@ import {
   LOAD_PERSISTED_SIM,
   LOAD_LAST_SIM,
   LOAD_SIM_FROM_FILE,
-  RESET_SIM,
 } from './types'
 import { SIMCCT_URL } from '../../../constants'
 import { ASTM2Dia } from '../../../utils/grainSizeConverter'

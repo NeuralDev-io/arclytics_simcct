@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import AlertCircle from 'react-feather/dist/icons/alert-circle'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faExclamationCircle } from '@fortawesome/pro-light-svg-icons/faExclamationCircle'
 import Tooltip from '../tooltip'
 
 import styles from './TextFieldExtra.module.scss'
@@ -80,7 +81,7 @@ class TextFieldExtra extends React.Component {
             position={errorTooltipPosition}
             className={{ container: styles.errorContainer, tooltip: `${styles.errorTooltip} ${styles[errorTooltipPosition]}` }}
           >
-            <AlertCircle className={styles.icon} />
+            <FontAwesomeIcon icon={faExclamationCircle} className={styles.icon} size="sm" />
             <span>{displayedError}</span>
           </Tooltip>
         )}

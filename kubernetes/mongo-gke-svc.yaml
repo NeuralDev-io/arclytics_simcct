@@ -52,7 +52,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
         - name: mongo-container
-          image: asia.gcr.io/arc-simcct/arc_sim_mongo:latest
+          image: asia.gcr.io/arc-sim-testing/arc_sim_mongo:latest
           imagePullPolicy: IfNotPresent
           resources:
             requests:
@@ -123,4 +123,4 @@ spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 50Gi
+            storage: 25Gi

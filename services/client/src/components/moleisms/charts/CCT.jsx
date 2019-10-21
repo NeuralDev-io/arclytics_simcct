@@ -20,7 +20,7 @@ import { InlineSpinner } from '../../elements/spinner'
 import { layout, config } from './utils/chartConfig'
 
 import { getColor } from '../../../utils/theming'
-import styles from './CCT.module.scss'
+import styles from './Chart.module.scss'
 
 const CCT = ({
   data,

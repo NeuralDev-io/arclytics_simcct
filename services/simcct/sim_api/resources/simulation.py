@@ -436,5 +436,5 @@ class Ae3Equilibrium(Resource):
         return {'status': 'success', 'data': data}, 200
 
 
-api.add_resource(Simulation, Routes.simulation.value)
-api.add_resource(Ae3Equilibrium, Routes.ae3_equilibrium.value)
+api.add_resource(Simulation, Routes.Simulation.value)
+api.add_resource(Ae3Equilibrium, Routes.Ae3Equilibrium.value)

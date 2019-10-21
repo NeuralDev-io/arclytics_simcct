@@ -8,15 +8,15 @@
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
-__version__ = '0.1.0'
-__status__ = 'development'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.10.15'
-
 """app_analytics.py: 
 
 This module provides the resources for analytical querying, manipulation and 
 transformations to display interesting data about the application itself. 
 """
+
 from os import environ as env
 from datetime import datetime
 from typing import Tuple
@@ -40,9 +40,9 @@ DATABASE = env.get('MONGO_APP_DB')
 # noinspection PyMethodMayBeStatic
 class GeneralData(Resource):
 
-    # method_decorators = {'get': [authorize_admin_cookie_restful]}
+    method_decorators = {'get': [authorize_admin_cookie_restful]}
 
-    def get(self) -> Tuple[dict, int]:
+    def get(self, _) -> Tuple[dict, int]:
         """Uses various MongoDB Queries and Aggregation Pipelines to get some
         interesting aggregation totals on certain collections and for the
         general application collection. Returns all the values from these
@@ -76,7 +76,7 @@ class GeneralData(Resource):
             {
                 '$group': {
                     '_id': None,
-                    'count': {'$sum': 1},
+                    # 'count': {'$sum': 1},
                     'average': {'$avg': {'$sum': '$ratings.rating'}}
                 }
             }
@@ -91,7 +91,7 @@ class GeneralData(Resource):
                 'count': {
                     'simulations': sim_df['count'][0],
                     'global_alloys': alloys_count,
-                    'ratings': ratings_df['count'][0],
+                    # 'ratings': ratings_df['count'][0],
                 },
                 'average': {
                     'ratings': ratings_df['average'][0]
@@ -105,9 +105,9 @@ class GeneralData(Resource):
 # noinspection PyMethodMayBeStatic
 class LiveLoginData(Resource):
 
-    # method_decorators = {'get': [authorize_admin_cookie_restful]}
+    method_decorators = {'get': [authorize_admin_cookie_restful]}
 
-    def get(self) -> Tuple[dict, int]:
+    def get(self, _) -> Tuple[dict, int]:
 
         # Get the current date
         date = datetime.utcnow().strftime('%Y-%m-%d')
@@ -145,6 +145,7 @@ class LiveLoginData(Resource):
         }
 
         return response, 200
+
 
 api.add_resource(GeneralData, Routes.GeneralData.value)
 api.add_resource(LiveLoginData, Routes.LiveLoginData.value)

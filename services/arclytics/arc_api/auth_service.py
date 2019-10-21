@@ -74,7 +74,7 @@ class AuthService(object):
     @staticmethod
     def decode_auth_token(
             auth_token: Union[bytes, str]
-    ) -> Union[Tuple[ ObjectId, str], Tuple[str, None]]:
+    ) -> Union[Tuple[ObjectId, str], Tuple[str, None]]:
         """Decodes the JWT auth token.
 
         Args:

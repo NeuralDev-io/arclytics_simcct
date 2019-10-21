@@ -34,9 +34,8 @@ from sim_api.models import (
 )
 from sim_api.routes import Routes
 
-logger = AppLogger(__name__)
-
 save_sim_blueprint = Blueprint('user_save_simulation', __name__)
+logger = AppLogger(__name__)
 
 # Note: An is_valid = False Configuration instance means it has not been run.
 

@@ -8,6 +8,7 @@
  * @author Andrew Che
  */
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUserFriends } from '@fortawesome/pro-light-svg-icons/faUserFriends'
 import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'

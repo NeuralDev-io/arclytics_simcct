@@ -31,6 +31,7 @@ import { persistSim } from '../../../state/ducks/persist/actions'
 import { logError } from '../../../api/LoggingHelper'
 
 import styles from './SimulationPage.module.scss'
+import ReportDownloadLink from '../../moleisms/pdf-export'
 
 class SimulationPage extends Component {
   constructor(props) {
@@ -116,6 +117,7 @@ class SimulationPage extends Component {
           />
         </div>
         <div className={styles.main}>
+          <ReportDownloadLink />
           <header>
             <div className={styles.config}>
               <h4>Configurations</h4>
@@ -153,14 +155,14 @@ class SimulationPage extends Component {
               {/* NOTE: TTT Child Component */}
               <div className={styles.line}>
                 <h5>TTT</h5>
-                <div>
+                <div id="ttt_chart">
                   <TTT />
                 </div>
               </div>
               <div className={styles.line}>
                 {/* NOTE: CCT Child Component */}
                 <h5>CCT</h5>
-                <div>
+                <div id="cct_chart">
                   <CCT />
                 </div>
               </div>

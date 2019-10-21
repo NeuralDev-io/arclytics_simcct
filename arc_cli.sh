@@ -1774,15 +1774,18 @@ while [[ "$1" != "" ]] ; do
               case $3 in
                 upload )
                   gsutil cp -r ${WORKDIR}/services/simcct/sim_api/static/* gs://${CLOUD_STORAGE_BUCKET}/imgs/
+                  gsutil cp -r ${WORKDIR}/arclytics.io/assets/ansto_neuraldev.jpg gs://${CLOUD_STORAGE_BUCKET}/imgs/
                   ;;
                 list | ls )
                   gsutil ls gs://${CLOUD_STORAGE_BUCKET}/imgs/**
                   ;;
                 public )
                   gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/imgs/email_footer_logo.png
+                  gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/imgs/ansto_neuraldev.jpg
                   ;;
                 address )
                   echo https://storage.googleapis.com/arclytics/imgs/email_footer_logo.png
+                  echo https://storage.googleapis.com/arclytics/imgs/ansto_neuraldev.jpg
                   ;;
                 go )
                   google-chrome https://storage.googleapis.com/arclytics/imgs/email_footer_logo.png

@@ -24,7 +24,7 @@ REPLICA_ZONE_MONGO="--replica-zones=${ZONE},australia-southeast1-c"
 echo "Creating GCE disks"
 for i in 1 2 3
 do
-    gcloud compute disks create --size 30GB \
+    gcloud compute disks create --size 50GB \
         --type pd-ssd mongo-ssd-disk-$i \
         ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
 done
@@ -53,13 +53,13 @@ echo
 kubectl rollout status sts/mongo --namespace arclytics
 
 # Wait until the final (2nd) mongod has started properly
-generalMessage "Waiting for the 2 containers to come up $(date)..."
-generalMessage " (IGNORE any reported not found & connection errors)"
+echo "Waiting for the 2 containers to come up $(date)..."
+echo " (IGNORE any reported not found & connection errors)"
 sleep 30
-generalMessage "  "
+echo "  "
 until kubectl --v=0 exec mongo-2 -c mongo-container -n arclytics -- mongo --quiet --eval 'db.getMongo()'; do
     sleep 5
-    generalMessage "  "
+    echo "  "
 done
 generalMessage "...mongo containers are now running $(date)"
 echo

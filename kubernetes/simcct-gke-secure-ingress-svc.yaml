@@ -44,7 +44,7 @@ spec:
     spec:
       containers:
         - name: simcct-container
-          image: asia.gcr.io/arc-sim/arc_sim_service:1.2.1
+          image: asia.gcr.io/arc-sim-testing/arc_sim_service:1.3.0
           imagePullPolicy: Always
           ports:
           - containerPort: 8000
@@ -68,7 +68,7 @@ spec:
             periodSeconds: 60
           resources:
             requests:
-              cpu: 1000m
+              cpu: 750m
               memory: 1.5Gi
             limits:
               cpu: 1500m
@@ -118,7 +118,7 @@ spec:
               secretKeyRef:
                 name: credentials
                 key: redis_password
-          - name: CLIENT_PROTOCOL
+          - name: CLIENT_SCHEME
             value: "https"
           - name: CLIENT_HOST
             value: "app.arclytics.io"
@@ -134,6 +134,12 @@ spec:
             value: "http"
           - name: ELASTIC_APM_SERVER_URL
             value: http://apm-service.arclytics.svc.cluster.local:8200
+            #value: https://apm.arclytics.io
+          - name: ELASTIC_APM_SECRET_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: elastic_apm_secret_token
           volumeMounts:
             - mountPath: /usr/src/app/certs
               readOnly: true

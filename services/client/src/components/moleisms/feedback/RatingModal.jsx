@@ -1,3 +1,16 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * RatingModal: periodically pops up to ask for a quick rating of the
+ * app. Less intrusive/time-consuming than a FeedbackModal.
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -17,30 +30,6 @@ import {
 import styles from './RatingModal.module.scss'
 
 class RatingModal extends Component {
-  componentDidMount = () => {
-    const { updateFeedbackConnect } = this.props
-    const simCount = localStorage.getItem('simCount')
-    if (simCount !== undefined) {
-      // check if it's turn to pop up feedback modal
-      const countToShow = ['2', '4', '9', '15', '26']
-      if (countToShow.includes(simCount) && localStorage.getItem('gotFeedback') !== 'true') {
-        this.timer = setTimeout(() => {
-          const { feedback: { feedbackVisible } } = this.props
-          if (!feedbackVisible) {
-            updateFeedbackConnect({ ratingVisible: true, givingFeedback: false })
-          }
-        }, 5000)
-      }
-    }
-  }
-
-  componentWillUnmount = () => {
-    if (this.timer) {
-      clearTimeout(this.timer)
-      this.timer = 0
-    }
-  }
-
   renderRating = () => {
     const { feedback: { rate }, submitRatingConnect } = this.props
     const iconArray = [

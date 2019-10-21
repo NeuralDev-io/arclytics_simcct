@@ -48,23 +48,15 @@
           <p>If you would like to cancel the promotion, please the button below:</p>
           <br/>
           <a href="{{ promotion_cancellation_url }}" style="text-decoration: none; text-decoration-color: #fafafa;">
-            <button onclick="window.location.href='{{ promotion_cancellation_url }}';" class="default-button"
-            style="font-style: normal;
-            background-color: #0076C2;
-            border: 2px solid #0076C2;
-            color: #fafafa;
-            width: 7.5rem;
-            height: 2.5rem;
-            {#padding: 0.5rem;#}
-            border-radius: 6px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, .25);
-            transition: ease-in-out .4s;
-            cursor: pointer;
-            text-align: center;
-            margin-left: auto;
-            margin-right: auto;">
-              Cancel Promotion
-            </button>
+            <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
+              <tr>
+                <td style="font-family: sans-serif; font-size: 14px; vertical-align: top; background-color: #0076C2; border-radius:5px; text-align: center;" valign="top" bgcolor="#0076C2" align="center">
+                  <a onclick="window.location.href='{{ promotion_cancellation_url }}';" target="_blank" style="display: inline-block; color: #ffffff; background-color: #0076C2; border: solid 1px #0076C2; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 14px; margin: 0; padding: 8px 23px; text-transform: capitalize; border-color: #0076C2;">
+                    Cancel Promotion
+                  </a>
+                </td>
+              </tr>
+            </table>
           </a>
           <br/>
           <p>
@@ -85,7 +77,7 @@
           <!-- EMAIL FOOTER GOES HERE -->
           <p>This message was sent by the team behind:</p>
           <br/>
-          <img src="https://storage.googleapis.com/asia.artifacts.arc-sim.appspot.com/assets/imgs/email_footer_logo.png"
+          <img src="https://storage.googleapis.com/arclytics/imgs/email_footer_logo.png"
                alt="Arclytics Logo" width="50%" height="auto"/>
         </table>
       </td>

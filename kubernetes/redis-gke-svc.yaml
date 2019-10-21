@@ -3,6 +3,9 @@ kind: ConfigMap
 metadata:
   name: redis-config-map
   namespace: arclytics
+  labels:
+    app: redis
+    service: redis-persistence
 data:
   redis.conf: |
     ################################## SECURITY ###################################
@@ -16,7 +19,7 @@ data:
     # Warning: since Redis is pretty fast an outside user can try up to
     # 150k passwords per second against a good box. This means that you should
     # use a very strong password otherwise it will be very easy to break.
-    #requirepass "#{ENV['REDIS_PASSWORD']}"
+    requirepass "#{ ENV['REDIS_PASSWORD'] || '8wHpuvd7+8hZ9kxm48UFAEJOW78l6wlIM7Igpcr0GhU=' }"
     protected-mode yes
 
     ################################## NETWORK #####################################
@@ -167,10 +170,9 @@ data:
     # http://antirez.com/post/redis-persistence-demystified.html
     #
     # If unsure, use "everysec".
-
     # appendfsync always
-    appendfsync everysec
     # appendfsync no
+    appendfsync everysec
 ---
 apiVersion: v1
 kind: Service
@@ -214,13 +216,31 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: redis-container
-          image: asia.gcr.io/arc-sim/arc_sim_redis:latest
+          image: asia.gcr.io/arc-sim-testing/arc_sim_redis:latest
           imagePullPolicy: Always
           command: ['/usr/local/bin/redis-server']
           args:
-            - '/redis-conf/redis.conf'
+#            - '/redis-conf/redis.conf'
             - '--requirepass'
             - '$(REDIS_PASSWORD)'
+            - '--appendonly'
+            - 'yes'
+            - '--save'
+            - '300'
+            - '--save'
+            - '1'
+            - '--save'
+            - '120'
+            - '10'
+            - '--save'
+            - '60'
+            - '1000'
+            - '--loglevel'
+            - 'verbose'
+            - '--appendonly'
+            - 'yes'
+            - '--appendfilename'
+            - 'appendonly.aof'
           resources:
             requests:
               cpu: 250m
@@ -242,12 +262,12 @@ spec:
           volumeMounts:
             - name: redis-pvc
               mountPath: /data
-            - name: redis-config
-              mountPath: /redis-conf
-      volumes:
-        - name: redis-config
-          configMap:
-            name: redis-config-map
+#            - name: redis-config
+#              mountPath: /redis-conf
+#      volumes:
+#        - name: redis-config
+#          configMap:
+#            name: redis-config-map
   volumeClaimTemplates:
     - metadata:
         name: redis-pvc
@@ -260,4 +280,4 @@ spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 30Gi
+            storage: 25Gi

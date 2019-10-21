@@ -9,7 +9,6 @@ services:
       dockerfile: Dockerfile
       labels:
         arclytics.io: "development"
-        service: "fluentd"
     image: neuraldev/arc_fluentd:1.0
     restart: always
     ports:
@@ -24,7 +23,7 @@ services:
     depends_on:
       - elasticsearch
     networks:
-      - host
+      - dev_subnet
 
   client:
     build:
@@ -32,7 +31,6 @@ services:
       dockerfile: Dockerfile
       labels:
         arclytics.io: "development"
-        service: "client"
     image: neuraldev/arc_sim_client:1.2
     volumes:
       - ./services/client:/usr/src/app
@@ -50,12 +48,16 @@ services:
       - NODE_ENV=development
       - REACT_APP_SIM_HOST=http://localhost
       - REACT_APP_SIM_PORT=8000
+      - REACT_APP_ARC_HOST=http://localhost
+      - REACT_APP_ARC_PORT=80
+      - REACT_APP_APM_URL=http://localhost/apm
+      - REACT_APP_FLUENTD_URL=http://localhost:80/logger
     depends_on:
       - mongodb
       - simcct
       - fluentd
     networks:
-      - host
+      - dev_subnet
 
   nginx:
     build:
@@ -63,7 +65,6 @@ services:
       dockerfile: Dockerfile
       labels:
         arclytics.io: "development"
-        service: "simcct"
     labels:
       arclytics.io: "development"
     image: neuraldev/arc_sim_nginx:1.0
@@ -77,8 +78,11 @@ services:
       - 80:80
     depends_on:
       - fluentd
+      - client
+      - simcct
+      - apm-server
     networks:
-      - host
+      - dev_subnet
 
   simcct:
     build:
@@ -123,12 +127,11 @@ services:
     depends_on:
       - mongodb
       - redis
-      - nginx
       - fluentd
       - elasticsearch
       - apm-server
     networks:
-      - host
+      - dev_subnet
 
   arclytics:
     build:
@@ -136,7 +139,7 @@ services:
       dockerfile: Dockerfile
       labels:
         arclytics.io: "development"
-    image: neuraldev/arclytics_service:1.3
+    image: neuraldev/arclytics_service:0.9
     logging:
       driver: fluentd
       options:
@@ -153,11 +156,25 @@ services:
       - FLASK_ENV=development
       - APP_SETTINGS=configs.flask_conf.DevelopmentConfig
       - SECRET_KEY=${SECRET_KEY}
-      - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
+      - SIMCCT_HOST=http://simcct:8000/v1/sim
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - MONGO_APP_DB=arc_dev
+      - MONGO_APP_USER=${MONGO_APP_USER}
+      - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
+      - FLUENTD_HOST=fluentd
+      - FLUENTD_PORT=24224
+      - FLUENTD_PREFIX_TAG=arclytics
+      - ELASTIC_APM_SERVER_URL=http://apm-server:8200
+      - MAPBOX_TOKEN=${MAPBOX_TOKEN}
     depends_on:
       - fluentd
+      - elasticsearch
     networks:
-      - host
+      - dev_subnet
 
   celery-worker:
     build:
@@ -186,14 +203,19 @@ services:
       - MAIL_USE_TLS=${MAIL_USE_TLS}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - MONGO_APP_DB=arc_dev
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - ELASTIC_APM_SERVER_URL=http://apm-server:8200
     depends_on:
       - redis
       - fluentd
+      - elasticsearch
+      - mongodb
     networks:
-      - host
+      - dev_subnet
 
   redis:
     build:
@@ -215,7 +237,7 @@ services:
     depends_on:
       - fluentd
     networks:
-      - host
+      - dev_subnet
 
   mongodb:
     build:
@@ -242,7 +264,7 @@ services:
     depends_on:
       - fluentd
     networks:
-      - host
+      - dev_subnet
 
   elasticsearch:
     build:
@@ -269,7 +291,7 @@ services:
         soft: -1
         hard: -1
     networks:
-      - host
+      - dev_subnet
 
   apm-server:
     build:
@@ -278,6 +300,11 @@ services:
       labels:
         arclytics.io: "development"
     image: neuraldev/arc_apm_server:latest
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: apm.docker.access
     ports:
       - 8200:8200
     expose:
@@ -287,7 +314,7 @@ services:
     depends_on:
       - elasticsearch
     networks:
-      - host
+      - dev_subnet
 
   kibana:
     build:
@@ -306,7 +333,7 @@ services:
       - elasticsearch
       - fluentd
     networks:
-      - host
+      - dev_subnet
 
   swagger:
     build:
@@ -322,7 +349,7 @@ services:
     environment:
       - URL=swagger.yaml
     networks:
-      - host
+      - dev_subnet
 
   # ============================== # DASK MICROSERVICES # ============================== #
   dask-scheduler:
@@ -342,7 +369,7 @@ services:
     # Entrypoint command needs to be set here because Dockerfile shared with `dask-worker`
     command: ['dask-scheduler']
     networks:
-      - host
+      - dev_subnet
 
   dask-worker:
     build:
@@ -354,7 +381,7 @@ services:
     hostname: dask-worker
     command: ['dask-worker', 'tcp://dask-scheduler:8786', '--no-nanny']
     networks:
-      - host
+      - dev_subnet
 
   jupyter:
     build:
@@ -368,19 +395,22 @@ services:
     volumes:
       - type: bind
         source: ./services/jupyter/notebooks
-        target: /home/arclytics/
+        target: /home/arclytics/notebooks
     ports:
       - 8888:8888
     expose:
       - 8888
     environment:
       - NB_USER=arclytics
+      - NB_UID=1000
+      - NB_GID=100
+      - NB_UMASK=002
+      - JUPYTER_ENABLE_LAB=yes
       - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
-    depends_on:
-      - dask-scheduler
-      - dask-worker
+      - MONGO_URI=mongodb://mongodb:27017
+      - REDIS_URI=redis://redis:6379
     networks:
-      - host
+      - dev_subnet
 
   # ============================== # TEST MICROSERVICES # ============================== #
   # Both these services were created for testing purposes and a proof-of-concept for
@@ -408,7 +438,7 @@ services:
     depends_on:
       - fluentd
     networks:
-      - host
+      - dev_subnet
 
   fluent-react:
     build:
@@ -429,11 +459,11 @@ services:
     depends_on:
       - fluentd
     networks:
-      - host
+      - dev_subnet
   # =================================================================================== #
 
 networks:
-  host:
+  dev_subnet:
     driver: bridge
     labels:
       arclytics.io: "development"

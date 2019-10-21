@@ -13,8 +13,6 @@ __author__ = [
 ]
 __license__ = 'MIT'
 __version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'production'
 __date__ = '2019.06.04'
 """manage.py: 
@@ -70,23 +68,59 @@ COV = coverage.coverage(
 )
 COV.start()
 
+# Create an instance of the global Flask app for the SimCCT Server.
 app = create_app()
+# Add the Flask Instance to the Flask CLI tool to use as a factory to create
+# more Flask instances when you run a CLI command.
 cli = FlaskGroup(create_app=create_app)
 
 
 @cli.command('flush')
 def flush():
     """Drop all collections in the database."""
-    db = get_db('default')
-    print(
-        'Dropping <{}.{}> database:'.format(db.name, 'users'), file=sys.stderr
+    if os.environ.get('FLASK_ENV', 'development') == 'production':
+        print('You should not flush the database in production.')
+        return
+
+    client = MongoClient(
+        host=os.environ.get('MONGO_HOST'),
+        port=int(os.environ.get('MONGO_PORT'))
     )
-    db.users.drop()
+    redis_client = redis.Redis(
+        host=os.environ.get('REDIS_HOST'), port=os.environ.get('REDIS_PORT')
+    )
+
+    # List of collections to drop
+    collections = [
+        'users', 'feedback', 'saved_simulations', 'shared_simulations',
+        'alloys'
+    ]
+
+    # Start dropping those collections for each of our dev environments.
+    print(
+        'Dropping collections in <{}> database:'.format('arc_dev'),
+        file=sys.stderr
+    )
+
+    for c in collections:
+        client['arc_dev'].drop_collection(c)
+
+    print(
+        'Dropping collections in <{}> database:'.format('arc_test'),
+        file=sys.stderr
+    )
+
+    for c in collections:
+        client['arc_dev'].drop_collection(c)
+
+    dbs_created = redis_client.config_get('databases')
+    print('Flushing Redis: {}'.format(dbs_created), file=sys.stderr)
+    redis_client.flushall()
 
 
 @cli.command('flush_all')
 def flush():
-    """Flush all databases and datastores."""
+    """Flush all databases and data stores."""
     if os.environ.get('FLASK_ENV', 'development') == 'production':
         print('You should not flush the database in production.')
         return

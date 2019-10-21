@@ -1,0 +1,8 @@
+Hi {{ user_name }},
+
+Your account has been enabled again by an administrator.
+
+If you have any questions, please contact help@neuraldev.io
+
+Regards,
+The Arclytics Team

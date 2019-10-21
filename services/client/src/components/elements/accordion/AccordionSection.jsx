@@ -1,7 +1,20 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * AccordionSection component for each section in an Accordion
+ *
+ * @version 1.0.0
+ * @author Andrew Che, Dalton Le
+ */
 import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
-import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
-import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronUp } from '@fortawesome/pro-light-svg-icons/faChevronUp'
+import { faChevronDown } from '@fortawesome/pro-light-svg-icons/faChevronDown'
 import { buttonize } from '../../../utils/accessibility'
 
 import styles from './AccordionSection.module.scss'
@@ -19,7 +32,7 @@ class AccordionSection extends PureComponent {
     const labelId = `label-${id}`
 
     return (
-      <React.Fragment>
+      <>
         <div
           className={styles.title}
           role="button"
@@ -30,8 +43,8 @@ class AccordionSection extends PureComponent {
         >
           <h6>{title}</h6>
           <div className={styles.icons}>
-            <ChevronDownIcon className={`${styles.icon} ${expanded ? styles.hidden : ''}`} />
-            <ChevronUpIcon className={`${styles.icon} ${!expanded ? styles.hidden : ''}`} />
+            <FontAwesomeIcon icon={faChevronDown} className={`${styles.icon} ${expanded ? styles.hidden : ''}`} size="1x" />
+            <FontAwesomeIcon icon={faChevronUp} className={`${styles.icon} ${!expanded ? styles.hidden : ''}`} size="1x" />
           </div>
         </div>
         <div
@@ -43,7 +56,7 @@ class AccordionSection extends PureComponent {
         >
           {expanded && children}
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

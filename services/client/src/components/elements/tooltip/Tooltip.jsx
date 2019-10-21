@@ -68,7 +68,7 @@ Tooltip.propTypes = {
     PropTypes.node,
   ]).isRequired,
   // prop to set the position of the modal relative to interactive element
-  // topLeft || topRight || bottomLeft || bottomRight
+  // top || right || bottom || left
   position: PropTypes.string,
   // className prop to override scss styles
   className: PropTypes.shape({

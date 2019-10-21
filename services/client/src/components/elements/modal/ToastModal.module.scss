@@ -30,6 +30,7 @@
   width: fit-content;
   box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 5px 10px rgba(0,0,0,.3);
   border-radius: 5px;
+  transition: $ease-in-out-cubic all .6s;
   box-sizing: border-box;
   max-height: 30vh;
   overflow-y: auto;

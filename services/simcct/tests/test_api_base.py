@@ -6,30 +6,24 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '{mayor}.{minor}.{rel}'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = [
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
+__license__ = 'MIT'
 __status__ = 'development'
 __date__ = '2019.07.03'
-"""base.py: 
-
-The base TestCase that all others subclass from.
-"""
 
 import os
-from pymongo import MongoClient
-from mongoengine.connection import get_db, get_connection, disconnect
+
 from flask_testing import TestCase
+from mongoengine.connection import disconnect, get_connection, get_db
+from pymongo import MongoClient
 from redis import Redis
 
-from tests.test_utilities import FlaskTestClientProxy
-from sim_api import set_flask_mongo, init_db
 from arc_logging import AppLogger
 from sim_api import create_app
+from sim_api import init_db, set_flask_mongo
 
 logger = AppLogger(__name__)
 

@@ -6,25 +6,18 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
 __status__ = 'development'
 __date__ = '2019.07.23'
-"""test_api_emails.py: 
-
-{Description}
-"""
 
 import time
 import unittest
 
-from tests.test_api_base import BaseTestCase
 from sim_api.token import (
-    confirm_token, generate_confirmation_token, generate_url, URLTokenError,
-    URLTokenExpired
+    URLTokenError, URLTokenExpired, confirm_token, generate_confirmation_token,
+    generate_url
 )
+from tests.test_api_base import BaseTestCase
 
 
 class TestTokenURL(BaseTestCase):
@@ -59,7 +52,7 @@ class TestTokenURL(BaseTestCase):
         """Ensure generate_url behaves as expected."""
         token = generate_confirmation_token('dummy@email.com')
         url = generate_url('auth.confirm_email', token)
-        url_token = url.split('/')[7]
+        url_token = url.split('/')[6]
         self.assertEqual(token, url_token)
         email = confirm_token(url_token)
         self.assertEqual(email, 'dummy@email.com')

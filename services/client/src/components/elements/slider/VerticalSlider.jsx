@@ -1,3 +1,20 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Vertical slider component. A wrapper around the
+ * react-compound-slider component to add extra styling
+ * and custom properties for Arclytics SimCCT.
+ *
+ * For props reference, refer to the documentation at
+ * https://sghall.github.io/react-compound-slider/#/
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React from 'react'
 import PropTypes from 'prop-types'
 import Slider, {

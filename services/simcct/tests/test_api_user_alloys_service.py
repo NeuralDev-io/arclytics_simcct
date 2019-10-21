@@ -6,15 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __status__ = 'development'
 __date__ = '2019.08.02'
-"""test_api_user_alloys_service.py: 
 
-Unit Testing the User Alloy Service.
-"""
 import os
 import unittest
 from pathlib import Path
@@ -92,7 +87,7 @@ class TestUserAlloyService(BaseTestCase):
         client, email='morgan@starkindustries.com', password='IronHeart!'
     ):
         client.post(
-            '/api/v1/sim/auth/login',
+            '/v1/sim/auth/login',
             data=json.dumps({
                 'email': email,
                 'password': password
@@ -119,7 +114,7 @@ class TestUserAlloyService(BaseTestCase):
         with app.test_client() as client:
             self.login(client)
             res = client.post(
-                '/api/v1/sim/user/alloys',
+                '/v1/sim/user/alloys',
                 data=json.dumps(alloy_data),
                 content_type='application/json'
             )
@@ -133,7 +128,7 @@ class TestUserAlloyService(BaseTestCase):
         with app.test_client() as client:
             self.login(client)
             res = client.post(
-                '/api/v1/sim/user/alloys',
+                '/v1/sim/user/alloys',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -154,7 +149,7 @@ class TestUserAlloyService(BaseTestCase):
             }
 
             res = client.post(
-                '/api/v1/sim/user/alloys',
+                '/v1/sim/user/alloys',
                 data=json.dumps(invalid_alloy),
                 content_type='application/json'
             )
@@ -173,7 +168,7 @@ class TestUserAlloyService(BaseTestCase):
 
             invalid_alloy = {'compositions': [{"symbol": "C", "weight": 0.0}]}
             res = client.post(
-                '/api/v1/sim/user/alloys',
+                '/v1/sim/user/alloys',
                 data=json.dumps(invalid_alloy),
                 content_type='application/json'
             )
@@ -189,7 +184,7 @@ class TestUserAlloyService(BaseTestCase):
             invalid_alloy = {'name': 'Alloy_1', 'compositions': []}
 
             res = client.post(
-                '/api/v1/sim/user/alloys',
+                '/v1/sim/user/alloys',
                 data=json.dumps(invalid_alloy),
                 content_type='application/json'
             )
@@ -215,7 +210,7 @@ class TestUserAlloyService(BaseTestCase):
             }
 
             res = client.post(
-                '/api/v1/sim/user/alloys',
+                '/v1/sim/user/alloys',
                 data=json.dumps(invalid_alloy),
                 content_type='application/json'
             )
@@ -241,7 +236,7 @@ class TestUserAlloyService(BaseTestCase):
             }
 
             res = client.post(
-                '/api/v1/sim/user/alloys',
+                '/v1/sim/user/alloys',
                 data=json.dumps(invalid_alloy),
                 content_type='application/json'
             )
@@ -303,7 +298,7 @@ class TestUserAlloyService(BaseTestCase):
             user.save()
 
             res = client.get(
-                '/api/v1/sim/user/alloys', content_type='application/json'
+                '/v1/sim/user/alloys', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
@@ -359,8 +354,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = str(user.saved_alloys[0].oid)
 
             res = client.get(
-                f'/api/v1/sim/user/alloys/{_id}',
-                content_type='application/json'
+                f'/v1/sim/user/alloys/{_id}', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
@@ -379,8 +373,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = str(user.saved_alloys[0].oid)
 
             res = client.get(
-                f'/api/v1/sim/user/alloys/{_id}',
-                content_type='application/json'
+                f'/v1/sim/user/alloys/{_id}', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
@@ -397,8 +390,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = ObjectId()
 
             res = client.get(
-                f'/api/v1/sim/user/alloys/{_id}',
-                content_type='application/json'
+                f'/v1/sim/user/alloys/{_id}', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['message'], 'Alloy does not exist.')
@@ -410,7 +402,7 @@ class TestUserAlloyService(BaseTestCase):
             self.login(client)
 
             res = client.get(
-                '/api/v1/sim/user/alloys/cheeseburgers',
+                '/v1/sim/user/alloys/cheeseburgers',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -467,8 +459,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = str(user.saved_alloys[0].oid)
 
             res = client.delete(
-                f'/api/v1/sim/user/alloys/{_id}',
-                content_type='application/json'
+                f'/v1/sim/user/alloys/{_id}', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(res.status_code, 202)
@@ -485,7 +476,7 @@ class TestUserAlloyService(BaseTestCase):
             self.login(client)
 
             res = client.get(
-                '/api/v1/sim/user/alloys/cheeseburgers',
+                '/v1/sim/user/alloys/cheeseburgers',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -500,8 +491,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = ObjectId()
 
             res = client.delete(
-                f'/api/v1/sim/user/alloys/{_id}',
-                content_type='application/json'
+                f'/v1/sim/user/alloys/{_id}', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['message'], 'No alloy found.')
@@ -518,8 +508,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = ObjectId()
 
             res = client.delete(
-                f'/api/v1/sim/user/alloys/{_id}',
-                content_type='application/json'
+                f'/v1/sim/user/alloys/{_id}', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(res.status_code, 404)
@@ -533,7 +522,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = ObjectId()
 
             res = client.put(
-                f'/api/v1/sim/user/alloys/{_id}',
+                f'/v1/sim/user/alloys/{_id}',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -547,7 +536,7 @@ class TestUserAlloyService(BaseTestCase):
             self.login(client)
 
             res = client.put(
-                f'/api/v1/sim/user/alloys/ironheart!',
+                f'/v1/sim/user/alloys/ironheart!',
                 data=json.dumps(alloy_data),
                 content_type='application/json'
             )
@@ -563,7 +552,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = ObjectId()
 
             res = client.put(
-                f'/api/v1/sim/user/alloys/{_id}',
+                f'/v1/sim/user/alloys/{_id}',
                 data=json.dumps({
                     'alloy_name': 'Wrong_Key',
                     'comps': []
@@ -582,7 +571,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = ObjectId()
 
             res = client.put(
-                f'/api/v1/sim/user/alloys/{_id}',
+                f'/v1/sim/user/alloys/{_id}',
                 data=json.dumps(
                     {
                         'name': 'Bad Alloc',
@@ -610,7 +599,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = ObjectId()
 
             res = client.put(
-                f'/api/v1/sim/user/alloys/{_id}',
+                f'/v1/sim/user/alloys/{_id}',
                 data=json.dumps(alloy_data),
                 content_type='application/json'
             )
@@ -630,7 +619,7 @@ class TestUserAlloyService(BaseTestCase):
             _id = ObjectId()
 
             res = client.put(
-                f'/api/v1/sim/user/alloys/{_id}',
+                f'/v1/sim/user/alloys/{_id}',
                 data=json.dumps(alloy_data),
                 content_type='application/json'
             )
@@ -656,7 +645,7 @@ class TestUserAlloyService(BaseTestCase):
             }
 
             res = client.put(
-                f'/api/v1/sim/user/alloys/{_id}',
+                f'/v1/sim/user/alloys/{_id}',
                 data=json.dumps(updated_alloy),
                 content_type='application/json'
             )
@@ -694,7 +683,7 @@ class TestUserAlloyService(BaseTestCase):
             }
 
             res = client.put(
-                f'/api/v1/sim/user/alloys/{_id}',
+                f'/v1/sim/user/alloys/{_id}',
                 data=json.dumps(updated_alloy),
                 content_type='application/json'
             )
@@ -762,7 +751,7 @@ class TestUserAlloyService(BaseTestCase):
             }
 
             res = client.put(
-                f'/api/v1/sim/user/alloys/{_id}',
+                f'/v1/sim/user/alloys/{_id}',
                 data=json.dumps(updated_alloy),
                 content_type='application/json'
             )
@@ -790,7 +779,7 @@ class TestUserAlloyService(BaseTestCase):
             updated_alloy = {'name': new_name, 'compositions': [new_elem]}
 
             res = client.patch(
-                f'/api/v1/sim/user/alloys/{_id}',
+                f'/v1/sim/user/alloys/{_id}',
                 data=json.dumps(updated_alloy),
                 content_type='application/json'
             )
@@ -807,7 +796,7 @@ class TestUserAlloyService(BaseTestCase):
             self.bad_cookie(self, client)
 
             res = client.post(
-                '/api/v1/sim/user/alloys',
+                '/v1/sim/user/alloys',
                 data=json.dumps(alloy_data),
                 content_type='application/json'
             )
@@ -821,7 +810,7 @@ class TestUserAlloyService(BaseTestCase):
             self.bad_cookie(self, client)
 
             res = client.post(
-                '/api/v1/sim/user/alloys', content_type='application/json'
+                '/v1/sim/user/alloys', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual('fail', data['status'])

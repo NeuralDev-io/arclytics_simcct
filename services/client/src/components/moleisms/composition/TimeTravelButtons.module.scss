@@ -1,0 +1,38 @@
+.timeMachine {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.timeButton {
+  width: 2rem;
+  height: 2rem;
+  background-color: transparent;
+
+  &.disabled { background-color: transparent; }
+
+  & .timeIcon {
+    height: 1rem;
+    width: 1rem;
+    stroke: var(--arc500);
+  }
+}
+
+.history {
+  padding: .5rem 0;
+
+  & > h4 {
+    margin: 1rem 0 1.5rem 2rem;
+  }
+}
+
+.historyItem {
+  width: 15rem;
+  padding: .75rem 1rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--n10);
+    color: var(--arc500);
+  }
+}

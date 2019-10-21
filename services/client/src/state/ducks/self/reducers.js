@@ -3,7 +3,6 @@ import {
   CREATE_USER_PROFILE,
   UPDATE_USER_PROFILE,
   UPDATE_EMAIL,
-  CHANGE_PASSWORD,
   SAVE_SIM,
   GET_SIM,
   GET_LAST_SIM,
@@ -19,7 +18,11 @@ const initialState = {
       phase_transform_exp: '',
     },
   },
-  savedSimulations: [],
+  savedSimulations: {
+    fetched: false,
+    isLoading: false,
+    data: [],
+  },
   lastSim: {},
 }
 
@@ -27,6 +30,7 @@ const reducer = (state = initialState, action) => {
   switch (action.type) {
     case GET_USER_PROFILE:
       return {
+        ...state,
         user: {
           ...state.user,
           ...action.payload,
@@ -59,27 +63,52 @@ const reducer = (state = initialState, action) => {
           ...action.payload,
         },
       }
-    case CHANGE_PASSWORD:
-      return {
-        ...state,
-        user: {
-          ...state.user,
-          ...action.payload,
-        },
-      }
     case SAVE_SIM:
       return {
         ...state,
-        savedSimulations: [
+        savedSimulations: {
           ...state.savedSimulations,
-          action.payload,
-        ],
+          data: [
+            ...state.savedSimulations.data,
+            action.payload,
+          ],
+        },
       }
-    case GET_SIM:
-      return {
-        ...state,
-        savedSimulations: [...action.payload],
+    case GET_SIM: {
+      if (action.status === 'started') {
+        return {
+          ...state,
+          savedSimulations: {
+            ...state.savedSimulations,
+            isLoading: true,
+          },
+        }
       }
+      if (action.status === 'success') {
+        return {
+          ...state,
+          savedSimulations: {
+            ...state.savedSimulations,
+            fetched: true,
+            isLoading: false,
+            data: [
+              ...action.payload,
+            ],
+          },
+        }
+      }
+      if (action.status === 'fail') {
+        return {
+          ...state,
+          savedSimulations: {
+            ...state.savedSimulations,
+            isLoading: false,
+            data: [],
+          },
+        }
+      }
+      break
+    }
     case GET_LAST_SIM:
       return {
         ...state,

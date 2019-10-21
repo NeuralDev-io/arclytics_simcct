@@ -34,7 +34,7 @@ spec:
     spec:
       containers:
       - name: simcct-container
-        image: asia.gcr.io/arc-sim/arc_sim_service:1.1.5
+        image: asia.gcr.io/arc-sim-testing/arc_sim_service:1.1.5
         imagePullPolicy: Always
         ports:
         - containerPort: 8000

@@ -12,13 +12,11 @@ services:
       labels:
         arclytics.io: "production"
         service: "website"
-    image: asia.gcr.io/arc-sim/arc_sim_website:latest
+    image: asia.gcr.io/arc-sim-testing/arc_sim_website:latest
     ports:
       - 8080:8080
     expose:
       - 8080
-    networks:
-      - arc_deploy
 
 
   fluentd:
@@ -28,7 +26,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "fluentd"
-    image: asia.gcr.io/arc-sim/arc_fluentd:latest
+    image: asia.gcr.io/arc-sim-testing/arc_fluentd:latest
     restart: always
     ports:
       - 24224:24224
@@ -37,8 +35,6 @@ services:
     expose:
       - 24224
       - 9880
-    networks:
-      - arc_deploy
 
   client:
     build:
@@ -48,22 +44,24 @@ services:
         - NODE_ENV=production
         - REACT_APP_SIM_HOST=https://api.arclytics.io
         - REACT_APP_SIM_PORT=443
+        - REACT_APP_ARC_HOST=https://api.arclytics.io
+        - REACT_APP_ARC_PORT=443
+        - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logger
       labels:
         arclytics.io: "production"
         service: "client"
-    image: asia.gcr.io/arc-sim/arc_sim_client:1.2.0
+    image: asia.gcr.io/arc-sim-testing/arc_sim_client:1.3.0
     ports:
       - 8080:8080
     expose:
       - 8080
     environment:
+      - NODE_ENV=production
       - REACT_APP_SIM_HOST=https://api.arclytics.io
       - REACT_APP_SIM_PORT=443
-    depends_on:
-      - simcct
-      - mongodb
-    networks:
-      - arc_deploy
+      - REACT_APP_ARC_HOST=https://api.arclytics.io
+      - REACT_APP_ARC_PORT=443
+      - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logger
 
   simcct:
     build:
@@ -72,38 +70,33 @@ services:
       labels:
         arclytics.io: "production"
         service: "simcct"
-    image: asia.gcr.io/arc-sim/arc_sim_service:1.2.1
+    image: asia.gcr.io/arc-sim-testing/arc_sim_service:1.3.0
     ports:
       - 8000:8000
     expose:
       - 8000
     environment:
-      - FLASK_APP=sim_api/app.py
+      - FLASK_APP=sim_api/__init__.py
       - FLASK_ENV=production
       - APP_SETTINGS=configs.flask_conf.ProductionConfig
       - SECRET_KEY=${SECRET_KEY}
       - SECURITY_PASSWORD_SALT=${SECURITY_PASSWORD_SALT}
-      - MONGO_HOST=mongodb
+      - MONGO_HOST=mongo-service
       - MONGO_PORT=27017
       - MONGO_APP_DB=${MONGO_APP_DB}
       - MONGO_APP_USER=${MONGO_APP_USER}
       - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
-      - REDIS_HOST=redis
+      - REDIS_HOST=redis-service
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - CLIENT_PROTOCOL=https
+      - CLIENT_SCHEME=https
       - CLIENT_HOST=app.arclytics.io
       - CLIENT_PORT=443
-      - DASK_SCHEDULER_ADDRESS=tcp://dask-scheduler:8786
       - FLUENTD_HOST=fluentd-service
       - FLUENTD_PORT=24224
       - FLUENTD_PREFIX_TAG=simcct
-      - ELASTIC_APM_SERVER_URL=http://apm-server:8200
-    depends_on:
-      - mongodb
-      - redis
-    networks:
-      - arc_deploy
+      - ELASTIC_APM_SERVER_URL=http://apm-service:8200
+      - ELASTIC_APM_SECRET_TOKEN=${SECRET_TOKEN}
 
   celery-worker:
     build:
@@ -112,7 +105,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "celery-worker"
-    image: asia.gcr.io/arc-sim/arc_sim_celery:1.2.0
+    image: asia.gcr.io/arc-sim-testing/arc_sim_celery:1.3.0
     ports:
       - 5555:5555
     expose:
@@ -125,14 +118,48 @@ services:
       - MAIL_USE_TLS=${MAIL_USE_TLS}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - REDIS_HOST=redis
+      - MONGO_HOST=mongo-service
+      - MONGO_PORT=27017
+      - MONGO_APP_DB=arclytics
+      - MONGO_APP_USER=${MONGO_APP_USER}
+      - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
+      - REDIS_HOST=redis-service
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - ELASTIC_APM_SERVER_URL=http://apm-service:8200
+      - ELASTIC_APM_SECRET_TOKEN=${SECRET_TOKEN}
+
+  arclytics:
+    build:
+      context: ./services/arclytics
+      dockerfile: Dockerfile-prod
+      labels:
+        arclytics.io: "production"
+        service: "arclytics"
+    image: asia.gcr.io/arc-sim-testing/arclytics_service:1.3.0
+    ports:
+      - 8001:8001
+    expose:
+      - 8001
+    environment:
+      - FLASK_APP=arc_api/__init__.py
+      - FLASK_ENV=production
+      - APP_SETTINGS=configs.flask_conf.ProductionConfig
+      - SECRET_KEY=${SECRET_KEY}
+      - SIMCCT_HOST=http://simcct-service:8000/v1/sim
+      - REDIS_HOST=redis-service
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MONGO_HOST=mongo-service
+      - MONGO_PORT=27017
+      - MONGO_APP_DB=arc_dev
+      - MONGO_APP_USER=${MONGO_APP_USER}
+      - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
+      - FLUENTD_HOST=fluentd-service
+      - FLUENTD_PORT=24224
+      - FLUENTD_PREFIX_TAG=arclytics
       - ELASTIC_APM_SERVER_URL=http://apm-server:8200
-    depends_on:
-      - redis
-    networks:
-      - arc_deploy
+      - MAPBOX_TOKEN=${MAPBOX_TOKEN}
 
   redis:
     build:
@@ -141,15 +168,14 @@ services:
       labels:
         arclytics.io: "production"
         service: "redis"
-    image: asia.gcr.io/arc-sim/arc_sim_redis:latest
+    image: asia.gcr.io/arc-sim-testing/arc_sim_redis:latest
     restart: always
-    command: redis-server --requirepass ${REDIS_PASSWORD}
     ports:
       - 6379:6379
     expose:
       - 6379
-    networks:
-      - arc_deploy
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
 
   mongodb:
     build:
@@ -158,7 +184,7 @@ services:
       labels:
         arclytics.io: "production"
         service: "mongodb"
-    image: asia.gcr.io/arc-sim/arc_sim_mongo:latest
+    image: asia.gcr.io/arc-sim-testing/arc_sim_mongo:latest
     restart: always
     ports:
       - 27017:27017
@@ -174,11 +200,3 @@ services:
       - MONGO_APP_USER_PASSWORD=${MONGO_APP_USER_PASSWORD}
       - MONGO_DATA_DIR=/usr/data/db
       - MONGO_LOG_DIR=/dev/null
-    networks:
-      - arc_deploy
-
-networks:
-  arc_deploy:
-    driver: bridge
-    labels:
-      arclytics.io: "production"

@@ -6,13 +6,12 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.9.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+from sim_api.extensions.utilities import ElementWeightInvalid
+
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.07.14'
 """global_alloys.py: 
 
@@ -26,15 +25,18 @@ from marshmallow import ValidationError
 
 from arc_logging import AppLogger
 from sim_api.extensions import api
+from sim_api.extensions.utilities import (
+    MissingElementError, ElementWeightInvalid, ElementInvalid,
+    ElementSymbolInvalid, DuplicateElementError
+)
 from sim_api.middleware import (
     authenticate_user_cookie_restful, authorize_admin_cookie_restful
 )
+from sim_api.routes import Routes
 from sim_api.schemas import AlloySchema
-from simulation.utilities import MissingElementError
-
-logger = AppLogger(__name__)
 
 alloys_blueprint = Blueprint('alloys', __name__)
+logger = AppLogger(__name__)
 
 
 class AlloysList(Resource):
@@ -80,12 +82,36 @@ class AlloysList(Resource):
         # conversions below with the compositions
         try:
             valid_data = AlloySchema().load(post_data)
+        except ElementSymbolInvalid as e:
+            # Where the symbol used for the element is not valid meaning it
+            # does not exist in a Periodic Table.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element symbol error.'
+            return response, 400
+        except ElementInvalid as e:
+            # If no "symbol" or "weight" passed as an Element object.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element error.'
+            return response, 400
+        except ElementWeightInvalid as e:
+            # If no "symbol" or "weight" passed as an Element object.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element weight error.'
+            return response, 400
         except MissingElementError as e:
-            response['errors'] = str(e)
-            response['message'] = 'Missing element error in schema validation.'
+            # Where the alloy is missing elements we expect to always be
+            # available as they are required downstream in the algorithm.
+            response['error'] = str(e)
+            response['message'] = 'Missing element error.'
+            return response, 400
+        except DuplicateElementError as e:
+            # One of the alloys contains two or more elements with the same
+            # chemical symbol.
+            response['error'] = str(e)
+            response['message'] = 'Alloy contains a duplicate element.'
             return response, 400
         except ValidationError as e:
-            response['errors'] = e.messages
+            response['error'] = e.messages
             response['message'] = 'Request data failed schema validation.'
             return response, 400
 
@@ -209,12 +235,36 @@ class Alloys(Resource):
         # will also validate the Elements symbol
         try:
             new_alloy = AlloySchema().load(put_data)
+        except ElementSymbolInvalid as e:
+            # Where the symbol used for the element is not valid meaning it
+            # does not exist in a Periodic Table.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element symbol error.'
+            return response, 400
+        except ElementInvalid as e:
+            # If no "symbol" or "weight" passed as an Element object.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element error.'
+            return response, 400
+        except ElementWeightInvalid as e:
+            # If no "symbol" or "weight" passed as an Element object.
+            response['error'] = str(e)
+            response['message'] = 'Invalid element weight error.'
+            return response, 400
         except MissingElementError as e:
-            response['errors'] = str(e)
-            response['message'] = 'Missing element error in schema validation.'
+            # Where the alloy is missing elements we expect to always be
+            # available as they are required downstream in the algorithm.
+            response['error'] = str(e)
+            response['message'] = 'Missing element error.'
+            return response, 400
+        except DuplicateElementError as e:
+            # One of the alloys contains two or more elements with the same
+            # chemical symbol.
+            response['error'] = str(e)
+            response['message'] = 'Alloy contains a duplicate element.'
             return response, 400
         except ValidationError as e:
-            response['errors'] = e.messages
+            response['error'] = e.messages
             response['message'] = 'Request data failed schema validation.'
             return response, 400
 
@@ -234,13 +284,14 @@ class Alloys(Resource):
         response.pop('message')
         return response, 200
 
-    # noinspection PyMethodMayBeStatic
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def patch(self, alloy_id):
         """Exposes the PATCH method for `/alloys` to update an existing alloy by
         an admin to update the existing data.
 
         Args:
-            _: A valid ObjectId string that will be checked  that is not used.
+            alloy_id: A valid ObjectId string that will be checked that is
+            not used.
 
         Returns:
             A Response object consisting of a dict and status code as an int.
@@ -285,7 +336,7 @@ class Alloys(Resource):
         #     AlloySchema().load(patch_data)
         # except ValidationError as e:
         #     response['message'] = 'Request data failed schema validation.'
-        #     response['errors'] = e.messages
+        #     response['error'] = e.messages
         #     return response, 400
         #
         # # First we update the compositions of the existing alloy if any.
@@ -318,7 +369,7 @@ class Alloys(Resource):
         #     # Must remove ObjectId in data to pass
         #     valid_data = AlloySchema(exclude=['_id']).load(existing_alloy)
         # except ValidationError as e:
-        #     response['errors'] = e.messages
+        #     response['error'] = e.messages
         #     return response, 400
         #
         # good = AlloysService().update_alloy(ObjectId(alloy_id), valid_data)
@@ -366,5 +417,5 @@ class Alloys(Resource):
         return response, 202
 
 
-api.add_resource(Alloys, '/api/v1/sim/global/alloys/<alloy_id>')
-api.add_resource(AlloysList, '/api/v1/sim/global/alloys')
+api.add_resource(Alloys, Routes.Alloys.value)
+api.add_resource(AlloysList, Routes.AlloysList.value)

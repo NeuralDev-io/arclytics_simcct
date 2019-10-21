@@ -4,7 +4,13 @@
 # Connect to mongodb container
 # -- kubectl exec -it mongo-0 bash
 
-# -- kubectl cp ./services/db/production_data/* mongo-0:/data/backups/
+# kubectl cp ./services/db/production_data/production_alloy_data.json mongo-0:/data/backups/ -c mongo-container
+# kubectl cp ./services/db/production_data/production_feedback_data.json mongo-0:/data/backups/ -c mongo-container
+# kubectl cp ./services/db/production_data/production_global_alloys_data.json mongo-0:/data/backups/ -c mongo-container
+# kubectl cp ./services/db/production_data/production_saved_sim_data.json mongo-0:/data/backups/ -c mongo-container
+# kubectl cp ./services/db/production_data/production_shared_sim_data.json mongo-0:/data/backups/ -c mongo-container
+# kubectl cp ./services/db/production_data/production_simulation_data.json mongo-0:/data/backups/ -c mongo-container
+# kubectl cp ./services/db/production_data/production_user_data.json mongo-0:/data/backups/ -c mongo-container
 # -- export $(egrep -v '^#' .env | xargs)
 
 # Create the admin user (this will automatically disable the localhost exception)

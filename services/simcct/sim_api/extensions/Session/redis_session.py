@@ -7,14 +7,10 @@
 # [1] https://gist.github.com/wushaobo/52be20bc801243dddf52a8be4c13179a
 # [2] https://github.com/mrichman/flask-redis
 # -----------------------------------------------------------------------------
-
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.2.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.08.07'
 """redis_session.py: 
 
@@ -25,8 +21,8 @@ it is not tampered with at each request.
 
 import json
 import time
-from os import environ as env
 from datetime import datetime, timedelta, timezone
+from os import environ as env
 from typing import Tuple, Union
 from uuid import uuid4
 
@@ -37,12 +33,14 @@ from redis import ReadOnlyError
 from werkzeug.datastructures import CallbackDict
 
 from arc_logging import AppLogger
+from sim_api.extensions import apm
 from sim_api.extensions.utilities import JSONEncoder
 
 logger = AppLogger(__name__)
 
 SESSION_EXPIRY_MINUTES = 120
 SESSION_COOKIE_NAME = 'SESSION_TOKEN'
+API_TOKEN_NAME = 'JWT_TOKEN'
 
 
 def utctimestamp_by_second(utc_date_time):
@@ -53,20 +51,29 @@ class RedisSession(CallbackDict, SessionMixin):
     def __init__(self, initial=None, sid=None, new=False):
         def on_update(s):
             s.modified = True
+            s.accessed = True
 
         CallbackDict.__init__(self, initial, on_update)
         self.sid = sid
         self.new = new
         self.modified = False
 
+    def clear(self) -> None:
+        """Clear the Session dictionary."""
+        super().clear()
+
 
 class RedisSessionInterface(SessionInterface):
     def __init__(self, app=None, use_signer=True):
         if app is not None:
-            self.redis = app.config.get('SESSION_REDIS')
-            self.secret_key = app.config.get('SECRET_KEY', None)
-            self.salt = app.config.get('SECURITY_PASSWORD_SALT', None)
+            self._redis = app.config.get('SESSION_REDIS')
+            self._secret_key = app.config.get('SECRET_KEY', None)
+            self._salt = app.config.get('SECURITY_PASSWORD_SALT', None)
             self.use_signer = use_signer
+
+    @property
+    def redis(self):
+        return self._redis
 
     def open_session(self, app, request) -> Union[None, RedisSession]:
         """This method is called at the beginning of every request in the
@@ -95,7 +102,7 @@ class RedisSessionInterface(SessionInterface):
             try:
                 sid_as_bytes = signer.unsign(session_key)
                 session_key = sid_as_bytes.decode()
-            except BadSignature as e:
+            except BadSignature:
                 return self._new_session()
 
         # If we have both the session key and the JWT in the cookies, then
@@ -118,34 +125,23 @@ class RedisSessionInterface(SessionInterface):
             return self._new_session()
 
         data = json.loads(redis_value.decode())
-
-        # if str(ip_address) != data.get('ip_address', ''):
-        #     logger.debug(
-        #         f'Some idiot tried to access from a different IP.\n'
-        #         f'Session IP: {data["ip_address"]}\n'
-        #         f'Request IP: {ip_address}'
-        #     )
-        #     return self._new_session()
-
-        # TODO(andrew@neuraldev.io): Add a check for User-Agent
-
         return RedisSession(data, sid=sid)
 
     def save_session(self, app, session, response):
         jwt = session.get('jwt')
+        is_admin = session.get('is_admin')
 
         # Initial verification of the Session
 
-        # Checking session is not empty or it hasn't been modified
-        def session_is_modified_empty():
-            return not session and session.modified
+        # If the session is modified to be empty, remove the cookie.
+        # If the session is empty, return without setting the cookie.
+        if not session:
+            if session.modified:
+                self._clean_redis_and_cookie(app, response, session)
+            return
 
         # Checking if this session has a JWT or not
-        def session_is_invalid():
-            return not jwt
-
-        # If either of those fails
-        if session_is_modified_empty() or session_is_invalid():
+        if not jwt:
             self._clean_redis_and_cookie(app, response, session)
             return
 
@@ -160,9 +156,9 @@ class RedisSessionInterface(SessionInterface):
         session.sid = self._inject_jwt_in_sid(session.sid, jwt)
         session_key = self._create_session_key(session.sid, expiry_date)
 
-        self._write_wrapper(
+        self.write_wrapper(
             self.redis.setex,
-            name=self._redis_key(session.sid),
+            name=self.redis_key(session.sid),
             value=redis_value,
             time=expires_in_seconds
         )
@@ -180,6 +176,14 @@ class RedisSessionInterface(SessionInterface):
                 httponly=True,
                 domain=self.get_cookie_domain(app)
             )
+            if is_admin:
+                response.set_cookie(
+                    API_TOKEN_NAME,
+                    jwt,
+                    expires=expiry_date,
+                    httponly=True,
+                    domain=self.get_cookie_domain(app)
+                )
         else:
             response.set_cookie(
                 SESSION_COOKIE_NAME,
@@ -189,6 +193,15 @@ class RedisSessionInterface(SessionInterface):
                 secure=True,
                 domain=self.get_cookie_domain(app)
             )
+            if is_admin:
+                response.set_cookie(
+                    API_TOKEN_NAME,
+                    jwt,
+                    expires=expiry_date,
+                    httponly=True,
+                    secure=True,
+                    domain=self.get_cookie_domain(app)
+                )
 
     @staticmethod
     def _new_session():
@@ -201,17 +214,25 @@ class RedisSessionInterface(SessionInterface):
         return timedelta(minutes=SESSION_EXPIRY_MINUTES)
 
     @staticmethod
-    def _redis_key(sid):
+    def redis_key(sid):
         return 'session:{}'.format(sid)
 
     def _get_signer(self):
-        if not self.secret_key:
+        if not self._secret_key:
+            apm.capture_message('Secret key not set.')
+            logger.error({'message': 'Secret key not set.'})
+            return None
+        if not self._salt:
+            apm.capture_message('Salt not set.')
+            logger.error({'message': 'Salt not set.'})
             return None
         return itsdangerous.Signer(
-            secret_key=self.secret_key, salt=self.salt, key_derivation='hmac'
+            secret_key=self._secret_key,
+            salt=self._salt,
+            key_derivation='hmac'
         )
 
-    def _write_wrapper(self, write_method, *args, **kwargs) -> None:
+    def write_wrapper(self, write_method, *args, **kwargs) -> None:
         """A basic wrapper to call redis-py methods but allows us to set a
         retry of 3 attempts if there are Redis ReadOnlyErrors.
 
@@ -228,6 +249,8 @@ class RedisSessionInterface(SessionInterface):
                 write_method(*args, **kwargs)
                 break
             except ReadOnlyError:
+                logger.exception('Redis Read error.')
+                apm.capture_exception()
                 self.redis.connection_pool.reset()
                 time.sleep(1)
 
@@ -241,7 +264,7 @@ class RedisSessionInterface(SessionInterface):
         Returns:
             A tuple of results.
         """
-        redis_key = self._redis_key(sid)
+        redis_key = self.redis_key(sid)
         pipeline = self.redis.pipeline()
         pipeline.get(redis_key)
         pipeline.ttl(redis_key)
@@ -258,6 +281,7 @@ class RedisSessionInterface(SessionInterface):
         try:
             return abs(int(expiry_timestamp) - timestamp_from_ttl) > 10
         except (ValueError, TypeError):
+            apm.capture_exception()
             return True
 
     def _extract_sid_and_expiry_ts_from(
@@ -273,14 +297,18 @@ class RedisSessionInterface(SessionInterface):
             A Tuple of (str, None) if there is any errors or (str, int).
         """
         s = itsdangerous.TimedJSONWebSignatureSerializer(
-            secret_key=self.secret_key
+            secret_key=self._secret_key
         )
 
         try:
-            res = s.loads(session_key, salt=self.salt)
-        except BadSignature as e:
+            res = s.loads(session_key, salt=self._salt)
+        except BadSignature:
+            logger.exception('Bad Signature.')
+            apm.capture_exception()
             return 'BadSignature', None
-        except SignatureExpired as e:
+        except SignatureExpired:
+            logger.exception('Signature Expired')
+            apm.capture_exception()
             return 'SignatureExpired', None
         return res.get('sid'), res.get('expiry_seconds')
 
@@ -299,13 +327,13 @@ class RedisSessionInterface(SessionInterface):
         """
         expiry_in_seconds = utctimestamp_by_second(expiry_date)
         s = itsdangerous.TimedJSONWebSignatureSerializer(
-            secret_key=self.secret_key, expires_in=expiry_in_seconds
+            secret_key=self._secret_key, expires_in=expiry_in_seconds
         )
         return s.dumps(
             {
                 'sid': sid,
                 'expiry_seconds': expiry_in_seconds
-            }, salt=self.salt
+            }, salt=self._salt
         )
 
     @staticmethod
@@ -318,7 +346,10 @@ class RedisSessionInterface(SessionInterface):
 
     def _clean_redis_and_cookie(self, app, response, session):
         """If the Cookie is bad, we clear out the Cookie and Redis store."""
-        self._write_wrapper(self.redis.delete, self._redis_key(session.sid))
+        self.write_wrapper(self.redis.delete, self.redis_key(session.sid))
+        response.delete_cookie(
+            API_TOKEN_NAME, domain=self.get_cookie_domain(app)
+        )
         response.delete_cookie(
             SESSION_COOKIE_NAME, domain=self.get_cookie_domain(app)
         )

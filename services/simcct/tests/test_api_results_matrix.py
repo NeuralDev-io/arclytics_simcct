@@ -6,18 +6,12 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
+__author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['']
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __date__ = '2019.08.20'
-"""test_api_results_matrix.py: 
-
-Unit testing the DynamicNdarray wrapper type created around a numpy.zeros()
-ndarray. 
-"""
 
 import unittest
+
 from simulation.dynamic_ndarray import DynamicNdarray
 
 

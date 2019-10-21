@@ -5,7 +5,7 @@ metadata:
   namespace: arclytics
 spec:
   capacity:
-    storage: 30Gi
+    storage: 25Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain

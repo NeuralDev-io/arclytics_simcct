@@ -6,17 +6,14 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = [
-    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
-    'Dinol Shrestha <@dinolsth>'
-]
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __license__ = 'MIT'
 __version__ = '1.0.0'
 __status__ = 'production'
 __date__ = '2019.07.03'
-"""users.py: 
+"""users.py:
 
-This file defines all the API resource routes and controller definitions using 
+This file defines all the API resource routes and controller definitions using
 the Flask Resource inheritance model.
 """
 
@@ -28,27 +25,532 @@ from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
 from arc_logging import AppLogger
-from sim_api.extensions import api
+from sim_api.extensions import api, apm
 from sim_api.middleware import (
     authenticate_user_cookie_restful, authorize_admin_cookie_restful
 )
 from sim_api.models import (User, UserProfile)
+from sim_api.routes import Routes
+from sim_api.search_service import SearchService
 
 logger = AppLogger(__name__)
 users_blueprint = Blueprint('users', __name__)
 
+# We need to ensure we only get a certain amount of information for the user
+# for speed purposes
+PROJECTIONS = {
+    '_id': 0,
+    'password': 0,
+    'ratings': 0,
+    'profile': 0,
+    'login_data': 0,
+    'last_updated': 0,
+    'saved_alloys': 0,
+    'disable_admin': 0,
+    'admin_profile': 0,
+    'last_alloy_store': 0,
+    'simulations_count': 0,
+    'last_configuration': 0,
+    'last_simulation_results': 0,
+    'last_simulation_invalid_fields': 0,
+}
+
 
 class UserList(Resource):
-    """Return all users (admin only)"""
+    """Resource to return all users without pagination."""
 
     method_decorators = {'get': [authorize_admin_cookie_restful]}
 
     # noinspection PyMethodMayBeStatic
     def get(self, _) -> Tuple[dict, int]:
-        """Get all users only available to admins."""
-        user_list = User.as_dict
-        response = {'status': 'success', 'data': {'users': user_list}}
+        """Get all users without pagination but allow sorting."""
+        response = {'status': 'fail', 'message': 'Invalid parameters.'}
+
+        # We are only allowing sorting on the full list but we must always
+        # return the full list regardless of sorting in the params.
+        sort = None
+        if request.args:
+            sort = request.args.get('sort', None)
+
+        # Pymongo can take a list of queries as objects so we initially just
+        # use an empty list which denotes no sorting required because our
+        # Mongo data access layers requires a chained function sort param.
+        sort_query = []
+
+        # Validate sort parameters
+        if sort:
+            # If our sorting value begins with a "-" in the string,
+            # then we know
+            # we are doing a DESCENDING sort so we will appropriately set
+            # the
+            # sort direction
+            sort_direction = 1
+            if str(sort).startswith('-'):
+                sort_direction = -1
+
+            valid_sort_keys = {
+                'email', '-email', 'admin', '-admin', 'verified', '-verified',
+                'full_name', '-full_name', 'first_name', '-first_name',
+                'last_name', '-last_name'
+            }
+            if sort not in valid_sort_keys:
+                response['message'] = 'Sort value is invalid.'
+                return response, 400
+
+            # If we are sorting on fullname, we will need to split the
+            # sort query
+            # into a 2 element list so we
+            if sort in {'full_name', '-full_name'}:
+                sort_query.append(('first_name', sort_direction))
+                sort_query.append(('last_name', sort_direction))
+            else:
+                sort_query.append((sort, sort_direction))
+
+        # In this endpoint, we want to return the full list regardless of any
+        # offsets or limits. We are only making sorting available for fun.
+        data = SearchService().find(
+            query={}, sort=sort_query, limit=0, projections=PROJECTIONS
+        )
+
+        if not data:
+            response['message'] = 'No results found.'
+            return response, 404
+
+        # Return the query/search parameters so that the client can
+        # request different pages in the future
+        response.pop('message')
+        response.update(
+            {
+                'status': 'success',
+                'data': data,
+                'n_documents': len(data)
+            }
+        )
         return response, 200
+
+
+class UserListQuery(Resource):
+    """Return all users based on a query (admin only)"""
+
+    method_decorators = {'get': [authorize_admin_cookie_restful]}
+
+    # noinspection PyMethodMayBeStatic
+    def get(self, _) -> Tuple[dict, int]:
+        """Provides a GET view method to allow clients to retrieve the list
+        of users in the database but with the ability to do pagination and
+        additional queries. This includes the ability to sort, limit and skip
+        the returned results. All pagination values required to retrieve
+        more data will be returned in the response body.
+
+        Args:
+            _: an instance of `models.User` passed from middleware not used.
+
+        Returns:
+            A valid HTTP Response with a JSON body and status code.
+        """
+
+        response = {'status': 'fail', 'message': 'Invalid parameters.'}
+
+        # ========== # VALIDATION OF PARAMETERS # ========== #
+        # Check whether there are any param args
+        if not request.args:
+            return response, 400
+
+        sort = None
+        if request.args:
+            sort = request.args.get('sort', None)
+
+        # Skip/offset of 0 is unlimited
+        try:
+            offset = int(request.args.get('offset', 0))
+        except ValueError:
+            response.update({'message': 'Invalid offset parameter.'})
+            return response, 400
+
+        # Limit of 0 is unlimited
+        try:
+            # We always want to return a full list if there is no limit
+            # requested so that's why it's 0.
+            limit = int(request.args.get('limit', 0))
+        except ValueError:
+            response.update({'message': 'Invalid limit parameter.'})
+            return response, 400
+
+        # Validate limit:
+        if limit < 0:
+            response['message'] = 'Limit must be a positive int.'
+            return response, 400
+
+        # Pymongo can take a list of queries as objects so we initially just
+        # use an empty list which denotes no sorting required because our
+        # Mongo data access layers requires a chained function sort param.
+        sort_query = []
+
+        # Validate sort parameters
+        if sort:
+            valid_sort_keys = {
+                'email', '-email', 'admin', '-admin', 'verified', '-verified',
+                'full_name', '-full_name', 'first_name', '-first_name',
+                'last_name', '-last_name'
+            }
+            if sort not in valid_sort_keys:
+                response['message'] = 'Sort value is invalid.'
+                return response, 400
+
+            # ========== # SETTING UP SORTING # ========== #
+            # If our sorting value begins with a "-" in the string, then we
+            # know we are doing a DESCENDING sort so we will appropriately set
+            # the sort direction
+            sort_direction = 1
+            if str(sort).startswith('-'):
+                sort_direction = -1
+
+            # If we are sorting on fullname, we will need to split the
+            # sort query into a 2 element list so we
+            if sort in {'full_name', '-full_name'}:
+                sort_query.append(('first_name', sort_direction))
+                sort_query.append(('last_name', sort_direction))
+            else:
+                sort_query.append((sort, sort_direction))
+
+        # We need the full list to check for pagination
+        n_total_documents = SearchService().count(limit=0)
+
+        # Validate offset
+        if offset > 0:
+            if offset >= n_total_documents:
+                response.update(
+                    {
+                        'message': 'Offset value exceeds number of documents.',
+                        'sort': sort,
+                        'offset': offset,
+                        'limit': limit
+                    }
+                )
+                return response, 400
+
+        # ========== # QUERY THE DATABASE # ========== #
+        # Because we want a full list returned, we will not have a query
+        # selector.
+        users_list = SearchService().find_slice(
+            query={},
+            projections=PROJECTIONS,
+            skip=offset,
+            limit=limit,
+            sort=sort_query
+        )
+
+        n_documents = len(users_list)
+        if n_documents <= 0:
+            response.update({'message': 'No results found.'})
+            return response, 404
+
+        # ========== # PREPARE RESPONSE # ========== #
+        # If there are no values for getting the next or previous offset (i.e.
+        # no limit has been provided, we just return null for them.
+        response.update(
+            {
+                'status': 'success',
+                'sort': sort,
+                'offset': offset,
+                'limit': limit,
+                'next_offset': None,
+                'prev_offset': None,
+                'n_results': n_documents,
+                'data': users_list,
+            }
+        )
+        response.pop('message')
+
+        # A limit of 0, meaning the client does not want any subset of the
+        # full list so there is no need to worry about offsets and pages.
+        # We also want to just return everything if the limit requested was
+        # way more than what results we found any way.
+        # Plus we can avoid a divide by zero error from below.
+        if limit == 0 or limit > n_total_documents:
+            return response, 200
+
+        # Next offset is the offset for the next page of results. Prev is for
+        # the previous.
+        if offset + limit - 1 < n_total_documents:
+            response.update({'next_offset': offset + limit})
+        if offset - limit >= 0:
+            response.update({'prev_offset': offset - limit})
+
+        if n_total_documents % limit == 0:
+            total_pages = int(n_total_documents / limit)
+        else:
+            total_pages = int(n_total_documents / limit) + 1
+        current_page = int(offset / limit) + 1
+
+        response.update(
+            {
+                'current_page': current_page,
+                'total_pages': total_pages
+            }
+        )
+
+        return response, 200
+
+
+class SearchUsers(Resource):
+    """Alloys administrators to search the database for a user/users"""
+
+    method_decorators = {'get': [authorize_admin_cookie_restful]}
+
+    # noinspection PyMethodMayBeStatic
+    def get(self, _) -> Tuple[dict, int]:
+        """Provides a GET view method to allow clients to do a search on the
+        users database if they are are an admin. The method allows them to
+        sort and limit the number of results returned but no pagination will
+        be done.
+
+        Args:
+            _: an instance of `models.User` passed from middleware not used.
+
+        Returns:
+            A valid HTTP Response with a JSON body and status code.
+        """
+
+        response = {'status': 'fail', 'message': 'Invalid parameters.'}
+
+        # ========== # VALIDATION OF PARAMETERS # ========== #
+        # Check the param args if there are any
+        if not request.args:
+            return response, 400
+
+        query, sort = None, None
+        if request.args:
+            query = request.args.get('query', None)
+            sort = request.args.get('sort', None)
+
+        # Limit of 0 is unlimited
+        try:
+            # By default, we limit the number of returned searches to 100.
+            limit = int(request.args.get('limit', 100))
+        except ValueError:
+            response.update({'message': 'Invalid limit parameter.'})
+            return response, 400
+
+        # Validate limit:
+        if limit < 0:
+            response['message'] = 'Limit must be a positive int.'
+            return response, 400
+
+        # Ensure query parameters have been given, otherwise there is nothing
+        # to search for.
+        if not query:
+            response.update({'message': 'No query parameters provided.'})
+            return response, 400
+
+        # Pymongo can take a list of queries as objects so we initially just
+        # use an empty list which denotes no sorting required because our
+        # Mongo data access layers requires a chained function sort param.
+        sort_query = []
+
+        # Validate sort parameter options
+        if sort:
+            valid_sort_keys = {
+                'email', '-email', 'admin', '-admin', 'verified', '-verified',
+                'full_name', '-full_name', 'first_name', '-first_name',
+                'last_name', '-last_name'
+            }
+            if sort not in valid_sort_keys:
+                response.update({'message': 'Sort value is invalid.'})
+                return response, 400
+
+            # ========== # SETTING UP SORTING # ========== #
+            # If our sorting value begins with a "-" in the string, then we
+            # know we are doing a DESCENDING sort so we will appropriately set
+            # the sort direction
+            sort_direction = 1
+            if str(sort).startswith('-'):
+                sort_direction = -1
+
+            # If we are sorting on fullname, we will need to split the
+            # sort query into a 2 element list so we
+            if sort in {'full_name', '-full_name'}:
+                sort_query.append(('first_name', sort_direction))
+                sort_query.append(('last_name', sort_direction))
+            else:
+                sort_query.append((sort, sort_direction))
+
+        # ========== # QUERY THE DATABASE # ========== #
+        # This is the key advanced text search.
+        # Ensuring no default language helps with searching emails because
+        # of the symbols.
+        query_selector = {
+            '$text': {
+                '$search': query,
+                '$language': 'none',
+                '$caseSensitive': False
+            }
+        }
+
+        # Check if the user is trying to search for an email by doing a rather
+        # simple check if the `@` symbol is in the string. If it is, we
+        # will try to search for an email instead.
+        # Thus:
+        #  - Searching for ironman@avengers.io will only return 1 result.
+        #  - Searching for ironman@ will fail
+        #  - Searching for ironman will return all emails with that substring
+        #    in the email.
+        if '@' in str(query):
+            data = SearchService().find(
+                query={'email': query},
+                sort=sort_query,
+                limit=limit,
+                projections=PROJECTIONS
+            )
+
+            n_results = len(data)
+            if n_results > 0:
+                # We found a user with this email so let's return that
+                return {
+                    'status': 'success',
+                    'query': query,
+                    'limit': limit,
+                    'data': data,
+                    'n_results': n_results
+                }, 200
+
+            # we failed to find via email to lets do a string search by going
+            # to the next call.
+
+        # Use MongoDB string search on a compound index we created in the
+        # `sim_api.models.py` to ensure this is possible for first_name,
+        # last_name, and email.
+        data = SearchService().find(
+            query=query_selector,
+            sort=sort_query,
+            limit=limit,
+            projections=PROJECTIONS
+        )
+
+        n_documents = len(data)
+        if not n_documents:
+            response.update({'message': 'No results found.'})
+            return response, 404
+
+        # ========== # PREPARE RESPONSE # ========== #
+        # No skip/offset with pagination will be provided because it would
+        # take too long to do anyway since you would need to do 2 full searches
+        # or manipulate the returned cursor to limit after the fact to get
+        # a subset of the results from offset/limit.
+        # The best way to avoid this is just to allow the client to limit the
+        # number of returned results.
+        # May be able to do it in the future but for now we will avoid.
+        response.update(
+            {
+                'status': 'success',
+                'sort': sort,
+                'limit': limit,
+                'n_results': n_documents,
+                'data': data,
+            }
+        )
+        response.pop('message')
+        return response, 200
+
+#         response = {'status': 'fail', 'message': 'Invalid payload.'}
+#
+#         data = request.get_json()
+#
+#         if isinstance(data, dict):
+#             sort_on = data.get('sort_on', None)
+#             offset = data.get('offset', None)
+#             limit = data.get('limit', None)
+#         else:
+#             sort_on = None
+#             offset = None
+#             limit = None
+#
+#         # Validate sort parameters
+#         if sort_on:
+#             valid_sort_keys = [
+#                 'email', '-email', 'admin', '-admin', 'verified', '-verified',
+#                 'fullname', '-fullname'
+#             ]
+#             sort_valid = False
+#             for k in valid_sort_keys:
+#                 if k == sort_on:
+#                     sort_valid = True
+#                     break
+#
+#             if not sort_valid:
+#                 response['message'] = 'Sort value is invalid.'
+#                 return response, 400
+#
+#         # Validate limit:
+#         if limit:
+#             if not isinstance(limit, int):
+#                 response['message'] = 'Limit value is invalid.'
+#                 return response, 400
+#             if not limit >= 1:
+#                 response['message'] = 'Limit must be > 1.'
+#                 return response, 400
+#         else:
+#             limit = 10
+#
+#         # Validate offset
+#         user_size = User.objects.count()
+#         if offset:
+#             if not isinstance(offset, int):
+#                 response['message'] = 'Offset value is invalid.'
+#                 return response, 400
+#             if offset > user_size + 1:
+#                 response['message'] = 'Offset value exceeds number of records.'
+#                 return response, 400
+#             if offset < 1:
+#                 response['message'] = 'Offset must be > 1.'
+#                 return response, 400
+#         else:
+#             offset = 1
+#
+#         # Query
+#         if sort_on:
+#             # Get the objects starting at the offset, limit the number of
+#             # results and sort on the sort_on value.
+#             if sort_on == 'fullname':
+#                 query_set = User.objects[offset - 1:offset + limit -
+#                                          1].order_by(
+#                                              'last_name', 'first_name'
+#                                          )
+#             elif sort_on == '-fullname':
+#                 query_set = User.objects[offset - 1:offset + limit -
+#                                          1].order_by(
+#                                              '-last_name', '-first_name'
+#                                          )
+#             else:
+#                 query_set = User.objects[offset - 1:offset + limit -
+#                                          1].order_by(sort_on)
+#         else:
+#             query_set = User.objects[offset - 1:offset + limit - 1]
+#
+#         response['sort_on'] = sort_on
+#         # Next offset is the offset for the next page of results. Prev is for
+#         # the previous.
+#         response['next_offset'] = None
+#         response['prev_offset'] = None
+#         response['limit'] = limit
+#
+#         if offset + limit - 1 < user_size:
+#             response['next_offset'] = offset + limit
+#         if offset - limit >= 1:
+#             response['prev_offset'] = offset - limit
+#
+#         if user_size % limit == 0:
+#             total_pages = int(user_size / limit)
+#         else:
+#             total_pages = int(user_size / limit) + 1
+#         current_page = int(offset / limit) + 1
+#
+#         response.pop('message')
+#         response['status'] = 'success'
+#         response['current_page'] = current_page
+#         response['total_pages'] = total_pages
+#         response['data'] = [obj.to_dict() for obj in query_set]
+#         return response, 200
 
 
 class Users(Resource):
@@ -163,6 +665,8 @@ class Users(Resource):
             if not user.admin_profile.verified:
                 response['message'] = 'User is not verified as an admin.'
                 response.pop('data')
+                logger.info(response['message'])
+                apm.capture_message(response['message'])
                 return response, 401
 
             # Otherwise, we can proceed to update the admin profile fields.
@@ -198,9 +702,10 @@ class Users(Resource):
             user.save()
         except ValidationError as e:
             response.pop('data')
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Validation error.'
             logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 418
 
         # Return response body.
@@ -246,9 +751,10 @@ class UserProfiles(Resource):
             user.last_updated = datetime.utcnow()
             user.save()
         except ValidationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Validation error.'
             logger.exception(response['message'], exc_info=True)
+            apm.capture_exception()
             return response, 400
 
         # Otherwise the save was successful and a response with the updated
@@ -264,6 +770,8 @@ class UserProfiles(Resource):
         return response, 201
 
 
-api.add_resource(UserList, '/api/v1/sim/users')
-api.add_resource(Users, '/api/v1/sim/user')
-api.add_resource(UserProfiles, '/api/v1/sim/user/profile')
+api.add_resource(UserList, Routes.UserList.value)
+api.add_resource(UserListQuery, Routes.UserListQuery.value)
+api.add_resource(SearchUsers, Routes.SearchUsers.value)
+api.add_resource(Users, Routes.Users.value)
+api.add_resource(UserProfiles, Routes.UserProfiles.value)

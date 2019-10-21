@@ -1,7 +1,22 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Form to choose alloy composition.
+ * The composition for weld and mix alloys + dilution value have been
+ * commented out as the client no longer requires this feature.
+ *
+ * @version 1.2.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import SaveIcon from 'react-feather/dist/icons/save'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSave } from '@fortawesome/pro-light-svg-icons/faSave'
 import Select from '../../elements/select'
 import Button from '../../elements/button'
 // import { TextFieldExtra } from '../../elements/textfield'
@@ -104,7 +119,7 @@ class CompForm extends Component {
               className={styles.saveButton}
               isDisabled={!sessionIsInitialised || !isAuthenticated}
               appearance="text"
-              IconComponent={props => <SaveIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faSave} {...props} />}
             >
               Save alloy
             </Button>
@@ -222,8 +237,8 @@ CompForm.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  globalAlloys: state.alloys.global,
-  userAlloys: state.alloys.user,
+  globalAlloys: state.alloys.global.data,
+  userAlloys: state.alloys.user.data,
   simAlloys: state.sim.alloys,
 })
 

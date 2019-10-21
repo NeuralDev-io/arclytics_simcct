@@ -8,14 +8,15 @@
   justify-content: center;
   align-items: center;
   padding: 1.5rem;
+
+  h2, span {
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
 }
 
-.refreshButton, h2, span {
+.refreshButton {
   margin-bottom: 1.5rem;
-}
-
-h2, span {
-  text-align:center;
 }
 
 .warningImage {

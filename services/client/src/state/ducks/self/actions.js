@@ -3,15 +3,19 @@ import {
   CREATE_USER_PROFILE,
   UPDATE_USER_PROFILE,
   UPDATE_EMAIL,
-  CHANGE_PASSWORD,
   SAVE_SIM,
   GET_SIM,
   GET_LAST_SIM,
 } from './types'
+import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
+import { logError } from '../../../api/LoggingHelper'
 
+/**
+ * Make API request to retrieve user profile.
+ */
 export const getUserProfile = () => (dispatch) => { // eslint-disable-line
-  return fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user`, {
+  return fetch(`${SIMCCT_URL}/user`, {
     method: 'GET',
     credentials: 'include',
     headers: {
@@ -43,12 +47,16 @@ export const getUserProfile = () => (dispatch) => { // eslint-disable-line
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.getUserProfile', err.stack)
     })
 }
 
+/**
+ * Post user profile to the API
+ * @param {any} values user profile object
+ */
 export const createUserProfile = values => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/profile`, {
+  fetch(`${SIMCCT_URL}/user/profile`, {
     method: 'POST',
     mode: 'cors',
     credentials: 'include',
@@ -82,12 +90,16 @@ export const createUserProfile = values => (dispatch) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.createUserProfile', err.stack)
     })
 }
 
+/**
+ * Update user profile
+ * @param {any} values user profile object
+ */
 export const updateUserProfile = values => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user`, {
+  fetch(`${SIMCCT_URL}/user`, {
     method: 'PATCH',
     mode: 'cors',
     credentials: 'include',
@@ -121,12 +133,16 @@ export const updateUserProfile = values => (dispatch) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.updateUserProfile', err.stack)
     })
 }
 
+/**
+ * Update user email
+ * @param {any} values object that contains email field
+ */
 export const updateEmail = values => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/auth/email/change`, {
+  fetch(`${SIMCCT_URL}/auth/email/change`, {
     method: 'PUT',
     mode: 'cors',
     credentials: 'include',
@@ -160,12 +176,16 @@ export const updateEmail = values => (dispatch) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.updateEmail', err.stack)
     })
 }
 
+/**
+ * Update user password
+ * @param {any} values object containing password fields
+ */
 export const changePassword = values => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/auth/password/change`, {
+  fetch(`${SIMCCT_URL}/auth/password/change`, {
     method: 'PUT',
     mode: 'cors',
     credentials: 'include',
@@ -190,33 +210,33 @@ export const changePassword = values => (dispatch) => {
           options: { variant: 'error' },
         }, true)(dispatch)
       }
-      if (data.status === 'success') {
-        dispatch({
-          type: CHANGE_PASSWORD,
-          payload: data.data,
-        })
-      }
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.changePassword', err.stack)
     })
 }
 
 /**
  * API call to `users` server to save a new saved simulation for the user.
- * User's are identified by the JWT token passed as an Authorization header.
+ * This function will only be called when the configurations are valid
+ * and the simulation has been run
  */
 export const saveSimulation = () => (dispatch, getState) => {
   // first, get sim alloys and configs from state
   const { configurations, alloys, results } = getState().sim
+
   const alloyStore = {
     alloy_option: alloys.alloyOption,
     alloys: {
       parent: alloys.parent,
-      // TODO(daltonle): Change this when weld and mix are added 
-      weld: alloys.parent,
-      mix: alloys.parent,
+      /*
+      * DECISION: We will not implement this as it adds too much complexity to
+      * the logical path of the system state. This was not a core requirement
+      * and Dr. Bendeich often said he did not want this implemented at all.
+      * */
+      weld: null,
+      mix: null,
     },
   }
   const simResults = {
@@ -237,7 +257,7 @@ export const saveSimulation = () => (dispatch, getState) => {
     grain_size: grain_size_ASTM,
   }
 
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
+  fetch(`${SIMCCT_URL}/user/simulation`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -277,7 +297,7 @@ export const saveSimulation = () => (dispatch, getState) => {
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.saveSimulation', err.stack)
     })
 }
 
@@ -296,7 +316,12 @@ export const saveSimulation = () => (dispatch, getState) => {
  * }
  */
 export const getSavedSimulations = () => (dispatch) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/simulation`, {
+  dispatch({
+    type: GET_SIM,
+    status: 'started',
+  })
+
+  fetch(`${SIMCCT_URL}/user/simulation`, {
     method: 'GET',
     credentials: 'include',
     headers: {
@@ -318,20 +343,31 @@ export const getSavedSimulations = () => (dispatch) => {
           message: res.message,
           options: { variant: 'error' },
         }, true)(dispatch)
+        dispatch({
+          type: GET_SIM,
+          status: 'fail',
+        })
       }
       if (res.status === 'success') {
         dispatch({
           type: GET_SIM,
+          status: 'success',
           payload: res.data,
         })
       }
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.getSavedSimulations', err.stack)
     })
 }
 
+/**
+ * Save the current sim to a user in the backend.
+ * This function is called before a user logs out, so the next time they
+ * log in, the sim can be loaded up and the user can continue where
+ * they left off.
+ */
 export const saveLastSim = () => (dispatch, getState) => {
   // first, get sim alloys and configs from state
   const { configurations, alloys, results } = getState().sim
@@ -339,7 +375,7 @@ export const saveLastSim = () => (dispatch, getState) => {
     alloy_option: alloys.alloyOption,
     alloys: {
       parent: alloys.parent,
-      // TODO(daltonle): Change this when weld and mix are added 
+      // TODO(daltonle): Change this when weld and mix are added
       weld: alloys.parent,
       mix: alloys.parent,
     },
@@ -365,13 +401,16 @@ export const saveLastSim = () => (dispatch, getState) => {
   const alloyError = alloys.parentError
   const configError = configurations.error
 
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/last/simulation`, {
+  const isValid = Object.keys(alloyError).length !== 0 && Object.keys(configError) !== 0
+
+  return fetch(`${SIMCCT_URL}/user/last/simulation`, {
     method: 'POST',
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
+      is_valid: isValid,
       configurations: validConfigs,
       alloy_store: alloyStore,
       simulation_results: simResults,
@@ -383,19 +422,31 @@ export const saveLastSim = () => (dispatch, getState) => {
   })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.saveLastSim', err.stack)
     })
 }
 
+/**
+ * Get the last sim saved to a user in the backend
+ */
 export const getLastSim = () => dispatch => (
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/last/simulation`, {
+  fetch(`${SIMCCT_URL}/user/last/simulation`, {
     method: 'GET',
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
   })
-    .then(res => res.json())
+    .then((res) => {
+      if (res.status === 404) { return { status: 'fail', data: {} } }
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          message: 'Couldn\'t retrieve saved simulations',
+        }
+      }
+      return res.json()
+    })
     .then((res) => {
       if (res.status === 'success') {
         dispatch({
@@ -407,6 +458,6 @@ export const getLastSim = () => dispatch => (
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'self.actions.getLastSim', err.stack)
     })
 )

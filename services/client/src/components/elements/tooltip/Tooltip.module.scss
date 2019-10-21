@@ -11,7 +11,8 @@
   box-sizing: border-box;
   transition: $ease-in-cubic all .4s;
   position: absolute;
-  transition: opacity 175ms,transform 175ms,-webkit-transform 175ms;
+  transition: opacity 100ms,transform 100ms,-webkit-transform 100ms;
+  transition-delay: 100ms;
 
   opacity: 0;
   z-index: -1;

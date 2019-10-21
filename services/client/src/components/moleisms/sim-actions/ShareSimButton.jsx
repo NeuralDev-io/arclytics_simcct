@@ -1,11 +1,23 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Button to share a sim via link/email.
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import Share2Icon from 'react-feather/dist/icons/share-2'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faShareAlt } from '@fortawesome/pro-light-svg-icons/faShareAlt'
 import Button from '../../elements/button'
 import { AttachModal } from '../../elements/modal'
-import Accordion from '../../elements/accordion'
-import AccordionSection from '../../elements/accordion/AccordionSection'
+import Accordion, { AccordionSection } from '../../elements/accordion'
 import TextField, { TextFieldEmail } from '../../elements/textfield'
 import TextArea from '../../elements/textarea'
 import { getShareUrlLink, sendShareEmail } from '../../../api/sim/SessionShareSim'
@@ -202,7 +214,7 @@ class ShareSimButton extends Component {
           appearance="text"
           type="button"
           onClick={() => {}}
-          IconComponent={props => <Share2Icon {...props} />}
+          IconComponent={props => <FontAwesomeIcon icon={faShareAlt} {...props} />}
           isDisabled={!isSimulated || !isAuthenticated}
         >
           SHARE

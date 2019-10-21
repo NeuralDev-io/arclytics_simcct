@@ -3,29 +3,33 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
- * Composition sidebar
+ * Simulation page rendered by '/'
  *
- * @version 0.8.0
+ * @version 1.4.0
  * @author Dalton Le and Andrew Che
  */
 
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
-import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
+import { withRouter } from 'react-router-dom'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronUp } from '@fortawesome/pro-light-svg-icons/faChevronUp'
+import { faChevronDown } from '@fortawesome/pro-light-svg-icons/faChevronDown'
 import Button from '../../elements/button'
 import Modal from '../../elements/modal'
 import AppBar from '../../moleisms/appbar'
 import CompSidebar from '../../moleisms/composition'
 import PhaseFractions from '../../moleisms/charts/PhaseFractions'
 import { SaveAlloyModal } from '../../moleisms/user-alloys'
+import { SignupModal } from '../../moleisms/demo'
 import { ConfigForm, UserProfileConfig } from '../../moleisms/sim-configs'
 import { SaveSimButton, ShareSimButton, LoadSimButton } from '../../moleisms/sim-actions'
 import { TTT, CCT } from '../../moleisms/charts'
 import { loadPersistedSim, loadLastSim } from '../../../state/ducks/sim/actions'
 import { getLastSim } from '../../../state/ducks/self/actions'
 import { persistSim } from '../../../state/ducks/persist/actions'
+import { logError } from '../../../api/LoggingHelper'
 
 import styles from './SimulationPage.module.scss'
 
@@ -48,15 +52,21 @@ class SimulationPage extends Component {
       lastSim,
       getLastSimConnect,
       loadLastSimConnect,
+      location,
     } = this.props
     window.addEventListener('beforeunload', persistSimConnect)
+
+    // if sim already loaded from account, then don't load any cached sim
+    if (location.state !== undefined && (
+      location.state.loadFromAccount || location.state.loadFromShare
+    )) return
 
     const persistedTime = Date.parse(persistedSimTime)
     const now = new Date()
     const diff = now - persistedTime
 
     // if the last sim session is less than 1 hour ago, load it instead
-    // otherise, load the last sim saved in the account
+    // otherwise, load the last sim saved in the account
     if (diff / 60000 < 60 && Object.keys(persistedSim).length !== 0) {
       loadPersistedSimConnect()
     } else if (lastSim === undefined || Object.keys(lastSim).length === 0) {
@@ -66,6 +76,9 @@ class SimulationPage extends Component {
             loadLastSimConnect()
           }
         })
+        .catch((err) => logError(
+          err.toString(), err.message, 'SimulationPage.componentDidMount', err.stack_trace,
+        ))
     }
   }
 
@@ -94,7 +107,7 @@ class SimulationPage extends Component {
     } = this.props
 
     return (
-      <React.Fragment>
+      <>
         <AppBar active="sim" redirect={history.push} isAdmin={isAdmin} isAuthenticated={isAuthenticated} />
         <div className={styles.compSidebar}>
           <CompSidebar
@@ -113,8 +126,8 @@ class SimulationPage extends Component {
                   displayConfig: !prevState.displayConfig,
                 }))}
                 IconComponent={(props) => {
-                  if (displayConfig) return <ChevronUpIcon {...props} />
-                  return <ChevronDownIcon {...props} />
+                  if (displayConfig) return <FontAwesomeIcon icon={faChevronUp}{...props} />
+                  return <FontAwesomeIcon icon={faChevronDown} {...props} />
                 }}
               >
                 {displayConfig ? 'Collapse' : 'Expand'}
@@ -164,8 +177,8 @@ class SimulationPage extends Component {
                 }))}
                 IconComponent={props => (
                   displayProfile
-                    ? <ChevronUpIcon {...props} />
-                    : <ChevronDownIcon {...props} />
+                    ? <FontAwesomeIcon icon={faChevronUp}{...props} />
+                    : <FontAwesomeIcon icon={faChevronDown}{...props} />
                 )}
               >
                 {displayProfile ? 'Collapse' : 'Expand'}
@@ -182,7 +195,8 @@ class SimulationPage extends Component {
         <Modal show={displaySaveModal} clicked={this.handleCloseModal}>
           <SaveAlloyModal handleClose={this.handleCloseModal} />
         </Modal>
-      </React.Fragment>
+        <SignupModal show={!isAuthenticated} redirect={history.push} />
+      </>
     )
   }
 }
@@ -200,6 +214,12 @@ SimulationPage.propTypes = {
     })),
   })).isRequired,
   history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      loadFromAccount: PropTypes.bool,
+      loadFromShare: PropTypes.bool,
+    }),
+  }).isRequired,
   isInitialised: PropTypes.bool.isRequired,
   isSimulated: PropTypes.bool.isRequired,
   isAdmin: PropTypes.bool.isRequired,
@@ -229,4 +249,4 @@ const mapDispatchToProps = {
   loadLastSimConnect: loadLastSim,
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(SimulationPage)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SimulationPage))

@@ -6,14 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['David Matthews <@tree1004>']
-
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.1.0'
-__maintainer__ = 'David Matthews'
-__email__ = 'davidmatthews1004@gmail.com'
-__status__ = 'development'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth']
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.08.11'
 """share.py: 
 
@@ -25,29 +21,29 @@ import os
 from datetime import datetime
 from typing import Tuple
 
-from email_validator import EmailNotValidError, validate_email
+from email_validator import EmailNotValidError
 from flask import Blueprint, jsonify, redirect, render_template, request
 from flask_restful import Resource
 from mongoengine.errors import ValidationError
 
 from arc_logging import AppLogger
-from sim_api.extensions import api
+from sim_api.extensions import api, apm
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
-    MissingElementError
+    MissingElementError, arc_validate_email
 )
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import (
     AlloyStore, Configuration, SharedSimulation, SimulationResults
 )
+from sim_api.routes import Routes
 from sim_api.token import (
     URLTokenError, confirm_simulation_token, generate_shared_simulation_token,
     generate_url
 )
 
-logger = AppLogger(__name__)
-
 share_blueprint = Blueprint('share', __name__)
+logger = AppLogger(__name__)
 
 
 class ShareSimulationLink(Resource):
@@ -59,6 +55,16 @@ class ShareSimulationLink(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self, user) -> Tuple[dict, int]:
+        """Generate a link for a shared sim object and return it to the
+        frontend.
+
+        Args:
+            user: User object for the owner of the shared simulation object
+                  returned by the authenticate middleware
+
+        Returns:
+            Returns a valid JSON response and status code as a tuple.
+        """
         # Get post data
         data = request.get_json()
 
@@ -96,28 +102,31 @@ class ShareSimulationLink(Resource):
             )
             shared_simulation_object.save()
         except ElementSymbolInvalid as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Element Symbol Invalid.'
             return response, 400
         except ElementInvalid as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Element Invalid.'
             return response, 400
         except MissingElementError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Alloy is missing essential elements.'
             return response, 400
         except DuplicateElementError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Alloy contains duplicate elements.'
             return response, 400
         except ValidationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Validation error.'
             return response, 400
         except OverflowError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Overflow error.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 500
 
         # Create a token that contains the ObjectId for the shared simulation
@@ -145,6 +154,16 @@ class ShareSimulationEmail(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self, owner) -> Tuple[dict, int]:
+        """Generate a link for a shared sim object and send it to the list of
+        email address provided.
+
+        Args:
+            owner: User object for the owner of the shared simulation object
+            returned by the authenticate middleware
+
+        Returns:
+            Returns a json response
+        """
         # Get post data
         data = request.get_json()
 
@@ -171,7 +190,7 @@ class ShareSimulationEmail(Resource):
         valid_email_list = []
         if len(email_list) == 1:
             try:
-                v = validate_email(email_list[0])
+                v = arc_validate_email(email_list[0])
                 valid_email_list.append(v['email'])
             except EmailNotValidError as e:
                 response['error'] = str(e)
@@ -180,7 +199,7 @@ class ShareSimulationEmail(Resource):
         else:
             for email in email_list:
                 try:
-                    v = validate_email(email)
+                    v = arc_validate_email(email)
                     valid_email_list.append(v['email'])
                 except EmailNotValidError as e:
                     response['error'] = str(e)
@@ -219,28 +238,34 @@ class ShareSimulationEmail(Resource):
             )
             shared_simulation_object.save()
         except ElementSymbolInvalid as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Element Symbol Invalid.'
             return response, 400
         except ElementInvalid as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Element Invalid.'
             return response, 400
         except MissingElementError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Alloy is missing essential elements.'
             return response, 400
         except DuplicateElementError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Alloy contains duplicate elements.'
             return response, 400
         except ValidationError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Validation error.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except OverflowError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Overflow error.'
+            log_message = {'message': response['message'], 'errors': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 500
 
         # Create a token that contains the ObjectId for the shared simulation
@@ -283,9 +308,7 @@ class ShareSimulationEmail(Resource):
         return response, 201
 
 
-@share_blueprint.route(
-    '/user/share/simulation/request/<token>', methods=['GET']
-)
+@share_blueprint.route(Routes.request_shared_simulation.value, methods=['GET'])
 def request_shared_simulation(token):
     """
     When the user clicks on a link to view a shared configuration, we need to
@@ -301,20 +324,8 @@ def request_shared_simulation(token):
 
     return redirect(f'{redirect_url}/share/simulation/{token}')
 
-    # # TODO(davidmatthews1004@gmail.com): Ensure the link can be dynamic.
-    # client_host = os.environ.get('CLIENT_HOST')
-    # # We can make our own redirect response by doing the following
-    # custom_redir_response = app.response_class(
-    #     status=302, mimetype='application/json'
-    # )
-    # # TODO(davidmatthews1004@gmail.com): Correct this endpoint and make sure I
-    # #  am correctly sending the signature.
-    # redirect_url = \
-    #     f'http://{client_host}/share/simulation/request/token={token}'
-    # return redirect(redirect_url, code=302)
 
-
-@share_blueprint.route('/user/share/simulation/view/<token>', methods=['GET'])
+@share_blueprint.route(Routes.view_shared_simulation.value, methods=['GET'])
 def view_shared_simulation(token):
     """
     Requests to this endpoint should be sent by the blank page described in
@@ -339,6 +350,9 @@ def view_shared_simulation(token):
     except URLTokenError as e:
         response['error'] = str(e)
         response['message'] = 'Invalid token.'
+        log_message = {'message': response['message'], 'errors': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return jsonify(response), 400
 
     # If the id decoded from the simulation does not exist, we must inform the
@@ -359,7 +373,5 @@ def view_shared_simulation(token):
     return jsonify(response), 200
 
 
-api.add_resource(ShareSimulationLink, '/api/v1/sim/user/share/simulation/link')
-api.add_resource(
-    ShareSimulationEmail, '/api/v1/sim/user/share/simulation/email'
-)
+api.add_resource(ShareSimulationLink, Routes.ShareSimulationLink.value)
+api.add_resource(ShareSimulationEmail, Routes.ShareSimulationEmail.value)

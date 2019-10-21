@@ -6,18 +6,9 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = 'Andrew Che <@codeninja55>'
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '1.0.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __status__ = 'development'
 __date__ = '2019.07.14'
-"""test_api_global_alloys.py: 
-
-Test all the endpoints on the Alloy resources endpoint.
-"""
 
 import unittest
 from pathlib import Path
@@ -36,7 +27,7 @@ from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'tests' / 'sim_configs.json'
 
 with open(_TEST_CONFIGS_PATH, 'r') as f:
     test_json = json.load(f)
@@ -147,12 +138,8 @@ class TestAlloyService(BaseTestCase):
         }
         alloy_store = AlloyStoreSchema().load(store)
 
-        cls.shuri.last_alloy_store = AlloyStore.from_json(
-            json.dumps(alloy_store)
-        )
-        cls.shuri.last_configuration = Configuration.from_json(
-            json.dumps(configs)
-        )
+        cls.shuri.last_alloy_store = alloy_store
+        cls.shuri.last_configuration = configs
 
         cls.shuri.save()
 
@@ -213,7 +200,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.shuri.email, self._shuri_pw)
 
             res = client.get(
-                '/api/v1/sim/global/alloys', content_type='application/json'
+                '/v1/sim/global/alloys', content_type='application/json'
             )
             data = res.json
 
@@ -233,7 +220,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.shuri.email, self._shuri_pw)
 
             res = client.get(
-                '/api/v1/sim/global/alloys', content_type='application/json'
+                '/v1/sim/global/alloys', content_type='application/json'
             )
             data = json.loads(res.data.decode())
 
@@ -251,7 +238,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.okoye.email, self._okoye_pw)
 
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps(
                     {
                         'name': 'Alloy-1',
@@ -271,7 +258,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.shuri.email, self._shuri_pw)
 
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps({}),  # Middleware before View method
                 content_type='application/json'
             )
@@ -288,7 +275,7 @@ class TestAlloyService(BaseTestCase):
             self.assertEqual(len(client.cookie_jar), 0)
 
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -314,9 +301,7 @@ class TestAlloyService(BaseTestCase):
             )
 
             # Logging out should clear the session
-            client.get(
-                '/api/v1/sim/auth/logout', content_type='application/json'
-            )
+            client.get('/v1/sim/auth/logout', content_type='application/json')
 
             # Clear the cookie from previously although it should be
             # cleared by logout
@@ -327,7 +312,7 @@ class TestAlloyService(BaseTestCase):
             client.set_cookie('localhost', 'SESSION_TOKEN', cookie.value)
 
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -342,7 +327,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.okoye.email, self._okoye_pw)
 
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -357,7 +342,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.okoye.email, self._okoye_pw)
 
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps(
                     {
                         'name': 'Alloy-1',
@@ -373,20 +358,13 @@ class TestAlloyService(BaseTestCase):
 
             self.assertEqual(res.status_code, 400)
             self.assertEqual(data['status'], 'fail')
-            self.assertEqual(
-                data['message'], 'Request data failed schema validation.'
+            self.assertEqual(data['message'], 'Invalid element error.')
+            self.assertTrue(data['error'])
+            err = (
+                'ValidationError (Element) (Field is required: '
+                '["Element.symbol"].)'
             )
-            self.assertTrue(data['errors'])
-            err = {
-                'compositions': {
-                    '0': {
-                        'name': ['Unknown field.'],
-                        'symbol': ['Missing data for required field.']
-                    },
-                    '_schema': ['Missing data for required field ["symbol"].']
-                }
-            }
-            self.assertEqual(data['errors'], err)
+            self.assertEqual(data['error'], err)
 
     def test_create_duplicate_name_alloy(self):
         """Ensure we can't create a duplicate alloy."""
@@ -405,7 +383,7 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(alloy_id)
             res = client.post(
-                '/api/v1/sim/global/alloys',
+                '/v1/sim/global/alloys',
                 data=json.dumps(duplicate_alloy),
                 content_type='application/json'
             )
@@ -427,7 +405,7 @@ class TestAlloyService(BaseTestCase):
             test_login(client, self.okoye.email, self._okoye_pw)
 
             res = client.get(
-                f'/api/v1/sim/global/alloys/{alloy_id}',
+                f'/v1/sim/global/alloys/{alloy_id}',
                 content_type='application/json'
             )
             data = res.json
@@ -444,7 +422,7 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(ObjectId())
             res = client.get(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -473,7 +451,7 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(ObjectId())
             res = client.patch(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 data=json.dumps(bad_alloy_data),
                 content_type='application/json'
             )
@@ -620,7 +598,7 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(alloy_id)
             res = client.put(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 data=json.dumps(new_alloy_data),
                 content_type='application/json'
             )
@@ -651,17 +629,15 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(ObjectId())
             res = client.put(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 data=json.dumps(bad_alloy_data),
                 content_type='application/json'
             )
             data = res.json
-            self.assertEqual(
-                data['message'], 'Missing element error in schema validation.'
-            )
+            self.assertEqual(data['message'], 'Missing element error.')
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(res.status_code, 400)
-            self.assertTrue(data['errors'])
+            self.assertTrue(data['error'])
 
     def test_update_alloy_non_existing(self):
         """Ensure if we try to update before creating it errors."""
@@ -673,7 +649,7 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(ObjectId())
             res = client.put(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 data=json.dumps(alloy_data),
                 content_type='application/json'
             )
@@ -688,7 +664,7 @@ class TestAlloyService(BaseTestCase):
 
             _id = str(ObjectId())
             res = client.put(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -752,7 +728,7 @@ class TestAlloyService(BaseTestCase):
             _id = str(alloy_id)
 
             res = client.delete(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -766,7 +742,7 @@ class TestAlloyService(BaseTestCase):
             _id = str(ObjectId())
 
             res = client.delete(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -789,7 +765,7 @@ class TestAlloyService(BaseTestCase):
             _id = 123456789
 
             res = client.delete(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -798,7 +774,7 @@ class TestAlloyService(BaseTestCase):
             self.assertEqual(data['message'], 'Invalid ObjectId.')
 
             res = client.put(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 data=json.dumps(alloy_data),
                 content_type='application/json'
             )
@@ -808,7 +784,7 @@ class TestAlloyService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
 
             res = client.get(
-                f'/api/v1/sim/global/alloys/{_id}',
+                f'/v1/sim/global/alloys/{_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())

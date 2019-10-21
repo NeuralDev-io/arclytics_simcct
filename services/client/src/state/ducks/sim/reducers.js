@@ -11,6 +11,8 @@ import {
   LOAD_SIM,
   LOAD_PERSISTED_SIM,
   LOAD_LAST_SIM,
+  LOAD_SIM_FROM_FILE,
+  RESET_SIM,
 } from './types'
 
 const initialState = {
@@ -18,6 +20,7 @@ const initialState = {
   isSimulated: false,
   displayUserCurve: true,
   results: {
+    isLoading: false,
     USER: {
       user_cooling_curve: {
         time: [],
@@ -80,10 +83,12 @@ const reducer = (state = initialState, action) => {
             ...state.alloys,
             isLoading: true,
           },
+          isSimulated: false,
+          results: { ...initialState.results },
         })
       }
       if (action.status === 'success') {
-        // set new alloy and auto-calculated fields in state
+        // set new alloy
         return ({
           ...state,
           isInitialised: true,
@@ -92,10 +97,8 @@ const reducer = (state = initialState, action) => {
             [action.alloyType]: action.alloy,
             isLoading: false,
           },
-          configurations: {
-            ...state.configurations,
-            ...action.config,
-          },
+          isSimulated: false,
+          results: { ...initialState.results },
         })
       }
       if (action.status === 'fail') {
@@ -105,6 +108,8 @@ const reducer = (state = initialState, action) => {
             ...state.alloys,
             isLoading: false,
           },
+          isSimulated: false,
+          results: { ...initialState.results },
         }
       }
       break
@@ -116,9 +121,11 @@ const reducer = (state = initialState, action) => {
           ...state.alloys,
           alloyOption: action.payload,
         },
+        isSimulated: false,
+        results: { ...initialState.results },
       }
-    case UPDATE_COMP:
-      // set new alloy comp and auto-calculated fields in state
+    case UPDATE_COMP: {
+      // set new alloy
       return ({
         ...state,
         alloys: {
@@ -126,11 +133,10 @@ const reducer = (state = initialState, action) => {
           parentError: action.parentError,
           [action.alloyType]: action.alloy,
         },
-        configurations: {
-          ...state.configurations,
-          ...action.config,
-        },
+        isSimulated: false,
+        results: { ...initialState.results },
       })
+    }
     case UPDATE_DILUTION:
       return {
         ...state,
@@ -138,15 +144,20 @@ const reducer = (state = initialState, action) => {
           ...state.alloys,
           dilution: action.payload,
         },
+        isSimulated: false,
+        results: { ...initialState.results },
       }
-    case UPDATE_CONFIG_METHOD:
+    case UPDATE_CONFIG_METHOD: {
       return {
         ...state,
         configurations: {
           ...state.configurations,
           method: action.payload,
         },
+        isSimulated: false,
+        results: { ...initialState.results },
       }
+    }
     case UPDATE_CONFIG:
       return {
         ...state,
@@ -154,22 +165,47 @@ const reducer = (state = initialState, action) => {
           ...state.configurations,
           ...action.payload,
         },
+        isSimulated: false,
+        results: { ...initialState.results },
       }
     case UPDATE_DISPLAY_USER_CURVE:
       return {
         ...state,
         displayUserCurve: action.payload,
       }
-    case RUN_SIM:
-      return {
-        ...state,
-        isSimulated: true,
-        results: {
-          ...state.results,
-          ...action.payload,
-          cctIndex: 0,
-        },
+    case RUN_SIM: {
+      if (action.status === 'started') {
+        return {
+          ...state,
+          results: {
+            ...state.results,
+            isLoading: true,
+          },
+        }
       }
+      if (action.status === 'fail') {
+        return {
+          ...state,
+          results: {
+            ...state.results,
+            isLoading: false,
+          },
+        }
+      }
+      if (action.status === 'success' && state.results.isLoading) {
+        return {
+          ...state,
+          isSimulated: true,
+          results: {
+            ...state.results,
+            ...action.payload,
+            isLoading: false,
+            cctIndex: 0,
+          },
+        }
+      }
+      break
+    }
     case UPDATE_CCT_INDEX:
       return {
         ...state,
@@ -181,6 +217,7 @@ const reducer = (state = initialState, action) => {
     case LOAD_SIM: {
       const { alloys, configurations, results } = action.payload
       return {
+        ...initialState,
         isInitialised: true,
         isSimulated: true,
         displayUserCurve: true,
@@ -191,17 +228,34 @@ const reducer = (state = initialState, action) => {
         alloys: {
           parentError: {},
           isLoading: false,
-          dilution: 0,
           ...alloys,
-          weld: {
-            _id: '',
-            name: '',
-            compositions: [],
-          },
-          mix: [],
         },
         results: {
           cctIndex: 0,
+          isLoading: false,
+          ...results,
+        },
+      }
+    }
+    case LOAD_SIM_FROM_FILE: {
+      const { alloys, configurations, results } = action.payload
+      return {
+        ...initialState,
+        isInitialised: true,
+        isSimulated: true,
+        displayUserCurve: true,
+        configurations: {
+          error: {},
+          ...configurations,
+        },
+        alloys: {
+          parentError: {},
+          isLoading: false,
+          ...alloys,
+        },
+        results: {
+          cctIndex: 0,
+          isLoading: false,
           ...results,
         },
       }
@@ -211,7 +265,7 @@ const reducer = (state = initialState, action) => {
     case LOAD_LAST_SIM: {
       const {
         last_alloy_store,
-        last_configurations,
+        last_configuration,
         last_simulation_invalid_fields,
         last_simulation_results,
       } = action.payload
@@ -225,7 +279,7 @@ const reducer = (state = initialState, action) => {
         configurations: {
           ...initialState.configurations,
           error: last_simulation_invalid_fields.invalid_configs,
-          ...last_configurations,
+          ...last_configuration,
         },
         alloys: {
           ...initialState.alloys,
@@ -239,6 +293,10 @@ const reducer = (state = initialState, action) => {
         },
       }
     }
+    case RESET_SIM:
+      return {
+        ...initialState,
+      }
     default:
       return state
   }

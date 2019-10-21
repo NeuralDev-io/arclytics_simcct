@@ -1,3 +1,8 @@
 export { default as TTT } from './TTT'
 export { default as CCT } from './CCT'
+export { default as ProfileBarChart } from './ProfileBarChart'
+export { default as LoginLocationMapbox } from './LoginLocationMapbox'
+export { default as SavedAlloysSimilarity } from './SavedAlloysSimilarity'
+export { default as MethodsHorizontalBarChart } from './MethodsUsedBarChart'
+export { default as SavedAlloysByNameHorizontalChart } from './SavedAlloysByNameHorizontalChart'
 export { layout, config } from './utils/chartConfig'

@@ -19,6 +19,11 @@ export const addFlashToast = (notification, dismissable = false) => (dispatch) =
   })
 }
 
+/**
+ * Remove a flash toast from Redux store.
+ * This is called after Toaster has displayed the toast.
+ * @param {string} key key of the flash toast
+ */
 export const removeFlashToast = key => (dispatch) => {
   dispatch({
     type: REMOVE_FLASH_TOAST,

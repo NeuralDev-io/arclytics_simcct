@@ -1,11 +1,26 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * ForgotPassword: form to be displayed to help user recover
+ * their password.
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import styles from '../../pages/login/LoginPage.module.scss'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import { forgotPasswordEmail } from '../../../utils/ValidationHelper'
 import { forgotPassword } from '../../../api/AuthenticationHelper'
 import { buttonize } from '../../../utils/accessibility'
+import { logError } from '../../../api/LoggingHelper'
+
+import styles from '../../pages/login/LoginPage.module.scss'
 
 class ForgotPassword extends Component {
   constructor(props) {
@@ -39,7 +54,7 @@ class ForgotPassword extends Component {
       })
         .catch((err) => {
           // If response is unsuccessful
-          console.log(err)
+          logError(err.toString(), err.message, 'ForgotPassword.handleForgotPasswordEmail', err.stack)
           this.setState({
             forgotPwdErr: err,
           })
@@ -55,8 +70,8 @@ class ForgotPassword extends Component {
     const { forgotEmail, forgotPwdErr, emailSent } = this.state
     const { forgotPwdHandler } = this.props
     return (
-      <React.Fragment>
-        <h3 className={styles.header}> Password Reset </h3>
+      <>
+        <h3 className={styles.header}>Reset your password </h3>
         <span> Enter your email to send a password reset email.</span>
         <TextField
           name="forgotEmail"
@@ -67,6 +82,14 @@ class ForgotPassword extends Component {
           error={forgotPwdErr}
           length="stretch"
         />
+        <div className={styles.backToSignin}>
+          <h6
+            className={styles.help}
+            {...buttonize(forgotPwdHandler)}
+          >
+            Go back to login
+          </h6>
+        </div>
         <div>
           <h6 className={emailSent ? styles.confirmation : styles.errors}>
             {emailSent ? ('Email has been sent.') : forgotPwdErr}
@@ -81,14 +104,8 @@ class ForgotPassword extends Component {
           >
             Send Email
           </Button>
-          <h6
-            className={styles.help}
-            {...buttonize(forgotPwdHandler)}
-          >
-            Go back to login
-          </h6>
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

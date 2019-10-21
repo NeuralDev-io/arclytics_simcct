@@ -233,3 +233,10 @@ services/elasticsearch/data/
 services/simcct/production_data/*.json
 services/db/production_data/*.json
 services/db/production_data/*
+services/simcct/simulation/
+
+.mapbox_token
+
+services/client/.npmrc
+
+services/db/production_data/

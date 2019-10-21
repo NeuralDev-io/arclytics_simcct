@@ -1,13 +1,16 @@
 /**
- *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
  * @version 0.1.0
  * @author Andrew Che
+ *
+ * This file provides helper asynchronous methods for getting a sharing link or
+ * sending an email for sharing configurations via the API in the simcct server.
  */
 
-// TODO(andrew@neuraldev.io): Do documentation.
+import { SIMCCT_URL } from '../../constants'
+
 export const getShareUrlLink = (configs, alloyStore, results) => new Promise((resolve, reject) => {
   /**
    * API request method to get the sharing URL link from the `users` server.
@@ -18,7 +21,7 @@ export const getShareUrlLink = (configs, alloyStore, results) => new Promise((re
    *   "link": "..."
    * }
    * */
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/share/simulation/link`, {
+  fetch(`${SIMCCT_URL}/user/share/simulation/link`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -50,7 +53,7 @@ export const sendShareEmail = (emails, message, configurations, alloyStore, resu
      *   "link": "..."
      * }
      * */
-    fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/share/simulation/email`, {
+    fetch(`${SIMCCT_URL}/user/share/simulation/email`, {
       method: 'POST',
       credentials: 'include',
       headers: {

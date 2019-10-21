@@ -1,38 +1,55 @@
+/**
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * AppBar component
+ *
+ * @version 1.0.0
+ * @author Dalton Le, Andrew Che, Arvy Salazar
+ */
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import HardDriveIcon from 'react-feather/dist/icons/hard-drive'
-// import HelpIcon from 'react-feather/dist/icons/help-circle'
-import MonitorIcon from 'react-feather/dist/icons/monitor'
-import UserIcon from 'react-feather/dist/icons/user'
-import LogOutIcon from 'react-feather/dist/icons/log-out'
-import DatabaseIcon from 'react-feather/dist/icons/database'
-import SlidersIcon from 'react-feather/dist/icons/sliders'
-import { ReactComponent as AnstoLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSignOut } from '@fortawesome/pro-light-svg-icons/faSignOut'
+import { faUser } from '@fortawesome/pro-light-svg-icons/faUser'
+import { faAnalytics } from '@fortawesome/pro-light-svg-icons/faAnalytics'
+import { faQuestionCircle } from '@fortawesome/pro-light-svg-icons'
+import { faUserCog } from '@fortawesome/pro-light-svg-icons/faUserCog'
+import { faSlidersV } from '@fortawesome/pro-light-svg-icons/faSlidersV'
+import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
+import { ReactComponent as SimulationIcon } from '../../../assets/simulation_icon.svg'
+import { faFileChartLine } from '@fortawesome/pro-light-svg-icons/faFileChartLine'
+import { ReactComponent as ANSTOLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
-import Tooltip from '../../elements/tooltip'
 import store from '../../../state/store'
-import { logout } from '../../../api/AuthenticationHelper'
+import Tooltip from '../../elements/tooltip'
 import { buttonize } from '../../../utils/accessibility'
-import { saveLastSim } from '../../../state/ducks/self/actions'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
+import { saveLastSim } from '../../../state/ducks/self/actions'
+import { logout } from '../../../api/AuthenticationHelper'
 
+import { logError } from '../../../api/LoggingHelper'
 import styles from './AppBar.module.scss'
 
 class AppBar extends React.Component {
-  handleLogout = () => {
+  handleLogout = async () => {
     const { addFlashToastConnect, saveLastSimConnect, redirect } = this.props
-    saveLastSimConnect()
+    await saveLastSimConnect()
     logout()
       .then(() => {
         redirect('/signin')
         store.dispatch({ type: 'USER_LOGOUT' })
       })
-      .catch(() => addFlashToastConnect({
-        message: 'We couldn\'t log you out. Please try again',
-        options: { variant: 'error' },
-      }, true))
+      .catch((err) => {
+        logError(err.toString(), err.messages, 'AppBar.handleLogout', err.stack_trace)
+        addFlashToastConnect({
+          message: 'We couldn\'t log you out. Please try again',
+          options: { variant: 'error' },
+        }, true)
+      })
   }
 
   render() {
@@ -45,15 +62,25 @@ class AppBar extends React.Component {
     return (
       <nav className={styles.navContainer}>
         <div>
-          <AnstoLogo className={styles.anstoLogo} />
+          <ANSTOLogo className={styles.anstoLogo} />
           <Link
             id="sim"
             className={`${styles.navIcon} ${active === 'sim' && styles.active}`}
             to="/"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <SlidersIcon className={styles.icon} />
+              <SimulationIcon className={styles.simIcon}/>
               <p>Simulation</p>
+            </Tooltip>
+          </Link>
+          <Link
+            id="equilibrium"
+            className={`${styles.navIcon} ${active === 'equilibrium' && styles.active}`}
+            to="/equilibrium"
+          >
+            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+              <FontAwesomeIcon icon={faSlidersV} className={styles.icon} size="lg" />
+              <p>Equilibrium</p>
             </Tooltip>
           </Link>
           <Link
@@ -62,7 +89,7 @@ class AppBar extends React.Component {
             to={isAuthenticated ? '/user/simulations' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <HardDriveIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faFileChartLine} className={styles.icon} size="lg" />
               <p>Saved simulations</p>
             </Tooltip>
           </Link>
@@ -72,13 +99,19 @@ class AppBar extends React.Component {
             to={isAuthenticated ? '/user/alloys' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <DatabaseIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faDatabase} className={styles.icon} size="lg" />
               <p>Alloy database</p>
             </Tooltip>
           </Link>
-          {/* <a
+          {/*
+            DECISION:
+            This was only use for testing of the ErrorBoundary and Logs so we will keep it here
+            in case we may need to test some other errors in the future.
+
+            <a
             id="help"
-            className={`${styles.navIcon} ${active === 'edu' && styles.active} ${!isAuthenticated && styles.disabled}`}
+            className={`${styles.navIcon} ${active === 'edu' && styles.active}
+            ${!isAuthenticated && styles.disabled}`}
             href={isAuthenticated ? '/' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
@@ -86,6 +119,24 @@ class AppBar extends React.Component {
               <p>Help</p>
             </Tooltip>
           </a> */}
+
+          <div
+            className={styles.line}
+            style={{ display: isAdmin ? 'flex' : 'none' }}
+          />
+
+          <Link
+            id="analytics"
+            className={`${styles.navIcon} ${active === 'analytics' && styles.active}`}
+            style={{ display: isAdmin ? 'flex' : 'none' }}
+            to="/analytics/users"
+          >
+            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+              <FontAwesomeIcon icon={faAnalytics} className={styles.icon} size="lg" />
+              <p>Data & analytics</p>
+            </Tooltip>
+          </Link>
+
           <Link
             id="admin"
             className={`${styles.navIcon} ${active === 'admin' && styles.active}`}
@@ -93,7 +144,7 @@ class AppBar extends React.Component {
             to="/admin/analytics"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <MonitorIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faUserCog} className={styles.icon} size="lg" />
               <p>Admin</p>
             </Tooltip>
           </Link>
@@ -105,7 +156,7 @@ class AppBar extends React.Component {
             to={isAuthenticated ? '/user/profile' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <UserIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faUser} className={styles.icon} size="lg" />
               <p>Account</p>
             </Tooltip>
           </Link>
@@ -118,10 +169,22 @@ class AppBar extends React.Component {
             })()}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <LogOutIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faSignOut} className={styles.icon} size="lg" />
               <p>Logout</p>
             </Tooltip>
           </div>
+
+          <Link
+            id="about"
+            className={`${styles.navIcon} ${active === 'about' && styles.active}`}
+            to="/about/arclytics"
+          >
+            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+              <FontAwesomeIcon icon={faQuestionCircle} className={styles.icon} size="lg" />
+              <p>About</p>
+            </Tooltip>
+          </Link>
+
           <Logo className={styles.logo} />
         </div>
       </nav>

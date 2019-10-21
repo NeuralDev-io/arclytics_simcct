@@ -8,11 +8,8 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__license__ = 'TBA'
+__license__ = 'MIT'
 __version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.09'
 """manage.py: 
@@ -20,13 +17,18 @@ __date__ = '2019.07.09'
 This script is to our CLI script tool to manage the application.
 """
 
+import os
 import sys
 import unittest
 
 import coverage
 from flask.cli import FlaskGroup
 
-from arc_api.app import create_app
+from arc_api import create_app
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
 
 COV = coverage.coverage(
     branch=True,

@@ -13,7 +13,7 @@ WORKDIR=$(dirname "$(readlink -f "$0")")
 DOCKER_COMPOSE_PATH="${WORKDIR}/docker-compose.yml"
 ARGS=""
 CONTAINER_GROUP=""
-CONTAINER_ARGS="simcct client redis mongodb nginx celery-worker fluentd elasticsearch kibana apm-server"
+CONTAINER_ARGS="arclytics simcct client redis mongodb nginx celery-worker fluentd elasticsearch kibana apm-server"
 CONTAINER_LOG=""
 LOGS_WATCH=0
 FLUSH_ALL=0
@@ -26,6 +26,7 @@ SCALE_CONTAINERS_ARGS=""
 DOCKER_DOWN_FLAG=0
 SWAGGER_FLAG=0
 JUPYTER_FLAG=0
+PRODUCTION_DATA=0
 
 MONGO_USERNAME=""
 MONGO_PASSWORD=""
@@ -46,14 +47,21 @@ terminalColWidth=$(tput cols)
 esc="\033";  # if this doesn't work, enter an ESC directly
 
 # Foreground colours
+# shellcheck disable=SC2034
 blackf="${esc}[30m"; redf="${esc}[31m"; greenf="${esc}[32m"; yellowf="${esc}[33m"
+# shellcheck disable=SC2034
 bluef="${esc}[34m"; purplef="${esc}[35m"; cyanf="${esc}[36m"; whitef="${esc}[37m"
 # Background colors
+# shellcheck disable=SC2034
 blackb="${esc}[40m"; redb="${esc}[41m"; greenb="${esc}[42m"; yellowb="${esc}[43m"
+# shellcheck disable=SC2034
 blueb="${esc}[44m"; purpleb="${esc}[45m"; cyanb="${esc}[46m"; whiteb="${esc}[47m"
 # Bold, italic, underline, and inverse style toggles
+# shellcheck disable=SC2034
 boldon="${esc}[1m"; boldoff="${esc}[22m"; italicson="${esc}[3m";
+# shellcheck disable=SC2034
 italicsoff="${esc}[23m"; ulon="${esc}[4m"; uloff="${esc}[24m";
+# shellcheck disable=SC2034
 invon="${esc}[7m"; invoff="${esc}[27m";
 reset="${esc}[0m"
 
@@ -117,8 +125,8 @@ getMongoUserAndPassword() {
 
 # Run only the arclytics tests
 arcTest() {
-    headerMessage "RUNNING USERS SERVER TESTS"
-    generalMessage "Beginning ${TEST_TITLE} for Users Server"
+    headerMessage "RUNNING ARCLYTICS SERVER TESTS"
+    generalMessage "Beginning ${TEST_TITLE} for Arclytics Server"
     echoSpace
     if [[ ${tty} == 1 ]]; then
         generalMessage "docker-compose exec -T arclytics python manage.py ${TEST_TYPE}"
@@ -156,8 +164,8 @@ client() {
 
 # run all tests
 all() {
-    # arcTest
     simcct
+    arcTest
     # client
     # e2e
 }
@@ -389,20 +397,20 @@ dockerLsFormatted() {
   generalMessage "Containers"
   echoLine
   docker container ls -a --format \
-      "table {{.ID}}\t{{.Image}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}" \
-      --filter "label=arclytics.io"
+    "table {{.ID}}\t{{.Image}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}" \
+    --filter "label=arclytics.io"
   echoLine
   generalMessage "Volumes"
   echoLine
   docker volume ls --format \
-      "table {{.Name}}\t{{.Labels}}\t{{.Driver}}\t{{.Mountpoint}}" \
+    "table {{.Name}}\t{{.Labels}}\t{{.Driver}}\t{{.Mountpoint}}" \
 #      --filter "label=arclytics.io"
   echoLine
   generalMessage "Images"
   echoLine
   docker image ls --format \
-      "table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}" \
-      --filter "label=arclytics.io"
+    "table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}" \
+    --filter "label=arclytics.io"
   echoLine
   completeMessage
   echo
@@ -489,16 +497,85 @@ flushDb() {
 
 # Flush and seed database
 flushAndSeedDb() {
+  if [[ $PRODUCTION_DATA == 1 ]]; then
+    headerMessage "SEED AND FLUSH BACK-END MICROSERVICES (WITH PRODUCTION DATA)"
+    generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
+    generalMessage "docker-compose exec simcct python manage.py flush_all"
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
+    echoSpace
+    generalMessage "Seeding simcct microservice database with global alloys"
+    generalMessage "docker-compose exec simcct python manage.py seed_db"
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python load_production_data.py
+    echoSpace
+  else
     headerMessage "SEED AND FLUSH BACK-END MICROSERVICES"
     generalMessage "Flushing simcct microservice database (Redis and MongoDB)"
     generalMessage "docker-compose exec simcct python manage.py flush_all"
-    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush_all
+    docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py flush
     echoSpace
     generalMessage "Seeding simcct microservice database with global alloys"
     generalMessage "docker-compose exec simcct python manage.py seed_db"
     docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py seed_db
     docker-compose -f "${DOCKER_COMPOSE_PATH}" exec simcct python manage.py seed_alloys_db
     echoSpace
+  fi
+}
+
+getLatestKubeVersion() {
+  LATEST=$(\gcloud container get-server-config \
+              ${LOCATION_COMMAND} \
+              --project=${PROJECT_ID} \
+              --format="json" \
+              | jq --raw-output '
+                def to_gke_semver(o):
+                  capture("(?<major>[0-9]*).(?<minor>[0-9]*).(?<patch>[0-9]*)-gke.(?<gke>[0-9]*)");
+                def from_gke_semver(o):
+                  .major + "." + .minor + "." + .patch + "-gke." + .gke;
+                reduce (
+                  .validMasterVersions[] | to_gke_semver(.)
+                ) as $this (
+                {
+                  "major":"0",
+                  "minor":"0",
+                  "patch": "0",
+                  "gke": "0"
+                };
+                if ($this.major|tonumber) > (.major|tonumber)
+                then . = $this
+                else (
+                  if ($this.major|tonumber) == (.major|tonumber)
+                  then (
+                    if ($this.minor|tonumber) > (.minor|tonumber)
+                    then . = $this
+                    else (
+                      if ($this.minor|tonumber) == (.minor|tonumber)
+                      then (
+                      if ($this.patch|tonumber) > (.patch|tonumber)
+                        then . = $this
+                          else (
+                              if ($this.patch|tonumber) == (.patch|tonumber)
+                              then (
+                                  if ($this.gke|tonumber) > (.gke|tonumber)
+                                  then . = $this
+                                  else .
+                                  end
+                              )
+                              else .
+                              end
+                          )
+                          end
+                      )
+                      else .
+                      end
+                    )
+                    end
+                  )
+                  else .
+                  end
+                )
+                end
+                ) | from_gke_semver(.)
+                ')
 }
 
 # shellcheck disable=SC2086
@@ -629,6 +706,10 @@ run() {
         if [[ ${DETACH_FLAG} == 1 ]]; then
             generalMessage "docker-compose up -d --build ${CONTAINER_ARGS}"
             docker-compose -f "${DOCKER_COMPOSE_PATH}" up -d --build ${CONTAINER_ARGS}
+
+            if [[ ${JUPYTER_FLAG} == 1 ]]; then
+              docker-compose logs jupyter
+            fi
         else
             generalMessage "docker-compose up --build ${CONTAINER_ARGS}"
             docker-compose -f "${DOCKER_COMPOSE_PATH}" up --build ${CONTAINER_ARGS}
@@ -707,20 +788,20 @@ while [[ "$1" != "" ]] ; do
       dockerPs
       ;;
     ls | list | show )
-        dockerLsFormatted
-        exit 0
-        ;;
+      dockerLsFormatted
+      exit 0
+      ;;
     stats )
-        ARGS=$2
-        while [[ "$3" != "" ]] ; do
-            ARGS="${ARGS} $3"
-            shift
-        done
-        dockerStats
-        ;;
+      ARGS=$2
+      while [[ "$3" != "" ]] ; do
+          ARGS="${ARGS} $3"
+          shift
+      done
+      dockerStats
+      ;;
     prune )
-        dockerSystemPrune
-        ;;
+      dockerSystemPrune
+      ;;
     down )
       while [[ "$2" != "" ]] ; do
         case $2 in
@@ -931,6 +1012,14 @@ while [[ "$1" != "" ]] ; do
       flushDb
       ;;
     seed )
+      while [[ "$2" != "" ]] ; do
+        case $2 in
+          -p | --prod | --production )
+            PRODUCTION_DATA=1
+            ;;
+        esac
+        shift
+      done
       flushAndSeedDb
       ;;
     dir )
@@ -947,13 +1036,14 @@ while [[ "$1" != "" ]] ; do
             headerMessage "ARC CLI STYLING PYTHON"
             CONFIG="${WORKDIR}/.yapf.cfg"
             ARC_DIR="${WORKDIR}/services/simcct"
+            SIMCCT_DIR="${WORKDIR}/services/simcct"
             CELERY_DIR="${WORKDIR}/services/celery-worker"
-            EXCLUDE_DIR="${WORKDIR}/services/client"
+            EXCLUDE_PATTERN="${WORKDIR}/services/simcct/arc_simulation/**.py"
             echo "Running yapf formatter"
             echo "Current Directory: ${WORKDIR}"
             echo "Configuration used: ${CONFIG}"
             echo "Exclude directory: ${EXCLUDE_DIR}"
-            yapf -ri --verbose --style=${CONFIG} --exclude=${EXCLUDE_DIR} ${ARC_DIR} ${CELERY_DIR}
+            yapf -ri --verbose --style=${CONFIG} --exclude=${EXCLUDE_PATTERN} ${SIMCCT_DIR} ${ARC_DIR} ${CELERY_DIR}
             completeMessage
             exit 0
             ;;
@@ -1017,10 +1107,10 @@ while [[ "$1" != "" ]] ; do
             # This will trigger a manual Cloud Build.
             gcloud builds submit ${WORKDIR} \
                 --config=${WORKDIR}/cloudbuild.yaml \
-                --machine-type=n1-highcpu-32 \
+                --machine-type=n1-highcpu-8 \
                 --ignore-file=${WORKDIR}/.gcloudignore \
                 --gcs-source-staging-dir=gs://arc-sim_cloudbuild/source \
-                --timeout=1h30m
+                --timeout=2h30m
           ;;
         esac
       shift
@@ -1028,8 +1118,8 @@ while [[ "$1" != "" ]] ; do
       ;;
     deploy )
       # Some Defaults
-      PROJECT_ID="arc-sim"
-      CLUSTER_NAME="arc-sim-aust"
+      PROJECT_ID="arc-sim-testing"
+      CLUSTER_NAME="arc-sim-cluster"
       KUBERNETES_MASTER_VERSION="1.13.7-gke.8"
       KUBERNETES_NODE_VERSION=${KUBERNETES_MASTER_VERSION}
       # Note: Only use one of ZONE/REGION but generally ZONE because
@@ -1038,18 +1128,21 @@ while [[ "$1" != "" ]] ; do
       # There are 3 for Australia.
       REGION="australia-southeast1"
       ZONE="australia-southeast1-a"
-      LOCATION_COMMAND="--region=${REGION}"
+      #LOCATION_COMMAND="--region=${REGION}"
+      LOCATION_COMMAND="--zone=${ZONE}"
       REPLICA_ZONE_REDIS="--replica-zones=${ZONE},australia-southeast1-b"
       REPLICA_ZONE_MONGO="--replica-zones=${ZONE},australia-southeast1-c"
       IMAGE_TYPE="UBUNTU"
       RESERVED_IP_NAME="arclytics-ip"
       CLIENT_SSL_NAME="client-app-https-cert"
       SIMCCT_SSL_NAME="simcct-app-https-cert"
+      ARC_SSL_NAME="arclytics-app-https-cert"
       WEBSITE_SSL_NAME="website-https-cert"
       CLIENT_HTTPS_TLS_NAME="client-app-https-secret"
       SIMCCT_HTTPS_TLS_NAME="simcct-app-https-secret"
+      ARC_HTTPS_TLS_NAME="arclytics-app-https-secret"
       WEBSITE_HTTPS_TLS_NAME="website-https-secret"
-      CLOUD_STORAGE_BUCKET="asia.artifacts.arc-sim.appspot.com"
+      CLOUD_STORAGE_BUCKET="arclytics"
 
       while [[ "$2" != "" ]] ; do
         case $2 in
@@ -1063,8 +1156,8 @@ while [[ "$1" != "" ]] ; do
             gcloud compute project-info describe --project ${PROJECT_ID}
             #gcloud container clusters describe ${CLUSTER_NAME} --zone ${ZONE}
             gcloud config set project ${PROJECT_ID}
-            #gcloud config set compute/zone ${ZONE}
-            gcloud config set compute/region ${REGION}
+            gcloud config set compute/zone ${ZONE}
+            #gcloud config set compute/region ${REGION}
             gcloud components update
             kubectl config set-context --current --namespace=arclytics
             #gcloud compute project-info add-metadata --metadata google-compute-default-region=australia-southeast1,google-compute-default-zone=australia-southeast1-a
@@ -1074,62 +1167,8 @@ while [[ "$1" != "" ]] ; do
               case $3 in
                 create )
                   # This uses `jq` package to get the latest GKE versions for Kubernetes Master and Nodes
-                  LATEST=$(\
-                    gcloud container get-server-config \
-                        ${LOCATION_COMMAND} \
-                        --project=${PROJECT_ID} \
-                        --format="json" \
-                        | jq --raw-output '
-                          def to_gke_semver(o):
-                            capture("(?<major>[0-9]*).(?<minor>[0-9]*).(?<patch>[0-9]*)-gke.(?<gke>[0-9]*)");
-                          def from_gke_semver(o):
-                            .major + "." + .minor + "." + .patch + "-gke." + .gke;
-                          reduce (
-                            .validMasterVersions[] | to_gke_semver(.)
-                          ) as $this (
-                          {
-                            "major":"0",
-                            "minor":"0",
-                            "patch": "0",
-                            "gke": "0"
-                          };
-                          if ($this.major|tonumber) > (.major|tonumber)
-                          then . = $this
-                          else (
-                            if ($this.major|tonumber) == (.major|tonumber)
-                            then (
-                              if ($this.minor|tonumber) > (.minor|tonumber)
-                              then . = $this
-                              else (
-                                if ($this.minor|tonumber) == (.minor|tonumber)
-                                then (
-                                if ($this.patch|tonumber) > (.patch|tonumber)
-                                  then . = $this
-                                    else (
-                                        if ($this.patch|tonumber) == (.patch|tonumber)
-                                        then (
-                                            if ($this.gke|tonumber) > (.gke|tonumber)
-                                            then . = $this
-                                            else .
-                                            end
-                                        )
-                                        else .
-                                        end
-                                    )
-                                    end
-                                )
-                                else .
-                                end
-                              )
-                              end
-                            )
-                            else .
-                            end
-                          )
-                          end
-                          ) | from_gke_semver(.)
-                          ')
-                   echo Kubernetes Version: ${LATEST}
+                  getLatestKubeVersion
+                  echo Kubernetes Version: ${LATEST}
 
                   # Create new GKE Kubernetes cluster (using host node VM images based on Ubuntu
                   # rather than ChromiumOS default & also use slightly larger VMs than default)
@@ -1139,10 +1178,11 @@ while [[ "$1" != "" ]] ; do
                       ${LOCATION_COMMAND} \
                       --image-type=${IMAGE_TYPE} \
                       --machine-type=n1-standard-2 \
-                      --num-nodes=2 \
-                      --min-nodes=1 \
-                      --max-nodes=3 \
+                      --num-nodes=4 \
+                      --min-nodes=4 \
+                      --max-nodes=8 \
                       --enable-autoscaling \
+                      --enable-autorepair \
                       --node-labels=component=arc-nodes \
                       --cluster-version=${LATEST}
                       #--cluster-version=${KUBERNETES_NODE_VERSION} \
@@ -1170,6 +1210,8 @@ while [[ "$1" != "" ]] ; do
           secrets )
             kubectl apply -f "${WORKDIR}/kubernetes/secrets.yml" \
                 --namespace=arclytics
+            kubectl apply -f "${WORKDIR}/kubernetes/efk-secrets.yaml" \
+                --namespace=kube-system
 
             # For MONGO REPLICASET
             TMPFILE=$(mktemp)
@@ -1177,7 +1219,14 @@ while [[ "$1" != "" ]] ; do
             kubectl create secret generic shared-bootstrap-secrets \
                 --from-file=internal-auth-mongodb-keyfile=${TMPFILE} \
                 --namespace=arclytics
-            rm ${TMPFILE}
+
+            # FOR APM SECRET TOKEN
+            #TMPFILE=$(mktemp)
+            #/usr/bin/openssl rand -base64 741 > ${TMPFILE}
+            #kubectl create secret generic apm-secret-token \
+            #    --from-file=secret_token=${TMPFILE} \
+            #    --namespace=arclytics
+            #rm ${TMPFILE}
 
             # Apply the SSL certificates to GCP management as well.
             gcloud compute ssl-certificates create ${CLIENT_SSL_NAME} \
@@ -1186,6 +1235,9 @@ while [[ "$1" != "" ]] ; do
             gcloud compute ssl-certificates create ${SIMCCT_SSL_NAME} \
                 --certificate "${WORKDIR}/certs/io.arclytics.api.crt" \
                 --private-key "${WORKDIR}/certs/io.arclytics.api.key"
+            gcloud compute ssl-certificates create ${ARC_SSL_NAME} \
+                --certificate "${WORKDIR}/certs/io.arclytics.data.crt" \
+                --private-key "${WORKDIR}/certs/io.arclytics.data.key"
             gcloud compute ssl-certificates create ${WEBSITE_SSL_NAME} \
                 --certificate "${WORKDIR}/certs/io.arclytics.crt" \
                 --private-key "${WORKDIR}/certs/io.arclytics.key"
@@ -1199,6 +1251,15 @@ while [[ "$1" != "" ]] ; do
             kubectl create secret tls ${SIMCCT_HTTPS_TLS_NAME} \
                --cert "${WORKDIR}/certs/io.arclytics.api.crt" \
                --key "${WORKDIR}/certs/io.arclytics.api.key" \
+               --namespace=arclytics
+            kubectl create secret tls ${ARC_HTTPS_TLS_NAME} \
+               --cert "${WORKDIR}/certs/io.arclytics.data.crt" \
+               --key "${WORKDIR}/certs/io.arclytics.data.key" \
+               --namespace=arclytics
+            APM_HTTPS_TLS_NAME="apm-app-https-secret"
+            kubectl create secret tls ${APM_HTTPS_TLS_NAME} \
+               --cert "${WORKDIR}/certs/io.arclytics.apm.fullchain.pem" \
+               --key "${WORKDIR}/certs/io.arclytics.apm.privkey.pem" \
                --namespace=arclytics
             kubectl create secret tls ${WEBSITE_HTTPS_TLS_NAME} \
                --cert "${WORKDIR}/certs/io.arclytics.crt" \
@@ -1215,6 +1276,9 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 delete )
                   gcloud compute addresses delete ${RESERVED_IP_NAME} --global
+                  ;;
+                show | ls )
+                  gcloud compute addresses list --global
                   ;;
               esac
               shift
@@ -1239,9 +1303,11 @@ while [[ "$1" != "" ]] ; do
                   generalMessage "Creating GCE disks"
                   for i in 1 2 3
                   do
-                      gcloud compute disks create --size 200GB \
-                          --type pd-ssd pd-standard-disk-$i \
-                          ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
+                      gcloud compute disks create --size 25GB \
+                          --type pd-ssd mongo-ssd-disk-$i \
+                          ${LOCATION_COMMAND}
+                          # ${REPLICA_ZONE_MONGO}
+                          # Only used for REGION
                   done
                   sleep 3
 
@@ -1322,9 +1388,10 @@ while [[ "$1" != "" ]] ; do
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_redis:${TAG}
                   ;;
                 create )
-                  gcloud compute disks create --size 30GB \
+                  gcloud compute disks create --size 25GB \
                       --type pd-ssd redis-ssd-disk \
-                      ${LOCATION_COMMAND} ${REPLICA_ZONE_REDIS}
+                      ${LOCATION_COMMAND}
+                      # ${REPLICA_ZONE_REDIS}
                   kubectl apply -f "${WORKDIR}/kubernetes/redis-gke-ssd-pv.yaml"
                   kubectl create -f "${WORKDIR}/kubernetes/redis-gke-svc.yaml" --validate=false
                   kubectl rollout status sts/redis --namespace arclytics
@@ -1346,19 +1413,19 @@ while [[ "$1" != "" ]] ; do
                 create )
                   # Register GCE Fast SSD persistent disks and then create the persistent disks
                   generalMessage "Creating GCE disks for Elasticsearch"
-                  for i in 1 2 3
+                  for i in 1 2
                   do
-                      gcloud compute disks create --size 20GB \
-                          --type pd-ssd es-ssd-disk-$i \
+                      gcloud compute disks create --size 200GB \
+                          --type pd-standard es-standard-disk-$i \
                           ${LOCATION_COMMAND} ${REPLICA_ZONE_MONGO}
                   done
                   sleep 3
 
                   # Create persistent volumes using disks created above
                   generalMessage "Creating GKE Persistent Volumes"
-                  for i in 1 2 3
+                  for i in 1 2
                   do
-                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/efk-elasticsearch-gke-ssd-pv.yaml" > /tmp/es-gke-pv.yaml
+                      sed -e "s/INST/${i}/g" "${WORKDIR}/kubernetes/efk-elasticsearch-gke-standard-pv.yaml" > /tmp/es-gke-pv.yaml
                       kubectl apply -f /tmp/es-gke-pv.yaml
                   done
                   rm /tmp/es-gke-pv.yaml
@@ -1373,14 +1440,14 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-elasticsearch-gke-svc.yaml"
                   kubectl delete pvc elasticsearch-pvc-elasticsearch-0 --namespace=arclytics
                   kubectl delete pvc elasticsearch-pvc-elasticsearch-1 --namespace=arclytics
-                  kubectl delete pvc elasticsearch-pvc-elasticsearch-2 --namespace=arclytics
+                  #kubectl delete pvc elasticsearch-pvc-elasticsearch-2 --namespace=arclytics
                   kubectl delete pv elasticsearch-pv-1 --namespace=arclytics
                   kubectl delete pv elasticsearch-pv-2 --namespace=arclytics
-                  kubectl delete pv elasticsearch-pv-3 --namespace=arclytics
+                  #kubectl delete pv elasticsearch-pv-3 --namespace=arclytics
                   sleep 15
                   gcloud compute disks delete es-standard-disk-1 ${LOCATION_COMMAND}
                   gcloud compute disks delete es-standard-disk-2 ${LOCATION_COMMAND}
-                  gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
+                  #gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
                   ;;
               esac
               shift
@@ -1420,7 +1487,7 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-kibana-gke-svc.yaml"
                   ;;
                 port-forward )
-                  KIBANA_POD_NAME=$(kubectl get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}")
+                  KIBANA_POD_NAME=$(kubectl get pod -l app=kibana --namespace=arclytics -o jsonpath="{.items[0].metadata.name}")
                   kubectl port-forward "${KIBANA_POD_NAME}" 5600:5601 --namespace arclytics
                   ;;
               esac
@@ -1454,6 +1521,14 @@ while [[ "$1" != "" ]] ; do
                   # eval $(minikube docker-env)  <-- If using Docker and self-built images
                   kubectl create -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
                   ;;
+                update )
+                  docker system prune -af --volumes --filter 'label=service=simcct'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
+                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                  sleep 10
+                  kubectl set image deployment/simcct simcct-container=asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                  ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
                   ;;
@@ -1472,10 +1547,46 @@ while [[ "$1" != "" ]] ; do
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
                   ;;
                 create )
-                  kubectl create -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
+                  kubectl apply -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
+                  ;;
+                update )
+                  docker system prune -af --volumes --filter 'label=service=celery-worker'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build celery-worker
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
+                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                  sleep 10
+                  kubectl set image deployment/celery-worker celery-worker-container=asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
+                  ;;
+              esac
+              shift
+            done
+            ;;
+          arclytics )
+            while [[ "$3" != "" ]]; do
+              case $3 in
+                build )
+                  # Prune to avoid collisions of names:tags output
+                  docker system prune -af --volumes --filter 'label=service=arclytics'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build arclytics
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=arclytics")
+                  docker push asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  ;;
+                create )
+                  kubectl apply -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
+                  ;;
+                update )
+                  docker system prune -af --volumes --filter 'label=service=arclytics'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build arclytics
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=arclytics")
+                  docker push asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  sleep 10
+                  kubectl set image deployment/arclytics arclytics-container=asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  ;;
+                delete )
+                  kubectl delete -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
                   ;;
               esac
               shift
@@ -1493,7 +1604,16 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 create )
                   # eval $(minikube docker-env)
-                  kubectl create -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
+                  kubectl apply -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
+                  ;;
+                update )
+                  docker system prune -af --volumes --filter 'label=service=client'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
+                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+                  sleep 10
+                  kubectl set image deployment/client-https client-https-container=asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+                  # kubectl apply -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
@@ -1513,6 +1633,15 @@ while [[ "$1" != "" ]] ; do
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_website:latest
                   ;;
                 create )
+                  kubectl apply -f "${WORKDIR}/kubernetes/web-gke-secure-svc.yaml"
+                  ;;
+                update )
+                  docker system prune -af --volumes --filter 'label=service=website'
+                  docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build website
+                  TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=website")
+                  docker push asia.gcr.io/${PROJECT_ID}/arc_sim_website:latest
+                  kubectl delete deployment web
+                  sleep 10
                   kubectl apply -f "${WORKDIR}/kubernetes/web-gke-secure-svc.yaml"
                   ;;
                 delete )
@@ -1549,6 +1678,7 @@ while [[ "$1" != "" ]] ; do
             docker system prune -af --volumes --filter 'label=service=simcct'
             docker system prune -af --volumes --filter 'label=service=client'
             docker system prune -af --volumes --filter 'label=service=celery-worker'
+            docker system prune -af --volumes --filter 'label=service=arclytics'
             docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build mongodb
             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=mongodb")
             docker push asia.gcr.io/${PROJECT_ID}/arc_sim_mongo:${TAG}
@@ -1561,6 +1691,9 @@ while [[ "$1" != "" ]] ; do
             docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build celery-worker
             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
             docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+            docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build arclytics
+            TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=arclytics")
+            docker push asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
             docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
             TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
             docker push asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
@@ -1592,10 +1725,10 @@ while [[ "$1" != "" ]] ; do
             echoLine
             gcloud container clusters list
             echoLine
-            generalMessage "Secrets"
-            echoLine
-            kubectl get secrets -o wide --namespace arclytics
-            echoLine
+            #generalMessage "Secrets"
+            #echoLine
+            #kubectl get secrets -o wide --namespace arclytics
+            #echoLine
             generalMessage "GCE Disks"
             echoLine
             gcloud compute disks list
@@ -1640,19 +1773,19 @@ while [[ "$1" != "" ]] ; do
             while [[ "$3" != "" ]]; do
               case $3 in
                 upload )
-                  gsutil cp -r ${WORKDIR}/services/simcct/sim_api/static/* gs://${CLOUD_STORAGE_BUCKET}/assets/
+                  gsutil cp -r ${WORKDIR}/services/simcct/sim_api/static/* gs://${CLOUD_STORAGE_BUCKET}/imgs/
                   ;;
                 list | ls )
-                  gsutil ls gs://${CLOUD_STORAGE_BUCKET}/assets/**
+                  gsutil ls gs://${CLOUD_STORAGE_BUCKET}/imgs/**
                   ;;
                 public )
-                  gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/assets/imgs/email_footer_logo.png
+                  gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/imgs/email_footer_logo.png
                   ;;
                 address )
-                  echo https://storage.cloud.google.com/asia.artifacts.arc-sim.appspot.com/assets/imgs/email_footer_logo.png
+                  echo https://storage.googleapis.com/arclytics/imgs/email_footer_logo.png
                   ;;
                 go )
-                  google-chrome https://storage.cloud.google.com/asia.artifacts.arc-sim.appspot.com/assets/imgs/email_footer_logo.png
+                  google-chrome https://storage.googleapis.com/arclytics/imgs/email_footer_logo.png
                   ;;
               esac
               shift

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # root.py
@@ -7,7 +6,6 @@
 # Attributions:
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
-
 __author__ = [
     'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
     'Dinol Shrestha <@dinolsth>'
@@ -25,14 +23,14 @@ import os
 
 from flask import Blueprint, Response, jsonify
 
+from sim_api.routes import Routes
 from arc_logging import AppLogger
 
+root_blueprint = Blueprint('root', __name__)
 logger = AppLogger(__name__)
 
-root_blueprint = Blueprint('root', __name__)
 
-
-@root_blueprint.route('/', methods=['GET'])
+@root_blueprint.route(Routes.index.value, methods=['GET'])
 def index():
     resp_string = f'Container: {os.uname()[1]}'
     response = Response(resp_string)
@@ -42,7 +40,7 @@ def index():
     return response
 
 
-@root_blueprint.route('/ping', methods=['GET'])
+@root_blueprint.route(Routes.ping.value, methods=['GET'])
 def ping():
     """Just a sanity check."""
     response = {
@@ -53,22 +51,22 @@ def ping():
     return jsonify(response), 200
 
 
-@root_blueprint.route('/log', methods=['GET'])
-def log():
-    """Just a log sanity check."""
-    response = {
-        'status': 'success',
-        'message': 'fluentd logging',
-        'container_id': os.uname()[1]
-    }
-    # Use the APM logger
-    # apm.capture_message('APM logging')
-    # Use the new Flask-Fluentd-Logger as a global variable.
-    logger.info(response)
-    return jsonify(response), 200
+# @root_blueprint.route('Routes.log.value', methods=['GET'])
+# def log():
+#     """Just a log sanity check."""
+#     response = {
+#         'status': 'success',
+#         'message': 'fluentd logging',
+#         'container_id': os.uname()[1]
+#     }
+#     # Use the APM logger
+#     # apm.capture_message('APM logging')
+#     # Use the new Flask-Fluentd-Logger as a global variable.
+#     logger.info(response)
+#     return jsonify(response), 200
 
 
-@root_blueprint.route('/healthy', methods=['GET'])
+@root_blueprint.route(Routes.readiness_probe.value, methods=['GET'])
 def readiness_probe():
     """Readiness probe for GCP Ingress."""
     response = Response('')

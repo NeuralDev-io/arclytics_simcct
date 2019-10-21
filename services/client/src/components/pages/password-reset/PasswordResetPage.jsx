@@ -1,13 +1,17 @@
 /**
- * Login Page
+ * Password Reset Page
  *
- * @version 0.0.0
+ * @version 1.0.0
  * @author Arvy Salazar
- * @github Xaraox
+ *
+ * Provides the password reset page and the controller logic to accomplish a password
+ * reset for the user after it has been successfully authenticated by the backend.
+ *
  */
 
 import React, { Component } from 'react'
-import CheckCircleIcon from 'react-feather/dist/icons/check-circle'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheckCircle } from '@fortawesome/pro-light-svg-icons/faCheckCircle'
 import PropTypes from 'prop-types'
 import { resetPassword, checkAuthStatus } from '../../../api/AuthenticationHelper'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
@@ -18,8 +22,8 @@ import Button from '../../elements/button'
 import Modal from '../../elements/modal/Modal'
 
 import styles from './PasswordResetPage.module.scss'
+import { logError } from '../../../api/LoggingHelper'
 
-// TODO: propTypes
 
 class PasswordResetPage extends Component {
   constructor(props) {
@@ -52,7 +56,7 @@ class PasswordResetPage extends Component {
     if (status === 'success') {
       return (
         <Modal className={styles.cnfrmModal} show="true">
-          <CheckCircleIcon className={styles.checkCircleIcon} />
+          <FontAwesomeIcon icon={faCheckCircle} className={styles.checkCircleIcon} />
           <h5>
             Your account password has been successfully changed.
           </h5>
@@ -67,7 +71,6 @@ class PasswordResetPage extends Component {
   }
 
   handleSubmit = () => {
-    console.log('handlesSubmit')
     const { match } = this.props
     const { newPwd, cnfrmPwd } = this.state
     const err = passwordResetValidation({ newPwd, cnfrmPwd })
@@ -90,14 +93,12 @@ class PasswordResetPage extends Component {
         this.setState({
           status: 'success',
         })
-        // history.push('/signin')
-        // TODO: uncomment when done
       })
-        .catch(() => {
-          console.log(err)
+        .catch((error) => {
           this.setState({
             status: err,
           })
+          logError(error.toString(), error.message, 'PasswordResetPage.handleSubmit', error.stack)
         })
     } else {
       this.setState({

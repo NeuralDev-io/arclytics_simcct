@@ -77,40 +77,34 @@ apm-server:
 
   rum:
     # To enable real user monitoring (RUM) support set this to true.
-    enabled: false
-
-    #event_rate:
-
+    enabled: true
+    event_rate:
       # Defines the maximum amount of events allowed to be sent to the APM Server RUM
       # endpoint per IP per second. Defaults to 300.
-      #limit: 300
-
+      limit: 300
       # An LRU cache is used to keep a rate limit per IP for the most recently seen IPs.
       # This setting defines the number of unique IPs that can be tracked in the cache.
       # Sites with many concurrent clients should consider increasing this limit. Defaults to 1000.
-      #lru_size: 1000
+      lru_size: 1000
 
     #-- General RUM settings
-
     # Comma separated list of permitted origins for real user monitoring.
     # User-agents will send an origin header that will be validated against this list.
     # An origin is made of a protocol scheme, host and port, without the url path.
     # Allowed origins in this setting can have * to match anything (eg.: http://*.example.com)
     # If an item in the list is a single '*', everything will be allowed
-    #allow_origins : ['*']
-
+    allow_origins : ['*']
     # Regexp to be matched against a stacktrace frame's `file_name` and `abs_path` attributes.
     # If the regexp matches, the stacktrace frame is considered to be a library frame.
-    #library_pattern: "node_modules|bower_components|~"
-
+    library_pattern: "node_modules|bower_components|~"
     # Regexp to be matched against a stacktrace frame's `file_name`.
     # If the regexp matches, the stacktrace frame is not used for calculating error groups.
     # The default pattern excludes stacktrace frames that have a filename starting with '/webpack'
-    #exclude_from_grouping: "^/webpack"
+    exclude_from_grouping: "^/webpack"
 
     # If a source map has previously been uploaded, source mapping is automatically applied
     # to all error and transaction documents sent to the RUM endpoint.
-    #source_mapping:
+    source_mapping:
 
       # Source maps are always fetched from Elasticsearch, by default using the output.elasticsearch configuration.
       # A different instance must be configured when using any other output.
@@ -126,17 +120,15 @@ apm-server:
         #protocol: "https"
         #username: "elastic"
         #password: "changeme"
-
       # The `cache.expiration` determines how long a source map should be cached before fetching it again from Elasticsearch.
       # Note that values configured without a time unit will be interpreted as seconds.
-      #cache:
-        #expiration: 5m
+      cache:
+        expiration: 5m
 
       # Source maps are stored in a separate index.
       # If the default index pattern for source maps at 'outputs.elasticsearch.indices'
       # is changed, a matching index pattern needs to be specified here.
-      #index_pattern: "apm-*-sourcemap*"
-
+      index_pattern: "apm-*-sourcemap*"
 
   # If set to true, APM Server augments data received by the agent with the original IP of the backend server,
   # or the IP and User Agent of the real user (RUM requests). It defaults to true.

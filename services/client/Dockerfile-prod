@@ -1,7 +1,8 @@
 # MULTISTAGE BUILD PATTERN
 
 # ========== # BUILD ENVIRONMENT # ========== #
-FROM node:10.16.2-alpine as build
+FROM node:10.16.3-alpine as build
+
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 
@@ -14,8 +15,20 @@ ARG REACT_APP_SIM_HOST
 ENV REACT_APP_SIM_HOST ${REACT_APP_SIM_HOST}
 ARG REACT_APP_SIM_PORT
 ENV REACT_APP_SIM_PORT ${REACT_APP_SIM_PORT}
+ARG REACT_APP_ARC_HOST
+ENV REACT_APP_ARC_HOST ${REACT_APP_ARC_HOST}
+ARG REACT_APP_ARC_PORT
+ENV REACT_APP_ARC_PORT ${REACT_APP_ARC_PORT}
+ARG REACT_APP_FLUENTD_URL
+ENV REACT_APP_FLUENTD_URL ${REACT_APP_FLUENTD_URL}
 
-COPY package.json /app/package.json
+# Install react-scripts pinned at 3.0.1 to global /usr/local/bin/react-scripts
+# This is due to there being an issue with 3.1.0
+#RUN npm install --silent react-scripts@3.0.1 --global
+#RUN which react-scripts
+
+COPY ./package.json /app/package.json
+COPY ./.npmrc /app/.npmrc
 RUN npm install --silent --only=prod
 COPY . /app
 
@@ -33,7 +46,7 @@ RUN rm /usr/share/nginx/html/static/js/*.map
 
 # Remove the default configurations so we serve the correct files
 RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx/kubernetes.conf /etc/nginx/conf.d
+COPY nginx/kubernetes.conf /etc/nginx/conf.d/default.conf
 
 # Create a readiness file
 RUN touch /etc/nginx/healthy

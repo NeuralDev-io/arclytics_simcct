@@ -21,5 +21,8 @@ const App = () => (
 
 #### `position`: string. 'top' | 'right' | 'bottom' | 'left'
 
-Position of the tooltip
+Position of the tooltip. Default is `'bottom'`.
 
+#### `className`: object. `{ container: string, tooltip: string }`
+
+Class name to override styling.

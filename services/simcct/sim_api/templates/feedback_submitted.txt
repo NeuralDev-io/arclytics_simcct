@@ -1,0 +1,13 @@
+A User has submitted Feedback
+
+Hello,
+
+{{ user_name }} has submitted feedback for the Arclytics application.
+
+They gave the application a rating of {{ rating }} out of 5.
+
+The feedback was for the category: {{ category }}
+
+The comment they gave was: {{ comment }}
+
+The Arclytics Team

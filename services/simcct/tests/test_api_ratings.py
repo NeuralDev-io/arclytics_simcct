@@ -6,29 +6,20 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['David Matthews <@tree1004>']
-
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.2.0'
-__maintainer__ = 'David Matthews'
-__email__ = 'davidmatthews1004@gmail.com'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __status__ = 'development'
 __date__ = '2019.08.27'
-"""test_api_ratings.py: 
 
-This script will run all tests on the Ratings and feedback endpoints.
-"""
-
-import os
 import json
+import os
 import unittest
 from pathlib import Path
 
-from tests.test_api_base import BaseTestCase
+from mongoengine import get_db
+
 from arc_logging import AppLogger
-from sim_api.models import User, Feedback, AdminProfile
-from tests.test_api_users import log_test_user_in
+from sim_api.models import AdminProfile, Feedback, User
+from tests.test_api_base import BaseTestCase
 from tests.test_utilities import test_login
 
 logger = AppLogger(__name__)
@@ -49,6 +40,19 @@ def load_test_feedback(self, user: User):
 
 class TestRatingsService(BaseTestCase):
     """Tests for Ratings and feedback endpoints"""
+    def tearDown(self) -> None:
+        db = get_db('default')
+        self.assertTrue(db.name, 'arc_test')
+        db.users.drop()
+        db.feedback.drop()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """On finishing, we should delete users collection so no conflict."""
+        db = get_db('default')
+        assert db.name == 'arc_test'
+        db.users.drop()
+        db.feedback.drop()
 
     def test_post_rating_no_data(self):
         mace = User(
@@ -64,7 +68,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, mace.email, 'ThisPartysOver')
             resp = client.post(
-                'api/v1/sim/user/rating',
+                '/v1/sim/user/rating',
                 data=json.dumps(''),
                 content_type='application/json'
             )
@@ -88,7 +92,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, plo.email, 'WhenYouAskForTrouble')
             resp = client.post(
-                '/api/v1/sim/user/rating',
+                '/v1/sim/user/rating',
                 data=json.dumps({'invalid_key': 'some_value'}),
                 content_type='application/json'
             )
@@ -112,7 +116,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, jhonny.email, 'WhenYouAskForTrouble')
             resp = client.post(
-                '/api/v1/sim/user/rating',
+                '/v1/sim/user/rating',
                 data=json.dumps({'rating': '3.5'}),
                 content_type='application/json'
             )
@@ -136,7 +140,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, rex.email, 'ExperienceOutranksEverything')
             resp = client.post(
-                '/api/v1/sim/user/rating',
+                '/v1/sim/user/rating',
                 data=json.dumps({'rating': '5'}),
                 content_type='application/json'
             )
@@ -165,12 +169,12 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, cody.email, 'BlastHim')
         resp_1 = client.post(
-            '/api/v1/sim/user/rating',
+            '/v1/sim/user/rating',
             data=json.dumps({'rating': '3'}),
             content_type='application/json'
         )
         resp_2 = client.post(
-            '/api/v1/sim/user/rating',
+            '/v1/sim/user/rating',
             data=json.dumps({'rating': '5'}),
             content_type='application/json'
         )
@@ -206,7 +210,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, echo.email, 'WeGotToFollowOrders')
             resp = client.post(
-                '/api/v1/sim/user/feedback',
+                '/v1/sim/user/feedback',
                 data=json.dumps(''),
                 content_type='application/json'
             )
@@ -230,7 +234,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, fives.email, 'WeAreOneAndTheSame')
             resp = client.post(
-                'api/v1/sim/user/feedback',
+                '/v1/sim/user/feedback',
                 data=json.dumps(
                     {
                         'category': 'Category value',
@@ -259,7 +263,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, hevy.email, 'YouDeserveIt')
             resp = client.post(
-                'api/v1/sim/user/feedback',
+                '/v1/sim/user/feedback',
                 data=json.dumps(
                     {
                         'category': 'Category value',
@@ -276,20 +280,20 @@ class TestRatingsService(BaseTestCase):
             self.assertEqual(data['message'], 'Feedback validation error.')
 
     def test_post_feedback_success(self):
-        heavy = User(
+        hevy = User(
             **{
-                'email': 'heavy@arclytics.io',
+                'email': 'cadet-hevy@arclytics.io',
                 'first_name': 'Clone Cadet',
-                'last_name': 'Heavy'
+                'last_name': 'Hevy'
             }
         )
-        heavy.set_password('YouDeserveIt')
-        heavy.save()
+        hevy.set_password('YouDeserveIt')
+        hevy.save()
 
         with self.client as client:
-            test_login(client, heavy.email, 'YouDeserveIt')
+            test_login(client, hevy.email, 'YouDeserveIt')
             resp = client.post(
-                '/api/v1/sim/user/feedback',
+                '/v1/sim/user/feedback',
                 data=json.dumps(
                     {
                         'category': 'Category value',
@@ -304,170 +308,11 @@ class TestRatingsService(BaseTestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data['status'], 'success')
             self.assertEqual(
-                data['message'], f'Feedback submitted by {heavy.email}.'
+                data['message'], f'Feedback submitted by {hevy.email}.'
             )
 
-            self.assertTrue(Feedback.objects(user=heavy.id))
+            # self.assertTrue(Feedback.objects(user=hevy.id))
 
-    # def test_ratings_list(self):
-    #     """NOT A REAL UNIT TEST, this is to help me develop the list endpoint"""
-    #     vader = User(
-    #         email='darthvader@arclytics.io',
-    #         first_name='Darth',
-    #         last_name='Vader'
-    #     )
-    #     vader.set_password('AllTooEasy')
-    #     vader.admin_profile = AdminProfile(
-    #         position='Position',
-    #         mobile_number=None,
-    #         verified=True,
-    #         promoted_by=None
-    #     )
-    #     vader.save()
-    #
-    #     with self.client:
-    #         cookie = test_login(self.client, vader.email, 'AllTooEasy')
-    #         self.client.post(
-    #             '/api/v1/sim/user/feedback',
-    #             data=json.dumps(
-    #                 {
-    #                     'category': 'Category value',
-    #                     'rating': 5,
-    #                     'comments': 'Comments value'
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #
-    #         self.client.post(
-    #             '/api/v1/sim/user/feedback',
-    #             data=json.dumps(
-    #                 {
-    #                     'category': 'Category value 2',
-    #                     'rating': 4,
-    #                     'comments': 'Comments value 2'
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #
-    #         self.client.post(
-    #             '/api/v1/sim/user/feedback',
-    #             data=json.dumps(
-    #                 {
-    #                     'category': 'Category value 3',
-    #                     'rating': 3,
-    #                     'comments': 'Comments value 3'
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #
-    #         self.client.post(
-    #             '/api/v1/sim/user/feedback',
-    #             data=json.dumps(
-    #                 {
-    #                     'category': 'Category value 4',
-    #                     'rating': 2,
-    #                     'comments': 'Comments value 4'
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #
-    #         self.client.post(
-    #             '/api/v1/sim/user/feedback',
-    #             data=json.dumps(
-    #                 {
-    #                     'category': 'Category value 5',
-    #                     'rating': 1,
-    #                     'comments': 'Comments value 5'
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #
-    #         resp_1 = self.client.get(
-    #             '/api/v1/sim/admin/feedback/list',
-    #             data=json.dumps({
-    #                 'limit': 2,
-    #                 'sort_on': '-rating'
-    #             }),
-    #             content_type='application/json'
-    #         )
-    #
-    #         data_1 = json.loads(resp_1.data.decode())
-    #         print(data_1)
-    #
-    #         resp_2 = self.client.get(
-    #             '/api/v1/sim/admin/feedback/list',
-    #             data=json.dumps(
-    #                 {
-    #                     'limit': data_1['limit'],
-    #                     'sort_on': data_1['sort_on'],
-    #                     'offset': data_1['next_offset']
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #
-    #         data_2 = json.loads(resp_2.data.decode())
-    #         print(data_2)
-    #
-    #         resp_3 = self.client.get(
-    #             '/api/v1/sim/admin/feedback/list',
-    #             data=json.dumps(
-    #                 {
-    #                     'limit': data_2['limit'],
-    #                     'sort_on': data_2['sort_on'],
-    #                     'offset': data_2['next_offset']
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #
-    #         data_3 = json.loads(resp_3.data.decode())
-    #         print(data_3)
-    #
-    #         self.client.post(
-    #             '/api/v1/sim/user/feedback',
-    #             data=json.dumps(
-    #                 {
-    #                     'category': 'Category value 6',
-    #                     'rating': 5,
-    #                     'comments': 'Comments value 6'
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #
-    #         self.client.post(
-    #             '/api/v1/sim/user/feedback',
-    #             data=json.dumps(
-    #                 {
-    #                     'category': 'Category value 7',
-    #                     'rating': 5,
-    #                     'comments': 'Comments value 7'
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #
-    #         resp_4 = self.client.get(
-    #             '/api/v1/sim/admin/feedback/list',
-    #             data=json.dumps(
-    #                 {
-    #                     'limit': data_2['limit'],
-    #                     'sort_on': data_2['sort_on'],
-    #                     'offset': data_2['next_offset']
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #
-    #         data_4 = json.loads(resp_4.data.decode())
-    #         print(data_4)
-    #
     def test_get_feedback_list_invalid_sort(self):
         vader = User(
             **{
@@ -490,7 +335,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps({'sort_on': 'invalid_category_value'}),
                 content_type='application/json'
             )
@@ -522,7 +367,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps({'limit': 'invalid_limit_value'}),
                 content_type='application/json'
             )
@@ -554,7 +399,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps({'limit': -1}),
                 content_type='application/json'
             )
@@ -586,7 +431,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps({'offset': 'invalid_offset_value'}),
                 content_type='application/json'
             )
@@ -596,39 +441,39 @@ class TestRatingsService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'Offset value is invalid.')
 
-    # def test_get_feedback_list_offset_too_large(self):
-    #     vader = User(
-    #         **{
-    #             'email': 'darwdthqvader@arclytics.io',
-    #             'first_name': 'Darth',
-    #             'last_name': 'Vader'
-    #         }
-    #     )
-    #     vader.set_password('AllTooEasy')
-    #     vader.admin_profile = AdminProfile(
-    #         position='Position',
-    #         mobile_number=None,
-    #         verified=True,
-    #         promoted_by=None
-    #     )
-    #     vader.save()
-    #
-    #     load_test_feedback(self, vader)
-    #
-    #     with self.client as client:
-    #         test_login(client, vader.email, 'AllTooEasy')
-    #         resp = client.get(
-    #             '/api/v1/sim/admin/feedback/list',
-    #             data=json.dumps({'offset': 100}),
-    #             content_type='application/json'
-    #         )
-    #         logger.debug(resp.data.decode())
-    #         data = json.loads(resp.data.decode())
-    #         self.assertEqual(resp.status_code, 400)
-    #         self.assertEqual(data['status'], 'fail')
-    #         self.assertEqual(
-    #             data['message'], 'Offset value exceeds number of records.'
-    #         )
+    def test_get_feedback_list_offset_too_large(self):
+        vader = User(
+            **{
+                'email': 'darwdthqvader@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
+        )
+        vader.set_password('AllTooEasy')
+        vader.admin_profile = AdminProfile(
+            position='Position',
+            mobile_number=None,
+            verified=True,
+            promoted_by=None
+        )
+        vader.save()
+
+        load_test_feedback(self, vader)
+
+        with self.client as client:
+            test_login(client, vader.email, 'AllTooEasy')
+            resp = client.get(
+                '/v1/sim/admin/feedback/list',
+                data=json.dumps({'offset': 100}),
+                content_type='application/json'
+            )
+            logger.debug(resp.data.decode())
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(
+                data['message'], 'Offset value exceeds number of records.'
+            )
 
     def test_get_feedback_list_offset_less_than_one(self):
         vader = User(
@@ -652,7 +497,7 @@ class TestRatingsService(BaseTestCase):
         with self.client as client:
             test_login(client, vader.email, 'AllTooEasy')
             resp = client.get(
-                '/api/v1/sim/admin/feedback/list',
+                '/v1/sim/admin/feedback/list',
                 data=json.dumps({'offset': -1}),
                 content_type='application/json'
             )
@@ -662,87 +507,220 @@ class TestRatingsService(BaseTestCase):
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(data['message'], 'Offset must be > 1.')
 
-    # def test_get_feedback_list_success(self):
-    #     vader = User(
-    #         email='darrthvoader@arclytics.io',
-    #         first_name='Darth',
-    #         last_name='Vader'
-    #     )
-    #     vader.set_password('AllTooEasy')
-    #     vader.admin_profile = AdminProfile(
-    #         position='Position',
-    #         mobile_number=None,
-    #         verified=True,
-    #         promoted_by=None
-    #     )
-    #     vader.save()
-    #
-    #     load_test_feedback(self, vader)
-    #
-    #     with self.client:
-    #         test_login(self.client, vader.email, 'AllTooEasy')
-    #         resp_1 = self.client.get(
-    #             '/api/v1/sim/admin/feedback/list',
-    #             data=json.dumps({
-    #                 'limit': 4,
-    #                 'sort_on': 'rating'
-    #             }),
-    #             content_type='application/json'
-    #         )
-    #         logger.debug(resp_1.data.decode())
-    #         data_1 = json.loads(resp_1.data.decode())
-    #         self.assertEqual(resp_1.status_code, 200)
-    #         self.assertEqual(data_1['status'], 'success')
-    #         self.assertEqual(data_1['sort_on'], 'rating')
-    #         self.assertEqual(data_1['next_offset'], 5)
-    #         self.assertEqual(data_1['prev_offset'], None)
-    #         self.assertEqual(data_1['limit'], 4)
-    #         self.assertEqual(data_1['current_page'], 1)
-    #         self.assertEqual(data_1['total_pages'], 3)
-    #
-    #         resp_2 = self.client.get(
-    #             '/api/v1/sim/admin/feedback/list',
-    #             data=json.dumps(
-    #                 {
-    #                     'offset': 5,
-    #                     'limit': 4,
-    #                     'sort_on': 'rating'
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #
-    #         data_2 = json.loads(resp_2.data.decode())
-    #         self.assertEqual(resp_2.status_code, 200)
-    #         self.assertEqual(data_2['status'], 'success')
-    #         self.assertEqual(data_2['sort_on'], 'rating')
-    #         self.assertEqual(data_2['next_offset'], 9)
-    #         self.assertEqual(data_2['prev_offset'], 1)
-    #         self.assertEqual(data_2['limit'], 4)
-    #         self.assertEqual(data_2['current_page'], 2)
-    #         self.assertEqual(data_2['total_pages'], 3)
-    #
-    #         resp_3 = self.client.get(
-    #             '/api/v1/sim/admin/feedback/list',
-    #             data=json.dumps(
-    #                 {
-    #                     'offset': 9,
-    #                     'limit': 4,
-    #                     'sort_on': 'rating'
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #
-    #         data_3 = json.loads(resp_3.data.decode())
-    #         self.assertEqual(resp_3.status_code, 200)
-    #         self.assertEqual(data_3['status'], 'success')
-    #         self.assertEqual(data_3['sort_on'], 'rating')
-    #         self.assertEqual(data_3['next_offset'], None)
-    #         self.assertEqual(data_3['prev_offset'], 5)
-    #         self.assertEqual(data_3['limit'], 4)
-    #         self.assertEqual(data_3['current_page'], 3)
-    #         self.assertEqual(data_3['total_pages'], 3)
+    def test_get_feedback_list_success(self):
+        vader = User(
+            email='darrthvoader@arclytics.io',
+            first_name='Darth',
+            last_name='Vader'
+        )
+        vader.set_password('AllTooEasy')
+        vader.admin_profile = AdminProfile(
+            position='Position',
+            mobile_number=None,
+            verified=True,
+            promoted_by=None
+        )
+        vader.save()
+
+        load_test_feedback(self, vader)
+
+        with self.client:
+            test_login(self.client, vader.email, 'AllTooEasy')
+            resp_1 = self.client.get(
+                '/v1/sim/admin/feedback/list',
+                data=json.dumps({
+                    'limit': 4,
+                    'sort_on': 'rating'
+                }),
+                content_type='application/json'
+            )
+            data_1 = json.loads(resp_1.data.decode())
+            self.assertEqual(resp_1.status_code, 200)
+            self.assertEqual(data_1['status'], 'success')
+            self.assertEqual(data_1['sort_on'], 'rating')
+            self.assertEqual(data_1['next_offset'], 5)
+            self.assertEqual(data_1['prev_offset'], None)
+            self.assertEqual(data_1['limit'], 4)
+            self.assertEqual(data_1['current_page'], 1)
+            self.assertEqual(data_1['total_pages'], 3)
+
+            resp_2 = self.client.get(
+                '/v1/sim/admin/feedback/list',
+                data=json.dumps(
+                    {
+                        'offset': 5,
+                        'limit': 4,
+                        'sort_on': 'rating'
+                    }
+                ),
+                content_type='application/json'
+            )
+
+            data_2 = json.loads(resp_2.data.decode())
+            self.assertEqual(resp_2.status_code, 200)
+            self.assertEqual(data_2['status'], 'success')
+            self.assertEqual(data_2['sort_on'], 'rating')
+            self.assertEqual(data_2['next_offset'], 9)
+            self.assertEqual(data_2['prev_offset'], 1)
+            self.assertEqual(data_2['limit'], 4)
+            self.assertEqual(data_2['current_page'], 2)
+            self.assertEqual(data_2['total_pages'], 3)
+
+            resp_3 = self.client.get(
+                '/v1/sim/admin/feedback/list',
+                data=json.dumps(
+                    {
+                        'offset': 9,
+                        'limit': 4,
+                        'sort_on': 'rating'
+                    }
+                ),
+                content_type='application/json'
+            )
+
+            data_3 = json.loads(resp_3.data.decode())
+            self.assertEqual(resp_3.status_code, 200)
+            self.assertEqual(data_3['status'], 'success')
+            self.assertEqual(data_3['sort_on'], 'rating')
+            self.assertEqual(data_3['next_offset'], None)
+            self.assertEqual(data_3['prev_offset'], 5)
+            self.assertEqual(data_3['limit'], 4)
+            self.assertEqual(data_3['current_page'], 3)
+            self.assertEqual(data_3['total_pages'], 3)
+
+    def test_post_subscribe_already_subscribed(self):
+        vader = User(
+            **{
+                'email': 'darthvader@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
+        )
+        vader.set_password('AllTooEasy')
+        vader.admin_profile = AdminProfile(
+            position='Position',
+            mobile_number=None,
+            verified=True,
+            promoted_by=None,
+            sub_to_feedback=True
+        )
+        vader.save()
+
+        with self.client as client:
+            test_login(client, vader.email, 'AllTooEasy')
+            resp = self.client.post(
+                '/v1/sim/admin/feedback/list/subscribe',
+                data=json.dumps({'action': 'subscribe'}),
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'User is already subscribed.')
+
+    def test_post_unsubscribe_already_unsubscribed(self):
+        vader = User(
+            **{
+                'email': 'darthvader@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
+        )
+        vader.set_password('AllTooEasy')
+        vader.admin_profile = AdminProfile(
+            position='Position',
+            mobile_number=None,
+            verified=True,
+            promoted_by=None,
+            sub_to_feedback=False
+        )
+        vader.save()
+
+        with self.client as client:
+            test_login(client, vader.email, 'AllTooEasy')
+            resp = self.client.post(
+                '/v1/sim/admin/feedback/list/subscribe',
+                data=json.dumps({'action': 'unsubscribe'}),
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(data['status'], 'fail')
+            self.assertEqual(data['message'], 'User is already unsubscribed.')
+
+    def test_post_subscribe_success(self):
+        vader = User(
+            **{
+                'email': 'darthvader@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
+        )
+        vader.set_password('AllTooEasy')
+        vader.admin_profile = AdminProfile(
+            position='Position',
+            mobile_number=None,
+            verified=True,
+            promoted_by=None,
+            sub_to_feedback=False
+        )
+        vader.save()
+
+        with self.client as client:
+            test_login(client, vader.email, 'AllTooEasy')
+            resp = self.client.post(
+                '/v1/sim/admin/feedback/list/subscribe',
+                data=json.dumps({'action': 'subscribe'}),
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(data['message'], 'User has been subscribed.')
+
+            vader_updated = User.objects.get(email=vader.email)
+            self.assertEqual(
+                vader_updated['admin_profile']['sub_to_feedback'], True
+            )
+
+    def test_post_unsubscribe_success(self):
+        vader = User(
+            **{
+                'email': 'darthvader@arclytics.io',
+                'first_name': 'Darth',
+                'last_name': 'Vader'
+            }
+        )
+        vader.set_password('AllTooEasy')
+        vader.admin_profile = AdminProfile(
+            position='Position',
+            mobile_number=None,
+            verified=True,
+            promoted_by=None,
+            sub_to_feedback=True
+        )
+        vader.save()
+
+        with self.client as client:
+            test_login(client, vader.email, 'AllTooEasy')
+            resp = self.client.post(
+                '/v1/sim/admin/feedback/list/subscribe',
+                data=json.dumps({'action': 'unsubscribe'}),
+                content_type='application/json'
+            )
+
+            data = json.loads(resp.data.decode())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(data['message'], 'User has been unsubscribed.')
+
+            vader_updated = User.objects.get(email=vader.email)
+            self.assertEqual(
+                vader_updated['admin_profile']['sub_to_feedback'], False
+            )
 
 
 if __name__ == '__main__':

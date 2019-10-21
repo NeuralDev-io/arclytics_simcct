@@ -1,3 +1,15 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Accordion component, to be used with the AccordionSection component.
+ *
+ * @version 1.0.0
+ * @author Andrew Che, Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 

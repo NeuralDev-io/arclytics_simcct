@@ -1,102 +1,94 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
-  <head>
-    <title>Acknowledge Promotion</title>
-    <style>
-      .default-button {
-        outline: none;
-        font-style: normal;
-        background-color: #0076C2;
-        border: 2px solid #0076C2;
-        color: #fafafa;
-        width: 7.5rem;
-        height: 2.5rem;
-        padding: 0 .75rem;
-        border-radius: 6px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, .25);
-        transition: ease-in-out .4s;
-        cursor: pointer;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-      }
-    </style>
-  </head>
-  <body style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;">
-  <table width="100%" border="0" cellspacing="10" cellpadding="0" class="wrapper">
-    <tr>
-      <td align="center" valign="top" style="text-align:center;">
-        <table border="0" cellspacing="0" cellpadding="5" class="main" width="600"
-               style="text-align: left; margin-left: auto; margin-right: auto;">
-          <!-- EMAIL HEADER GOES HERE -->
-        </table>
-      </td>
-    </tr>
-    <tr>
-      <td  align="center" valign="top" style="text-align:center;">
-        <table border="0" cellspacing="0" cellpadding="10" class="main"
-               style="text-align: left; margin-left: auto; margin-right: auto;"  width="600">
-          <hr>
-          <!-- EMAIL CONTENT -->
-          <p>Hi {{ user_name }},</p>
-          <br/>
-          <p>
-              You've recently been promoted to the role of
-              administrator with the position: {{ position }}
-          </p>
-          <p>Please acknowledge this promotion by clicking the button below:</p>
-          <br/>
-          <a href="{{ promotion_verification_url }}" style="text-decoration: none; text-decoration-color: #fafafa;">
-            <button onclick="window.location.href='{{ promotion_verification_url }}';" class="default-button"
-            style="font-style: normal;
-            background-color: #0076C2;
-            border: 2px solid #0076C2;
-            color: #fafafa;
-            width: 7.5rem;
-            height: 2.5rem;
-            padding: 0.5rem;
-            border-radius: 6px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, .25);
-            transition: ease-in-out .4s;
-            cursor: pointer;
-            text-align: center;
-            margin-left: auto;
-            margin-right: auto;">
-              Confirm
-            </button>
-          </a>
-          <br/>
-          <p>
-              The above link is valid for one hour. If you do not verify your
-              promotion within this period you will need to contact {{ admin_name }}
-              to ask them to send you a new email. They can be contacted at:
-              {{ admin_email }}
-          </p>
-          <br/>
-          <p>
-              If you need additional assistance, please contact <a href="mailto:help@arclytics.io">help@arclytics.io</a>.
-          </p>
-          <br/>
-          <br/>
-          <p>Cheers,</p>
-          <h4>The Arclytics Team</h4>
-          <hr>
-        </table>
-      </td>
-    </tr>
-    <tr>
-      <td align="center" valign="top" style="text-align: center;">
-        <table border="0" cellspacing="0" cellpadding="10" class="main"width="600"
-               style="text-align: left; margin-left: auto; margin-right: auto;">
-          <!-- EMAIL FOOTER GOES HERE -->
-          <p>This message was sent by the team behind:</p>
-          <br/>
-          <img src="https://storage.googleapis.com/arclytics/imgs/email_footer_logo.png"
-               alt="Arclytics Logo" width="50%" height="auto"/>
-        </table>
-      </td>
-    </tr>
-  </table>
-  </body>
-</html>
+  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  <html>
+    <head>
+      <title>Acknowledge Promotion</title>
+      <style>
+        .default-button {
+          outline: none;
+          font-style: normal;
+          background-color: #0076C2;
+          border: 2px solid #0076C2;
+          color: #fafafa;
+          width: 7.5rem;
+          height: 2.5rem;
+          padding: 0 .75rem;
+          border-radius: 6px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, .25);
+          transition: ease-in-out .4s;
+          cursor: pointer;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+        }
+      </style>
+    </head>
+    <body style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;">
+    <table width="100%" border="0" cellspacing="10" cellpadding="0" class="wrapper">
+      <tr>
+        <td align="center" valign="top" style="text-align:center;">
+          <table border="0" cellspacing="0" cellpadding="5" class="main" width="600"
+                 style="text-align: left; margin-left: auto; margin-right: auto;">
+            <!-- EMAIL HEADER GOES HERE -->
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td  align="center" valign="top" style="text-align:center;">
+          <table border="0" cellspacing="0" cellpadding="10" class="main"
+                 style="text-align: left; margin-left: auto; margin-right: auto;"  width="600">
+            <hr>
+            <!-- EMAIL CONTENT -->
+            <p>Hi {{ user_name }},</p>
+            <br/>
+            <p>
+                You've recently been promoted to the role of
+                administrator with the position: {{ position }}
+            </p>
+            <p>Please acknowledge this promotion by clicking the button below:</p>
+            <br/>
+            <a href="{{ promotion_verification_url }}" style="text-decoration: none; text-decoration-color: #fafafa;">
+              <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
+                <tr>
+                  <td style="font-family: sans-serif; font-size: 14px; vertical-align: top; background-color: #0076C2; border-radius:5px; text-align: center;" valign="top" bgcolor="#0076C2" align="center">
+                    <a onclick="window.location.href='{{ promotion_verification_url }}';" target="_blank" style="display: inline-block; color: #ffffff; background-color: #0076C2; border: solid 1px #0076C2; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 14px; margin: 0; padding: 8px 23px; text-transform: capitalize; border-color: #0076C2;">
+                      Confirm
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </a>
+            <br/>
+            <p>
+                The above link is valid for one hour. If you do not verify your
+                promotion within this period you will need to contact {{ admin_name }}
+                to ask them to send you a new email. They can be contacted at:
+                {{ admin_email }}
+            </p>
+            <br/>
+            <p>
+                If you need additional assistance, please contact <a href="mailto:help@arclytics.io">help@arclytics.io</a>.
+            </p>
+            <br/>
+            <br/>
+            <p>Cheers,</p>
+            <h4>The Arclytics Team</h4>
+            <hr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td align="center" valign="top" style="text-align: center;">
+          <table border="0" cellspacing="0" cellpadding="10" class="main"width="600"
+                 style="text-align: left; margin-left: auto; margin-right: auto;">
+            <!-- EMAIL FOOTER GOES HERE -->
+            <p>This message was sent by the team behind:</p>
+            <br/>
+            <img src="https://storage.googleapis.com/asia.artifacts.arc-sim.appspot.com/assets/imgs/email_footer_logo.png"
+                 alt="Arclytics Logo" width="50%" height="auto"/>
+          </table>
+        </td>
+      </tr>
+    </table>
+    </body>
+  </html>

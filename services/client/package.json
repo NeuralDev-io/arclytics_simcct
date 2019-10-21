@@ -19,7 +19,7 @@
     "babel-eslint": "10.0.1",
     "classnames": "2.2.6",
     "clsx": "^1.0.4",
-    "dom-to-image": "^2.6.0",
+    "dom-to-image": "2.6.0",
     "eslint": "5.16.0",
     "eslint-config-airbnb": "18.0.1",
     "eslint-plugin-import": "2.16.0",

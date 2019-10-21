@@ -35,9 +35,8 @@ from sim_api.middleware import (
 from sim_api.routes import Routes
 from sim_api.schemas import AlloySchema
 
-logger = AppLogger(__name__)
-
 alloys_blueprint = Blueprint('alloys', __name__)
+logger = AppLogger(__name__)
 
 
 class AlloysList(Resource):
@@ -418,5 +417,5 @@ class Alloys(Resource):
         return response, 202
 
 
-api.add_resource(Alloys, Routes.alloys.value)
-api.add_resource(AlloysList, Routes.alloys_list.value)
+api.add_resource(Alloys, Routes.Alloys.value)
+api.add_resource(AlloysList, Routes.AlloysList.value)

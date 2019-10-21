@@ -492,7 +492,27 @@ class User(Document):
     login_data = EmbeddedDocumentListField(document_type=LoginData)
 
     # Define the collection and indexing for this document
-    meta = {'collection': 'users', 'indexes': ['last_login', '#email']}
+    meta = {
+        'collection':
+        'users',
+        'indexes': [
+            # This create text indexes for advanced text search
+            {
+                'fields': ['$first_name', '$last_name', '$email'],
+                # For a text index, the weight of an indexed field denotes
+                # the significance of the field relative to the other indexed
+                # fields in terms of the text search score.
+                # 2 times (i.e. 10:1) the impact as a term match in the
+                # last_name and email fields
+                # 10:9 impact as a term match in the last_name:first_name
+                'weights': {
+                    'last_name': 10,
+                    'first_name': 9,
+                    'email': 1
+                }
+            }
+        ]
+    }
 
     def set_password(self, raw_password: str) -> None:
         """
@@ -663,7 +683,23 @@ class Feedback(Document):
     comment = StringField(required=True)
     created_date = DateTimeField(default=datetime.utcnow(), required=True)
 
-    meta = {'collection': 'feedback'}
+    meta = {
+        'collection': 'feedback',
+        'indexes': [
+            # This create text indexes for advanced text search
+            {
+                'fields': ['category', 'comment'],
+                # For a text index, the weight of an indexed field denotes
+                # the significance of the field relative to the other indexed
+                # fields in terms of the text search score.
+                # 5:1 the impact as a term match in the category vs comments
+                'weights': {
+                    'category': 5,
+                    'comment': 1
+                }
+            }
+        ]
+    }
 
     def to_dict(self):
         return {

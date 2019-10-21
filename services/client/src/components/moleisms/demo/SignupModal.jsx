@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -46,7 +44,7 @@ export class SignupModal extends Component {
     return (
       <ToastModal show={show}>
         <div className={styles.modal}>
-          <h6>Sign up to enjoy the whole Arclytics SimCCT experience.</h6>
+          <h6>Sign up to enjoy the full Arclytics SimCCT experience.</h6>
           <Button
             onClick={() => redirect('/signup')}
           >

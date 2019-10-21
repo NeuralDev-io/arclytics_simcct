@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -13,21 +11,33 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import PlusIcon from 'react-feather/dist/icons/plus'
-import EditIcon from 'react-feather/dist/icons/edit-3'
-import SlashIcon from 'react-feather/dist/icons/slash'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUserSlash } from '@fortawesome/pro-light-svg-icons/faUserSlash'
+import { faUserCheck } from '@fortawesome/pro-light-svg-icons/faUserCheck'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
 import Table from '../../elements/table'
-import { getUsers } from '../../../state/ducks/users/actions'
+import SecureConfirmModal from '../confirm-modal/SecureConfirmModal'
+import UserPromoteModal from './UserPromoteModal'
+import {
+  getUsers, promoteAdmin, deactivateUser, enableUser,
+} from '../../../state/ducks/users/actions'
 
 import styles from './ManageUsers.module.scss'
+
 
 class ManageUsers extends Component {
   constructor(props) {
     super(props)
     this.state = {
       searchEmail: '',
+      showPromoteModal: false,
+      promoteName: '',
+      promoteEmail: '',
+      showStatusModal: false,
+      statusIsActive: '',
+      statusName: '',
+      statusEmail: '',
     }
   }
 
@@ -36,8 +46,73 @@ class ManageUsers extends Component {
     if (users.length === 0) getUsersConnect()
   }
 
+  handleChange = (name, value) => {
+    this.setState({
+      [name]: value,
+    })
+  }
+
+  handleShowPromoteModal = (name, email) => {
+    const { showPromoteModal } = this.state
+    if (showPromoteModal === false) {
+      this.setState({
+        showPromoteModal: true,
+        promoteName: name,
+        promoteEmail: email,
+      })
+    }
+  }
+
+  handlePromoteSubmit = (email, position) => {
+    const { promoteAdminConnect } = this.props
+    promoteAdminConnect(email, position)
+    this.setState({
+      promoteName: '',
+      promoteEmail: '',
+      showPromoteModal: false,
+    })
+  }
+
+  handleShowStatusModal = (name, email, active) => {
+    const { showStatusModal } = this.state
+    if (showStatusModal === false) {
+      this.setState({
+        showStatusModal: true,
+        statusIsActive: active,
+        statusName: name,
+        statusEmail: email,
+      })
+    }
+  }
+
+  handleStatusSubmit = (email, isActive) => {
+    const { deactivateUserConnect, getUsersConnect, enableUserConnect } = this.props
+    if (isActive) {
+      deactivateUserConnect(email)
+    } else if (!isActive) {
+      enableUserConnect(email)
+      getUsersConnect()
+    }
+    this.setState({
+      showStatusModal: false,
+      statusIsActive: '',
+      statusName: '',
+      statusEmail: '',
+    })
+  }
+
+
   render() {
-    const { searchEmail } = this.state
+    const {
+      searchEmail,
+      showPromoteModal,
+      promoteName,
+      promoteEmail,
+      showStatusModal,
+      statusIsActive,
+      statusName,
+      statusEmail,
+    } = this.state
     const { users } = this.props
     const tableData = users.filter(u => u.email.includes(searchEmail))
 
@@ -67,24 +142,34 @@ class ManageUsers extends Component {
         Cell: ({ original }) => (
           <div className={styles.actions}>
             <Button
-              onClick={() => console.log(original)}
+              onClick={() => {
+                this.handleShowPromoteModal(`${original.first_name} ${original.last_name}`, original.email)
+              }}
               appearance="text"
-              length="short"
-              IconComponent={props => <EditIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faUserCheck} size="lg" {...props} />}
+              isDisabled={original.admin}
             >
-              Edit
+              Promotion
             </Button>
+
             <Button
-              onClick={() => console.log(original)}
+              onClick={() => {
+                this.handleShowStatusModal(
+                  `${original.first_name} ${original.last_name}`,
+                  original.email,
+                  original.active,
+                )
+              }}
               appearance="text"
+              isDisabled={original.admin}
               color={original.active ? 'dangerous' : 'default'}
-              IconComponent={props => <SlashIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faUserSlash} size="lg" {...props} />}
             >
               {original.active ? 'Deactivate' : 'Activate'}
             </Button>
           </div>
         ),
-        width: 210,
+        width: 337,
       },
     ]
 
@@ -103,14 +188,14 @@ class ManageUsers extends Component {
               onChange={value => this.setState({ searchEmail: value })}
             />
           </div>
-          <Button
-            appearance="outline"
-            onClick={this.showAddAlloy}
-            IconComponent={props => <PlusIcon {...props} />}
-            length="short"
-          >
-            Add
-          </Button>
+          {/* <Button */}
+          {/*  appearance="outline" */}
+          {/*  onClick={this.showAddAlloy} */}
+          {/*  IconComponent={props => <FontAwesomeIcon icon={faPlus} size="lg"{...props} />} */}
+          {/*  length="short" */}
+          {/* > */}
+          {/*  Add */}
+          {/* </Button> */}
         </div>
         <Table
           className="-highlight"
@@ -122,14 +207,37 @@ class ManageUsers extends Component {
           resizable={false}
           condensed
         />
+        <UserPromoteModal
+          show={showPromoteModal}
+          messageTitle={`Promote '${promoteName}' to admin ?`}
+          actionButtonName="Confirm Promote"
+          email={promoteEmail}
+          onSubmit={(email, position) => this.handlePromoteSubmit(email, position)}
+          onClose={() => this.setState({ showPromoteModal: false })}
+        />
+        <SecureConfirmModal
+          show={showStatusModal}
+          messageTitle={
+            statusIsActive
+              ? `Do you want to deactivate '${statusName}' ?`
+              : `Do you want to activate '${statusName}' ?`
+          }
+          actionButtonName={statusIsActive ? 'Deactivate' : 'Activate'}
+          onSubmit={() => this.handleStatusSubmit(statusEmail, statusIsActive)}
+          onClose={() => this.setState({ showStatusModal: false })}
+        />
       </div>
     )
   }
 }
 
+
 ManageUsers.propTypes = {
   users: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   getUsersConnect: PropTypes.func.isRequired,
+  promoteAdminConnect: PropTypes.func.isRequired,
+  enableUserConnect: PropTypes.func.isRequired,
+  deactivateUserConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -138,6 +246,9 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   getUsersConnect: getUsers,
+  promoteAdminConnect: promoteAdmin,
+  deactivateUserConnect: deactivateUser,
+  enableUserConnect: enableUser,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ManageUsers)

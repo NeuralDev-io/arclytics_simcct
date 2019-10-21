@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -20,7 +18,7 @@ import { InlineSpinner } from '../../elements/spinner'
 import { layout, config } from './utils/chartConfig'
 
 import { getColor } from '../../../utils/theming'
-import styles from './CCT.module.scss'
+import styles from './Chart.module.scss'
 
 const CCT = ({
   data,

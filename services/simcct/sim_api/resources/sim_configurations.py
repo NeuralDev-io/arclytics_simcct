@@ -27,18 +27,18 @@ from marshmallow import ValidationError
 
 from arc_logging import AppLogger
 from sim_api.extensions import api, apm
-from simulation.simconfiguration import SimConfiguration as SimConfig
-from simulation.utilities import Method, ConfigurationError
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
-    MissingElementError, ElementWeightInvalid
+    ElementWeightInvalid, MissingElementError
 )
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.routes import Routes
 from sim_api.schemas import AlloyStoreSchema
+from simulation.simconfiguration import SimConfiguration as SimConfig
+from simulation.utilities import ConfigurationError, Method
 
-logger = AppLogger(__name__)
 configs_blueprint = Blueprint('sim_configurations', __name__)
+logger = AppLogger(__name__)
 
 
 # noinspection PyMethodMayBeStatic,DuplicatedCode
@@ -513,6 +513,6 @@ class Austenite(Resource):
         return {'message': 'Method Not Allowed.', 'status': 'fail'}, 405
 
 
-api.add_resource(Martensite, Routes.martensite.value)
-api.add_resource(Bainite, Routes.bainite.value)
-api.add_resource(Austenite, Routes.austenite.value)
+api.add_resource(Martensite, Routes.Martensite.value)
+api.add_resource(Bainite, Routes.Bainite.value)
+api.add_resource(Austenite, Routes.Austenite.value)

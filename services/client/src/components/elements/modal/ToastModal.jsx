@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -14,7 +12,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import XIcon from 'react-feather/dist/icons/x'
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+// import {faTimes } from '@fortawesome/pro-light-svg-icons/faTimes'
 import { IconButton } from '../button'
+// <FontAwesomeIcon icon={faTimes} className={styles.icon} size="lg" />
+
 
 import styles from './ToastModal.module.scss'
 

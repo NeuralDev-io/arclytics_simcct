@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -13,7 +11,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import UploadIcon from 'react-feather/dist/icons/upload'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUpload } from '@fortawesome/pro-light-svg-icons/faUpload'
 import Button from '../../elements/button'
 import FileInput from '../../elements/file-input/FileInput'
 import { AttachModal } from '../../elements/modal'
@@ -97,7 +96,7 @@ class LoadSimButton extends Component {
           appearance="outline"
           type="button"
           onClick={() => {}}
-          IconComponent={props => <UploadIcon {...props} />}
+          IconComponent={props => <FontAwesomeIcon icon={faUpload}{...props} />}
         >
           LOAD
         </Button>
@@ -105,7 +104,7 @@ class LoadSimButton extends Component {
           <h4>Import simulation</h4>
           <FileInput
             name="import_simulation"
-            Icon={props => <UploadIcon {...props} />}
+            Icon={props => <FontAwesomeIcon icon={faUpload}{...props} />}
             onChange={this.handleFileInputChange}
             filename={filename}
           />

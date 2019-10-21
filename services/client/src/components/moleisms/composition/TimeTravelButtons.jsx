@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -14,9 +12,10 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import UndoIcon from 'react-feather/dist/icons/skip-back'
-import RedoIcon from 'react-feather/dist/icons/skip-forward'
-import MinusIcon from 'react-feather/dist/icons/minus'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faStepBackward } from '@fortawesome/pro-light-svg-icons/faStepBackward'
+import { faStepForward } from '@fortawesome/pro-light-svg-icons/faStepForward'
+import { faMinus } from '@fortawesome/pro-light-svg-icons/faMinus'
 import { AttachModal } from '../../elements/modal'
 import { IconButton } from '../../elements/button'
 import { timeTravelBack, timeTravelNext, timeTravelTo } from '../../../state/ducks/timeMachine/actions'
@@ -68,7 +67,7 @@ class TimeTravelButtons extends Component {
       <div className={styles.timeMachine}>
         <IconButton
           onClick={timeTravelBackConnect}
-          Icon={props => <UndoIcon {...props} />}
+          Icon={props => <FontAwesomeIcon icon={faStepBackward} {...props} />}
           isDisabled={
             timeMachine.data.length === 0
             || timeMachine.current === 0
@@ -91,7 +90,7 @@ class TimeTravelButtons extends Component {
         >
           <IconButton
             onClick={() => {}}
-            Icon={props => <MinusIcon {...props} />}
+            Icon={props => <FontAwesomeIcon  icon={faMinus} {...props} />}
             isDisabled={timeMachine.data.length === 0}
             className={{
               button: `${styles.timeButton}
@@ -108,7 +107,7 @@ class TimeTravelButtons extends Component {
         </AttachModal>
         <IconButton
           onClick={timeTravelNextConnect}
-          Icon={props => <RedoIcon {...props} />}
+          Icon={props => <FontAwesomeIcon  icon={faStepForward} {...props} />}
           isDisabled={
             timeMachine.data.length === 0
             || timeMachine.current === timeMachine.data.length - 1

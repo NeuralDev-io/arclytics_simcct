@@ -80,7 +80,6 @@ class ContextTask(TaskBase):
 # noinspection PyPropertyAccess
 celery.Task = ContextTask
 
-
 # ========== # CELERY BEAT # ========== #
 # Setup the Redis client to a different database
 redis_host = env.get('REDIS_HOST', None)
@@ -98,7 +97,7 @@ redis_client = Redis.from_url(redis_uri)
 def setup_periodic_tasks(sender, **kwargs):
     # Testing hello every 10 seconds
     sender.add_periodic_task(
-        crontab(),
+        crontab(),  # By default this occurs on the minute
         get_logged_users_total.s(),
         name='Get logged in users every 30 secs'
     )
@@ -122,38 +121,26 @@ def get_logged_users_total():
 
     # We need to store the timestamp for when this entry was created
     now = datetime.datetime.utcnow()
-    timestamp = datetime.datetime.timestamp(now)
-
-    # Testing for now.
-    print(
-        'Logged in users: {} (date: {}, timestamp: {})'.format(
-            len(keys), date, timestamp
-        )
-    )
+    # timestamp = datetime.datetime.timestamp(now)
 
     # Every sample in the document will be a value for how many users are
     # logged in the application at the current timestamp.
-    # We use timestamp for an easy comparison to create the first and last
-    # recorded samples of the day and because UNIX timestamps are 32 bits
-    # versus an ISODate which is 64 bits.
-    sample = {'timestamp': timestamp, 'value': len(keys)}
+    sample = {'datetime': now, 'value': len(keys)}
     # We use the query to find the document or make a new one if it does not
     # exist when we pass in `upsert=True`
     # As new data samples are added it is simply appended to the document
     # until the number of samples hit 1000
-    q = {'date': date, 'n_samples': {'$lt': 1000}}
+    q = {'date': date, 'n_samples': {'$lt': 2000}}
     # Make some updates on the document based by doing:
     #  - Insert the new sample into the `logged_in` key which is an array.
-    #  - Get the `min` for the day by checking the `sample.timestamp` and store
-    #    it as the `first` key.
-    #  - Get the `max` for the day by checking the `sample.timestamp` and store
-    #    it as the `last` key.
     #  - Increment the `n_samples` key by `.
     u = {
-        '$push': {'logged_in': sample},
-        '$min': {'first': '$logged_in.timestamp'},
-        '$max': {'last': '$logged_in.timestamp'},
-        '$inc': {'n_samples': 1},
+        '$push': {
+            'logged_in': sample
+        },
+        '$inc': {
+            'n_samples': 1
+        },
     }
 
     MongoService().update_one(query=q, update=u, upsert=True)

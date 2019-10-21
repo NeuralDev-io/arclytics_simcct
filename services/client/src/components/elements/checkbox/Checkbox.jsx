@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -13,6 +11,8 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+// import { faCheckSquare } from '@fortawesome/pro-light-svg-icons/faCheckSquare'
 import CheckIcon from 'react-feather/dist/icons/check'
 
 import styles from './Checkbox.module.scss'
@@ -40,6 +40,8 @@ const Checkbox = (props) => {
       />
       <div className={styles.checkmark}>
         <CheckIcon className={styles.icon} />
+        {/* <FontAwesomeIcon icon={faCheckSquare} className={styles.icon} size="2x" /> */}
+
       </div>
       <span>{label}</span>
     </div>

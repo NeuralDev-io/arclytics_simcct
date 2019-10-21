@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -15,7 +13,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import SaveIcon from 'react-feather/dist/icons/save'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSave } from '@fortawesome/pro-light-svg-icons/faSave'
 import Select from '../../elements/select'
 import Button from '../../elements/button'
 // import { TextFieldExtra } from '../../elements/textfield'
@@ -118,7 +117,7 @@ class CompForm extends Component {
               className={styles.saveButton}
               isDisabled={!sessionIsInitialised || !isAuthenticated}
               appearance="text"
-              IconComponent={props => <SaveIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faSave} {...props} />}
             >
               Save alloy
             </Button>

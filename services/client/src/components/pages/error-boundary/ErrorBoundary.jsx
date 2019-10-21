@@ -36,10 +36,6 @@ class ErrorBoundary extends React.Component {
     return { error }
   }
 
-  handleRefreshPage = () => {
-    window.location.reload()
-  }
-
   componentDidCatch(error, errorInfo) {
     // Catch errors in any components below and re-render with error message
     this.setState({
@@ -47,6 +43,10 @@ class ErrorBoundary extends React.Component {
       errorInfo,
     })
     logError(error.toString(), error.message, 'ErrorBoundary', error.stack)
+  }
+
+  handleRefreshPage = () => {
+    window.location.reload()
   }
 
   render() {

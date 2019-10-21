@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -60,6 +58,10 @@ class PhaseFractions extends Component {
         </div>
       )
     })
+  }
+
+  getAnnotationText = (user_cooling_curve, currentIdx, hasData) => {
+    return `${!hasData ? 0 : Math.round(user_cooling_curve.temp[currentIdx])} °C`
   }
 
   render() {
@@ -158,6 +160,13 @@ class PhaseFractions extends Component {
                         plot_bgcolor: getColor('--n0'),
                         paper_bgcolor: 'transparent',
                         showlegend: false,
+                        annotations: [
+                          {
+                            font: { size: 16, color: getColor('--n500') },
+                            text: `${this.getAnnotationText(user_cooling_curve, currentIdx, hasData)}`,
+                            showarrow: false,
+                          }
+                        ]
                       }}
                       config={{
                         ...config,

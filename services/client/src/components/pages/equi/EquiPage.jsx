@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -64,10 +62,12 @@ class EquiPage extends React.Component {
       xfe,
       ceut,
       cf,
+      isAdmin,
+      isAuthenticated
     } = this.props
     return (
       <>
-        <AppBar active="equilibrium" redirect={history.push} isAdmin isAuthenticated />
+        <AppBar active="equilibrium" redirect={history.push} isAdmin={isAdmin} isAuthenticated={isAuthenticated} />
         <div className={styles.main}>
           <section>
             <h4>Ae3 equilibrium</h4>
@@ -111,6 +111,8 @@ EquiPage.propTypes = {
   persistedSim: PropTypes.shape({}).isRequired,
   persistedSimTime: PropTypes.string.isRequired,
   lastSim: PropTypes.shape({}).isRequired,
+  isAdmin: PropTypes.bool.isRequired,
+  isAuthenticated: PropTypes.bool.isRequired,
 }
 
 const mapStateToProps = (state) => ({

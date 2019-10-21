@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -14,7 +12,8 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import InfoIcon from 'react-feather/dist/icons/info'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faBrain } from '@fortawesome/pro-light-svg-icons/faBrain'
 import { connect } from 'react-redux'
 import Tooltip from '../../elements/tooltip'
 import Select from '../../elements/select'
@@ -198,7 +197,7 @@ class ConfigForm extends Component {
             <div className={styles.headerContainer}>
               <h6>CCT/TTT method</h6>
               <Tooltip className={{ tooltip: `${styles.infoTip} ${styles.methodTooltip}`, container: styles.infoTipContainer }} position="right">
-                <InfoIcon className={styles.infoIcon} />
+                <FontAwesomeIcon icon={faBrain} className={styles.infoIcon} size="2x" />
                 <p>
                   J.S.Krikaldy, et al., &quot;Prediction of microstructure and hardenability in
                   <br />
@@ -232,7 +231,7 @@ class ConfigForm extends Component {
             <div className={styles.headerContainer}>
               <h6>Grain size</h6>
               <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
-                <InfoIcon className={styles.infoIcon} />
+                <FontAwesomeIcon icon={faBrain} className={styles.infoIcon} size="2x" />
                 <p>
                   Plots a sigmoidal function distribution on a separate sheet.
                   <br />
@@ -285,7 +284,7 @@ class ConfigForm extends Component {
               <div className={styles.headerContainer}>
                 <h6>Ferrite/Pearlite</h6>
                 <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="right">
-                  <InfoIcon className={styles.infoIcon} />
+                  <FontAwesomeIcon icon={faBrain} className={styles.infoIcon} size="2x" />
                   <p>
                     Ae3 = temperature below austenite to ferrite transformation becomes
                     thermodynamically possible.
@@ -346,7 +345,7 @@ class ConfigForm extends Component {
               <div className={styles.headerContainer}>
                 <h6>Bainite</h6>
                 <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
-                  <InfoIcon className={styles.infoIcon} />
+                  <FontAwesomeIcon icon={faBrain} className={styles.infoIcon} size="2x" />
                   <p>
                     Bainite transformation temperature (C)
                   </p>
@@ -386,7 +385,7 @@ class ConfigForm extends Component {
               <div className={styles.headerContainer}>
                 <h6>Martensite</h6>
                 <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
-                  <InfoIcon className={styles.infoIcon} />
+                  <FontAwesomeIcon icon={faBrain} className={styles.infoIcon} size="2x" />
                   <p>
                     Martensite transformation temperature (C)
                     <br />
@@ -451,7 +450,7 @@ class ConfigForm extends Component {
           <div className={styles.headerContainer}>
             <h5>Nucleation parameters</h5>
             <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="right">
-              <InfoIcon className={styles.infoIcon} />
+              <FontAwesomeIcon icon={faBrain} className={styles.infoIcon} size="2x" />
               <p>
                 Plots a sigmoidal function distribution on a separate sheet This is for
                 visualizing the various Sigmoidal distributions used:

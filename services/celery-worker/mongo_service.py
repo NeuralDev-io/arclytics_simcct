@@ -20,7 +20,6 @@ write or read as needed.
 from os import environ as env
 from pymongo import MongoClient
 
-
 COLLECTION_NAME = 'celery_beat'
 
 
@@ -31,6 +30,7 @@ class MongoService(object):
         if env.get('FLASK_ENV', 'production') == 'production':
             mongo_uri = (
                 'mongodb://{username}:{password}@{host}:{port}/{db}'
+                '?authSource=admin&authMechanism=SCRAM-SHA-1'
             ).format(
                 username=env.get('MONGO_APP_USER'),
                 password=env.get('MONGO_APP_USER_PASSWORD'),
@@ -39,15 +39,18 @@ class MongoService(object):
                 db=self.db_name
             )
             self.conn = MongoClient(mongo_uri)
+            self.db = self.conn[self.db_name]
         else:
             self.conn = MongoClient(
-                host=env.get('MONGO_HOST'),
-                port=int(env.get('MONGO_PORT'))
+                host=env.get('MONGO_HOST'), port=int(env.get('MONGO_PORT'))
             )
-
-        self.db = self.conn[self.db_name]
-        # Implement an index to expire after two weeks: 14 * 24 * 60 * 60
-        self.db.celery_beat.create_index('date', expireAfterSeconds=1209600)
+            # Implement an index to expire after two weeks: 14 * 24 * 60 * 60
+            # Note this only done during development as it's created by the
+            # Mongo container in production
+            self.db = self.conn[self.db_name]
+            self.db.celery_beat.create_index(
+                'date', expireAfterSeconds=1209600
+            )
 
     def update_one(self, query: dict, update: dict, upsert: bool = False):
         """Do an updateOne query on the Mongo collection."""

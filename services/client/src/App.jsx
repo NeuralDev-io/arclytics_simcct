@@ -30,7 +30,6 @@ import ErrorBoundary from './components/pages/error-boundary/ErrorBoundary'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
 import NoMatchPage from './components/pages/no-match/NoMatchPage'
-import TestRoute from './components/pages/test-route/TestRoute'// TODO(andrew@neuraldev.io): Delete this
 import SimulationPage from './components/pages/simulation'
 import EquiPage from './components/pages/equi/EquiPage'
 import AdminPage from './components/pages/admin'
@@ -42,7 +41,15 @@ import PasswordResetPage from './components/pages/password-reset'
 import SharePage from './components/pages/share'
 import Healthy from './components/moleisms/healthy/Healthy'
 import AnalyticsPage from './components/pages/analytics'
+import AboutPage from './components/pages/about/AboutPage'
+import FeedbackPage from './components/pages/feedback'
 
+/*
+* DECISION:
+* This was only use for testing of the ErrorBoundary and Logs so we will keep it here
+* in case we may need to test some other errors in the future.
+* */
+// import TestRoute from './components/pages/test-route/TestRoute'
 import './App.scss'
 
 const useStyles = makeStyles({
@@ -78,11 +85,11 @@ function App() {
               />
               <Route
                 path="/signin"
-                render={props => <LoginPage {...props} />}
+                render={(props) => <LoginPage {...props} />}
               />
               <Route
                 path="/signup"
-                render={props => <SignupPage {...props} />}
+                render={(props) => <SignupPage {...props} />}
               />
               <PrivateRoute
                 exact
@@ -98,6 +105,10 @@ function App() {
                 path="/user/simulations"
                 component={UserSimulationPage}
               />
+              <Route
+                path="/about"
+                component={AboutPage}
+              />
               <PrivateRoute
                 exact
                 path="/user/alloys"
@@ -112,6 +123,10 @@ function App() {
                 component={AnalyticsPage}
               />
               <AdminRoute
+                path="/feedback"
+                component={FeedbackPage}
+              />
+              <AdminRoute
                 path="/admin"
                 component={AdminPage}
               />
@@ -123,11 +138,18 @@ function App() {
                 path="/password/reset=:token"
                 render={(props) => <PasswordResetPage {...props} />}
               />
-              {/* TODO(andrew@neuraldev.io): DELETE THIS ROUTE - AFTER TESTING HTTP LOGGER */}
-              <Route
-                path="/test"
-                render={(props) => (<TestRoute {...props} />)}
-              />
+
+              {/*
+                DECISION:
+                This was only use for testing of the ErrorBoundary and Logs so we will keep it here
+                in case we may need to test some other errors in the future.
+
+                <Route
+                  path="/test"
+                  render={(props) => (<TestRoute {...props} />)}
+                />
+
+               */}
 
               <ShareRoute
                 path="/share/simulation/:token"

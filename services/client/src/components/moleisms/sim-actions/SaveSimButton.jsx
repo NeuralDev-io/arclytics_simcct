@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -14,9 +12,9 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import FileSaver from 'file-saver'
-import SaveIcon from 'react-feather/dist/icons/save'
-import ServerIcon from 'react-feather/dist/icons/server'
-import FileIcon from 'react-feather/dist/icons/file'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSave } from '@fortawesome/pro-light-svg-icons/faSave'
+import { faFile } from '@fortawesome/pro-light-svg-icons/faFile'
 import Button from '../../elements/button'
 import { AttachModal } from '../../elements/modal'
 import ReportDownloadLink from '../pdf-export'
@@ -110,7 +108,7 @@ class SaveSimButton extends Component {
           appearance="outline"
           type="button"
           onClick={() => {}}
-          IconComponent={props => <SaveIcon {...props} />}
+          IconComponent={props => <FontAwesomeIcon icon={faSave} {...props} />}
           isDisabled={!isSimulated || !isAuthenticated}
         >
           SAVE
@@ -118,11 +116,11 @@ class SaveSimButton extends Component {
         <div className={styles.optionList}>
           <h4>Save simulation</h4>
           <div className={styles.option} {...buttonize(this.saveSim)}>
-            <ServerIcon className={styles.icon} />
+            <FontAwesomeIcon icon={faSave} className={styles.icon} />
             <span>Save to your account</span>
           </div>
           <div className={styles.option} {...buttonize(this.saveSimAsFile)}>
-            <FileIcon className={styles.icon} />
+            <FontAwesomeIcon icon={faFile} className={styles.icon} />
             <span>Save to file</span>
           </div>
           <h6 className={styles.divider}>

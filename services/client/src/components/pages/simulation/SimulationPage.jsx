@@ -13,8 +13,9 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
-import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
-import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronUp } from '@fortawesome/pro-light-svg-icons/faChevronUp'
+import { faChevronDown } from '@fortawesome/pro-light-svg-icons/faChevronDown'
 import Button from '../../elements/button'
 import Modal from '../../elements/modal'
 import AppBar from '../../moleisms/appbar'
@@ -127,8 +128,8 @@ class SimulationPage extends Component {
                   displayConfig: !prevState.displayConfig,
                 }))}
                 IconComponent={(props) => {
-                  if (displayConfig) return <ChevronUpIcon {...props} />
-                  return <ChevronDownIcon {...props} />
+                  if (displayConfig) return <FontAwesomeIcon icon={faChevronUp}{...props} />
+                  return <FontAwesomeIcon icon={faChevronDown} {...props} />
                 }}
               >
                 {displayConfig ? 'Collapse' : 'Expand'}
@@ -178,8 +179,8 @@ class SimulationPage extends Component {
                 }))}
                 IconComponent={props => (
                   displayProfile
-                    ? <ChevronUpIcon {...props} />
-                    : <ChevronDownIcon {...props} />
+                    ? <FontAwesomeIcon icon={faChevronUp}{...props} />
+                    : <FontAwesomeIcon icon={faChevronDown}{...props} />
                 )}
               >
                 {displayProfile ? 'Collapse' : 'Expand'}

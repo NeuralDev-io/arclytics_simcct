@@ -1,37 +1,38 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
- * Appbar component
+ * AppBar component
  *
  * @version 1.0.0
- * @author Dalton Le
+ * @author Dalton Le, Andrew Che, Arvy Salazar
  */
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import ActivityIcon from 'react-feather/dist/icons/activity'
-import HardDriveIcon from 'react-feather/dist/icons/hard-drive'
-// import HelpIcon from 'react-feather/dist/icons/help-circle'
-import MonitorIcon from 'react-feather/dist/icons/monitor'
-import UserIcon from 'react-feather/dist/icons/user'
-import LogOutIcon from 'react-feather/dist/icons/log-out'
-import DatabaseIcon from 'react-feather/dist/icons/database'
-import SlidersIcon from 'react-feather/dist/icons/sliders'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSignOut } from '@fortawesome/pro-light-svg-icons/faSignOut'
+import { faUser } from '@fortawesome/pro-light-svg-icons/faUser'
+import { faAnalytics } from '@fortawesome/pro-light-svg-icons/faAnalytics'
+import { faQuestionCircle } from '@fortawesome/pro-light-svg-icons'
+import { faUserCog } from '@fortawesome/pro-light-svg-icons/faUserCog'
+import { faSlidersV } from '@fortawesome/pro-light-svg-icons/faSlidersV'
+import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
+import { faFileChartLine } from '@fortawesome/pro-light-svg-icons/faFileChartLine'
+import { faCommentAltLines } from '@fortawesome/pro-light-svg-icons/faCommentAltLines'
+import { ReactComponent as SimulationIcon } from '../../../assets/simulation_icon.svg'
 import { ReactComponent as ANSTOLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
-import Tooltip from '../../elements/tooltip'
 import store from '../../../state/store'
-import { logout } from '../../../api/AuthenticationHelper'
+import Tooltip from '../../elements/tooltip'
 import { buttonize } from '../../../utils/accessibility'
-import { saveLastSim } from '../../../state/ducks/self/actions'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
-import { logError } from '../../../api/LoggingHelper'
+import { saveLastSim } from '../../../state/ducks/self/actions'
+import { logout } from '../../../api/AuthenticationHelper'
 
+import { logError } from '../../../api/LoggingHelper'
 import styles from './AppBar.module.scss'
 
 class AppBar extends React.Component {
@@ -69,7 +70,7 @@ class AppBar extends React.Component {
             to="/"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <SlidersIcon className={styles.icon} />
+              <SimulationIcon className={styles.simIcon}/>
               <p>Simulation</p>
             </Tooltip>
           </Link>
@@ -79,7 +80,7 @@ class AppBar extends React.Component {
             to="/equilibrium"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <SlidersIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faSlidersV} className={styles.icon} size="lg" />
               <p>Equilibrium</p>
             </Tooltip>
           </Link>
@@ -89,7 +90,7 @@ class AppBar extends React.Component {
             to={isAuthenticated ? '/user/simulations' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <HardDriveIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faFileChartLine} className={styles.icon} size="lg" />
               <p>Saved simulations</p>
             </Tooltip>
           </Link>
@@ -99,11 +100,16 @@ class AppBar extends React.Component {
             to={isAuthenticated ? '/user/alloys' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <DatabaseIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faDatabase} className={styles.icon} size="lg" />
               <p>Alloy database</p>
             </Tooltip>
           </Link>
-          {/* <a
+          {/*
+            DECISION:
+            This was only use for testing of the ErrorBoundary and Logs so we will keep it here
+            in case we may need to test some other errors in the future.
+
+            <a
             id="help"
             className={`${styles.navIcon} ${active === 'edu' && styles.active}
             ${!isAuthenticated && styles.disabled}`}
@@ -127,8 +133,20 @@ class AppBar extends React.Component {
             to="/analytics/users"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <ActivityIcon className={styles.icon} />
-              <p>Data & Analytics</p>
+              <FontAwesomeIcon icon={faAnalytics} className={styles.icon} size="lg" />
+              <p>Data & analytics</p>
+            </Tooltip>
+          </Link>
+
+          <Link
+            id="feedback"
+            className={`${styles.navIcon} ${active === 'feedback' && styles.active}`}
+            style={{ display: isAdmin ? 'flex' : 'none' }}
+            to="/feedback"
+          >
+            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+              <FontAwesomeIcon icon={faCommentAltLines} className={styles.icon} size="lg" />
+              <p>Feedback</p>
             </Tooltip>
           </Link>
 
@@ -139,7 +157,7 @@ class AppBar extends React.Component {
             to="/admin/analytics"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <MonitorIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faUserCog} className={styles.icon} size="lg" />
               <p>Admin</p>
             </Tooltip>
           </Link>
@@ -151,7 +169,7 @@ class AppBar extends React.Component {
             to={isAuthenticated ? '/user/profile' : ''}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <UserIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faUser} className={styles.icon} size="lg" />
               <p>Account</p>
             </Tooltip>
           </Link>
@@ -164,10 +182,22 @@ class AppBar extends React.Component {
             })()}
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
-              <LogOutIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faSignOut} className={styles.icon} size="lg" />
               <p>Logout</p>
             </Tooltip>
           </div>
+
+          <Link
+            id="about"
+            className={`${styles.navIcon} ${active === 'about' && styles.active}`}
+            to="/about/arclytics"
+          >
+            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+              <FontAwesomeIcon icon={faQuestionCircle} className={styles.icon} size="lg" />
+              <p>About</p>
+            </Tooltip>
+          </Link>
+
           <Logo className={styles.logo} />
         </div>
       </nav>

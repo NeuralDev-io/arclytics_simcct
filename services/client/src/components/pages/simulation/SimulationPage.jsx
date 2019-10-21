@@ -31,6 +31,7 @@ import { persistSim } from '../../../state/ducks/persist/actions'
 import { logError } from '../../../api/LoggingHelper'
 
 import styles from './SimulationPage.module.scss'
+import ReportDownloadLink from '../../moleisms/pdf-export'
 
 class SimulationPage extends Component {
   constructor(props) {
@@ -116,6 +117,7 @@ class SimulationPage extends Component {
           />
         </div>
         <div className={styles.main}>
+          <ReportDownloadLink />
           <header>
             <div className={styles.config}>
               <h4>Configurations</h4>

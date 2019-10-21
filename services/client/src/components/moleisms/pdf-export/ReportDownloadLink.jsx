@@ -14,7 +14,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import domtoimage from 'dom-to-image'
-import { PDFDownloadLink } from '@react-pdf/renderer'
+import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer'
 import PdfReport from './PdfReport'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
 import { logError } from '../../../api/LoggingHelper'
@@ -53,7 +53,13 @@ class ReportDownloadLink extends React.Component {
   }
 
   render() {
-    const { onError, isSimulated, addFlashToastConnect } = this.props
+    const {
+      onError,
+      isSimulated,
+      addFlashToastConnect,
+      configurations,
+      alloy,
+    } = this.props
     const {
       hasError,
       isReady,
@@ -85,20 +91,34 @@ class ReportDownloadLink extends React.Component {
 
     // only render the PDF when all the ingredients are ready
     return (
-      <PDFDownloadLink
-        document={<PdfReport tttUrl={tttUrl} cctUrl={cctUrl} />}
-        fileName="SimCCT_report.pdf"
-        style={{
-          ...downloadButtonStyle,
-          backgroundColor: getColor('--arc500'),
-          color: getColor('--n0'),
-          border: `2px solid ${getColor('--arc500')}`,
-        }}
-      >
-        {({ loading }) => (
-          loading ? 'Almost ready...' : 'Download report'
-        )}
-      </PDFDownloadLink>
+      // <PDFDownloadLink
+      //   document={(
+      //     <PdfReport
+      //       tttUrl={tttUrl}
+      //       cctUrl={cctUrl}
+      //       configurations={configurations}
+      //     />
+      //   )}
+      //   fileName="SimCCT_report.pdf"
+      //   style={{
+      //     ...downloadButtonStyle,
+      //     backgroundColor: getColor('--arc500'),
+      //     color: getColor('--n0'),
+      //     border: `2px solid ${getColor('--arc500')}`,
+      //   }}
+      // >
+      //   {({ loading }) => (
+      //     loading ? 'Almost ready...' : 'Download report'
+      //   )}
+      // </PDFDownloadLink>
+      <PDFViewer style={{ width: 700, height: 700 }}>
+        <PdfReport
+          tttUrl={tttUrl}
+          cctUrl={cctUrl}
+          configurations={configurations}
+          alloy={alloy}
+        />
+      </PDFViewer>
     )
   }
 }
@@ -107,12 +127,15 @@ ReportDownloadLink.propTypes = {
   // onFinish: PropTypes.func.isRequired,
   onError: PropTypes.func.isRequired,
   // given by redux connect()
+  configurations: PropTypes.shape({}).isRequired,
   isSimulated: PropTypes.bool.isRequired,
   addFlashToastConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = (state) => ({
   isSimulated: state.sim.isSimulated,
+  configurations: state.sim.configurations,
+  alloy: state.sim.alloys.parent,
 })
 
 const mapDispatchToProps = {

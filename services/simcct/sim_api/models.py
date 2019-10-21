@@ -683,7 +683,23 @@ class Feedback(Document):
     comment = StringField(required=True)
     created_date = DateTimeField(default=datetime.utcnow(), required=True)
 
-    meta = {'collection': 'feedback'}
+    meta = {
+        'collection': 'feedback',
+        'indexes': [
+            # This create text indexes for advanced text search
+            {
+                'fields': ['category', 'comment'],
+                # For a text index, the weight of an indexed field denotes
+                # the significance of the field relative to the other indexed
+                # fields in terms of the text search score.
+                # 5:1 the impact as a term match in the category vs comments
+                'weights': {
+                    'category': 5,
+                    'comment': 1
+                }
+            }
+        ]
+    }
 
     def to_dict(self):
         return {

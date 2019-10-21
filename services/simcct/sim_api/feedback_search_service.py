@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # arclytics_sim
-# search_service.py
+# feedback_search_service.py
 #
 # Attributions:
 # [1]
@@ -12,21 +12,22 @@ __license__ = 'MIT'
 __version__ = '1.0.0'
 __status__ = 'development'
 __date__ = '2019.10.17'
-"""search_service.py: 
+"""feedback_search_service.py: 
 
 This is a Service Access Layer where the application logic resides for 
-methods that access the data persistence layer for searching Users documents.
+methods that access the data persistence layer for searching Feedback 
+documents.
 """
 
 from os import environ as env
 
 from arc_logging import AppLogger
-from sim_api.extensions import apm, Mongo
+from sim_api.extensions import Mongo
 
 logger = AppLogger(__name__)
 
 
-class SearchService(object):
+class FeedbackSearchService(object):
     """Service layer where the application logic resides."""
     def __init__(self, client=Mongo()):
         """
@@ -47,13 +48,13 @@ class SearchService(object):
         we can also sort or limit the results returned.
 
         Usage:
-            SearchService().find(
+            FeedbackSearchService().find(
                 # search for all documents
                 query={},
                 # return without _id field but with email
-                projections={'_id': 0, 'email': 1},
-                # sort ASCENDING on first_name field
-                sort=[('first_name': 1)],
+                projections={'_id': 0, 'comment': 1},
+                # sort DESCENDING on created_date field
+                sort=[('created_date': -1)],
                 # limit to only 10 returned results
                 limit=10
             )
@@ -70,28 +71,19 @@ class SearchService(object):
         if not sort:
             cursor = self.client.find(
                 db_name=self.db_name,
-                collection='users',
+                collection='feedback',
                 query=query,
                 projections=projections,
             ).limit(limit)
         else:
             cursor = self.client.find(
                 db_name=self.db_name,
-                collection='users',
+                collection='feedback',
                 query=query,
                 projections=projections,
             ).sort(sort).limit(limit)
 
         return [obj for obj in cursor]
-
-    def find_one(self, query: dict = None, projections: dict = None):
-        """Simple find one user based on a query and projection."""
-        return self.client.find_one(
-            db_name=self.db_name,
-            collection='users',
-            query_selector=query,
-            projections=projections
-        )
 
     def find_slice(
         self,
@@ -121,25 +113,36 @@ class SearchService(object):
         if not sort:
             cursor = self.client.find(
                 db_name=self.db_name,
-                collection='users',
+                collection='feedback',
                 query=query,
                 projections=projections
             ).skip(skip).limit(limit)
         else:
             cursor = self.client.find(
                 db_name=self.db_name,
-                collection='users',
+                collection='feedback',
                 query=query,
                 projections=projections,
             ).skip(skip).limit(limit).sort(sort)
 
         return list(cursor)
 
+    def aggregate(
+            self,
+            pipeline: list = None
+    ):
+        cursor = self.client.aggregate(
+            db_name=self.db_name,
+            collection='feedback',
+            pipeline=pipeline
+        )
+        return list(cursor)
+
     def count(self, skip: int = 0, limit: int = 0):
         """Simply count the number of documents with a skip and limit query."""
         return self.client.count(
             db_name=self.db_name,
-            collection='users',
+            collection='feedback',
             filter={},  # We always count ALL documents
             skip=skip,
             limit=limit

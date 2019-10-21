@@ -1526,6 +1526,7 @@ while [[ "$1" != "" ]] ; do
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                  sleep 10
                   kubectl set image deployment/simcct simcct-container=asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
                   ;;
                 delete )
@@ -1553,6 +1554,7 @@ while [[ "$1" != "" ]] ; do
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build celery-worker
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                  sleep 10
                   kubectl set image deployment/celery-worker celery-worker-container=asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
                   ;;
                 delete )
@@ -1580,10 +1582,8 @@ while [[ "$1" != "" ]] ; do
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build arclytics
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=arclytics")
                   docker push asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  sleep 10
                   kubectl set image deployment/arclytics arclytics-container=asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
-                  #kubectl delete deployment arclytics
-                  #sleep 10
-                  #kubectl apply -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
@@ -1611,8 +1611,8 @@ while [[ "$1" != "" ]] ; do
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+                  sleep 10
                   kubectl set image deployment/client-https client-https-container=asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
-                  # sleep 10
                   # kubectl apply -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )

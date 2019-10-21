@@ -1,6 +1,7 @@
 @import '../../../styles/colors.scss';
 
-$break-small: 1366px;
+$break-small: 1400px;
+$break-medium: 1600px;
 
 .container {
   width: 90%;
@@ -20,37 +21,67 @@ $break-small: 1366px;
     margin-bottom: 0.75rem;
   }
 
-  .liveData {
-    .liveDataCard {
+  .nerdyData {
+    display: flex;
+    margin-top: 1.25rem;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: center;
+
+    .nerdyDataCard {
       background-color: var(--n0);
-      min-width: 90%;
-      min-height: 8rem;
-      max-height: 10rem;
-      margin: 0;
+      min-height: 12rem;
+      max-height: 15rem;
+      margin-top: 1.25rem;
       padding: 0;
+      display: flex;
+      min-width: 15.5%;
+      flex-flow: column wrap;
+      justify-content: center;
+      align-items: center;
+
+      & > .cardIcon {
+        width: 2.25rem;
+        height: 2.25rem;
+      }
+
+      @media screen and (min-width: $break-medium) {
+        width: 15.5%;
+      }
+
+      @media screen and (max-width: $break-medium) {
+        flex-basis: 32.5%;
+        width: 15.5%;
+        min-width: 15.5%;
+      }
+
     }
   }
 
   .map {
+    background-color: var(--n0);
     margin-top: 1.25rem;
+    min-height: 35rem;
 
     .mapCard {
       background-color: var(--n0);
+      flex-basis: 90%;
       min-height: 35rem;
+      max-height: 42rem;
       min-width: 90%;
       margin: 0;
+      z-index: 1001;
+      position: relative;
+      display: flex;
+      flex-flow: column;
 
-      .content {
-        background-color: var(--n0);
-
-        min-height: 24rem;
-        max-height: 32rem;
-        padding: 1.5rem 0.75rem 0 0.75rem;
+      & > div {
+        flex-grow: 1;
       }
     }
   }
 
-  .charts {
+  .profileCharts {
     display: flex;
     margin-top: 1.25rem;
     flex-flow: row wrap;
@@ -60,6 +91,19 @@ $break-small: 1366px;
 
     .profileCard {
       background-color: var(--n0);
+      z-index: 1001;
+      position: relative;
+      display: flex;
+      flex-flow: column;
+      width: 48%;
+      margin: 0.75rem 0;
+      min-height: 24rem;
+      max-height: 32rem;
+      padding: 1.5rem 0.75rem 0 0.75rem;
+
+      & > div {
+        flex-grow: 1;
+      }
 
       @media screen and (max-width: $break-small) {
         min-width: 100%;
@@ -68,12 +112,6 @@ $break-small: 1366px;
       @media screen and (min-width: $break-small) {
         min-width: 45%;
       }
-
-      width: 48%;
-      margin: 0.25rem;
-      min-height: 24rem;
-      max-height: 32rem;
-      padding: 1.5rem 0.75rem 0 0.75rem;
     }
   }
 

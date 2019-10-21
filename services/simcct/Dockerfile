@@ -14,6 +14,7 @@ RUN conda install --yes --freeze-installed -q \
     conda-forge::pip \
     nomkl \
     numpy==1.17.2 \
+    tqdm \
     conda-forge::marshmallow==3.2.0 \
     conda-forge::flask==1.1.1 \
     && conda clean -tipsy \

@@ -15,6 +15,7 @@ RUN conda install --yes --freeze-installed -q \
     nomkl \
     numpy==1.17.2 \
     pandas==0.25.1 \
+    scikit-learn==0.21.3 \
     gunicorn==19.9.0 \
     conda-forge::flask==1.0.2 \
     && conda clean -tipsy \

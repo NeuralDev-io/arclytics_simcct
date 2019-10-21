@@ -13,7 +13,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import Share2Icon from 'react-feather/dist/icons/share-2'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faShareAlt } from '@fortawesome/pro-light-svg-icons/faShareAlt'
 import Button from '../../elements/button'
 import { AttachModal } from '../../elements/modal'
 import Accordion, { AccordionSection } from '../../elements/accordion'
@@ -213,7 +214,7 @@ class ShareSimButton extends Component {
           appearance="text"
           type="button"
           onClick={() => {}}
-          IconComponent={props => <Share2Icon {...props} />}
+          IconComponent={props => <FontAwesomeIcon icon={faShareAlt} {...props} />}
           isDisabled={!isSimulated || !isAuthenticated}
         >
           SHARE

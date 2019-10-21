@@ -22,7 +22,7 @@
     .icon {
       height: 1rem;
       width: 1rem;
-      stroke: var(--n500);
+      color: var(--n500);
       flex-shrink: 0;
     }
   }
@@ -30,7 +30,7 @@
   .button.disabled {
     background-color: rgba(var(--n10-rgb), $alpha: .5);
     .icon {
-      stroke: rgba(var(--n500-rgb), $alpha: .3);
+      color: rgba(var(--n500-rgb), $alpha: .3);
     }
   }
 }

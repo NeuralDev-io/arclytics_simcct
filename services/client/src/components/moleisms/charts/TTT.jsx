@@ -16,12 +16,13 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
+import { InlineSpinner } from '../../elements/spinner'
 import { layout, config } from './utils/chartConfig'
 
 import { getColor } from '../../../utils/theming'
-import styles from './TTT.module.scss'
+import styles from './Chart.module.scss'
 
-const TTT = ({ data }) => {
+const TTT = ({ data, isLoading }) => {
   let chartData = []
   if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
     chartData = [
@@ -106,6 +107,13 @@ const TTT = ({ data }) => {
   }
 
   if (chartData.length === 0) {
+    if (isLoading) {
+      return (
+        <div className={styles.noData}>
+          <InlineSpinner />
+        </div>
+      )
+    }
     return <div className={styles.noData}>No data.</div>
   }
 
@@ -154,6 +162,7 @@ TTT.propTypes = {
     bainite_completion: linePropTypes,
     martensite: linePropTypes,
   }),
+  isLoading: PropTypes.bool.isRequired,
 }
 
 TTT.defaultProps = {
@@ -162,6 +171,7 @@ TTT.defaultProps = {
 
 const mapStateToProps = state => ({
   data: state.sim.results.TTT,
+  isLoading: state.sim.results.isLoading,
 })
 
 export default connect(mapStateToProps, {})(TTT)

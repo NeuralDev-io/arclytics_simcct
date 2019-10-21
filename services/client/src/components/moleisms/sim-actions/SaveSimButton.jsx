@@ -14,9 +14,10 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import FileSaver from 'file-saver'
-import SaveIcon from 'react-feather/dist/icons/save'
-import ServerIcon from 'react-feather/dist/icons/server'
-import FileIcon from 'react-feather/dist/icons/file'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSave } from '@fortawesome/pro-light-svg-icons/faSave'
+import { faServer } from '@fortawesome/pro-light-svg-icons/faServer'
+import { faFile } from '@fortawesome/pro-light-svg-icons/faFile'
 import Button from '../../elements/button'
 import { AttachModal } from '../../elements/modal'
 import { buttonize } from '../../../utils/accessibility'
@@ -94,7 +95,7 @@ class SaveSimButton extends Component {
           appearance="outline"
           type="button"
           onClick={() => {}}
-          IconComponent={props => <SaveIcon {...props} />}
+          IconComponent={props => <FontAwesomeIcon icon={faSave} {...props} />}
           isDisabled={!isSimulated || !isAuthenticated}
         >
           SAVE
@@ -102,11 +103,11 @@ class SaveSimButton extends Component {
         <div className={styles.optionList}>
           <h4>Save simulation</h4>
           <div className={styles.option} {...buttonize(this.saveSim)}>
-            <ServerIcon className={styles.icon} />
+            <FontAwesomeIcon icon={faSave} className={styles.icon} />
             <span>Save to your account</span>
           </div>
           <div className={styles.option} {...buttonize(this.saveSimAsFile)}>
-            <FileIcon className={styles.icon} />
+            <FontAwesomeIcon icon={faFile} className={styles.icon} />
             <span>Save to file</span>
           </div>
         </div>

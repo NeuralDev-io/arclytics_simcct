@@ -141,9 +141,11 @@ class TestForgotPassword(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(data['message'], 'User does not exist.')
-            self.assertEqual(data['status'], 'fail')
-            self.assert404(res)
+            # For security reasons, the endpoint will return success even if the
+            # user does not exist.
+            # self.assertEqual(data['message'], 'User does not exist.')
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 202)
 
     def test_reset_password_email_not_verified_user(self):
         """Ensure if user has not confirmed email no reset password."""
@@ -364,8 +366,10 @@ class TestForgotPassword(BaseTestCase):
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
-            self.assertEqual(data['message'], 'User does not exist.')
-            self.assert401(res)
+            # self.assertEqual(data['message'], 'User does not exist.')
+            # self.assert401(res)
+            self.assertEqual(data['status'], 'success')
+            self.assertEqual(res.status_code, 202)
 
     def test_reset_password_success(self):
         """Ensure we go through the whole reset password correctly."""

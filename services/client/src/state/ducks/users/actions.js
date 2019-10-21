@@ -1,5 +1,9 @@
 import {
   GET_USERS,
+  UPDATE_USER,
+  PROMOTE_ADMIN,
+  DEACTIVATE_USER,
+  ENABLE_USER,
 } from './types'
 import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
@@ -33,7 +37,7 @@ export const getUsers = () => (dispatch) => {
       if (res.status === 'success') {
         dispatch({
           type: GET_USERS,
-          payload: res.data.users || [],
+          payload: res.data || [],
         })
       }
     })
@@ -45,4 +49,134 @@ export const getUsers = () => (dispatch) => {
 
 export const updateUser = () => (dispatch) => {
 
+}
+
+export const deactivateUser = (email) => (dispatch) => {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/v1/sim/disable/user`,{
+    method: 'PUT',
+    credentials: 'include',
+    headers: {
+      'Content-Type' : 'application/json'
+    },
+    body: JSON.stringify({
+      email: email
+    })
+  })
+    .then((res) => {
+      if (res.status !== 200){
+        return {
+          status: 'fail',
+          message: 'Something went wrong while deactivating user',
+        }
+      }
+      return res.json()
+    })
+    .then((res) => {
+      if (res.status === 'success'){
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'success' },
+        }, true)(dispatch)
+        dispatch({
+          type: DEACTIVATE_USER
+        })
+      }
+      if (res.status === 'fail'){
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
+    })
+    .catch((err) => {
+      // log to fluentd
+      logError(err.toString(), err.message, 'users.actions.deactivateUser', err.stack)
+    })
+}
+
+export const enableUser = (email) => (dispatch) => {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/v1/sim/enable/user`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: {
+      'Content-Type' : 'application/json'
+    },
+    body: JSON.stringify({
+      email:email,
+    })
+  })
+    .then((res) => {
+      if (res.status !== 200){
+        return {
+          status: 'fail',
+          message: 'Something went wrong activating user',
+        }
+      }
+      return res.json()
+    })
+    .then((res) => {
+      if (res.status === 'success'){
+        dispatch({
+          type: ENABLE_USER,
+          payload: email
+        })
+      }
+      if (res.status === 'fail'){
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
+    })
+    .catch((err) => {
+      // log to fluentd
+      logError(err.toString(), err.message, 'users.actions.enableUser', err.stack)
+    })
+
+}
+
+export const promoteAdmin = (email, position) => (dispatch) => {
+  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/v1/sim/admin/create`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: (JSON.stringify({
+      email: email,
+      position: position,
+    }))
+  })
+    .then((res) => {
+      if (res.status !== 202){
+        return {
+          status: 'fail',
+          message: 'Something went wrong when promoting user',
+        }
+      }
+      return res.json()
+    })
+    .then((res) => {
+      //check response
+      if (res.status === 'success') {
+        console.log('Success')
+        dispatch({
+          type: PROMOTE_ADMIN,
+          payload: {
+            email,
+            position
+          }
+        })
+      }
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+      }
+    })
+    .catch((err) => {
+      // log to fluentd
+      logError(err.toString(), err.message, 'users.actions.promoteAdmin', err.stack)
+    })
 }

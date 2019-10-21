@@ -17,6 +17,7 @@ import { connect } from 'react-redux'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import VerticalSlider from '../../elements/slider'
+import { InlineSpinner } from '../../elements/spinner'
 import { config } from './utils/chartConfig'
 import { roundTo } from '../../../utils/math'
 import { getColor } from '../../../utils/theming'
@@ -61,6 +62,10 @@ class PhaseFractions extends Component {
     })
   }
 
+  getAnnotationText = (user_cooling_curve, currentIdx, hasData) => {
+    return `${!hasData ? 0 : Math.round(user_cooling_curve.temp[currentIdx])} °C`
+  }
+
   render() {
     const {
       data: {
@@ -70,6 +75,7 @@ class PhaseFractions extends Component {
         },
         slider_max = -1,
       },
+      isLoading,
       cctIndex,
     } = this.props
 
@@ -136,7 +142,7 @@ class PhaseFractions extends Component {
         </div>
         <div className={styles.pie}>
           {
-            !hasData ? <div className={styles.noData}>No data.</div>
+            !hasData ? <div className={styles.noData}>{isLoading ? <InlineSpinner /> : 'No data.'}</div>
               : (
                 <AutoSizer>
                   {({ height, width }) => (
@@ -156,6 +162,13 @@ class PhaseFractions extends Component {
                         plot_bgcolor: getColor('--n0'),
                         paper_bgcolor: 'transparent',
                         showlegend: false,
+                        annotations: [
+                          {
+                            font: { size: 16, color: getColor('--n500') },
+                            text: `${this.getAnnotationText(user_cooling_curve, currentIdx, hasData)}`,
+                            showarrow: false,
+                          }
+                        ]
                       }}
                       config={{
                         ...config,
@@ -192,6 +205,7 @@ PhaseFractions.propTypes = {
     slider_temp_field: PropTypes.number,
     slider_max: PropTypes.number,
   }),
+  isLoading: PropTypes.bool.isRequired,
   cctIndex: PropTypes.number.isRequired,
   updateCCTIndexConnect: PropTypes.func.isRequired,
 }
@@ -202,6 +216,7 @@ PhaseFractions.defaultProps = {
 
 const mapStateToProps = state => ({
   data: state.sim.results.USER,
+  isLoading: state.sim.results.isLoading,
   cctIndex: state.sim.results.cctIndex,
 })
 

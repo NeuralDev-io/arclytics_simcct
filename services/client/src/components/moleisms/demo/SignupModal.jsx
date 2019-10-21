@@ -46,7 +46,7 @@ export class SignupModal extends Component {
     return (
       <ToastModal show={show}>
         <div className={styles.modal}>
-          <h6>Sign up to enjoy the whole Arclytics SimCCT experience.</h6>
+          <h6>Sign up to enjoy the full Arclytics SimCCT experience.</h6>
           <Button
             onClick={() => redirect('/signup')}
           >

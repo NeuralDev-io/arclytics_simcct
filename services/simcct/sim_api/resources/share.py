@@ -42,9 +42,8 @@ from sim_api.token import (
     generate_url
 )
 
-logger = AppLogger(__name__)
-
 share_blueprint = Blueprint('share', __name__)
+logger = AppLogger(__name__)
 
 
 class ShareSimulationLink(Resource):
@@ -158,9 +157,12 @@ class ShareSimulationEmail(Resource):
         """Generate a link for a shared sim object and send it to the list of
         email address provided.
 
-        :param owner: User object for the owner of the shared simulation object
-        returned by the authenticate middleware
-        :return: Returns a json response
+        Args:
+            owner: User object for the owner of the shared simulation object
+            returned by the authenticate middleware
+
+        Returns:
+            Returns a json response
         """
         # Get post data
         data = request.get_json()
@@ -371,5 +373,5 @@ def view_shared_simulation(token):
     return jsonify(response), 200
 
 
-api.add_resource(ShareSimulationLink, Routes.share_simulation_link.value)
-api.add_resource(ShareSimulationEmail, Routes.share_simulation_email.value)
+api.add_resource(ShareSimulationLink, Routes.ShareSimulationLink.value)
+api.add_resource(ShareSimulationEmail, Routes.ShareSimulationEmail.value)

@@ -42,12 +42,13 @@ import SharePage from './components/pages/share'
 import Healthy from './components/moleisms/healthy/Healthy'
 import AnalyticsPage from './components/pages/analytics'
 import AboutPage from './components/pages/about/AboutPage'
+import FeedbackPage from './components/pages/feedback'
+
 /*
 * DECISION:
 * This was only use for testing of the ErrorBoundary and Logs so we will keep it here
 * in case we may need to test some other errors in the future.
 * */
-
 // import TestRoute from './components/pages/test-route/TestRoute'
 import './App.scss'
 
@@ -120,6 +121,10 @@ function App() {
               <AdminRoute
                 path="/analytics"
                 component={AnalyticsPage}
+              />
+              <AdminRoute
+                path="/feedback"
+                component={FeedbackPage}
               />
               <AdminRoute
                 path="/admin"

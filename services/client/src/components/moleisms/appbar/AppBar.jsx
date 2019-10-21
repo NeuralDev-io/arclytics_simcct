@@ -20,8 +20,9 @@ import { faQuestionCircle } from '@fortawesome/pro-light-svg-icons'
 import { faUserCog } from '@fortawesome/pro-light-svg-icons/faUserCog'
 import { faSlidersV } from '@fortawesome/pro-light-svg-icons/faSlidersV'
 import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
-import { ReactComponent as SimulationIcon } from '../../../assets/simulation_icon.svg'
 import { faFileChartLine } from '@fortawesome/pro-light-svg-icons/faFileChartLine'
+import { faCommentAltLines } from '@fortawesome/pro-light-svg-icons/faCommentAltLines'
+import { ReactComponent as SimulationIcon } from '../../../assets/simulation_icon.svg'
 import { ReactComponent as ANSTOLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import store from '../../../state/store'
@@ -134,6 +135,18 @@ class AppBar extends React.Component {
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
               <FontAwesomeIcon icon={faAnalytics} className={styles.icon} size="lg" />
               <p>Data & analytics</p>
+            </Tooltip>
+          </Link>
+
+          <Link
+            id="feedback"
+            className={`${styles.navIcon} ${active === 'feedback' && styles.active}`}
+            style={{ display: isAdmin ? 'flex' : 'none' }}
+            to="/feedback"
+          >
+            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+              <FontAwesomeIcon icon={faCommentAltLines} className={styles.icon} size="lg" />
+              <p>Feedback</p>
             </Tooltip>
           </Link>
 

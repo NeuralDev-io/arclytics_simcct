@@ -79,15 +79,6 @@ class UserList(Resource):
 
         # Validate sort parameters
         if sort:
-            # If our sorting value begins with a "-" in the string,
-            # then we know
-            # we are doing a DESCENDING sort so we will appropriately set
-            # the
-            # sort direction
-            sort_direction = 1
-            if str(sort).startswith('-'):
-                sort_direction = -1
-
             valid_sort_keys = {
                 'email', '-email', 'admin', '-admin', 'verified', '-verified',
                 'full_name', '-full_name', 'first_name', '-first_name',
@@ -97,6 +88,16 @@ class UserList(Resource):
                 response['message'] = 'Sort value is invalid.'
                 return response, 400
 
+            # If our sorting value begins with a "-" in the string,
+            # then we know we are doing a DESCENDING sort so we will
+            # appropriately set the sort direction
+            sort_direction = 1
+            sort_key = sort
+            if str(sort).startswith('-'):
+                # We remove the first character as it's not a valid key
+                sort_key = sort[1:]
+                sort_direction = -1
+
             # If we are sorting on fullname, we will need to split the
             # sort query
             # into a 2 element list so we
@@ -104,7 +105,7 @@ class UserList(Resource):
                 sort_query.append(('first_name', sort_direction))
                 sort_query.append(('last_name', sort_direction))
             else:
-                sort_query.append((sort, sort_direction))
+                sort_query.append((sort_key, sort_direction))
 
         # In this endpoint, we want to return the full list regardless of any
         # offsets or limits. We are only making sorting available for fun.
@@ -198,11 +199,14 @@ class UserListQuery(Resource):
                 return response, 400
 
             # ========== # SETTING UP SORTING # ========== #
-            # If our sorting value begins with a "-" in the string, then we
-            # know we are doing a DESCENDING sort so we will appropriately set
-            # the sort direction
+            # If our sorting value begins with a "-" in the string,
+            # then we know we are doing a DESCENDING sort so we will
+            # appropriately set the sort direction
             sort_direction = 1
+            sort_key = sort
             if str(sort).startswith('-'):
+                # We remove the first character as it's not a valid key
+                sort_key = sort[1:]
                 sort_direction = -1
 
             # If we are sorting on fullname, we will need to split the
@@ -211,7 +215,7 @@ class UserListQuery(Resource):
                 sort_query.append(('first_name', sort_direction))
                 sort_query.append(('last_name', sort_direction))
             else:
-                sort_query.append((sort, sort_direction))
+                sort_query.append((sort_key, sort_direction))
 
         # We need the full list to check for pagination
         n_total_documents = SearchService().count(limit=0)

@@ -44,16 +44,6 @@ logger = AppLogger(__name__)
 DATABASE = env.get('MONGO_APP_DB')
 
 
-def get_color(row):
-    if row['x'] > 0 and row['y'] > 0:
-        return 0
-    elif row['x'] > 0 and row['y'] < 0:
-        return 1
-    elif row['x'] < 0 and row['y'] > 0:
-        return 2
-    return 3
-
-
 # noinspection PyMethodMayBeStatic
 class SavedAlloysSimilarity(Resource):
 
@@ -187,7 +177,6 @@ class SavedAlloysSimilarity(Resource):
         tsne_df.columns = ['x', 'y', 'name']
 
         # Generate some colour codes
-        # tsne_df['color'] = tsne_df.apply(lambda row: get_color(row), axis=1)
         # Assign each name category a unique code which represents the color
         # of the markers in Plotly.
         tsne_df = tsne_df.assign(
@@ -296,6 +285,7 @@ class AlloyCountByName(Resource):
             }
         }
         return response, 200
+
 
 api.add_resource(MethodCount, Routes.MethodCount.value)
 api.add_resource(AlloyCountByName, Routes.AlloyCountByName.value)

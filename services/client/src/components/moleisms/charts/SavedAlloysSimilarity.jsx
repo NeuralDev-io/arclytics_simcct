@@ -24,7 +24,9 @@ import styles from './Chart.module.scss'
 
 const SavedAlloysSimilarity = ({ data, isLoading }) => {
   let chartData = []
+
   if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
+    const colorLen = Array(COLORS3).length
     chartData = [
       {
         x: data.x,
@@ -34,11 +36,13 @@ const SavedAlloysSimilarity = ({ data, isLoading }) => {
         mode: 'markers',
         marker: {
           size: 8,
+          // Cycle through the 3 shades of color for each point.
           color: data.color.map(i => {
-            const idx = i % COLORS3.length
+            const idx = i % colorLen
             return COLORS3[idx]
           }),
         },
+        opacity: 0.75,
         textfont: {
           family: 'Open Sans',
           size: 11,

@@ -12,7 +12,12 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
-import { layout, COLORS, COLORS2, COLORS3 } from './utils/chartConfig'
+import {
+  layout,
+  COLORS,
+  COLORS2,
+  COLORS3,
+} from './utils/chartConfig'
 
 import styles from './Chart.module.scss'
 
@@ -34,10 +39,9 @@ const SavedAlloysByNameHorizontalChart = ({ data }) => {
             const idx = i % colorscale.length
             return colorscale[idx]
           }),
-          // color: data.colors
         },
         orientation: 'h',
-        opacity: 0.7,
+        opacity: 0.75,
         textfont: {
           family: 'Open Sans',
           size: 16,
@@ -75,7 +79,7 @@ const SavedAlloysByNameHorizontalChart = ({ data }) => {
                 ticksuffix: '  ', // give it a bit of space to the edge
                 position: -1,
                 title: 'Alloy names',
-                type: 'category'
+                type: 'category',
               },
               margin: {
                 t: 45,
@@ -88,9 +92,9 @@ const SavedAlloysByNameHorizontalChart = ({ data }) => {
             config={{
               modeBarButtonsToRemove: [
                 'toImage', 'sendDataToCloud', 'select2d', 'lasso2d', 'toggleSpikelines',
-                'scrollZoom', 'hoverCompareCartesian', 'hoverClosestCartesian', 'autoScale2d'
+                'scrollZoom', 'hoverCompareCartesian', 'hoverClosestCartesian',
+                'autoScale2d',
               ],
-              // editable: false,
               displaylogo: false,
               displayModeBar: 'hover',
               showTips: true,

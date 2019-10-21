@@ -173,7 +173,7 @@ class SavedAlloysSimilarity(Resource):
         #   n_iter: Maximum number of iterations for the optimization. Should
         #   be at least 250.
         tsne_model = TSNE(
-            n_components=2, perplexity=35, learning_rate=200., n_iter=1000
+            n_components=2, perplexity=35, learning_rate=200., n_iter=750
         )
 
         # We fit the model to the dataset
@@ -186,8 +186,13 @@ class SavedAlloysSimilarity(Resource):
         tsne_df = pd.concat([tsne_df, labels_df], axis=1, ignore_index=True)
         tsne_df.columns = ['x', 'y', 'name']
 
-        # Generate some colours
-        tsne_df['color'] = tsne_df.apply(lambda row: get_color(row), axis=1)
+        # Generate some colour codes
+        # tsne_df['color'] = tsne_df.apply(lambda row: get_color(row), axis=1)
+        # Assign each name category a unique code which represents the color
+        # of the markers in Plotly.
+        tsne_df = tsne_df.assign(
+            color=(tsne_df['name']).astype('category').cat.codes
+        )
 
         # View the params used in the model and return that in the response
         params = tsne_model.get_params()

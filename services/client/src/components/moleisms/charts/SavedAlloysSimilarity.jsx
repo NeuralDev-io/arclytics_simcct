@@ -80,15 +80,6 @@ const SavedAlloysSimilarity = ({ data, isLoading }) => {
                 autorange: true,
               },
               showlegend: false,
-              // legend: {
-              //   y: 0.5,
-              //   yref: 'paper',
-              //   font: {
-              //     family: 'Open Sans',
-              //     size: 14,
-              //     color: 'grey',
-              //   }
-              // },
               plot_bgcolor: getColor('--n0'),
               paper_bgcolor: getColor('--n0'),
               margin: {

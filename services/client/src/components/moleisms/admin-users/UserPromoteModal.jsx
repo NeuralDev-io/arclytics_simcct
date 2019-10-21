@@ -55,7 +55,9 @@ class UserPromoteModal extends Component {
         <form className={styles.content} onSubmit={this.handleSubmit}>
           <div className={styles.header}>
             <h6> {messageTitle} </h6>
-            <span>Assign a position and enter your password to confirm.</span>
+            <span>Assign a position to the user.</span>
+            <br/>
+            <span>Enter your password to confirm.</span>
           </div>
           <TextField
             onChange={val => this.setState({ position: val })}
@@ -89,7 +91,6 @@ class UserPromoteModal extends Component {
               name="confirmDelete"
               appearance="text"
               length="long"
-              color="dangerous"
               isDisabled={password === '' || position === ''}
             >
               {actionButtonName}

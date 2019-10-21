@@ -26,11 +26,11 @@ from flask import Blueprint, Response, jsonify
 from sim_api.routes import Routes
 from arc_logging import AppLogger
 
-logger = AppLogger(__name__)
 root_blueprint = Blueprint('root', __name__)
+logger = AppLogger(__name__)
 
 
-@root_blueprint.route(Routes.root.value, methods=['GET'])
+@root_blueprint.route(Routes.index.value, methods=['GET'])
 def index():
     resp_string = f'Container: {os.uname()[1]}'
     response = Response(resp_string)
@@ -66,7 +66,7 @@ def ping():
 #     return jsonify(response), 200
 
 
-@root_blueprint.route(Routes.healthy.value, methods=['GET'])
+@root_blueprint.route(Routes.readiness_probe.value, methods=['GET'])
 def readiness_probe():
     """Readiness probe for GCP Ingress."""
     response = Response('')

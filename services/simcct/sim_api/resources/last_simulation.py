@@ -35,9 +35,8 @@ from sim_api.schemas import (
     ConfigurationsSchema, AlloyStoreSchema, SimulationResultsSchema
 )
 
-logger = AppLogger(__name__)
-
 last_sim_blueprint = Blueprint('user_last_simulation', __name__)
+logger = AppLogger(__name__)
 
 
 class LastSimulation(Resource):
@@ -322,4 +321,4 @@ class LastSimulation(Resource):
         return response, 200
 
 
-api.add_resource(LastSimulation, Routes.last_simulation.value)
+api.add_resource(LastSimulation, Routes.LastSimulation.value)

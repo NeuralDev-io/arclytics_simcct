@@ -23,7 +23,6 @@ from flask import current_app
 
 from tests.test_api_base import BaseTestCase
 from sim_api.models import User
-from sim_api.resources.auth import SimCCTBadServerLogout
 from sim_api.token import generate_confirmation_token, generate_url
 from sim_api.extensions.utilities import get_mongo_uri
 from tests.test_utilities import test_login
@@ -195,9 +194,11 @@ class TestAuthEndpoints(BaseTestCase):
 
     def test_user_confirm_email_successful_redirect(self):
         mandolorian = User(
-            email='themandolorian@arclytics.io',
-            first_name='The',
-            last_name='Mandolorian'
+            **{
+                'email': 'themandolorian@arclytics.io',
+                'first_name': 'The',
+                'last_name': 'Mandolorian'
+            }
         )
         mandolorian.set_password('BountyHuntingIsComplicated')
         mandolorian.save()
@@ -466,10 +467,10 @@ class TestAuthEndpoints(BaseTestCase):
         user.set_password('NewCaptainAmerica')
         user.save()
         with self.client:
-            cookie = test_login(self.client, user.email, 'NewCaptainAmerica')
+            _ = test_login(self.client, user.email, 'NewCaptainAmerica')
 
             # user login
-            resp_login = self.client.post(
+            self.client.post(
                 '/v1/sim/auth/login',
                 data=json.dumps(
                     {
@@ -489,51 +490,6 @@ class TestAuthEndpoints(BaseTestCase):
             )
             self.assertIn('Successfully logged out.', data['message'])
             self.assertEqual(response.status_code, 202)
-
-    # def test_invalid_logout_expired_token(self):
-    #     user = User(
-    #         **{
-    #             'email': 'tchalla@avengers.io',
-    #             'first_name': "T'challa",
-    #             'last_name': 'Wakandan'
-    #         }
-    #     )
-    #     user.set_password('SomebodyGetThatManAShield!')
-    #     user.save()
-    #     current_app.config['TOKEN_EXPIRATION_SECONDS'] = -1
-    #     with self.client:
-    #         resp_login = self.client.post(
-    #             '/v1/sim/auth/login',
-    #             data=json.dumps(
-    #                 {
-    #                     'email': 'tchalla@avengers.io',
-    #                     'password': 'SomebodyGetThatManAShield!'
-    #                 }
-    #             ),
-    #             content_type='application/json'
-    #         )
-    #         # invalid token logout
-    #         token = json.loads(resp_login.data.decode())['token']
-    #         self.client.get(
-    #             '/v1/sim/auth/logout',
-    #             headers={
-    #                 'Authorization': 'Bearer {token}'.format(token=token)
-    #             }
-    #         )
-    #         self.assertRaises(SimCCTBadServerLogout)
-
-    def test_invalid_logout(self):
-        with self.client:
-            self.client.get(
-                '/v1/sim/auth/logout',
-                headers={'Authorization': 'Bearer invalid'}
-            )
-            self.assertRaises(SimCCTBadServerLogout)
-
-    def test_invalid_auth_header(self):
-        with self.client:
-            self.client.get('/v1/sim/auth/logout', headers={})
-            self.assertRaises(SimCCTBadServerLogout)
 
     def test_user_status(self):
         user = User(

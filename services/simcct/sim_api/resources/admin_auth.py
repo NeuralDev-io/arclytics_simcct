@@ -35,9 +35,8 @@ from sim_api.token import (
     generate_promotion_confirmation_token, generate_url
 )
 
-logger = AppLogger(__name__)
-
 admin_blueprint = Blueprint('admin', __name__)
+logger = AppLogger(__name__)
 
 
 class AdminCreate(Resource):
@@ -561,6 +560,6 @@ class EnableAccount(Resource):
         return response, 200
 
 
-api.add_resource(AdminCreate, Routes.admin_create.value)
-api.add_resource(DisableAccount, Routes.disable_account.value)
-api.add_resource(EnableAccount, Routes.enable_account.value)
+api.add_resource(AdminCreate, Routes.AdminCreate.value)
+api.add_resource(DisableAccount, Routes.DisableAccount.value)
+api.add_resource(EnableAccount, Routes.EnableAccount.value)

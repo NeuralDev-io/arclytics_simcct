@@ -44,30 +44,6 @@ class FeedbackModal extends Component {
     }
   }
 
-  componentDidMount = () => {
-    const { updateFeedbackConnect } = this.props
-    const simCount = localStorage.getItem('simCount')
-    if (simCount !== undefined) {
-      // check if it's turn to pop up feedback modal
-      const countToShow = ['3', '8', '13', '20']
-      if (countToShow.includes(simCount) && localStorage.getItem('gotFeedback') !== 'true') {
-        this.timer = setTimeout(() => {
-          const { feedback: { feedbackVisible } } = this.props
-          if (!feedbackVisible) {
-            updateFeedbackConnect({ feedbackVisible: true, givingFeedback: false })
-          }
-        }, 5000)
-      }
-    }
-  }
-
-  componentWillUnmount = () => {
-    if (this.timer) {
-      clearTimeout(this.timer)
-      this.timer = 0
-    }
-  }
-
   handleClose = () => {
     const { closeFeedbackConnect } = this.props
     localStorage.setItem('gotFeedback', true)
@@ -118,7 +94,7 @@ class FeedbackModal extends Component {
     const { categoryOptions } = this.state
 
     return (
-      <React.Fragment>
+      <>
         <div
           className={`${styles.backdrop} ${backdrop ? styles.show : ''}`}
           {...buttonize(this.handleClose)}
@@ -195,7 +171,7 @@ class FeedbackModal extends Component {
               )
           }
         </ToastModal>
-      </React.Fragment>
+      </>
     )
   }
 }

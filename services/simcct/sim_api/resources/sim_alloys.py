@@ -271,4 +271,4 @@ class AlloyStore(Resource):
         return {'message': 'Method Not Allowed.', 'status': 'fail'}, 405
 
 
-api.add_resource(AlloyStore, Routes.alloy_store.value)
+api.add_resource(AlloyStore, Routes.AlloyStore.value)

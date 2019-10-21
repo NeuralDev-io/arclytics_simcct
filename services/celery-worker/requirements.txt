@@ -3,3 +3,4 @@ elastic-apm[flask]==5.1.2
 Flask==1.1.1
 flask-mail==0.9.1
 fluent-logger==0.9.3
+pymongo==3.9.0

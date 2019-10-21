@@ -10,7 +10,8 @@
  */
 
 import React, { Component } from 'react'
-import CheckCircleIcon from 'react-feather/dist/icons/check-circle'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheckCircle } from '@fortawesome/pro-light-svg-icons/faCheckCircle'
 import PropTypes from 'prop-types'
 import { resetPassword, checkAuthStatus } from '../../../api/AuthenticationHelper'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
@@ -55,7 +56,7 @@ class PasswordResetPage extends Component {
     if (status === 'success') {
       return (
         <Modal className={styles.cnfrmModal} show="true">
-          <CheckCircleIcon className={styles.checkCircleIcon} />
+          <FontAwesomeIcon icon={faCheckCircle} className={styles.checkCircleIcon} />
           <h5>
             Your account password has been successfully changed.
           </h5>

@@ -20,6 +20,7 @@ const initialState = {
   isSimulated: false,
   displayUserCurve: true,
   results: {
+    isLoading: false,
     USER: {
       user_cooling_curve: {
         time: [],
@@ -172,16 +173,39 @@ const reducer = (state = initialState, action) => {
         ...state,
         displayUserCurve: action.payload,
       }
-    case RUN_SIM:
-      return {
-        ...state,
-        isSimulated: true,
-        results: {
-          ...state.results,
-          ...action.payload,
-          cctIndex: 0,
-        },
+    case RUN_SIM: {
+      if (action.status === 'started') {
+        return {
+          ...state,
+          results: {
+            ...state.results,
+            isLoading: true,
+          },
+        }
       }
+      if (action.status === 'fail') {
+        return {
+          ...state,
+          results: {
+            ...state.results,
+            isLoading: false,
+          },
+        }
+      }
+      if (action.status === 'success' && state.results.isLoading) {
+        return {
+          ...state,
+          isSimulated: true,
+          results: {
+            ...state.results,
+            ...action.payload,
+            isLoading: false,
+            cctIndex: 0,
+          },
+        }
+      }
+      break
+    }
     case UPDATE_CCT_INDEX:
       return {
         ...state,
@@ -208,6 +232,7 @@ const reducer = (state = initialState, action) => {
         },
         results: {
           cctIndex: 0,
+          isLoading: false,
           ...results,
         },
       }
@@ -230,6 +255,7 @@ const reducer = (state = initialState, action) => {
         },
         results: {
           cctIndex: 0,
+          isLoading: false,
           ...results,
         },
       }

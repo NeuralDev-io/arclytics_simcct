@@ -10,7 +10,8 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Formik } from 'formik'
 import { Link } from 'react-router-dom'
-import AlertCircleIcon from 'react-feather/dist/icons/alert-circle'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faExclamationCircle } from '@fortawesome/pro-light-svg-icons/faExclamationCircle'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import {signup, checkAuthStatus, resendVerify} from '../../../api/AuthenticationHelper'
 import { signupValidation } from '../../../utils/ValidationHelper'
@@ -212,7 +213,7 @@ class SignupPage extends Component {
                   show={showCnfrmModal}
                 >
 
-                  <AlertCircleIcon className={styles.alertCircleIcon} />
+                  <FontAwesomeIcon icon={faExclamationCircle} className={styles.alertCircleIcon} />
                   <h5> Your account has been successfully registered. Verify your account. </h5>
                   <sub>
                     So that you are able to use the full services of the Arclytics Sim application

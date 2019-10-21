@@ -40,9 +40,8 @@ from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import Alloy, User
 from sim_api.routes import Routes
 
-logger = AppLogger(__name__)
-
 user_alloys_blueprint = Blueprint('user_alloys', __name__)
+logger = AppLogger(__name__)
 
 
 class UserAlloysList(Resource):
@@ -171,8 +170,6 @@ class UserAlloysList(Resource):
         # To avoid running a list comprehension loop, if there's nothing
         # to return we get out of here and notify the client.
         if user.saved_alloys.count() == 0:
-            logger.info({'message': 'No alloys found.'})
-            apm.capture_message({'message': 'No alloys found.'})
             return {'status': 'fail', 'message': 'No alloys found.'}, 404
 
         # Mongo by default returns a Cursor which we must convert to dict
@@ -420,5 +417,5 @@ class UserAlloy(Resource):
         return response, 202
 
 
-api.add_resource(UserAlloysList, Routes.user_alloy_list.value)
-api.add_resource(UserAlloy, Routes.user_alloy.value)
+api.add_resource(UserAlloysList, Routes.UserAlloysList.value)
+api.add_resource(UserAlloy, Routes.UserAlloy.value)

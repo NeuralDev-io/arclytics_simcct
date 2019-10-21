@@ -31,6 +31,7 @@ class MongoService(object):
         if env.get('FLASK_ENV', 'production') == 'production':
             mongo_uri = (
                 'mongodb://{username}:{password}@{host}:{port}/{db}'
+                '?authSource=admin&authMechanism=SCRAM-SHA-1'
             ).format(
                 username=env.get('MONGO_APP_USER'),
                 password=env.get('MONGO_APP_USER_PASSWORD'),
@@ -44,6 +45,19 @@ class MongoService(object):
                 host=env.get('MONGO_HOST'), port=int(env.get('MONGO_PORT'))
             )
 
+    def find(
+            self,
+            db_name: str = 'arc_dev',
+            collection: str = '',
+            query: dict = None,
+    ):
+        """Read from the database given a collection and return a cursor."""
+        if query is None:
+            return None
+        db = self.conn[db_name]
+
+        return db[collection].find(query)
+
     def read_mongo(
             self,
             db_name: str = 'arc_dev',
@@ -51,7 +65,10 @@ class MongoService(object):
             query: dict = None,
             projections: dict = None,
     ) -> Union[pd.DataFrame, None]:
-        """Read from a database and collection with a simple query."""
+        """
+        Read from a database and collection with a simple query and return the
+        result as a `pandas.DataFrame`.
+        """
         if query is None:
             return None
 
@@ -68,7 +85,10 @@ class MongoService(object):
     def read_aggregation(
             self, db_name: str, collection: str, pipeline: list = None
     ) -> Union[pd.DataFrame, None]:
-        """Read from a database and collection with an aggregation pipeline."""
+        """
+        Read from a database and collection with an aggregation pipeline and
+        return the result as a `pandas.DataFrame`.
+        """
 
         if not pipeline:
             return None

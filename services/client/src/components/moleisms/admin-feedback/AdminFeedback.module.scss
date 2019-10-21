@@ -1,0 +1,21 @@
+.container {
+  margin: auto;
+
+  h3 {
+    margin-bottom: 2.5rem;
+  }
+
+  .tools {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+}

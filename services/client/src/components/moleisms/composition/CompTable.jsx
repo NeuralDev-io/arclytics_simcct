@@ -1,13 +1,4 @@
-import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
-import AutoSizer from 'react-virtualized-auto-sizer'
-import Table from '../../elements/table'
-import { SelfControlledTextField } from '../../elements/textfield'
-import { validate } from '../../../utils/validator'
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -18,6 +9,13 @@ import { validate } from '../../../utils/validator'
  * @version 1.0.0
  * @author Dalton Le
  */
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
+import AutoSizer from 'react-virtualized-auto-sizer'
+import Table from '../../elements/table'
+import { SelfControlledTextField } from '../../elements/textfield'
+import { validate } from '../../../utils/validator'
 import { constraints } from './utils/constraints'
 import { updateComp } from '../../../state/ducks/sim/actions'
 

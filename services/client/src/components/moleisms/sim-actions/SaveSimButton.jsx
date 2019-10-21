@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -16,7 +14,6 @@ import { connect } from 'react-redux'
 import FileSaver from 'file-saver'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSave } from '@fortawesome/pro-light-svg-icons/faSave'
-import { faServer } from '@fortawesome/pro-light-svg-icons/faServer'
 import { faFile } from '@fortawesome/pro-light-svg-icons/faFile'
 import Button from '../../elements/button'
 import { AttachModal } from '../../elements/modal'

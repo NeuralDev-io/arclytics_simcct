@@ -151,7 +151,7 @@ class ManageUsers extends Component {
               IconComponent={props => <FontAwesomeIcon icon={faUserCheck} size="lg" {...props} />}
               isDisabled={original.admin}
             >
-              Promote
+              Promotion
             </Button>
 
             <Button

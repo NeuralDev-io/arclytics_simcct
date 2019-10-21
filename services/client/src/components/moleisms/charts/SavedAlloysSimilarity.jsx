@@ -17,7 +17,7 @@ import PropTypes from 'prop-types'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { InlineSpinner } from '../../elements/spinner'
-import { layout, config, COLORS } from './utils/chartConfig'
+import { layout, config, COLORS3 } from './utils/chartConfig'
 import { getColor } from '../../../utils/theming'
 
 import styles from './Chart.module.scss'
@@ -34,7 +34,10 @@ const SavedAlloysSimilarity = ({ data, isLoading }) => {
         mode: 'markers',
         marker: {
           size: 8,
-          color: data.color.map(i => COLORS[i]),
+          color: data.color.map(i => {
+            const idx = i % COLORS3.length
+            return COLORS3[idx]
+          }),
         },
         textfont: {
           family: 'Open Sans',
@@ -108,6 +111,7 @@ SavedAlloysSimilarity.propTypes = {
     x: PropTypes.arrayOf(PropTypes.number),
     y: PropTypes.arrayOf(PropTypes.number),
     label: PropTypes.arrayOf(PropTypes.string),
+    color: PropTypes.arrayOf(PropTypes.number),
   }),
   isLoading: PropTypes.bool.isRequired,
 }

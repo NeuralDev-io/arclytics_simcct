@@ -1,9 +1,16 @@
 /**
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
  * Login Page
  *
- * @version 0.0.0
+ * @version 1.0.0
  * @author Arvy Salazar
- * @github Xaraox
+ *
+ * This is the Login Page component that includes the Forget Password and Register
+ * page. It also handles the logic required to make API requests for each of these
+ * features provided.
+ *
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
@@ -19,12 +26,12 @@ import Button from '../../elements/button'
 import { buttonize } from '../../../utils/accessibility'
 
 import styles from './LoginPage.module.scss'
+import { logError, logInfo } from '../../../api/LoggingHelper'
 
 /*
   TODO:
   - once the textfield err prop is fixed uncomment err and need just test edge cases and for
     Formik move it to the err prop
-  - change all the logos too ansto logos
 */
 
 class LoginPage extends Component {
@@ -113,19 +120,17 @@ class LoginPage extends Component {
                   if (res.status === 'success') {
                     if (!res.isProfile) history.push('/profileQuestions')
                     else history.push('/')
-                  } else {
-                    //TODO: something went wrong try again later.
-                    console.log(res)
                   }
                 })
               })
-                .catch(() => {
+                .catch((rejectMsg) => {
                   // If response is unsuccessful
                   setErrors({
                     email: 'Invalid email',
                     password: 'Password is invalid',
                   })
                   setSubmitting(false)
+                  logInfo(rejectMsg, 'LoginPage.Formik')
                 })
             }}
           >
@@ -162,12 +167,20 @@ class LoginPage extends Component {
                         error={errors.password && touched.password && errors.password}
                       />
                     </div>
-                    <h6
-                      className={styles.help}
-                      {...buttonize(() => this.setState({ hasForgotPwd: true }))}
-                    >
-                      Trouble signing in?
-                    </h6>
+                    <div className={styles.otherLinks}>
+                      <h6>
+                        {' '}
+                        Don&apos;t have an account?&nbsp;
+                        <Link className={styles.createAccount} to="/signup">Sign up</Link>
+                        {' '}
+                      </h6>
+                      <h6
+                        className={styles.help}
+                        {...buttonize(() => this.setState({ hasForgotPwd: true }))}
+                      >
+                        Trouble signing in?
+                      </h6>
+                    </div>
                     <div className={styles.clear}>
                       <Button
                         className={styles.signIn}
@@ -179,24 +192,20 @@ class LoginPage extends Component {
                       >
                         SIGN IN
                       </Button>
-                      <h6>
-                        {' '}
-                        Don&apos;t have an account?&nbsp;
-                        <Link className={styles.createAccount} to="/signup">Sign up</Link>
-                        {' '}
-                      </h6>
                     </div>
                   </div>
                 </form>
               </div>
             )}
           </Formik>
+
+          <div className={styles.policy}>
+            <p><Link className={styles.links} to="/about/privacy">Privacy policy</Link></p>
+            <p><Link className={styles.links} to="/about/disclaimer">Disclaimer</Link></p>
+          </div>
         </div>
-        <div
-          className={
-            `${styles.forgotPwdForm} ${fadeForgot}`
-          }
-        >
+
+        <div className={`${styles.forgotPwdForm} ${fadeForgot}`}>
           <ForgotPassword forgotPwdHandler={this.handleForgotPassword} />
         </div>
       </div>

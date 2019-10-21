@@ -1,11 +1,22 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Composition sidebar
+ *
+ * @version 1.2.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-// import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
-// import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
 import CompForm from './CompForm'
 import CompTable from './CompTable'
 import Button from '../../elements/button'
+import TimeTravelButtons from './TimeTravelButtons'
 import { runSim } from '../../../state/ducks/sim/actions'
 
 import styles from './CompSidebar.module.scss'
@@ -46,6 +57,7 @@ class CompSidebar extends Component {
           >
             {showSettings ? 'Collapse' : 'Expand'}
           </Button> */}
+          <TimeTravelButtons />
         </header>
         <div style={{ display: showSettings ? 'block' : 'none' }}>
           <CompForm

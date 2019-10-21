@@ -21,4 +21,12 @@
   &:hover {
     background-color: var(--n10);
   }
+
+  &.disabled {
+    background-color: rgba(var(--n10-rgb), $alpha: .5);
+    cursor: not-allowed;
+    .icon {
+      stroke: rgba(var(--n500-rgb), $alpha: .3);
+    }
+  }
 }

@@ -1,3 +1,16 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * SharePage: requests for a shared simulation using the token in the URL
+ * and redirects to SimPage with the simulation loaded.
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -10,7 +23,10 @@ class SharePage extends Component {
       .then(() => {
         const { isAuthenticated } = this.props
         if (isAuthenticated) {
-          history.push('/')
+          history.push({
+            pathname: '/',
+            state: { loadFromShare: true },
+          })
         } else {
           history.push('/demo')
         }

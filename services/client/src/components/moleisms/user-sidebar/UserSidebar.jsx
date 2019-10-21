@@ -1,11 +1,24 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * User sidebar.
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import UserIcon from 'react-feather/dist/icons/user'
-import DatabaseIcon from 'react-feather/dist/icons/database'
-import SlidersIcon from 'react-feather/dist/icons/sliders'
-import FeedbackIcon from 'react-feather/dist/icons/heart'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUser } from '@fortawesome/pro-light-svg-icons/faUser'
+import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
+import { faSlidersV } from '@fortawesome/pro-light-svg-icons/faSlidersV'
+import { faHeart } from '@fortawesome/pro-light-svg-icons/faHeart'
 import Button from '../../elements/button'
 import { updateFeedback } from '../../../state/ducks/feedback/actions'
 
@@ -44,7 +57,7 @@ class UserSidebar extends Component {
           onClick={() => this.setState({ active: 'profile' })}
           className={`${styles.item} ${active === 'profile' && styles.active}`}
         >
-          <UserIcon className={styles.icon} />
+          <FontAwesomeIcon icon={faUser} className={styles.icon} />
           <span>Profile</span>
         </Link>
         <Link
@@ -53,7 +66,7 @@ class UserSidebar extends Component {
           onClick={() => this.setState({ active: 'profile' })}
           className={`${styles.item} ${active === 'alloys' && styles.active}`}
         >
-          <DatabaseIcon className={styles.icon} />
+          <FontAwesomeIcon icon={faDatabase} className={styles.icon} />
           <span>Security</span>
         </Link>
         <Link
@@ -62,13 +75,13 @@ class UserSidebar extends Component {
           onClick={() => this.setState({ active: 'profile' })}
           className={`${styles.item} ${active === 'simulations' && styles.active}`}
         >
-          <SlidersIcon className={styles.icon} />
+          <FontAwesomeIcon icon={faSlidersV} className={styles.icon} />
           <span>Data personalisation</span>
         </Link>
         <Button
           appearance="text"
           length="long"
-          IconComponent={props => <FeedbackIcon {...props} />}
+          IconComponent={props => <FontAwesomeIcon icon={faHeart} {...props} />}
           className={styles.feedbackButton}
           onClick={this.handleOpenFeedback}
         >

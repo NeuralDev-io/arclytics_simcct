@@ -5,10 +5,10 @@ metadata:
   namespace: arclytics
 spec:
   capacity:
-    storage: 20Gi
+    storage: 200Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: fast
+  storageClassName: standard
   gcePersistentDisk:
     pdName: es-ssd-disk-INST  # Make sure you use the SSD name created in `gcloud`

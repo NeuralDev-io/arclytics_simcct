@@ -1,3 +1,17 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Configurations for user profile simulation. Input elements in this
+ * form are disabled until users choose an alloy using the CompForm
+ * component.
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -31,7 +45,7 @@ class UserProfileConfig extends Component {
       isInitialised,
     } = this.props
     return (
-      <React.Fragment>
+      <>
         <Checkbox
           className={styles.checkbox}
           name="displayUserCurve"
@@ -67,7 +81,7 @@ class UserProfileConfig extends Component {
             error={configurations.error.cct_cooling_rate}
           />
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

@@ -21,23 +21,29 @@ class ProfileQuestionsPage extends Component {
     this.state = {
       question1: null,
       question1Select: [
-        { label: 'Q1 Option 1', value: 'Q1 Option 1' },
-        { label: 'Q1 Option 2', value: 'Q1 Option 2' },
+        { label: 'Education', value: 'Education' },
+        { label: 'Research', value: 'Research' },
+        { label: 'Engineering Work', value: 'Engineering Work' },
+        { label: 'Experimentation', value: 'Experimentation' },
       ],
       question2: null,
       question2Select: [
-        { label: 'Q2 Option 1', value: 'Q2 Option 1' },
-        { label: 'Q2 Option 2', value: 'Q2 Option 2' },
+        { label: 'High School', value: 'High School' },
+        { label: 'Bachelors Degree', value: 'Bachelors Degree' },
+        { label: 'Masters Degree', value: 'Masters Degree' },
+        { label: 'PhD', value: 'PhD' },
       ],
       question3: null,
       question3Select: [
-        { label: 'Q3 Option 1', value: 'Q3 Option 1' },
-        { label: 'Q3 Option 2', value: 'Q3 Option 2' },
+        { label: 'Beginner', value: 'Beginner' },
+        { label: 'Intermediate', value: 'Intermediate' },
+        { label: 'Advanced', value: 'Advanced' },
       ],
       question4: null,
       question4Select: [
-        { label: 'Q4 Option 1', value: 'Q4 Option 1' },
-        { label: 'Q4 Option 2', value: 'Q4 Option 2' },
+        { label: 'Beginner', value: 'Beginner' },
+        { label: 'Intermediate', value: 'Intermediate' },
+        { label: 'Advanced', value: 'Advanced' },
       ],
     }
   }

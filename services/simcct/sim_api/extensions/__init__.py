@@ -12,8 +12,6 @@ __author__ = [
 ]
 __license__ = 'MIT'
 __version__ = '1.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.25'
 """extensions.py: 
@@ -21,24 +19,30 @@ __date__ = '2019.07.25'
 This module just defines extensions for Flask that can be used across the
 context of the app.
 """
+
 from flask_bcrypt import Bcrypt
 from flask_restful import Api
 from elasticapm.contrib.flask import ElasticAPM
-
-# from flask_talisman import Talisman
-from .Session import FlaskRedisSession
-from .mongo import MongoAlloys
-from .mongodb import MongoSingleton
-from .utilities import (
-    DuplicateElementError, ElementInvalid, ElementSymbolInvalid, JSONEncoder,
-    MissingElementError, PasswordValidationError, PeriodicTable,
-    RESPONSE_HEADERS, SimpleUTC, URLTokenError, URLTokenExpired, get_mongo_uri
-)
 
 # Some other extensions to Flask
 apm = ElasticAPM()
 api = Api()
 bcrypt = Bcrypt()
+
+# from flask_talisman import Talisman
+# These are local extensions that must be imported first as some of them
+# rely on the third-party extensions above.
+from .Session import FlaskRedisSession
+from .mongo_alloys import MongoAlloys
+from .mongodb import MongoSingleton
+from .utilities import (
+    DuplicateElementError, ElementInvalid, ElementSymbolInvalid, JSONEncoder,
+    MissingElementError, PasswordValidationError, PeriodicTable,
+    RESPONSE_HEADERS, SimpleUTC, URLTokenError, URLTokenExpired, get_mongo_uri,
+    ElementWeightInvalid
+)
+from .mongo import Mongo
+
 redis_session = FlaskRedisSession()
 # To use add flask-talisman==0.7.0 to requirements.txt
 # talisman = Talisman()

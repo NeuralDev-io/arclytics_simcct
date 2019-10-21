@@ -1,7 +1,7 @@
 # From cloud-builders-community
 # https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/docker-compose
 # RUN before cloudbuild.yaml can be applied:
-# docker build --build-arg version=1.24.1 -t asia.gcr.io/arc-sim/docker:latest .
+# docker build --build-arg version=1.24.1 -t asia.gcr.io/arc-sim-testing/docker:latest .
 FROM ubuntu:bionic
 
 ARG version=1.24.1

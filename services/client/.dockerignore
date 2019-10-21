@@ -1,7 +1,10 @@
 node_modules
 build
 env
-htmlcov
 .dockerignore
 Dockerfile
 Dockerfile-prod
+Dockerfile-https-prod
+cypress
+cypress.json
+README.md

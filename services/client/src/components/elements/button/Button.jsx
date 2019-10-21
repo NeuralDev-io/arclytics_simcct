@@ -41,10 +41,10 @@ const Button = (props) => {
         if (isLoading) return <InlineSpinner />
         if (IconComponent !== null) {
           return (
-            <React.Fragment>
+            <>
               <IconComponent className={styles.icon} />
               {children}
-            </React.Fragment>
+            </>
           )
         }
         return children

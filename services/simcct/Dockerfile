@@ -13,17 +13,17 @@ RUN conda install --yes --freeze-installed -q \
     cytoolz \
     conda-forge::pip \
     nomkl \
-    dask==2.3.0 \
-    numpy==1.16.4 \
-    conda-forge::marshmallow==3.0.1 \
-    conda-forge::flask==1.0.2 \
-    conda-forge::socat \
+    numpy==1.17.2 \
+    tqdm \
+    conda-forge::marshmallow==3.2.0 \
+    conda-forge::flask==1.1.1 \
     && conda clean -tipsy \
     && find /opt/conda/ -type f,l -name '*.a' -delete \
     && find /opt/conda/ -type f,l -name '*.pyc' -delete \
     && find /opt/conda/ -type f,l -name '*.js.map' -delete \
-    && find /opt/conda/lib/python*/site-packages/bokeh/server/static -type f,l -name '*.js' -not -name '*.min.js' -delete \
     && rm -rf /opt/conda/pkgs
+    # dask==2.3.0 \
+    # && find /opt/conda/lib/python*/site-packages/bokeh/server/static -type f,l -name '*.js' -not -name '*.min.js' -delete \
 
 # Pillow dependencies
 # RUN apk --no-cache add python-dev  jpeg-dev \
@@ -55,6 +55,10 @@ COPY . /usr/src/app
 
 # install our arc_logging library
 WORKDIR /usr/src/app/arc_logging
+RUN python setup.py install
+
+# Install our simulation package
+WORKDIR /usr/src/app/arc_simulation
 RUN python setup.py install
 
 # go back to app source directory

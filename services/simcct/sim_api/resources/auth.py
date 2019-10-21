@@ -6,10 +6,7 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = [
-    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
-    'Dinol Shrestha <@dinolsth>'
-]
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __license__ = 'MIT'
 __version__ = '1.7.0'
 __status__ = 'production'
@@ -21,48 +18,43 @@ login, logout, and any additional endpoints that require authentication and
 authorisation purposes..
 """
 
-import json
 import os
 from datetime import datetime
 from typing import Tuple
+from pathlib import Path
 
 import geoip2
 import geoip2.database
-from email_validator import EmailNotValidError, validate_email
+from email_validator import EmailNotValidError
 from flask import (
     Blueprint, jsonify, redirect, render_template, request, session
 )
 from geoip2.errors import AddressNotFoundError
+from maxminddb.errors import InvalidDatabaseError
 from mongoengine.errors import NotUniqueError, ValidationError
+from redis import ReadOnlyError
 
 from arc_logging import AppLogger
-from sim_api.extensions import bcrypt, apm
-from sim_api.extensions.SimSession.sim_session_service import SimSessionService
-from sim_api.extensions.utilities import URLTokenError, URLTokenExpired
+from sim_api.routes import Routes
+from sim_api.extensions import bcrypt, apm, redis_session
+from sim_api.extensions.utilities import (
+    URLTokenError, URLTokenExpired, arc_validate_email
+)
 from sim_api.middleware import (authenticate_user_and_cookie_flask)
 from sim_api.models import LoginData, User
 from sim_api.token import (
     confirm_token, generate_confirmation_token, generate_url
 )
+from sim_api.auth_service import AuthService
 
 logger = AppLogger(__name__)
 
 auth_blueprint = Blueprint('auth', __name__)
 
 
-class SimCCTBadServerLogout(Exception):
-    """
-    A custom exception to be raised by a synchronous call to logout on the
-    SimCCT server if the response is not what we are expecting.
-    """
-
-    def __init__(self, msg: str):
-        super(SimCCTBadServerLogout, self).__init__(msg)
-
-
 # noinspection PyBroadException
-@auth_blueprint.route('/confirm/<token>', methods=['GET'])
-def confirm_email(token):
+@auth_blueprint.route(Routes.confirm_email.value, methods=['GET'])
+def confirm_email(token) -> Tuple[dict, int]:
     """This endpoint simply just takes in the token that a user would send
     from going to a link in their confirmation email and attaching the token
     as part of the request parameter.
@@ -84,15 +76,31 @@ def confirm_email(token):
     try:
         email = confirm_token(token)
     except URLTokenError:
+        # We send a redirect to the frontend with a query in the params to
+        # say that the token has expired and they will handle it appropriately
+        # for the user.
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except URLTokenExpired:
+        # We send a redirect to the frontend with a query in the params to
+        # say that the token has expired and they will handle it appropriately
+        # for the user.
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
-    except Exception:
+    except Exception as e:
+        message = 'An Exception Occurred.'
+        log_message = {'message': message, "error": str(e)}
+        logger.error(log_message)
+        apm.capture_exception()
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     # We ensure there is a user for this email
-    user = User.objects.get(email=email)
+    if not User.objects(email=email):
+        log_message = {'message': 'User does not exist.'}
+        logger.error(log_message)
+        apm.capture_message(log_message)
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
+
     # And do the real work confirming their status
+    user = User.objects.get(email=email)
     user.verified = True
     user.save()
 
@@ -101,10 +109,9 @@ def confirm_email(token):
     return redirect(f'{redirect_url}/signin', code=302)
 
 
-@auth_blueprint.route('/confirm/resend', methods=['GET'])
+@auth_blueprint.route(Routes.confirm_email_resend.value, methods=['GET'])
 @authenticate_user_and_cookie_flask
-def confirm_email_resend(user):
-
+def confirm_email_resend(user) -> Tuple[dict, int]:
     response = {'status': 'fail', 'message': 'Bad request'}
 
     if user.verified:
@@ -136,10 +143,10 @@ def confirm_email_resend(user):
     return jsonify(response), 200
 
 
-@auth_blueprint.route('/confirm/register/resend', methods=['PUT'])
+@auth_blueprint.route(
+    Routes.confirm_email_resend_after_registration.value, methods=['PUT']
+)
 def confirm_email_resend_after_registration() -> Tuple[dict, int]:
-
-    # response = {'status': 'fail', 'message': 'Invalid payload.'}
     response = {'status': 'success'}
 
     data = request.get_json()
@@ -147,12 +154,15 @@ def confirm_email_resend_after_registration() -> Tuple[dict, int]:
     email = data.get('email', None)
 
     if not User.objects(email=email):
-        # response['message'] = 'User does not exist.'
+        log_message = 'User does not exist'
+        logger.warning(log_message)
         return jsonify(response), 200
 
     user = User.objects.get(email=email)
 
     if user.verified:
+        log_message = 'User is already verified.'
+        logger.warning(log_message)
         # response['message'] = 'User is already verified.'
         return jsonify(response), 200
 
@@ -181,8 +191,8 @@ def confirm_email_resend_after_registration() -> Tuple[dict, int]:
     return jsonify(response), 200
 
 
-@auth_blueprint.route('/confirmadmin/<token>', methods=['GET'])
-def confirm_email_admin(token):
+@auth_blueprint.route(Routes.confirm_email_admin.value, methods=['GET'])
+def confirm_email_admin(token) -> Tuple[dict, int]:
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
     protocol = os.environ.get('CLIENT_SCHEME')
@@ -192,11 +202,21 @@ def confirm_email_admin(token):
 
     try:
         email = confirm_token(token)
-    except URLTokenError as e:
+    except URLTokenError:
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
-    except URLTokenExpired as e:
+    except URLTokenExpired:
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
     except Exception as e:
+        message = 'An Exception Occured.'
+        log_message = {'message': message, "error": str(e)}
+        logger.error(log_message)
+        apm.capture_exception()
+        return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
+
+    if not User.objects(email=email):
+        log_message = {'message': 'User does not exist.'}
+        logger.error(log_message)
+        apm.capture_message(log_message)
         return redirect(f'{redirect_url}/signin?tokenexpired=true', code=302)
 
     user = User.objects.get(email=email)
@@ -208,7 +228,7 @@ def confirm_email_admin(token):
     return redirect(f'{redirect_url}/signin', code=302)
 
 
-@auth_blueprint.route(rule='/auth/register', methods=['POST'])
+@auth_blueprint.route(Routes.register_user.value, methods=['POST'])
 def register_user() -> Tuple[dict, int]:
     """Blueprint route for registration of users."""
 
@@ -238,10 +258,19 @@ def register_user() -> Tuple[dict, int]:
         response['message'] = 'The password is invalid.'
         return jsonify(response), 400
 
+    # Verify email is valid
+    try:
+        v = arc_validate_email(email)
+        valid_email = v['email']
+    except EmailNotValidError as e:
+        response['error'] = str(e)
+        response['message'] = 'Invalid email.'
+        return response, 400
+
     # Create a Mongo User object if one doesn't exists
-    if not User.objects(email=email):
+    if not User.objects(email=valid_email):
         new_user = User(
-            email=email, first_name=first_name, last_name=last_name
+            email=valid_email, first_name=first_name, last_name=last_name
         )
         # ensure we set an encrypted password.
         new_user.set_password(raw_password=password)
@@ -252,15 +281,16 @@ def register_user() -> Tuple[dict, int]:
     try:
         new_user.save()
 
-        # generate auth token
-        auth_token = new_user.encode_auth_token(new_user.id)
+        # generate auth token and pass the role of the user, which at the
+        # beginning is always the default.
+        auth_token = AuthService().encode_auth_token(new_user.id, role='user')
         # generate the confirmation token for verifying email
-        confirmation_token = generate_confirmation_token(email)
+        confirmation_token = generate_confirmation_token(valid_email)
         confirm_url = generate_url('auth.confirm_email', confirmation_token)
 
         from sim_api.email_service import send_email
         send_email(
-            to=[email],
+            to=[valid_email],
             subject_suffix='Please Confirm Your Email',
             html_template=render_template(
                 'activate.html',
@@ -280,131 +310,15 @@ def register_user() -> Tuple[dict, int]:
         response['message'] = 'User has been registered.'
         return jsonify(response), 201
 
-    except ValidationError as e:
-        # logger.error('Validation Error: {}'.format(e))
+    except ValidationError:
         response['message'] = 'The user cannot be validated.'
         return jsonify(response), 400
-    except NotUniqueError as e:
-        # logger.error('Not Unique Error: {}'.format(e))
+    except NotUniqueError:
         response['message'] = 'The users details already exists.'
         return jsonify(response), 400
 
 
-@auth_blueprint.route(rule='/auth/login', methods=['POST'])
-def login() -> any:
-    """
-    Blueprint route for registration of users with a returned JWT if successful.
-    """
-
-    # Get the post data
-    post_data = request.get_json()
-
-    # Validating empty payload
-    response = {'status': 'fail', 'message': 'Invalid payload.'}
-    if not post_data:
-        return jsonify(response), 400
-
-    # Extract the request data required for login
-    email = post_data.get('email', '')
-    password = post_data.get('password', '')
-
-    # Validate some of these
-    if not email:
-        response['message'] = 'You must provide an email.'
-        return jsonify(response), 400
-
-    if not password:
-        response['message'] = 'You must provide a password.'
-        return jsonify(response), 400
-
-    if len(str(password)) < 6 or len(str(password)) > 254:
-        response['message'] = 'Email or password combination incorrect.'
-        return jsonify(response), 400
-
-    try:
-        if not User.objects(email=email):
-            response['message'] = 'User does not exist.'
-            logger.debug({
-                'email': email,
-                'message': response['message']
-            })
-            return jsonify(response), 404
-    except Exception as e:
-        logger.error(str(e))
-        response['message'] = 'User does not exist.'
-        return jsonify(response), 404
-
-    user = User.objects.get(email=email)
-
-    if bcrypt.check_password_hash(user.password, password):
-        auth_token = user.encode_auth_token(user.id)
-        if auth_token:
-            if not user.active:
-                response['message'] = 'Your Account has been disabled.'
-                logger.info({
-                    'message': response['message'],
-                    'user': user.email
-                })
-                return jsonify(response), 401
-
-            # Let's save some stats for later
-            user.last_login = datetime.utcnow()
-
-            user.save()
-
-            # Get location data
-            reader = geoip2.database.Reader(
-                '/usr/src/app/sim_api/resources/GeoLite2-City/'
-                'GeoLite2-City.mmdb'
-            )
-            try:
-                location_data = reader.city(str(request.remote_addr))
-                # location_data = reader.city('203.10.91.88')
-                country = location_data.country.names['en']
-                state = location_data.subdivisions[0].names['en']
-                ip_address = location_data.traits.ip_address
-
-                user.login_data.append(
-                    LoginData(
-                        country=country, state=state, ip_address=ip_address
-                    )
-                )
-                logger.info({
-                    'message': 'User logged in',
-                    'user': user.email,
-                    'country': country,
-                    'state': state,
-                    'ip_address': ip_address
-                })
-                user.save()
-            except AddressNotFoundError:
-                user.reload()
-                ip_address = request.remote_addr
-                user.login_data.append(LoginData(ip_address=ip_address))
-                logger.error({
-                    'user': user.email,
-                    'message': 'Address not found.',
-                    'ip_address': ip_address
-                }, stack_info=False)
-                user.save()
-            reader.close()
-
-            session['jwt'] = auth_token.decode()
-            session['ip_address'] = request.remote_addr
-            session['signed_in'] = True
-
-            # Inject the Simulation Session data
-            SimSessionService().new_session(user=user)
-
-            response['status'] = 'success'
-            response['message'] = 'Successfully logged in.'
-            return jsonify(response), 200
-
-    response['message'] = 'Email or password combination incorrect.'
-    return jsonify(response), 404
-
-
-@auth_blueprint.route(rule='/auth/password/check', methods=['POST'])
+@auth_blueprint.route(Routes.check_password.value, methods=['POST'])
 @authenticate_user_and_cookie_flask
 def check_password(user) -> Tuple[dict, int]:
     """
@@ -437,7 +351,7 @@ def check_password(user) -> Tuple[dict, int]:
     return jsonify(response), 400
 
 
-@auth_blueprint.route('/auth/password/reset', methods=['PUT'])
+@auth_blueprint.route(Routes.reset_password.value, methods=['PUT'])
 def reset_password() -> Tuple[dict, int]:
     """The endpoint that resets the password using a password reset token rather
     than the JWT token we usually give for a user. This is only to be used
@@ -446,7 +360,7 @@ def reset_password() -> Tuple[dict, int]:
     Returns:
         A valid HTTP Response and a statue code as a tuple.
     """
-    # Not using Middleware because w need to use a different token decoding
+    # Not using Middleware because we need to use a different token decoding
     response = {'status': 'fail', 'message': 'Provide a valid JWT auth token.'}
 
     # get the auth token
@@ -458,11 +372,11 @@ def reset_password() -> Tuple[dict, int]:
 
     # Decode either returns bson.ObjectId if successful or a string from an
     # exception
-    resp_or_id = User.decode_password_reset_token(auth_token=token)
-
-    # Either returns an ObjectId User ID or a string response.
+    resp_or_id = AuthService().decode_password_reset_token(auth_token=token)
     if isinstance(resp_or_id, str):
         response['message'] = resp_or_id
+        logger.info(response['message'])
+        apm.capture_message(response['message'])
         return jsonify(response), 401
 
     request_data = request.get_json()
@@ -489,11 +403,31 @@ def reset_password() -> Tuple[dict, int]:
     # Validate the user is active
     user = User.objects.get(id=resp_or_id)
     if not user or not user.active:
-        response['message'] = 'User does not exist.'
-        return jsonify(response), 401
+        # For security reasons we send back successful even if the user exists.
+        # response['message'] = 'User does not exist.'
+        # return jsonify(response), 401
+        response['status'] = 'success'
+        response.pop('message')
+        return jsonify(response), 202
 
-    # TODO(andrew@neuraldev.io): Send a confirmation email again to the user
-    #  that their password has been reset.
+    # The email to notify the user that their password has been changed.
+    from sim_api.email_service import send_email
+    send_email(
+        to=[user.email],
+        subject_suffix='Your Arclytics Sim password has been changed',
+        html_template=render_template(
+            'change_password.html',
+            change_datetime=datetime.utcnow().isoformat(),
+            email=user.email,
+            user_name=f'{user.first_name} {user.last_name}'
+        ),
+        text_template=render_template(
+            'change_password.txt',
+            change_datetime=datetime.utcnow().isoformat(),
+            email=user.email,
+            user_name=f'{user.first_name} {user.last_name}'
+        )
+    )
 
     # Well, they have passed every test
     user.set_password(password)
@@ -504,8 +438,8 @@ def reset_password() -> Tuple[dict, int]:
     return jsonify(response), 202
 
 
-@auth_blueprint.route('/reset/password/confirm/<token>', methods=['GET'])
-def confirm_reset_password(token):
+@auth_blueprint.route(Routes.confirm_reset_password.value, methods=['GET'])
+def confirm_reset_password(token) -> Tuple[dict, int]:
     response = {'status': 'fail', 'message': 'Invalid payload.'}
 
     protocol = os.environ.get('CLIENT_SCHEME')
@@ -516,11 +450,28 @@ def confirm_reset_password(token):
     # Decode the token from the email to the confirm it was the right one
     try:
         email = confirm_token(token)
-    except URLTokenError as e:
+    except URLTokenError:
+        logger.exception('Bad URL token.')
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/password/reset?tokenexpired=true', code=302
         )
     except Exception as e:
+        logger.exception(
+            {
+                'msg': 'URL token confirmation error. ',
+                'error': str(e)
+            }
+        )
+        apm.capture_exception()
+        return redirect(
+            f'{redirect_url}/password/reset?tokenexpired=true', code=302
+        )
+
+    # Ensure the user exists
+    if not User.objects(email=email):
+        logger.error('User does not exist.')
+        apm.capture_message('User does not exist.')
         return redirect(
             f'{redirect_url}/password/reset?tokenexpired=true', code=302
         )
@@ -530,14 +481,15 @@ def confirm_reset_password(token):
 
     # We create a JWT token to send to the client-side so they can attach
     # it as part of the next request
-    jwt_token = user.encode_password_reset_token(user_id=user.id).decode()
+    jwt_token = AuthService().encode_password_reset_token(user_id=user.id
+                                                          ).decode()
 
     response['status'] = 'success'
     response.pop('message')
     return redirect(f'{redirect_url}/password/reset={jwt_token}', code=302)
 
 
-@auth_blueprint.route('/reset/password', methods=['POST'])
+@auth_blueprint.route(Routes.reset_password_email.value, methods=['POST'])
 def reset_password_email() -> Tuple[dict, int]:
     """This endpoint is to be used by the client-side browser to send the email
     to the API server for validation with the user's details. It will only send
@@ -567,7 +519,7 @@ def reset_password_email() -> Tuple[dict, int]:
     # Verify it is actually a valid email
     try:
         # validate and get info
-        v = validate_email(post_email)
+        v = arc_validate_email(post_email)
         # replace with normalized form
         valid_email = v['email']
     except EmailNotValidError as e:
@@ -578,8 +530,12 @@ def reset_password_email() -> Tuple[dict, int]:
 
     # Verify the email matches a user in the database
     if not User.objects(email=valid_email):
-        response['message'] = 'User does not exist.'
-        return jsonify(response), 404
+        # For security reasons we send back 'success'
+        response['status'] = 'success'
+        response.pop('message')
+        return jsonify(response), 202
+        # response['message'] = 'User does not exist.'
+        # return jsonify(response), 404
 
     # If there is a user with this email address, we must send to that email
     user = User.objects.get(email=valid_email)
@@ -618,9 +574,9 @@ def reset_password_email() -> Tuple[dict, int]:
     return jsonify(response), 202
 
 
-@auth_blueprint.route('/auth/password/change', methods=['PUT'])
+@auth_blueprint.route(Routes.change_password.value, methods=['PUT'])
 @authenticate_user_and_cookie_flask
-def change_password(user):
+def change_password(user) -> Tuple[dict, int]:
     """The endpoint that allows a user to change password after they have been
     authorized by the authentication middleware.
 
@@ -691,10 +647,12 @@ def change_password(user):
         return jsonify(response), 200
 
     response['message'] = 'Password is not correct.'
+    logger.info({'email': user.email, 'message': response['message']})
+    apm.capture_message(response['message'])
     return jsonify(response), 401
 
 
-@auth_blueprint.route('/auth/email/change', methods=['PUT'])
+@auth_blueprint.route(Routes.change_email.value, methods=['PUT'])
 @authenticate_user_and_cookie_flask
 def change_email(user) -> Tuple[dict, int]:
     response = {'status': 'fail', 'message': 'Invalid payload.'}
@@ -711,7 +669,7 @@ def change_email(user) -> Tuple[dict, int]:
 
     # Validate new email address.
     try:
-        v = validate_email(new_email)
+        v = arc_validate_email(new_email)
         valid_new_email = v['email']
     except EmailNotValidError as e:
         response['error'] = str(e)
@@ -722,8 +680,8 @@ def change_email(user) -> Tuple[dict, int]:
     user.verified = False
     user.save()
 
-    confirm_token = generate_confirmation_token(valid_new_email)
-    confirm_url = generate_url('auth.confirm_email', confirm_token)
+    _confirm_token = generate_confirmation_token(valid_new_email)
+    confirm_url = generate_url('auth.confirm_email', _confirm_token)
 
     from sim_api.email_service import send_email
     send_email(
@@ -747,18 +705,261 @@ def change_email(user) -> Tuple[dict, int]:
     return jsonify(response), 200
 
 
-@auth_blueprint.route('/auth/logout', methods=['GET'])
+# noinspection PyBroadException
+@auth_blueprint.route(Routes.login.value, methods=['POST'])
+def login() -> any:
+    """
+    Blueprint route for registration of users with a returned JWT if successful.
+    """
+
+    # Get the post data
+    post_data = request.get_json()
+
+    # Validating empty payload
+    response = {'status': 'fail', 'message': 'Invalid payload.'}
+    if not post_data:
+        return jsonify(response), 400
+
+    # Extract the request data required for login
+    email = post_data.get('email', '')
+    password = post_data.get('password', '')
+
+    # Validate some of these
+    if not email:
+        response['message'] = 'You must provide an email.'
+        return jsonify(response), 400
+
+    if not password:
+        response['message'] = 'You must provide a password.'
+        return jsonify(response), 400
+
+    if len(str(password)) < 6 or len(str(password)) > 254:
+        response['message'] = 'Email or password combination incorrect.'
+        return jsonify(response), 400
+
+    try:
+        if not User.objects(email=email):
+            # response['message'] = 'User does not exist.'
+            # return jsonify(response), 404
+            # For security reasons we do not responsed with 'user does not
+            # exist'
+            response['message'] = 'Email or password combination incorrect.'
+            return jsonify(response), 400
+    except Exception:
+        # response['message'] = 'User does not exist'
+        # return jsonify(response), 404
+        # For security reasons we do not responsed with 'user does not
+        # exist'
+        response['message'] = 'Email or password combination incorrect.'
+        return jsonify(response), 400
+
+    # Let's save some stats for later
+    login_datetime = datetime.utcnow()
+
+    user = User.objects.get(email=str(email).lower())
+
+    # Now let's really check if the User can access our application
+    if bcrypt.check_password_hash(user.password, password):
+        user_role = 'admin' if user.is_admin else 'user'
+        auth_token = AuthService().encode_auth_token(user.id, role=user_role)
+
+        if auth_token:
+            if not user.active:
+                response['message'] = 'This user account has been disabled.'
+                logger.info(
+                    {
+                        'message': response['message'],
+                        'user': user.email
+                    }
+                )
+                apm.capture_message('Unauthorised access.')
+                return jsonify(response), 403
+
+            # First we check if there is a proxy or other network service
+            # that forwards the IP address. If it is not the case,
+            # we can check for the HTTP_X_REAL_IP which is part of
+            # the header and is often used in a proxy.
+            if not request.headers.get('X-Forwarded-For', None):
+                # If HTTP_X_REAL_IP not found, we can then fall back
+                # to use the `request.remote_addr` even though it is
+                # unlikely to be a real address.
+                request_ip = request.environ.get(
+                    'HTTP_X_REAL_IP', request.remote_addr
+                )
+            else:
+                # If we have a forwarded IP, it usually can be split
+                # We want the first one because the syntax is as follows:
+                # X-Forwarded-For: <client>, <proxy1>, <proxy2>
+                # Refer to:
+                # https://developer.mozilla.org/en-US/docs/Web/HTTP/
+                # Headers/X-Forwarded-For
+                # "The X-Forwarded-For (XFF) header is a de-facto standard
+                # header for identifying the originating IP address of a
+                # client connecting to a web server through an HTTP proxy
+                # or a load balancer."
+                forwarded_ip = request.headers.get('X-Forwarded-For')
+                request_ip = str(forwarded_ip).split(',')[0]
+
+            # Get the relative path of the database from the current path
+            # Applying dirname to a directory yields the parent directory
+            par_dir = os.path.dirname(os.path.abspath(__file__))
+            db_path = Path(par_dir) / 'GeoLite2-City' / 'GeoLite2-City.mmdb'
+
+            # If we can't record this data, we will store it as a Null
+            country, state, continent, timezone = None, None, None, None
+            geopoint = None
+            accuracy_radius = 0
+
+            try:
+                if not db_path.exists():
+                    raise FileNotFoundError(
+                        f'MaxMind DB file not found in {db_path.as_posix()}.'
+                    )
+                # Read from a MaxMind DB  that we have stored as so the
+                # `geoip2` library cna look for the IP address location.
+                reader = geoip2.database.Reader(db_path.as_posix())
+
+                location_data = reader.city(str(request_ip))
+
+                if location_data.country:
+                    country = location_data.country.names['en']
+
+                if location_data.subdivisions:
+                    state = location_data.subdivisions[0].names['en']
+
+                if location_data.continent:
+                    continent = location_data.continent.names['en']
+
+                if location_data.location:
+                    accuracy_radius = location_data.location.accuracy_radius
+                    geopoint = {
+                        'type':
+                        'Point',
+                        'coordinates': [
+                            location_data.location.latitude,
+                            location_data.location.longitude
+                        ]
+                    }
+                    timezone = location_data.location.time_zone
+
+                reader.close()
+            except FileNotFoundError as e:
+                apm.capture_exception()
+                logger.critical(
+                    {
+                        'message': 'File not found error.',
+                        'error': str(e)
+                    }
+                )
+            except ValueError as e:
+                apm.capture_exception()
+                logger.exception(
+                    {
+                        'message': 'geoip2 Read error.',
+                        'error': str(e)
+                    }
+                )
+            except InvalidDatabaseError as e:
+                apm.capture_exception()
+                logger.exception(
+                    {
+                        'message': 'Invalid MaxMind DB error.',
+                        'error': str(e)
+                    }
+                )
+            except AddressNotFoundError:
+                # If our library cannot find a location based on the IP address
+                # usually because we're in a localhost testing environment or
+                # if the address is somehow bad, then we need to handle this
+                # error and allow the response.
+                apm.capture_exception()
+            finally:
+                # logger.info(
+                #     {
+                #         'message': 'User logged in.',
+                #         'user': user.email,
+                #         'country': country,
+                #         'state': state,
+                #         'ip_address': request_ip
+                #     }
+                # )
+                login_data = LoginData(
+                    **{
+                        'ip_address': request_ip,
+                        'created_datetime': login_datetime,
+                        'continent': continent,
+                        'country': country,
+                        'state': state,
+                        'accuracy_radius': accuracy_radius,
+                        'geo_point': geopoint,
+                        'timezone': timezone,
+                    }
+                )
+                user.last_login = login_datetime
+                user.login_data.append(login_data)
+                user.save()
+
+            # Store additional information in their session as it will be
+            # required by the server-side session interface to check and
+            # generate other tokens and keys.
+            session['jwt'] = auth_token.decode()
+            session['ip_address'] = request_ip
+            session['is_admin'] = user.is_admin
+            session['user_id'] = str(user.id)
+            session['location'] = login_data.to_dict()
+
+            response.update(
+                {
+                    'status': 'success',
+                    'message': 'Successfully logged in.'
+                }
+            )
+            return jsonify(response), 200
+
+    response['message'] = 'Email or password combination incorrect.'
+    logger.info(response['message'])
+    apm.capture_message(response['message'])
+    return jsonify(response), 400
+
+
+@auth_blueprint.route(Routes.logout.value, methods=['GET'])
 @authenticate_user_and_cookie_flask
 def logout(_) -> Tuple[dict, int]:
     """Log the user out and invalidate the auth token."""
+    # Save the session ID for later
+    sid = session.sid
+
+    # Ensure we remove the JWT from the session dict.
+    session.pop('jwt')
 
     # Remove the data from the user's current session.
     session.clear()
+
+    # Remove the session stored in Redis so that the next time the user
+    # tries to use an endpoint with a deleted cookie, there will be no
+    # Redis value returned and they will need to have a new session created.
+
+    # Grab the exposed RedisSessionInterface instance exposed.
+    r_sess_interface = redis_session.interface
+    # Get the Redis connection stored in the instance
+    redis = r_sess_interface.redis
+    # We need to include the prefix that we use to store the Session in Redis
+    redis_session_key = r_sess_interface.redis_key(sid)
+    # Delete the Redis storage to ensure the cookie is not valid anymore
+    try:
+        redis.delete(redis_session_key)
+    except ReadOnlyError:
+        logger.exception('Redis read error in logout.')
+        apm.capture_exception()
+        redis.connection_pool.reset()
+
+    # logger.debug({'msg': redis.get(redis_session_key)})
+    # logger.debug({'session': session})
     response = {'status': 'success', 'message': 'Successfully logged out.'}
     return jsonify(response), 202
 
 
-@auth_blueprint.route('/auth/status', methods=['GET'])
+@auth_blueprint.route(Routes.get_user_status.value, methods=['GET'])
 @authenticate_user_and_cookie_flask
 def get_user_status(user) -> Tuple[dict, int]:
     """Get the current session status of the user."""
@@ -766,15 +967,11 @@ def get_user_status(user) -> Tuple[dict, int]:
     if not user.profile:
         is_profile = False
 
-    sim_session = json.loads(session['simulation'])
-
     response = {
         "status": 'success',
         "isProfile": is_profile,
         "verified": user.verified,
         "active": user.active,
-        "signedIn": session['signed_in'],
-        "simulationValid": sim_session['configurations']['is_valid'],
         "admin": user.is_admin,
     }
     return jsonify(response), 200

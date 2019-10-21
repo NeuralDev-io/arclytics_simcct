@@ -6,9 +6,7 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __status__ = 'development'
 __date__ = '2019.07.13'
 
@@ -18,14 +16,14 @@ from copy import deepcopy
 from pathlib import Path
 
 from bson import ObjectId
-from flask import json
 from flask import current_app as app
+from flask import json
 from mongoengine import DoesNotExist, get_db
 
-from tests.test_api_base import BaseTestCase
 from sim_api.models import (
-    User, Configuration, AlloyStore, SavedSimulation, UserProfile, AdminProfile
+    AdminProfile, AlloyStore, Configuration, SavedSimulation, User, UserProfile
 )
+from tests.test_api_base import BaseTestCase
 from tests.test_utilities import test_login
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
@@ -112,7 +110,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/api/v1/sim/user/simulation',
+                '/v1/sim/user/simulation',
                 data=json.dumps({}),
                 content_type='application/json'
             )
@@ -127,7 +125,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/api/v1/sim/user/simulation',
+                '/v1/sim/user/simulation',
                 data=json.dumps({'alloy_store': ALLOY_STORE}),
                 content_type='application/json'
             )
@@ -144,7 +142,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/api/v1/sim/user/simulation',
+                '/v1/sim/user/simulation',
                 data=json.dumps({'configurations': CONFIGS}),
                 content_type='application/json'
             )
@@ -164,7 +162,7 @@ class TestSaveSimulationService(BaseTestCase):
             del alloy_store['alloys']['parent']['compositions'][-1]
 
             res = client.post(
-                '/api/v1/sim/user/simulation',
+                '/v1/sim/user/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -194,7 +192,7 @@ class TestSaveSimulationService(BaseTestCase):
             )
 
             res = client.post(
-                '/api/v1/sim/user/simulation',
+                '/v1/sim/user/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -219,7 +217,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.post(
-                '/api/v1/sim/user/simulation',
+                '/v1/sim/user/simulation',
                 data=json.dumps(
                     {
                         'configurations': CONFIGS,
@@ -257,7 +255,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.get(
-                '/api/v1/sim/user/simulation', content_type='application/json'
+                '/v1/sim/user/simulation', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'fail')
@@ -290,7 +288,7 @@ class TestSaveSimulationService(BaseTestCase):
             ).save()
 
             res = client.get(
-                '/api/v1/sim/user/simulation', content_type='application/json'
+                '/v1/sim/user/simulation', content_type='application/json'
             )
             data = json.loads(res.data.decode())
             self.assertEqual(data['status'], 'success')
@@ -318,7 +316,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.get(
-                '/api/v1/sim/user/simulation/BadObjectId',
+                '/v1/sim/user/simulation/BadObjectId',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -332,7 +330,7 @@ class TestSaveSimulationService(BaseTestCase):
             sim_id = ObjectId()
 
             res = client.get(
-                f'/api/v1/sim/user/simulation/{sim_id}',
+                f'/v1/sim/user/simulation/{sim_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -351,7 +349,7 @@ class TestSaveSimulationService(BaseTestCase):
             ).save()
 
             res = client.get(
-                f'/api/v1/sim/user/simulation/{saved_sim.id}',
+                f'/v1/sim/user/simulation/{saved_sim.id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -371,7 +369,7 @@ class TestSaveSimulationService(BaseTestCase):
             cookie = test_login(client, self.tony.email, self._tony_pw)
 
             res = client.delete(
-                '/api/v1/sim/user/simulation/BadObjectId',
+                '/v1/sim/user/simulation/BadObjectId',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -385,7 +383,7 @@ class TestSaveSimulationService(BaseTestCase):
             sim_id = ObjectId()
 
             res = client.delete(
-                f'/api/v1/sim/user/simulation/{sim_id}',
+                f'/v1/sim/user/simulation/{sim_id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())
@@ -404,7 +402,7 @@ class TestSaveSimulationService(BaseTestCase):
             ).save()
 
             res = client.delete(
-                f'/api/v1/sim/user/simulation/{saved_sim.id}',
+                f'/v1/sim/user/simulation/{saved_sim.id}',
                 content_type='application/json'
             )
             data = json.loads(res.data.decode())

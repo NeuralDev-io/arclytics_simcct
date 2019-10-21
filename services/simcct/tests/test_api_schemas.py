@@ -8,8 +8,7 @@
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __credits__ = ['']
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+
 __status__ = 'development'
 __date__ = '2019.07.18'
 
@@ -22,8 +21,9 @@ from marshmallow import ValidationError
 from manage import BASE_DIR
 from tests.test_api_base import BaseTestCase
 from sim_api.schemas import (AlloySchema, ConfigurationsSchema)
+from sim_api.extensions.utilities import ElementSymbolInvalid
 
-_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'simulation' / 'sim_configs.json'
+_TEST_CONFIGS_PATH = Path(BASE_DIR) / 'tests' / 'sim_configs.json'
 
 
 class TestSchemas(BaseTestCase):
@@ -108,11 +108,10 @@ class TestSchemas(BaseTestCase):
         }
 
         err = (
-            "{'compositions': {0: {'symbol': ['ValidationError (Element)"
-            " (Field does not match a valid element symbol in the "
-            "Periodic Table: [\"symbol\"])']}}}"
+            'ValidationError (Element) (Field does not match a valid element'
+            ' symbol in the Periodic Table: ["symbol"])'
         )
-        with self.assertRaises(ValidationError, msg=err):
+        with self.assertRaises(ElementSymbolInvalid, msg=err):
             AlloySchema().load(alloy)
 
     def test_alloy_schema_compositions_valid(self):

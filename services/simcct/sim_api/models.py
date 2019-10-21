@@ -6,12 +6,9 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = [
-    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
-    'Dinol Shrestha <@dinolsth>'
-]
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
 __license__ = 'MIT'
-__version__ = '1.3.0'
+__version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.07.03'
 """models.py: 
@@ -22,25 +19,24 @@ Sim database using MongoDB. Here we define the `mongoengine.Document` and
 microservice.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Tuple, Union
 
-import jwt
 from bson import ObjectId
 from flask import current_app, json
 from mongoengine import (
     BooleanField, DO_NOTHING, DateTimeField, DictField, Document, EmailField,
     EmbeddedDocument, EmbeddedDocumentField, EmbeddedDocumentListField,
     FloatField, IntField, ObjectIdField, ReferenceField, StringField,
-    ValidationError, queryset_manager
+    LongField, PointField, ValidationError, queryset_manager
 )
 
+from arc_logging import AppLogger
 from sim_api.extensions import bcrypt
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid, JSONEncoder,
     MissingElementError, PasswordValidationError, PeriodicTable
 )
-from arc_logging import AppLogger
 
 logger = AppLogger(__name__)
 
@@ -201,6 +197,7 @@ class AdminProfile(EmbeddedDocument):
     mobile_number = StringField(max_length=11, min_length=10)
     verified = BooleanField(default=False)
     promoted_by = ObjectIdField()
+    sub_to_feedback = BooleanField(default=False)
 
     def to_dict(self) -> dict:
         """
@@ -333,12 +330,13 @@ class Element(EmbeddedDocument):
         return {'symbol': self.symbol, 'weight': self.weight}
 
     def clean(self):
-        """Ensure that the `symbol` field must conform to a proper periodic
+        """
+        Ensure that the `symbol` field must conform to a proper periodic
         table element symbol and ensure they are both required.
         """
         # These ensure they are not missing.
         if not self.symbol:
-            msg = 'Field is required: ["Element.symbol"])'
+            msg = 'Field is required: ["Element.symbol"]'
             raise ElementInvalid(message=msg)
 
         if not self.weight == 0.0:
@@ -425,16 +423,24 @@ class Rating(EmbeddedDocument):
 
 
 class LoginData(EmbeddedDocument):
-    time = DateTimeField(default=datetime.utcnow(), required=True)
-    country = StringField()
+    created_datetime = DateTimeField(default=datetime.utcnow(), required=True)
     state = StringField()
+    country = StringField()
+    continent = StringField()
+    accuracy_radius = IntField()
+    geo_point = PointField()
+    timezone = StringField()
     ip_address = StringField()
 
     def to_dict(self):
         return {
-            'time': str(self.time),
-            'country': self.country,
+            'created_datetime': str(self.created_datetime.isoformat()),
             'state': self.state,
+            'country': self.country,
+            'continent': self.continent,
+            'accuracy_radius': self.accuracy_radius,
+            'geo_point': self.geo_point,
+            'timezone': self.timezone,
             'ip_address': self.ip_address
         }
 
@@ -455,20 +461,19 @@ class User(Document):
 
     # The following fields describe the simulation properties saved to a users
     # Document for later retrieval
-    last_configuration = EmbeddedDocumentField(
-        document_type=Configuration, default=None
-    )
-
-    last_alloy_store = EmbeddedDocumentField(
-        document_type=AlloyStore, default=None
-    )
-
-    last_simulation_results = EmbeddedDocumentField(
-        document_type=SimulationResults, default=None
-    )
-
+    # Note: It is necessary to use `sim_api.schemas.ConfigurationSchema`,
+    # `sim_api.schemas.AlloySchema` and
+    # `sim_api.schemas.SimulationResultsSchema` to validate these before
+    # dumping to the database if we want to ensure validity.
+    last_configuration = DictField(default=None)
+    last_alloy_store = DictField(default=None)
+    last_simulation_results = DictField(default=None)
     last_simulation_invalid_fields = DictField(default=None)
 
+    # Store the number of simulations the user has run
+    simulations_count = LongField(default=0)
+
+    # Store alloys for the user
     saved_alloys = EmbeddedDocumentListField(document_type=Alloy)
 
     # Some rather useful metadata information that's not core to the
@@ -488,14 +493,30 @@ class User(Document):
 
     # Define the collection and indexing for this document
     meta = {
-        'collection': 'users',
-        # 'indexes': [
-        # {'fields': ['saved_alloys.name'], 'unique': True}
-        # ]
+        'collection':
+        'users',
+        'indexes': [
+            # This create text indexes for advanced text search
+            {
+                'fields': ['$first_name', '$last_name', '$email'],
+                # For a text index, the weight of an indexed field denotes
+                # the significance of the field relative to the other indexed
+                # fields in terms of the text search score.
+                # 2 times (i.e. 10:1) the impact as a term match in the
+                # last_name and email fields
+                # 10:9 impact as a term match in the last_name:first_name
+                'weights': {
+                    'last_name': 10,
+                    'first_name': 9,
+                    'email': 1
+                }
+            }
+        ]
     }
 
     def set_password(self, raw_password: str) -> None:
-        """Helper utility method to save an encrypted password using the
+        """
+        Helper utility method to save an encrypted password using the
         Bcrypt Flask extension.
         """
         self.password = bcrypt.generate_password_hash(
@@ -546,106 +567,6 @@ class User(Document):
         transformed.
         """
         return json.dumps(self.to_dict(), cls=JSONEncoder)
-
-    @staticmethod
-    def encode_auth_token(user_id: ObjectId) -> Union[bytes, None]:
-        """Generates JWT auth token that is returned as bytes."""
-        try:
-            payload = {
-                'exp':
-                datetime.utcnow() + timedelta(
-                    days=current_app.config.get('TOKEN_EXPIRATION_DAYS', 0),
-                    seconds=current_app.config.
-                    get('TOKEN_EXPIRATION_SECONDS', 0)
-                ),
-                'iat':
-                datetime.utcnow(),
-                'sub':
-                user_id
-            }
-
-            return jwt.encode(
-                payload=payload,
-                key=current_app.config.get('SECRET_KEY', None),
-                algorithm='HS256',
-                json_encoder=JSONEncoder
-            )
-        except Exception as e:
-            logger.error('Encode auth token error: {}'.format(e))
-            return None
-
-    @staticmethod
-    def decode_auth_token(auth_token: bytes) -> Union[ObjectId, str]:
-        """Decodes the JWT auth token.
-
-        Args:
-            auth_token: a bytes type that was encoded by
-
-        Returns:
-            An integer or string.
-        """
-        try:
-            payload = jwt.decode(
-                jwt=auth_token, key=current_app.config.get('SECRET_KEY', None)
-            )
-            return ObjectId(payload['sub'])
-        except jwt.ExpiredSignatureError:
-            return 'Signature expired. Please login again.'
-        except jwt.InvalidTokenError:
-            logger.info('Invalid token error.')
-            return 'Invalid token. Please log in again.'
-
-    @staticmethod
-    def encode_password_reset_token(user_id: ObjectId) -> Union[bytes, None]:
-        """Encode a timed JWT token of 30 minutes to send to the client-side
-        so we can verify which user has requested to reset their password.
-
-        Args:
-            user_id: the valid ObjectId user id.
-
-        Returns:
-            A valid JWT token or None if there is any kind of generic exception.
-        """
-        # noinspection PyBroadException
-        try:
-            payload = {
-                'exp': datetime.utcnow() + timedelta(minutes=30),
-                'iat': datetime.utcnow(),
-                'sub': user_id
-            }
-
-            return jwt.encode(
-                payload=payload,
-                key=current_app.config.get('SECRET_KEY', None),
-                algorithm='HS256',
-                json_encoder=JSONEncoder
-            )
-        except Exception:
-            logger.exception(
-                'Encode authentication token error.', exc_info=True
-            )
-            return None
-
-    @staticmethod
-    def decode_password_reset_token(auth_token: bytes) -> Union[ObjectId, str]:
-        """Decodes the JWT auth token for the password reset.
-
-        Args:
-            auth_token: a bytes type that was encoded by
-
-        Returns:
-            An ObjectId or string.
-        """
-        try:
-            payload = jwt.decode(
-                jwt=auth_token, key=current_app.config.get('SECRET_KEY', None)
-            )
-            return ObjectId(payload['sub'])
-        except jwt.ExpiredSignatureError:
-            return 'Signature expired. Please get a new token.'
-        except jwt.InvalidTokenError:
-            logger.info('Invalid token error.')
-            return 'Invalid token. Please get a new token.'
 
     # MongoEngine allows you to create custom cleaning rules for your documents
     # when calling save(). By providing a custom clean() method you can do
@@ -742,6 +663,8 @@ class SharedSimulation(Document):
     simulation_results = EmbeddedDocumentField(
         document_type=SimulationResults, required=True, null=False
     )
+
+    meta = {'collection': 'shared_simulations'}
 
     def to_dict(self):
         return {

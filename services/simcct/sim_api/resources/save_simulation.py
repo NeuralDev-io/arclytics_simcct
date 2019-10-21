@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # arclytics_sim
 # save_simulation.py
@@ -7,14 +6,10 @@
 # Attributions:
 # [1]
 # ----------------------------------------------------------------------------------------------------------------------
-
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__license__ = 'TBA'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
 __version__ = '1.0.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__status__ = 'production'
 __date__ = '2019.08.11'
 """save_simulation.py: 
 
@@ -27,7 +22,8 @@ from flask import Blueprint, json, request
 from flask_restful import Resource
 from mongoengine import DoesNotExist, FieldDoesNotExist, ValidationError
 
-from sim_api.extensions import api
+from arc_logging import AppLogger
+from sim_api.extensions import api, apm
 from sim_api.extensions.utilities import (
     DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
     MissingElementError
@@ -36,8 +32,10 @@ from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.models import (
     AlloyStore, Configuration, SavedSimulation, SimulationResults
 )
+from sim_api.routes import Routes
 
 save_sim_blueprint = Blueprint('user_save_simulation', __name__)
+logger = AppLogger(__name__)
 
 # Note: An is_valid = False Configuration instance means it has not been run.
 
@@ -91,7 +89,6 @@ class SaveSimulationList(Resource):
             )
         )
 
-        # TODO(andrew@neuraldev.io): Add the graphs also
         # The following `mongoengine.EmbeddedDocument` models have in-built
         # custom validation that will be passed down.
         try:
@@ -128,10 +125,16 @@ class SaveSimulationList(Resource):
             # All other validation errors
             response['error'] = str(e)
             response['message'] = 'Model schema validation error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 400
         except OverflowError as e:
-            response['errors'] = str(e)
+            response['error'] = str(e)
             response['message'] = 'Overflow error.'
+            log_message = {'message': response['message'], 'error': str(e)}
+            logger.exception(log_message)
+            apm.capture_exception()
             return response, 500
 
         response.pop('message')
@@ -195,7 +198,7 @@ class SaveSimulationDetail(Resource):
 
         try:
             qs = SavedSimulation.objects.get(id=sim_id)
-        except DoesNotExist as e:
+        except DoesNotExist:
             return {'status': 'fail', 'message': 'Does not exist.'}, 404
         return {'status': 'success', 'data': qs.to_dict()}, 200
 
@@ -216,12 +219,12 @@ class SaveSimulationDetail(Resource):
 
         try:
             qs = SavedSimulation.objects.get(id=sim_id)
-        except DoesNotExist as e:
+        except DoesNotExist:
             return {'status': 'fail', 'message': 'Does not exist.'}, 404
 
         qs.delete()
         return {'status': 'success'}, 202
 
 
-api.add_resource(SaveSimulationList, '/api/v1/sim/user/simulation')
-api.add_resource(SaveSimulationDetail, '/api/v1/sim/user/simulation/<sim_id>')
+api.add_resource(SaveSimulationList, Routes.save_simulation_list.value)
+api.add_resource(SaveSimulationDetail, Routes.save_simulation_detail.value)

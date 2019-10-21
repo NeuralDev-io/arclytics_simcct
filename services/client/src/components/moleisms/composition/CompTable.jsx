@@ -5,6 +5,19 @@ import AutoSizer from 'react-virtualized-auto-sizer'
 import Table from '../../elements/table'
 import { SelfControlledTextField } from '../../elements/textfield'
 import { validate } from '../../../utils/validator'
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Composition table, displaying the composition of the alloy chosen
+ * in the CompForm component.
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import { constraints } from './utils/constraints'
 import { updateComp } from '../../../state/ducks/sim/actions'
 
@@ -25,7 +38,12 @@ class CompTable extends Component {
       }
     }
 
-    const err = validate(value, constraints.weight)
+    let err
+    if (symbol === 'C') {
+      err = validate(value, constraints.carbon)
+    } else {
+      err = validate(value, constraints.weight)
+    }
     const error = { ...data.parentError }
     if (err !== undefined) {
       error[symbol] = err

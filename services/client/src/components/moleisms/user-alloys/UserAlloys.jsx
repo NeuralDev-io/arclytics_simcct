@@ -1,10 +1,23 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * User alloys display
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import PlusIcon from 'react-feather/dist/icons/plus'
-import LoadIcon from 'react-feather/dist/icons/upload'
-import EditIcon from 'react-feather/dist/icons/edit-3'
-import TrashIcon from 'react-feather/dist/icons/trash-2'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus } from '@fortawesome/pro-light-svg-icons/faPlus'
+import { faUpload } from '@fortawesome/pro-light-svg-icons/faUpload'
+import { faEdit } from '@fortawesome/pro-light-svg-icons/faEdit'
+import { faTrashAlt } from '@fortawesome/pro-light-svg-icons/faTrashAlt'
 import Table from '../../elements/table'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
@@ -39,8 +52,8 @@ class UserAlloys extends Component {
   }
 
   componentDidMount = () => {
-    const { userAlloys = [], getUserAlloysConnect } = this.props
-    if (!userAlloys || userAlloys.length === 0) getUserAlloysConnect()
+    const { userAlloys = [], dataFetched = false, getUserAlloysConnect } = this.props
+    if (!userAlloys || userAlloys.length === 0 || !dataFetched) getUserAlloysConnect()
   }
 
   handleShowModal = type => this.setState({ [`${type}Modal`]: true })
@@ -120,7 +133,10 @@ class UserAlloys extends Component {
   }))
 
   render() {
-    const { userAlloys } = this.props
+    const { dataFetched, dataLoading } = this.props
+    let { userAlloys } = this.props
+    if (!dataFetched) userAlloys = []
+
     const {
       alloyId,
       currentAlloy,
@@ -148,7 +164,7 @@ class UserAlloys extends Component {
               onClick={() => this.handleLoadAlloy(original)}
               appearance="text"
               length="short"
-              IconComponent={props => <LoadIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faUpload} {...props} />}
             >
               Load
             </Button>
@@ -156,7 +172,7 @@ class UserAlloys extends Component {
               onClick={() => this.showEditAlloy(original)}
               appearance="text"
               length="short"
-              IconComponent={props => <EditIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faEdit}{...props} />}
             >
               Edit
             </Button>
@@ -165,7 +181,7 @@ class UserAlloys extends Component {
               appearance="text"
               color="dangerous"
               length="short"
-              IconComponent={props => <TrashIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faTrashAlt} {...props} />}
             >
               Delete
             </Button>
@@ -193,7 +209,7 @@ class UserAlloys extends Component {
           <Button
             appearance="outline"
             onClick={this.showAddAlloy}
-            IconComponent={props => <PlusIcon {...props} />}
+            IconComponent={props => <FontAwesomeIcon icon={faPlus} {...props} />}
             length="short"
           >
             Add
@@ -203,6 +219,7 @@ class UserAlloys extends Component {
           className="-highlight"
           data={tableData}
           columns={columns}
+          loading={dataLoading}
           pageSize={tableData.length > 10 ? 10 : tableData.length}
           showPageSizeOptions={false}
           showPagination={tableData.length !== 0}
@@ -246,6 +263,8 @@ UserAlloys.propTypes = {
       weight: PropTypes.number,
     })),
   })).isRequired,
+  dataLoading: PropTypes.bool.isRequired,
+  dataFetched: PropTypes.bool.isRequired,
   getUserAlloysConnect: PropTypes.func.isRequired,
   createUserAlloyConnect: PropTypes.func.isRequired,
   updateUserAlloyConnect: PropTypes.func.isRequired,
@@ -254,7 +273,9 @@ UserAlloys.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  userAlloys: state.alloys.user,
+  userAlloys: state.alloys.user.data,
+  dataLoading: state.alloys.user.isLoading,
+  dataFetched: state.alloys.user.isFetched,
 })
 
 const mapDispatchToProps = {

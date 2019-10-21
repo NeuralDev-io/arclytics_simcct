@@ -8,7 +8,7 @@ data:
     server.host: "0.0.0.0"
     server.port: 5601
     server.name: "Arclytics Sim"
-    elasticsearch.hosts: ["http://elasticsearch-0.elasticsearch.arclytics.svc.cluster.local:9200", "http://elasticsearch-1.elasticsearch.arclytics.svc.cluster.local:9200", "http://elasticsearch-2.elasticsearch.arclytics.svc.cluster.local:9200" ]
+    elasticsearch.hosts: ["http://elasticsearch-0.elasticsearch.arclytics.svc.cluster.local:9200", "http://elasticsearch-1.elasticsearch.arclytics.svc.cluster.local:9200" ]
 ---
 apiVersion: v1
 kind: Service
@@ -51,7 +51,7 @@ spec:
         image: docker.elastic.co/kibana/kibana:7.3.2
         resources:
           limits:
-            cpu: 500m
+            cpu: 250m
           requests:
             cpu: 100m
         ports:

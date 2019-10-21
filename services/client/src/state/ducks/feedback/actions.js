@@ -3,8 +3,15 @@ import {
   CLOSE_FEEDBACK,
   RESET_FEEDBACK,
 } from './types'
+import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
+import { logError } from '../../../api/LoggingHelper'
 
+/**
+ * Update feedback in the Redux state. The reducer will take the
+ * feedback parameters and spread it into the Redux state's feedback.
+ * @param {any} feedback feedback object
+ */
 export const updateFeedback = feedback => (dispatch) => {
   dispatch({
     type: UPDATE_FEEDBACK,
@@ -12,20 +19,31 @@ export const updateFeedback = feedback => (dispatch) => {
   })
 }
 
+/**
+ * Close all feedback modals and set 'gotFeedback' in localStorage
+ * to true so the app stop asking users for feedback.
+ */
 export const closeFeedback = () => (dispatch) => {
   dispatch({
     type: CLOSE_FEEDBACK,
   })
-  localStorage.setItem('gotFeedback', true)
 }
 
+/**
+ * Reset feedback Redux state to initial state.
+ */
 export const resetFeedback = () => (dispatch) => {
   dispatch({ type: RESET_FEEDBACK })
 }
 
+/**
+ * Submit feedback to the API with data taken from the current Redux state.
+ * If the request is successful, close the feedback modal, reset feedback state,
+ * and create a success thank-you flash toast.
+ */
 export const submitFeedback = () => (dispatch, getState) => {
   const { category, rate, message } = getState().feedback
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/feedback`, {
+  fetch(`${SIMCCT_URL}/user/feedback`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -54,23 +72,28 @@ export const submitFeedback = () => (dispatch, getState) => {
         }, true)(dispatch)
       }
       if (res.status === 'success') {
+        // close modal and reset state
         dispatch({ type: CLOSE_FEEDBACK })
         setTimeout(() => dispatch({ type: RESET_FEEDBACK }), 500)
+        // dispatch success thank-you flash toast
         addFlashToast({
           message: 'Thank you for your feedback.',
           options: { variant: 'success' },
         }, true)(dispatch)
-        localStorage.setItem('gotFeedback', true)
       }
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'feedback.actions.submitFeedback', err.stack)
     })
 }
 
-export const submitRating = rate => (dispatch, getState) => {
-  fetch(`${process.env.REACT_APP_SIM_HOST}:${process.env.REACT_APP_SIM_PORT}/api/v1/sim/user/rating`, {
+/**
+ * Submit a rating to the API
+ * @param {number} rate Rating submitted by user
+ */
+export const submitRating = rate => (dispatch) => {
+  fetch(`${SIMCCT_URL}/user/rating`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -97,17 +120,18 @@ export const submitRating = rate => (dispatch, getState) => {
         }, true)(dispatch)
       }
       if (res.status === 'success') {
+        // close modal and reset feedback state
         dispatch({ type: CLOSE_FEEDBACK })
         setTimeout(() => dispatch({ type: RESET_FEEDBACK }), 500)
+        // dispatch success flash toast
         addFlashToast({
           message: 'Thank you for your feedback.',
           options: { variant: 'success' },
         }, true)(dispatch)
-        localStorage.setItem('gotFeedback', true)
       }
     })
     .catch((err) => {
       // log to fluentd
-      console.log(err)
+      logError(err.toString(), err.message, 'feedback.actions.submitRating', err.stack)
     })
 }

@@ -1,11 +1,24 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Load button with AttachModal to load a simulation from a file
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import UploadIcon from 'react-feather/dist/icons/upload'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUpload } from '@fortawesome/pro-light-svg-icons/faUpload'
 import Button from '../../elements/button'
 import FileInput from '../../elements/file-input/FileInput'
 import { AttachModal } from '../../elements/modal'
-import { loadSim } from '../../../state/ducks/sim/actions'
+import { loadSimFromFile } from '../../../state/ducks/sim/actions'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
 
 import styles from './LoadSimButton.module.scss'
@@ -24,8 +37,10 @@ class LoadSimButton extends Component {
   handleCloseModal = () => this.setState({ visible: false })
 
   handleFileInputChange = (e) => {
-    const { loadSimConnect, addFlashToastConnect } = this.props
+    const { loadSimFromFileConnect, addFlashToastConnect } = this.props
     const file = e.target.files[0]
+
+    if (file === null || file === undefined) return
 
     // check file size
     if (file.size > 200000) {
@@ -55,7 +70,7 @@ class LoadSimButton extends Component {
       // TODO: validate sim schema
 
       // load simulations
-      loadSimConnect(sim)
+      loadSimFromFileConnect(sim)
       this.setState({ filename: file.name })
       addFlashToastConnect({
         message: 'File imported successfully',
@@ -65,6 +80,7 @@ class LoadSimButton extends Component {
     }
 
     reader.readAsText(file)
+    e.target.value = null
   }
 
   render() {
@@ -82,14 +98,15 @@ class LoadSimButton extends Component {
           appearance="outline"
           type="button"
           onClick={() => {}}
-          IconComponent={props => <UploadIcon {...props} />}
+          IconComponent={props => <FontAwesomeIcon icon={faUpload}{...props} />}
         >
           LOAD
         </Button>
         <div className={styles.modal}>
           <h4>Import simulation</h4>
           <FileInput
-            Icon={props => <UploadIcon {...props} />}
+            name="import_simulation"
+            Icon={props => <FontAwesomeIcon icon={faUpload}{...props} />}
             onChange={this.handleFileInputChange}
             filename={filename}
           />
@@ -101,12 +118,12 @@ class LoadSimButton extends Component {
 
 LoadSimButton.propTypes = {
   // props from connect()
-  loadSimConnect: PropTypes.func.isRequired,
+  loadSimFromFileConnect: PropTypes.func.isRequired,
   addFlashToastConnect: PropTypes.func.isRequired,
 }
 
 const mapDispatchToProps = {
-  loadSimConnect: loadSim,
+  loadSimFromFileConnect: loadSimFromFile,
   addFlashToastConnect: addFlashToast,
 }
 

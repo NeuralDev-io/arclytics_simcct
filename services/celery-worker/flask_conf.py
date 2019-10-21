@@ -27,6 +27,9 @@ class BaseConfig:
     SECRET_KEY = env.get('SECRET_KEY', '')
     SECURITY_PASSWORD_SALT = env.get('SECURITY_PASSWORD_SALT', '')
 
+    # Celery settings
+    timezone = 'UTC'
+
     # Flask Email
     MAIL_SUBJECT_PREFIX = '[Arclytics]'
     MAIL_DEFAULT_SENDER = 'Arclytics Team <admin@arclytics.io>'
@@ -40,10 +43,12 @@ class BaseConfig:
 
     # elastic application performance monitoring
     ELASTIC_APM = {
-        'SERVER_URL': env.get('ELASTIC_APM_SERVER_URL', None),
+        'SERVER_URL':
+        env.get('ELASTIC_APM_SERVER_URL', 'http://localhost:8200'),
         'SERVICE_NAME': 'celery',
-        'SECRET_TOKEN': env.get('SECRET_KEY'),
-        'DEBUG': False
+        'SECRET_TOKEN': env.get('SECRET_TOKEN'),
+        'CAPTURE_BODY': 'all',
+        'DEBUG': True
     }
 
 
@@ -52,8 +57,8 @@ class DevelopmentConfig(BaseConfig):
     # CELERY REDIS
     REDIS_HOST = env.get('REDIS_HOST', None)
     REDIS_PORT = env.get('REDIS_PORT', None)
-    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/5'
-    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'
+    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/1'
+    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/2'
 
 
 class TestingConfig(BaseConfig):
@@ -64,8 +69,8 @@ class TestingConfig(BaseConfig):
     # CELERY REDIS
     REDIS_HOST = env.get('REDIS_HOST', None)
     REDIS_PORT = env.get('REDIS_PORT', None)
-    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/5'
-    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/6'
+    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/1'
+    CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/2'
 
 
 class ProductionConfig(BaseConfig):
@@ -75,5 +80,14 @@ class ProductionConfig(BaseConfig):
     REDIS_PORT = env.get('REDIS_PORT', None)
     REDIS_PASSWORD = env.get('REDIS_PASSWORD', None)
     redis_uri = f'redis://user:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}'
-    CELERY_BROKER_URL = f'{redis_uri}/5'
-    CELERY_RESULT_BACKEND = f'{redis_uri}/6'
+    CELERY_BROKER_URL = f'{redis_uri}/1'
+    CELERY_RESULT_BACKEND = f'{redis_uri}/2'
+
+    # production elastic application performance monitoring
+    ELASTIC_APM = {
+        'SERVER_URL': env.get('ELASTIC_APM_SERVER_URL', None),
+        'SERVICE_NAME': 'celery',
+        'CAPTURE_BODY': 'all',
+        'DEBUG': False,
+        # 'SECRET_TOKEN': env.get('ELASTIC_APM_SECRET_TOKEN'),
+    }

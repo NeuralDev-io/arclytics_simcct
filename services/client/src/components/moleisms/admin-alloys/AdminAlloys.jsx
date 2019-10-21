@@ -1,10 +1,20 @@
+/**
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Global alloys display
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import PlusIcon from 'react-feather/dist/icons/plus'
-import LoadIcon from 'react-feather/dist/icons/upload'
-import EditIcon from 'react-feather/dist/icons/edit-3'
-import TrashIcon from 'react-feather/dist/icons/trash-2'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus } from '@fortawesome/pro-light-svg-icons/faPlus'
+import { faUpload } from '@fortawesome/pro-light-svg-icons/faUpload'
+import { faEdit } from '@fortawesome/pro-light-svg-icons/faEdit'
+import { faTrashAlt } from '@fortawesome/pro-light-svg-icons/faTrashAlt'
 import Table from '../../elements/table'
 import TextField from '../../elements/textfield'
 import Button from '../../elements/button'
@@ -20,6 +30,7 @@ import { initSession } from '../../../state/ducks/sim/actions'
 import { DEFAULT_ELEMENTS } from '../../../utils/alloys'
 
 import styles from './AdminAlloys.module.scss'
+import Tooltip from "../../elements/tooltip";
 
 class AdminAlloys extends Component {
   constructor(props) {
@@ -39,8 +50,8 @@ class AdminAlloys extends Component {
   }
 
   componentDidMount = () => {
-    const { globalAlloys = [], getGlobalAlloysConnect } = this.props
-    if (!globalAlloys || globalAlloys.length === 0) getGlobalAlloysConnect()
+    const { globalAlloys = [], dataFetched = false, getGlobalAlloysConnect } = this.props
+    if (!globalAlloys || globalAlloys.length === 0 || !dataFetched) getGlobalAlloysConnect()
   }
 
   handleShowModal = type => this.setState({ [`${type}Modal`]: true })
@@ -122,7 +133,9 @@ class AdminAlloys extends Component {
   }))
 
   render() {
-    const { globalAlloys } = this.props
+    const { dataFetched, dataLoading } = this.props
+    let { globalAlloys } = this.props
+    if (!dataFetched) globalAlloys = []
     const {
       alloyId,
       currentAlloy,
@@ -130,7 +143,6 @@ class AdminAlloys extends Component {
       addModal,
       deleteModal,
       editModal,
-      error,
     } = this.state
 
     const tableData = globalAlloys.filter(
@@ -151,7 +163,7 @@ class AdminAlloys extends Component {
               onClick={() => this.handleLoadAlloy(original)}
               appearance="text"
               length="short"
-              IconComponent={props => <LoadIcon {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faUpload} size="lg" {...props} />}
             >
               Load
             </Button>
@@ -159,7 +171,7 @@ class AdminAlloys extends Component {
               onClick={() => this.showEditAlloy(original)}
               appearance="text"
               length="short"
-              IconComponent={props => <EditIcon {...props} />}
+              IconComponent={props =>  <FontAwesomeIcon icon={faEdit} size="lg" {...props} />}
             >
               Edit
             </Button>
@@ -168,7 +180,7 @@ class AdminAlloys extends Component {
               appearance="text"
               color="dangerous"
               length="short"
-              IconComponent={props => <TrashIcon {...props} />}
+              IconComponent={props =>  <FontAwesomeIcon icon={faTrashAlt} size="lg" {...props} />}
             >
               Delete
             </Button>
@@ -196,7 +208,8 @@ class AdminAlloys extends Component {
           <Button
             appearance="outline"
             onClick={this.showAddAlloy}
-            IconComponent={props => <PlusIcon {...props} />}
+            IconComponent={props =><FontAwesomeIcon icon={faPlus} size="lg" {...props} />}
+
             length="short"
           >
             Add
@@ -206,6 +219,7 @@ class AdminAlloys extends Component {
           className="-highlight"
           data={tableData}
           columns={columns}
+          loading={dataLoading}
           pageSize={tableData.length > 10 ? 10 : tableData.length}
           showPageSizeOptions={false}
           showPagination={tableData.length !== 0}
@@ -249,6 +263,8 @@ AdminAlloys.propTypes = {
       weight: PropTypes.number,
     })),
   })).isRequired,
+  dataFetched: PropTypes.bool.isRequired,
+  dataLoading: PropTypes.bool.isRequired,
   getGlobalAlloysConnect: PropTypes.func.isRequired,
   createGlobalAlloyConnect: PropTypes.func.isRequired,
   updateGlobalAlloyConnect: PropTypes.func.isRequired,
@@ -257,7 +273,9 @@ AdminAlloys.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  globalAlloys: state.alloys.global,
+  globalAlloys: state.alloys.global.data,
+  dataFetched: state.alloys.global.isFetched,
+  dataLoading: state.alloys.global.isLoading,
 })
 
 const mapDispatchToProps = {

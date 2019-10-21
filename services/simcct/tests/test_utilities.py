@@ -6,21 +6,19 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+__author__ = [
+    'Andrew Che <@codeninja55>', 'David Matthews <@tree1004>',
+    'Dinol Shrestha <@dinolsth>'
+]
 __status__ = 'development'
 __date__ = '2019.07.31'
-"""utilities.py: 
-
-{Description}
-"""
 
 from datetime import datetime
-from simulation.periodic import PeriodicTable
+
 from flask import json
+
 from sim_api.extensions.Session.redis_session import SESSION_COOKIE_NAME
+from simulation.periodic import PeriodicTable
 
 GMT_DATETIME_FORMAT = "%a, %d-%b-%Y %H:%M:%S GMT"
 
@@ -38,7 +36,7 @@ def convert_json_to_comp(comp_list):
 
 def test_login(client, email: str, password: str):
     resp_login = client.post(
-        '/api/v1/sim/auth/login',
+        '/v1/sim/auth/login',
         data=json.dumps({
             'email': email,
             'password': password

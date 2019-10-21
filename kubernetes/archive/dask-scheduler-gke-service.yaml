@@ -39,7 +39,7 @@ spec:
     spec:
       containers:
         - name: dask-scheduler-container
-          image: asia.gcr.io/arc-sim/arc_dask_scheduler:latest
+          image: asia.gcr.io/arc-sim-testing/arc_dask_scheduler:latest
           imagePullPolicy: IfNotPresent
           args:
           - 'dask-scheduler'

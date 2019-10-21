@@ -14,8 +14,7 @@ __author__ = [
 ]
 __license__ = 'MIT'
 __version__ = '1.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
+
 __status__ = 'production'
 __date__ = '2019.06.04'
 """__init__.py:
@@ -150,14 +149,14 @@ def create_app(configs_path=app_settings) -> Flask:
         redis = Redis(
             host=env.get('REDIS_HOST'),
             port=int(env.get('REDIS_PORT')),
-            db=1,
+            db=0,
         )
     else:
         redis = Redis(
             host=env.get('REDIS_HOST'),
             port=int(env.get('REDIS_PORT')),
             password=env.get('REDIS_PASSWORD'),
-            db=1,
+            db=0,
         )
 
     # Mongo Client interface with MongoEngine as Object Document Mapper (ODM)
@@ -184,18 +183,18 @@ def create_app(configs_path=app_settings) -> Flask:
         )
         # ========== # FLASK BLUEPRINTS # ========== #
         app.register_blueprint(root_blueprint)
-        app.register_blueprint(users_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(auth_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(user_alloys_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(admin_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(share_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(last_sim_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(save_sim_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(ratings_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(configs_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(alloys_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(sim_blueprint, url_prefix='/api/v1/sim')
-        app.register_blueprint(sim_alloys_blueprint, url_prefix='/api/v1/sim')
+        app.register_blueprint(users_blueprint)
+        app.register_blueprint(auth_blueprint)
+        app.register_blueprint(user_alloys_blueprint)
+        app.register_blueprint(admin_blueprint)
+        app.register_blueprint(share_blueprint)
+        app.register_blueprint(last_sim_blueprint)
+        app.register_blueprint(save_sim_blueprint)
+        app.register_blueprint(ratings_blueprint)
+        app.register_blueprint(configs_blueprint)
+        app.register_blueprint(alloys_blueprint)
+        app.register_blueprint(sim_blueprint)
+        app.register_blueprint(sim_alloys_blueprint)
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
     # Notes:

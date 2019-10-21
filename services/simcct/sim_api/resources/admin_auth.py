@@ -6,12 +6,10 @@
 # Attributions:
 # [1]
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
-__license__ = 'TBA'
-__version__ = '0.1.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
+__version__ = '1.0.0'
+__status__ = 'production'
 __date__ = '2019.08.11'
 """admin_auth.py: 
 
@@ -22,23 +20,23 @@ Sharing endpoints using the Flask Resource inheritance model.
 import os
 from datetime import datetime
 
-from email_validator import EmailNotValidError, validate_email
+from email_validator import EmailNotValidError
 from flask import Blueprint, redirect, render_template, request
 from flask_restful import Resource
 
 from arc_logging import AppLogger
-from sim_api.extensions import api
-from sim_api.extensions.utilities import URLTokenExpired
+from sim_api.extensions import api, apm
+from sim_api.extensions.utilities import URLTokenExpired, arc_validate_email
 from sim_api.middleware import authorize_admin_cookie_restful
 from sim_api.models import (AdminProfile, User)
+from sim_api.routes import Routes
 from sim_api.token import (
     URLTokenError, confirm_token, generate_confirmation_token,
     generate_promotion_confirmation_token, generate_url
 )
 
-logger = AppLogger(__name__)
-
 admin_blueprint = Blueprint('admin', __name__)
+logger = AppLogger(__name__)
 
 
 class AdminCreate(Resource):
@@ -64,6 +62,11 @@ class AdminCreate(Resource):
         if not email:
             response['message'] = 'No email provided.'
             return response, 400
+        # We
+        # if not isinstance(email, str):
+        #     response['message'] = 'Email data type is invalid.'
+        #     return response, 400
+        # email = email.lower()
         if not position:
             response['message'] = 'No position provided.'
             return response, 400
@@ -71,7 +74,7 @@ class AdminCreate(Resource):
         # Verify it is actually a valid email
         try:
             # validate and get info
-            v = validate_email(email)
+            v = arc_validate_email(email)
             # replace with normalized form
             valid_email = v['email']
         except EmailNotValidError as e:
@@ -168,7 +171,7 @@ class AdminCreate(Resource):
         return response, 202
 
 
-@admin_blueprint.route('/admin/create/cancel/<token>', methods=['GET'])
+@admin_blueprint.route(Routes.cancel_promotion.value, methods=['GET'])
 def cancel_promotion(token):
     """
     Allow an admin to cancel their promotion of another user
@@ -185,15 +188,19 @@ def cancel_promotion(token):
         # we want a list back of emails.
         # Change expiration parameter to 30 days instead of 1 hour.
         email_list = confirm_token(token, 2592000)
-    except URLTokenError as e:
+    except URLTokenError:
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
-    except URLTokenExpired as e:
+    except URLTokenExpired:
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
     except Exception as e:
+        message = 'An Exception Occured.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
@@ -214,7 +221,10 @@ def cancel_promotion(token):
     try:
         admin_email = email_list[0]
         user_email = email_list[1]
-    except IndexError as e:
+    except IndexError:
+        message = f'Email list index error. List: {str(email_list)}'
+        logger.exception(message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/create/cancel?tokenexpired=true', code=302
         )
@@ -260,7 +270,7 @@ def cancel_promotion(token):
     return redirect(f'{redirect_url}/signin', code=302)
 
 
-@admin_blueprint.route('/admin/create/verify/<token>', methods=['GET'])
+@admin_blueprint.route(Routes.verify_promotion.value, methods=['GET'])
 def verify_promotion(token):
     """
     Allow a user to acknowledge their promotion and in doing so verify their
@@ -285,6 +295,10 @@ def verify_promotion(token):
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
     except Exception as e:
+        message = 'An Exception Occured.'
+        log_message = {'message': message, 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/admin/verify?tokenexpired=true', code=302
         )
@@ -343,9 +357,8 @@ def verify_promotion(token):
         )
     )
 
-    logger.debug(client_host)
-    response['status'] = 'success'
-    response.pop('message')
+    # response['status'] = 'success'
+    # response.pop('message')
     return redirect(f'{redirect_url}/signin', code=302)
 
 
@@ -373,7 +386,7 @@ class DisableAccount(Resource):
         # Verify it is actually a valid email
         try:
             # validate and get info
-            v = validate_email(email)
+            v = arc_validate_email(email)
             # replace with normalized form
             valid_email = v['email']
         except EmailNotValidError as e:
@@ -418,7 +431,7 @@ class DisableAccount(Resource):
         return response, 200
 
 
-@admin_blueprint.route('/disable/user/confirm/<token>', methods=['GET'])
+@admin_blueprint.route(Routes.confirm_disable_account.value, methods=['GET'])
 def confirm_disable_account(token):
     """
     Allow an Admin user to confirm that they want to disable a user's account
@@ -433,15 +446,18 @@ def confirm_disable_account(token):
     # Decode the token from the email to confirm it was the right one
     try:
         email = confirm_token(token)
-    except URLTokenError as e:
+    except URLTokenError:
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
-    except URLTokenExpired as e:
+    except URLTokenExpired:
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
     except Exception as e:
+        log_message = {'message': 'An Exception Occurred.', 'error': str(e)}
+        logger.exception(log_message)
+        apm.capture_exception()
         return redirect(
             f'{redirect_url}/disable/user/confirm?tokenexpired=true', code=302
         )
@@ -472,11 +488,78 @@ def confirm_disable_account(token):
         )
     )
 
-    logger.debug(client_host)
     response['status'] = 'success'
     response.pop('message')
     return redirect(f'{redirect_url}/', code=302)
 
 
-api.add_resource(AdminCreate, '/api/v1/sim/admin/create')
-api.add_resource(DisableAccount, '/api/v1/sim/disable/user')
+class EnableAccount(Resource):
+    """Route for Admins to re-enable disabled user accounts"""
+
+    method_decorators = {'put': [authorize_admin_cookie_restful]}
+
+    def put(self, admin):
+        post_data = request.get_json()
+
+        # Validating empty payload
+        response = {'status': 'fail', 'message': 'Invalid payload.'}
+        if not post_data:
+            return response, 400
+
+        # Extract the request body data
+        email = post_data.get('email', None)
+
+        if not email:
+            response['message'] = 'No email provided.'
+            return response, 400
+
+        # Verify it is actually a valid email
+        try:
+            # validate and get info
+            v = arc_validate_email(email)
+            # replace with normalized form
+            valid_email = v['email']
+        except EmailNotValidError as e:
+            # email is not valid, exception message is human-readable
+            response['error'] = str(e)
+            response['message'] = 'Invalid email.'
+            return response, 400
+
+        # Validation checks
+        if not User.objects(email=valid_email):
+            response['message'] = 'User does not exist.'
+            return response, 404
+
+        user = User.objects.get(email=valid_email)
+
+        # Ensure user's account is actually disbaled
+        if user.active == True:
+            response['message'] = 'Account is not disabled.'
+            return response, 400
+
+        # Reenable user account
+        user.active = True
+        user.save()
+
+        from sim_api.email_service import send_email
+        send_email(
+            to=[user.email],
+            subject_suffix='Your Account has been enabled again',
+            html_template=render_template(
+                'account_enabled.html',
+                user_name=f'{user.first_name} {user.last_name}'
+            ),
+            text_template=render_template(
+                'account_enabled.txt',
+                user_name=f'{user.first_name} {user.last_name}'
+            )
+        )
+
+        response['status'] = 'success'
+        response.pop('message')
+        return response, 200
+
+
+api.add_resource(AdminCreate, Routes.AdminCreate.value)
+api.add_resource(DisableAccount, Routes.DisableAccount.value)
+api.add_resource(EnableAccount, Routes.EnableAccount.value)

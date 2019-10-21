@@ -21,6 +21,12 @@ export const validate = (value, constraints) => {
   return err
 }
 
+/**
+ * Validate a group of values against an array of constraints.
+ * Use this function to validate relationships between values.
+ * @param {any} values values object
+ * @param {array} constraints array of constraint objects
+ */
 export const validateGroup = (values, constraints) => {
   let err
   const BreakException = {}

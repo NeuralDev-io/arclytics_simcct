@@ -52,7 +52,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
         - name: mongo-container
-          image: asia.gcr.io/arc-sim/arc_sim_mongo:latest
+          image: asia.gcr.io/arc-sim-testing/arc_sim_mongo:latest
           imagePullPolicy: IfNotPresent
           resources:
             requests:
@@ -60,7 +60,7 @@ spec:
               memory: 1Gi
             limits:
               cpu: 1000m
-              memory: 4Gi
+              memory: 2Gi
           command:
             - "numactl"
             - "--interleave=all"
@@ -123,4 +123,4 @@ spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 30Gi
+            storage: 25Gi

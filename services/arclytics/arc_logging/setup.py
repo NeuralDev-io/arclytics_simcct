@@ -19,7 +19,7 @@ setup(
         'fluentd and stdout stream.'
     ),
     long_description=__doc__,
-    py_modules=['arc_logging'],
+    packages=['arc_logging'],
     zip_safe=False,
     include_package_data=True,
     platforms='any',

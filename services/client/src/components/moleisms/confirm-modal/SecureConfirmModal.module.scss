@@ -1,0 +1,29 @@
+@import '../../../styles/typography';
+
+.modal {
+  display: flex;
+  flex-flow: row nowrap;
+  height: fit-content;
+  .content {
+    display: flex;
+    flex-flow: column nowrap;
+    min-width: 22rem;
+
+    .header {
+      margin-bottom: 1.5rem;
+
+      h6 {
+        margin-bottom: .5rem;
+      }
+    }
+
+    .buttonGroup {
+      width: 100%;
+      display: flex;
+      flex-flow: row nowrap;
+      margin: 2.5rem 0 .5rem 0;
+      align-self: flex-end;
+      justify-content: space-between;
+    }
+  }
+}

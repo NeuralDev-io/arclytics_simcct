@@ -29,7 +29,7 @@ echo ""
 
 # Uncomment to print ENV variables to Docker logs
 echo "ENVIRONMENT VARIABLES"
-printenv
-echo ""
+#printenv
+#echo ""
 
 python manage.py run -h ${HOST} -p ${PORT}

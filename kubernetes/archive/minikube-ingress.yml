@@ -12,7 +12,7 @@ spec:
         backend:
           serviceName: client
           servicePort: 80
-      - path: /api/v1/sim
+      - path: /v1/sim
         backend:
           serviceName: simcct
           servicePort: 8000

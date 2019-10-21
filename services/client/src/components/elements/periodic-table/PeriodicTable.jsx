@@ -1,3 +1,17 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Periodic table component, quite tightly coupled with AlloyModal
+ * components in '/moleisms/admin-alloys/AlloyModal.jsx' or
+ * '/moleisms/user-alloys/AlloyModal.jsx'
+ *
+ * @version 1.0.1
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { PERIODIC_TABLE_DATA } from '../../../utils/alloys'

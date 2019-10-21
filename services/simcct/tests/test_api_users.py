@@ -7,28 +7,18 @@
 # [1]
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>', 'David Matthews <@tree1004>']
-
-__credits__ = ['']
-__license__ = 'TBA'
-__version__ = '0.2.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
 __status__ = 'development'
 __date__ = '2019.07.03'
-"""test_api_users.py: 
-
-This script will run all tests on the Users endpoints.
-"""
 
 import json
 import unittest
 
 from mongoengine import get_db
 
-from tests.test_api_base import BaseTestCase, app
-from sim_api.models import (User, UserProfile, AdminProfile)
-from tests.test_utilities import test_login
 from arc_logging import AppLogger
+from sim_api.models import (AdminProfile, User, UserProfile)
+from tests.test_api_base import BaseTestCase, app
+from tests.test_utilities import test_login
 
 logger = AppLogger(__name__)
 
@@ -37,7 +27,7 @@ def log_test_user_in(self, user: User, password: str) -> str:
     """Log in a test user and return their token"""
     with self.client:
         resp_login = self.client.post(
-            '/api/v1/sim/auth/login',
+            '/v1/sim/auth/login',
             data=json.dumps({
                 'email': user.email,
                 'password': password
@@ -111,7 +101,7 @@ class TestUserService(BaseTestCase):
 
     def test_ping(self):
         """Ensure the /ping route behaves correctly."""
-        res = self.client.get('/ping')
+        res = self.client.get('/v1/sim/ping')
         data = json.loads(res.data.decode())
         self.assertEqual(res.status_code, 200)
         self.assertIn('success', data['status'])
@@ -134,7 +124,7 @@ class TestUserService(BaseTestCase):
             test_login(client, tony.email, 'IAmTheRealIronMan')
 
             resp = client.get(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 content_type='application/json',
             )
             data = json.loads(resp.data.decode())
@@ -144,7 +134,7 @@ class TestUserService(BaseTestCase):
     def test_user_status(self):
         with self.client:
             test_login(self.client, self.tony.email, self._tony_pw)
-            response = self.client.get('/api/v1/sim/auth/status')
+            response = self.client.get('/v1/sim/auth/status')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 200)
             self.assertIsNone(data.get('message', None))
@@ -152,14 +142,12 @@ class TestUserService(BaseTestCase):
             self.assertTrue(data['active'])
             self.assertTrue(data['admin'])
             self.assertTrue(data['isProfile'])
-            self.assertFalse(data['simulationValid'])
-            self.assertTrue(data['signedIn'])
             self.assertTrue(data['verified'])
 
     def test_single_user_not_active(self):
         """
         Ensure if user is not active they can't use authenticated endpoints
-        like get: /api/v1/sim/user
+        like get: /v1/sim/user
         """
         clint = User(
             **{
@@ -179,7 +167,7 @@ class TestUserService(BaseTestCase):
             clint.save()
 
             resp = self.client.get(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 content_type='application/json',
             )
 
@@ -193,7 +181,7 @@ class TestUserService(BaseTestCase):
     def test_single_user_no_cookie(self):
         """Ensure error is thrown if there is no cookie provided."""
         with self.client:
-            response = self.client.get('/api/v1/sim/user')
+            response = self.client.get('/v1/sim/user')
             data = json.loads(response.data.decode())
             self.assertEqual(response.status_code, 401)
             self.assertIn('Session token is not valid.', data['message'])
@@ -215,9 +203,7 @@ class TestUserService(BaseTestCase):
             )
 
             # Logging out should clear the session
-            client.get(
-                '/api/v1/sim/auth/logout', content_type='application/json'
-            )
+            client.get('/v1/sim/auth/logout', content_type='application/json')
 
             # Clear the cookie from previously although it should be
             # cleared by logout
@@ -227,9 +213,7 @@ class TestUserService(BaseTestCase):
             # We set the old Cookie back and see if it works
             client.set_cookie('localhost', 'SESSION_TOKEN', cookie.value)
 
-            res = client.get(
-                '/api/v1/sim/user', content_type='application/json'
-            )
+            res = client.get('/v1/sim/user', content_type='application/json')
             data = json.loads(res.data.decode())
 
             self.assertEqual(data['message'], 'Session is invalid.')
@@ -266,7 +250,7 @@ class TestUserService(BaseTestCase):
     #         # client.set_cookie('localhost', 'SESSION_TOKEN', cookie.value)
     #         #
     #         res = client.get(
-    #             '/api/v1/sim/user',
+    #             '/v1/sim/user',
     #             content_type='application/json',
     #             environ_base={
     #                 'HTTP_USER_AGENT': 'Chrome',
@@ -304,7 +288,7 @@ class TestUserService(BaseTestCase):
         with self.client:
             test_login(self.client, tony.email, 'IAmTheRealIronMan')
             resp = self.client.get(
-                '/api/v1/sim/users',
+                '/v1/sim/users',
                 content_type='application/json',
             )
             data = json.loads(resp.data.decode())
@@ -344,7 +328,7 @@ class TestUserService(BaseTestCase):
             client.cookie_jar.clear()
             client.set_cookie('localhost', 'BAD_KEY', cookie_value)
 
-            resp = self.client.get('/api/v1/sim/users')
+            resp = self.client.get('/v1/sim/users')
             data = json.loads(resp.data.decode())
             self.assertEqual('fail', data['status'])
             self.assertNotIn('data', data)
@@ -389,6 +373,33 @@ class TestUserService(BaseTestCase):
         nat.set_password('IveGotRedInMyLedger')
         nat.verified = True
         nat.save()
+        thor = User(
+            **{
+                'email': 'thor@avengers.io',
+                'first_name': 'Thor',
+                'last_name': 'Odinson'
+            }
+        )
+        thor.set_password('BringMeThanos')
+        thor.save()
+        hulk = User(
+            **{
+                'email': 'hulk@avengers.io',
+                'first_name': 'Bruce',
+                'last_name': 'Banner'
+            }
+        )
+        hulk.set_password('HulkOut')
+        hulk.save()
+        hawkeye = User(
+            **{
+                'email': 'hawkeye@avengers.io',
+                'first_name': 'Clint',
+                'last_name': 'Barton'
+            }
+        )
+        hawkeye.set_password('AndIHaveABowAndArrow')
+        hawkeye.save()
 
         db = get_db('default')
         self.assertEqual(db.name, 'arc_test')
@@ -398,16 +409,24 @@ class TestUserService(BaseTestCase):
             test_login(client, self.tony.email, self._tony_pw)
             self.assertTrue(tony.active)
             resp = client.get(
-                '/api/v1/sim/users',
+                '/v1/sim/users',
+                data=json.dumps({
+                    'sort_on': 'email',
+                    'limit': 2,
+                    'offset': 3
+                }),
                 content_type='application/json',
             )
             data = json.loads(resp.data.decode())
             self.assertEqual(resp.status_code, 200)
-            self.assertEqual(len(data['data']['users']), num_users)
-            self.assertTrue(data['data']['users'][0]['admin'])
-            self.assertTrue(data['data']['users'][1]['admin'])
-            self.assertFalse(data['data']['users'][2]['admin'])
-            self.assertIn('success', data['status'])
+            self.assertEqual(data['sort_on'], 'email')
+            self.assertEqual(data['next_offset'], 5)
+            self.assertEqual(data['prev_offset'], 1)
+            self.assertEqual(data['limit'], 2)
+            self.assertEqual(data['current_page'], 2)
+            self.assertEqual(data['total_pages'], 4)
+            self.assertEqual(data['data'][0]['email'], 'ironman@avengers.com')
+            self.assertEqual(data['data'][1]['email'], 'nat@shield.gov.us')
 
     def test_patch_user(self):
         """Test update user details"""
@@ -424,7 +443,7 @@ class TestUserService(BaseTestCase):
         with self.client as client:
             test_login(client, obiwan.email, 'HelloThere')
             resp = self.client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'first_name': 'Obi-Wan',
@@ -501,7 +520,7 @@ class TestUserService(BaseTestCase):
         with self.client as client:
             test_login(client, yoda.email, 'DoOrDoNot')
             resp = self.client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'first_name': 'Yoda',
@@ -572,7 +591,7 @@ class TestUserService(BaseTestCase):
         """Test update only some of the user's details"""
         sheev = User(
             **{
-                'email': 'sheev@palpatine.io',
+                'email': 'sheev@arclytics.io',
                 'first_name': 'Sheev',
                 'last_name': 'Palpatine'
             }
@@ -590,7 +609,7 @@ class TestUserService(BaseTestCase):
         with self.client as client:
             test_login(client, sheev.email, 'IAmTheSenate')
             resp = client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'first_name': 'Emperor',
@@ -629,7 +648,7 @@ class TestUserService(BaseTestCase):
         """Try update a user without any data for the update"""
         maul = User(
             **{
-                'email': 'maul@sith.io',
+                'email': 'maul@arclytics.io',
                 'first_name': 'Darth',
                 'last_name': 'Maul'
             }
@@ -640,7 +659,7 @@ class TestUserService(BaseTestCase):
         with self.client as client:
             test_login(client, maul.email, 'AtLastWeWillHaveRevenge')
             resp = self.client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(''),
                 content_type='application/json'
             )
@@ -672,7 +691,7 @@ class TestUserService(BaseTestCase):
             test_login(client, ahsoka.email, 'IAmNoJedi')
 
             resp = client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'last_name': 'Tano',
@@ -735,7 +754,7 @@ class TestUserService(BaseTestCase):
             test_login(client, obiwan.email, 'HelloThere')
 
             resp = client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'lightsaber_colour': 'blue',
@@ -768,7 +787,7 @@ class TestUserService(BaseTestCase):
             test_login(client, obiwan.email, 'HelloThere')
 
             resp = client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'first_name': 'Obi-Wan',
@@ -823,7 +842,7 @@ class TestUserService(BaseTestCase):
             test_login(client, rex.email, 'ExperienceOutranksEverything')
 
             resp = client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'mobile_number': '1234567890',
@@ -876,7 +895,7 @@ class TestUserService(BaseTestCase):
             test_login(client, rex.email, 'ExperienceOutranksEverything')
 
             resp = self.client.patch(
-                '/api/v1/sim/user',
+                '/v1/sim/user',
                 data=json.dumps(
                     {
                         'mobile_number': '1234567890',
@@ -908,7 +927,7 @@ class TestUserService(BaseTestCase):
             test_login(client, jabba.email, 'ThereWillBeNoBargain')
 
             resp = self.client.post(
-                '/api/v1/sim/user/profile',
+                '/v1/sim/user/profile',
                 data=json.dumps(
                     {
                         'aim': 'Find Han Solo.',
@@ -943,7 +962,7 @@ class TestUserService(BaseTestCase):
         """Test empty post is unsuccessful"""
         lando = User(
             **{
-                'email': 'lando@calrissian.io',
+                'email': 'lando@arclytics.io',
                 'first_name': 'Lando',
                 'last_name': 'Calrissian'
             }
@@ -954,7 +973,7 @@ class TestUserService(BaseTestCase):
         with self.client as client:
             test_login(client, lando.email, 'TheShieldIsStillUp')
             resp = client.post(
-                '/api/v1/sim/user/profile',
+                '/v1/sim/user/profile',
                 data=json.dumps(''),
                 content_type='application/json'
             )
@@ -980,7 +999,7 @@ class TestUserService(BaseTestCase):
             test_login(client, boba.email, 'NoGoodToMeDead')
 
             resp = client.post(
-                '/api/v1/sim/user/profile',
+                '/v1/sim/user/profile',
                 data=json.dumps(
                     {
                         'highest_education': 'Bounty Hunter Academy.',
@@ -996,7 +1015,7 @@ class TestUserService(BaseTestCase):
                 f"ValidationError (User:{boba.id}) (aim.Field is "
                 f"required: ['profile'])"
             )
-            self.assertEqual(data['errors'], err)
+            self.assertEqual(data['error'], err)
             self.assertEqual(data['message'], 'Validation error.')
             self.assertEqual(data['status'], 'fail')
             self.assertEqual(resp.status_code, 400)
@@ -1012,6 +1031,205 @@ class TestUserService(BaseTestCase):
         )
         kylo.set_password('LetStarWarsDie')
         kylo.save()
+
+    # def test_search_users_no_search_on(self):
+    #     """Ensure a search request with no search_on value fails"""
+    #     vos = User(
+    #         **{
+    #             'email': 'quinlan@arclytics.io',
+    #             'first_name': 'Quinlan',
+    #             'last_name': 'Vos'
+    #         }
+    #     )
+    #     vos.set_password('expertTracker')
+    #     vos.admin_profile = AdminProfile(
+    #         position='Position',
+    #         mobile_number=None,
+    #         verified=True,
+    #         promoted_by=None
+    #     )
+    #     vos.verified = True
+    #     vos.save()
+    #
+    #     with self.client as client:
+    #         test_login(client, vos.email, 'expertTracker')
+    #         resp = client.get(
+    #             '/v1/sim/users/search',
+    #             data=json.dumps({
+    #                 'sort_on': '-fullname'
+    #             }),
+    #             content_type='application/json'
+    #         )
+    #         data = json.loads(resp.data.decode())
+    #         self.assertEqual(resp.status_code, 400)
+    #         self.assertEqual(data['message'], 'No search parameters provided.')
+    #
+    # def test_search_users_invalid_search_on(self):
+    #     """Ensure a search request with an invalid search_on value fails"""
+    #     vos = User(
+    #         **{
+    #             'email': 'quinlan@arclytics.io',
+    #             'first_name': 'Quinlan',
+    #             'last_name': 'Vos'
+    #         }
+    #     )
+    #     vos.set_password('expertTracker')
+    #     vos.admin_profile = AdminProfile(
+    #         position='Position',
+    #         mobile_number=None,
+    #         verified=True,
+    #         promoted_by=None
+    #     )
+    #     vos.verified = True
+    #     vos.save()
+    #
+    #     with self.client as client:
+    #         test_login(client, vos.email, 'expertTracker')
+    #         resp = client.get(
+    #             '/v1/sim/users/search',
+    #             data=json.dumps({
+    #                 'search_on': 'force abilities',
+    #                 'search_for': 'Force Speed'
+    #             }),
+    #             content_type='application/json'
+    #         )
+    #         data = json.loads(resp.data.decode())
+    #         self.assertEqual(resp.status_code, 400)
+    #         self.assertEqual(
+    #             data['message'], 'Invalid search on attribute: force abilities.'
+    #         )
+    #
+    # def test_search_users_success(self):
+    #     """Ensure valid search requests on the users database are successful"""
+    #     vos = User(
+    #         **{
+    #             'email': 'quinlan@arclytics.io',
+    #             'first_name': 'Quinlan',
+    #             'last_name': 'Vos'
+    #         }
+    #     )
+    #     vos.set_password('expertTracker')
+    #     vos.admin_profile = AdminProfile(
+    #         position='Position',
+    #         mobile_number=None,
+    #         verified=True,
+    #         promoted_by=None
+    #     )
+    #     vos.verified = True
+    #     vos.save()
+    #     kenobi = User(
+    #         **{
+    #             'email': 'obiwan@arclytics.io',
+    #             'first_name': 'Obi Wan',
+    #             'last_name': 'Kenobi'
+    #         }
+    #     )
+    #     kenobi.set_password('HelloThere')
+    #     kenobi.save()
+    #     skywalker = User(
+    #         **{
+    #             'email': 'anakin@arclytics.io',
+    #             'first_name': 'Anakin',
+    #             'last_name': 'Skywalker'
+    #         }
+    #     )
+    #     skywalker.set_password('YouUnderestimateMyPower')
+    #     skywalker.save()
+    #     ahsoka = User(
+    #         **{
+    #             'email': 'ahsoka@gmail.com',
+    #             'first_name': 'Ahsoka',
+    #             'last_name': 'Tano'
+    #         }
+    #     )
+    #     ahsoka.set_password('YouAlwaysBlameTheShip')
+    #     ahsoka.save()
+    #     plo = User(
+    #         **{
+    #             'email': 'plokoon@gmail.com',
+    #             'first_name': 'Plo',
+    #             'last_name': 'Koon'
+    #         }
+    #     )
+    #     plo.set_password('WhenYouAskForTrouble')
+    #     plo.save()
+    #     aayla = User(
+    #         **{
+    #             'email': 'aalya@arclytics.io',
+    #             'first_name': 'Aayla',
+    #             'last_name': 'Secura'
+    #         }
+    #     )
+    #     aayla.set_password('AStrongBelief')
+    #     aayla.save()
+    #     yoda = User(
+    #         **{
+    #             'email': 'yoda@gmail.com',
+    #             'first_name': 'Master',
+    #             'last_name': 'Yoda'
+    #         }
+    #     )
+    #     yoda.set_password('DoOrDoNot')
+    #     yoda.save()
+    #     mace = User(
+    #         **{
+    #             'email': 'mace@arclytics.io',
+    #             'first_name': 'Mace',
+    #             'last_name': 'Windu'
+    #         }
+    #     )
+    #     mace.set_password('ThisPartysOver')
+    #     mace.save()
+    #
+    #     with self.client as client:
+    #         test_login(client, vos.email, 'expertTracker')
+    #         resp = client.get(
+    #             '/v1/sim/users/search',
+    #             data=json.dumps({
+    #                 'search_on': 'email',
+    #                 'search_for': 'arclytics',
+    #                 'sort_on': 'fullname',
+    #                 'limit': 2
+    #             }),
+    #             content_type='application/json'
+    #         )
+    #         data = json.loads(resp.data.decode())
+    #         self.assertEqual(resp.status_code, 200)
+    #         self.assertEqual(data['status'], 'success')
+    #         self.assertEqual(data['data'][0]['email'], 'obiwan@arclytics.io')
+    #         self.assertEqual(data['sort_on'], 'fullname')
+    #         self.assertEqual(data['search_on'], 'email')
+    #         self.assertEqual(data['search_for'], 'arclytics')
+    #         self.assertEqual(data['next_offset'], 3)
+    #         self.assertEqual(data['prev_offset'], None)
+    #         self.assertEqual(data['limit'], 2)
+    #         self.assertEqual(data['current_page'], 1)
+    #         self.assertEqual(data['total_pages'], 3)
+    #
+    #         resp2 = client.get(
+    #             '/v1/sim/users/search',
+    #             data=json.dumps({
+    #                 'search_on': 'first_name',
+    #                 'search_for': 'o',
+    #                 'sort_on': 'fullname',
+    #                 'limit': 2,
+    #                 'offset': 3
+    #             }),
+    #             content_type='application/json'
+    #         )
+    #         data2 = json.loads(resp2.data.decode())
+    #         self.assertEqual(resp2.status_code, 200)
+    #         self.assertEqual(data2['status'], 'success')
+    #         self.assertEqual(data2['data'][1]['email'], 'ahsoka@gmail.com')
+    #         self.assertEqual(data2['sort_on'], 'fullname')
+    #         self.assertEqual(data2['search_on'], 'first_name')
+    #         self.assertEqual(data2['search_for'], 'o')
+    #         self.assertEqual(data2['next_offset'], None)
+    #         self.assertEqual(data2['prev_offset'], 1)
+    #         self.assertEqual(data2['limit'], 2)
+    #         self.assertEqual(data2['current_page'], 2)
+    #         self.assertEqual(data2['total_pages'], 2)
+    #
 
 
 if __name__ == '__main__':

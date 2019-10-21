@@ -1,5 +1,19 @@
+/*
+* This source code is licensed under the MIT license found in the
+* LICENSE file in the root directory of this repository.
+*
+* App Component
+*
+* @version 1.2.0
+* @author Dalton Le, Arvy Salazar, Andrew Che
+*
+* DECISION:
+* This was only use for testing of the ErrorBoundary and Logs so we will keep it here
+* in case we may need to test some other errors in the future.
+*
+* */
+
 import React, { Component } from 'react'
-import ErrorBoundary from '../error-boundary'
 
 class TestRoute extends Component {
   constructor(props) {
@@ -14,7 +28,7 @@ class TestRoute extends Component {
   // }
 
   render() {
-    const { err } =  this.state
+    const { err } = this.state
     if (err) {
       throw new Error('Test error!')
     }
@@ -29,4 +43,5 @@ class TestRoute extends Component {
   }
 }
 
+// noinspection JSUnusedGlobalSymbols
 export default TestRoute

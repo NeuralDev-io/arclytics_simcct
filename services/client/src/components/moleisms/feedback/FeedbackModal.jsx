@@ -1,3 +1,15 @@
+/**
+ * Copyright 2019, NeuralDev.
+ * All rights reserved.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * FeedbackModal: periodically pops up to ask for feedback
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -29,30 +41,6 @@ class FeedbackModal extends Component {
         { label: 'Appearance', value: 'Appearance' },
         { label: 'Others', value: 'Others' },
       ],
-    }
-  }
-
-  componentDidMount = () => {
-    const { updateFeedbackConnect } = this.props
-    const simCount = localStorage.getItem('simCount')
-    if (simCount !== undefined) {
-      // check if it's turn to pop up feedback modal
-      const countToShow = ['3', '8', '13', '20']
-      if (countToShow.includes(simCount) && localStorage.getItem('gotFeedback') !== 'true') {
-        this.timer = setTimeout(() => {
-          const { feedback: { feedbackVisible } } = this.props
-          if (!feedbackVisible) {
-            updateFeedbackConnect({ feedbackVisible: true, givingFeedback: false })
-          }
-        }, 5000)
-      }
-    }
-  }
-
-  componentWillUnmount = () => {
-    if (this.timer) {
-      clearTimeout(this.timer)
-      this.timer = 0
     }
   }
 
@@ -106,7 +94,7 @@ class FeedbackModal extends Component {
     const { categoryOptions } = this.state
 
     return (
-      <React.Fragment>
+      <>
         <div
           className={`${styles.backdrop} ${backdrop ? styles.show : ''}`}
           {...buttonize(this.handleClose)}
@@ -183,7 +171,7 @@ class FeedbackModal extends Component {
               )
           }
         </ToastModal>
-      </React.Fragment>
+      </>
     )
   }
 }

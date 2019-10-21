@@ -7,17 +7,15 @@
 # [1]
 # https://python-3-patterns-idioms-test.readthedocs.io/en/latest/Singleton.html
 # -----------------------------------------------------------------------------
-__author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
-__license__ = 'TBA'
+__author__ = ['David Matthews <@tree1004>', 'Dinol Shrestha <@dinolsth>']
+__license__ = 'MIT'
 __version__ = '1.0.0'
-__maintainer__ = 'Andrew Che'
-__email__ = 'andrew@neuraldev.io'
-__status__ = 'development'
+__status__ = 'production'
 __date__ = '2019.07.04'
 """mongodb.py: 
 
-This module defines a singleton instance of a PyMongo MongoClient using the MongoEngine interface.
+This module defines a singleton instance of a PyMongo MongoClient using the 
+MongoEngine interface.
 """
 from pymongo import MongoClient
 

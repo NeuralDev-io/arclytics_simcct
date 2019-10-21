@@ -13,8 +13,6 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
-import ChevronUpIcon from 'react-feather/dist/icons/chevron-up'
-import ChevronDownIcon from 'react-feather/dist/icons/chevron-down'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronUp } from '@fortawesome/pro-light-svg-icons/faChevronUp'
 import { faChevronDown } from '@fortawesome/pro-light-svg-icons/faChevronDown'
@@ -109,7 +107,7 @@ class SimulationPage extends Component {
     } = this.props
 
     return (
-      <React.Fragment>
+      <>
         <AppBar active="sim" redirect={history.push} isAdmin={isAdmin} isAuthenticated={isAuthenticated} />
         <div className={styles.compSidebar}>
           <CompSidebar
@@ -198,7 +196,7 @@ class SimulationPage extends Component {
           <SaveAlloyModal handleClose={this.handleCloseModal} />
         </Modal>
         <SignupModal show={!isAuthenticated} redirect={history.push} />
-      </React.Fragment>
+      </>
     )
   }
 }

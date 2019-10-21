@@ -26,7 +26,6 @@ from flask import Flask
 from flask_cors import CORS
 
 from arc_api.extensions import *
-from arc_api.resources import *
 
 DATETIME_FMT = '%Y-%m-%dT%H:%M:%S%z'
 DATE_FMT = '%Y-%m-%d'
@@ -67,13 +66,26 @@ def create_app(configs_path=app_settings) -> Flask:
     """
 
     # Instantiate the application
-    app = Flask('arclytics_flask_server')
+    app = Flask(__name__)
 
     # ========== # CONFIGURATIONS # ========== #
     # Setup the configuration for Flask
     app.config.from_object(configs_path)
     app.secret_key = env.get('SECRET_KEY')
     prod_environment = app.env == 'production'
+
+    # ========== # IMPORT FLASK BLUEPRINTS # ========== #
+    with app.app_context():
+        from arc_api.resources import (
+            user_analytics_blueprint, app_analytics_blueprint,
+            sim_analytics_blueprint
+        )
+        from arc_api.resources.root import root_blueprint
+        # ========== # REGISTER FLASK BLUEPRINTS # ========== #
+        app.register_blueprint(root_blueprint)
+        app.register_blueprint(sim_analytics_blueprint)
+        app.register_blueprint(user_analytics_blueprint)
+        app.register_blueprint(app_analytics_blueprint)
 
     # ========== # INIT FLASK EXTENSIONS # ========== #
     # Set up the Flask App Context
@@ -99,12 +111,6 @@ def create_app(configs_path=app_settings) -> Flask:
         ],
         supports_credentials=True
     )
-    # ========== # IMPORT FLASK BLUEPRINTS # ========== #
-    from arc_api.resources.root import root_blueprint
-    # ========== # REGISTER FLASK BLUEPRINTS # ========== #
-    app.register_blueprint(root_blueprint)
-    app.register_blueprint(user_analytics_blueprint)
-    app.register_blueprint(app_analytics_blueprint)
 
     # Set up Flask extensions plugins
     extensions(app)

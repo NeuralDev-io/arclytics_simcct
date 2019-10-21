@@ -12,10 +12,10 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
-import { layout, config } from './utils/chartConfig'
+import { layout } from './utils/chartConfig'
 import { getColor } from '../../../utils/theming'
 
-import styles from './ProfileBarChart.module.scss'
+import styles from './Chart.module.scss'
 
 const ProfileBarChart = ({ title, name, data, color }) => {
   let traceData = []
@@ -36,7 +36,6 @@ const ProfileBarChart = ({ title, name, data, color }) => {
         textfont: {
           family: 'Open Sans',
           size: 16,
-          // color: getColor('--arc500')
         }
       },
     ]
@@ -50,7 +49,6 @@ const ProfileBarChart = ({ title, name, data, color }) => {
     <AutoSizer>
       {({ height, width }) => {
         const defaultLayout = { ...layout(height, width) }
-        // TODO(andrew@neuraldev.io): Add more layout configs if needed
         const profileLayout = {
           ...defaultLayout,
           showlegend: false

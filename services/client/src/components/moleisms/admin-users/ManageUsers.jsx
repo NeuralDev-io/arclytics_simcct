@@ -14,9 +14,6 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus } from '@fortawesome/pro-light-svg-icons/faPlus'
-import { faEdit } from '@fortawesome/pro-light-svg-icons/faEdit'
-import { faUpload } from '@fortawesome/pro-light-svg-icons/faUpload'
 import { faUserSlash } from '@fortawesome/pro-light-svg-icons/faUserSlash'
 import { faUserCheck } from '@fortawesome/pro-light-svg-icons/faUserCheck'
 import TextField from '../../elements/textfield'
@@ -24,11 +21,12 @@ import Button from '../../elements/button'
 import Table from '../../elements/table'
 import SecureConfirmModal from '../confirm-modal/SecureConfirmModal'
 import UserPromoteModal from './UserPromoteModal'
-import Modal from '../../elements/modal'
-import { getUsers, promoteAdmin, deactivateUser, enableUser } from '../../../state/ducks/users/actions'
+import {
+  getUsers, promoteAdmin, deactivateUser, enableUser,
+} from '../../../state/ducks/users/actions'
 
 import styles from './ManageUsers.module.scss'
-import ProfilePage from "../user-profile";
+
 
 class ManageUsers extends Component {
   constructor(props) {
@@ -46,7 +44,7 @@ class ManageUsers extends Component {
   }
 
   componentDidMount = () => {
-    const {users, getUsersConnect} = this.props
+    const { users, getUsersConnect } = this.props
     if (users.length === 0) getUsersConnect()
   }
 
@@ -58,7 +56,7 @@ class ManageUsers extends Component {
 
   handleShowPromoteModal = (name, email) => {
     const { showPromoteModal } = this.state
-    if (showPromoteModal === false){
+    if (showPromoteModal === false) {
       this.setState({
         showPromoteModal: true,
         promoteName: name,
@@ -68,19 +66,18 @@ class ManageUsers extends Component {
   }
 
   handlePromoteSubmit = (email, position) => {
-    const { promoteAdminConnect} = this.props
+    const { promoteAdminConnect } = this.props
     promoteAdminConnect(email, position)
-    this.setState( {
+    this.setState({
       promoteName: '',
       promoteEmail: '',
-      showPromoteModal: false
+      showPromoteModal: false,
     })
   }
 
-  handleShowStatusModal = (name, email, active) =>{
+  handleShowStatusModal = (name, email, active) => {
     const { showStatusModal } = this.state
-    console.log(active)
-    if (showStatusModal === false){
+    if (showStatusModal === false) {
       this.setState({
         showStatusModal: true,
         statusIsActive: active,
@@ -92,9 +89,9 @@ class ManageUsers extends Component {
 
   handleStatusSubmit = (email, isActive) => {
     const { deactivateUserConnect, getUsersConnect, enableUserConnect } = this.props
-    if (isActive){
+    if (isActive) {
       deactivateUserConnect(email)
-    } else if (!isActive){
+    } else if (!isActive) {
       enableUserConnect(email)
       getUsersConnect()
     }
@@ -118,7 +115,7 @@ class ManageUsers extends Component {
       statusName,
       statusEmail,
     } = this.state
-    const {users,} = this.props
+    const { users } = this.props
     const tableData = users.filter(u => u.email.includes(searchEmail))
 
     const columns = [
@@ -128,39 +125,30 @@ class ManageUsers extends Component {
       },
       {
         Header: 'Full name',
-        Cell: ({original}) => <span>{[original.first_name, original.last_name].join(' ')}</span>,
+        Cell: ({ original }) => <span>{[original.first_name, original.last_name].join(' ')}</span>,
       },
       {
         Header: 'Admin',
         accessor: 'admin',
-        Cell: ({value}) => <span>{value ? 'Yes' : 'No'}</span>,
+        Cell: ({ value }) => <span>{value ? 'Yes' : 'No'}</span>,
         width: 80,
       },
       {
         Header: 'Verified',
         accessor: 'verified',
-        Cell: ({value}) => <span>{value ? 'Yes' : 'No'}</span>,
+        Cell: ({ value }) => <span>{value ? 'Yes' : 'No'}</span>,
         width: 80,
       },
       {
         Header: '',
-        Cell: ({original}) => (
+        Cell: ({ original }) => (
           <div className={styles.actions}>
-            {/*<Button*/}
-            {/*  onClick={() => console.log(original)}*/}
-            {/*  appearance="text"*/}
-            {/*  length="short"*/}
-            {/*  IconComponent={props => <FontAwesomeIcon icon={faEdit} size="6x" {...props} />}*/}
-            {/*>*/}
-            {/*  Edit*/}
-            {/*</Button>*/}
-
             <Button
               onClick={() => {
                 this.handleShowPromoteModal(`${original.first_name} ${original.last_name}`, original.email)
               }}
               appearance="text"
-              IconComponent={props => <FontAwesomeIcon icon={faUserCheck} size="lg" {...props}/>}
+              IconComponent={props => <FontAwesomeIcon icon={faUserCheck} size="lg" {...props} />}
               isDisabled={original.admin}
             >
               Promote
@@ -171,7 +159,7 @@ class ManageUsers extends Component {
                 this.handleShowStatusModal(
                   `${original.first_name} ${original.last_name}`,
                   original.email,
-                  original.active
+                  original.active,
                 )
               }}
               appearance="text"
@@ -199,17 +187,17 @@ class ManageUsers extends Component {
               name="searchEmail"
               placeholder="Email..."
               value={searchEmail}
-              onChange={value => this.setState({searchEmail: value})}
+              onChange={value => this.setState({ searchEmail: value })}
             />
           </div>
-          {/*<Button*/}
-          {/*  appearance="outline"*/}
-          {/*  onClick={this.showAddAlloy}*/}
-          {/*  IconComponent={props => <FontAwesomeIcon icon={faPlus} size="lg"{...props} />}*/}
-          {/*  length="short"*/}
-          {/*>*/}
-          {/*  Add*/}
-          {/*</Button>*/}
+          {/* <Button */}
+          {/*  appearance="outline" */}
+          {/*  onClick={this.showAddAlloy} */}
+          {/*  IconComponent={props => <FontAwesomeIcon icon={faPlus} size="lg"{...props} />} */}
+          {/*  length="short" */}
+          {/* > */}
+          {/*  Add */}
+          {/* </Button> */}
         </div>
         <Table
           className="-highlight"
@@ -225,20 +213,20 @@ class ManageUsers extends Component {
           show={showPromoteModal}
           messageTitle={`Promote '${promoteName}' to admin ?`}
           actionButtonName="Confirm Promote"
-          email = {promoteEmail}
-          onSubmit = {(email, position) => this.handlePromoteSubmit(email, position)}
-          onClose = {() => this.setState({showPromoteModal: false})}
+          email={promoteEmail}
+          onSubmit={(email, position) => this.handlePromoteSubmit(email, position)}
+          onClose={() => this.setState({ showPromoteModal: false })}
         />
         <SecureConfirmModal
           show={showStatusModal}
           messageTitle={
-            statusIsActive ?
-            `Do you want to deactivate '${statusName}' ?` :
-            `Do you want to activate '${statusName}' ?`
+            statusIsActive
+              ? `Do you want to deactivate '${statusName}' ?`
+              : `Do you want to activate '${statusName}' ?`
           }
           actionButtonName={statusIsActive ? 'Deactivate' : 'Activate'}
-          onSubmit = {() => this.handleStatusSubmit(statusEmail, statusIsActive)}
-          onClose = {() => this.setState({showStatusModal: false})}
+          onSubmit={() => this.handleStatusSubmit(statusEmail, statusIsActive)}
+          onClose={() => this.setState({ showStatusModal: false })}
         />
       </div>
     )
@@ -250,6 +238,7 @@ ManageUsers.propTypes = {
   users: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
   getUsersConnect: PropTypes.func.isRequired,
   promoteAdminConnect: PropTypes.func.isRequired,
+  enableUserConnect: PropTypes.func.isRequired,
   deactivateUserConnect: PropTypes.func.isRequired,
 }
 

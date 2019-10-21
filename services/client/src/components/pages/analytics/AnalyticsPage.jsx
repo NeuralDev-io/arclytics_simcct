@@ -14,12 +14,13 @@ import AppBar from '../../moleisms/appbar'
 import AnalyticsSidebar from '../../moleisms/analytics-sidebar'
 import UsersAnalytics from '../../moleisms/analytics-users'
 import AppAnalytics from '../../moleisms/analytics-app'
+import SimAnalytics from '../../moleisms/analytics-sim'
 
 import styles from './AnalyticsPage.module.scss'
 
 function AnalyticsPage({ history }) {
   return (
-    <React.Fragment>
+    <>
       <AppBar active="analytics" redirect={history.push} isAdmin isAuthenticated />
 
       <div className={styles.sidebar}>
@@ -28,10 +29,11 @@ function AnalyticsPage({ history }) {
 
       <div className={styles.main}>
         <Route path="/analytics/users" render={props => <UsersAnalytics {...props} />} />
+        <Route path="/analytics/simulations" render={props => <SimAnalytics {...props} />} />
         <Route path="/analytics/app" render={props => <AppAnalytics {...props} />} />
       </div>
 
-    </React.Fragment>
+    </>
   )
 }
 

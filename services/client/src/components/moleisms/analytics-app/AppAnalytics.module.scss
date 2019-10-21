@@ -29,16 +29,16 @@ $break-small: 1366px;
 
     .generalDataCard {
       background-color: var(--n0);
-      min-height: 10rem;
-      max-height: 12rem;
-      margin: 0;
+      min-height: 12rem;
+      max-height: 15rem;
+      margin-top: 1.25rem;
       padding: 0;
       display: flex;
-      flex-flow: row nowrap;
-      flex-basis: 22.5%;
+      min-width: 15.5%;
       flex-flow: column nowrap;
       justify-content: center;
       align-items: center;
+
       & > .cardIcon {
         width: 2.25rem;
         height: 2.25rem;
@@ -47,19 +47,25 @@ $break-small: 1366px;
   }
 
   .chart {
+    background-color: var(--n0);
     margin-top: 1.25rem;
     min-height: 35rem;
 
     .liveLoginCard {
       background-color: var(--n0);
+      flex-basis: 90%;
       min-height: 35rem;
-      //min-width: 90%;
+      max-height: 42rem;
+      min-width: 90%;
       margin: 0;
+      z-index: 1001;
+      position: relative;
+      display: flex;
+      flex-flow: column;
 
-      //.liveLoginChart {
-      //  min-height: 35rem;
-      //  position: relative;
-      //}
+      & > div {
+        flex-grow: 1;
+      }
     }
   }
 

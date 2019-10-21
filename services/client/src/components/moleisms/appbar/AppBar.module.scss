@@ -37,9 +37,9 @@
     }
 
     & > .navIcon {
-      width: 2rem;
-      height: 2rem;
-      margin-bottom: 1.25rem;
+      width: 2.25rem;
+      height: 2.25rem;
+      margin-bottom: 1.75rem;
       cursor: pointer;
       border-radius: 50%;
       display: flex;
@@ -56,19 +56,24 @@
         color: var(--n900);
       }
 
+      .simIcon {
+        width: 1.5rem;
+        fill: var(--n900);
+      }
+
       &.active {
         & .icon { color: var(--arc500); }
+        & .simIcon {fill: var(--arc500); }
       }
 
       &:last-child {
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
       }
 
       &.disabled {
         cursor: not-allowed;
-        & .icon {
-          stroke: var(--n200);
-        }
+        & .icon {color: var(--n200);}
+        & .simIcon { fill: var(--n200); }
       }
     }
   }

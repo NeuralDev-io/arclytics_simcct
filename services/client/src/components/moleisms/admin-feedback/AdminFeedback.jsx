@@ -29,7 +29,6 @@ class AdminFeedback extends Component {
       feedbackData = [],
       dataFetched = false,
       getFeedbackListConnect,
-      addFlashToastConnect,
     } = this.props
 
     if (!feedbackData || feedbackData.length === 0 || !dataFetched) {
@@ -48,7 +47,6 @@ class AdminFeedback extends Component {
     if (!dataFetched) feedbackData = []
 
     // const { searchName } = this.state
-    console.log(feedbackData)
 
     return (
       <div className={styles.container}>
@@ -86,7 +84,6 @@ AdminFeedback.propTypes = {
   dataLoading: PropTypes.bool.isRequired,
   dataFetched: PropTypes.bool.isRequired,
   getFeedbackListConnect: PropTypes.func.isRequired,
-  addFlashToastConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -97,7 +94,6 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = {
   getFeedbackListConnect: getFeedback,
-  addFlashToastConnect: addFlashToast,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdminFeedback)

@@ -142,14 +142,25 @@ class SaveSimButton extends Component {
                     Generate report
                   </Button>
                 )
-                : <ReportDownloadLink onFinish={this.handleCloseModal} onError={this.handleCloseDownloadLink} />
+                : (
+                  <ReportDownloadLink
+                    onFinish={this.handleCloseModal}
+                    onError={this.handleCloseDownloadLink}
+                  />
+                )
             }
           </div>
-          <Portal to={document.getElementById('temp-container')}>
-            <div className={styles.equiChart} id="equi_chart">
-              <Equilibrium />
-            </div>
-          </Portal>
+          {
+            visible
+              ? (
+                <Portal to={document.getElementById('temp-container')}>
+                  <div className={styles.equiChart} id="equi_chart">
+                    <Equilibrium />
+                  </div>
+                </Portal>
+              )
+              : ''
+          }
         </div>
       </AttachModal>
     )

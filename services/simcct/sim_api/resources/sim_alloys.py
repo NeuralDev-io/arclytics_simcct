@@ -244,6 +244,12 @@ class AlloyStore(Resource):
             try:
                 ae1, ae3 = SimConfig.calc_ae1_ae3(comp_np_arr)
                 data.update({'ae1_temp': ae1, 'ae3_temp': ae3})
+            except ValueError as e:
+                msg = 'Calculating Ae1 and Ae3 ValueError.'
+                logger.exception(msg)
+                apm.capture_exception(msg)
+                response.update({'message': msg, 'error': str(e)})
+                return response, 500
             except Exception as e:
                 # This is to make sure the client knows there has been some
                 # calculation error which is potentially something to do with

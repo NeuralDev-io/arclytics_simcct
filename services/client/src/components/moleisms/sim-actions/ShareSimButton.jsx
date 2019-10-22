@@ -29,7 +29,7 @@ class ShareSimButton extends Component {
     this.state = {
       linkCopyDisabled: true,
       shareUrlLink: '',
-      copyLinkSuccess: '',
+      showCopied: false,
       emails: [],
       currentEmail: '',
       emailError: '',
@@ -175,7 +175,13 @@ class ShareSimButton extends Component {
     //  definitely works for Chrome.
     const { shareUrlLink } = this.state
     navigator.clipboard.writeText(shareUrlLink).then(() => {
-      this.setState({ copyLinkSuccess: 'Copied!' })
+      this.setState({ showCopied: true })
+      setTimeout(() => {
+        this.setState({ showCopied: false })
+      }, 1000)
+      setTimeout(() => {
+        this.setState({ visible: false })
+      }, 2000)
     })
   }
 
@@ -192,7 +198,7 @@ class ShareSimButton extends Component {
     const {
       linkCopyDisabled,
       shareUrlLink,
-      copyLinkSuccess,
+      showCopied,
       emails,
       currentEmail,
       emailError,
@@ -226,7 +232,7 @@ class ShareSimButton extends Component {
               id="email"
             >
               <form onSubmit={this.onEmailSubmit}>
-                <div>
+                <div className={styles.emailTextFields}>
                   <TextFieldEmail
                     type="email"
                     name="email"
@@ -275,12 +281,13 @@ class ShareSimButton extends Component {
                 placeholder={linkCopyDisabled ? 'Generate a URL link to copy' : 'URL Link'}
                 length="stretch"
                 value={shareUrlLink}
-                ref={textfield => this.textField = textfield}
+                ref={(textfield) => { this.textField = textfield }}
                 isDisabled
               />
               <div className={styles.linkButtonContainer}>
                 <Button
                   onClick={this.onUrlLinkSubmit}
+                  className={styles.generate}
                   name="generateLinkSubmit"
                   type="button"
                   appearance="outline"
@@ -290,15 +297,17 @@ class ShareSimButton extends Component {
                 </Button>
                 <Button
                   onClick={this.copyToClipboard}
+                  className={`${styles.copyBtn} ${showCopied ? styles.active : ''}`}
                   name="copyLinkSubmit"
                   type="button"
                   appearance="outline"
                   length="long"
                   isDisabled={linkCopyDisabled}
                 >
-                  COPY LINK
+                  {
+                    showCopied ? 'Copied!' : 'COPY LINK'
+                  }
                 </Button>
-                <span>{copyLinkSuccess}</span>
               </div>
             </AccordionSection>
 

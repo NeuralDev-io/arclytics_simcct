@@ -22,11 +22,6 @@ import { dangerouslyGetDateTimeString } from '../../../utils/datetime'
 
 import styles from './AdminFeedback.module.scss'
 
-/*
-* TODO:
-*  - Add pagination callback to ReactTable component
-*
-* */
 
 class AdminFeedback extends Component {
   constructor(props) {
@@ -39,14 +34,9 @@ class AdminFeedback extends Component {
 
   componentDidMount = () => { }
 
-  // handleShowModal = type => this.setState({ [`${type}Modal`]: true })
-
-  // handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
-
   fetchFeedbackQuery = (state) => {
     const {
       getFeedbackListConnect,
-      sort,
     } = this.props
 
     /*
@@ -55,21 +45,20 @@ class AdminFeedback extends Component {
     * sorted: state.sorted, -- sorting
     *  - Note: sorted ==> [ { "id": "...", "desc": bool } ]
     * filtered: state.filtered -- This one I don't need
-    *
     * */
-    // console.log(state.sorted)
 
-    getFeedbackListConnect(`limit=${state.pageSize}&page=${state.page}&sort=${sort}`)
+    // Set up sorting:
+    let sort = '-created_date'
+    if (state.sorted.length > 0) {
+      if (state.sorted[0].desc) {
+        sort = state.sorted[0].id
+      } else {
+        sort = `-${state.sorted[0].id}`
+      }
+    }
+    console.log(sort)
 
-    // if (currentPage < state.page) {
-    //   Forward
-      // getFeedbackListConnect(`limit=${state.pageSize}&offset=${nextOffset}&sort=${sort}`)
-      // this.setState({ currentPage: state.page })
-    // } else {
-    //   Back
-      // getFeedbackListConnect(`limit=${state.pageSize}&offset=${prevOffset}&sort=${sort}`)
-      // this.setState({ currentPage: state.page })
-    // }
+    getFeedbackListConnect(`page=${state.page}&limit=${state.pageSize}&sort=${sort}`)
   }
 
   render() {
@@ -77,9 +66,7 @@ class AdminFeedback extends Component {
     const {
       dataFetched,
       dataLoading,
-      currentPage,
       totalPages,
-      limit,
     } = this.props
     let { feedbackData } = this.props
     if (!dataFetched) feedbackData = []
@@ -93,29 +80,34 @@ class AdminFeedback extends Component {
       {
         Header: 'Email',
         accessor: 'user',
+        id: 'email',
         // Used to render a standard cell, defaults to `accessed` otherwise
         Cell: ({ value }) => value.email,
-        // sortMethod: () => {},
+        sortable: false,
+        filterable: false,
       },
       {
         Header: 'Category',
         accessor: 'category',
+        id: 'category',
         maxWidth: 180,
       },
       {
         Header: 'Rating',
         accessor: 'rating',
+        id: 'rating',
         maxWidth: 65,
       },
       {
         Header: 'Comment',
         accessor: 'comment',
-        // width: 100,
+        id: 'comment',
         minWidth: 180,
       },
       {
         Header: 'Created',
         accessor: 'created_date',
+        id: 'created_date',
         Cell: ({ value }) => (<span>{dangerouslyGetDateTimeString(value)}</span>),
         maxWidth: 180,
       },
@@ -151,26 +143,30 @@ class AdminFeedback extends Component {
         <h3>User feedback</h3>
 
         <div className={styles.tools}>
-          <div className="input-row">
-            <span>Search</span>
-            <TextField
-              type="text"
+          <TextField
+            type="text"
+            length={!isSearching ? 'long' : 'stretch'}
+            name="searchQuery"
+            placeholder="Search feedback..."
+            value={searchQuery}
+            onFocus={() => this.setState({ isSearching: true })}
+            onBlur={() => this.setState({ isSearching: false })}
+            className={styles.searchBar}
+            onChange={value => this.setState({ searchQuery: value })}
+          />
+          { isSearching ? (
+            <Button
+              appearance="outline"
+              onClick={() => console.log('Search')}
+              IconComponent={props => <FontAwesomeIcon icon={faSearch} {...props} />}
               length="long"
-              name="searchQuery"
-              placeholder="Search feedback..."
-              value={searchQuery}
-              onChange={value => this.setState({ searchQuery: value })}
-            />
-          </div>
-          <Button
-            appearance="outline"
-            onClick={() => console.log('Search')}
-            IconComponent={props => <FontAwesomeIcon icon={faSearch} {...props} />}
-            length="long"
-            isDisabled={!isSearching}
-          >
+              className={styles.searchBtn}
+              isDisabled={!isSearching}
+            >
             Search
-          </Button>
+            </Button>
+          )
+            : (' ')}
         </div>
 
         <ControlledTable

@@ -30,7 +30,7 @@ function AboutPage({ history }) {
         <AboutSidebar redirect={history.push} />
       </div>
 
-      <div className={styles.main}>
+      <div className={styles.main} id="about-content">
         <Route path="/about/application" render={(props) => <AboutApp {...props} />} />
         <Route path="/about/disclaimer" render={(props) => <Disclaimer {...props} />} />
         <Route path="/about/privacy" render={(props) => <Privacy {...props} />} />

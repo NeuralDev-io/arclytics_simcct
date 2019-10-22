@@ -39,6 +39,11 @@ class AboutSidebar extends Component {
     }
   }
 
+  handleRedirect = (route) => {
+    this.setState({ active: route })
+    document.getElementById('app').scrollTop = 0
+  }
+
   handleBackToApp = () => {
     const { redirect } = this.props
     redirect('/')
@@ -52,7 +57,7 @@ class AboutSidebar extends Component {
         <Link
           id="application"
           to="/about/application"
-          onClick={() => this.setState({ active: 'application' })}
+          onClick={() => this.handleRedirect('application')}
           className={`${styles.item} ${active === 'application' && styles.active}`}
         >
           <FontAwesomeIcon icon={faInfoSquare} className={styles.icon} />
@@ -61,7 +66,7 @@ class AboutSidebar extends Component {
         <Link
           id="disclaimer"
           to="/about/disclaimer"
-          onClick={() => this.setState({ active: 'disclaimer' })}
+          onClick={() => this.handleRedirect('disclaimer')}
           className={`${styles.item} ${active === 'disclaimer' && styles.active}`}
         >
           <FontAwesomeIcon icon={faExclamationTriangle} className={styles.icon} />
@@ -70,7 +75,7 @@ class AboutSidebar extends Component {
         <Link
           id="privacy"
           to="/about/privacy"
-          onClick={() => this.setState({ active: 'privacy' })}
+          onClick={() => this.handleRedirect('privacy')}
           className={`${styles.item} ${active === 'privacy' && styles.active}`}
         >
           <FontAwesomeIcon icon={faUserShield} className={styles.icon}/>

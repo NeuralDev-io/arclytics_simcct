@@ -88,11 +88,7 @@ export const getFeedback = params => (dispatch) => {
         })
       }
       if (res.status === 'success') {
-        // TODO(andrew@neuraldev.io): For testing purposes.
-        addFlashToast({
-          message: `Ready to go. Fetched: ${res.data.length}`,
-          options: { variant: 'success' },
-        }, true)(dispatch)
+        console.log(res)
         dispatch({
           type: GET_FEEDBACK,
           payload: res || {},

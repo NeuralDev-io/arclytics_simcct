@@ -17,6 +17,7 @@ This file defines all the API resource routes and controller definitions for
 Rating and Feedback endpoints using the Flask Resource inheritance model.
 """
 
+from math import floor
 from typing import Tuple
 
 from flask import Blueprint, render_template, request
@@ -104,11 +105,11 @@ class UserFeedback(Resource):
         if request.args:
             sort = request.args.get('sort', None)
 
-        # Skip/offset of 0 is a flag for not skipping/offsetting
+        # page number
         try:
-            offset = int(request.args.get('offset', 0))
+            page = int(request.args.get('page', 0))
         except ValueError:
-            response.update({'message': 'Invalid offset parameter.'})
+            response.update({'message': 'Required page parameter.'})
             return response, 400
 
         # Limit of 0 is unlimited
@@ -118,6 +119,10 @@ class UserFeedback(Resource):
             limit = int(request.args.get('limit', 0))
         except ValueError:
             response.update({'message': 'Invalid limit parameter.'})
+            return response, 400
+
+        if limit < 0:
+            response['message'] = 'Limit must be a positive int.'
             return response, 400
 
         # We use a lookup to do a left join on the Feedback --> Users
@@ -141,25 +146,6 @@ class UserFeedback(Resource):
             # make it a dictionary.
             {"$unwind": "$user"},
         ]
-
-        # We need the full list to check for pagination
-        n_total_documents = SearchService().count(limit=0)
-
-        # Stage 3 -- If we have an offset, we validate it first and then
-        # we add it to the pipeline. Must also ensure skip goes first.
-        if offset > 0:
-            if offset >= n_total_documents:
-                response.update(
-                    {
-                        'message': 'Offset value exceeds number of '
-                                   'documents.',
-                        'sort': sort,
-                        'offset': offset,
-                        'limit': limit
-                    }
-                )
-                return response, 400
-            pipeline.append({"$skip": offset})
 
         # Stage 3 -- If we have to sort, then we validate it first and then
         # add it to our pipeline. We sort before we apply any limit on it.
@@ -189,13 +175,22 @@ class UserFeedback(Resource):
             # By default we always sort on the latest feedback created
             pipeline.append({"$sort": {'created_date': -1}})
 
-        # Stage 4 -- If we have a limit, we validate then add to the pipeline
-        if limit < 0:
-            response['message'] = 'Limit must be a positive int.'
-            return response, 400
+        current_page = 0 if limit == 0 else page
+        skip = current_page * limit
+        pipeline.append({"$skip": skip})
 
+        # Stage 4 -- If we have a limit, we validate then add to the pipeline
         if limit >= 1:
             pipeline.append({"$limit": limit})
+            # We need the full list to check for pagination
+            n_total_documents = SearchService().count(limit=0)
+
+            total_pages = floor(n_total_documents / limit)
+            if n_total_documents % limit == 0:
+                total_pages = total_pages - 1
+
+        else:
+            total_pages = 0
 
         # Stage 6 -- Return/select only those things we want.
         projection = {
@@ -223,45 +218,17 @@ class UserFeedback(Resource):
         # no limit has been provided, we just return null for them.
         response.update(
             {
-                'status': 'success',
                 'sort': sort,
-                'offset': offset,
                 'limit': limit,
-                'next_offset': None,
-                'prev_offset': None,
+                'status': 'success',
+                'current_page': current_page,
+                'total_pages': total_pages,
                 'n_results': n_documents,
                 'data': feedback_list,
             }
         )
         response.pop('message')
 
-        # A limit of 0, meaning the client does not want any subset of the
-        # full list so there is no need to worry about offsets and pages.
-        # We also want to just return everything if the limit requested was
-        # way more than what results we found any way.
-        # Plus we can avoid a divide by zero error from below.
-        if limit == 0 or limit > n_total_documents:
-            return response, 200
-
-        # Next offset is the offset for the next page of results. Prev is for
-        # the previous.
-        if offset + limit - 1 < n_total_documents:
-            response.update({'next_offset': offset + limit})
-        if offset - limit >= 0:
-            response.update({'prev_offset': offset - limit})
-
-        if n_total_documents % limit == 0:
-            total_pages = int(n_total_documents / limit)
-        else:
-            total_pages = int(n_total_documents / limit) + 1
-        current_page = int(offset / limit) + 1
-
-        response.update(
-            {
-                'current_page': current_page,
-                'total_pages': total_pages
-            }
-        )
         return response, 200
 
     def post(self, user) -> Tuple[dict, int]:

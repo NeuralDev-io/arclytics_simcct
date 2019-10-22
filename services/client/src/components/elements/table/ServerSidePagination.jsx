@@ -3,10 +3,10 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
- * Custom pagination override for React-Table
+ * A custom Pagination that handles with Server Side Pagination control.
  *
  * @version 1.0.0
- * @author Dalton Le
+ * @author Andrew Che
  *
  */
 import React, { Component } from 'react'
@@ -18,7 +18,7 @@ import Button from '../button'
 
 import styles from './Pagination.module.scss'
 
-class Pagination extends Component {
+class ServerSidePagination extends Component {
   componentDidUpdate = (prevProps) => {
     const { page } = this.props
     if (prevProps.page !== page) this.changePage(page + 1)
@@ -43,14 +43,12 @@ class Pagination extends Component {
       data,
     } = this.props
     const activePage = page + 1
-    const startRow = page * pageSize + 1
-    const endRow = (page + 1) * pageSize > data.length ? data.length : (page + 1) * pageSize
 
     return (
       <div className={styles.pagination}>
         <div className={styles.pageNum}>
           <span className="text--sub2">
-            {startRow}-{endRow} of {data.length} {/* eslint-disable-line */}
+            Page {page + 1} of {pages + 1} {/* eslint-disable-line */}
           </span>
         </div>
         <Button
@@ -67,10 +65,10 @@ class Pagination extends Component {
         <Button
           className={`${styles.button} ${activePage === pages && styles.disabled}`}
           onClick={() => {
-            if (activePage === pages) return
+            if (activePage === pages + 1) return
             this.changePage(activePage + 1)
           }}
-          isDisabled={activePage === pages}
+          isDisabled={activePage === pages + 1}
           appearance="text"
         >
           <FontAwesomeIcon icon={faChevronRight} className={styles.icon} />
@@ -80,7 +78,7 @@ class Pagination extends Component {
   }
 }
 
-Pagination.propTypes = {
+ServerSidePagination.propTypes = {
   pages: PropTypes.number.isRequired,
   page: PropTypes.number.isRequired,
   pageSize: PropTypes.number.isRequired,
@@ -88,4 +86,4 @@ Pagination.propTypes = {
   data: PropTypes.array.isRequired, // eslint-disable-line
 }
 
-export default Pagination
+export default ServerSidePagination

@@ -16,7 +16,7 @@ import { faEye } from '@fortawesome/pro-light-svg-icons/faEye'
 import { faSearch } from '@fortawesome/pro-light-svg-icons/faSearch'
 import { getFeedback } from '../../../state/ducks/feedback/actions'
 import Button from '../../elements/button'
-import Table from '../../elements/table'
+import { ControlledTable } from '../../elements/table'
 import TextField from '../../elements/textfield'
 import { dangerouslyGetDateTimeString } from '../../../utils/datetime'
 
@@ -24,8 +24,6 @@ import styles from './AdminFeedback.module.scss'
 
 /*
 * TODO:
-*  - Build the table.
-*  - Add the pagination param variables to Redux state
 *  - Add pagination callback to ReactTable component
 *
 * */
@@ -39,28 +37,50 @@ class AdminFeedback extends Component {
     }
   }
 
-  componentDidMount = () => {
-    const {
-      feedbackData = [],
-      dataFetched = false,
-      getFeedbackListConnect,
-      offset,
-      limit,
-      sort,
-    } = this.props
-
-    if (!feedbackData || feedbackData.length === 0 || !dataFetched) {
-      getFeedbackListConnect(`limit=${limit}&offset=${offset}&sort=${sort}`)
-    }
-  }
+  componentDidMount = () => { }
 
   // handleShowModal = type => this.setState({ [`${type}Modal`]: true })
 
   // handleCloseModal = type => this.setState({ [`${type}Modal`]: false })
 
+  fetchFeedbackQuery = (state) => {
+    const {
+      getFeedbackListConnect,
+      sort,
+    } = this.props
+
+    /*
+    * page: state.page, -- page (zero-indexed)
+    * pageSize: state.pageSize, -- limit
+    * sorted: state.sorted, -- sorting
+    *  - Note: sorted ==> [ { "id": "...", "desc": bool } ]
+    * filtered: state.filtered -- This one I don't need
+    *
+    * */
+    // console.log(state.sorted)
+
+    getFeedbackListConnect(`limit=${state.pageSize}&page=${state.page}&sort=${sort}`)
+
+    // if (currentPage < state.page) {
+    //   Forward
+      // getFeedbackListConnect(`limit=${state.pageSize}&offset=${nextOffset}&sort=${sort}`)
+      // this.setState({ currentPage: state.page })
+    // } else {
+    //   Back
+      // getFeedbackListConnect(`limit=${state.pageSize}&offset=${prevOffset}&sort=${sort}`)
+      // this.setState({ currentPage: state.page })
+    // }
+  }
+
   render() {
     // First check if we have any data to render or set to empty
-    const { dataFetched, dataLoading } = this.props
+    const {
+      dataFetched,
+      dataLoading,
+      currentPage,
+      totalPages,
+      limit,
+    } = this.props
     let { feedbackData } = this.props
     if (!dataFetched) feedbackData = []
 
@@ -130,6 +150,29 @@ class AdminFeedback extends Component {
       <div className={styles.container}>
         <h3>User feedback</h3>
 
+        <div>
+          <p>
+            Loading:
+            {' '}
+            { dataLoading ? '...' : dataFetched}
+          </p>
+          <p>
+            Limit:
+            {' '}
+            {limit}
+          </p>
+          <p>
+            Pages:
+            {' '}
+            {currentPage}
+            {' '}
+            of
+            {' '}
+            {totalPages}
+          </p>
+          <br />
+        </div>
+
         <div className={styles.tools}>
           <div className="input-row">
             <span>Search</span>
@@ -153,26 +196,27 @@ class AdminFeedback extends Component {
           </Button>
         </div>
 
-        <Table
-          className="-highlight"
-          data={feedbackData}
+        <ControlledTable
           columns={columns}
+          // Forces table not to paginate or sort automatically,
+          // so we can handle it server-side
+          data={feedbackData}
+          pages={totalPages}
           loading={dataLoading}
-          pageSize={feedbackData.length > 10 ? 10 : feedbackData.length}
+          // Request new data when things change
+          fetchData={this.fetchFeedbackQuery}
           showPageSizeOptions={false}
-          showPagination={feedbackData.length !== 0}
+          // showPagination={feedbackData.length !== 0}
           resizable={false}
+          defaultPageSize={10}
           condensed
+          className="-highlight"
         />
       </div>
     )
   }
 }
 
-/*
-* TODO(andrew@neuraldev.io): add the required pagination state
-*  - sort, offset, limit, next_offset, prev_offset, n_results, current_page, total_pages
-* */
 AdminFeedback.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
@@ -184,16 +228,12 @@ AdminFeedback.propTypes = {
     category: PropTypes.string,
     comment: PropTypes.string,
     rating: PropTypes.number,
-    created_date: PropTypes.instanceOf(Date),
+    created_date: PropTypes.string,
   })).isRequired,
-  sort: PropTypes.string,
-  offset: PropTypes.number,
-  limit: PropTypes.number,
-  next_offset: PropTypes.number,
-  prev_offset: PropTypes.number,
-  current_page: PropTypes.number,
-  total_pages: PropTypes.number,
-  n_results: PropTypes.number,
+  sort: PropTypes.string.isRequired,
+  limit: PropTypes.number.isRequired,
+  currentPage: PropTypes.number.isRequired,
+  totalPages: PropTypes.number.isRequired,
   dataLoading: PropTypes.bool.isRequired,
   dataFetched: PropTypes.bool.isRequired,
   getFeedbackListConnect: PropTypes.func.isRequired,
@@ -202,13 +242,9 @@ AdminFeedback.propTypes = {
 const mapStateToProps = state => ({
   feedbackData: state.feedback.feedbackList.data,
   sort: state.feedback.feedbackList.sort,
-  offset: state.feedback.feedbackList.offset,
   limit: state.feedback.feedbackList.limit,
-  next_offset: state.feedback.feedbackList.next_offset,
-  prev_offset: state.feedback.feedbackList.prev_offset,
-  current_page: state.feedback.feedbackList.current_page,
-  total_pages: state.feedback.feedbackList.total_pages,
-  n_results: state.feedback.feedbackList.n_results,
+  currentPage: state.feedback.feedbackList.current_page,
+  totalPages: state.feedback.feedbackList.total_pages,
   dataLoading: state.feedback.feedbackList.isLoading,
   dataFetched: state.feedback.feedbackList.isFetched,
 })

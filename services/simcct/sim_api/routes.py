@@ -80,7 +80,7 @@ class Routes(enum.Enum):
     # ratings.py
     UserRating = f'{PREFIX}/user/rating'
     UserFeedback = f'{PREFIX}/user/feedback'
-    FeedbackList = f'{PREFIX}/admin/feedback/list'
+    UserFeedbackSearch = f'{PREFIX}/user/feedback/search'
     SubscribeFeedback = f'{PREFIX}/admin/feedback/list/subscribe'
 
     # share.py

@@ -23,9 +23,7 @@ import styles from './Equilibrium.module.scss'
 class Equilibrium extends React.Component {
   componentDidMount = () => {
     const { data, isInitialised, getEquilibriumValuesConnect } = this.props
-    console.log('just mounted')
     if (isInitialised && (data === undefined || data === null || Object.keys(data).length === 0)) {
-      console.log('getting data')
       getEquilibriumValuesConnect()
     }
   }
@@ -42,7 +40,6 @@ class Equilibrium extends React.Component {
 
     // only make API request if an alloy was chosen
     if (isInitialised && (prevProps.alloys !== alloys || prevProps.ae1Temp !== ae1Temp)) {
-      console.log('getting data after updated')
       getEquilibriumValuesConnect()
     }
   }

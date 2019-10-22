@@ -1,5 +1,6 @@
 export { default as TTT } from './TTT'
 export { default as CCT } from './CCT'
+export { default as Equilibrium } from './Equilibrium'
 export { default as ProfileBarChart } from './ProfileBarChart'
 export { default as LoginLocationMapbox } from './LoginLocationMapbox'
 export { default as SavedAlloysSimilarity } from './SavedAlloysSimilarity'

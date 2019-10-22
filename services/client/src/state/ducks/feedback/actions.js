@@ -2,10 +2,117 @@ import {
   UPDATE_FEEDBACK,
   CLOSE_FEEDBACK,
   RESET_FEEDBACK,
+  GET_FEEDBACK,
 } from './types'
 import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
 import { logError } from '../../../api/LoggingHelper'
+
+
+/**
+ * API request to `simcct` server to get all feedback stored in the `feedback`
+ * collection.
+ * reducer to use as defined in `src/state/ducks/feedback/reducers.js`.
+ *
+ * If successful, the response will:
+ * {
+ *   "status": "success",
+ *   "data": [
+ *     {
+ *       "email": ...,
+ *       "category": ...,
+ *       "rating": ...,
+ *       "comment": ...,
+ *       "created_date": ...,
+ *     }
+ *   ],
+ *   "sort": ...,
+ *   "offset": ...,
+ *   "limit": ..., (= 0 --> all, > 1 --> number of limited results)
+ *   "next_offset": ..., (null --> no offset)
+ *   "prev_offset": ..., (null --> no offset)
+ *   "n_results": ...,
+ *   "current_page": ...,
+ *   "total_pages": ...,
+ * }
+ * @param params the URL query parameters for the request.
+ * @param dispatch the Redux `dispatch()` function which will define the `type` of
+ * reducer to use as defined in `src/state/ducks/feedback/reducers.js`.
+ *
+ */
+export const getFeedback = params => (dispatch) => {
+  // Ensure redux knows we have started the retrieval so it waits to render
+  dispatch({
+    type: GET_FEEDBACK,
+    status: 'started',
+  })
+
+  // Make the API request for retrieval and handle response
+  fetch(`${SIMCCT_URL}/user/feedback?${params}`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((res) => {
+      if (res.status === 404) { return { status: 'success', data: [] } }
+
+      if (res.status === 401) {
+        return {
+          status: 'fail',
+          message: 'Not Authorized.',
+        }
+      }
+
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          // Toast error message
+          message: 'Couldn\'t retrieve feedback list.',
+        }
+      }
+
+      // Success
+      return res.json()
+    })
+    .then((res) => {
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+        dispatch({
+          type: GET_FEEDBACK,
+          status: 'fail',
+        })
+      }
+      if (res.status === 'success') {
+        console.log(res)
+        // TODO(andrew@neuraldev.io): For testing purposes.
+        addFlashToast({
+          message: 'Ready to go.',
+          options: { variant: 'success' },
+        }, true)(dispatch)
+        dispatch({
+          type: GET_FEEDBACK,
+          payload: res.data || [],
+          // TODO(andrew@neuraldev.io): add all the pagination response results also
+          //  - sort, offset, limit, next_offset, prev_offset, n_results, current_page, total_pages
+          status: 'success',
+        })
+      }
+    })
+    .catch((err) => {
+      // log to fluentd
+      logError(
+        err.toString(),
+        err.message,
+        'feedback.actions.getAlloys',
+        err.stack,
+      )
+    })
+}
 
 /**
  * Update feedback in the Redux state. The reducer will take the

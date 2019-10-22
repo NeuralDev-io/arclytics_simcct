@@ -37,7 +37,6 @@ class AboutSidebar extends Component {
       this.setState({ active: 'application' })
       redirect('/about/application')
     }
-
   }
 
   handleBackToApp = () => {

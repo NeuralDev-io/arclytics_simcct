@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -16,6 +14,7 @@
 /**
 * PrivateRoute only allows authenticated users to access
 */
+// eslint-disable-next-line max-classes-per-file
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Route, Redirect } from 'react-router-dom'

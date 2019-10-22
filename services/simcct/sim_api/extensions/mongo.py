@@ -98,3 +98,15 @@ class Mongo(object):
         db = self.conn[db_name]
 
         return db[collection].find_one(query_selector, projections)
+
+    def aggregate(
+            self,
+            db_name: str = 'arc_dev',
+            collection: str = 'arc_dev',
+            pipeline: list = None,
+    ):
+        if pipeline is None:
+            return None
+        db = self.conn[db_name]
+
+        return db[collection].aggregate(pipeline, allowDiskUse=True)

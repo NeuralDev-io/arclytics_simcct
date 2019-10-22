@@ -118,7 +118,6 @@ class SimulationPage extends Component {
           />
         </div>
         <div className={styles.main}>
-          <ReportDownloadLink />
           <header>
             <div className={styles.config}>
               <h4>Configurations</h4>

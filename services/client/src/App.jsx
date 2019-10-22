@@ -74,6 +74,7 @@ function App() {
         }}
       >
         <Provider store={store}>
+          <div id="temp-container" />
           <Toaster />
           <div className="App">
             <FeedbackModal />

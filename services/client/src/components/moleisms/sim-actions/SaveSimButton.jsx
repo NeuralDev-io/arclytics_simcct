@@ -16,8 +16,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSave } from '@fortawesome/pro-light-svg-icons/faSave'
 import { faFile } from '@fortawesome/pro-light-svg-icons/faFile'
 import Button from '../../elements/button'
+import Portal from '../../elements/portal'
 import { AttachModal } from '../../elements/modal'
 import ReportDownloadLink from '../pdf-export'
+import { Equilibrium } from '../charts'
 import { buttonize } from '../../../utils/accessibility'
 import { saveSimulation } from '../../../state/ducks/self/actions'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
@@ -143,6 +145,11 @@ class SaveSimButton extends Component {
                 : <ReportDownloadLink onFinish={this.handleCloseModal} onError={this.handleCloseDownloadLink} />
             }
           </div>
+          <Portal to={document.getElementById('temp-container')}>
+            <div className={styles.equiChart} id="equi_chart">
+              <Equilibrium />
+            </div>
+          </Portal>
         </div>
       </AttachModal>
     )

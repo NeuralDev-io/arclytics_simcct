@@ -14,7 +14,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import domtoimage from 'dom-to-image'
-import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer'
+import { PDFDownloadLink } from '@react-pdf/renderer'
 import PdfReport from './PdfReport'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
 import { logError } from '../../../api/LoggingHelper'
@@ -49,41 +49,58 @@ class ReportDownloadLink extends React.Component {
       isReady: false,
       tttUrl: '',
       cctUrl: '',
+      equiUrl: '',
     }
+  }
+
+  handleDomToImgError = (err) => {
+    const { onError, addFlashToastConnect } = this.props
+    addFlashToastConnect({
+      message: 'Couldn\'t generate PDF report',
+      options: { variant: 'error' },
+    }, true)
+    logError(err.toString(), err.message, 'components.ReportDownloadLink.domtoimage', err.stack)
+    this.setState({ hasError: true })
+    onError()
   }
 
   render() {
     const {
-      onError,
       isSimulated,
-      addFlashToastConnect,
       configurations,
       alloy,
+      equi,
     } = this.props
     const {
       hasError,
       isReady,
       tttUrl,
       cctUrl,
+      equiUrl,
     } = this.state
-    if (!isSimulated) return <div>No data to genereate report</div>
+    // Only start rendering report after all graphs have been plotted
+    if (!isSimulated || equi.isLoading || equi.xfe === 0) {
+      return <div>No data to genereate report</div>
+    }
     if (!isReady && !hasError) {
       domtoimage.toPng(document.getElementById('ttt_chart'))
         .then((tttDataUrl) => {
           domtoimage.toPng(document.getElementById('cct_chart'))
             .then((cctDataUrl) => {
-              this.setState({ cctUrl: cctDataUrl, tttUrl: tttDataUrl, isReady: true })
+              domtoimage.toPng(document.getElementById('equi_chart'))
+                .then((equiDataUrl) => {
+                  this.setState({
+                    cctUrl: cctDataUrl,
+                    tttUrl: tttDataUrl,
+                    equiUrl: equiDataUrl,
+                    isReady: true,
+                  })
+                })
+                .catch(this.handleDomToImgError)
             })
+            .catch(this.handleDomToImgError)
         })
-        .catch((err) => {
-          addFlashToastConnect({
-            message: 'Couldn\'t generate PDF report',
-            options: { variant: 'error' },
-          }, true)
-          logError(err.toString(), err.message, 'equi.actions.getEquilibriumValues', err.stack)
-          this.setState({ hasError: true })
-          onError()
-        })
+        .catch(this.handleDomToImgError)
       return <div>Your report is being prepared...</div>
     }
 
@@ -91,34 +108,29 @@ class ReportDownloadLink extends React.Component {
 
     // only render the PDF when all the ingredients are ready
     return (
-      // <PDFDownloadLink
-      //   document={(
-      //     <PdfReport
-      //       tttUrl={tttUrl}
-      //       cctUrl={cctUrl}
-      //       configurations={configurations}
-      //     />
-      //   )}
-      //   fileName="SimCCT_report.pdf"
-      //   style={{
-      //     ...downloadButtonStyle,
-      //     backgroundColor: getColor('--arc500'),
-      //     color: getColor('--n0'),
-      //     border: `2px solid ${getColor('--arc500')}`,
-      //   }}
-      // >
-      //   {({ loading }) => (
-      //     loading ? 'Almost ready...' : 'Download report'
-      //   )}
-      // </PDFDownloadLink>
-      <PDFViewer style={{ width: 700, height: 700 }}>
-        <PdfReport
-          tttUrl={tttUrl}
-          cctUrl={cctUrl}
-          configurations={configurations}
-          alloy={alloy}
-        />
-      </PDFViewer>
+      <PDFDownloadLink
+        document={(
+          <PdfReport
+            tttUrl={tttUrl}
+            cctUrl={cctUrl}
+            equiUrl={equiUrl}
+            configurations={configurations}
+            alloy={alloy}
+            equi={equi}
+          />
+        )}
+        fileName="SimCCT_report.pdf"
+        style={{
+          ...downloadButtonStyle,
+          backgroundColor: getColor('--arc500'),
+          color: getColor('--n0'),
+          border: `2px solid ${getColor('--arc500')}`,
+        }}
+      >
+        {({ loading }) => (
+          loading ? 'Almost ready...' : 'Download report'
+        )}
+      </PDFDownloadLink>
     )
   }
 }
@@ -128,6 +140,13 @@ ReportDownloadLink.propTypes = {
   onError: PropTypes.func.isRequired,
   // given by redux connect()
   configurations: PropTypes.shape({}).isRequired,
+  alloy: PropTypes.shape({}).isRequired,
+  equi: PropTypes.shape({
+    isLoading: PropTypes.bool,
+    xfe: PropTypes.oneOfType([
+      PropTypes.string, PropTypes.number,
+    ]),
+  }).isRequired,
   isSimulated: PropTypes.bool.isRequired,
   addFlashToastConnect: PropTypes.func.isRequired,
 }
@@ -136,6 +155,7 @@ const mapStateToProps = (state) => ({
   isSimulated: state.sim.isSimulated,
   configurations: state.sim.configurations,
   alloy: state.sim.alloys.parent,
+  equi: state.equi,
 })
 
 const mapDispatchToProps = {

@@ -9,12 +9,18 @@
   height: 2rem;
   background-color: transparent;
 
-  &.disabled { background-color: transparent; }
+  &.disabled {
+    background-color: transparent;
+
+    & .timeIcon {
+      color: var(--n50);
+    }
+  }
 
   & .timeIcon {
     height: 1rem;
     width: 1rem;
-    stroke: var(--arc500);
+    color: var(--arc500);
   }
 }
 

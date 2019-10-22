@@ -62,9 +62,9 @@ const useStyles = makeStyles({
 
 function App() {
   const classes = useStyles()
-  const matches = useMediaQuery('(min-width: 1366px)')
+  const matches = useMediaQuery('(max-width: 1366px)')
 
-  if (!matches) return <MobilePage />
+  if (matches) return <MobilePage />
 
   return (
     <ErrorBoundary>

@@ -147,34 +147,6 @@ class UserFeedback(Resource):
             {"$unwind": "$user"},
         ]
 
-        # Stage 3 -- If we have to sort, then we validate it first and then
-        # add it to our pipeline. We sort before we apply any limit on it.
-        if sort:
-            valid_sort_keys = {
-                'category', '-category', 'rating', '-rating',
-                'created_date', '-created_date', 'comment', '-comment'
-            }
-            if sort not in valid_sort_keys:
-                response['message'] = 'Sort value is invalid.'
-                return response, 400
-
-            # ========== # SETTING UP SORTING # ========== #
-            # If our sorting value begins with a "-" in the string, then we
-            # know we are doing a DESCENDING sort so we will appropriately set
-            # the sort direction
-            sort_direction = 1
-            sort_key = sort
-            if str(sort).startswith('-'):
-                # We remove the first character as it's not a valid key
-                sort_key = sort[1:]
-                # Reverse for DESCENDING
-                sort_direction = -1
-
-            pipeline.append({"$sort": {sort_key: sort_direction}})
-        else:
-            # By default we always sort on the latest feedback created
-            pipeline.append({"$sort": {'created_date': -1}})
-
         current_page = 0 if limit == 0 else page
         skip = current_page * limit
         pipeline.append({"$skip": skip})
@@ -188,9 +160,37 @@ class UserFeedback(Resource):
             total_pages = floor(n_total_documents / limit)
             if n_total_documents % limit == 0:
                 total_pages = total_pages - 1
-
         else:
             total_pages = 0
+
+            # Stage 3 -- If we have to sort, then we validate it first and then
+            # add it to our pipeline. We sort before we apply any limit on it.
+            if sort:
+                valid_sort_keys = {
+                    'category', '-category', 'rating', '-rating',
+                    'created_date', '-created_date', 'comment', '-comment'
+                }
+                if sort not in valid_sort_keys:
+                    response['message'] = 'Sort value is invalid.'
+                    return response, 400
+
+                # ========== # SETTING UP SORTING # ========== #
+                # If our sorting value begins with a "-" in the string, then we
+                # know we are doing a DESCENDING sort so we will
+                # appropriately set
+                # the sort direction
+                sort_direction = 1
+                sort_key = sort
+                if str(sort).startswith('-'):
+                    # We remove the first character as it's not a valid key
+                    sort_key = sort[1:]
+                    # Reverse for DESCENDING
+                    sort_direction = -1
+
+                pipeline.append({"$sort": {sort_key: sort_direction}})
+            else:
+                # By default we always sort on the latest feedback created
+                pipeline.append({"$sort": {'created_date': -1}})
 
         # Stage 6 -- Return/select only those things we want.
         projection = {

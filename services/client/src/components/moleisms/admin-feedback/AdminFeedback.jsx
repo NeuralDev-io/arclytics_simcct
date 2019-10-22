@@ -150,29 +150,6 @@ class AdminFeedback extends Component {
       <div className={styles.container}>
         <h3>User feedback</h3>
 
-        <div>
-          <p>
-            Loading:
-            {' '}
-            { dataLoading ? '...' : dataFetched}
-          </p>
-          <p>
-            Limit:
-            {' '}
-            {limit}
-          </p>
-          <p>
-            Pages:
-            {' '}
-            {currentPage}
-            {' '}
-            of
-            {' '}
-            {totalPages}
-          </p>
-          <br />
-        </div>
-
         <div className={styles.tools}>
           <div className="input-row">
             <span>Search</span>
@@ -200,11 +177,11 @@ class AdminFeedback extends Component {
           columns={columns}
           // Forces table not to paginate or sort automatically,
           // so we can handle it server-side
+          // Request new data when things change
+          fetchData={this.fetchFeedbackQuery}
           data={feedbackData}
           pages={totalPages}
           loading={dataLoading}
-          // Request new data when things change
-          fetchData={this.fetchFeedbackQuery}
           showPageSizeOptions={false}
           // showPagination={feedbackData.length !== 0}
           resizable={false}

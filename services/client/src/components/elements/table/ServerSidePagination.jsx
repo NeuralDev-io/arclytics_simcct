@@ -63,7 +63,7 @@ class ServerSidePagination extends Component {
           <FontAwesomeIcon icon={faChevronLeft} className={styles.icon} />
         </Button>
         <Button
-          className={`${styles.button} ${activePage === pages && styles.disabled}`}
+          className={`${styles.button} ${activePage === pages + 1 && styles.disabled}`}
           onClick={() => {
             if (activePage === pages + 1) return
             this.changePage(activePage + 1)

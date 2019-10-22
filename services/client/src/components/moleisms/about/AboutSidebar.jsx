@@ -16,6 +16,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUserShield } from '@fortawesome/pro-light-svg-icons/faUserShield'
 import { faInfoSquare } from '@fortawesome/pro-light-svg-icons/faInfoSquare'
 import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons/faExclamationTriangle'
+import { faHeart } from '@fortawesome/pro-light-svg-icons/faHeart'
 import { faArrowLeft } from '@fortawesome/pro-light-svg-icons/faArrowLeft'
 import Button from '../../elements/button'
 
@@ -33,7 +34,7 @@ class AboutSidebar extends Component {
   componentDidMount = () => {
     const { active } = this.state
     const { redirect } = this.props
-    if (!['application', 'disclaimer', 'privacy'].includes(active)) {
+    if (!['application', 'disclaimer', 'privacy', 'acknowledgements'].includes(active)) {
       this.setState({ active: 'application' })
       redirect('/about/application')
     }
@@ -78,8 +79,17 @@ class AboutSidebar extends Component {
           onClick={() => this.handleRedirect('privacy')}
           className={`${styles.item} ${active === 'privacy' && styles.active}`}
         >
-          <FontAwesomeIcon icon={faUserShield} className={styles.icon}/>
+          <FontAwesomeIcon icon={faUserShield} className={styles.icon} />
           <span>Privacy policy</span>
+        </Link>
+        <Link
+          id="privacy"
+          to="/about/acknowledgements"
+          onClick={() => this.handleRedirect('acknowledgements')}
+          className={`${styles.item} ${active === 'acknowledgements' && styles.active}`}
+        >
+          <FontAwesomeIcon icon={faHeart} className={styles.icon} />
+          <span>Acknowledgements</span>
         </Link>
         <Button
           appearance="text"

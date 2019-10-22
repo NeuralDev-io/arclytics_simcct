@@ -17,6 +17,7 @@ import {
   AboutSidebar,
   Privacy,
   Disclaimer,
+  Acknowledgements,
 } from '../../moleisms/about'
 
 import styles from './AboutPage.module.scss'
@@ -34,6 +35,7 @@ function AboutPage({ history }) {
         <Route path="/about/application" render={(props) => <AboutApp {...props} />} />
         <Route path="/about/disclaimer" render={(props) => <Disclaimer {...props} />} />
         <Route path="/about/privacy" render={(props) => <Privacy {...props} />} />
+        <Route path="/about/acknowledgements" render={(props) => <Acknowledgements {...props} />} />
       </div>
     </>
   )

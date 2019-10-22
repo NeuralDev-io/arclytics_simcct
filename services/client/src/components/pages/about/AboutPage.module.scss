@@ -3,19 +3,10 @@
   height: 100vh;
   margin-left: 4rem;
   position: fixed;
-
-  @media screen and (max-width: 1720px) {
-    width: 250px;
-  }
 }
 
 .main {
-  margin-left: calc(2rem + 15vw);
+  margin-left: calc(4rem + 15vw);
   width: calc(100vw - calc(4rem + 15vw));
   padding: 2.5rem 0;
-
-  @media screen and (max-width: 1720px) {
-    margin-left: calc(2rem + 250px);
-    width: calc(100% - calc(4rem + 250px));
-  }
 }

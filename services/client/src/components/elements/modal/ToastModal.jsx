@@ -11,12 +11,9 @@
  */
 import React from 'react'
 import PropTypes from 'prop-types'
-import XIcon from 'react-feather/dist/icons/x'
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-// import {faTimes } from '@fortawesome/pro-light-svg-icons/faTimes'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTimes } from '@fortawesome/pro-light-svg-icons/faTimes'
 import { IconButton } from '../button'
-// <FontAwesomeIcon icon={faTimes} className={styles.icon} size="lg" />
-
 
 import styles from './ToastModal.module.scss'
 
@@ -35,7 +32,7 @@ const ToastModal = ({
     && (
       <IconButton
         onClick={onClose}
-        Icon={props => <XIcon {...props} />}
+        Icon={props => <FontAwesomeIcon icon={faTimes} className={styles.icon} size="lg" {...props} />}
         className={{ button: styles.closeButton }}
       />
     )}

@@ -29,7 +29,6 @@
   }
 }
 
-.childrenContainer * {
-//  TODO(andrew@neuraldev.io): Update this later if we need to do anything.
+.childrenContainer > * {
   margin: 0.25rem 0;
 }

@@ -38,6 +38,10 @@
       margin-right: .75rem;
     }
 
+    & > span {
+      font-weight: 400;
+    }
+
     &:hover {
       background-color: var(--n10);
     }

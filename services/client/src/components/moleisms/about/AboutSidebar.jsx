@@ -16,6 +16,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUserShield } from '@fortawesome/pro-light-svg-icons/faUserShield'
 import { faInfoSquare } from '@fortawesome/pro-light-svg-icons/faInfoSquare'
 import { faExclamationTriangle } from '@fortawesome/pro-light-svg-icons/faExclamationTriangle'
+import { faHeart } from '@fortawesome/pro-light-svg-icons/faHeart'
 import { faArrowLeft } from '@fortawesome/pro-light-svg-icons/faArrowLeft'
 import Button from '../../elements/button'
 
@@ -26,18 +27,22 @@ class AboutSidebar extends Component {
     super(props)
     const pathArr = window.location.pathname.split('/')
     this.state = {
-      active: pathArr[pathArr.length - 1],
+      active: pathArr[2],
     }
   }
 
   componentDidMount = () => {
     const { active } = this.state
     const { redirect } = this.props
-    if (!['application', 'disclaimer', 'privacy'].includes(active)) {
+    if (!['application', 'disclaimer', 'privacy', 'acknowledgements'].includes(active)) {
       this.setState({ active: 'application' })
       redirect('/about/application')
     }
+  }
 
+  handleRedirect = (route) => {
+    this.setState({ active: route })
+    document.getElementById('app').scrollTop = 0
   }
 
   handleBackToApp = () => {
@@ -53,29 +58,38 @@ class AboutSidebar extends Component {
         <Link
           id="application"
           to="/about/application"
-          onClick={() => this.setState({ active: 'application' })}
+          onClick={() => this.handleRedirect('application')}
           className={`${styles.item} ${active === 'application' && styles.active}`}
         >
-          <FontAwesomeIcon icon={faInfoSquare} className={styles.icon}/>
+          <FontAwesomeIcon icon={faInfoSquare} className={styles.icon} />
           <span>Arclytics SimCCT</span>
         </Link>
         <Link
           id="disclaimer"
           to="/about/disclaimer"
-          onClick={() => this.setState({ active: 'disclaimer' })}
+          onClick={() => this.handleRedirect('disclaimer')}
           className={`${styles.item} ${active === 'disclaimer' && styles.active}`}
         >
-          <FontAwesomeIcon icon={faExclamationTriangle} className={styles.icon}/>
+          <FontAwesomeIcon icon={faExclamationTriangle} className={styles.icon} />
           <span>Disclaimer</span>
         </Link>
         <Link
           id="privacy"
           to="/about/privacy"
-          onClick={() => this.setState({ active: 'privacy' })}
+          onClick={() => this.handleRedirect('privacy')}
           className={`${styles.item} ${active === 'privacy' && styles.active}`}
         >
-          <FontAwesomeIcon icon={faUserShield} className={styles.icon}/>
+          <FontAwesomeIcon icon={faUserShield} className={styles.icon} />
           <span>Privacy policy</span>
+        </Link>
+        <Link
+          id="privacy"
+          to="/about/acknowledgements"
+          onClick={() => this.handleRedirect('acknowledgements')}
+          className={`${styles.item} ${active === 'acknowledgements' && styles.active}`}
+        >
+          <FontAwesomeIcon icon={faHeart} className={styles.icon} />
+          <span>Acknowledgements</span>
         </Link>
         <Button
           appearance="text"

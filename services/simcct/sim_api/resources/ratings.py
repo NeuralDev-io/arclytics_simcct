@@ -184,8 +184,6 @@ class UserFeedback(Resource):
                 # Reverse for DESCENDING
                 sort_direction = -1
 
-            logger.debug({'sort': sort, 'sort_dir': sort_direction})
-
             pipeline.append({"$sort": {sort_key: sort_direction}})
         else:
             # By default we always sort on the latest feedback created

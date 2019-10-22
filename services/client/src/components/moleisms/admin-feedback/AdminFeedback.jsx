@@ -11,16 +11,31 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEye } from '@fortawesome/pro-light-svg-icons/faEye'
+import { faSearch } from '@fortawesome/pro-light-svg-icons/faSearch'
+import { getFeedback } from '../../../state/ducks/feedback/actions'
+import Button from '../../elements/button'
+import Table from '../../elements/table'
+import TextField from '../../elements/textfield'
+import { dangerouslyGetDateTimeString } from '../../../utils/datetime'
 
 import styles from './AdminFeedback.module.scss'
-import { getFeedback } from '../../../state/ducks/feedback/actions'
-import { addFlashToast } from '../../../state/ducks/toast/actions'
+
+/*
+* TODO:
+*  - Build the table.
+*  - Add the pagination param variables to Redux state
+*  - Add pagination callback to ReactTable component
+*
+* */
 
 class AdminFeedback extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      searchName: '',
+      searchQuery: '',
+      isSearching: false,
     }
   }
 
@@ -32,7 +47,7 @@ class AdminFeedback extends Component {
     } = this.props
 
     if (!feedbackData || feedbackData.length === 0 || !dataFetched) {
-      getFeedbackListConnect('limit=10&offset=1&sort=created_date')
+      getFeedbackListConnect('limit=20&offset=0&sort=-created_date')
     }
   }
 
@@ -46,21 +61,106 @@ class AdminFeedback extends Component {
     let { feedbackData } = this.props
     if (!dataFetched) feedbackData = []
 
-    // const { searchName } = this.state
+    const {
+      isSearching,
+      searchQuery,
+    } = this.state
+
+    const columns = [
+      {
+        Header: 'Email',
+        accessor: 'user',
+        // Used to render a standard cell, defaults to `accessed` otherwise
+        Cell: ({ value }) => value.email,
+        // sortMethod: () => {},
+      },
+      {
+        Header: 'Category',
+        accessor: 'category',
+        maxWidth: 180,
+      },
+      {
+        Header: 'Rating',
+        accessor: 'rating',
+        maxWidth: 65,
+      },
+      {
+        Header: 'Comment',
+        accessor: 'comment',
+        // width: 100,
+        minWidth: 180,
+      },
+      {
+        Header: 'Created',
+        accessor: 'created_date',
+        Cell: ({ value }) => (<span>{dangerouslyGetDateTimeString(value)}</span>),
+        maxWidth: 180,
+      },
+      // May need a button for viewing the full content.
+      {
+        Header: '',
+        Cell: ({ original }) => (
+          <div className={styles.actions}>
+            {/* <Button
+              onClick={() => this.handleLoadSim(original)}
+              length="short"
+              appearance="text"
+              IconComponent={props => <FontAwesomeIcon icon={faUpload} {...props} />}
+            >
+              Load
+            </Button> */}
+            <Button
+              onClick={() => console.log(original)}
+              length="short"
+              appearance="text"
+              IconComponent={props => <FontAwesomeIcon icon={faEye} {...props} />}
+            >
+              View
+            </Button>
+          </div>
+        ),
+        width: 90, // 180, -- For 2 buttons
+      },
+    ]
 
     return (
       <div className={styles.container}>
         <h3>User feedback</h3>
-        <h5>
-          Data Loading:
-          {' '}
-          {dataLoading ? 'true' : 'false'}
-        </h5>
-        <h5>
-          Data Fetched:
-          {' '}
-          {!dataFetched ? 'none' : feedbackData.length}
-        </h5>
+
+        <div className={styles.tools}>
+          <div className="input-row">
+            <span>Search</span>
+            <TextField
+              type="text"
+              length="long"
+              name="searchQuery"
+              placeholder="Search feedback..."
+              value={searchQuery}
+              onChange={value => this.setState({ searchQuery: value })}
+            />
+          </div>
+          <Button
+            appearance="outline"
+            onClick={() => console.log('Search')}
+            IconComponent={props => <FontAwesomeIcon icon={faSearch} {...props} />}
+            length="long"
+            isDisabled={!isSearching}
+          >
+            Search
+          </Button>
+        </div>
+
+        <Table
+          className="-highlight"
+          data={feedbackData}
+          columns={columns}
+          loading={dataLoading}
+          pageSize={feedbackData.length > 10 ? 10 : feedbackData.length}
+          showPageSizeOptions={false}
+          showPagination={feedbackData.length !== 0}
+          resizable={false}
+          condensed
+        />
       </div>
     )
   }
@@ -75,10 +175,12 @@ AdminFeedback.propTypes = {
     push: PropTypes.func.isRequired,
   }).isRequired,
   feedbackData: PropTypes.arrayOf(PropTypes.shape({
-    email: PropTypes.string,
+    user: PropTypes.shape({
+      email: PropTypes.string,
+    }),
     category: PropTypes.string,
-    rating: PropTypes.number,
     comment: PropTypes.string,
+    rating: PropTypes.number,
     created_date: PropTypes.instanceOf(Date),
   })).isRequired,
   dataLoading: PropTypes.bool.isRequired,

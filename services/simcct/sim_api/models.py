@@ -681,7 +681,10 @@ class Feedback(Document):
     category = StringField(required=True)
     rating = IntField(min_value=1, max_value=5, default=None)
     comment = StringField(required=True)
-    created_date = DateTimeField(default=datetime.utcnow(), required=True)
+    created_date = DateTimeField(
+        default=datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+        required=True
+    )
 
     meta = {
         'collection': 'feedback',

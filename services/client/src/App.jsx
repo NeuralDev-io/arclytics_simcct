@@ -16,6 +16,7 @@ import React from 'react'
 import { Provider } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
 import { SnackbarProvider } from 'notistack'
+import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { makeStyles } from '@material-ui/core/styles'
 import store from './state/store'
 import {
@@ -31,7 +32,7 @@ import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
 import NoMatchPage from './components/pages/no-match/NoMatchPage'
 import SimulationPage from './components/pages/simulation'
-import EquiPage from './components/pages/equi/EquiPage'
+import EquiPage from './components/pages/equi'
 import AdminPage from './components/pages/admin'
 import ProfileQuestionsPage from './components/pages/profile-questions'
 import UserPage from './components/pages/user'
@@ -41,8 +42,9 @@ import PasswordResetPage from './components/pages/password-reset'
 import SharePage from './components/pages/share'
 import Healthy from './components/moleisms/healthy/Healthy'
 import AnalyticsPage from './components/pages/analytics'
-import AboutPage from './components/pages/about/AboutPage'
+import AboutPage from './components/pages/about'
 import FeedbackPage from './components/pages/feedback'
+import MobilePage from './components/pages/mobile'
 
 /*
 * DECISION:
@@ -60,6 +62,9 @@ const useStyles = makeStyles({
 
 function App() {
   const classes = useStyles()
+  const matches = useMediaQuery('(min-width: 1366px)')
+
+  if (!matches) return <MobilePage />
 
   return (
     <ErrorBoundary>

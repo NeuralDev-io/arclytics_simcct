@@ -44,10 +44,13 @@ class AdminFeedback extends Component {
       feedbackData = [],
       dataFetched = false,
       getFeedbackListConnect,
+      offset,
+      limit,
+      sort,
     } = this.props
 
     if (!feedbackData || feedbackData.length === 0 || !dataFetched) {
-      getFeedbackListConnect('limit=20&offset=0&sort=-created_date')
+      getFeedbackListConnect(`limit=${limit}&offset=${offset}&sort=${sort}`)
     }
   }
 
@@ -183,6 +186,14 @@ AdminFeedback.propTypes = {
     rating: PropTypes.number,
     created_date: PropTypes.instanceOf(Date),
   })).isRequired,
+  sort: PropTypes.string,
+  offset: PropTypes.number,
+  limit: PropTypes.number,
+  next_offset: PropTypes.number,
+  prev_offset: PropTypes.number,
+  current_page: PropTypes.number,
+  total_pages: PropTypes.number,
+  n_results: PropTypes.number,
   dataLoading: PropTypes.bool.isRequired,
   dataFetched: PropTypes.bool.isRequired,
   getFeedbackListConnect: PropTypes.func.isRequired,
@@ -190,6 +201,14 @@ AdminFeedback.propTypes = {
 
 const mapStateToProps = state => ({
   feedbackData: state.feedback.feedbackList.data,
+  sort: state.feedback.feedbackList.sort,
+  offset: state.feedback.feedbackList.offset,
+  limit: state.feedback.feedbackList.limit,
+  next_offset: state.feedback.feedbackList.next_offset,
+  prev_offset: state.feedback.feedbackList.prev_offset,
+  current_page: state.feedback.feedbackList.current_page,
+  total_pages: state.feedback.feedbackList.total_pages,
+  n_results: state.feedback.feedbackList.n_results,
   dataLoading: state.feedback.feedbackList.isLoading,
   dataFetched: state.feedback.feedbackList.isFetched,
 })

@@ -10,10 +10,13 @@ const initialState = {
     data: [],
     isFetched: false,
     isLoading: false,
-    /*
-    * TODO(andrew@neuraldev.io): add the required pagination state
-    *  - sort, offset, limit, next_offset, prev_offset, n_results, current_page, total_pages
-    * */
+    offset: 0,
+    sort: '-created_date',
+    limit: 10,
+    next_offset: undefined,
+    prev_offset: undefined,
+    current_page: -1,
+    total_pages: -1,
   },
   feedbackVisible: false,
   ratingVisible: false,
@@ -56,7 +59,14 @@ const reducer = (state = initialState, action) => {
             ...state.feedbackList,
             isLoading: false,
             isFetched: true,
-            data: action.payload,
+            data: action.payload.data,
+            offset: action.payload.offset,
+            sort: action.payload.sort,
+            limit: action.payload.limit,
+            next_offset: action.payload.next_offset,
+            prev_offset: action.payload.prev_offset,
+            current_page: action.payload.current_page,
+            total_pages: action.payload.total_pages,
           },
         }
       }

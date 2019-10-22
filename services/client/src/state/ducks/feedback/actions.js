@@ -95,9 +95,7 @@ export const getFeedback = params => (dispatch) => {
         }, true)(dispatch)
         dispatch({
           type: GET_FEEDBACK,
-          payload: res.data || [],
-          // TODO(andrew@neuraldev.io): add all the pagination response results also
-          //  - sort, offset, limit, next_offset, prev_offset, n_results, current_page, total_pages
+          payload: res || {},
           status: 'success',
         })
       }

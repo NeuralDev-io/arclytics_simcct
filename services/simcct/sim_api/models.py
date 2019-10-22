@@ -691,13 +691,13 @@ class Feedback(Document):
         'indexes': [
             # This create text indexes for advanced text search
             {
-                'fields': ['category', 'comment'],
+                'fields': ['$category', '$comment'],
                 # For a text index, the weight of an indexed field denotes
                 # the significance of the field relative to the other indexed
                 # fields in terms of the text search score.
                 # 5:1 the impact as a term match in the category vs comments
                 'weights': {
-                    'category': 5,
+                    'category': 3,
                     'comment': 1
                 }
             }

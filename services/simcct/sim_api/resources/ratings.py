@@ -39,6 +39,19 @@ ratings_blueprint = Blueprint('ratings', __name__)
 logger = AppLogger(__name__)
 
 
+# Projection of the fields we want returned from a feedback collection
+PROJECTIONS = {
+    "$project": {
+        "_id": 0,
+        "category": 1,
+        "rating": 1,
+        "comment": 1,
+        "created_date": 1,
+        "user.email": 1,
+    }
+}
+
+
 # noinspection PyMethodMayBeStatic
 class UserRating(Resource):
     """
@@ -193,17 +206,7 @@ class UserFeedback(Resource):
             total_pages = 0
 
         # Stage 6 -- Return/select only those things we want.
-        projection = {
-            "$project": {
-                "_id": 0,
-                "category": 1,
-                "rating": 1,
-                "comment": 1,
-                "created_date": 1,
-                "user.email": 1,
-            }
-        }
-        pipeline.append(projection)
+        pipeline.append(PROJECTIONS)
 
         # ========== # QUERY THE DATABASE # ========== #
         feedback_list = SearchService().aggregate(pipeline)
@@ -313,7 +316,184 @@ class UserFeedbackSearch(Resource):
         Returns:
 
         """
-        return {'status': 'fail'}, 405
+
+        response = {'status': 'fail', 'message': 'Invalid parameters.'}
+
+        # ========== # VALIDATION OF PARAMETERS # ========== #
+        # Check the param args if there are any
+        if not request.args:
+            return response, 400
+
+        query, sort = None, None
+        if request.args:
+            query = request.args.get('query', None)
+            sort = request.args.get('sort', None)
+
+        # Ensure query parameters have been given, otherwise there is
+        # nothing to search for.
+        if not query:
+            response.update({'message': 'No query parameters provided.'})
+            return response, 400
+
+        # Limit of 0 is unlimited
+        try:
+            # By default, we limit the number of returned searches to 200.
+            limit = int(request.args.get('limit', 200))
+        except ValueError:
+            response.update({'message': 'Invalid limit parameter.'})
+            return response, 400
+
+        # Validate limit:
+        if limit < 0:
+            response['message'] = 'Limit must be a positive int.'
+            return response, 400
+
+        # Stage 3 -- If we have to sort, then we validate it first and then
+        # add it to our pipeline. We sort before we apply any limit on it.
+        if sort:
+            valid_sort_keys = {
+                'category', '-category', 'rating', '-rating',
+                'created_date', '-created_date', 'comment', '-comment'
+            }
+            if sort not in valid_sort_keys:
+                response['message'] = 'Sort value is invalid.'
+                return response, 400
+
+            # ========== # SETTING UP SORTING # ========== #
+            # If our sorting value begins with a "-" in the string, then we
+            # know we are doing a DESCENDING sort so we will
+            # appropriately set
+            # the sort direction
+            sort_direction = 1
+            sort_key = sort
+            if str(sort).startswith('-'):
+                # We remove the first character as it's not a valid key
+                sort_key = sort[1:]
+                # Reverse for DESCENDING
+                sort_direction = -1
+
+            # Sort on both the chosen sort values and the text search score
+            # returned from the weighting.
+            sort_stage = {
+                "$sort": {
+                    "score": {"$meta": "textScore"},
+                    sort_key: sort_direction
+                }
+            }
+        else:
+            # By default we always sort on the latest feedback created
+            sort_stage = {
+                "$sort": {
+                    "score": {"$meta": "textScore"},
+                    "created_date": -1
+                }
+            }
+
+        # Stage 4 -- If we have a limit, we validate then prepare for the
+        # pipeline later.
+        limit_stage = {"$limit": limit} if limit >= 1 else {"$limit": 100}
+
+        # Check if the user is trying to search for an email by doing a
+        # rather simple check if the `@` symbol is in the string. If it is,
+        # we will try to search for an email instead.
+        # Thus:
+        #  - Searching for ironman@avengers.io will only return 1 result.
+        #  - Searching for ironman@ will fail
+        #  - Searching for ironman will return all emails with that
+        #  substring
+        #    in the email.
+        if '@' in str(query):
+            # Stage 1 -- Lookup to from Feedback --> Users and get the user
+            # to be returned `as` the new Array field `user`. Also setup the
+            # pipeline list which we can add to it later.
+            email_pipeline = [
+                {
+                    "$lookup": {
+                        "from": "users",
+                        "localField": "user",
+                        "foreignField": "_id",
+                        "as": "user"
+                    }
+                },
+                # Stage 2 -- Our returned result is an Array so we unwind it to
+                # make it a dictionary.
+                {"$unwind": "$user"},
+                # Stage 3 -- Match the query email with the user.email that we
+                # unwound in the last stage.
+                {
+                    "$match": {
+                        "user.email": query
+                    }
+                },
+                sort_stage,
+                limit_stage,
+                PROJECTIONS
+            ]
+
+            data = SearchService().aggregate(email_pipeline)
+
+            n_results = len(data)
+            if n_results > 0:
+                # We found a user with this email so let's return that
+                return {
+                       'status': 'success',
+                       'query': query,
+                       'sort': sort,
+                       'limit': limit,
+                       'data': data,
+                       'n_results': n_results
+                   }, 200
+
+            # we failed to find via email to lets do a string search by
+            # going to the next call.
+
+        # We use the compound text index on `comment` and `category` to do a
+        # advanced text search. Our indexes are weighted to the categories so
+        # we will more than likely see those first.
+        pipeline = [
+            # Stage 1 -- We do an advanced text search on the indexes that we
+            # created in `sim_api.models.Feedback`
+            {
+                "$match": {
+                    "$text": {
+                        "$search": query,
+                        "$caseSensitive": False
+                    }
+                }
+            },
+            # Stage 2 -- Lookup from Feedback --> Users and get the user
+            # to be returned `as` the new Array field `user`. Also setup the
+            # pipeline list which we can add to it later.
+            {
+                "$lookup": {
+                    "from": "users",
+                    "localField": "user",
+                    "foreignField": "_id",
+                    "as": "user"
+                }
+            },
+            # Stage 3 -- Our returned result is an Array so we unwind it to
+            # make it a dictionary.
+            {"$unwind": "$user"},
+            sort_stage,
+            limit_stage,
+            PROJECTIONS
+        ]
+
+        data = SearchService().aggregate(pipeline)
+
+        n_results = len(data)
+        if n_results > 0:
+            return {
+                'status': 'success',
+                'query': query,
+                'sort': sort,
+                'limit': limit,
+                'data': data,
+                'n_results': n_results
+            }, 200
+
+        return {'status': 'fail', 'message': 'No results.'}, 404
 
 
 # noinspection PyMethodMayBeStatic

@@ -35,9 +35,7 @@ class AdminFeedback extends Component {
   componentDidMount = () => { }
 
   fetchFeedbackQuery = (state) => {
-    const {
-      getFeedbackListConnect,
-    } = this.props
+    const { getFeedbackListConnect } = this.props
 
     /*
     * page: state.page, -- page (zero-indexed)
@@ -56,9 +54,12 @@ class AdminFeedback extends Component {
         sort = `-${state.sorted[0].id}`
       }
     }
-    console.log(sort)
-
     getFeedbackListConnect(`page=${state.page}&limit=${state.pageSize}&sort=${sort}`)
+  }
+
+  handleSearch = () => {
+    const { searchQuery } = this.state
+    this.setState({ isSearching: false, searchQuery: '' })
   }
 
   render() {
@@ -111,12 +112,13 @@ class AdminFeedback extends Component {
         Cell: ({ value }) => (<span>{dangerouslyGetDateTimeString(value)}</span>),
         maxWidth: 180,
       },
-      // May need a button for viewing the full content.
       {
         Header: '',
         Cell: ({ original }) => (
           <div className={styles.actions}>
-            {/* <Button
+            {/*
+            Potentially consider doing a send email feature as a response.
+            <Button
               onClick={() => this.handleLoadSim(original)}
               length="short"
               appearance="text"
@@ -145,28 +147,24 @@ class AdminFeedback extends Component {
         <div className={styles.tools}>
           <TextField
             type="text"
-            length={!isSearching ? 'long' : 'stretch'}
+            length="stretch"
             name="searchQuery"
-            placeholder="Search feedback..."
+            placeholder="Search feedback by email, category or comments..."
             value={searchQuery}
             onFocus={() => this.setState({ isSearching: true })}
-            onBlur={() => this.setState({ isSearching: false })}
             className={styles.searchBar}
             onChange={value => this.setState({ searchQuery: value })}
           />
-          { isSearching ? (
-            <Button
-              appearance="outline"
-              onClick={() => console.log('Search')}
-              IconComponent={props => <FontAwesomeIcon icon={faSearch} {...props} />}
-              length="long"
-              className={styles.searchBtn}
-              isDisabled={!isSearching}
-            >
-            Search
-            </Button>
-          )
-            : (' ')}
+          <Button
+            appearance="outline"
+            onClick={this.handleSearch}
+            IconComponent={props => <FontAwesomeIcon icon={faSearch} {...props} />}
+            length="long"
+            className={styles.searchBtn}
+            isDisabled={!isSearching}
+          >
+          Search
+          </Button>
         </div>
 
         <ControlledTable

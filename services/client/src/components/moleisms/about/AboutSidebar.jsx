@@ -26,7 +26,7 @@ class AboutSidebar extends Component {
     super(props)
     const pathArr = window.location.pathname.split('/')
     this.state = {
-      active: pathArr[pathArr.length - 1],
+      active: pathArr[2],
     }
   }
 
@@ -55,7 +55,7 @@ class AboutSidebar extends Component {
           onClick={() => this.setState({ active: 'application' })}
           className={`${styles.item} ${active === 'application' && styles.active}`}
         >
-          <FontAwesomeIcon icon={faInfoSquare} className={styles.icon}/>
+          <FontAwesomeIcon icon={faInfoSquare} className={styles.icon} />
           <span>Arclytics SimCCT</span>
         </Link>
         <Link
@@ -64,7 +64,7 @@ class AboutSidebar extends Component {
           onClick={() => this.setState({ active: 'disclaimer' })}
           className={`${styles.item} ${active === 'disclaimer' && styles.active}`}
         >
-          <FontAwesomeIcon icon={faExclamationTriangle} className={styles.icon}/>
+          <FontAwesomeIcon icon={faExclamationTriangle} className={styles.icon} />
           <span>Disclaimer</span>
         </Link>
         <Link

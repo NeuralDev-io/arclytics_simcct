@@ -1776,7 +1776,7 @@ while [[ "$1" != "" ]] ; do
                   gsutil cp -r ${WORKDIR}/services/simcct/sim_api/static/* gs://${CLOUD_STORAGE_BUCKET}/imgs/
                   gsutil cp -r ${WORKDIR}/arclytics.io/assets/ansto_neuraldev.jpg gs://${CLOUD_STORAGE_BUCKET}/imgs/
                   gsutil cp -r ${WORKDIR}/services/client/src/assets/ANSTO_logo_SVG/logo_text_gov.svg gs://${CLOUD_STORAGE_BUCKET}/imgs/
-                  gsutil cp -r ${WORKDIR}/services/client/src/assets/ANSTO_logo_SVG/logo_20.svg gs://${CLOUD_STORAGE_BUCKET}/imgs/
+                  gsutil cp -r ${WORKDIR}/services/client/src/assets/logo_20.svg gs://${CLOUD_STORAGE_BUCKET}/imgs/
                   ;;
                 list | ls )
                   gsutil ls gs://${CLOUD_STORAGE_BUCKET}/imgs/**

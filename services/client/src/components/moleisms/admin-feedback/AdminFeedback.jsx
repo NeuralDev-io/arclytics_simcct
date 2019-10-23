@@ -16,13 +16,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye } from '@fortawesome/pro-light-svg-icons/faEye'
 import { faSearch } from '@fortawesome/pro-light-svg-icons/faSearch'
 import { faEraser } from '@fortawesome/pro-light-svg-icons/faEraser'
+import { faTimes } from '@fortawesome/pro-light-svg-icons/faTimes'
 import { getFeedback, searchFeedback } from '../../../state/ducks/feedback/actions'
-import Button from '../../elements/button'
+import Button, { IconButton } from '../../elements/button'
 import { ControlledTable } from '../../elements/table'
 import TextField from '../../elements/textfield'
 import { dangerouslyGetDateTimeString } from '../../../utils/datetime'
 
 import styles from './AdminFeedback.module.scss'
+import { getColor } from '../../../utils/theming'
 
 
 class AdminFeedback extends Component {
@@ -33,6 +35,8 @@ class AdminFeedback extends Component {
       isSearching: false,
       searchState: false,
       page: 0,
+      showSideView: false,
+      currentFeedback: {},
     }
   }
 
@@ -115,12 +119,47 @@ class AdminFeedback extends Component {
     getFeedbackListConnect(`page=0&limit=${limit}&sort=${sort}`)
   }
 
+  handleViewSim = (feedback) => {
+    const date = new Date(feedback.created_date)
+    // eslint-disable-next-line no-underscore-dangle
+    this.setState({
+      showSideView: true,
+      currentFeedback: {
+        email: feedback.user.email,
+        comment: feedback.comment,
+        created: date.toString(),
+        rating: feedback.rating,
+        category: feedback.category,
+      },
+    })
+    setTimeout(() => {
+      this.setState({
+        currentFeedback: {
+          email: feedback.user.email,
+          comment: feedback.comment,
+          created: date.toString(),
+          rating: feedback.rating,
+          category: feedback.category,
+        },
+      })
+    }, 500)
+  }
+
+  handleCloseSideView = () => {
+    this.setState({
+      showSideView: false,
+      currentFeedback: {},
+    })
+  }
+
   render() {
     const {
       isSearching,
       searchState,
       searchQuery,
       page,
+      showSideView,
+      currentFeedback,
     } = this.state
 
     const {
@@ -129,7 +168,7 @@ class AdminFeedback extends Component {
       totalPages,
     } = this.props
 
-    let { feedbackList } = this.props
+    let { feedbackList = [] } = this.props
     if (!dataFetched) feedbackList = []
 
     const columns = [
@@ -172,18 +211,8 @@ class AdminFeedback extends Component {
         Header: '',
         Cell: ({ original }) => (
           <div className={styles.actions}>
-            {/*
-            Potentially consider doing a send email feature as a response.
             <Button
-              onClick={() => this.handleLoadSim(original)}
-              length="short"
-              appearance="text"
-              IconComponent={props => <FontAwesomeIcon icon={faUpload} {...props} />}
-            >
-              Load
-            </Button> */}
-            <Button
-              // onClick={() => ()}
+              onClick={() => this.handleViewSim(original)}
               length="short"
               appearance="text"
               IconComponent={props => <FontAwesomeIcon icon={faEye} {...props} />}
@@ -197,59 +226,101 @@ class AdminFeedback extends Component {
     ]
 
     return (
-      <div className={styles.container}>
-        <h3>User feedback</h3>
+      <>
+        <div className={`${styles.mainView} ${showSideView ? styles.shrink : ''}`}>
+          <h3>User feedback</h3>
 
-        <div className={styles.tools}>
-          <TextField
-            type="text"
-            length="stretch"
-            name="searchQuery"
-            placeholder="Search feedback by email, category or comments..."
-            value={searchQuery}
-            onFocus={() => this.setState({ isSearching: true, searchState: true })}
-            className={styles.searchBar}
-            onChange={value => this.setState({ searchQuery: value })}
+          <div className={styles.tools}>
+            <TextField
+              type="text"
+              length="stretch"
+              name="searchQuery"
+              placeholder="Search feedback by email, category or comments..."
+              value={searchQuery}
+              onFocus={() => this.setState({ isSearching: true, searchState: true })}
+              className={styles.searchBar}
+              onChange={value => this.setState({ searchQuery: value })}
+            />
+            <Button
+              appearance="outline"
+              onClick={this.handleSearch}
+              IconComponent={props => <FontAwesomeIcon icon={faSearch} {...props} />}
+              length="long"
+              className={styles.searchBtn}
+              isDisabled={!isSearching}
+            >
+            Search
+            </Button>
+            <Button
+              appearance="outline"
+              onClick={this.handleClearSearch}
+              IconComponent={props => <FontAwesomeIcon icon={faEraser} {...props} />}
+              length="long"
+              className={styles.clearBtn}
+              isDisabled={!searchState}
+            >
+            Clear
+            </Button>
+          </div>
+
+          <ControlledTable
+            columns={columns}
+            // Request new data when things change
+            fetchData={this.fetchFeedbackQuery}
+            data={feedbackList}
+            pages={totalPages}
+            page={page}
+            onPageChange={p => this.setState({ page: p })}
+            loading={dataLoading}
+            showPageSizeOptions={false}
+            showPagination={feedbackList.length !== 0}
+            resizable={false}
+            defaultPageSize={10}
+            condensed
+            className="-highlight"
           />
-          <Button
-            appearance="outline"
-            onClick={this.handleSearch}
-            IconComponent={props => <FontAwesomeIcon icon={faSearch} {...props} />}
-            length="long"
-            className={styles.searchBtn}
-            isDisabled={!isSearching}
-          >
-          Search
-          </Button>
-          <Button
-            appearance="outline"
-            onClick={this.handleClearSearch}
-            IconComponent={props => <FontAwesomeIcon icon={faEraser} {...props} />}
-            length="long"
-            className={styles.clearBtn}
-            isDisabled={!searchState}
-          >
-          Clear
-          </Button>
         </div>
+        <div className={`${styles.sideView} ${showSideView ? styles.show : ''}`}>
+          <header className={styles.sideHeader}>
+            <h5>
+              Feedback from:
+              {' '}
+              {currentFeedback.email}
+            </h5>
+            <IconButton
+              onClick={this.handleCloseSideView}
+              Icon={props => <FontAwesomeIcon icon={faTimes} color={getColor('--n500')} {...props} />}
+            />
+          </header>
 
-        <ControlledTable
-          columns={columns}
-          // Request new data when things change
-          fetchData={this.fetchFeedbackQuery}
-          data={feedbackList}
-          pages={totalPages}
-          page={page}
-          onPageChange={p => this.setState({ page: p })}
-          loading={dataLoading}
-          showPageSizeOptions={false}
-          showPagination={feedbackList.length !== 0}
-          resizable={false}
-          defaultPageSize={10}
-          condensed
-          className="-highlight"
-        />
-      </div>
+          <div className={styles.feedbackForm}>
+            <h6>Submitted</h6>
+            <p>{currentFeedback.created}</p>
+            <br />
+            <h6>Category</h6>
+            <p>{currentFeedback.category}</p>
+            <br />
+            <h6>Rating</h6>
+            <p>{currentFeedback.rating}</p>
+            <br />
+            <h6>Comment</h6>
+            <p>{currentFeedback.comment}</p>
+            <br />
+          </div>
+
+          <div className={styles.sideActions}>
+            <Button
+              onClick={this.handleCloseSideView}
+              appearance="outline"
+              length="long"
+              IconComponent={props => <FontAwesomeIcon icon={faTimes} {...props} />}
+              className={styles.sideButtons}
+            >
+                Close
+            </Button>
+          </div>
+        </div>
+      </>
     )
   }
 }

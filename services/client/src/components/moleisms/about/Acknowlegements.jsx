@@ -42,7 +42,11 @@ const packages = [
 class Acknowledgements extends React.PureComponent {
   renderPackageList = () => packages.map(packageItem => (
     <li key={packageItem.name} className={styles.packageItem}>
-      <a href={packageItem.link}>
+      <a
+        href={packageItem.link}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         {packageItem.name}
       </a>
     </li>
@@ -70,7 +74,11 @@ class Acknowledgements extends React.PureComponent {
             </ul>
             <p>
               We would also like to acknowledge the &nbsp;
-              <a href="https://www.uow.edu.au/southwesternsydneycampus/">
+              <a
+                href="https://www.uow.edu.au/southwesternsydneycampus/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 University of Wollongong (South Western Sydney campus)
               </a>
               &nbsp; academic and student services staff for their support.

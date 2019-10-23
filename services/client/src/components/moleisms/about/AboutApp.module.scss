@@ -63,48 +63,8 @@
   margin-bottom: 1.75rem;
 }
 
-.acknowledgements {
-  display: flex;
-  flex-flow: column nowrap;
-  align-items: flex-start;
-  width: 100%;
-
+section.theory {
   & > ul {
-    display: flex;
-    flex-flow: row wrap;
-    width: 100%;
-    margin: 1.25rem 0 0 0;
-    padding: 0;
-    list-style-type: none;
-    align-items: center;
-
-    & > li {
-      //float: left;
-      height: 100%;
-      width: 7rem;
-    }
-
-    & > li a {
-      display: block;
-      color: var(--n900);
-      text-align: center;
-      align-items: center;
-      padding: 0 .25rem;
-      //width: 6rem;
-      height: 2.5rem;
-      text-decoration: none;
-    }
-
-    & > .icon {
-      //width: 1.25rem;
-      //margin-right: .75rem;
-    }
-
-    & > li a:hover {
-      background-color: var(--arc500);
-      color: var(--n10);
-    }
-
-    li:first-of-type { padding: 0; }
+    margin-top: 1.5rem;
   }
 }

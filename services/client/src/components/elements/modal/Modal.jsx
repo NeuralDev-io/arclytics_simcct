@@ -13,6 +13,7 @@ import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/pro-light-svg-icons/faTimes'
 import { IconButton } from '../button'
+import Portal from '../portal'
 import { buttonize } from '../../../utils/accessibility'
 
 import styles from './Modal.module.scss'
@@ -24,22 +25,24 @@ const Modal = ({
   className,
   children,
 }) => (
-  <div className={`${styles.container} ${show ? styles.show : ''}`}>
-    <div className={styles.backdrop} {...buttonize(onClose)} />
-    <div className={`${styles.modalContainer} ${withCloseIcon && styles.withCloseIcon}`}>
-      <div className={`${styles.modal} ${className || ''}`}>
-        {children}
+  <Portal to={document.getElementById('modal-container')}>
+    <div className={`${styles.container} ${show ? styles.show : ''}`}>
+      <div className={styles.backdrop} {...buttonize(onClose)} />
+      <div className={`${styles.modalContainer} ${withCloseIcon && styles.withCloseIcon}`}>
+        <div className={`${styles.modal} ${className || ''}`}>
+          {children}
+        </div>
+        { withCloseIcon
+        && (
+          <IconButton
+            onClick={onClose}
+            Icon={props => <FontAwesomeIcon icon={faTimes} className={styles.icon} size="lg" {...props} />}
+            className={{ button: styles.closeButton }}
+          />
+        )}
       </div>
-      { withCloseIcon
-      && (
-        <IconButton
-          onClick={onClose}
-          Icon={props => <FontAwesomeIcon icon={faTimes} className={styles.icon} size="lg" {...props} />}
-          className={{ button: styles.closeButton }}
-        />
-      )}
     </div>
-  </div>
+  </Portal>
 )
 
 Modal.propTypes = {

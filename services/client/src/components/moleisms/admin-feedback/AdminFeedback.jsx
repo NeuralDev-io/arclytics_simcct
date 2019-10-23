@@ -158,6 +158,14 @@ class AdminFeedback extends Component {
         Header: 'Comment',
         accessor: 'comment',
         id: 'comment',
+        Cell: ({ value }) => {
+          if (value !== undefined) {
+            const len = value.length
+            if (len >= 80) return `${String(value).substring(0, 80)}...`
+            return value
+          }
+          return ''
+        },
         minWidth: 180,
       },
       {

@@ -13,12 +13,8 @@ const initialState = {
   totalPages: -1,
   sort: '-created_date',
   limit: 10,
-  feedbackData: {
-    current_page: -1,
-  },
   searchData: {
     query: '',
-    current_page: -1,
   },
   feedbackVisible: false,
   ratingVisible: false,
@@ -37,9 +33,6 @@ const reducer = (state = initialState, action) => {
         return {
           ...state,
           isLoading: true,
-          feedbackData: {
-            ...state.feedbackData,
-          },
         }
       }
       // Let's deal with failure first so we can get over it faster (i.e. fail fast)
@@ -47,9 +40,6 @@ const reducer = (state = initialState, action) => {
         return {
           ...state,
           isLoading: false,
-          feedbackData: {
-            ...state.feedbackData,
-          },
         }
       }
       // If action.status === 'success'
@@ -62,10 +52,6 @@ const reducer = (state = initialState, action) => {
           totalPages: action.payload.total_pages,
           sort: action.payload.sort,
           limit: action.payload.limit,
-          feedbackData: {
-            ...state.feedbackData,
-            current_page: action.payload.current_page,
-          },
         }
       }
       break
@@ -104,7 +90,6 @@ const reducer = (state = initialState, action) => {
           searchData: {
             ...state.searchData,
             query: action.payload.query,
-            current_page: action.payload.current_page,
           },
         }
       }

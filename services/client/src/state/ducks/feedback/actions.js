@@ -180,7 +180,6 @@ export const searchFeedback = params => (dispatch) => {
         })
       }
       if (res.status === 'success') {
-        console.log(res)
         dispatch({
           type: SEARCH_FEEDBACK,
           payload: res || {},

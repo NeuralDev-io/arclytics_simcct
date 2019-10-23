@@ -31,12 +31,18 @@ class AdminFeedback extends Component {
       searchQuery: '',
       isSearching: false,
       searchState: false,
+      page: 0,
     }
   }
 
   componentDidMount = () => { }
 
-  fetchFeedbackQuery = (state) => {
+  /**
+   * The handle callback for React-Table that controls what happens when the state
+   * of the table has changed.
+   * @param (reactTableState) the state of the React-Table.
+   */
+  fetchFeedbackQuery = (reactTableState) => {
     const { getFeedbackListConnect, searchFeedbackConnect } = this.props
 
     /*
@@ -57,20 +63,20 @@ class AdminFeedback extends Component {
 
     // Set up sorting:
     let sort = '-created_date'
-    if (state.sorted.length > 0) {
-      if (state.sorted[0].desc) {
-        sort = state.sorted[0].id
+    if (reactTableState.sorted.length > 0) {
+      if (reactTableState.sorted[0].desc) {
+        sort = reactTableState.sorted[0].id
       } else {
-        sort = `-${state.sorted[0].id}`
+        sort = `-${reactTableState.sorted[0].id}`
       }
     }
 
     if (searchState) {
       searchFeedbackConnect(
-        `query=${searchQuery}&page=${state.page}&limit=${state.pageSize}&sort=${sort}`,
+        `query=${searchQuery}&page=${reactTableState.page}&limit=${reactTableState.pageSize}&sort=${sort}`,
       )
     } else {
-      getFeedbackListConnect(`page=${state.page}&limit=${state.pageSize}&sort=${sort}`)
+      getFeedbackListConnect(`page=${reactTableState.page}&limit=${reactTableState.pageSize}&sort=${sort}`)
     }
   }
 
@@ -82,7 +88,7 @@ class AdminFeedback extends Component {
    * retrieval of all data.
    */
   handleSearch = () => {
-    this.setState({ isSearching: false, searchState: true })
+    this.setState({ page: 0, isSearching: false, searchState: true })
     const { searchFeedbackConnect, sort, limit } = this.props
     const { searchQuery } = this.state
     // Make the initial search and get the first page.
@@ -96,7 +102,12 @@ class AdminFeedback extends Component {
    * full list of feedback again so the state of the table is back to normal.
    */
   handleClearSearch = () => {
-    this.setState({ searchQuery: '', isSearching: false, searchState: false })
+    this.setState({
+      page: 0,
+      searchQuery: '',
+      isSearching: false,
+      searchState: false,
+    })
     const { getFeedbackListConnect, sort, limit } = this.props
     // Clear the table state by doing a retrieval of all the data again from
     // the first page.
@@ -108,6 +119,7 @@ class AdminFeedback extends Component {
       isSearching,
       searchState,
       searchQuery,
+      page,
     } = this.state
 
     const {
@@ -115,7 +127,7 @@ class AdminFeedback extends Component {
       dataLoading,
       totalPages,
     } = this.props
-    // const { feedbackData: { sort: sortList, limit: limitList } } = this.props
+
     let { feedbackList } = this.props
     if (!dataFetched) feedbackList = []
 
@@ -225,6 +237,8 @@ class AdminFeedback extends Component {
           fetchData={this.fetchFeedbackQuery}
           data={feedbackList}
           pages={totalPages}
+          page={page}
+          onPageChange={p => this.setState({ page: p })}
           loading={dataLoading}
           showPageSizeOptions={false}
           showPagination={feedbackList.length !== 0}
@@ -249,6 +263,7 @@ AdminFeedback.propTypes = {
   dataFetched: PropTypes.bool.isRequired,
   sort: PropTypes.string.isRequired,
   limit: PropTypes.number.isRequired,
+  page: PropTypes.number.isRequired,
   // Get parameters from Redux connect
   feedbackList: PropTypes.arrayOf(PropTypes.shape({
     user: PropTypes.shape({
@@ -275,9 +290,7 @@ const mapStateToProps = state => ({
   totalPages: state.feedback.totalPages,
   sort: state.feedback.sort,
   limit: state.feedback.limit,
-  getCurrentPage: state.feedback.feedbackData.current_page,
   searchData: state.feedback.searchData,
-  searchCurrentPage: state.feedback.searchData.current_page,
 })
 
 const mapDispatchToProps = {

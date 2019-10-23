@@ -348,6 +348,13 @@ class UserFeedbackSearch(Resource):
             response['message'] = 'Limit must be a positive int.'
             return response, 400
 
+        # Get the page number to check how many skips to return
+        try:
+            page = int(request.args.get('page', 0))
+        except ValueError:
+            response.update({'message': 'Invalid page parameter.'})
+            return response, 400
+
         # Stage 3 -- If we have to sort, then we validate it first and then
         # add it to our pipeline. We sort before we apply any limit on it.
         if sort:
@@ -389,9 +396,11 @@ class UserFeedbackSearch(Resource):
                 }
             }
 
-        # Stage 4 -- If we have a limit, we validate then prepare for the
-        # pipeline later.
-        limit_stage = {"$limit": limit} if limit >= 1 else {"$limit": 100}
+        # We need to get the number of skips to return the sliced result.
+        current_page = 0 if limit == 0 else page
+        skip = current_page * limit
+
+        # limit_stage = {"$limit": limit} if limit >= 1 else {"$limit": 200}
 
         # Check if the user is trying to search for an email by doing a
         # rather simple check if the `@` symbol is in the string. If it is,
@@ -426,23 +435,38 @@ class UserFeedbackSearch(Resource):
                     }
                 },
                 sort_stage,
-                limit_stage,
                 PROJECTIONS
             ]
 
             data = SearchService().aggregate(email_pipeline)
 
             n_results = len(data)
-            if n_results > 0:
+            if n_results == 1:
                 # We found a user with this email so let's return that
                 return {
                        'status': 'success',
                        'query': query,
                        'sort': sort,
                        'limit': limit,
+                       'page': 0,
+                       'total_pages': 1,
                        'data': data,
-                       'n_results': n_results
+                       'n_total_results': 1
                    }, 200
+            if n_results > 1:
+                # Since we found more than 1 result, we need to slice based
+                # on the limit asked.
+                return {
+                    'status': 'success',
+                    'query': query,
+                    'sort': sort,
+                    'limit': limit,
+                    # Return the slice from the skip to the limit
+                    # Note that Python returns the end of the list if the
+                    # limit is more than than len(list)
+                    'data': data[skip:limit-1],
+                    'n_total_results': n_results
+                }, 200
 
             # we failed to find via email to lets do a string search by
             # going to the next call.
@@ -450,48 +474,61 @@ class UserFeedbackSearch(Resource):
         # We use the compound text index on `comment` and `category` to do a
         # advanced text search. Our indexes are weighted to the categories so
         # we will more than likely see those first.
-        pipeline = [
-            # Stage 1 -- We do an advanced text search on the indexes that we
-            # created in `sim_api.models.Feedback`
-            {
-                "$match": {
-                    "$text": {
-                        "$search": query,
-                        "$caseSensitive": False
-                    }
+        pipeline = [{
+            "$match": {
+                "$text": {
+                    "$search": query,
+                    "$caseSensitive": False
                 }
-            },
-            # Stage 2 -- Lookup from Feedback --> Users and get the user
-            # to be returned `as` the new Array field `user`. Also setup the
-            # pipeline list which we can add to it later.
-            {
-                "$lookup": {
-                    "from": "users",
-                    "localField": "user",
-                    "foreignField": "_id",
-                    "as": "user"
-                }
-            },
-            # Stage 3 -- Our returned result is an Array so we unwind it to
-            # make it a dictionary.
-            {"$unwind": "$user"},
-            sort_stage,
-            limit_stage,
-            PROJECTIONS
-        ]
+            }
+        }, {
+            "$lookup": {
+                "from": "users",
+                "localField": "user",
+                "foreignField": "_id",
+                "as": "user"
+            }
+        }, {"$unwind": "$user"}, sort_stage, PROJECTIONS]
 
+        # Query the database to get the full result
         data = SearchService().aggregate(pipeline)
 
+        # Instead of using a limit stage, we wil just go ahead and get
+        # everything and then we can slice based on skip:limit - 1 results.
         n_results = len(data)
         if n_results > 0:
-            return {
-                'status': 'success',
-                'query': query,
-                'sort': sort,
-                'limit': limit,
-                'data': data,
-                'n_results': n_results
-            }, 200
+            # We need the full list to check for pagination.
+            if limit == 0:
+                # No limit was asked so we return everything
+                return {
+                    'status': 'success',
+                    'query': query,
+                    'sort': sort,
+                    'limit': limit,
+                    'page': 0,
+                    'total_pages': 1,
+                    'data': data,
+                    'n_total_results': n_results
+                }, 200
+            else:
+                # We know there is more results than the limit so we need
+                # some pagination.
+                total_pages = floor(n_results / limit)
+                if n_results % limit == 0:
+                    total_pages = total_pages - 1
+                else:
+                    total_pages = total_pages
+
+                return {
+                    'status': 'success',
+                    'query': query,
+                    'sort': sort,
+                    'limit': limit,
+                    'page': page,
+                    'total_pages': total_pages,
+                    'data': data,
+                    'n_total_results': n_results
+                }, 200
 
         return {'status': 'fail', 'message': 'No results.'}, 404
 

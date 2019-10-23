@@ -3,6 +3,9 @@ version: '3.7'
 
 services:
 
+  # Website Microservice
+  # This is the website arclytics.io container that can be deployed to
+  # a Kubernetes service.
   website:
     build:
       context: ./arclytics.io/client/
@@ -18,7 +21,9 @@ services:
     expose:
       - 8080
 
-
+  # Fluentd Microservice
+  # This is the `fluentd` logger container that ingests all logs from Docker and
+  # acts as a centralised logging layer.
   fluentd:
     build:
       context: ./services/fluentd
@@ -36,6 +41,10 @@ services:
       - 24224
       - 9880
 
+  # Client Microservice
+  # This is the React front-end container that the client can access via the
+  # Nginx HTTP server. This container is built in production mode and it is
+  # the static files are copied to a Nginx HTTP server container.
   client:
     build:
       context: ./services/client
@@ -63,6 +72,13 @@ services:
       - REACT_APP_ARC_PORT=443
       - REACT_APP_FLUENTD_URL=https://app.arclytics.io/logger
 
+  # SimCCT Microservice
+  # This is the main service that provides user and admin management, authentication,
+  # authorization, server-side session and cookie management, and the RESTful API
+  # for the `arc_simulation` package. The `arc_simulation` package is a submodule
+  # that provides the algorithm for phase transformation calculations. This service
+  # is written with the Flask microframework and contains additional Flask plugins
+  # provided by the open-source community.
   simcct:
     build:
       context: ./services/simcct
@@ -98,6 +114,10 @@ services:
       - ELASTIC_APM_SERVER_URL=http://apm-service:8200
       - ELASTIC_APM_SECRET_TOKEN=${SECRET_TOKEN}
 
+  # Celery-Worker Microservice
+  # This container contains a Flask instance of a Celery worker node that performs
+  # asynchronous tasks based on the message queue from Redis and stores the result
+  # in the Redis backend.
   celery-worker:
     build:
       context: ./services/celery-worker
@@ -129,6 +149,12 @@ services:
       - ELASTIC_APM_SERVER_URL=http://apm-service:8200
       - ELASTIC_APM_SECRET_TOKEN=${SECRET_TOKEN}
 
+  # Arclytics Microservice
+  # This is the container that provides analytics for the application. It ensures
+  # authentication and authorization by using the same secret key as the `simcct`
+  # microservice and decoding the JSON Web Token that is set in the cookie.
+  # This service is written with the Flask microframework and contains additional
+  # Flask plugins provided by the open-source community.
   arclytics:
     build:
       context: ./services/arclytics
@@ -161,6 +187,11 @@ services:
       - ELASTIC_APM_SERVER_URL=http://apm-server:8200
       - MAPBOX_TOKEN=${MAPBOX_TOKEN}
 
+  # Redis Microservice
+  # This is a Redis in-memory data store and persistence layer than is used by other
+  # services including `simcct`, `arclytics`, and `celery-worker`. It's main purpose
+  # is for the server-side session storage for Flask and the message queue and results
+  # backend for Celery.
   redis:
     build:
       context: ./services/redis
@@ -177,6 +208,12 @@ services:
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
 
+  # MongoDB Microservice
+  # MongoDB is an open-source, general purpose, document-based, distributed
+  # NoSQL database. Our application uses MongoDB with a Replica Set distribution
+  # as the data persistence layer for our users and application data. We also
+  # use MongoDB’s querying language and pipelines to leverage data analytics
+  # about our users, application, and the simulation data.
   mongodb:
     build:
       context: ./services/db

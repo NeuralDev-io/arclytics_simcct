@@ -3,6 +3,7 @@ import {
   CLOSE_FEEDBACK,
   RESET_FEEDBACK,
   GET_FEEDBACK,
+  SEARCH_FEEDBACK,
 } from './types'
 import { SIMCCT_URL } from '../../../constants'
 import { addFlashToast } from '../toast/actions'
@@ -88,7 +89,6 @@ export const getFeedback = params => (dispatch) => {
         })
       }
       if (res.status === 'success') {
-        console.log(res)
         dispatch({
           type: GET_FEEDBACK,
           payload: res || {},
@@ -101,7 +101,99 @@ export const getFeedback = params => (dispatch) => {
       logError(
         err.toString(),
         err.message,
-        'feedback.actions.getAlloys',
+        'feedback.actions.getFeedback',
+        err.stack,
+      )
+    })
+}
+
+/**
+ * API request to `simcct` server to search for feedback based on a query
+ * sent in the parameters which can be used for `email`, `category`, and
+ * `comment`. The reducer to use as defined in `src/state/ducks/feedback/reducers.js`.
+ *
+ * If successful, the response will be:
+ * {
+ *   "status": "success",
+ *   "data": [
+ *     {
+ *       "email": ...,
+ *       "category": ...,
+ *       "rating": ...,
+ *       "comment": ...,
+ *       "created_date": ...,
+ *     }
+ *   ],
+ *   "query": ...,
+ *   "sort": ...,
+ *   "offset": ...,
+ *   "limit": ..., (= 0 --> default 200, > 1 --> number of limited results)
+ *   "n_results": ...,
+ * }
+ * @param params the URL query parameters for the request.
+ * @param dispatch the Redux `dispatch()` function which will define the `type` of
+ * reducer to use as defined in `src/state/ducks/feedback/reducers.js`.
+ *
+ */
+export const searchFeedback = params => (dispatch) => {
+  // Ensure redux knows we have started the retrieval so it waits to render
+  dispatch({
+    type: SEARCH_FEEDBACK,
+    status: 'started',
+  })
+
+  // Make the API request for retrieval and handle response
+  fetch(`${SIMCCT_URL}/user/feedback/search?${params}`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((res) => {
+      if (res.status === 404) { return { status: 'success', data: [] } }
+      if (res.status === 401) {
+        return {
+          status: 'fail',
+          message: 'Not Authorized.',
+        }
+      }
+      if (res.status !== 200) {
+        return {
+          status: 'fail',
+          // Toast error message
+          message: 'Search not successful.',
+        }
+      }
+      // Success
+      return res.json()
+    })
+    .then((res) => {
+      if (res.status === 'fail') {
+        addFlashToast({
+          message: res.message,
+          options: { variant: 'error' },
+        }, true)(dispatch)
+        dispatch({
+          type: SEARCH_FEEDBACK,
+          status: 'fail',
+        })
+      }
+      if (res.status === 'success') {
+        console.log(res)
+        dispatch({
+          type: SEARCH_FEEDBACK,
+          payload: res || {},
+          status: 'success',
+        })
+      }
+    })
+    .catch((err) => {
+      // log to fluentd
+      logError(
+        err.toString(),
+        err.message,
+        'feedback.actions.searchFeedback',
         err.stack,
       )
     })

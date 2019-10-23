@@ -14,7 +14,8 @@ import { connect } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye } from '@fortawesome/pro-light-svg-icons/faEye'
 import { faSearch } from '@fortawesome/pro-light-svg-icons/faSearch'
-import { getFeedback } from '../../../state/ducks/feedback/actions'
+import { faEraser } from '@fortawesome/pro-light-svg-icons/faEraser'
+import { getFeedback, searchFeedback } from '../../../state/ducks/feedback/actions'
 import Button from '../../elements/button'
 import { ControlledTable } from '../../elements/table'
 import TextField from '../../elements/textfield'
@@ -29,21 +30,30 @@ class AdminFeedback extends Component {
     this.state = {
       searchQuery: '',
       isSearching: false,
+      searchState: false,
     }
   }
 
   componentDidMount = () => { }
 
   fetchFeedbackQuery = (state) => {
-    const { getFeedbackListConnect } = this.props
+    const { getFeedbackListConnect, searchFeedbackConnect } = this.props
 
     /*
-    * page: state.page, -- page (zero-indexed)
-    * pageSize: state.pageSize, -- limit
-    * sorted: state.sorted, -- sorting
-    *  - Note: sorted ==> [ { "id": "...", "desc": bool } ]
-    * filtered: state.filtered -- This one I don't need
+    * These are the parameters from `state` sent by ControlledTable.
+    *   - page: state.page, -- page (zero-indexed)
+    *   - pageSize: state.pageSize, -- limit
+    *   - sorted: state.sorted, -- sorting
+    *     - Note: sorted ==> [ { "id": "...", "desc": bool } ]
+    *   - filtered: state.filtered -- This one I don't need
     * */
+
+    /*
+    * Update the component state with the Redux state variables for the
+    * ControlledTable so that when we search, we know exactly which params we
+    * need to query with.
+    * */
+    const { searchState, searchQuery } = this.state
 
     // Set up sorting:
     let sort = '-created_date'
@@ -54,28 +64,60 @@ class AdminFeedback extends Component {
         sort = `-${state.sorted[0].id}`
       }
     }
-    getFeedbackListConnect(`page=${state.page}&limit=${state.pageSize}&sort=${sort}`)
+
+    if (searchState) {
+      searchFeedbackConnect(
+        `query=${searchQuery}&page=${state.page}&limit=${state.pageSize}&sort=${sort}`,
+      )
+    } else {
+      getFeedbackListConnect(`page=${state.page}&limit=${state.pageSize}&sort=${sort}`)
+    }
   }
 
+  /**
+   * This function just deals with the initial search request to the API server.
+   * It's main purpose is to get the results and change the state of the Redux store
+   * to one that is using search so that any time there is a change in the table,
+   * we continue to use the search query for page changes rather than the default
+   * retrieval of all data.
+   */
   handleSearch = () => {
+    this.setState({ isSearching: false, searchState: true })
+    const { searchFeedbackConnect, sort, limit } = this.props
     const { searchQuery } = this.state
-    this.setState({ isSearching: false, searchQuery: '' })
+    // Make the initial search and get the first page.
+    searchFeedbackConnect(
+      `query=${searchQuery}&page=0&limit=${limit}&sort=${sort}`,
+    )
+  }
+
+  /**
+   * This function deals with clearing the search state and by retrieving the
+   * full list of feedback again so the state of the table is back to normal.
+   */
+  handleClearSearch = () => {
+    this.setState({ searchQuery: '', isSearching: false, searchState: false })
+    const { getFeedbackListConnect, sort, limit } = this.props
+    // Clear the table state by doing a retrieval of all the data again from
+    // the first page.
+    getFeedbackListConnect(`page=0&limit=${limit}&sort=${sort}`)
   }
 
   render() {
-    // First check if we have any data to render or set to empty
+    const {
+      isSearching,
+      searchState,
+      searchQuery,
+    } = this.state
+
     const {
       dataFetched,
       dataLoading,
       totalPages,
     } = this.props
-    let { feedbackData } = this.props
-    if (!dataFetched) feedbackData = []
-
-    const {
-      isSearching,
-      searchQuery,
-    } = this.state
+    // const { feedbackData: { sort: sortList, limit: limitList } } = this.props
+    let { feedbackList } = this.props
+    if (!dataFetched) feedbackList = []
 
     const columns = [
       {
@@ -151,7 +193,7 @@ class AdminFeedback extends Component {
             name="searchQuery"
             placeholder="Search feedback by email, category or comments..."
             value={searchQuery}
-            onFocus={() => this.setState({ isSearching: true })}
+            onFocus={() => this.setState({ isSearching: true, searchState: true })}
             className={styles.searchBar}
             onChange={value => this.setState({ searchQuery: value })}
           />
@@ -165,19 +207,27 @@ class AdminFeedback extends Component {
           >
           Search
           </Button>
+          <Button
+            appearance="outline"
+            onClick={this.handleClearSearch}
+            IconComponent={props => <FontAwesomeIcon icon={faEraser} {...props} />}
+            length="long"
+            className={styles.clearBtn}
+            isDisabled={!searchState}
+          >
+          Clear
+          </Button>
         </div>
 
         <ControlledTable
           columns={columns}
-          // Forces table not to paginate or sort automatically,
-          // so we can handle it server-side
           // Request new data when things change
           fetchData={this.fetchFeedbackQuery}
-          data={feedbackData}
+          data={feedbackList}
           pages={totalPages}
           loading={dataLoading}
           showPageSizeOptions={false}
-          // showPagination={feedbackData.length !== 0}
+          showPagination={feedbackList.length !== 0}
           resizable={false}
           defaultPageSize={10}
           condensed
@@ -192,7 +242,15 @@ AdminFeedback.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func.isRequired,
   }).isRequired,
-  feedbackData: PropTypes.arrayOf(PropTypes.shape({
+  // These state params are managed by Redux store whether we are retrieving
+  // or searching for feedback
+  totalPages: PropTypes.number.isRequired,
+  dataLoading: PropTypes.bool.isRequired,
+  dataFetched: PropTypes.bool.isRequired,
+  sort: PropTypes.string.isRequired,
+  limit: PropTypes.number.isRequired,
+  // Get parameters from Redux connect
+  feedbackList: PropTypes.arrayOf(PropTypes.shape({
     user: PropTypes.shape({
       email: PropTypes.string,
     }),
@@ -201,27 +259,30 @@ AdminFeedback.propTypes = {
     rating: PropTypes.number,
     created_date: PropTypes.string,
   })).isRequired,
-  sort: PropTypes.string.isRequired,
-  limit: PropTypes.number.isRequired,
-  currentPage: PropTypes.number.isRequired,
-  totalPages: PropTypes.number.isRequired,
-  dataLoading: PropTypes.bool.isRequired,
-  dataFetched: PropTypes.bool.isRequired,
   getFeedbackListConnect: PropTypes.func.isRequired,
+  // Search parameters from the Redux mapStateToProps connect
+  searchData: PropTypes.shape({
+    query: PropTypes.string,
+    current_page: PropTypes.number,
+  }).isRequired,
+  searchFeedbackConnect: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
-  feedbackData: state.feedback.feedbackList.data,
-  sort: state.feedback.feedbackList.sort,
-  limit: state.feedback.feedbackList.limit,
-  currentPage: state.feedback.feedbackList.current_page,
-  totalPages: state.feedback.feedbackList.total_pages,
-  dataLoading: state.feedback.feedbackList.isLoading,
-  dataFetched: state.feedback.feedbackList.isFetched,
+  feedbackList: state.feedback.feedbackList,
+  dataFetched: state.feedback.isFetched,
+  dataLoading: state.feedback.isLoading,
+  totalPages: state.feedback.totalPages,
+  sort: state.feedback.sort,
+  limit: state.feedback.limit,
+  getCurrentPage: state.feedback.feedbackData.current_page,
+  searchData: state.feedback.searchData,
+  searchCurrentPage: state.feedback.searchData.current_page,
 })
 
 const mapDispatchToProps = {
   getFeedbackListConnect: getFeedback,
+  searchFeedbackConnect: searchFeedback,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdminFeedback)

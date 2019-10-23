@@ -141,6 +141,7 @@ class AdminFeedback extends Component {
         Cell: ({ value }) => value.email,
         sortable: false,
         filterable: false,
+        maxWidth: 300,
       },
       {
         Header: 'Category',
@@ -158,18 +159,10 @@ class AdminFeedback extends Component {
         Header: 'Comment',
         accessor: 'comment',
         id: 'comment',
-        Cell: ({ value }) => {
-          if (value !== undefined) {
-            const len = value.length
-            if (len >= 80) return `${String(value).substring(0, 80)}...`
-            return value
-          }
-          return ''
-        },
         minWidth: 180,
       },
       {
-        Header: 'Created',
+        Header: 'Submitted',
         accessor: 'created_date',
         id: 'created_date',
         Cell: ({ value }) => (<span>{dangerouslyGetDateTimeString(value)}</span>),

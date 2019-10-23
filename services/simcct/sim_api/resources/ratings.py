@@ -308,13 +308,15 @@ class UserFeedbackSearch(Resource):
     method_decorators = {'get': [authorize_admin_cookie_restful]}
 
     def get(self, _):
-        """
+        """Endpoint to do search query on the Feedback collection which also
+        returns a paginated result if the user limits the search.
 
         Args:
-            _:
+            _: a `sim_api.models.User` instance that is passed from the
+            middleware and not used.
 
         Returns:
-
+            A valid HTTP response as a Python dict and a status code.
         """
 
         response = {'status': 'fail', 'message': 'Invalid parameters.'}
@@ -533,9 +535,7 @@ class SubscribeFeedback(Resource):
     method_decorators = {'post': [authorize_admin_cookie_restful]}
 
     def post(self, user):
-        """
-        Toggle subscription to the feedback mailing list.
-        """
+        """Toggle subscription to the feedback mailing list."""
 
         response = {'status': 'fail', 'message': 'Invalid payload.'}
 

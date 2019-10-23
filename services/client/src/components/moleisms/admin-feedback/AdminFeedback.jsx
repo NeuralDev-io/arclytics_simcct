@@ -8,6 +8,7 @@
  * @version 1.0.0
  * @author Andrew Che
  */
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -181,7 +182,7 @@ class AdminFeedback extends Component {
               Load
             </Button> */}
             <Button
-              onClick={() => console.log(original)}
+              // onClick={() => ()}
               length="short"
               appearance="text"
               IconComponent={props => <FontAwesomeIcon icon={faEye} {...props} />}

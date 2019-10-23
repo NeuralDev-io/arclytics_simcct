@@ -103,7 +103,7 @@ const AboutApp = () => (
       </div>
     </section>
 
-    <section>
+    <section className={styles.theory}>
       <h4>Theory</h4>
       <p>
         The online Arclytics-SimCCT package utilises the methods and ideas

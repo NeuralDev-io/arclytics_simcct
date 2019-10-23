@@ -381,20 +381,10 @@ class UserFeedbackSearch(Resource):
 
             # Sort on both the chosen sort values and the text search score
             # returned from the weighting.
-            sort_stage = {
-                "$sort": {
-                    "score": {"$meta": "textScore"},
-                    sort_key: sort_direction
-                }
-            }
+            sort_stage = {"$sort": {sort_key: sort_direction}}
         else:
             # By default we always sort on the latest feedback created
-            sort_stage = {
-                "$sort": {
-                    "score": {"$meta": "textScore"},
-                    "created_date": -1
-                }
-            }
+            sort_stage = {"$sort": {"created_date": -1}}
 
         # We need to get the number of skips to return the sliced result.
         current_page = 0 if limit == 0 else page
@@ -464,7 +454,7 @@ class UserFeedbackSearch(Resource):
                     # Return the slice from the skip to the limit
                     # Note that Python returns the end of the list if the
                     # limit is more than than len(list)
-                    'data': data[skip:limit-1],
+                    'data': data[skip:skip+limit],
                     'n_total_results': n_results
                 }, 200
 
@@ -525,8 +515,9 @@ class UserFeedbackSearch(Resource):
                     'sort': sort,
                     'limit': limit,
                     'page': page,
+                    'skip': skip,
                     'total_pages': total_pages,
-                    'data': data,
+                    'data': data[skip:skip+limit],
                     'n_total_results': n_results
                 }, 200
 

@@ -508,9 +508,9 @@ class User(Document):
                 # last_name and email fields
                 # 10:9 impact as a term match in the last_name:first_name
                 'weights': {
-                    'last_name': 10,
-                    'first_name': 9,
-                    'email': 1
+                    'last_name': 4,
+                    'first_name': 2,
+                    'email': 5
                 }
             }
         ]

@@ -1705,7 +1705,7 @@ paths:
                   value:
                     status: "fail"
                     message: "The user details already exists."
-  /auth/login:
+  /v1/sim/auth/login:
     post:
       summary: "Logs a user in"
       tags:
@@ -1795,32 +1795,22 @@ paths:
                   value:
                     status: "fail"
                     message: "Email or password combination incorrect."
-        401:
-          description: "Unauthorised access by user."
+        403:
+          description: "Unauthorized access."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
               examples:
-                'Disabled User':
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
-        404:
-          description: "The user does not exist."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No User':
-                  value:
-                    status: "fail"
-                    message: "User does not exist."
-                'Incorrect Password':
-                  value:
-                    status: "fail"
-                    message: "Email or password combination incorrect."
   /auth/status:
     get:
       summary: "Returns the logged in user's status"

@@ -909,11 +909,245 @@ paths:
                   value:
                     status: "fail"
                     message: "Mongoengine Validation error."
+  /user/share/simulation/link:
+    post:
+      summary: "Generate link that can be used to share configurations."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "Link to be generated to share configurations."
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                configuration:
+                  $ref: '#/components/schemas/Configurations'
+                alloy:
+                  $ref: '#/components/schemas/Alloy'
+      responses:
+        201:
+          description: "Link successfully generated."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                link: "https://sharelink.com"
+        400:
+          description: "Invalid payload in request body."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Bad Request Body':
+                  value:
+                    status: "fail"
+                    message: "Configurations or Alloy Store not sent."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Element Symbol Invalid."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Element Invalid."
+                'Missing Elements':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy is missing essential elements."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Validation error."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'No token provided':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Bad Request Body':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+  /user/share/simulation/email:
+    post:
+      summary: "Generate email that can be used to share configurations."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "Email link to be generated to share configurations."
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                configuration:
+                  $ref: '#/components/schemas/Configurations'
+                alloy:
+                  $ref: '#/components/schemas/Alloy'
+      responses:
+        201:
+          description: "Link successfully generated."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                message: "Email(s) sent."
+                link: "https://sharelink.com"
+        400:
+          description: "Invalid payload in request body."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Email Provided':
+                  value:
+                    status: "fail"
+                    message: "No email addresses provided."
+                'Invalid Email Address':
+                  value:
+                    status: "fail"
+                    message: "Invalid email address type."
+                'Invalid Email':
+                  value:
+                    status: "fail"
+                    message: "Invalid email."
+                'Email Address Not In The List':
+                  value:
+                    status: "fail"
+                    message: "An email address is invalid in the list."
+                'Bad Request Body':
+                  value:
+                    status: "fail"
+                    message: "Configurations or Alloy Store not sent."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Element Symbol Invalid."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Element Invalid."
+                'Missing Elements':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy is missing essential elements."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Validation error."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'No token provided':
+                  value:
+                    status: "fail"
+                    message: "Provide a valid JWT auth token."
+                'Expired Token':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Disabled User':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    message: "User does not exist."
+
   /v1/sim/user/simulation:
     get:
       summary: "Retrieve the list of Configurations saved in the User's document."
       tags:
-        - Users
+        - Save Simulation
       security:
         - bearerAuth: []
       responses:
@@ -1197,7 +1431,7 @@ paths:
     get:
       summary: "Retrieve the list of Configurations saved in the User's document."
       tags:
-        - Users
+        - Save Simulation
       security:
         - bearerAuth: []
       responses:
@@ -1282,7 +1516,7 @@ paths:
     delete:
       summary: "Delete a saved simulation from saved_simulation."
       tags:
-        - Users
+        - Save Simulation
       security:
         - bearerAuth: []
       responses:
@@ -1350,239 +1584,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Does not exit."
-  /user/share/simulation/link:
-    post:
-      summary: "Generate link that can be used to share configurations."
-      tags:
-        - Users
-      security:
-        - bearerAuth: []
-      requestBody:
-        description: "Link to be generated to share configurations."
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                configuration:
-                  $ref: '#/components/schemas/Configurations'
-                alloy:
-                  $ref: '#/components/schemas/Alloy'
-      responses:
-        201:
-          description: "Link successfully generated."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "success"
-                link: "https://sharelink.com"
-        400:
-          description: "Invalid payload in request body."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Bad Request Body':
-                  value:
-                    status: "fail"
-                    message: "Configurations or Alloy Store not sent."
-                'Element Symbol Invalid':
-                  value:
-                    status: "fail"
-                    error: "string"
-                    message: "Element Symbol Invalid."
-                'Element Invalid':
-                  value:
-                    status: "fail"
-                    error: "string"
-                    message: "Element Invalid."
-                'Missing Elements':
-                  value:
-                    status: "fail"
-                    error: "string"
-                    message: "Alloy is missing essential elements."
-                'Duplicate Element':
-                  value:
-                    status: "fail"
-                    error: "string"
-                    message: "Alloy contains a duplicate element."
-                'Validation Error':
-                  value:
-                    status: "fail"
-                    error: "string"
-                    message: "Validation error."
-        '401':
-          description: "The user is not authenticated to perform this request."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    format: string
-                  message:
-                    type: string
-                    format: string
-              examples:
-                'No token provided':
-                  value:
-                    status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
-                  value:
-                    status: "fail"
-                    message: "Signature expired. Please login again."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid token. Please log in again."
-                'Disabled User':
-                  value:
-                    status: "fail"
-                    message: "This user account has been disabled."
-                'Bad Request Body':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
-        404:
-          description: "The user cannot be found."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No User':
-                  value:
-                    status: "fail"
-                    message: "User does not exist."
-  /user/share/simulation/email:
-    post:
-      summary: "Generate email that can be used to share configurations."
-      tags:
-        - Users
-      security:
-        - bearerAuth: []
-      requestBody:
-        description: "Email link to be generated to share configurations."
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                configuration:
-                  $ref: '#/components/schemas/Configurations'
-                alloy:
-                  $ref: '#/components/schemas/Alloy'
-      responses:
-        201:
-          description: "Link successfully generated."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "success"
-                message: "Email(s) sent."
-                link: "https://sharelink.com"
-        400:
-          description: "Invalid payload in request body."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Email Provided':
-                  value:
-                    status: "fail"
-                    message: "No email addresses provided."
-                'Invalid Email Address':
-                  value:
-                    status: "fail"
-                    message: "Invalid email address type."
-                'Invalid Email':
-                  value:
-                    status: "fail"
-                    message: "Invalid email."
-                'Email Address Not In The List':
-                  value:
-                    status: "fail"
-                    message: "An email address is invalid in the list."
-                'Bad Request Body':
-                  value:
-                    status: "fail"
-                    message: "Configurations or Alloy Store not sent."
-                'Element Symbol Invalid':
-                  value:
-                    status: "fail"
-                    error: "string"
-                    message: "Element Symbol Invalid."
-                'Element Invalid':
-                  value:
-                    status: "fail"
-                    error: "string"
-                    message: "Element Invalid."
-                'Missing Elements':
-                  value:
-                    status: "fail"
-                    error: "string"
-                    message: "Alloy is missing essential elements."
-                'Duplicate Element':
-                  value:
-                    status: "fail"
-                    error: "string"
-                    message: "Alloy contains a duplicate element."
-                'Validation Error':
-                  value:
-                    status: "fail"
-                    error: "string"
-                    message: "Validation error."
-        '401':
-          description: "The user is not authenticated to perform this request."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    format: string
-                  message:
-                    type: string
-                    format: string
-              examples:
-                'No token provided':
-                  value:
-                    status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
-                  value:
-                    status: "fail"
-                    message: "Signature expired. Please login again."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid token. Please log in again."
-                'Disabled User':
-                  value:
-                    status: "fail"
-                    message: "This user account has been disabled."
-        404:
-          description: "The user cannot be found."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No User':
-                  value:
-                    status: "fail"
-                    message: "User does not exist."
+
 
   /v1/sim/auth/register:
     post:
@@ -3163,28 +3165,6 @@ paths:
                   value:
                     status: "fail"
                     message: "No JWT stored in Session."
-  /users/ping:
-    get:
-      summary: "Just a sanity check that simcct server can sanely connect to users."
-      tags:
-        - Sessions
-      responses:
-        200:
-          description: "You are not crazy."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: "The status of `success` or `fail`."
-                  message:
-                    type: string
-                    description: "The message response"
-              example:
-                status: "success"
-                message: "pong!"
 
   /global/alloys:
     post:
@@ -6157,7 +6137,7 @@ tags:
     description: "Endpoints for Authentication and Authorization."
   - name: Admin
     description: Endpoints that are used by an Administrator.
-  - name: Sessions
+  - name: Save Simulation
     description: "Endpoints that manage sessions."
   - name: Alloys
     description: "Endpoints that expose the full CRUD interface for Alloys."

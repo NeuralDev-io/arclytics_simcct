@@ -1584,7 +1584,7 @@ paths:
                     status: "fail"
                     message: "User does not exist."
 
-  /auth/register:
+  /v1/sim/auth/register:
     post:
       summary: "Register and create a new user"
       tags:
@@ -1648,7 +1648,7 @@ paths:
                   first_name: "Peter"
                   last_name: "Parker"
       responses:
-        200:
+        201:
           description: "The user has been successfully created and you get an ID back."
           content:
             application/json:
@@ -1688,6 +1688,11 @@ paths:
                   value:
                     status: "fail"
                     message: "The password is invalid."
+                'Invalid Email':
+                  value:
+                    status: "fail"
+                    error: "abc@mail.edu"
+                    message: "Invalid email."
                 'Duplicate User':
                   value:
                     status: "fail"

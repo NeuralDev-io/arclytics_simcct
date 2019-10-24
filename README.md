@@ -21,8 +21,6 @@ Our application architecture can be described by the following:
 
 
 
-
-
 [**Play with the tool »**](https://app.arclytics.io)  
 
 [Website](https://arclytics.io) · [LICENSE](https://bitbucket.org/neuraldev/arclytics_sim/src/master/LICENSE)
@@ -318,23 +316,23 @@ P.S. If you want to learn more about Docker click [here](https://docs.docker.com
 **IMPORTANT!!!** You must start the Docker container with this command every time you run.
 
 ```bash
-$ docker-compose -p arc up -d client users simcct
+$ docker-compose -p arc up -d client arclytics simcct
 ```
 
 #### Using the Arclytics CLI script
 
-To make certain environmental variables and other commands simpler. A shell script `arclytics.sh` has been created which provides an intuitive use of different CLI commands for Docker and Docker Compose.
+To make certain environmental variables and other commands simpler. A shell script `arc_cli.sh` has been created which provides an intuitive use of different CLI commands for Docker and Docker Compose.
 
 To use it to start the server:
 
 ```bash
-$ ./arclytics.sh -d up
+$ ./arc_cli.sh -d up
 ```
 
 To view what commands and options are available:
 
 ```bash
-$ ./arclytics.sh --help
+$ ./arc_cli.sh --help
 
 ARCLYTICS CLI SCRIPT
 
@@ -342,14 +340,14 @@ The Arclytics CLI script for running `docker` and `docker-compose` commands on t
 Arclytics Sim Docker orchestration.
 
 Usage:
-arclytics.sh build [SERVICE ARGS...]
-arclytics.sh up [options] [SERVICE ARGS...]
-arclytics.sh up --scale [SERVICE=NUM]
-arclytics.sh logs [SERVICE]
-arclytics.sh test [options] [TEST TYPE]
-arclytics.sh down [options]
-arclytics.sh scale [SERVICE=NUM...]
-arclytics.sh [COMMAND]
+arc_cli.sh build [SERVICE ARGS...]
+arc_cli.sh up [options] [SERVICE ARGS...]
+arc_cli.sh up --scale [SERVICE=NUM]
+arc_cli.sh logs [SERVICE]
+arc_cli.sh test [options] [TEST TYPE]
+arc_cli.sh down [options]
+arc_cli.sh scale [SERVICE=NUM...]
+arc_cli.sh [COMMAND]
 
 Options:
   -b, --build           Build the Docker containers before running.
@@ -431,13 +429,13 @@ $ docker-compose exec simcct python manage.py seed_db
 You can also use the Arclytics CLI script to help with this to flush:
 
 ```bash
-$ ./arclytics.sh flush
+$ ./arc_cli.sh flush
 ```
 
 To flush and seed:
 
 ```bash
-$ ./arclytics.sh seed
+$ ./arc_cli.sh seed
 ```
 
 #### Advanced Use (with caution)
@@ -478,17 +476,17 @@ This will run the tests with coverage:
 You can also use the Arclytics CLI script to do the above:
 
 ```bash
-$ ./arclytics.sh test all
+$ ./arc_cli.sh test all
 ```
 
 To view the the options for the `test` command with Arclytics CLI script.
 
 ```bash
-$ ./arclytics.sh test --help
+$ ./arc_cli.sh test --help
 
 ARCLYTICS CLI SCRIPT
 
-Usage: arclytics.sh test [OPTIONS] [TEST TYPE]
+Usage: arc_cli.sh test [OPTIONS] [TEST TYPE]
 
 The Arclytics CLI command to run Unit Tests.
 
@@ -509,7 +507,7 @@ Test Types (one only):
 For example, this will run the tests for the Flask back-ends only with coverage:
 
 ```shell
-$ ./arclytics.sh -c server
+$ ./arc_cli.sh -c server
 ```
 
 
@@ -590,14 +588,6 @@ $ minikube config set cpus 4
 
 
 
-
-
-### Built with
-
-* TBD
-
-
-
 ## Versioning
 
 Internally, we use [Semantic Versioning guidelines](https://semver.org/) for our versioning standard. Sometimes we can make a mess of it, but we adhere to those rules whenever possible. 
@@ -644,4 +634,24 @@ We thank the following organisations, departments, and individuals for their kin
 
 We also thank the open source community for making available awesome packages and libraries for our ease of development and deployment. The following are used under the hood of Arclytics Sim:
 
-* TBC
+* Docker
+* Kubernetes
+* conda
+* Flask
+* gunicorn
+* Celery
+* NodeJS
+* React
+* MongoDB
+* Redis
+* Plotly
+* numpy
+* pandas
+* jupyter
+* fluentd
+* Elasticsearch
+* Kibana
+* Elastic APM
+* Marshmallow
+* Flask-RESTful
+* Swagger

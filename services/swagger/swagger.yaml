@@ -1869,7 +1869,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-  /auth/logout:
+  /v1/sim/auth/logout:
     get:
       summary: "Logs a user out"
       tags:
@@ -1886,18 +1886,7 @@ paths:
               example:
                 status: "success"
                 message: "Successfully logged out."
-        400:
-          description: "Bad request body provided with no JSON Web Token."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Auth Header':
-                  value:
-                    status: "fail"
-                    message: "Provide a valid JWT auth token."
-        '401':
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -1911,11 +1900,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'Non Active User':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "This user does not exist."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -1923,6 +1916,34 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
         500:
           description: "An internal server error has occurred."
           content:
@@ -1933,7 +1954,7 @@ paths:
                 'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "Unable to logout the user from the SimCCT server"
+                    message: "No JWT stored in Session."
   /v1/sim/reset/password:
     post:
       summary: "Request an email for a reset of the user's password with their confirmed email."

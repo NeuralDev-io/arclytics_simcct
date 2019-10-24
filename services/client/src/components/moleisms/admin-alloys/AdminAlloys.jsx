@@ -7,7 +7,9 @@
  * @version 1.0.0
  * @author Dalton Le
  */
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { Component } from 'react'
+// noinspection ES6CheckImport
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -30,7 +32,7 @@ import { initSession } from '../../../state/ducks/sim/actions'
 import { DEFAULT_ELEMENTS } from '../../../utils/alloys'
 
 import styles from './AdminAlloys.module.scss'
-import Tooltip from "../../elements/tooltip";
+// import Tooltip from "../../elements/tooltip";
 
 class AdminAlloys extends Component {
   constructor(props) {
@@ -171,7 +173,7 @@ class AdminAlloys extends Component {
               onClick={() => this.showEditAlloy(original)}
               appearance="text"
               length="short"
-              IconComponent={props =>  <FontAwesomeIcon icon={faEdit} size="lg" {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faEdit} size="lg" {...props} />}
             >
               Edit
             </Button>
@@ -180,7 +182,7 @@ class AdminAlloys extends Component {
               appearance="text"
               color="dangerous"
               length="short"
-              IconComponent={props =>  <FontAwesomeIcon icon={faTrashAlt} size="lg" {...props} />}
+              IconComponent={props => <FontAwesomeIcon icon={faTrashAlt} size="lg" {...props} />}
             >
               Delete
             </Button>
@@ -208,7 +210,7 @@ class AdminAlloys extends Component {
           <Button
             appearance="outline"
             onClick={this.showAddAlloy}
-            IconComponent={props =><FontAwesomeIcon icon={faPlus} size="lg" {...props} />}
+            IconComponent={props => <FontAwesomeIcon icon={faPlus} size="lg" {...props} />}
 
             length="short"
           >

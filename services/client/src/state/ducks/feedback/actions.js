@@ -37,7 +37,6 @@ import { logError } from '../../../api/LoggingHelper'
  *   "total_pages": ...,
  * }
  * @param params the URL query parameters for the request.
- * @param dispatch the Redux `dispatch()` function which will define the `type` of
  * reducer to use as defined in `src/state/ducks/feedback/reducers.js`.
  *
  */
@@ -57,7 +56,12 @@ export const getFeedback = params => (dispatch) => {
     },
   })
     .then((res) => {
-      if (res.status === 404) { return { status: 'success', data: [] } }
+      if (res.status === 404) {
+        return {
+          status: 'success',
+          res: { data: [] },
+        }
+      }
 
       if (res.status === 401) {
         return {
@@ -91,7 +95,7 @@ export const getFeedback = params => (dispatch) => {
       if (res.status === 'success') {
         dispatch({
           type: GET_FEEDBACK,
-          payload: res || {},
+          payload: res || { data: [] },
           status: 'success',
         })
       }
@@ -131,7 +135,6 @@ export const getFeedback = params => (dispatch) => {
  *   "n_results": ...,
  * }
  * @param params the URL query parameters for the request.
- * @param dispatch the Redux `dispatch()` function which will define the `type` of
  * reducer to use as defined in `src/state/ducks/feedback/reducers.js`.
  *
  */
@@ -151,7 +154,12 @@ export const searchFeedback = params => (dispatch) => {
     },
   })
     .then((res) => {
-      if (res.status === 404) { return { status: 'success', data: [] } }
+      if (res.status === 404) {
+        return {
+          status: 'success',
+          res: { data: [] },
+        }
+      }
       if (res.status === 401) {
         return {
           status: 'fail',
@@ -182,7 +190,7 @@ export const searchFeedback = params => (dispatch) => {
       if (res.status === 'success') {
         dispatch({
           type: SEARCH_FEEDBACK,
-          payload: res || {},
+          payload: res || { data: [] },
           status: 'success',
         })
       }

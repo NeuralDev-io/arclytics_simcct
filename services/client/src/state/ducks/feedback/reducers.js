@@ -11,7 +11,7 @@ const initialState = {
   isFetched: false,
   isLoading: false,
   totalPages: -1,
-  sort: '-created_date',
+  sort: 'created_date',
   limit: 10,
   searchData: {
     query: '',
@@ -25,6 +25,7 @@ const initialState = {
   message: '',
 }
 
+// eslint-disable-next-line consistent-return
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case GET_FEEDBACK: {

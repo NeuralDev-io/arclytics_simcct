@@ -2010,7 +2010,7 @@ paths:
               example:
                 status: "fail"
                 message: "User does not exist."
-  /auth/password/reset:
+  /v1/sim/auth/password/reset:
     put:
       summary: "An endpoint for the client to send the new passwords to reset a user's account password."
       tags:
@@ -2081,21 +2081,6 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please get a new token."
-                'Disabled User':
-                  value:
-                    status: "fail"
-                    message: "This user account has been disabled."
-        404:
-          description: "The user cannot be found."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No User':
-                  value:
-                    status: "fail"
-                    message: "User does not exist."
   /v1/sim/auth/password/check:
     post:
       summary: "An endpoint for password check."

@@ -18,10 +18,10 @@ __version__ = '1.0.0'
 __status__ = 'development'
 __date__ = '2019.10.20'
 
-"""sim_analytics.py: 
+"""sim_analytics.py:
 
-This module provides the resources for analytical querying, manipulation and 
-transformations to display interesting data about the simulations and alloys. 
+This module provides the resources for analytical querying, manipulation and
+transformations to display interesting data about the simulations and alloys.
 """
 
 from os import environ as env
@@ -163,7 +163,7 @@ class SavedAlloysSimilarity(Resource):
         #   n_iter: Maximum number of iterations for the optimization. Should
         #   be at least 250.
         tsne_model = TSNE(
-            n_components=2, perplexity=35, learning_rate=200., n_iter=750
+            n_components=2, perplexity=35, learning_rate=200., n_iter=350
         )
 
         # We fit the model to the dataset

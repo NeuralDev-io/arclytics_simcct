@@ -1526,8 +1526,10 @@ while [[ "$1" != "" ]] ; do
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                  kubectl delete deployment simcct
                   sleep 10
-                  kubectl set image deployment/simcct simcct-container=asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                  # kubectl set image deployment/simcct simcct-container=asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                  kubectl apply -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
@@ -1554,8 +1556,10 @@ while [[ "$1" != "" ]] ; do
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build celery-worker
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                  kubectl delete deployment celery-worker
                   sleep 10
-                  kubectl set image deployment/celery-worker celery-worker-container=asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                  # kubectl set image deployment/celery-worker celery-worker-container=asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                  kubectl apply -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
@@ -1582,8 +1586,10 @@ while [[ "$1" != "" ]] ; do
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build arclytics
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=arclytics")
                   docker push asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  kubectl delete deployment arclytics
                   sleep 10
-                  kubectl set image deployment/arclytics arclytics-container=asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  # kubectl set image deployment/arclytics arclytics-container=asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  kubectl apply -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
@@ -1611,9 +1617,10 @@ while [[ "$1" != "" ]] ; do
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+                  kubectl delete deployment client-https
                   sleep 10
-                  kubectl set image deployment/client-https client-https-container=asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
-                  # kubectl apply -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
+                  # kubectl set image deployment/client-https client-https-container=asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+                  kubectl apply -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
@@ -1833,4 +1840,3 @@ done
 
 # Load all .env into current shell
 # export $(egrep -v '^#' .env | xargs)
-

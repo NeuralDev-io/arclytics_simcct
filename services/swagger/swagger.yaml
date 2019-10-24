@@ -2524,7 +2524,7 @@ paths:
                 'Email not found':
                   value:
                     redirect: 'http://{redirect_url}/signin?tokenexpired=true'
-  /reset/password/confirm/<token>:
+  /v1/sim/reset/password/confirm/<token>:
     get:
       summary: "Decode the token from the email to the confirm right person."
       tags:
@@ -2539,24 +2539,17 @@ paths:
               examples:
                 'Successfull Redirect':
                   value:
-                    redirect: 'http://localhost:3000/password/reset={jwt_token}'
-        400:
-          description: "An invalid payload has been sent with the request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'URL Token Error':
+                    status: 'success'
+                    redirect: 'http://{redirect_url}/password/reset={jwt_token}'
+                'URLTokenError':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid token."
+                    redirect: 'http://{redirect_url}/password/reset?tokenexpired=true'
                 'Exception':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid token."
+                    redirect: 'http://{redirect_url}/password/reset?tokenexpired=true'
+                'User not found':
+                  value:
+                    redirect: 'http://{redirect_url}/password/reset?tokenexpired=true'
 
   /admin/create:
     post:

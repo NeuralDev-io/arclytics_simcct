@@ -3000,48 +3000,37 @@ paths:
                   value:
                     status: "fail"
                     message: "No JWT stored in Session."
-  /disable/user/confirm/<token>:
+  /v1/sim/disable/user/confirm/<token>:
     get:
       summary: "Send confirmation to disable user account if an Admin has requested."
       security:
         - bearerAuth: []
       tags:
         - Admin
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                  format: email
       responses:
         302:
-          description: "Link sent successfully."
-        400:
-          description: "An invalid payload has been sent with the request."
+          description: "Redirect."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'URL Token Error':
+                'Successfully Disable':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid token."
+                    status: 'success'
+                    redirect: 'http://{redirect_url}/'
+                'URLTokenExpired':
+                  value:
+                    redirect: 'http://{redirect_url}/disable/user/confirm?tokenexpired=true'
+                'URLTokenError':
+                  value:
+                    redirect: 'http://{redirect_url}/disable/user/confirm?tokenexpired=true'
                 'Exception':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid token."
-                'User Does Not Exist':
+                    redirect: 'http://{redirect_url}/disable/user/confirm?tokenexpired=true'
+                'No User':
                   value:
-                    status: "fail"
-                    message: "User does not exist."
-
+                    redirect: 'http://{redirect_url}/disable/user/confirm?tokenexpired=true'
   /users/ping:
     get:
       summary: "Just a sanity check that simcct server can sanely connect to users."

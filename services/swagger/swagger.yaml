@@ -2401,6 +2401,41 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid payload."
+  /v1/sim/confirm/register/resend:
+    put:
+      summary: "An endpoint for resending confirmation email."
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "Request to resend email."
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: string
+                  example: "ironman@neuraldev.io"
+      responses:
+        200:
+          description: "Resend email"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'User Does Not Exist':
+                  value:
+                    status: "success"
+                'Users Is Already Verified':
+                  value:
+                    status: "success"
+                'Resent Email':
+                  value:
+                    status: "success"
   /confirmadmin/<token>:
     get:
       summary: "Confirmation for URL link tokens sent for user registration verification."

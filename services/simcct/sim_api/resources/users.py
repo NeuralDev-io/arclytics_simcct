@@ -302,10 +302,16 @@ class SearchUsers(Resource):
             query = request.args.get('query', None)
             sort = request.args.get('sort', None)
 
+        # Ensure query parameters have been given, otherwise there is
+        # nothing to search for.
+        if not query:
+            response.update({'message': 'No query parameters provided.'})
+            return response, 400
+
         # Limit of 0 is unlimited
         try:
-            # By default, we limit the number of returned searches to 100.
-            limit = int(request.args.get('limit', 100))
+            # By default, we limit the number of returned searches to 200.
+            limit = int(request.args.get('limit', 200))
         except ValueError:
             response.update({'message': 'Invalid limit parameter.'})
             return response, 400
@@ -315,10 +321,11 @@ class SearchUsers(Resource):
             response['message'] = 'Limit must be a positive int.'
             return response, 400
 
-        # Ensure query parameters have been given, otherwise there is nothing
-        # to search for.
-        if not query:
-            response.update({'message': 'No query parameters provided.'})
+        # Get the page number to check how many skips to return
+        try:
+            page = int(request.args.get('page', 0))
+        except ValueError:
+            response.update({'message': 'Invalid page parameter.'})
             return response, 400
 
         # Pymongo can take a list of queries as objects so we initially just
@@ -331,18 +338,21 @@ class SearchUsers(Resource):
             valid_sort_keys = {
                 'email', '-email', 'admin', '-admin', 'verified', '-verified',
                 'full_name', '-full_name', 'first_name', '-first_name',
-                'last_name', '-last_name'
+                'last_name', '-last_name', 'created_date', '-created_date'
             }
             if sort not in valid_sort_keys:
                 response.update({'message': 'Sort value is invalid.'})
                 return response, 400
 
             # ========== # SETTING UP SORTING # ========== #
-            # If our sorting value begins with a "-" in the string, then we
-            # know we are doing a DESCENDING sort so we will appropriately set
-            # the sort direction
+            # If our sorting value begins with a "-" in the string,
+            # then we know we are doing a DESCENDING sort so we will
+            # appropriately set the sort direction
             sort_direction = 1
+            sort_key = sort
             if str(sort).startswith('-'):
+                # We remove the first character as it's not a valid key
+                sort_key = sort[1:]
                 sort_direction = -1
 
             # If we are sorting on fullname, we will need to split the
@@ -350,8 +360,10 @@ class SearchUsers(Resource):
             if sort in {'full_name', '-full_name'}:
                 sort_query.append(('first_name', sort_direction))
                 sort_query.append(('last_name', sort_direction))
+            elif sort in {'created_date', '-created_date'}:
+                sort_query.append(('created', sort_direction))
             else:
-                sort_query.append((sort, sort_direction))
+                sort_query.append((sort_key, sort_direction))
 
         # ========== # QUERY THE DATABASE # ========== #
         # This is the key advanced text search.
@@ -365,6 +377,10 @@ class SearchUsers(Resource):
             }
         }
 
+        # We need to get the number of skips to return the sliced result.
+        current_page = 0 if limit == 0 else page
+        skip = current_page * limit
+
         # Check if the user is trying to search for an email by doing a rather
         # simple check if the `@` symbol is in the string. If it is, we
         # will try to search for an email instead.
@@ -377,19 +393,35 @@ class SearchUsers(Resource):
             data = SearchService().find(
                 query={'email': query},
                 sort=sort_query,
-                limit=limit,
                 projections=PROJECTIONS
             )
 
             n_results = len(data)
-            if n_results > 0:
+            if n_results == 0:
                 # We found a user with this email so let's return that
                 return {
                     'status': 'success',
                     'query': query,
                     'limit': limit,
+                    'sort': sort,
+                    'page': 0,
+                    'total_pages': 1,
                     'data': data,
-                    'n_results': n_results
+                    'n_total_results': n_results
+                }, 200
+            if n_results > 1:
+                # Since we found more than 1 result, we need to slice based
+                # on the limit asked.
+                return {
+                    'status': 'success',
+                    'query': query,
+                    'sort': sort,
+                    'limit': limit,
+                    # Return the slice from the skip to the limit
+                    # Note that Python returns the end of the list if the
+                    # limit is more than than len(list)
+                    'data': data[skip:skip + limit],
+                    'n_total_results': n_results
                 }, 200
 
             # we failed to find via email to lets do a string search by going
@@ -399,36 +431,46 @@ class SearchUsers(Resource):
         # `sim_api.models.py` to ensure this is possible for first_name,
         # last_name, and email.
         data = SearchService().find(
-            query=query_selector,
-            sort=sort_query,
-            limit=limit,
-            projections=PROJECTIONS
+            query=query_selector, sort=sort_query, projections=PROJECTIONS
         )
 
-        n_documents = len(data)
-        if not n_documents:
-            response.update({'message': 'No results found.'})
-            return response, 404
+        # Instead of using a limit stage, we wil just go ahead and get
+        # everything and then we can slice based on skip:limit results.
+        n_results = len(data)
+        if n_results > 0:
+            # We need the full list to check for pagination.
+            if limit == 0:
+                # No limit was asked so we return everything
+                return {
+                    'status': 'success',
+                    'query': query,
+                    'sort': sort,
+                    'limit': limit,
+                    'page': 0,
+                    'total_pages': 1,
+                    'data': data,
+                    'n_total_results': n_results
+                }, 200
+            else:
+                # We know there is more results than the limit so we need
+                # some pagination.
+                total_pages = floor(n_results / limit)
+                if n_results % limit == 0:
+                    total_pages = total_pages - 1
 
-        # ========== # PREPARE RESPONSE # ========== #
-        # No skip/offset with pagination will be provided because it would
-        # take too long to do anyway since you would need to do 2 full searches
-        # or manipulate the returned cursor to limit after the fact to get
-        # a subset of the results from offset/limit.
-        # The best way to avoid this is just to allow the client to limit the
-        # number of returned results.
-        # May be able to do it in the future but for now we will avoid.
-        response.update(
-            {
-                'status': 'success',
-                'sort': sort,
-                'limit': limit,
-                'n_results': n_documents,
-                'data': data,
-            }
-        )
-        response.pop('message')
-        return response, 200
+                return {
+                    'status': 'success',
+                    'query': query,
+                    'sort': sort,
+                    'limit': limit,
+                    'page': page,
+                    'skip': skip,
+                    'total_pages': total_pages,
+                    'data': data[skip:skip + limit],
+                    'n_total_results': n_results
+                }, 200
+
+        return {'status': 'fail', 'message': 'No results.'}, 404
 
 
 class Users(Resource):

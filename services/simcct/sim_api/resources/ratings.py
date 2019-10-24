@@ -493,7 +493,7 @@ class UserFeedbackSearch(Resource):
         data = SearchService().aggregate(pipeline)
 
         # Instead of using a limit stage, we wil just go ahead and get
-        # everything and then we can slice based on skip:limit - 1 results.
+        # everything and then we can slice based on skip:limit results.
         n_results = len(data)
         if n_results > 0:
             # We need the full list to check for pagination.
@@ -515,8 +515,6 @@ class UserFeedbackSearch(Resource):
                 total_pages = floor(n_results / limit)
                 if n_results % limit == 0:
                     total_pages = total_pages - 1
-                else:
-                    total_pages = total_pages
 
                 return {
                     'status': 'success',

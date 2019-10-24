@@ -100,10 +100,10 @@ class Mongo(object):
         return db[collection].find_one(query_selector, projections)
 
     def aggregate(
-            self,
-            db_name: str = 'arc_dev',
-            collection: str = 'arc_dev',
-            pipeline: list = None,
+        self,
+        db_name: str = 'arc_dev',
+        collection: str = 'arc_dev',
+        pipeline: list = None,
     ):
         if pipeline is None:
             return None

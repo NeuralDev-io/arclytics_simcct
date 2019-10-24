@@ -38,7 +38,6 @@ from sim_api.feedback_search_service import (
 ratings_blueprint = Blueprint('ratings', __name__)
 logger = AppLogger(__name__)
 
-
 # Projection of the fields we want returned from a feedback collection
 PROJECTIONS = {
     "$project": {
@@ -157,15 +156,17 @@ class UserFeedback(Resource):
             },
             # Stage 2 -- Our returned result is an Array so we unwind it to
             # make it a dictionary.
-            {"$unwind": "$user"},
+            {
+                "$unwind": "$user"
+            },
         ]
 
         # Stage 3 -- If we have to sort, then we validate it first and then
         # add it to our pipeline. We sort before we apply any limit on it.
         if sort:
             valid_sort_keys = {
-                'category', '-category', 'rating', '-rating',
-                'created_date', '-created_date', 'comment', '-comment'
+                'category', '-category', 'rating', '-rating', 'created_date',
+                '-created_date', 'comment', '-comment'
             }
             if sort not in valid_sort_keys:
                 response['message'] = 'Sort value is invalid.'
@@ -361,8 +362,8 @@ class UserFeedbackSearch(Resource):
         # add it to our pipeline. We sort before we apply any limit on it.
         if sort:
             valid_sort_keys = {
-                'category', '-category', 'rating', '-rating',
-                'created_date', '-created_date', 'comment', '-comment'
+                'category', '-category', 'rating', '-rating', 'created_date',
+                '-created_date', 'comment', '-comment'
             }
             if sort not in valid_sort_keys:
                 response['message'] = 'Sort value is invalid.'
@@ -418,7 +419,9 @@ class UserFeedbackSearch(Resource):
                 },
                 # Stage 2 -- Our returned result is an Array so we unwind it to
                 # make it a dictionary.
-                {"$unwind": "$user"},
+                {
+                    "$unwind": "$user"
+                },
                 # Stage 3 -- Match the query email with the user.email that we
                 # unwound in the last stage.
                 {
@@ -436,15 +439,15 @@ class UserFeedbackSearch(Resource):
             if n_results == 1:
                 # We found a user with this email so let's return that
                 return {
-                       'status': 'success',
-                       'query': query,
-                       'sort': sort,
-                       'limit': limit,
-                       'page': 0,
-                       'total_pages': 1,
-                       'data': data,
-                       'n_total_results': 1
-                   }, 200
+                    'status': 'success',
+                    'query': query,
+                    'sort': sort,
+                    'limit': limit,
+                    'page': 0,
+                    'total_pages': 1,
+                    'data': data,
+                    'n_total_results': 1
+                }, 200
             if n_results > 1:
                 # Since we found more than 1 result, we need to slice based
                 # on the limit asked.
@@ -456,7 +459,7 @@ class UserFeedbackSearch(Resource):
                     # Return the slice from the skip to the limit
                     # Note that Python returns the end of the list if the
                     # limit is more than than len(list)
-                    'data': data[skip:skip+limit],
+                    'data': data[skip:skip + limit],
                     'n_total_results': n_results
                 }, 200
 
@@ -466,21 +469,25 @@ class UserFeedbackSearch(Resource):
         # We use the compound text index on `comment` and `category` to do a
         # advanced text search. Our indexes are weighted to the categories so
         # we will more than likely see those first.
-        pipeline = [{
-            "$match": {
-                "$text": {
-                    "$search": query,
-                    "$caseSensitive": False
+        pipeline = [
+            {
+                "$match": {
+                    "$text": {
+                        "$search": query,
+                        "$caseSensitive": False
+                    }
                 }
-            }
-        }, {
-            "$lookup": {
-                "from": "users",
-                "localField": "user",
-                "foreignField": "_id",
-                "as": "user"
-            }
-        }, {"$unwind": "$user"}, sort_stage, PROJECTIONS]
+            }, {
+                "$lookup": {
+                    "from": "users",
+                    "localField": "user",
+                    "foreignField": "_id",
+                    "as": "user"
+                }
+            }, {
+                "$unwind": "$user"
+            }, sort_stage, PROJECTIONS
+        ]
 
         # Query the database to get the full result
         data = SearchService().aggregate(pipeline)
@@ -519,7 +526,7 @@ class UserFeedbackSearch(Resource):
                     'page': page,
                     'skip': skip,
                     'total_pages': total_pages,
-                    'data': data[skip:skip+limit],
+                    'data': data[skip:skip + limit],
                     'n_total_results': n_results
                 }, 200
 

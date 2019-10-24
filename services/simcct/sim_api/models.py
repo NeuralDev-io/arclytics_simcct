@@ -687,7 +687,8 @@ class Feedback(Document):
     )
 
     meta = {
-        'collection': 'feedback',
+        'collection':
+        'feedback',
         'indexes': [
             # This create text indexes for advanced text search
             {

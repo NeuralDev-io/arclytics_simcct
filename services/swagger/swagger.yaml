@@ -2292,7 +2292,7 @@ paths:
                   value:
                     status: "fail"
                     message: "User is already verified."
-  /confirm/<token>:
+  /v1/sim/confirm/<token>:
     get:
       summary: "Confirmation for URL link tokens sent for admin registration verification."
       tags:
@@ -2307,10 +2307,20 @@ paths:
               examples:
                 'Successfull Redirect':
                   value:
-                    redirect: 'http://{client_host}/signin'
-                'Token Expired':
+                    status: 'success'
+                    redirect: 'http://{redirect_url}/signin'
+                'URLTokenError':
                   value:
-                    redirect: 'http://{client_host}/confirm/tokenexpired'
+                    redirect: 'http://{redirect_url}/signin?tokenexpired=true'
+                'URLTokenExpired':
+                  value:
+                    redirect: 'http://{redirect_url}/signin?tokenexpired=true'
+                'Exception':
+                  value:
+                    redirect: 'http://{redirect_url}/signin?tokenexpired=true'
+                'Email not found':
+                  value:
+                    redirect: 'http://{redirect_url}/signin?tokenexpired=true'
         400:
           description: "An invalid payload has been sent with the request."
           content:

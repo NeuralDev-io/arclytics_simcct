@@ -1944,7 +1944,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Unable to logout the user from the SimCCT server"
-  /reset/password:
+  /v1/sim/reset/password:
     post:
       summary: "Request an email for a reset of the user's password with their confirmed email."
       tags:
@@ -2001,15 +2001,6 @@ paths:
               example:
                 status: "fail"
                 message: "The user must verify their email."
-        404:
-          description: "The user does not exist in the database or cannot be found."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "User does not exist."
   /v1/sim/auth/password/reset:
     put:
       summary: "An endpoint for the client to send the new passwords to reset a user's account password."

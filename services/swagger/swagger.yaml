@@ -2875,7 +2875,7 @@ paths:
                 'User Is Not Admin':
                   value:
                     redirect: 'http://{redirect_url}/admin/verify?tokenexpired=true'
-  /disable/user:
+  /v1/sim/disable/user:
     put:
       summary: "Disable a User's account if an Admin has requested."
       security:
@@ -2923,18 +2923,29 @@ paths:
                     status: "fail"
                     message: "Invalid email."
                     error: "The email address is not valid. It must have exactly one @-sign."
-        '401':
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -2942,23 +2953,32 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+                'Verify Email':
                   value:
                     status: "fail"
-                    message: "This user account has been disabled."
+                    message: "The user must verify their email"
         403:
-          description: "The user is not authorised to perform this request."
+          description: "Unauthorized access."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
               examples:
-                'No Authorisation':
+                'Account Disabled':
                   value:
                     status: "fail"
-                    message: "Not authorized"
+                    message: "This user account has been disabled."
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
         404:
-          description: "We cannot find a valid user."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
@@ -2967,7 +2987,19 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
   /disable/user/confirm/<token>:
     get:
       summary: "Send confirmation to disable user account if an Admin has requested."

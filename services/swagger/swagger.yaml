@@ -2799,73 +2799,48 @@ paths:
                   value:
                     status: "fail"
                     message: "No JWT stored in Session."
-  /admin/create/cancel/<token>:
+  /v1/sim/admin/create/cancel/<token>:
     get:
       summary: "Allow an admin to cancel their promotion of another user"
       tags:
         - Admin
       responses:
         302:
-          description: "Successfully create Admin."
-          headers:
-            Location:
-              schema:
-                type: string
-                example: 'http://localhost:3000/signin'
-              description: "The URI location of the redirect"
-        400:
-          description: "An invalid payload has been sent with the request."
+          description: "Redirect."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'URL Token Error':
+                'Successfull Cancelled Promotion':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid token."
+                    status: 'success'
+                    redirect: 'http://{redirect_url}/signin'
+                'URLTokenError':
+                  value:
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
+                'URLTokenExpired':
+                  value:
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
                 'Exception':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid token."
-                'Not In List':
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
+                'Email List Not Returned':
                   value:
-                    status: "fail"
-                    message: "Invalid token."
-                'Admin Or User Not In List':
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
+                'Index Error':
                   value:
-                    status: "fail"
-                    message: "Invalid data in Token."
-                'Invalid List':
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
+                'No User':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid list from token."
-                'Missing Information':
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
+                'User Is Not Admin':
                   value:
-                    status: "fail"
-                    message: "Missing information in Token."
-                'Administrator does not exist':
-                  value:
-                    status: "fail"
-                    message: "Administrator does not exist."
-                'User does not exist':
-                  value:
-                    status: "fail"
-                    message: "Target User does not exist."
-        '401':
-          description: "The user is not authenticated to perform this request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Not Authorised':
-                  value:
-                    status: "fail"
-                    message: "User is not authorised to promote other user."
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
+
+
+
+
   /admin/create/verify/<token>:
     get:
       summary: "Allow a user to acknowledge their promotion and in doing so verify their status as an admin"

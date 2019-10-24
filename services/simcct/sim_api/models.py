@@ -484,7 +484,9 @@ class User(Document):
     verified = BooleanField(default=False)
     # Make sure when converting these that it follows ISO8601 format as
     # defined in settings.DATETIME_FMT
-    created = DateTimeField(default=datetime.utcnow(), null=False)
+    created = DateTimeField(
+        default=datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'), null=False
+    )
     last_updated = DateTimeField(default=None, null=False)
     last_login = DateTimeField()
 

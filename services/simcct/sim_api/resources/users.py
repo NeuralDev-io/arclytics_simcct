@@ -18,6 +18,7 @@ the Flask Resource inheritance model.
 """
 
 from datetime import datetime
+from math import floor
 from typing import Tuple
 
 from flask import Blueprint, request
@@ -163,9 +164,9 @@ class UserListQuery(Resource):
 
         # Skip/offset of 0 is unlimited
         try:
-            offset = int(request.args.get('offset', 0))
+            page = int(request.args.get('page', 0))
         except ValueError:
-            response.update({'message': 'Invalid offset parameter.'})
+            response.update({'message': 'Required page parameter.'})
             return response, 400
 
         # Limit of 0 is unlimited
@@ -192,7 +193,7 @@ class UserListQuery(Resource):
             valid_sort_keys = {
                 'email', '-email', 'admin', '-admin', 'verified', '-verified',
                 'full_name', '-full_name', 'first_name', '-first_name',
-                'last_name', '-last_name'
+                'last_name', '-last_name', 'created_date', '-created_date'
             }
             if sort not in valid_sort_keys:
                 response['message'] = 'Sort value is invalid.'
@@ -214,24 +215,24 @@ class UserListQuery(Resource):
             if sort in {'full_name', '-full_name'}:
                 sort_query.append(('first_name', sort_direction))
                 sort_query.append(('last_name', sort_direction))
+            elif sort in {'created_date', '-created_date'}:
+                sort_query.append(('created', sort_direction))
             else:
                 sort_query.append((sort_key, sort_direction))
 
-        # We need the full list to check for pagination
-        n_total_documents = SearchService().count(limit=0)
+        # Validate page
+        current_page = 0 if limit == 0 else page
+        skip = current_page * limit
 
-        # Validate offset
-        if offset > 0:
-            if offset >= n_total_documents:
-                response.update(
-                    {
-                        'message': 'Offset value exceeds number of documents.',
-                        'sort': sort,
-                        'offset': offset,
-                        'limit': limit
-                    }
-                )
-                return response, 400
+        if limit >= 1:
+            # We need the full list to check for pagination
+            n_total_documents = SearchService().count(limit=0)
+
+            total_pages = floor(n_total_documents / limit)
+            if n_total_documents % limit == 0:
+                total_pages = total_pages - 1
+        else:
+            total_pages = 1
 
         # ========== # QUERY THE DATABASE # ========== #
         # Because we want a full list returned, we will not have a query
@@ -239,7 +240,7 @@ class UserListQuery(Resource):
         users_list = SearchService().find_slice(
             query={},
             projections=PROJECTIONS,
-            skip=offset,
+            skip=skip,
             limit=limit,
             sort=sort_query
         )
@@ -256,43 +257,16 @@ class UserListQuery(Resource):
             {
                 'status': 'success',
                 'sort': sort,
-                'offset': offset,
+                'skip': skip,
+                'page': page,
                 'limit': limit,
-                'next_offset': None,
-                'prev_offset': None,
+                'current_page': current_page,
+                'total_pages': total_pages,
                 'n_results': n_documents,
                 'data': users_list,
             }
         )
         response.pop('message')
-
-        # A limit of 0, meaning the client does not want any subset of the
-        # full list so there is no need to worry about offsets and pages.
-        # We also want to just return everything if the limit requested was
-        # way more than what results we found any way.
-        # Plus we can avoid a divide by zero error from below.
-        if limit == 0 or limit > n_total_documents:
-            return response, 200
-
-        # Next offset is the offset for the next page of results. Prev is for
-        # the previous.
-        if offset + limit - 1 < n_total_documents:
-            response.update({'next_offset': offset + limit})
-        if offset - limit >= 0:
-            response.update({'prev_offset': offset - limit})
-
-        if n_total_documents % limit == 0:
-            total_pages = int(n_total_documents / limit)
-        else:
-            total_pages = int(n_total_documents / limit) + 1
-        current_page = int(offset / limit) + 1
-
-        response.update(
-            {
-                'current_page': current_page,
-                'total_pages': total_pages
-            }
-        )
 
         return response, 200
 

@@ -3031,6 +3031,138 @@ paths:
                 'No User':
                   value:
                     redirect: 'http://{redirect_url}/disable/user/confirm?tokenexpired=true'
+  /v1/sim/enable/user:
+    put:
+      summary: "Disable a User's account if an Admin has requested."
+      security:
+        - bearerAuth: []
+      tags:
+        - Admin
+      requestBody:
+        description: "User account to be enabled"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        200:
+          description: "The user has been successfully enabled."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Bad Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Email':
+                  value:
+                    status: "fail"
+                    message: "No email provided."
+                'No Position Provided':
+                  value:
+                    status: "fail"
+                    message: "No position provided"
+                'Invalid Email':
+                  value:
+                    status: "fail"
+                    message: "Invalid email."
+                    error: "The email address is not valid. It must have exactly one @-sign."
+                'Account Not Disabled':
+                  value:
+                    status: "fail"
+                    message: "Account is not disabled."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Verify Email':
+                  value:
+                    status: "fail"
+                    message: "The user must verify their email"
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
   /users/ping:
     get:
       summary: "Just a sanity check that simcct server can sanely connect to users."

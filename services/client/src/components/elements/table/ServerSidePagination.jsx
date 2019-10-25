@@ -9,6 +9,7 @@
  * @author Andrew Che
  *
  */
+/* eslint-disable no-unused-vars */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -43,12 +44,13 @@ class ServerSidePagination extends Component {
       data,
     } = this.props
     const activePage = page + 1
+    const totalPages = (pages === 1) ? 1 : pages + 1
 
     return (
       <div className={styles.pagination}>
         <div className={styles.pageNum}>
           <span className="text--sub2">
-            Page {page + 1} of {pages + 1} {/* eslint-disable-line */}
+            Page {activePage} of {totalPages} {/* eslint-disable-line */}
           </span>
         </div>
         <Button
@@ -63,12 +65,12 @@ class ServerSidePagination extends Component {
           <FontAwesomeIcon icon={faChevronLeft} className={styles.icon} />
         </Button>
         <Button
-          className={`${styles.button} ${activePage === pages + 1 && styles.disabled}`}
+          className={`${styles.button} ${activePage === totalPages && styles.disabled}`}
           onClick={() => {
-            if (activePage === pages + 1) return
+            if (activePage === totalPages) return
             this.changePage(activePage + 1)
           }}
-          isDisabled={activePage === pages + 1}
+          isDisabled={activePage === totalPages}
           appearance="text"
         >
           <FontAwesomeIcon icon={faChevronRight} className={styles.icon} />

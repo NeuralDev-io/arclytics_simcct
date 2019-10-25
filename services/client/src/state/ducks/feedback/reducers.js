@@ -11,7 +11,7 @@ const initialState = {
   isFetched: false,
   isLoading: false,
   totalPages: -1,
-  sort: '-created_date',
+  sort: 'created_date',
   limit: 10,
   searchData: {
     query: '',
@@ -25,6 +25,7 @@ const initialState = {
   message: '',
 }
 
+// eslint-disable-next-line consistent-return
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case GET_FEEDBACK: {
@@ -33,6 +34,7 @@ const reducer = (state = initialState, action) => {
         return {
           ...state,
           isLoading: true,
+          isFetched: false,
         }
       }
       // Let's deal with failure first so we can get over it faster (i.e. fail fast)
@@ -40,18 +42,19 @@ const reducer = (state = initialState, action) => {
         return {
           ...state,
           isLoading: false,
+          isFetched: false,
         }
       }
       // If action.status === 'success'
       if (action.status === 'success') {
         return {
           ...state,
-          feedbackList: action.payload.data,
+          feedbackList: action.payload.data || [],
           isLoading: false,
           isFetched: true,
-          totalPages: action.payload.total_pages,
-          sort: action.payload.sort,
-          limit: action.payload.limit,
+          totalPages: action.payload.total_pages || initialState.totalPages,
+          sort: action.payload.sort || initialState.sort,
+          limit: action.payload.limit || initialState.limit,
         }
       }
       break
@@ -62,6 +65,7 @@ const reducer = (state = initialState, action) => {
         return {
           ...state,
           isLoading: true,
+          isFetched: false,
           searchData: {
             ...state.searchData,
           },
@@ -72,6 +76,7 @@ const reducer = (state = initialState, action) => {
         return {
           ...state,
           isLoading: false,
+          isFetched: false,
           searchData: {
             ...state.searchData,
           },
@@ -81,15 +86,15 @@ const reducer = (state = initialState, action) => {
       if (action.status === 'success') {
         return {
           ...state,
-          feedbackList: action.payload.data,
+          feedbackList: action.payload.data || [],
           isLoading: false,
           isFetched: true,
-          totalPages: action.payload.total_pages,
-          sort: action.payload.sort,
-          limit: action.payload.limit,
+          totalPages: action.payload.total_pages || initialState.totalPages,
+          sort: action.payload.sort || initialState.sort,
+          limit: action.payload.limit || initialState.limit,
           searchData: {
             ...state.searchData,
-            query: action.payload.query,
+            query: action.payload.query || initialState.searchData.query,
           },
         }
       }

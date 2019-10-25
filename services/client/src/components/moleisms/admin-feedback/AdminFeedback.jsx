@@ -10,6 +10,7 @@
  */
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { Component } from 'react'
+// noinspection ES6CheckImport
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -22,9 +23,9 @@ import Button, { IconButton } from '../../elements/button'
 import { ControlledTable } from '../../elements/table'
 import TextField from '../../elements/textfield'
 import { dangerouslyGetDateTimeString } from '../../../utils/datetime'
+import { getColor } from '../../../utils/theming'
 
 import styles from './AdminFeedback.module.scss'
-import { getColor } from '../../../utils/theming'
 
 
 class AdminFeedback extends Component {
@@ -40,7 +41,7 @@ class AdminFeedback extends Component {
     }
   }
 
-  componentDidMount = () => { }
+  componentDidMount = () => {}
 
   /**
    * The handle callback for React-Table that controls what happens when the state
@@ -67,7 +68,7 @@ class AdminFeedback extends Component {
     const { searchState, searchQuery } = this.state
 
     // Set up sorting:
-    let sort = '-created_date'
+    let sort = 'created_date'
     if (reactTableState.sorted.length > 0) {
       if (reactTableState.sorted[0].desc) {
         sort = reactTableState.sorted[0].id
@@ -326,9 +327,6 @@ class AdminFeedback extends Component {
 }
 
 AdminFeedback.propTypes = {
-  history: PropTypes.shape({
-    push: PropTypes.func.isRequired,
-  }).isRequired,
   // These state params are managed by Redux store whether we are retrieving
   // or searching for feedback
   totalPages: PropTypes.number.isRequired,

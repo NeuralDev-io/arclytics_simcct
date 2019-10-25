@@ -17,7 +17,7 @@ import PropTypes from 'prop-types'
 import Plot from 'react-plotly.js'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { InlineSpinner } from '../../elements/spinner'
-import { layout, config, COLORS3 } from './utils/chartConfig'
+import { layout, config, COLORS4 } from './utils/chartConfig'
 import { getColor } from '../../../utils/theming'
 
 import styles from './Chart.module.scss'
@@ -26,7 +26,6 @@ const SavedAlloysSimilarity = ({ data, isLoading }) => {
   let chartData = []
 
   if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
-    const colorLen = Array(COLORS3).length
     chartData = [
       {
         x: data.x,
@@ -38,8 +37,8 @@ const SavedAlloysSimilarity = ({ data, isLoading }) => {
           size: 8,
           // Cycle through the 3 shades of color for each point.
           color: data.color.map(i => {
-            const idx = i % colorLen
-            return COLORS3[idx]
+            const idx = i % COLORS4.length
+            return COLORS4[idx]
           }),
         },
         opacity: 0.75,

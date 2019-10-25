@@ -1568,7 +1568,7 @@ paths:
               example:
                 status: "fail"
                 message: "Invalid Object Id."
-        '401':
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -1582,11 +1582,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -1594,25 +1598,49 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
         404:
-          description: "The user does not exist in the database or cannot be found."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'User Does Not Exist':
+                'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
                 'Simulation Does Not Exist':
                   value:
                     status: "fail"
-                    message: "Does not exit."
+                    message: "Does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
 
 
   /v1/sim/auth/register:

@@ -397,7 +397,7 @@ class SearchUsers(Resource):
             )
 
             n_results = len(data)
-            if n_results == 0:
+            if n_results == 1:
                 # We found a user with this email so let's return that
                 return {
                     'status': 'success',
@@ -457,6 +457,8 @@ class SearchUsers(Resource):
                 total_pages = floor(n_results / limit)
                 if n_results % limit == 0:
                     total_pages = total_pages - 1
+                if total_pages == 0:
+                    total_pages = 1
 
                 return {
                     'status': 'success',
@@ -470,7 +472,7 @@ class SearchUsers(Resource):
                     'n_total_results': n_results
                 }, 200
 
-        return {'status': 'fail', 'message': 'No results.'}, 404
+        return {'status': 'fail', 'message': 'No results.', 'query': query}, 404
 
 
 class Users(Resource):

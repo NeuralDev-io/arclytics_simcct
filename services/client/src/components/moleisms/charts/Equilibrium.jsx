@@ -77,6 +77,8 @@ class Equilibrium extends React.Component {
           name: 'T0',
           type: 'scatter',
           mode: 'lines',
+          opacity: 0.25,
+          visible: 'legendonly',
           line: {
             color: getColor('--r500'),
             shape: 'spline',

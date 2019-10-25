@@ -10,10 +10,10 @@ const initialState = {
   usersList: [],
   isFetched: false,
   isLoading: false,
-  totalPages: -1,
+  totalPages: 0,
   sort: 'created_date',
   limit: 10,
-  skip: -1,
+  skip: 0,
   searchData: {
     query: '',
   },
@@ -28,6 +28,7 @@ const reducer = (state = initialState, action) => {
         return {
           ...state,
           isLoading: true,
+          isFetched: false,
         }
       }
       // Let's deal with failure first so we can get over it faster (i.e. fail fast)
@@ -37,17 +38,19 @@ const reducer = (state = initialState, action) => {
           isLoading: false,
         }
       }
-      // Success
-      return {
-        ...state,
-        usersList: action.payload.data,
-        isLoading: false,
-        isFetched: true,
-        totalPages: action.payload.total_pages,
-        sort: action.payload.sort,
-        limit: action.payload.limit,
-        skip: action.payload.skip,
+      if (action.status === 'success') {
+        return {
+          ...state,
+          usersList: action.payload.data || [],
+          isLoading: false,
+          isFetched: true,
+          totalPages: action.payload.total_pages || initialState.totalPages,
+          sort: action.payload.sort || initialState.sort,
+          limit: action.payload.limit || initialState.limit,
+          skip: action.payload.skip || initialState.skip,
+        }
       }
+      break
     }
     case SEARCH_USERS: {
       // Ensure that subscribers know the process has started.
@@ -55,6 +58,7 @@ const reducer = (state = initialState, action) => {
         return {
           ...state,
           isLoading: true,
+          isFetched: false,
           searchData: {
             ...state.searchData,
           },
@@ -74,16 +78,17 @@ const reducer = (state = initialState, action) => {
       if (action.status === 'success') {
         return {
           ...state,
-          usersList: action.payload.data,
           isLoading: false,
           isFetched: true,
-          totalPages: action.payload.total_pages,
-          sort: action.payload.sort,
-          limit: action.payload.limit,
-          skip: action.payload.skip,
+          // always returned from action dispatch as empty list or data
+          usersList: action.payload.data || [],
+          totalPages: action.payload.total_pages || initialState.totalPages,
+          sort: action.payload.sort || initialState.sort,
+          limit: action.payload.limit || initialState.limit,
+          skip: action.payload.skip || initialState.skip,
           searchData: {
             ...state.searchData,
-            query: action.payload.query,
+            query: action.payload.query || initialState.searchData.query,
           },
         }
       }

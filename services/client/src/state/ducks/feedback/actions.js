@@ -59,7 +59,7 @@ export const getFeedback = params => (dispatch) => {
       if (res.status === 404) {
         return {
           status: 'success',
-          res: { data: [] },
+          data: [],
         }
       }
 
@@ -95,7 +95,7 @@ export const getFeedback = params => (dispatch) => {
       if (res.status === 'success') {
         dispatch({
           type: GET_FEEDBACK,
-          payload: res || { data: [] },
+          payload: res || {},
           status: 'success',
         })
       }
@@ -157,7 +157,7 @@ export const searchFeedback = params => (dispatch) => {
       if (res.status === 404) {
         return {
           status: 'success',
-          res: { data: [] },
+          data: [],
         }
       }
       if (res.status === 401) {
@@ -190,7 +190,7 @@ export const searchFeedback = params => (dispatch) => {
       if (res.status === 'success') {
         dispatch({
           type: SEARCH_FEEDBACK,
-          payload: res || { data: [] },
+          payload: res || {},
           status: 'success',
         })
       }

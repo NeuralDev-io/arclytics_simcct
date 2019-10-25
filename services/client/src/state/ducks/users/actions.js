@@ -31,7 +31,7 @@ export const getUsers = params => (dispatch) => {
       if (res.status === 404) {
         return {
           status: 'success',
-          res: { data: [] },
+          data: [],
         }
       }
       if (res.status === 401) {
@@ -55,12 +55,17 @@ export const getUsers = params => (dispatch) => {
         addFlashToast({
           message: res.message,
           options: { variant: 'error' },
+        })(dispatch)
+        dispatch({
+          type: GET_USERS,
+          status: 'fail',
         })
       }
       if (res.status === 'success') {
         dispatch({
           type: GET_USERS,
-          payload: res || { data: [] },
+          status: 'success',
+          payload: res || {},
         })
       }
     })
@@ -87,9 +92,11 @@ export const searchUsers = params => (dispatch) => {
   })
     .then((res) => {
       if (res.status === 404) {
+        // Ensure the 404 returned is not an error but just a successful
+        // request without any data returned.
         return {
           status: 'success',
-          res: { data: [] },
+          data: [],
         }
       }
       if (res.status === 401) {
@@ -105,6 +112,7 @@ export const searchUsers = params => (dispatch) => {
           message: 'Search not successful.',
         }
       }
+      // success
       return res.json()
     })
     .then((res) => {
@@ -112,12 +120,17 @@ export const searchUsers = params => (dispatch) => {
         addFlashToast({
           message: res.message,
           options: { variant: 'error' },
+        })(dispatch)
+        dispatch({
+          type: SEARCH_USERS,
+          status: 'fail',
         })
       }
       if (res.status === 'success') {
         dispatch({
           type: SEARCH_USERS,
-          payload: res || { data: [] },
+          status: 'success',
+          payload: res || {},
         })
       }
     })

@@ -4475,7 +4475,7 @@ paths:
                   value:
                     status: "fail"
                     message: "No JWT stored in Session."
-  /user/alloys/{id}:
+  /v1/sim/user/alloys/{id}:
     get:
       summary: "We get the requested alloy from the parameter's ObjectId."
       tags:
@@ -4537,18 +4537,40 @@ paths:
                           weight: 0.0
                         - symbol: "P"
                           weight: 0.012
-        401:
-          description: "The user is not authenticated to perform this request."
+        400:
+          description: "An invalid request body has been sent."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'No Auth Header':
+                'Inlvaid Request':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Invalid ObjectId."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -4556,21 +4578,24 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
-                  value:
-                    status: "fail"
-                    message: "This user account has been disabled."
-        400:
-          description: "The request has an invalid request parameter."
+        403:
+          description: "Unauthorized access."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "Invalid ObjectId."
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
         404:
-          description: "There are no alloys saved to the user's document or user to find."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
@@ -4579,11 +4604,12 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
                 'No alloys':
                   value:
                     status: "fail"
-                    message: "No alloys found."
+                    message: "Alloy does not exist."
         418:
           description: "Multiple objects have been returned from the query."
           content:
@@ -4593,6 +4619,18 @@ paths:
               example:
                 status: "fail"
                 message: "Multiple objects returned."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+
     patch:
       summary: "Save an alloy to the User's database."
       tags:

@@ -1252,181 +1252,180 @@ paths:
                   value:
                     status: "fail"
                     message: "No JWT stored in Session."
-
     post:
-          summary: "Save the list of Configuration."
-          tags:
-            - Users
-          security:
-            - bearerAuth: []
-          requestBody:
-            description: "List of configuration and alloy"
-            required: true
-            content:
-              application/json:
-                schema:
+      summary: "Save the list of Configuration."
+      tags:
+        - Save Simulation
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "List of configuration and alloy"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                configurations:
+                  $ref: '#/components/schemas/Configurations'
+                alloy_store:
+                  $ref: '#/components/schemas/Alloy Store'
+                simulation_results:
+                  $ref: '#/components/schemas/Saved Simulation'
+      responses:
+        201:
+          description: "Successfully saved."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    format: bytes
+                  message:
+                    type: string
+                    format: string
+              example:
+                status: "success"
+                data:
                   type: object
                   properties:
+                    user:
+                      $ref: '#/components/schemas/User'
                     configurations:
                       $ref: '#/components/schemas/Configurations'
                     alloy_store:
-                      $ref: '#/components/schemas/Alloy Store'
+                       $ref: '#/components/schemas/Alloy Store'
                     simulation_results:
                       $ref: '#/components/schemas/Saved Simulation'
-          responses:
-            201:
-              description: "Successfully saved."
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      token:
-                        type: string
-                        format: bytes
-                      message:
-                        type: string
-                        format: string
-                  example:
-                    status: "success"
-                    data:
-                      type: object
-                      properties:
-                        user:
-                          $ref: '#/components/schemas/User'
-                        configurations:
-                          $ref: '#/components/schemas/Configurations'
-                        alloy_store:
-                           $ref: '#/components/schemas/Alloy Store'
-                        simulation_results:
-                          $ref: '#/components/schemas/Saved Simulation'
-            400:
-              description: "An invalid payload has been sent in the request."
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/Response'
-                  examples:
-                    'Empty payload':
-                      value:
-                        status: "fail"
-                        message: "Invalid payload."
-                    'Missing Configurations':
-                      value:
-                        status: "fail"
-                        message: "Missing Configurations in payload."
-                    'Missing Alloy':
-                      value:
-                        status: "fail"
-                        message: "Missing Alloy Store in payload."
-                    'Field Does Not Exist':
-                      value:
-                        status: "fail"
-                        error: "string"
-                        message: "Field does not exist error."
-                    'Element Symbol Invalid':
-                      value:
-                        status: "fail"
-                        error: "string"
-                        message: "Invalid element symbol error."
-                    'Element Invalid':
-                      value:
-                        status: "fail"
-                        error: "string"
-                        message: "Invalid element error."
-                    'Missing Element Error':
-                      value:
-                        status: "fail"
-                        error: "string"
-                        message: "Missing element error."
-                    'Validation Error':
-                      value:
-                        status: "fail"
-                        error: "string"
-                        message: "Model schema validation error."
-                    'Duplicate Element':
-                      value:
-                        status: "fail"
-                        error: "string"
-                        message: "Alloy contains a duplicate element."
-            401:
-              description: "The user is not authenticated to perform this request."
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      status:
-                        type: string
-                        format: string
-                      message:
-                        type: string
-                        format: string
-                  examples:
-                    'Invalid Session':
-                      value:
-                        status: "fail"
-                        message: "Session is invalid."
-                    'Session Token Invalid':
-                      value:
-                        status: "fail"
-                        message: "Session token is not valid."
-                    'Signature Expired':
-                      value:
-                        status: "fail"
-                        message: "Signature expired. Please login again."
-                    'Invalid Token':
-                      value:
-                        status: "fail"
-                        message: "Invalid token. Please log in again."
-            403:
-              description: "Unauthorized access."
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      status:
-                        type: string
-                      message:
-                        type: string
-                  examples:
-                    'Account Disabled':
-                      value:
-                        status: "fail"
-                        message: "This user account has been disabled."
-                    'Non Admin User':
-                      value:
-                        status: "fail"
-                        message: "Not authorized."
-            404:
-              description: "The user cannot be found."
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/Response'
-                  examples:
-                    'No User':
-                      value:
-                        status: "fail"
-                        error: "error"
-                        message: "User does not exist."
-            500:
-              description: "An internal server error has occurred."
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/Response'
-                  examples:
-                    'Internal Server Error':
-                      value:
-                        status: "fail"
-                        message: "No JWT stored in Session."
-                    'Overflow Error':
-                      value:
-                        status: "fail"
-                        error: "Error ..."
-                        message: "Overflow error."
+        400:
+          description: "An invalid payload has been sent in the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Missing Configurations':
+                  value:
+                    status: "fail"
+                    message: "Missing Configurations in payload."
+                'Missing Alloy':
+                  value:
+                    status: "fail"
+                    message: "Missing Alloy Store in payload."
+                'Field Does Not Exist':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Field does not exist error."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Model schema validation error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+                'Overflow Error':
+                  value:
+                    status: "fail"
+                    error: "Error ..."
+                    message: "Overflow error."
   /user/simulation/{id}:
     get:
       summary: "Retrieve the list of Configurations saved in the User's document."

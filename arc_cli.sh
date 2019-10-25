@@ -1199,6 +1199,11 @@ while [[ "$1" != "" ]] ; do
 
                   # google-chrome console.cloud.google.com/kubernetes/list?project=${PROJECT_ID}
                   ;;
+                scale )
+                  gcloud container clusters resize ${CLUSTER_NAME} --node-pool default-pool --num-nodes $4
+                  sleep 5
+                  gcloud container clusters list
+                  ;;
                 delete )
                   gcloud container clusters list
                   gcloud container clusters delete ${CLUSTER_NAME} --region ${REGION}

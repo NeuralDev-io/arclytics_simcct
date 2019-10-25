@@ -22,10 +22,14 @@ import './Table.scss'
 // loading data.
 const CustomNoDataComponent = ({ loading }) => (
   loading
-    ? null
-    : (
+    ? (
       <div className="rt-noData">
         Loading...
+      </div>
+    )
+    : (
+      <div className="rt-noData">
+        No results.
       </div>
     )
 )

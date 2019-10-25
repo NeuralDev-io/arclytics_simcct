@@ -115,7 +115,7 @@ class ManageUsers extends Component {
    * @param (reactTableState) the state of the React-Table.
    */
   fetchUsersQuery = (reactTableState) => {
-    const { getUsersConnect } = this.props
+    const { getUsersConnect, searchUsersConnect } = this.props
 
     /*
     * These are the parameters from `state` sent by ControlledTable.
@@ -131,7 +131,7 @@ class ManageUsers extends Component {
     * ControlledTable so that when we search, we know exactly which params we
     * need to query with.
     * */
-    // const { searchState, searchQuery } = this.state
+    const { searchState, searchQuery } = this.state
 
     // Set up sorting:
     let sort = 'created_date'
@@ -143,14 +143,14 @@ class ManageUsers extends Component {
       }
     }
 
-    // if (searchState) {
-    //   searchFeedbackConnect(
-    //     `query=${searchQuery}&page=${reactTableState.page}&limit=${reactTableState.pageSize}
-    //     &sort=${sort}`,
-    //   )
-    // } else {
-    getUsersConnect(`page=${reactTableState.page}&limit=${reactTableState.pageSize}&sort=${sort}`)
-    // }
+    if (searchState) {
+      searchUsersConnect(
+        `query=${searchQuery}&page=${reactTableState.page}&limit=${reactTableState.pageSize}
+        &sort=${sort}`,
+      )
+    } else {
+      getUsersConnect(`page=${reactTableState.page}&limit=${reactTableState.pageSize}&sort=${sort}`)
+    }
   }
 
   /**
@@ -208,7 +208,7 @@ class ManageUsers extends Component {
     } = this.props
 
     let { users = [] } = this.props
-    if (!dataFetched) users = []
+    if (!dataFetched || users.length === 0) users = []
 
     const columns = [
       {
@@ -324,7 +324,7 @@ class ManageUsers extends Component {
           onPageChange={p => this.setState({ page: p })}
           loading={dataLoading}
           showPageSizeOptions={false}
-          showPagination={users.length !== 0}
+          showPagination={totalPages > 1}
           resizable={false}
           defaultPageSize={10}
           condensed

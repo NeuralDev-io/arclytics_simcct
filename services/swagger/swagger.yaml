@@ -1057,7 +1057,7 @@ paths:
                     status: "fail"
                     error: "error..."
                     message: "Overflow error."
-  /user/share/simulation/email:
+  /v1/sim/user/share/simulation/email:
     post:
       summary: "Generate email that can be used to share configurations."
       tags:
@@ -1074,8 +1074,10 @@ paths:
               properties:
                 configuration:
                   $ref: '#/components/schemas/Configurations'
-                alloy:
-                  $ref: '#/components/schemas/Alloy'
+                alloy_store:
+                  $ref: '#/components/schemas/Alloy Store'
+                simulation_results:
+                  $ref: '#/components/schemas/Saved Simulation'
       responses:
         201:
           description: "Link successfully generated."
@@ -1094,6 +1096,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
+                'Bad Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
                 'No Email Provided':
                   value:
                     status: "fail"
@@ -1139,7 +1145,12 @@ paths:
                     status: "fail"
                     error: "string"
                     message: "Validation error."
-        '401':
+                'Overflow Error':
+                  value:
+                    status: "fail"
+                    error: "error..."
+                    message: "Overflow Error"
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -1153,11 +1164,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No token provided':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -1165,7 +1180,19 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
@@ -1179,7 +1206,19 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
 
   /v1/sim/user/simulation:
     get:

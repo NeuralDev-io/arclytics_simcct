@@ -8,14 +8,13 @@
  * @author Andrew Che
  */
 import React, { Component } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { logError } from '../../../api/LoggingHelper'
 import Card from '../../elements/card'
 import { getSimulationData } from '../../../api/Analytics'
 import {
   SavedAlloysSimilarity,
   MethodsHorizontalBarChart,
-  SavedAlloysByNameHorizontalChart
+  SavedAlloysByNameHorizontalChart,
 } from '../charts'
 
 import styles from './SimAnalytics.module.scss'
@@ -36,7 +35,7 @@ class SimAnalytics extends Component {
   componentDidMount = () => {
     this.setState({
       isLoading: true,
-      isLoadingSavedAlloySimilarity: true
+      isLoadingSavedAlloySimilarity: true,
     })
     this.fetchSavedAlloysSimilarity()
     this.fetchMethodsData()
@@ -54,7 +53,7 @@ class SimAnalytics extends Component {
         err.toString(),
         err.message,
         'SimAnalytics.fetchSavedAlloysSimilarity',
-        err.stack
+        err.stack,
       ))
   }
 
@@ -69,7 +68,7 @@ class SimAnalytics extends Component {
         err.toString(),
         err.message,
         'SimAnalytics.fetchSavedAlloysByNameData',
-        err.stack
+        err.stack,
       ))
   }
 
@@ -84,7 +83,7 @@ class SimAnalytics extends Component {
         err.toString(),
         err.message,
         'SimAnalytics.fetchSavedAlloysSimilarity',
-        err.stack
+        err.stack,
       ))
   }
 

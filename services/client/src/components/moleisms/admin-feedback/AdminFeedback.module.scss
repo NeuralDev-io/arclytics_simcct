@@ -86,6 +86,8 @@ h3 {
     width: 100%;
     padding: 1.5rem;
     overflow-y: auto;
+    word-break: normal !important;
+    word-wrap: normal !important;
     background-color: var(--n10);
     border-radius: 1rem;
   }

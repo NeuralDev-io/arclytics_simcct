@@ -10,6 +10,7 @@
  * @version 1.0.0
  * @author Dalton Le
  */
+/* eslint-disable react/prop-types */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -18,7 +19,12 @@ import Select from '../../elements/select'
 import TextField, { TextFieldExtra } from '../../elements/textfield'
 import Checkbox from '../../elements/checkbox'
 import {
-  updateConfigMethod, updateGrainSize, updateMsBsAe, getMsBsAe, setAutoCalculate, updateConfig,
+  updateConfigMethod,
+  updateGrainSize,
+  updateMsBsAe,
+  getMsBsAe,
+  setAutoCalculate,
+  updateConfig,
 } from '../../../state/ducks/sim/actions'
 import { validate, validateGroup } from '../../../utils/validator'
 import { roundTo } from '../../../utils/math'
@@ -307,7 +313,9 @@ class ConfigForm extends Component {
                     }
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_ae || !isAuthenticated || !isInitialised}
+                    isDisabled={
+                      configurations.auto_calculate_ae || !isAuthenticated || !isInitialised
+                    }
                     error={configurations.error.ae1_temp}
                   />
                 </div>
@@ -327,7 +335,9 @@ class ConfigForm extends Component {
                     }
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_ae || !isAuthenticated || !isInitialised}
+                    isDisabled={
+                      configurations.auto_calculate_ae || !isAuthenticated || !isInitialised
+                    }
                     error={configurations.error.ae3_temp}
                   />
                 </div>
@@ -367,7 +377,9 @@ class ConfigForm extends Component {
                     }
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_bs || !isAuthenticated || !isInitialised}
+                    isDisabled={
+                      configurations.auto_calculate_bs || !isAuthenticated || !isInitialised
+                    }
                     error={configurations.error.bs_temp}
                   />
                 </div>
@@ -410,7 +422,9 @@ class ConfigForm extends Component {
                     }
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_ms || !isAuthenticated || !isInitialised}
+                    isDisabled={
+                      configurations.auto_calculate_ms || !isAuthenticated || !isInitialised
+                    }
                     error={configurations.error.ms_temp}
                   />
                 </div>
@@ -430,7 +444,9 @@ class ConfigForm extends Component {
                         : configurations.ms_rate_param
                     }
                     length="short"
-                    isDisabled={configurations.auto_calculate_ms || !isAuthenticated || !isInitialised}
+                    isDisabled={
+                      configurations.auto_calculate_ms || !isAuthenticated || !isInitialised
+                    }
                     error={configurations.error.ms_rate_param}
                   />
                 </div>

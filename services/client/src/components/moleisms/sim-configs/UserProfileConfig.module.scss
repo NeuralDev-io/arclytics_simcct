@@ -4,11 +4,43 @@
 
 .config {
   margin-bottom: .75rem;
-  & > span {
-    width: 8rem;
+
+  & > .titleContainer {
+    display: flex;
+    align-items: center;
+    margin-right: 1.5rem;
+    //width: 14rem;
+
+    & > span {
+      width: 8rem;
+    }
   }
+
 }
 
 .textfield {
   padding-right: 4rem;
+}
+
+.infoIcon {
+  width: 1rem;
+  height: 1rem;
+  stroke: var(--arc500);
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+}
+
+.infoTip {
+  width: max-content;
+  max-width: 35rem;
+}
+
+.infoTipContainer {
+  width: 1rem;
+  height: 1rem;
+}
+
+.methodTooltip {
+  top: 2rem;
 }

@@ -1450,8 +1450,8 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete pv elasticsearch-pv-2 --namespace=arclytics
                   #kubectl delete pv elasticsearch-pv-3 --namespace=arclytics
                   sleep 15
-                  gcloud compute disks delete es-standard-disk-1 ${LOCATION_COMMAND}
-                  gcloud compute disks delete es-standard-disk-2 ${LOCATION_COMMAND}
+                  gcloud compute disks delete es-standard-disk-1 --region=australia-southeast1
+                  gcloud compute disks delete es-standard-disk-2 --region=australia-southeast1
                   #gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
                   ;;
               esac
@@ -1477,6 +1477,10 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-ingress-svc.yaml"
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-daemonset.yaml"
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-rbac.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/fluentd-logging --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift
@@ -1507,6 +1511,10 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-apm-gke-svc.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/apm-server --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift
@@ -1610,6 +1618,7 @@ while [[ "$1" != "" ]] ; do
                 scale )
                   kubectl scale deployments/arclytics --replicas=$4
                   kubectl get rs -o wide
+                  ;;
               esac
               shift
             done
@@ -1640,6 +1649,10 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/client-https --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift

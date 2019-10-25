@@ -1539,6 +1539,10 @@ while [[ "$1" != "" ]] ; do
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
                   ;;
+                scale )
+                  kubectl scale deployments/simcct --replicas=$4
+                  kubectl get rs -o wide
+                  ;;
               esac
               shift
             done
@@ -1568,6 +1572,10 @@ while [[ "$1" != "" ]] ; do
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/celery-worker --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift
@@ -1599,6 +1607,9 @@ while [[ "$1" != "" ]] ; do
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
                   ;;
+                scale )
+                  kubectl scale deployments/arclytics --replicas=$4
+                  kubectl get rs -o wide
               esac
               shift
             done

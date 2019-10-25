@@ -6187,13 +6187,25 @@ paths:
                     errors: "string"
                     message: "Unable to save to session store."
 
-  /simulate:
-    get:
+  /v1/sim/simulate:
+    post:
       summary: "Run the simulation and get the results back."
       security:
         - bearerAuth: []
       tags:
         - Simulation
+      requestBody:
+        description: "Save user's last Alloy and Configuration."
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                last_alloy_store:
+                  $ref: '#/components/schemas/Alloy Store'
+                last_configurations:
+                  $ref: '#/components/schemas/Configurations'
       responses:
         200:
           description: "The CCT and TTT simulations have been completed and the Graphs result returned."
@@ -6208,14 +6220,55 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'Ae Errors':
+                'No Data':
                   value:
                     status: "fail"
-                    message: "Ae1 and Ae3 value cannot be less than 0.0."
-                'MS/BS Errors':
+                'No Alloy Store':
                   value:
                     status: "fail"
-                    message: "MS and BS value cannot be less than 0.0."
+                    message: "Alloy store required."
+                'One Alloy Option':
+                  value:
+                    status: "fail"
+                    message: "Alloy option must be one of [\"single\" | \"mix\"]"
+                'Configurations Required':
+                  value:
+                    status: "fail"
+                    message: "Configurations required."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Model schema validation error."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Invalid Element Weight':
+                  value:
+                    status: fail
+                    error: "Error .."
+                    message: "Invalid element weight error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'No Mix Option':
+                  value:
+                    status: "fail"
+                    message: "Mix option not allowed."
                 'Configuration Errors':
                   value:
                     status: "fail"
@@ -6227,44 +6280,63 @@ paths:
                     errors: "string"
                     message: "Simulation Error"
         401:
-          description: "Unauthorized access to the endpoint."
+          description: "The user is not authenticated to perform this request."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
               examples:
-                'No Token':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "No valid Authorization in header."
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
                 'Invalid Token':
                   value:
                     status: "fail"
-                    message: "Invalid JWT token in header."
-                'No Session Key':
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
-                    message: "No previous session initiated."
-                'Unable To Load Session':
-                  value:
-                    status: "fail"
-                    errors: "String (Session_store)"
-                    message: "Unable to load session from Redis."
+                    message: "This user account has been disabled."
         404:
-          description: "The configurations could not found"
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'No last configurations':
+                'No User':
                   value:
                     status: "fail"
-                    message: "No previous session configurations was set."
-                'No last alloy':
-                  value:
-                    status: "fail"
-                    message: "No previous session alloy was set."
+                    error: "error"
+                    message: "User does not exist."
         500:
           description: "An internal server error has occurred."
           content:
@@ -6275,7 +6347,22 @@ paths:
                 'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "Unable to retrieve data from Redis."
+                    message: "No JWT stored in Session."
+                'Value Error':
+                  value:
+                    status: "fail"
+                    errors: "Errors ..."
+                    message: "ValueError in preparing SimConfiguration instance."
+                'Initialisation Error':
+                  value:
+                    status: "fail"
+                    errors: "Errors ..."
+                    message: "SimConfiguration initialisation error."
+                'PhaseSimulation Initialisation Error':
+                  value:
+                    status: "fail"
+                    errors: "Errors ..."
+                    message: "PhaseSimulation initialisation error."
                 'Zero Division Error':
                   value:
                     status: "fail"
@@ -6286,31 +6373,6 @@ paths:
                     status: "fail"
                     errors: "Error."
                     message: "Assertion error building response data."
-                'Configuration Error':
-                  value:
-                    status: "fail"
-                    errors: "Error."
-                    message: "No Ae1 and Ae3 value has been provided."
-                'Configuration Error2':
-                  value:
-                    status: "fail"
-                    errors: "Error."
-                    message: "Start or Finish percent must be a fraction."
-                'Configuration Error3':
-                  value:
-                    status: "fail"
-                    errors: "Error."
-                    message: "XFE has to be below 1.0"
-                'Simulation Error':
-                  value:
-                    status: "fail"
-                    errors: "Error."
-                    message: "Need a configurations instance to run simulation."
-                'Simulation Error2':
-                  value:
-                    status: "fail"
-                    errors: "Error."
-                    message: "Don't be silly with negative Cooling Rate."
 
 components:
   securitySchemes:

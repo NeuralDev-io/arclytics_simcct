@@ -3732,8 +3732,7 @@ paths:
                   value:
                     status: "fail"
                     message: "No JWT stored in Session."
-
-  /global/alloys/{id}:
+  /v1/sim/global/alloys/{id}:
     get:
       summary: "Get a single alloy from the Alloys database."
       tags:
@@ -3768,15 +3767,79 @@ paths:
               example:
                 status: "fail"
                 message: "Invalid ObjectId"
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
         404:
-          description: "Cannot find an existing alloy with that ID."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "Alloy not found."
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'Alloy Not Found':
+                  value:
+                    status: "fail"
+                    message: "Alloy not found."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
     patch:
       summary: "Update a single existing Alloy."
       tags:

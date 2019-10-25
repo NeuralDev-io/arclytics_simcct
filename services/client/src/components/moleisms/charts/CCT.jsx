@@ -104,7 +104,7 @@ const CCT = ({
         type: 'scatter',
         mode: 'lines',
         line: {
-          color: getColor('--br500'),
+          color: getColor('--b500'),
           shape: 'spline',
         },
       },

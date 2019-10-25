@@ -106,12 +106,10 @@
 .infoIcon {
   width: 1rem;
   height: 1rem;
-  color: var(--arc500);
+  stroke: var(--arc500);
   cursor: pointer;
   position: absolute;
   top: 0;
-
-  &:hover { color: var(--n900); }
 }
 
 .headerContainer {

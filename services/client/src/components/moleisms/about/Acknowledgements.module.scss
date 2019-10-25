@@ -1,0 +1,41 @@
+.container {
+  width: 60%;
+  margin: auto;
+
+  h3 {
+    margin-bottom: 2.5rem;
+  }
+
+  h4 {
+    margin-top: 2.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  h5 {
+    margin-top: 1.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  h6 {
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  ul.packageList {
+    list-style-type: none;
+    display: flex;
+    flex-flow: row wrap;
+    margin: 1.5rem 0 2.5rem 0;
+
+    & > li.packageItem {
+      margin: 0 1rem .5rem 0;
+      width: 10rem;
+    }
+  }
+
+  ol.references {
+    & > li {
+      margin-bottom: .5rem;
+    }
+  }
+}

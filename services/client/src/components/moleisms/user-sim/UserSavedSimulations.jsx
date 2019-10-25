@@ -8,6 +8,7 @@
  * @version 1.0.0
  * @author Dalton Le
  */
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -23,6 +24,7 @@ import { getSavedSimulations } from '../../../state/ducks/self/actions'
 import { loadSimFromAccount } from '../../../state/ducks/sim/actions'
 
 import styles from './UserSavedSimulations.module.scss'
+import { dangerouslyGetDateTimeString } from '../../../utils/datetime'
 
 class UserSavedSimulations extends Component {
   constructor(props) {
@@ -48,6 +50,7 @@ class UserSavedSimulations extends Component {
   }
 
   handleViewSim = (sim) => {
+    // eslint-disable-next-line no-underscore-dangle
     this.setState({ showSideView: true, currentSim: { _id: sim._id } })
     setTimeout(() => {
       this.setState({
@@ -55,10 +58,6 @@ class UserSavedSimulations extends Component {
         currentSim: sim,
       })
     }, 500)
-    // this.setState({
-    //   // showSideView: true,
-    //   currentSim: sim,
-    // })
   }
 
   handleCloseSideView = () => {
@@ -76,8 +75,24 @@ class UserSavedSimulations extends Component {
 
     const columns = [
       {
-        Header: 'ID',
-        accessor: '_id',
+        Header: 'Created',
+        accessor: 'created',
+        Cell: ({ value }) => (<span>{dangerouslyGetDateTimeString(value)}</span>),
+        maxWidth: 180,
+      },
+      {
+        Header: 'Alloy used',
+        accessor: d => d.alloy_store.alloys.parent.name,
+        id: 'alloy_name',
+        // Cell: ({ value }) => (value !== undefined ? value.alloy_store.alloys.parent.name : ''),
+        filterable: false,
+        maxWidth: 180,
+      },
+      {
+        Header: 'Method',
+        accessor: d => d.configurations.method,
+        id: 'method',
+        filterable: false,
       },
       {
         Header: '',
@@ -123,7 +138,11 @@ class UserSavedSimulations extends Component {
         </div>
         <div className={`${styles.sideview} ${showSideView ? styles.show : ''}`}>
           <header className={styles.sideHeader}>
-            <h5>Sim ID: {_id}</h5>
+            <h5>
+              Sim ID:
+              {' '}
+              {_id}
+            </h5>
             <IconButton
               onClick={this.handleCloseSideView}
               Icon={props => <FontAwesomeIcon icon={faTimes} color={getColor('--n500')} {...props} />}

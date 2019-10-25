@@ -8,8 +8,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
-__version__ = '0.1.0'
-__status__ = 'development'
+__version__ = '2.0.0'
+__status__ = 'production'
 __date__ = '2019.10.02'
 
 """user_analytics.py: 
@@ -24,7 +24,7 @@ from typing import Tuple
 from flask import Blueprint
 from flask_restful import Resource
 
-from arc_api.extensions import api
+from arc_api.extensions import api, cache
 from arc_api.routes import Routes
 from arc_api.mongo_service import MongoService
 from arc_api.middleware import authorize_admin_cookie_restful
@@ -41,6 +41,7 @@ class UserNerdyData(Resource):
 
     method_decorators = {'get': [authorize_admin_cookie_restful]}
 
+    @cache.cached(timeout=120, key_prefix='UserNerdyData.get')
     def get(self, _):
         """Uses various MongoDB Queries and Aggregation Pipeline to get some
         interesting aggregation totals on certain collections and embedded
@@ -178,6 +179,7 @@ class UserProfileData(Resource):
 
     method_decorators = {'get': [authorize_admin_cookie_restful]}
 
+    @cache.cached(timeout=120, key_prefix='UserProfileData.get')
     def get(self, _) -> Tuple[dict, int]:
         """Uses MongoDB Aggregation Pipeline to get all Profile data from
         the `users` collection and then transforms that to allow building

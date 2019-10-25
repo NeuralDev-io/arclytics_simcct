@@ -35,7 +35,7 @@ spec:
   selector:
     matchLabels:
       app: simcct
-  replicas: 4
+  replicas: 2
   template:
     metadata:
       labels:
@@ -68,8 +68,8 @@ spec:
             periodSeconds: 60
           resources:
             requests:
-              cpu: 750m
-              memory: 1.5Gi
+              cpu: 1000m
+              memory: 2Gi
             limits:
               cpu: 1500m
               memory: 4Gi

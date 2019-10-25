@@ -41,7 +41,7 @@ class SearchService(object):
         query: dict = None,
         projections: dict = None,
         sort: list = None,
-        limit: int = None
+        limit: int = 0
     ):
         """Do a `collections.find()` query with projections. Additionally,
         we can also sort or limit the results returned.

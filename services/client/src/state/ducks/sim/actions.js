@@ -549,6 +549,7 @@ export const runSim = () => (dispatch, getState) => {
       }
       return res.json()
     })
+    // eslint-disable-next-line consistent-return
     .then((simRes) => {
       if (simRes.status === 'fail') {
         logDebug(simRes, 'actions.runSim')

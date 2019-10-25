@@ -111,7 +111,8 @@ h6 {
 p {
   font-size: $base-text-size;
   line-height: $base-line-height;
-  font-family: $base-letter-spacing;
+  font-family: $font-primary;
+  letter-spacing: $base-letter-spacing;
 }
 
 .text--btn {

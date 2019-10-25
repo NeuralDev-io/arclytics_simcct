@@ -11,8 +11,8 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-// import { faCheckSquare } from '@fortawesome/pro-light-svg-icons/faCheckSquare'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck } from '@fortawesome/pro-light-svg-icons/faCheck'
 import CheckIcon from 'react-feather/dist/icons/check'
 
 import styles from './Checkbox.module.scss'
@@ -39,9 +39,8 @@ const Checkbox = (props) => {
         checked={isChecked}
       />
       <div className={styles.checkmark}>
-        <CheckIcon className={styles.icon} />
-        {/* <FontAwesomeIcon icon={faCheckSquare} className={styles.icon} size="2x" /> */}
-
+        {/* <CheckIcon className={styles.icon} /> */}
+        <FontAwesomeIcon icon={faCheck} className={styles.icon} size="2x" />
       </div>
       <span>{label}</span>
     </div>

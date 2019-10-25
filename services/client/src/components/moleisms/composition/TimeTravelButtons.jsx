@@ -90,7 +90,7 @@ class TimeTravelButtons extends Component {
         >
           <IconButton
             onClick={() => {}}
-            Icon={props => <FontAwesomeIcon  icon={faMinus} {...props} />}
+            Icon={props => <FontAwesomeIcon icon={faMinus} {...props} />}
             isDisabled={timeMachine.data.length === 0}
             className={{
               button: `${styles.timeButton}
@@ -107,7 +107,7 @@ class TimeTravelButtons extends Component {
         </AttachModal>
         <IconButton
           onClick={timeTravelNextConnect}
-          Icon={props => <FontAwesomeIcon  icon={faStepForward} {...props} />}
+          Icon={props => <FontAwesomeIcon icon={faStepForward} {...props} />}
           isDisabled={
             timeMachine.data.length === 0
             || timeMachine.current === timeMachine.data.length - 1

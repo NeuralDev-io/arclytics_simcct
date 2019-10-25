@@ -197,13 +197,13 @@ class ConfigurationsSchema(Schema):
     bs_temp = fields.Float(required=False, validate=not_negative)
     ae1_temp = fields.Float(required=False, validate=not_negative)
     ae3_temp = fields.Float(required=False, validate=not_negative)
-    start_temp = fields.Int(required=True, validate=not_negative)
+    start_temp = fields.Float(required=True, validate=not_negative)
 
     # Validation for this done in method `validate_cooling_rate`.
     # User cooling curve configurations
     nucleation_start = fields.Float(required=False)
     nucleation_finish = fields.Float(required=False)
-    cct_cooling_rate = fields.Int(required=False)
+    cct_cooling_rate = fields.Float(required=False)
 
     # By default, `schema.load()` will raise a `ValidationError` if it
     # encounters a key with no matching `Field` in the schema

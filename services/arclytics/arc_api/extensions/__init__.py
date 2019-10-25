@@ -8,8 +8,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
-__version__ = '1.1.0'
-__status__ = 'development'
+__version__ = '2.0.0'
+__status__ = 'production'
 __date__ = '2019.10.02'
 """extensions.__init__.py: 
 

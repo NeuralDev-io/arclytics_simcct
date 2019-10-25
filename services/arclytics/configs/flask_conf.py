@@ -43,15 +43,14 @@ class BaseConfig:
     REDIS_URL = f'redis://{redis_host}:{redis_port}/0'
 
     # Flask Caching
-    # CACHE_TYPE = 'simple'
-    # CACHE_DEFAULT_TIMEOUT = 300
+    CACHE_TYPE = 'redis'
+    CACHE_DEFAULT_TIMEOUT = 300
     # Redis only
-    # CACHE_KEY_PREFIX = 'cache'
-    # CACHE_REDIS_HOST
-    # CACHE_REDIS_PORT
-    # CACHE_REDIS_PASSWORD
-    # CACHE_REDIS_DB = 3
-    # CACHE_REDIS_URL
+    CACHE_KEY_PREFIX = 'cache'
+    CACHE_REDIS_HOST = redis_host
+    CACHE_REDIS_PORT = redis_port
+    CACHE_REDIS_DB = 3
+    CACHE_REDIS_URL = f'redis://{redis_host}:{redis_port}/3'
 
     # fluentd
     FLUENTD_HOST = env.get('FLUENTD_HOST', 'localhost')
@@ -103,6 +102,19 @@ class ProductionConfig(BaseConfig):
     redis_port = env.get('REDIS_PORT', None)
     redis_password = env.get('REDIS_PASSWORD', None)
     REDIS_URL = f'redis://user:{redis_password}@{redis_host}:{redis_port}'
+
+    # Flask Caching
+    CACHE_TYPE = 'redis'
+    CACHE_DEFAULT_TIMEOUT = 150
+    # Redis only
+    CACHE_KEY_PREFIX = 'cache'
+    CACHE_REDIS_HOST = redis_host
+    CACHE_REDIS_PORT = redis_port
+    # CACHE_REDIS_PASSWORD
+    CACHE_REDIS_DB = 3
+    CACHE_REDIS_URL = (
+        f'redis://user:{redis_password}@{redis_host}:{redis_port}/3'
+    )
 
     # production elastic application performance monitoring
     ELASTIC_APM = {

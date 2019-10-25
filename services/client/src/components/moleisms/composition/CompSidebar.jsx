@@ -71,7 +71,8 @@ class CompSidebar extends Component {
           onClick={runSimConnect}
           length="long"
           className={styles.btn}
-          isDisabled={!sessionIsInitialised
+          isDisabled={
+            !sessionIsInitialised
             || !isAuthenticated
             || Object.keys(configError).length !== 0
             || Object.keys(parentError).length !== 0

@@ -3,17 +3,18 @@ import {
   CLOSE_FEEDBACK,
   RESET_FEEDBACK,
   GET_FEEDBACK,
+  SEARCH_FEEDBACK,
 } from './types'
 
 const initialState = {
-  feedbackList: {
-    data: [],
-    isFetched: false,
-    isLoading: false,
-    /*
-    * TODO(andrew@neuraldev.io): add the required pagination state
-    *  - sort, offset, limit, next_offset, prev_offset, n_results, current_page, total_pages
-    * */
+  feedbackList: [],
+  isFetched: false,
+  isLoading: false,
+  totalPages: -1,
+  sort: 'created_date',
+  limit: 10,
+  searchData: {
+    query: '',
   },
   feedbackVisible: false,
   ratingVisible: false,
@@ -24,39 +25,76 @@ const initialState = {
   message: '',
 }
 
+// eslint-disable-next-line consistent-return
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case GET_FEEDBACK: {
+      // Ensure that subscribers know the process has started.
       if (action.status === 'started') {
         return {
           ...state,
-          feedbackList: {
-            ...state.feedbackList,
-            isLoading: true,
-          },
+          isLoading: true,
+          isFetched: false,
         }
       }
-
       // Let's deal with failure first so we can get over it faster (i.e. fail fast)
       if (action.status === 'fail') {
         return {
           ...state,
-          feedbackList: {
-            ...state.feedbackList,
-            isLoading: false,
-          },
+          isLoading: false,
+          isFetched: false,
         }
       }
-
       // If action.status === 'success'
       if (action.status === 'success') {
         return {
           ...state,
-          feedbackList: {
-            ...state.feedbackList,
-            isLoading: false,
-            isFetched: true,
-            data: action.payload,
+          feedbackList: action.payload.data || [],
+          isLoading: false,
+          isFetched: true,
+          totalPages: action.payload.total_pages || initialState.totalPages,
+          sort: action.payload.sort || initialState.sort,
+          limit: action.payload.limit || initialState.limit,
+        }
+      }
+      break
+    }
+    case SEARCH_FEEDBACK: {
+      // Ensure that subscribers know the process has started.
+      if (action.status === 'started') {
+        return {
+          ...state,
+          isLoading: true,
+          isFetched: false,
+          searchData: {
+            ...state.searchData,
+          },
+        }
+      }
+      // Let's deal with failure first so we can get over it faster (i.e. fail fast)
+      if (action.status === 'fail') {
+        return {
+          ...state,
+          isLoading: false,
+          isFetched: false,
+          searchData: {
+            ...state.searchData,
+          },
+        }
+      }
+      // If action.status === 'success'
+      if (action.status === 'success') {
+        return {
+          ...state,
+          feedbackList: action.payload.data || [],
+          isLoading: false,
+          isFetched: true,
+          totalPages: action.payload.total_pages || initialState.totalPages,
+          sort: action.payload.sort || initialState.sort,
+          limit: action.payload.limit || initialState.limit,
+          searchData: {
+            ...state.searchData,
+            query: action.payload.query || initialState.searchData.query,
           },
         }
       }

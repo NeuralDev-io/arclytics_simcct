@@ -37,11 +37,11 @@ class PhaseFractions extends Component {
   renderCurrentPercent = (data) => {
     const { labels, values } = data
     const chartColors = [
-      getColor('--o500'),
-      getColor('--g500'),
-      getColor('--t500'),
-      getColor('--i500'),
-      getColor('--m500'),
+      getColor('--t500'), // Austenite
+      getColor('--r500'), // Ferrite
+      getColor('--g500'), // Pearlite
+      getColor('--v500'), // Bainite
+      getColor('--b500'), // Martensite
     ]
     return labels.map((label, index) => {
       const isDisabled = values[index] === 0
@@ -60,6 +60,7 @@ class PhaseFractions extends Component {
     })
   }
 
+  // eslint-disable-next-line arrow-body-style
   getAnnotationText = (user_cooling_curve, currentIdx, hasData) => {
     return `${!hasData ? 0 : Math.round(user_cooling_curve.temp[currentIdx])} °C`
   }
@@ -98,15 +99,16 @@ class PhaseFractions extends Component {
       })(),
       marker: {
         colors: [
-          getColor('--o500'),
-          getColor('--g500'),
-          getColor('--t500'),
-          getColor('--i500'),
-          getColor('--m500'),
+          getColor('--t500'), // Austenite
+          getColor('--r500'), // Ferrite
+          getColor('--g500'), // Pearlite
+          getColor('--v500'), // Bainite
+          getColor('--b500'), // Martensite
         ],
       },
       type: 'pie',
       hoverinfo: 'label+percent',
+      opacity: 0.8,
       textinfo: 'none',
       sort: false,
       hole: 0.55,
@@ -165,8 +167,8 @@ class PhaseFractions extends Component {
                             font: { size: 16, color: getColor('--n500') },
                             text: `${this.getAnnotationText(user_cooling_curve, currentIdx, hasData)}`,
                             showarrow: false,
-                          }
-                        ]
+                          },
+                        ],
                       }}
                       config={{
                         ...config,

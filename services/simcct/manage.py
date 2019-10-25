@@ -12,7 +12,7 @@ __author__ = [
     'Dinol Shrestha <@dinolsth>'
 ]
 __license__ = 'MIT'
-__version__ = '0.1.0'
+__version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.06.04'
 """manage.py: 

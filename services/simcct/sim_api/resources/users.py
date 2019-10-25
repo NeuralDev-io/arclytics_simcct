@@ -18,6 +18,7 @@ the Flask Resource inheritance model.
 """
 
 from datetime import datetime
+from math import floor
 from typing import Tuple
 
 from flask import Blueprint, request
@@ -163,9 +164,9 @@ class UserListQuery(Resource):
 
         # Skip/offset of 0 is unlimited
         try:
-            offset = int(request.args.get('offset', 0))
+            page = int(request.args.get('page', 0))
         except ValueError:
-            response.update({'message': 'Invalid offset parameter.'})
+            response.update({'message': 'Required page parameter.'})
             return response, 400
 
         # Limit of 0 is unlimited
@@ -192,7 +193,7 @@ class UserListQuery(Resource):
             valid_sort_keys = {
                 'email', '-email', 'admin', '-admin', 'verified', '-verified',
                 'full_name', '-full_name', 'first_name', '-first_name',
-                'last_name', '-last_name'
+                'last_name', '-last_name', 'created_date', '-created_date'
             }
             if sort not in valid_sort_keys:
                 response['message'] = 'Sort value is invalid.'
@@ -214,24 +215,24 @@ class UserListQuery(Resource):
             if sort in {'full_name', '-full_name'}:
                 sort_query.append(('first_name', sort_direction))
                 sort_query.append(('last_name', sort_direction))
+            elif sort in {'created_date', '-created_date'}:
+                sort_query.append(('created', sort_direction))
             else:
                 sort_query.append((sort_key, sort_direction))
 
-        # We need the full list to check for pagination
-        n_total_documents = SearchService().count(limit=0)
+        # Validate page
+        current_page = 0 if limit == 0 else page
+        skip = current_page * limit
 
-        # Validate offset
-        if offset > 0:
-            if offset >= n_total_documents:
-                response.update(
-                    {
-                        'message': 'Offset value exceeds number of documents.',
-                        'sort': sort,
-                        'offset': offset,
-                        'limit': limit
-                    }
-                )
-                return response, 400
+        if limit >= 1:
+            # We need the full list to check for pagination
+            n_total_documents = SearchService().count(limit=0)
+
+            total_pages = floor(n_total_documents / limit)
+            if n_total_documents % limit == 0:
+                total_pages = total_pages - 1
+        else:
+            total_pages = 1
 
         # ========== # QUERY THE DATABASE # ========== #
         # Because we want a full list returned, we will not have a query
@@ -239,7 +240,7 @@ class UserListQuery(Resource):
         users_list = SearchService().find_slice(
             query={},
             projections=PROJECTIONS,
-            skip=offset,
+            skip=skip,
             limit=limit,
             sort=sort_query
         )
@@ -256,43 +257,16 @@ class UserListQuery(Resource):
             {
                 'status': 'success',
                 'sort': sort,
-                'offset': offset,
+                'skip': skip,
+                'page': page,
                 'limit': limit,
-                'next_offset': None,
-                'prev_offset': None,
+                'current_page': current_page,
+                'total_pages': total_pages,
                 'n_results': n_documents,
                 'data': users_list,
             }
         )
         response.pop('message')
-
-        # A limit of 0, meaning the client does not want any subset of the
-        # full list so there is no need to worry about offsets and pages.
-        # We also want to just return everything if the limit requested was
-        # way more than what results we found any way.
-        # Plus we can avoid a divide by zero error from below.
-        if limit == 0 or limit > n_total_documents:
-            return response, 200
-
-        # Next offset is the offset for the next page of results. Prev is for
-        # the previous.
-        if offset + limit - 1 < n_total_documents:
-            response.update({'next_offset': offset + limit})
-        if offset - limit >= 0:
-            response.update({'prev_offset': offset - limit})
-
-        if n_total_documents % limit == 0:
-            total_pages = int(n_total_documents / limit)
-        else:
-            total_pages = int(n_total_documents / limit) + 1
-        current_page = int(offset / limit) + 1
-
-        response.update(
-            {
-                'current_page': current_page,
-                'total_pages': total_pages
-            }
-        )
 
         return response, 200
 
@@ -328,10 +302,16 @@ class SearchUsers(Resource):
             query = request.args.get('query', None)
             sort = request.args.get('sort', None)
 
+        # Ensure query parameters have been given, otherwise there is
+        # nothing to search for.
+        if not query:
+            response.update({'message': 'No query parameters provided.'})
+            return response, 400
+
         # Limit of 0 is unlimited
         try:
-            # By default, we limit the number of returned searches to 100.
-            limit = int(request.args.get('limit', 100))
+            # By default, we limit the number of returned searches to 200.
+            limit = int(request.args.get('limit', 200))
         except ValueError:
             response.update({'message': 'Invalid limit parameter.'})
             return response, 400
@@ -341,10 +321,11 @@ class SearchUsers(Resource):
             response['message'] = 'Limit must be a positive int.'
             return response, 400
 
-        # Ensure query parameters have been given, otherwise there is nothing
-        # to search for.
-        if not query:
-            response.update({'message': 'No query parameters provided.'})
+        # Get the page number to check how many skips to return
+        try:
+            page = int(request.args.get('page', 0))
+        except ValueError:
+            response.update({'message': 'Invalid page parameter.'})
             return response, 400
 
         # Pymongo can take a list of queries as objects so we initially just
@@ -357,18 +338,21 @@ class SearchUsers(Resource):
             valid_sort_keys = {
                 'email', '-email', 'admin', '-admin', 'verified', '-verified',
                 'full_name', '-full_name', 'first_name', '-first_name',
-                'last_name', '-last_name'
+                'last_name', '-last_name', 'created_date', '-created_date'
             }
             if sort not in valid_sort_keys:
                 response.update({'message': 'Sort value is invalid.'})
                 return response, 400
 
             # ========== # SETTING UP SORTING # ========== #
-            # If our sorting value begins with a "-" in the string, then we
-            # know we are doing a DESCENDING sort so we will appropriately set
-            # the sort direction
+            # If our sorting value begins with a "-" in the string,
+            # then we know we are doing a DESCENDING sort so we will
+            # appropriately set the sort direction
             sort_direction = 1
+            sort_key = sort
             if str(sort).startswith('-'):
+                # We remove the first character as it's not a valid key
+                sort_key = sort[1:]
                 sort_direction = -1
 
             # If we are sorting on fullname, we will need to split the
@@ -376,8 +360,10 @@ class SearchUsers(Resource):
             if sort in {'full_name', '-full_name'}:
                 sort_query.append(('first_name', sort_direction))
                 sort_query.append(('last_name', sort_direction))
+            elif sort in {'created_date', '-created_date'}:
+                sort_query.append(('created', sort_direction))
             else:
-                sort_query.append((sort, sort_direction))
+                sort_query.append((sort_key, sort_direction))
 
         # ========== # QUERY THE DATABASE # ========== #
         # This is the key advanced text search.
@@ -391,6 +377,10 @@ class SearchUsers(Resource):
             }
         }
 
+        # We need to get the number of skips to return the sliced result.
+        current_page = 0 if limit == 0 else page
+        skip = current_page * limit
+
         # Check if the user is trying to search for an email by doing a rather
         # simple check if the `@` symbol is in the string. If it is, we
         # will try to search for an email instead.
@@ -403,19 +393,35 @@ class SearchUsers(Resource):
             data = SearchService().find(
                 query={'email': query},
                 sort=sort_query,
-                limit=limit,
                 projections=PROJECTIONS
             )
 
             n_results = len(data)
-            if n_results > 0:
+            if n_results == 1:
                 # We found a user with this email so let's return that
                 return {
                     'status': 'success',
                     'query': query,
                     'limit': limit,
+                    'sort': sort,
+                    'page': 0,
+                    'total_pages': 1,
                     'data': data,
-                    'n_results': n_results
+                    'n_total_results': n_results
+                }, 200
+            if n_results > 1:
+                # Since we found more than 1 result, we need to slice based
+                # on the limit asked.
+                return {
+                    'status': 'success',
+                    'query': query,
+                    'sort': sort,
+                    'limit': limit,
+                    # Return the slice from the skip to the limit
+                    # Note that Python returns the end of the list if the
+                    # limit is more than than len(list)
+                    'data': data[skip:skip + limit],
+                    'n_total_results': n_results
                 }, 200
 
             # we failed to find via email to lets do a string search by going
@@ -425,136 +431,48 @@ class SearchUsers(Resource):
         # `sim_api.models.py` to ensure this is possible for first_name,
         # last_name, and email.
         data = SearchService().find(
-            query=query_selector,
-            sort=sort_query,
-            limit=limit,
-            projections=PROJECTIONS
+            query=query_selector, sort=sort_query, projections=PROJECTIONS
         )
 
-        n_documents = len(data)
-        if not n_documents:
-            response.update({'message': 'No results found.'})
-            return response, 404
+        # Instead of using a limit stage, we wil just go ahead and get
+        # everything and then we can slice based on skip:limit results.
+        n_results = len(data)
+        if n_results > 0:
+            # We need the full list to check for pagination.
+            if limit == 0:
+                # No limit was asked so we return everything
+                return {
+                    'status': 'success',
+                    'query': query,
+                    'sort': sort,
+                    'limit': limit,
+                    'page': 0,
+                    'total_pages': 1,
+                    'data': data,
+                    'n_total_results': n_results
+                }, 200
+            else:
+                # We know there is more results than the limit so we need
+                # some pagination.
+                total_pages = floor(n_results / limit)
+                if n_results % limit == 0:
+                    total_pages = total_pages - 1
+                if total_pages == 0:
+                    total_pages = 1
 
-        # ========== # PREPARE RESPONSE # ========== #
-        # No skip/offset with pagination will be provided because it would
-        # take too long to do anyway since you would need to do 2 full searches
-        # or manipulate the returned cursor to limit after the fact to get
-        # a subset of the results from offset/limit.
-        # The best way to avoid this is just to allow the client to limit the
-        # number of returned results.
-        # May be able to do it in the future but for now we will avoid.
-        response.update(
-            {
-                'status': 'success',
-                'sort': sort,
-                'limit': limit,
-                'n_results': n_documents,
-                'data': data,
-            }
-        )
-        response.pop('message')
-        return response, 200
+                return {
+                    'status': 'success',
+                    'query': query,
+                    'sort': sort,
+                    'limit': limit,
+                    'page': page,
+                    'skip': skip,
+                    'total_pages': total_pages,
+                    'data': data[skip:skip + limit],
+                    'n_total_results': n_results
+                }, 200
 
-#         response = {'status': 'fail', 'message': 'Invalid payload.'}
-#
-#         data = request.get_json()
-#
-#         if isinstance(data, dict):
-#             sort_on = data.get('sort_on', None)
-#             offset = data.get('offset', None)
-#             limit = data.get('limit', None)
-#         else:
-#             sort_on = None
-#             offset = None
-#             limit = None
-#
-#         # Validate sort parameters
-#         if sort_on:
-#             valid_sort_keys = [
-#                 'email', '-email', 'admin', '-admin', 'verified', '-verified',
-#                 'fullname', '-fullname'
-#             ]
-#             sort_valid = False
-#             for k in valid_sort_keys:
-#                 if k == sort_on:
-#                     sort_valid = True
-#                     break
-#
-#             if not sort_valid:
-#                 response['message'] = 'Sort value is invalid.'
-#                 return response, 400
-#
-#         # Validate limit:
-#         if limit:
-#             if not isinstance(limit, int):
-#                 response['message'] = 'Limit value is invalid.'
-#                 return response, 400
-#             if not limit >= 1:
-#                 response['message'] = 'Limit must be > 1.'
-#                 return response, 400
-#         else:
-#             limit = 10
-#
-#         # Validate offset
-#         user_size = User.objects.count()
-#         if offset:
-#             if not isinstance(offset, int):
-#                 response['message'] = 'Offset value is invalid.'
-#                 return response, 400
-#             if offset > user_size + 1:
-#                 response['message'] = 'Offset value exceeds number of records.'
-#                 return response, 400
-#             if offset < 1:
-#                 response['message'] = 'Offset must be > 1.'
-#                 return response, 400
-#         else:
-#             offset = 1
-#
-#         # Query
-#         if sort_on:
-#             # Get the objects starting at the offset, limit the number of
-#             # results and sort on the sort_on value.
-#             if sort_on == 'fullname':
-#                 query_set = User.objects[offset - 1:offset + limit -
-#                                          1].order_by(
-#                                              'last_name', 'first_name'
-#                                          )
-#             elif sort_on == '-fullname':
-#                 query_set = User.objects[offset - 1:offset + limit -
-#                                          1].order_by(
-#                                              '-last_name', '-first_name'
-#                                          )
-#             else:
-#                 query_set = User.objects[offset - 1:offset + limit -
-#                                          1].order_by(sort_on)
-#         else:
-#             query_set = User.objects[offset - 1:offset + limit - 1]
-#
-#         response['sort_on'] = sort_on
-#         # Next offset is the offset for the next page of results. Prev is for
-#         # the previous.
-#         response['next_offset'] = None
-#         response['prev_offset'] = None
-#         response['limit'] = limit
-#
-#         if offset + limit - 1 < user_size:
-#             response['next_offset'] = offset + limit
-#         if offset - limit >= 1:
-#             response['prev_offset'] = offset - limit
-#
-#         if user_size % limit == 0:
-#             total_pages = int(user_size / limit)
-#         else:
-#             total_pages = int(user_size / limit) + 1
-#         current_page = int(offset / limit) + 1
-#
-#         response.pop('message')
-#         response['status'] = 'success'
-#         response['current_page'] = current_page
-#         response['total_pages'] = total_pages
-#         response['data'] = [obj.to_dict() for obj in query_set]
-#         return response, 200
+        return {'status': 'fail', 'message': 'No results.', 'query': query}, 404
 
 
 class Users(Resource):

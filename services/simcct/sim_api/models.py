@@ -271,10 +271,10 @@ class Configuration(EmbeddedDocument):
     ae3_temp = FloatField(
         default=0.0, null=False, required=True, validation=not_negative
     )
-    start_temp = IntField(
+    start_temp = FloatField(
         default=900, null=False, required=True, validation=not_negative
     )
-    cct_cooling_rate = IntField(
+    cct_cooling_rate = FloatField(
         default=10, null=False, required=True, validation=not_negative
     )
 

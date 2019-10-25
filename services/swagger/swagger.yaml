@@ -4204,7 +4204,7 @@ paths:
                   value:
                     status: "fail"
                     message: "No JWT stored in Session."
-  /user/alloys:
+  /v1/sim/user/alloys:
     post:
       summary: "Save an alloy to the User's database."
       tags:
@@ -4260,6 +4260,35 @@ paths:
                     status: "fail"
                     message: 'Compositions must be provided as a list of valid
                                   elements e.g. {"symbol": "C", "weight": 1.0}'
+                'No Field':
+                  value:
+                    status: "fail"
+                    message: "Field does not exist error."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'Alloy Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy validation error."
         401:
           description: "The user is not authenticated to perform this request."
           content:
@@ -4274,11 +4303,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -4286,12 +4319,24 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
         404:
-          description: "There are no alloys saved to the user's document or user to find."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
@@ -4300,7 +4345,19 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
     get:
       summary: "We get the list of User's alloys stored in their document."
       tags:

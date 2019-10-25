@@ -3745,6 +3745,7 @@ paths:
           schema:
             type: string
             format: bytes
+            example: "5d2d81cff091de1cf091674b"
       responses:
         200:
           description: "The request has been successful."
@@ -3901,6 +3902,7 @@ paths:
           schema:
             type: string
             format: bytes
+            example: "5d2d81cff091de1cf091674b"
       responses:
         200:
           description: "The request was successful and the updated Alloy is returned."
@@ -4106,6 +4108,7 @@ paths:
           schema:
             type: string
             format: bytes
+            example: "5d2d81cff091de1cf091674b"
       responses:
         202:
           description: "Your request was successfully completed."
@@ -4124,15 +4127,83 @@ paths:
               example:
                 status: "fail"
                 message: "Invalid ObjectId."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
         404:
-          description: "No existing alloy to delete."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "Alloy not found."
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'No Alloy Found':
+                  value:
+                    status: "fail"
+                    message: "Alloy not found."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
   /user/alloys:
     post:
       summary: "Save an alloy to the User's database."

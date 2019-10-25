@@ -20,7 +20,7 @@ import { layout, config } from './utils/chartConfig'
 import { getColor } from '../../../utils/theming'
 import styles from './Chart.module.scss'
 
-const TTT = ({ data, isLoading }) => {
+const TTT = ({ data, isLoading, startTemp }) => {
   let chartData = []
   if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
     chartData = [
@@ -115,6 +115,14 @@ const TTT = ({ data, isLoading }) => {
     return <div className={styles.noData}>No data.</div>
   }
 
+  // Setup the max value for the y-axis
+  let ymax
+  if (startTemp < 1000) {
+    ymax = 1000
+  } else {
+    ymax = (startTemp < 1500) ? 1500 : startTemp + 100
+  }
+
   return (
     <AutoSizer>
       {({ height, width }) => {
@@ -128,12 +136,18 @@ const TTT = ({ data, isLoading }) => {
                 ...defaultLayout.xaxis,
                 title: 'Time (s)',
                 type: 'log',
-                autorange: true,
+                autorange: false,
+                // exponentformat: 'power',
+                rangemode: 'nonnegative',
+                constrain: 'domain',
+                range: [-1.6094379124341003, 4.605170185988092],
               },
               yaxis: {
                 ...defaultLayout.yaxis,
                 title: 'Temperature (°C)',
-                autorange: true,
+                range: [0, ymax],
+                rangemode: 'tozero',
+                autorange: false,
               },
             }}
             config={config}
@@ -151,6 +165,7 @@ const linePropTypes = PropTypes.shape({
 
 TTT.propTypes = {
   // props given by connect()
+  startTemp: PropTypes.number.isRequired,
   data: PropTypes.shape({
     ferrite_nucleation: linePropTypes,
     ferrite_completion: linePropTypes,
@@ -169,6 +184,7 @@ TTT.defaultProps = {
 
 const mapStateToProps = state => ({
   data: state.sim.results.TTT,
+  startTemp: state.sim.configurations.start_temp,
   isLoading: state.sim.results.isLoading,
 })
 

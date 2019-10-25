@@ -4630,9 +4630,8 @@ paths:
                   value:
                     status: "fail"
                     message: "No JWT stored in Session."
-
-    patch:
-      summary: "Save an alloy to the User's database."
+    put:
+      summary: "Update an alloy to the User's database."
       tags:
         - Alloys
       security:
@@ -4813,19 +4812,24 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid ObjectId."
-                'Invalid Keys':
+                'Must Provide Alloy':
                   value:
                     status: "fail"
-                    message: "Invalid keys in request payload (i.e. must be either \"name\" or \"compositions\")."
+                    message: "Alloy name must be provided."
+                'Must Provide Alloy List':
+                  value:
+                    status: "fail"
+                    message: "Alloy compositions list must be provided."
                 'Invalid Compositions':
                   value:
                     status: "fail"
                     message: "Compositions must be provided as a list of valid elements
                               e.g. {\"symbol\": \"C\", \"weight\": 1.0}"
-                'Additional Fields in Element':
+                "Empty Field":
                   value:
                     status: "fail"
-                    message: "Alloy validation error."
+                    error: "Error ..."
+                    message: "Field does not exist error."
                 'Bad Element Symbol':
                   value:
                     status: "fail"
@@ -4834,18 +4838,43 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid element error."
+                'Missing Element':
+                  value:
+                    status: "fail"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'Additional Fields in Element':
+                  value:
+                    status: "fail"
+                    message: "Alloy validation error."
+
         401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -4853,7 +4882,19 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
@@ -4864,27 +4905,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'No User':
-                  value:
-                    status: "fail"
-                    message: "User does not exist."
                 'No alloys':
                   value:
                     status: "fail"
                     message: "No alloys found."
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
                 'Empty Alloys Store':
                   value:
                     status: "fail"
                     message: "Alloy does not exist."
-        418:
-          description: "Multiple objects have been returned from the query."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "Multiple objects returned."
         500:
           description: "An internal server error has occurred."
           content:
@@ -4892,10 +4925,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
+                'Error':
+                  value:
+                    status: "fail"
+                    message: "Validation error on saving."
                 'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "Validation error on updating."
+                    message: "No JWT stored in Session."
+                'Failed To Update':
+                  value:
+                    status: "fail"
+                    message: "Failed to update alloy."
+
     delete:
       summary: "Delete an alloy from the user's database."
       tags:

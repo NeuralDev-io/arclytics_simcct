@@ -31,7 +31,7 @@ from flask import Blueprint
 from flask_restful import Resource
 import pandas as pd
 
-from arc_api.extensions import api
+from arc_api.extensions import api, cache
 from arc_api.routes import Routes
 from arc_api.mongo_service import MongoService
 from arc_api.middleware import authorize_admin_cookie_restful
@@ -49,6 +49,7 @@ class SavedAlloysSimilarity(Resource):
 
     method_decorators = {'get': [authorize_admin_cookie_restful]}
 
+    @cache.cached(timeout=120, key_prefix='SavedAlloySimilarity.get')
     def get(self, _) -> Tuple[dict, int]:
         """The view method to perform a t-distributed Stochastic Neighbor
         Embedding on the alloy compositions.
@@ -163,7 +164,7 @@ class SavedAlloysSimilarity(Resource):
         #   n_iter: Maximum number of iterations for the optimization. Should
         #   be at least 250.
         tsne_model = TSNE(
-            n_components=2, perplexity=35, learning_rate=200., n_iter=350
+            n_components=2, perplexity=40, learning_rate=200., n_iter=250
         )
 
         # We fit the model to the dataset
@@ -204,6 +205,7 @@ class MethodCount(Resource):
 
     method_decorators = {'get': [authorize_admin_cookie_restful]}
 
+    @cache.cached(timeout=120, key_prefix='MethodCount.get')
     def get(self, _) -> Tuple[dict, int]:
         """The view method to get the count data for the methods used in
         saved simulations.
@@ -247,6 +249,7 @@ class MethodCount(Resource):
 class AlloyCountByName(Resource):
     method_decorators = {'get': [authorize_admin_cookie_restful]}
 
+    @cache.cached(timeout=120, key_prefix='AlloyCountByName.get')
     def get(self, _) -> Tuple[dict, int]:
         """The view method to get the count data for the alloy by name used in
         saved simulations.

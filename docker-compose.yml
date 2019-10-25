@@ -163,7 +163,7 @@ services:
       dockerfile: Dockerfile
       labels:
         arclytics.io: "development"
-    image: neuraldev/arclytics_service:0.9
+    image: neuraldev/arclytics_service:2.0
     logging:
       driver: fluentd
       options:

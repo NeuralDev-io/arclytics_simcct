@@ -8,7 +8,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
-__version__ = '1.0.0'
+__version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.10.15'
 """app_analytics.py: 
@@ -25,7 +25,7 @@ from flask import Blueprint
 from flask_restful import Resource
 import pandas as pd
 
-from arc_api.extensions import api
+from arc_api.extensions import api, cache
 from arc_api.routes import Routes
 from arc_api.mongo_service import MongoService
 from arc_api.middleware import authorize_admin_cookie_restful
@@ -42,6 +42,7 @@ class GeneralData(Resource):
 
     method_decorators = {'get': [authorize_admin_cookie_restful]}
 
+    @cache.cached(timeout=120, key_prefix='GeneralData.get')
     def get(self, _) -> Tuple[dict, int]:
         """Uses various MongoDB Queries and Aggregation Pipelines to get some
         interesting aggregation totals on certain collections and for the

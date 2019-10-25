@@ -1199,6 +1199,11 @@ while [[ "$1" != "" ]] ; do
 
                   # google-chrome console.cloud.google.com/kubernetes/list?project=${PROJECT_ID}
                   ;;
+                scale )
+                  gcloud container clusters resize ${CLUSTER_NAME} --node-pool default-pool --num-nodes $4
+                  sleep 5
+                  gcloud container clusters list
+                  ;;
                 delete )
                   gcloud container clusters list
                   gcloud container clusters delete ${CLUSTER_NAME} --region ${REGION}
@@ -1445,8 +1450,8 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete pv elasticsearch-pv-2 --namespace=arclytics
                   #kubectl delete pv elasticsearch-pv-3 --namespace=arclytics
                   sleep 15
-                  gcloud compute disks delete es-standard-disk-1 ${LOCATION_COMMAND}
-                  gcloud compute disks delete es-standard-disk-2 ${LOCATION_COMMAND}
+                  gcloud compute disks delete es-standard-disk-1 --region=australia-southeast1
+                  gcloud compute disks delete es-standard-disk-2 --region=australia-southeast1
                   #gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
                   ;;
               esac
@@ -1472,6 +1477,10 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-ingress-svc.yaml"
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-daemonset.yaml"
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-rbac.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/fluentd-logging --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift
@@ -1503,6 +1512,10 @@ while [[ "$1" != "" ]] ; do
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-apm-gke-svc.yaml"
                   ;;
+                scale )
+                  kubectl scale deployments/apm-server --replicas=$4
+                  kubectl get rs -o wide
+                  ;;
               esac
               shift
             done
@@ -1526,11 +1539,17 @@ while [[ "$1" != "" ]] ; do
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build simcct
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=simcct")
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                  kubectl delete deployment simcct
                   sleep 10
-                  kubectl set image deployment/simcct simcct-container=asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                  # kubectl set image deployment/simcct simcct-container=asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
+                  kubectl apply -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/simcct --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift
@@ -1554,11 +1573,17 @@ while [[ "$1" != "" ]] ; do
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build celery-worker
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=celery-worker")
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                  kubectl delete deployment celery-worker
                   sleep 10
-                  kubectl set image deployment/celery-worker celery-worker-container=asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                  # kubectl set image deployment/celery-worker celery-worker-container=asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
+                  kubectl apply -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/celery-worker --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift
@@ -1582,11 +1607,17 @@ while [[ "$1" != "" ]] ; do
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build arclytics
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=arclytics")
                   docker push asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  kubectl delete deployment arclytics
                   sleep 10
-                  kubectl set image deployment/arclytics arclytics-container=asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  # kubectl set image deployment/arclytics arclytics-container=asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
+                  kubectl apply -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/arclytics --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift
@@ -1611,12 +1642,17 @@ while [[ "$1" != "" ]] ; do
                   docker-compose -f "${WORKDIR}/docker-compose-gke.yaml" build client
                   TAG=$(docker image ls --format "{{.Tag}}" --filter "label=service=client")
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+                  kubectl delete deployment client-https
                   sleep 10
-                  kubectl set image deployment/client-https client-https-container=asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
-                  # kubectl apply -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
+                  # kubectl set image deployment/client-https client-https-container=asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
+                  kubectl apply -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/client-https --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift
@@ -1833,4 +1869,3 @@ done
 
 # Load all .env into current shell
 # export $(egrep -v '^#' .env | xargs)
-

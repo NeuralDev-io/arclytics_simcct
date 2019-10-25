@@ -9,7 +9,8 @@
  * @version 1.0.0
  * @author Andrew Che
  *
- */
+*/
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react'
 import PropTypes from 'prop-types'
 import ReactTable from 'react-table'
@@ -21,10 +22,14 @@ import './Table.scss'
 // loading data.
 const CustomNoDataComponent = ({ loading }) => (
   loading
-    ? null
-    : (
+    ? (
       <div className="rt-noData">
         Loading...
+      </div>
+    )
+    : (
+      <div className="rt-noData">
+        No results.
       </div>
     )
 )
@@ -48,7 +53,6 @@ const ControlledTable = (props) => {
   return (
     <ReactTable
       manual
-      {...otherProps}
       onFetchData={fetchData}
       PaginationComponent={ServerSidePagination}
       loading={loading}
@@ -57,6 +61,7 @@ const ControlledTable = (props) => {
       defaultPageSize={defaultPageSize}
       pages={pages}
       className={`${hideDivider ? 'rt-hide-divider' : ''} ${condensed ? 'condensed' : ''} ${className}`}
+      {...otherProps}
     />
   )
 }

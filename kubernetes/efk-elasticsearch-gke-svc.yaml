@@ -12,7 +12,7 @@ data:
     discovery.zen.minimum_master_nodes: 1
     xpack.security.enabled: false
     xpack.monitoring.enabled: false
-    ES_JAVA_OPTS: -Xms512m -Xmx512m
+  ES_JAVA_OPTS: -Xms512m -Xmx512m
 ---
 kind: Service
 apiVersion: v1
@@ -98,7 +98,7 @@ spec:
           imagePullPolicy: IfNotPresent
           resources:
             limits:
-              cpu: 500m
+              cpu: 250m
             requests:
               cpu: 100m
           securityContext:

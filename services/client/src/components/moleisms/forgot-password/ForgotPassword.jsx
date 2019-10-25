@@ -80,28 +80,25 @@ class ForgotPassword extends Component {
           error={forgotPwdErr}
           length="stretch"
         />
-        <div className={styles.backToSignin}>
-          <h6
-            className={styles.help}
-            {...buttonize(forgotPwdHandler)}
-          >
-            Go back to login
-          </h6>
-        </div>
         <div>
-          <h6 className={emailSent ? styles.confirmation : styles.errors}>
-            {emailSent ? ('Email has been sent.') : forgotPwdErr}
+          <h6 className={styles.confirmation}>
+            {emailSent ? ('Email has been sent.') : ('')}
             &nbsp;
           </h6>
-          <Button
-            className={styles.forgotSubmit}
-            type="submit"
-            length="long"
-            isDisabled={emailSent}
-            onClick={this.handleForgotPasswordEmail}
-          >
-            Send Email
-          </Button>
+          <div className={styles.buttonGroup}>
+            <Button
+              className={styles.forgotSubmit}
+              type="submit"
+              length="long"
+              isDisabled={emailSent}
+              onClick={this.handleForgotPasswordEmail}
+            >
+              Send Email
+            </Button>
+            <h6{...buttonize(forgotPwdHandler)}>
+              Go back to login
+            </h6>
+          </div>
         </div>
       </>
     )

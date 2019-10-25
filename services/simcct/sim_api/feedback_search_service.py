@@ -127,14 +127,9 @@ class FeedbackSearchService(object):
 
         return list(cursor)
 
-    def aggregate(
-            self,
-            pipeline: list = None
-    ):
+    def aggregate(self, pipeline: list = None):
         cursor = self.client.aggregate(
-            db_name=self.db_name,
-            collection='feedback',
-            pipeline=pipeline
+            db_name=self.db_name, collection='feedback', pipeline=pipeline
         )
         return list(cursor)
 

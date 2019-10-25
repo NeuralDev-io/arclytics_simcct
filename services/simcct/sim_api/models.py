@@ -271,10 +271,10 @@ class Configuration(EmbeddedDocument):
     ae3_temp = FloatField(
         default=0.0, null=False, required=True, validation=not_negative
     )
-    start_temp = IntField(
+    start_temp = FloatField(
         default=900, null=False, required=True, validation=not_negative
     )
-    cct_cooling_rate = IntField(
+    cct_cooling_rate = FloatField(
         default=10, null=False, required=True, validation=not_negative
     )
 
@@ -484,7 +484,9 @@ class User(Document):
     verified = BooleanField(default=False)
     # Make sure when converting these that it follows ISO8601 format as
     # defined in settings.DATETIME_FMT
-    created = DateTimeField(default=datetime.utcnow(), null=False)
+    created = DateTimeField(
+        default=datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'), null=False
+    )
     last_updated = DateTimeField(default=None, null=False)
     last_login = DateTimeField()
 
@@ -506,9 +508,9 @@ class User(Document):
                 # last_name and email fields
                 # 10:9 impact as a term match in the last_name:first_name
                 'weights': {
-                    'last_name': 10,
-                    'first_name': 9,
-                    'email': 1
+                    'last_name': 4,
+                    'first_name': 2,
+                    'email': 5
                 }
             }
         ]
@@ -687,7 +689,8 @@ class Feedback(Document):
     )
 
     meta = {
-        'collection': 'feedback',
+        'collection':
+        'feedback',
         'indexes': [
             # This create text indexes for advanced text search
             {

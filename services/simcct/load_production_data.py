@@ -8,7 +8,7 @@
 # ----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>', 'Dinol Shrestha<@dinolsth>']
 __license__ = 'MIT'
-__version__ = '1.0.0'
+__version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.09.15'
 """load_production_data.py: 

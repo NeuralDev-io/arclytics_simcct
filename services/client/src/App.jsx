@@ -11,6 +11,7 @@
  * Sim React front-end client.
  *
  */
+/* eslint-disable react/jsx-props-no-spreading */
 
 import React from 'react'
 import { Provider } from 'react-redux'
@@ -62,7 +63,7 @@ const useStyles = makeStyles({
 
 function App() {
   const classes = useStyles()
-  const matches = useMediaQuery('(max-width: 1366px)')
+  const matches = useMediaQuery('(max-width: 1280px)')
 
   if (matches) return <MobilePage />
 

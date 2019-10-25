@@ -10,11 +10,9 @@
 # [2] https://github.com/nickjj/build-a-saas-app-with-flask
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
-__credits__ = ['']
 __license__ = 'MIT'
-__version__ = '1.0.0'
-
-__status__ = 'development'
+__version__ = '2.0.0'
+__status__ = 'production'
 __date__ = '2019.07.25'
 """celery_runner.py: 
 

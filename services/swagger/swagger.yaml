@@ -6393,11 +6393,16 @@ paths:
                   $ref: '#/components/schemas/Alloy Store'
       responses:
         200:
-          description: "The CCT and TTT simulations have been completed and the Graphs result returned."
+          description: "Ae3 Equilibrium ran successfully."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Graphs'
+                $ref: '#/components/schemas/Response'
+              example:
+                  ferrite_phase_frac: 1.21
+                  eutectic_composition_carbon: 12.12
+                  cf: 2.4
+                  results_plot:
         400:
           description: "An invalid request has been made."
           content:

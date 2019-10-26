@@ -5442,13 +5442,25 @@ paths:
                   value:
                     status: "fail"
                     message: "Compositions conversion error."
-  /configs/ms:
-    get:
-      summary: "Update the auto calculate for MS and MS Rate Parameter and return the new values."
+  /v1/sim/configs/ms:
+    post:
+      summary: "Initiate calculation for MS."
       tags:
         - Configurations
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  example: "Li"
+                alloy_store:
+                  $ref: '#/components/schemas/Alloy Store'
       responses:
         200:
           description: "The auto calculate for MS store has been updated and returned."
@@ -5468,42 +5480,118 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
+                'Invalid Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid Payload"
                 'No Alloy Store':
                   value:
                     status: "fail"
-                    message: "No previous session initiated."
-                'No Configurations Store':
+                    message: "Alloy store required."
+                'No Method':
                   value:
                     status: "fail"
-                    message: "No previous session initiated."
-                'No Compositions for Alloy Type':
+                    message: "Method required."
+                'Selece One method':
                   value:
                     status: "fail"
-                    message: "User has not set an Alloy."
+                    message: "Method must be one of [\"Li98\" | \"Kirkaldy83\"]."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Model schema validation error."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Invalid Element Weight':
+                  value:
+                    status: fail
+                    error: "Error .."
+                    message: "Invalid element weight error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'No Mix Option':
+                  value:
+                    status: "fail"
+                    message: "Mix option not allowed."
+                'No Alloy Composition':
+                  value:
+                    status: "fail"
+                    message: "No alloy composition."
         401:
-          description: "Unauthorized access to the endpoint."
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'No Token':
+                'No User':
                   value:
                     status: "fail"
-                    message: "No valid Authorization in header."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid JWT token in header."
-                'No Session Key':
-                  value:
-                    status: "fail"
-                    message: "No Session key in header."
-                'Unable To Load Session':
-                  value:
-                    status: "fail"
-                    errors: "String (Session_store)"
-                    message: "Unable to load session from Redis."
+                    error: "error"
+                    message: "User does not exist."
         500:
           description: "An internal server error has occurred."
           content:
@@ -5514,16 +5602,17 @@ paths:
                 'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "Unable to retrieve data from Redis."
-                'Conversion Error':
-                  value:
-                    status: "fail"
-                    message: "Compositions conversion error."
-                'Unable to save session':
+                    message: "No JWT stored in Session."
+                'Configuration Errors':
                   value:
                     status: "fail"
                     errors: "string"
-                    message: "Unable to save to session store."
+                    message: "Configuration error"
+                'Ms and Ms rate param error':
+                  value:
+                    status: "fail"
+                    error: "Invalid Ms value"
+                    message: "Calculating Ms and Ms rate param error."
     put:
       summary: "We update the server session store of MS, MS Rate Parameter and BS"
       tags:

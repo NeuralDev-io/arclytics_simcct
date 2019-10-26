@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -25,9 +23,7 @@ import styles from './Equilibrium.module.scss'
 class Equilibrium extends React.Component {
   componentDidMount = () => {
     const { data, isInitialised, getEquilibriumValuesConnect } = this.props
-    console.log('just mounted')
     if (isInitialised && (data === undefined || data === null || Object.keys(data).length === 0)) {
-      console.log('getting data')
       getEquilibriumValuesConnect()
     }
   }
@@ -44,7 +40,6 @@ class Equilibrium extends React.Component {
 
     // only make API request if an alloy was chosen
     if (isInitialised && (prevProps.alloys !== alloys || prevProps.ae1Temp !== ae1Temp)) {
-      console.log('getting data after updated')
       getEquilibriumValuesConnect()
     }
   }
@@ -82,6 +77,8 @@ class Equilibrium extends React.Component {
           name: 'T0',
           type: 'scatter',
           mode: 'lines',
+          opacity: 0.25,
+          visible: 'legendonly',
           line: {
             color: getColor('--r500'),
             shape: 'spline',

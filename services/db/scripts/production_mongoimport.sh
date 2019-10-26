@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # REFERENCES:
 # [1] https://docs.mongodb.com/manual/reference/program/mongoexport/
 

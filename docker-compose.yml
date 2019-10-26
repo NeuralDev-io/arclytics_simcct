@@ -3,6 +3,9 @@ version: '3.7'
 
 services:
 
+  # Fluentd Microservice
+  # This is the `fluentd` logger container that ingests all logs from Docker and
+  # acts as a centralised logging layer.
   fluentd:
     build:
       context: ./services/fluentd
@@ -25,6 +28,10 @@ services:
     networks:
       - dev_subnet
 
+  # Client Microservice
+  # This is the React front-end container that the client can access via the
+  # Nginx HTTP server. This container is run in development mode as it is only
+  # being used in the development environment.
   client:
     build:
       context: ./services/client
@@ -59,6 +66,10 @@ services:
     networks:
       - dev_subnet
 
+  # Nginx Microservice
+  # This is an Nginx HTTP server that does reverse-proxy in the development
+  # environment to easily access the `localhost` via URL matching to reverse
+  # send traffic to the appropriate Docker container.
   nginx:
     build:
       context: ./services/nginx
@@ -84,6 +95,13 @@ services:
     networks:
       - dev_subnet
 
+  # SimCCT Microservice
+  # This is the main service that provides user and admin management, authentication,
+  # authorization, server-side session and cookie management, and the RESTful API
+  # for the `arc_simulation` package. The `arc_simulation` package is a submodule
+  # that provides the algorithm for phase transformation calculations. This service
+  # is written with the Flask microframework and contains additional Flask plugins
+  # provided by the open-source community.
   simcct:
     build:
       context: ./services/simcct
@@ -133,13 +151,19 @@ services:
     networks:
       - dev_subnet
 
+  # Arclytics Microservice
+  # This is the container that provides analytics for the application. It ensures
+  # authentication and authorization by using the same secret key as the `simcct`
+  # microservice and decoding the JSON Web Token that is set in the cookie.
+  # This service is written with the Flask microframework and contains additional
+  # Flask plugins provided by the open-source community.
   arclytics:
     build:
       context: ./services/arclytics
       dockerfile: Dockerfile
       labels:
         arclytics.io: "development"
-    image: neuraldev/arclytics_service:0.9
+    image: neuraldev/arclytics_service:2.0
     logging:
       driver: fluentd
       options:
@@ -176,6 +200,10 @@ services:
     networks:
       - dev_subnet
 
+  # Celery-Worker Microservice
+  # This container contains a Flask instance of a Celery worker node that performs
+  # asynchronous tasks based on the message queue from Redis and stores the result
+  # in the Redis backend.
   celery-worker:
     build:
       context: ./services/celery-worker
@@ -217,6 +245,11 @@ services:
     networks:
       - dev_subnet
 
+  # Redis Microservice
+  # This is a Redis in-memory data store and persistence layer than is used by other
+  # services including `simcct`, `arclytics`, and `celery-worker`. It's main purpose
+  # is for the server-side session storage for Flask and the message queue and results
+  # backend for Celery.
   redis:
     build:
       context: ./services/redis
@@ -239,6 +272,12 @@ services:
     networks:
       - dev_subnet
 
+  # MongoDB Microservice
+  # MongoDB is an open-source, general purpose, document-based, distributed
+  # NoSQL database. Our application uses MongoDB with a Replica Set distribution
+  # as the data persistence layer for our users and application data. We also
+  # use MongoDB’s querying language and pipelines to leverage data analytics
+  # about our users, application, and the simulation data.
   mongodb:
     build:
       context: ./services/db
@@ -266,6 +305,15 @@ services:
     networks:
       - dev_subnet
 
+  # Elasticsearch Microservice
+  # Elasticsearch is a distributed, open-source RESTful, JSON-based search and
+  # analytics engine. Whilst Elasticsearch as a tool provides many features,
+  # one of it’s common use cases is the foundation of the ELK stack (acronym
+  # for “Elasticsearch,” “Logstash,” and “Kibana”) for logging and logging
+  # analytics. Arclytics SimCCT, being a distributed microservices architecture,
+  # solved the problem of distributed container logs by building a unified
+  # logging stack for rapid development debugging and deployment maintenance
+  # and metrics. Elasticsearch is the foundation of this stack.
   elasticsearch:
     build:
       context: ./services/elasticsearch
@@ -293,6 +341,15 @@ services:
     networks:
       - dev_subnet
 
+  # APM Server Microservice
+  # Elastic’s Application Performance Monitoring (APM) tool allows our software
+  # team to better understand how the Arclytics SimCCT application is performing
+  # in real-time. One of it’s core features is providing distributed and
+  # reliable tracing of our API services and the ability to monitor and capture
+  # bugs and exceptions. Due to the nature of our distributed microservices, APM
+  # has been extremely powerful in allowing us to find bottlenecks and bugs
+  # faster so that we can build an application that is of a higher-quality for
+  # our client and users.
   apm-server:
     build:
       context: ./services/apm-server
@@ -316,6 +373,11 @@ services:
     networks:
       - dev_subnet
 
+  # Kibana Microservice
+  # Kibana is a data visualization and management tool for Elasticsearch that
+  # provides real-time metrics. It mainly allows our software team to visualise
+  # and navigate the EFK stack whether we are in a development or production
+  # environment.
   kibana:
     build:
       context: ./services/kibana
@@ -335,6 +397,11 @@ services:
     networks:
       - dev_subnet
 
+  # Swagger Microservice
+  # Swagger is an open-source Application Programming Interface development tool
+  # that follows the OpenAPI standard. In our development environment, we deploy
+  # a Swagger service that allows us to document and test our RESTful API design
+  # and implementation.
   swagger:
     build:
       context: ./services/swagger

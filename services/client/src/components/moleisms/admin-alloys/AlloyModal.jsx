@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -72,7 +70,10 @@ class AlloyModal extends Component {
       weight: value,
     }
 
-    const err = validate(value, constraints.weight)
+    let err
+    if (symbol === 'C') {
+      err = validate(value, constraints.carbon)
+    } else err = validate(value, constraints.weight)
     if (err !== undefined) {
       this.setState(state => ({
         error: {

@@ -8,8 +8,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
-__version__ = '0.9.0'
-__status__ = 'development'
+__version__ = '2.0.0'
+__status__ = 'production'
 __date__ = '2019.10.02'
 """utilities.py: 
 

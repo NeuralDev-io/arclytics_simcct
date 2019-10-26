@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -39,11 +37,11 @@ class PhaseFractions extends Component {
   renderCurrentPercent = (data) => {
     const { labels, values } = data
     const chartColors = [
-      getColor('--o500'),
-      getColor('--g500'),
-      getColor('--t500'),
-      getColor('--i500'),
-      getColor('--m500'),
+      getColor('--t500'), // Austenite
+      getColor('--r500'), // Ferrite
+      getColor('--g500'), // Pearlite
+      getColor('--v500'), // Bainite
+      getColor('--b500'), // Martensite
     ]
     return labels.map((label, index) => {
       const isDisabled = values[index] === 0
@@ -60,6 +58,11 @@ class PhaseFractions extends Component {
         </div>
       )
     })
+  }
+
+  // eslint-disable-next-line arrow-body-style
+  getAnnotationText = (user_cooling_curve, currentIdx, hasData) => {
+    return `${!hasData ? 0 : Math.round(user_cooling_curve.temp[currentIdx])} °C`
   }
 
   render() {
@@ -96,15 +99,16 @@ class PhaseFractions extends Component {
       })(),
       marker: {
         colors: [
-          getColor('--o500'),
-          getColor('--g500'),
-          getColor('--t500'),
-          getColor('--i500'),
-          getColor('--m500'),
+          getColor('--t500'), // Austenite
+          getColor('--r500'), // Ferrite
+          getColor('--g500'), // Pearlite
+          getColor('--v500'), // Bainite
+          getColor('--b500'), // Martensite
         ],
       },
       type: 'pie',
       hoverinfo: 'label+percent',
+      opacity: 0.8,
       textinfo: 'none',
       sort: false,
       hole: 0.55,
@@ -158,6 +162,13 @@ class PhaseFractions extends Component {
                         plot_bgcolor: getColor('--n0'),
                         paper_bgcolor: 'transparent',
                         showlegend: false,
+                        annotations: [
+                          {
+                            font: { size: 16, color: getColor('--n500') },
+                            text: `${this.getAnnotationText(user_cooling_curve, currentIdx, hasData)}`,
+                            showarrow: false,
+                          },
+                        ],
                       }}
                       config={{
                         ...config,

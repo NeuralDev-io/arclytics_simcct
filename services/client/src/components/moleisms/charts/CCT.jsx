@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -20,7 +18,7 @@ import { InlineSpinner } from '../../elements/spinner'
 import { layout, config } from './utils/chartConfig'
 
 import { getColor } from '../../../utils/theming'
-import styles from './CCT.module.scss'
+import styles from './Chart.module.scss'
 
 const CCT = ({
   data,
@@ -28,6 +26,7 @@ const CCT = ({
   userData,
   displayUserCurve,
   cctIndex,
+  startTemp,
 }) => {
   let chartData = []
   if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
@@ -105,7 +104,7 @@ const CCT = ({
         type: 'scatter',
         mode: 'lines',
         line: {
-          color: getColor('--br500'),
+          color: getColor('--b500'),
           shape: 'spline',
         },
       },
@@ -118,6 +117,7 @@ const CCT = ({
               name: 'User cooling curve',
               type: 'scatter',
               mode: 'lines',
+              opacity: 0.75,
               line: {
                 color: getColor('--t500'),
                 shape: 'spline',
@@ -131,12 +131,13 @@ const CCT = ({
               y: cctIndex !== -1
                 ? [userData.user_cooling_curve.temp[cctIndex]]
                 : [userData.user_cooling_curve.temp[userData.slider_max]],
-              name: 'CCT',
+              name: 'Current temp.',
+              showlegend: false,
               mode: 'markers',
               type: 'scatter',
               marker: {
-                color: getColor('--g500'),
-                width: 50,
+                color: getColor('--arc500'),
+                width: 75,
               },
             },
           ]
@@ -157,6 +158,14 @@ const CCT = ({
     return <div className={styles.noData}>No data.</div>
   }
 
+  // Setup the max value for the y-axis
+  let ymax
+  if (startTemp < 1000) {
+    ymax = 1000
+  } else {
+    ymax = (startTemp < 1500) ? 1500 : startTemp + 100
+  }
+
   return (
     <AutoSizer>
       {({ height, width }) => {
@@ -170,12 +179,18 @@ const CCT = ({
                 ...defaultLayout.xaxis,
                 title: 'Time (s)',
                 type: 'log',
-                autorange: true,
+                autorange: false,
+                // exponentformat: 'power',
+                rangemode: 'nonnegative',
+                constrain: 'domain',
+                range: [-1.6094379124341003, 4.605170185988092],
               },
               yaxis: {
                 ...defaultLayout.yaxis,
                 title: 'Temperature (°C)',
-                autorange: true,
+                range: [0, ymax],
+                rangemode: 'tozero',
+                autorange: false,
               },
             }}
             config={config}
@@ -192,6 +207,7 @@ const linePropTypes = PropTypes.shape({
 })
 
 CCT.propTypes = {
+  startTemp: PropTypes.number.isRequired,
   displayUserCurve: PropTypes.bool.isRequired,
   // props given by connect()
   data: PropTypes.shape({
@@ -221,6 +237,7 @@ CCT.defaultProps = {
 
 const mapStateToProps = state => ({
   data: state.sim.results.CCT,
+  startTemp: state.sim.configurations.start_temp,
   isLoading: state.sim.results.isLoading,
   userData: state.sim.results.USER,
   cctIndex: state.sim.results.cctIndex,

@@ -8,7 +8,7 @@
 # ----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>', 'Dinol Shrestha<@dinolsth>']
 __license__ = 'MIT'
-__version__ = '1.0.0'
+__version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.09.15'
 """load_production_data.py: 
@@ -190,7 +190,7 @@ with app.app_context():
         if user_type[0] == 2:
             n_user_alloys = random.randint(5, 15)
         if user_type[0] == 3:
-            n_user_alloys = random.randint(15, 30)
+            n_user_alloys = random.randint(15, 31)
 
         # ==================== # USER SAVED ALLOYS # =================== #
         alloy = random.sample(alloy_data['alloys'], n_user_alloys)

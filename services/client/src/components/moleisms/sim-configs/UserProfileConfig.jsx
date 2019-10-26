@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -12,6 +10,7 @@
  * @version 1.0.0
  * @author Dalton Le
  */
+/* eslint-disable react/prop-types */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -20,6 +19,8 @@ import Checkbox from '../../elements/checkbox'
 import { updateConfig, toggleDisplayUserCurve } from '../../../state/ducks/sim/actions'
 import { validate } from '../../../utils/validator'
 import { constraints } from './utils/constraints'
+import { ReactComponent as BrainIcon } from '../../../assets/icons/brain.svg'
+import Tooltip from '../../elements/tooltip'
 
 import styles from './UserProfileConfig.module.scss'
 
@@ -55,7 +56,15 @@ class UserProfileConfig extends Component {
           isDisabled={!isAuthenticated || !isInitialised}
         />
         <div className={`input-row ${styles.config}`}>
-          <span>Start temperature</span>
+          <div className={styles.titleContainer}>
+            <span>Start temperature</span>
+            <Tooltip className={{ tooltip: `${styles.infoTip} ${styles.methodTooltip}`, container: styles.infoTipContainer }} position="right">
+              <BrainIcon className={styles.infoIcon} />
+              <p>
+                Test
+              </p>
+            </Tooltip>
+          </div>
           <TextFieldExtra
             type="text"
             name="start_temp"
@@ -68,7 +77,15 @@ class UserProfileConfig extends Component {
           />
         </div>
         <div className={`input-row ${styles.config}`}>
-          <span>CCT cooling rate</span>
+          <div className={styles.titleContainer}>
+            <span>CCT cooling rate</span>
+            <Tooltip className={{ tooltip: `${styles.infoTip} ${styles.methodTooltip}`, container: styles.infoTipContainer }} position="right">
+              <BrainIcon className={styles.infoIcon} />
+              <p>
+                Test
+              </p>
+            </Tooltip>
+          </div>
           <TextFieldExtra
             type="text"
             name="cct_cooling_rate"

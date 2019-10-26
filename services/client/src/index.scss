@@ -13,6 +13,34 @@ html {
   height: 100vh;
 }
 
+a {
+  font-size: $base-text-size;
+  line-height: $base-line-height;
+  font-family: $font-primary;
+  letter-spacing: $base-letter-spacing;
+  text-decoration: none;
+  color: var(--arc500);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+ul, ol {
+  padding: 0 0 0 2.5rem;
+
+  & > li {
+    text-decoration: none;
+    outline: none;
+    font-size: $base-text-size;
+    line-height: $base-line-height;
+    font-family: $font-primary;
+    letter-spacing: $base-letter-spacing;
+  }
+}
+
 *:focus {
   outline-color: var(--arc500);
 }

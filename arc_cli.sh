@@ -397,20 +397,20 @@ dockerLsFormatted() {
   generalMessage "Containers"
   echoLine
   docker container ls -a --format \
-      "table {{.ID}}\t{{.Image}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}" \
-      --filter "label=arclytics.io"
+    "table {{.ID}}\t{{.Image}}\t{{.RunningFor}}\t{{.Status}}\t{{.Ports}}\t{{.Names}}" \
+    --filter "label=arclytics.io"
   echoLine
   generalMessage "Volumes"
   echoLine
   docker volume ls --format \
-      "table {{.Name}}\t{{.Labels}}\t{{.Driver}}\t{{.Mountpoint}}" \
+    "table {{.Name}}\t{{.Labels}}\t{{.Driver}}\t{{.Mountpoint}}" \
 #      --filter "label=arclytics.io"
   echoLine
   generalMessage "Images"
   echoLine
   docker image ls --format \
-      "table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}" \
-      --filter "label=arclytics.io"
+    "table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}" \
+    --filter "label=arclytics.io"
   echoLine
   completeMessage
   echo
@@ -788,20 +788,20 @@ while [[ "$1" != "" ]] ; do
       dockerPs
       ;;
     ls | list | show )
-        dockerLsFormatted
-        exit 0
-        ;;
+      dockerLsFormatted
+      exit 0
+      ;;
     stats )
-        ARGS=$2
-        while [[ "$3" != "" ]] ; do
-            ARGS="${ARGS} $3"
-            shift
-        done
-        dockerStats
-        ;;
+      ARGS=$2
+      while [[ "$3" != "" ]] ; do
+          ARGS="${ARGS} $3"
+          shift
+      done
+      dockerStats
+      ;;
     prune )
-        dockerSystemPrune
-        ;;
+      dockerSystemPrune
+      ;;
     down )
       while [[ "$2" != "" ]] ; do
         case $2 in
@@ -1178,10 +1178,11 @@ while [[ "$1" != "" ]] ; do
                       ${LOCATION_COMMAND} \
                       --image-type=${IMAGE_TYPE} \
                       --machine-type=n1-standard-2 \
-                      --num-nodes=2 \
-                      --min-nodes=2 \
+                      --num-nodes=4 \
+                      --min-nodes=4 \
                       --max-nodes=8 \
                       --enable-autoscaling \
+                      --enable-autorepair \
                       --node-labels=component=arc-nodes \
                       --cluster-version=${LATEST}
                       #--cluster-version=${KUBERNETES_NODE_VERSION} \
@@ -1197,6 +1198,11 @@ while [[ "$1" != "" ]] ; do
                   kubectl apply -f "${WORKDIR}/kubernetes/arclytics-gke-namespace.yaml"
 
                   # google-chrome console.cloud.google.com/kubernetes/list?project=${PROJECT_ID}
+                  ;;
+                scale )
+                  gcloud container clusters resize ${CLUSTER_NAME} --node-pool default-pool --num-nodes $4
+                  sleep 5
+                  gcloud container clusters list
                   ;;
                 delete )
                   gcloud container clusters list
@@ -1444,8 +1450,8 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete pv elasticsearch-pv-2 --namespace=arclytics
                   #kubectl delete pv elasticsearch-pv-3 --namespace=arclytics
                   sleep 15
-                  gcloud compute disks delete es-standard-disk-1 ${LOCATION_COMMAND}
-                  gcloud compute disks delete es-standard-disk-2 ${LOCATION_COMMAND}
+                  gcloud compute disks delete es-standard-disk-1 --region=australia-southeast1
+                  gcloud compute disks delete es-standard-disk-2 --region=australia-southeast1
                   #gcloud compute disks delete es-standard-disk-3 ${LOCATION_COMMAND}
                   ;;
               esac
@@ -1471,6 +1477,10 @@ while [[ "$1" != "" ]] ; do
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-ingress-svc.yaml"
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-daemonset.yaml"
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-fluentd-gke-rbac.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/fluentd-logging --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift
@@ -1502,6 +1512,10 @@ while [[ "$1" != "" ]] ; do
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/efk-apm-gke-svc.yaml"
                   ;;
+                scale )
+                  kubectl scale deployments/apm-server --replicas=$4
+                  kubectl get rs -o wide
+                  ;;
               esac
               shift
             done
@@ -1527,10 +1541,15 @@ while [[ "$1" != "" ]] ; do
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
                   kubectl delete deployment simcct
                   sleep 10
+                  # kubectl set image deployment/simcct simcct-container=asia.gcr.io/${PROJECT_ID}/arc_sim_service:"${TAG}"
                   kubectl apply -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/simcct-gke-secure-ingress-svc.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/simcct --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift
@@ -1556,10 +1575,15 @@ while [[ "$1" != "" ]] ; do
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
                   kubectl delete deployment celery-worker
                   sleep 10
+                  # kubectl set image deployment/celery-worker celery-worker-container=asia.gcr.io/${PROJECT_ID}/arc_sim_celery:"${TAG}"
                   kubectl apply -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/celery-gke-deployment.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/celery-worker --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift
@@ -1585,10 +1609,15 @@ while [[ "$1" != "" ]] ; do
                   docker push asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
                   kubectl delete deployment arclytics
                   sleep 10
+                  # kubectl set image deployment/arclytics arclytics-container=asia.gcr.io/${PROJECT_ID}/arclytics_service:${TAG}
                   kubectl apply -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/arclytics-gke-secure-ingress-svc.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/arclytics --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift
@@ -1615,10 +1644,15 @@ while [[ "$1" != "" ]] ; do
                   docker push asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
                   kubectl delete deployment client-https
                   sleep 10
+                  # kubectl set image deployment/client-https client-https-container=asia.gcr.io/${PROJECT_ID}/arc_sim_client:${TAG}
                   kubectl apply -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
                   ;;
                 delete )
                   kubectl delete -f "${WORKDIR}/kubernetes/client-gke-secure-ingress-svc.yaml"
+                  ;;
+                scale )
+                  kubectl scale deployments/client-https --replicas=$4
+                  kubectl get rs -o wide
                   ;;
               esac
               shift
@@ -1776,15 +1810,24 @@ while [[ "$1" != "" ]] ; do
               case $3 in
                 upload )
                   gsutil cp -r ${WORKDIR}/services/simcct/sim_api/static/* gs://${CLOUD_STORAGE_BUCKET}/imgs/
+                  gsutil cp -r ${WORKDIR}/arclytics.io/assets/ansto_neuraldev.jpg gs://${CLOUD_STORAGE_BUCKET}/imgs/
+                  gsutil cp -r ${WORKDIR}/services/client/src/assets/ANSTO_logo_SVG/logo_text_gov.svg gs://${CLOUD_STORAGE_BUCKET}/imgs/
+                  gsutil cp -r ${WORKDIR}/services/client/src/assets/logo_20.svg gs://${CLOUD_STORAGE_BUCKET}/imgs/
                   ;;
                 list | ls )
                   gsutil ls gs://${CLOUD_STORAGE_BUCKET}/imgs/**
                   ;;
                 public )
                   gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/imgs/email_footer_logo.png
+                  gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/imgs/ansto_neuraldev.jpg
+                  gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/imgs/logo_text_gov.svg
+                  gsutil acl ch -u AllUsers:R gs://${CLOUD_STORAGE_BUCKET}/imgs/logo_20.svg
                   ;;
                 address )
                   echo https://storage.googleapis.com/arclytics/imgs/email_footer_logo.png
+                  echo https://storage.googleapis.com/arclytics/imgs/ansto_neuraldev.jpg
+                  echo https://storage.googleapis.com/arclytics/imgs/logo_text_gov.svg
+                  echo https://storage.googleapis.com/arclytics/imgs/logo_20.svg
                   ;;
                 go )
                   google-chrome https://storage.googleapis.com/arclytics/imgs/email_footer_logo.png
@@ -1826,4 +1869,3 @@ done
 
 # Load all .env into current shell
 # export $(egrep -v '^#' .env | xargs)
-

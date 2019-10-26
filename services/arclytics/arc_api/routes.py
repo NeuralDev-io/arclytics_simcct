@@ -9,7 +9,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
-__version__ = '1.0.0'
+__version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.10.15'
 
@@ -43,6 +43,11 @@ class Routes(enum.Enum):
     UserNerdyData = f'{PREFIX}/users/stats'
     UserLoginLocationData = f'{PREFIX}/users/login/map'
     UserProfileData = f'{PREFIX}/users/profile'
+
+    # sim_analytics.py
+    MethodCount = f'{PREFIX}/sim/methods_data'
+    AlloyCountByName = f'{PREFIX}/sim/saved_alloys_name_count'
+    SavedAlloysSimilarity = f'{PREFIX}/sim/saved_alloys_similarity'
 
     # app_analytics.py
     GeneralData = f'{PREFIX}/app/stats'

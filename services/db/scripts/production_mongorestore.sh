@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # REFERENCES:
 # [1] https://docs.mongodb.com/manual/reference/program/mongodump/#bin.mongodump
 # [2] https://docs.mongodb.com/manual/tutorial/backup-and-restore-tools/

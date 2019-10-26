@@ -27,10 +27,10 @@ from marshmallow import ValidationError
 
 from arc_logging import AppLogger
 from sim_api.extensions import api, apm
-from sim_api.extensions.utilities import (DuplicateElementError, ElementInvalid,
-                                          ElementSymbolInvalid,
-                                          ElementWeightInvalid,
-                                          MissingElementError)
+from sim_api.extensions.utilities import (
+    DuplicateElementError, ElementInvalid, ElementSymbolInvalid,
+    ElementWeightInvalid, MissingElementError
+)
 from sim_api.middleware import authenticate_user_cookie_restful
 from sim_api.routes import Routes
 from sim_api.schemas import AlloyStoreSchema

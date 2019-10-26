@@ -1,7 +1,19 @@
+/**
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this repository.
+ *
+ * Custom pagination override for React-Table
+ *
+ * @version 1.0.0
+ * @author Dalton Le
+ *
+ */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import ChevronLeft from 'react-feather/dist/icons/chevron-left'
-import ChevronRight from 'react-feather/dist/icons/chevron-right'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronLeft } from '@fortawesome/pro-light-svg-icons/faChevronLeft'
+import { faChevronRight } from '@fortawesome/pro-light-svg-icons/faChevronRight'
 import Button from '../button'
 
 import styles from './Pagination.module.scss'
@@ -50,7 +62,7 @@ class Pagination extends Component {
           isDisabled={activePage === 1}
           appearance="text"
         >
-          <ChevronLeft className={styles.icon} />
+          <FontAwesomeIcon icon={faChevronLeft} className={styles.icon} />
         </Button>
         <Button
           className={`${styles.button} ${activePage === pages && styles.disabled}`}
@@ -61,7 +73,7 @@ class Pagination extends Component {
           isDisabled={activePage === pages}
           appearance="text"
         >
-          <ChevronRight className={styles.icon} />
+          <FontAwesomeIcon icon={faChevronRight} className={styles.icon} />
         </Button>
       </div>
     )

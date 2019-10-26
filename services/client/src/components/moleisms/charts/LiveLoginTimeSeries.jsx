@@ -17,7 +17,7 @@ import { getLiveLoginData } from '../../../api/Analytics'
 import { logError } from '../../../api/LoggingHelper'
 import { InlineSpinner } from '../../elements/spinner'
 
-import styles from './LoginLocationMapbox.module.scss'
+import styles from './Chart.module.scss'
 
 class LiveLoginTimeSeries extends Component {
   constructor(props) {
@@ -50,7 +50,7 @@ class LiveLoginTimeSeries extends Component {
         err.toString(),
         err.message,
         'UsersAnalytics.getTimeSeriesData',
-        err.stack
+        err.stack,
       ))
   }
 
@@ -58,7 +58,7 @@ class LiveLoginTimeSeries extends Component {
     const { data, isLoading } = this.state
     let traceData = []
     let rangeStart = new Date()
-    let rangeFinish = new Date()
+    const rangeFinish = new Date()
 
     // Set up the Plotly Trace
     if (data !== undefined && data !== null && Object.keys(data).length !== 0) {
@@ -69,7 +69,7 @@ class LiveLoginTimeSeries extends Component {
           x: data.x,
           y: data.y,
           line: {
-            color: getColor('--b300'),
+            color: getColor('--arc500'),
           },
         },
       ]
@@ -83,113 +83,112 @@ class LiveLoginTimeSeries extends Component {
 
     if (traceData.length === 0) {
       if (isLoading) {
-        return <div className={styles.noData}>
-          <InlineSpinner />
-        </div>
+        return (
+          <div className={styles.noData}>
+            <InlineSpinner />
+          </div>
+        )
       }
       return <div className={styles.noData}>No data.</div>
     }
 
     return (
       <AutoSizer>
-        {({ height, width }) => {
-
-          return (
-            <Plot
-              data={traceData}
-              layout={{
-                height,
-                width,
-                showlegend: false,
-                plot_bgcolor: getColor('--n0'),
-                paper_bgcolor: getColor('--n0'),
-                margin: {
-                  t: 56,
-                  b: 56,
-                  l: 64,
-                  r: 64,
-                  // pad: 12,
+        {({ height, width }) => (
+          <Plot
+            data={traceData}
+            layout={{
+              height,
+              width,
+              showlegend: false,
+              plot_bgcolor: getColor('--n0'),
+              paper_bgcolor: getColor('--n0'),
+              margin: {
+                t: 56,
+                b: 56,
+                l: 64,
+                r: 64,
+                // pad: 12,
+              },
+              xaxis: {
+                title: 'Date and Time',
+                titlefont: {
+                  family: 'Open Sans',
+                  size: 14,
+                  color: getColor('--n500'),
                 },
-                xaxis: {
-                  title: 'Date and Time',
-                  titlefont: {
-                    family: 'Open Sans',
-                    size: 14,
-                    color: getColor('--n500'),
-                  },
-                  tickfont: {
-                    family: 'Open Sans',
-                    size: 11,
-                    weight: 600,
-                    color: getColor('--n500'),
-                  },
-                  autorange: true,
-                  type: 'date',
-                  // range: [rangeStart, rangeFinish],
-                  rangeslider: {
-                    range: [rangeStart, rangeFinish],
-                  },
-                  rangeselector: {
-                    buttons: [
-                      {
-                        count: 10,
-                        label: '10m',
-                        step: 'minute',
-                        stepmode: 'backward',
-                      },
-                      {
-                        count: 1,
-                        label: '1h',
-                        step: 'hour',
-                        stepmode: 'backward',
-                      },
-                      {
-                        count: 6,
-                        label: '6h',
-                        step: 'hour',
-                        stepmode: 'backward',
-                      },
-                      {
-                        count: 12,
-                        label: '12h',
-                        step: 'hour',
-                        stepmode: 'backward',
-                      },
-                      {
-                        step: 'all',
-                      },
-                    ],
-                  },
+                tickfont: {
+                  family: 'Open Sans',
+                  size: 11,
+                  weight: 600,
+                  color: getColor('--n500'),
                 },
-                yaxis: {
-                  title: 'Count',
-                  titlefont: {
-                    family: 'Open Sans',
-                    size: 14,
-                    color: getColor('--n500'),
-                  },
-                  tickfont: {
-                    family: 'Open Sans',
-                    size: 11,
-                    weight: 600,
-                    color: getColor('--n500'),
-                  },
-                  autorange: true,
-                  type: 'linear',
+                autorange: true,
+                type: 'date',
+                // range: [rangeStart, rangeFinish],
+                rangeslider: {
+                  range: [rangeStart, rangeFinish],
                 },
-              }}
-              config={{
-                modeBarButtonsToRemove: [
+                rangeselector: {
+                  buttons: [
+                    {
+                      count: 10,
+                      label: '10m',
+                      step: 'minute',
+                      stepmode: 'backward',
+                    },
+                    {
+                      count: 1,
+                      label: '1h',
+                      step: 'hour',
+                      stepmode: 'backward',
+                    },
+                    {
+                      count: 6,
+                      label: '6h',
+                      step: 'hour',
+                      stepmode: 'backward',
+                    },
+                    {
+                      count: 12,
+                      label: '12h',
+                      step: 'hour',
+                      stepmode: 'backward',
+                    },
+                    {
+                      step: 'all',
+                    },
+                  ],
+                },
+              },
+              yaxis: {
+                title: 'Count',
+                titlefont: {
+                  family: 'Open Sans',
+                  size: 14,
+                  color: getColor('--n500'),
+                },
+                tickfont: {
+                  family: 'Open Sans',
+                  size: 11,
+                  weight: 600,
+                  color: getColor('--n500'),
+                },
+                autorange: true,
+                type: 'linear',
+              },
+            }}
+            config={{
+              modeBarButtonsToRemove: [
                 'select2d', 'lasso2d', 'toggleSpikelines',
                 'hoverCompareCartesian', 'hoverClosestCartesian',
-                'autoScale2d'
-                ],
-                displaylogo: false,
-                displayModeBar: 'hover',
-              }}
-            />
-          )
-        }}
+                'autoScale2d',
+              ],
+              displaylogo: false,
+              displayModeBar: 'hover',
+            }}
+          />
+        )}
       </AutoSizer>
     )
   }

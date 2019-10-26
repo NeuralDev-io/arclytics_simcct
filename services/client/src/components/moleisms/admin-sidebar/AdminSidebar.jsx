@@ -10,7 +10,7 @@
  */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Link, Redirect } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
 import { faUserFriends } from '@fortawesome/pro-light-svg-icons/faUserFriends'
@@ -46,7 +46,6 @@ class AdminSidebar extends Component {
           onClick={() => this.setState({ active: 'alloys' })}
           className={`${styles.item} ${active === 'alloys' && styles.active}`}
         >
-          {/*<DatabaseIcon className={styles.icon} />*/}
           <FontAwesomeIcon icon={faDatabase} className={styles.icon}/>
           <span>Alloy database</span>
         </Link>
@@ -56,7 +55,6 @@ class AdminSidebar extends Component {
           onClick={() => this.setState({ active: 'users' })}
           className={`${styles.item} ${active === 'users' && styles.active}`}
         >
-          {/*<UsersIcon className={styles.icon} />*/}
           <FontAwesomeIcon icon={faUserFriends} className={styles.icon}/>
           <span>Manage users</span>
         </Link>

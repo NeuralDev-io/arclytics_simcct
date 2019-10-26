@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -73,7 +71,8 @@ class CompSidebar extends Component {
           onClick={runSimConnect}
           length="long"
           className={styles.btn}
-          isDisabled={!sessionIsInitialised
+          isDisabled={
+            !sessionIsInitialised
             || !isAuthenticated
             || Object.keys(configError).length !== 0
             || Object.keys(parentError).length !== 0

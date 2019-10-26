@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -10,7 +8,9 @@
  * @version 1.0.0
  * @author Dalton Le
  */
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { Component } from 'react'
+// noinspection ES6CheckImport
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -53,10 +53,10 @@ class LoadSimButton extends Component {
     }
 
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = (ev) => {
       let sim
       try {
-        const fileText = e.target.result
+        const fileText = ev.target.result
         sim = JSON.parse(fileText)
       } catch (err) {
         addFlashToastConnect({
@@ -98,7 +98,7 @@ class LoadSimButton extends Component {
           appearance="outline"
           type="button"
           onClick={() => {}}
-          IconComponent={props => <FontAwesomeIcon icon={faUpload}{...props} />}
+          IconComponent={props => <FontAwesomeIcon icon={faUpload} {...props} />}
         >
           LOAD
         </Button>
@@ -106,7 +106,7 @@ class LoadSimButton extends Component {
           <h4>Import simulation</h4>
           <FileInput
             name="import_simulation"
-            Icon={props => <FontAwesomeIcon icon={faUpload}{...props} />}
+            Icon={props => <FontAwesomeIcon icon={faUpload} {...props} />}
             onChange={this.handleFileInputChange}
             filename={filename}
           />

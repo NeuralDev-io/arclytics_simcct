@@ -13,8 +13,16 @@
 import { ARC_URL } from '../constants'
 import { logError } from './LoggingHelper'
 
-
+/**************************************************************/
+/********************* | User Analytics | *********************/
+/**************************************************************/
 export const getNerdyStatsData = async () => {
+  /**
+   * Get the summary stats for the Users Analytics page. This function will
+   * always return a resolved promise with the state being the data in the
+   * response if any.
+   *
+   */
   let call
   try {
 
@@ -27,9 +35,8 @@ export const getNerdyStatsData = async () => {
       },
     })
       .then((res) => {
-        if (res.status === 401 || res.status === 403)  {
-          throw new Error('Unauthorised')
-        }
+        if (res.status === 401) throw new Error('Unauthenticated')
+        if (res.status === 403) throw new Error('Unauthorised')
         return res.json()
       })
       .then(res => res)
@@ -51,8 +58,14 @@ export const getNerdyStatsData = async () => {
   return call
 }
 
-// TODO(andrew@neuraldev.io): Ensure this is non-blocking.
+
 export const getProfileAnalyticsData = async () => {
+  /**
+   * Get the profile data to plot bar charts for the Users Analytics page.
+   * This function will always return a resolved promise with the state being
+   * the data in the response if any.
+   *
+   */
   let call
   try {
     call = await fetch(`${ARC_URL}/users/profile`, {
@@ -86,7 +99,14 @@ export const getProfileAnalyticsData = async () => {
   return call
 }
 
+
 export const getLoginLocationData = async () => {
+  /**
+   * Get the data for location data to plot the Mapbox Density chart
+   * on the User Analytics page. This function will always return a
+   * resolved promise with the state being the data in the response if any.
+   *
+   */
   let call
   try {
     call = await fetch(`${ARC_URL}/users/login/map`, {
@@ -120,7 +140,61 @@ export const getLoginLocationData = async () => {
   return call
 }
 
+/********************************************************************/
+/********************* | Simulation Analytics | *********************/
+/********************************************************************/
+export const getSimulationData = async (path) => {
+  /**
+   * Get the Saved Alloy Similarity stats for the Sim Analytics page. This
+   * function will always return a resolved promise with the state being the
+   * data in the response if any.
+   *
+   */
+  let call
+  try {
+    call = await fetch(`${ARC_URL}${path}`, {
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((res) => {
+        if (res.status === 401) throw new Error('Unauthenticated')
+        if (res.status === 403) throw new Error('Unauthorised')
+        return res.json()
+      })
+      .then(res => res)
+
+  } catch (e) {
+
+    logError(
+      e.toString(),
+      e.message,
+      'Analytics.getSimulationData',
+      e.stack
+    )
+    return {
+      status: 'fail',
+      data: undefined
+    }
+
+  }
+  return call
+}
+
+
+/*********************************************************************/
+/********************* | Application Analytics | *********************/
+/*********************************************************************/
 export const getGeneralStatsData = async () => {
+  /**
+   * Get the summary stats for the App Analytics page. This function will
+   * always return a resolved promise with the state being the data in the
+   * response if any.
+   *
+   */
   let call
   try {
     call = await fetch(`${ARC_URL}/app/stats`, {
@@ -132,9 +206,8 @@ export const getGeneralStatsData = async () => {
       },
     })
       .then((res) => {
-        if (res.status === 401 || res.status === 403)  {
-          throw new Error('Unauthorised')
-        }
+        if (res.status === 401) throw new Error('Unauthenticated')
+        if (res.status === 403) throw new Error('Unauthorised')
         return res.json()
       })
       .then(res => res)
@@ -158,6 +231,12 @@ export const getGeneralStatsData = async () => {
 
 
 export const getLiveLoginData = async () => {
+  /**
+   * Get the data for the live login location stats to plot the time series chart
+   * on the Application Analytics page. This function will always return a
+   * resolved promise with the state being the data in the response if any.
+   *
+   */
   let call
   try {
     call = await fetch(`${ARC_URL}/app/logged_in_data`, {

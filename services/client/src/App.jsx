@@ -11,11 +11,13 @@
  * Sim React front-end client.
  *
  */
+/* eslint-disable react/jsx-props-no-spreading */
 
 import React from 'react'
 import { Provider } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
 import { SnackbarProvider } from 'notistack'
+import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { makeStyles } from '@material-ui/core/styles'
 import store from './state/store'
 import {
@@ -30,9 +32,8 @@ import ErrorBoundary from './components/pages/error-boundary/ErrorBoundary'
 import LoginPage from './components/pages/login/LoginPage'
 import SignupPage from './components/pages/signup/SignupPage'
 import NoMatchPage from './components/pages/no-match/NoMatchPage'
-import TestRoute from './components/pages/test-route/TestRoute'// TODO(andrew@neuraldev.io): Delete this
 import SimulationPage from './components/pages/simulation'
-import EquiPage from './components/pages/equi/EquiPage'
+import EquiPage from './components/pages/equi'
 import AdminPage from './components/pages/admin'
 import ProfileQuestionsPage from './components/pages/profile-questions'
 import UserPage from './components/pages/user'
@@ -42,7 +43,16 @@ import PasswordResetPage from './components/pages/password-reset'
 import SharePage from './components/pages/share'
 import Healthy from './components/moleisms/healthy/Healthy'
 import AnalyticsPage from './components/pages/analytics'
+import AboutPage from './components/pages/about'
+import FeedbackPage from './components/pages/feedback'
+import MobilePage from './components/pages/mobile'
 
+/*
+* DECISION:
+* This was only use for testing of the ErrorBoundary and Logs so we will keep it here
+* in case we may need to test some other errors in the future.
+* */
+// import TestRoute from './components/pages/test-route/TestRoute'
 import './App.scss'
 
 const useStyles = makeStyles({
@@ -53,6 +63,9 @@ const useStyles = makeStyles({
 
 function App() {
   const classes = useStyles()
+  const matches = useMediaQuery('(max-width: 1280px)')
+
+  if (matches) return <MobilePage />
 
   return (
     <ErrorBoundary>
@@ -67,8 +80,9 @@ function App() {
         }}
       >
         <Provider store={store}>
+          <div id="temp-container" />
           <Toaster />
-          <div className="App">
+          <div className="App" id="app">
             <FeedbackModal />
             <RatingModal />
             <Switch>
@@ -78,11 +92,11 @@ function App() {
               />
               <Route
                 path="/signin"
-                render={props => <LoginPage {...props} />}
+                render={(props) => <LoginPage {...props} />}
               />
               <Route
                 path="/signup"
-                render={props => <SignupPage {...props} />}
+                render={(props) => <SignupPage {...props} />}
               />
               <PrivateRoute
                 exact
@@ -98,6 +112,10 @@ function App() {
                 path="/user/simulations"
                 component={UserSimulationPage}
               />
+              <Route
+                path="/about"
+                component={AboutPage}
+              />
               <PrivateRoute
                 exact
                 path="/user/alloys"
@@ -112,6 +130,10 @@ function App() {
                 component={AnalyticsPage}
               />
               <AdminRoute
+                path="/feedback"
+                component={FeedbackPage}
+              />
+              <AdminRoute
                 path="/admin"
                 component={AdminPage}
               />
@@ -123,11 +145,18 @@ function App() {
                 path="/password/reset=:token"
                 render={(props) => <PasswordResetPage {...props} />}
               />
-              {/* TODO(andrew@neuraldev.io): DELETE THIS ROUTE - AFTER TESTING HTTP LOGGER */}
-              <Route
-                path="/test"
-                render={(props) => (<TestRoute {...props} />)}
-              />
+
+              {/*
+                DECISION:
+                This was only use for testing of the ErrorBoundary and Logs so we will keep it here
+                in case we may need to test some other errors in the future.
+
+                <Route
+                  path="/test"
+                  render={(props) => (<TestRoute {...props} />)}
+                />
+
+               */}
 
               <ShareRoute
                 path="/share/simulation/:token"

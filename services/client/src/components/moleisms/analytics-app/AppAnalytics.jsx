@@ -17,18 +17,11 @@ import { logError } from '../../../api/LoggingHelper'
 import { getColor } from '../../../utils/theming'
 import Card from '../../elements/card'
 import LiveLoginTimeSeries from '../charts/LiveLoginTimeSeries'
+import { roundTo } from '../../../utils/math'
+import { getGeneralStatsData } from '../../../api/Analytics'
+import { COLORS } from '../charts/utils/chartConfig'
 
 import styles from './AppAnalytics.module.scss'
-import { getGeneralStatsData } from '../../../api/Analytics'
-import { roundTo } from '../../../utils/math'
-
-/*
-* TODO (andrew@neuraldev.io):
-*  - Li98 vs. Kirkaldy83 Bar plot.
-*  - Alloys MDS plotting
-*  - Ask Dr. Bendeich/Muransky if they have anything else they want.
-*
-* */
 
 class AppAnalytics extends Component {
   constructor(props) {
@@ -65,19 +58,19 @@ class AppAnalytics extends Component {
         <div className={styles.generalData}>
 
           <Card className={styles.generalDataCard}>
-            <FontAwesomeIcon icon={faPlayCircle} color={getColor('--arc500')}  className={styles.cardIcon} />
+            <FontAwesomeIcon icon={faPlayCircle} color={COLORS[0]}  className={styles.cardIcon} />
             <h5>{(statsData !== undefined) ? statsData.count.simulations : '0'}</h5>
             <p>Run simulation</p>
           </Card>
 
           <Card className={styles.generalDataCard}>
-            <FontAwesomeIcon icon={faDatabase}color={getColor('--arc500')} className={styles.cardIcon} />
+            <FontAwesomeIcon icon={faDatabase} color={COLORS[1]} className={styles.cardIcon} />
             <h5>{(statsData !== undefined) ? statsData.count.global_alloys : '0'}</h5>
             <p>Global alloys</p>
           </Card>
 
           <Card className={styles.generalDataCard}>
-            <FontAwesomeIcon icon={faStar} color={getColor('--arc500')} className={styles.cardIcon} />
+            <FontAwesomeIcon icon={faStar} color={COLORS[2]} className={styles.cardIcon} />
             <h5>
               {
                 (statsData !== undefined) ? roundTo(parseFloat(statsData.average.ratings), 2) : '0'
@@ -87,7 +80,7 @@ class AppAnalytics extends Component {
           </Card>
 
           <Card className={styles.generalDataCard}>
-            <FontAwesomeIcon icon={faCode} color={getColor('--arc500')} className={styles.cardIcon} />
+            <FontAwesomeIcon icon={faCode} color={COLORS[3]} className={styles.cardIcon} />
             <h5>0</h5>
             <p>More stuff</p>
           </Card>

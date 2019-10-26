@@ -1,14 +1,12 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
  *
- * Appbar component
+ * AppBar component
  *
  * @version 1.0.0
- * @author Dalton Le
+ * @author Dalton Le, Andrew Che, Arvy Salazar
  */
 import React from 'react'
 import PropTypes from 'prop-types'
@@ -22,8 +20,9 @@ import { faQuestionCircle } from '@fortawesome/pro-light-svg-icons'
 import { faUserCog } from '@fortawesome/pro-light-svg-icons/faUserCog'
 import { faSlidersV } from '@fortawesome/pro-light-svg-icons/faSlidersV'
 import { faDatabase } from '@fortawesome/pro-light-svg-icons/faDatabase'
-import { ReactComponent as SimulationIcon } from '../../../assets/simulation_icon.svg'
 import { faFileChartLine } from '@fortawesome/pro-light-svg-icons/faFileChartLine'
+import { faCommentAltLines } from '@fortawesome/pro-light-svg-icons/faCommentAltLines'
+import { ReactComponent as SimulationIcon } from '../../../assets/simulation_icon.svg'
 import { ReactComponent as ANSTOLogo } from '../../../assets/ANSTO_Logo_SVG/logo.svg'
 import { ReactComponent as Logo } from '../../../assets/logo_20.svg'
 import store from '../../../state/store'
@@ -105,7 +104,12 @@ class AppBar extends React.Component {
               <p>Alloy database</p>
             </Tooltip>
           </Link>
-          {/* <a
+          {/*
+            DECISION:
+            This was only use for testing of the ErrorBoundary and Logs so we will keep it here
+            in case we may need to test some other errors in the future.
+
+            <a
             id="help"
             className={`${styles.navIcon} ${active === 'edu' && styles.active}
             ${!isAuthenticated && styles.disabled}`}
@@ -131,6 +135,18 @@ class AppBar extends React.Component {
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
               <FontAwesomeIcon icon={faAnalytics} className={styles.icon} size="lg" />
               <p>Data & analytics</p>
+            </Tooltip>
+          </Link>
+
+          <Link
+            id="feedback"
+            className={`${styles.navIcon} ${active === 'feedback' && styles.active}`}
+            style={{ display: isAdmin ? 'flex' : 'none' }}
+            to="/feedback"
+          >
+            <Tooltip className={{ tooltip: styles.tooltip }} position="right">
+              <FontAwesomeIcon icon={faCommentAltLines} className={styles.icon} size="lg" />
+              <p>Feedback</p>
             </Tooltip>
           </Link>
 
@@ -171,19 +187,16 @@ class AppBar extends React.Component {
             </Tooltip>
           </div>
 
-          <div
+          <Link
             id="about"
-            className={`${styles.navIcon} ${!isAuthenticated && styles.disabled}`}
-            {...(() => {
-              if (isAuthenticated) return buttonize(this.handleLogout)
-              return {}
-            })()}
+            className={`${styles.navIcon} ${active === 'about' && styles.active}`}
+            to="/about/arclytics"
           >
             <Tooltip className={{ tooltip: styles.tooltip }} position="right">
               <FontAwesomeIcon icon={faQuestionCircle} className={styles.icon} size="lg" />
               <p>About</p>
             </Tooltip>
-          </div>
+          </Link>
 
           <Logo className={styles.logo} />
         </div>

@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -13,10 +11,12 @@
 
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import XIcon from 'react-feather/dist/icons/x'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {faTimes } from '@fortawesome/pro-light-svg-icons/faTimes'
 import { buttonize } from '../../../utils/accessibility'
 
 import styles from './TextFieldEmail.module.scss'
+
 
 // TODO: include validation
 class TextFieldEmail extends Component {
@@ -134,7 +134,7 @@ class TextFieldEmail extends Component {
               {...buttonize(() => this.handleDelete(email))}
             >
               <span>{email}</span>
-              <XIcon className={styles.icon} />
+              <FontAwesomeIcon icon={faTimes} className={styles.icon} size="sm" />
             </div>
           ))}
         </div>

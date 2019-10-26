@@ -8,7 +8,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
-__version__ = '1.0.0'
+__version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.10.03'
 
@@ -27,6 +27,9 @@ from flask import jsonify, request
 from arc_api.auth_service import AuthService
 from arc_api.extensions import API_TOKEN_NAME
 from arc_api.extensions import apm
+from arc_logging import AppLogger
+
+logger = AppLogger(__name__)
 
 
 # ========================== # FLASK VERSIONS # ============================= #
@@ -59,6 +62,13 @@ def authorize_admin_cookie_flask(f):
         if role is None or not role == 'admin':
             response.update({'message': 'Not authorised.'})
             apm.capture_message('Not authorised attempt on Arclytics.')
+            logger.debug(
+                {
+                    'message': 'Not authorised attempt on Arclytics.',
+                    'role': role,
+                    'user_id': user_obj_id
+                }
+            )
             return jsonify(response), 403
 
         return f(user_obj_id, *args, **kwargs)
@@ -86,6 +96,12 @@ def authorize_admin_cookie_restful(f):
         auth_token = request.cookies.get(API_TOKEN_NAME)
 
         if not auth_token:
+            logger.debug(
+                {
+                    'message': 'Not authenticated attempt on Arclytics.',
+                    'auth_token': auth_token
+                }
+            )
             return response, 401
 
         # if we have a JWT token, we decode it and verify their role.
@@ -96,6 +112,13 @@ def authorize_admin_cookie_restful(f):
         if role is None or not role == 'admin':
             response.update({'message': 'Not authorised.'})
             apm.capture_message('Not authorised attempt on Arclytics.')
+            logger.debug(
+                {
+                    'message': 'Not authorised attempt on Arclytics.',
+                    'role': role,
+                    'user_id': user_obj_id
+                }
+            )
             return response, 403
 
         return f(user_obj_id, *args, **kwargs)

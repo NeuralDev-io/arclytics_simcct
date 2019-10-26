@@ -44,7 +44,7 @@ spec:
     spec:
       containers:
         - name: arclytics-container
-          image: asia.gcr.io/arc-sim-testing/arclytics_service:1.0.0
+          image: asia.gcr.io/arc-sim-testing/arclytics_service:2.0.0
           imagePullPolicy: Always
           ports:
           - containerPort: 8001
@@ -68,11 +68,11 @@ spec:
             periodSeconds: 60
           resources:
             requests:
-              cpu: 750m
-              memory: 1Gi
-            limits:
               cpu: 1000m
               memory: 2Gi
+            limits:
+              cpu: 1250m
+              memory: 4Gi
           env:
           - name: FLASK_APP
             value: "arc_api/__init__.py"

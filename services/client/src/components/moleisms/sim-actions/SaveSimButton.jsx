@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -16,10 +14,12 @@ import { connect } from 'react-redux'
 import FileSaver from 'file-saver'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSave } from '@fortawesome/pro-light-svg-icons/faSave'
-import { faServer } from '@fortawesome/pro-light-svg-icons/faServer'
 import { faFile } from '@fortawesome/pro-light-svg-icons/faFile'
 import Button from '../../elements/button'
+import Portal from '../../elements/portal'
 import { AttachModal } from '../../elements/modal'
+import ReportDownloadLink from '../pdf-export'
+import { Equilibrium } from '../charts'
 import { buttonize } from '../../../utils/accessibility'
 import { saveSimulation } from '../../../state/ducks/self/actions'
 import { addFlashToast } from '../../../state/ducks/toast/actions'
@@ -31,12 +31,21 @@ class SaveSimButton extends Component {
     super(props)
     this.state = {
       visible: false,
+      showDownload: false,
     }
   }
 
   handleShowModal = () => this.setState({ visible: true })
 
   handleCloseModal = () => this.setState({ visible: false })
+
+  handleShowDownloadLink = () => {
+    setTimeout(() => {
+      this.setState({ showDownload: true })
+    }, 100)
+  }
+
+  handleCloseDownloadLink = () => this.setState({ showDownload: false })
 
   saveSim = () => {
     const { saveSimulationConnect, addFlashToastConnect, sim: { configurations } } = this.props
@@ -81,7 +90,13 @@ class SaveSimButton extends Component {
 
   render() {
     const { isSimulated, isAuthenticated } = this.props
-    const { visible } = this.state
+    const { visible, showDownload } = this.state
+
+    // this is a bit hacky, we're checking if a new simulation is in progress while
+    // showDownload is still true --> set showDownload to false so the next time
+    // it's true, the ReportDownloadLink component is re-rendered and will generate
+    // a new PDF report.
+    if (!isSimulated && showDownload) this.setState({ showDownload: false })
 
     return (
       <AttachModal
@@ -110,6 +125,42 @@ class SaveSimButton extends Component {
             <FontAwesomeIcon icon={faFile} className={styles.icon} />
             <span>Save to file</span>
           </div>
+          <h6 className={styles.divider}>
+            <span>or</span>
+          </h6>
+          <div className={styles.download}>
+            <span>Download the simulation as a .PDF report</span>
+            {
+              !showDownload
+                ? (
+                  <Button
+                    appearance="outline"
+                    length="long"
+                    onClick={this.handleShowDownloadLink}
+                    isDisabled={!isSimulated || !isAuthenticated}
+                  >
+                    Generate report
+                  </Button>
+                )
+                : (
+                  <ReportDownloadLink
+                    onFinish={this.handleCloseModal}
+                    onError={this.handleCloseDownloadLink}
+                  />
+                )
+            }
+          </div>
+          {
+            visible
+              ? (
+                <Portal to={document.getElementById('temp-container')}>
+                  <div className={styles.equiChart} id="equi_chart">
+                    <Equilibrium />
+                  </div>
+                </Portal>
+              )
+              : ''
+          }
         </div>
       </AttachModal>
     )

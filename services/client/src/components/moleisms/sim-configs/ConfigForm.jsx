@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -12,21 +10,27 @@
  * @version 1.0.0
  * @author Dalton Le
  */
+/* eslint-disable react/prop-types */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import InfoIcon from 'react-feather/dist/icons/info'
 import { connect } from 'react-redux'
 import Tooltip from '../../elements/tooltip'
 import Select from '../../elements/select'
 import TextField, { TextFieldExtra } from '../../elements/textfield'
 import Checkbox from '../../elements/checkbox'
 import {
-  updateConfigMethod, updateGrainSize, updateMsBsAe, getMsBsAe, setAutoCalculate, updateConfig,
+  updateConfigMethod,
+  updateGrainSize,
+  updateMsBsAe,
+  getMsBsAe,
+  setAutoCalculate,
+  updateConfig,
 } from '../../../state/ducks/sim/actions'
 import { validate, validateGroup } from '../../../utils/validator'
 import { roundTo } from '../../../utils/math'
 import { constraints } from './utils/constraints'
 import { ASTM2Dia, dia2ASTM } from '../../../utils/grainSizeConverter'
+import { ReactComponent as BrainIcon } from '../../../assets/icons/brain.svg'
 
 import styles from './ConfigForm.module.scss'
 
@@ -198,7 +202,7 @@ class ConfigForm extends Component {
             <div className={styles.headerContainer}>
               <h6>CCT/TTT method</h6>
               <Tooltip className={{ tooltip: `${styles.infoTip} ${styles.methodTooltip}`, container: styles.infoTipContainer }} position="right">
-                <InfoIcon className={styles.infoIcon} />
+                <BrainIcon className={styles.infoIcon} />
                 <p>
                   J.S.Krikaldy, et al., &quot;Prediction of microstructure and hardenability in
                   <br />
@@ -232,7 +236,7 @@ class ConfigForm extends Component {
             <div className={styles.headerContainer}>
               <h6>Grain size</h6>
               <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
-                <InfoIcon className={styles.infoIcon} />
+                <BrainIcon className={styles.infoIcon} />
                 <p>
                   Plots a sigmoidal function distribution on a separate sheet.
                   <br />
@@ -285,7 +289,7 @@ class ConfigForm extends Component {
               <div className={styles.headerContainer}>
                 <h6>Ferrite/Pearlite</h6>
                 <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="right">
-                  <InfoIcon className={styles.infoIcon} />
+                  <BrainIcon className={styles.infoIcon} />
                   <p>
                     Ae3 = temperature below austenite to ferrite transformation becomes
                     thermodynamically possible.
@@ -309,7 +313,9 @@ class ConfigForm extends Component {
                     }
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_ae || !isAuthenticated || !isInitialised}
+                    isDisabled={
+                      configurations.auto_calculate_ae || !isAuthenticated || !isInitialised
+                    }
                     error={configurations.error.ae1_temp}
                   />
                 </div>
@@ -329,7 +335,9 @@ class ConfigForm extends Component {
                     }
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_ae || !isAuthenticated || !isInitialised}
+                    isDisabled={
+                      configurations.auto_calculate_ae || !isAuthenticated || !isInitialised
+                    }
                     error={configurations.error.ae3_temp}
                   />
                 </div>
@@ -346,7 +354,7 @@ class ConfigForm extends Component {
               <div className={styles.headerContainer}>
                 <h6>Bainite</h6>
                 <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
-                  <InfoIcon className={styles.infoIcon} />
+                  <BrainIcon className={styles.infoIcon} />
                   <p>
                     Bainite transformation temperature (C)
                   </p>
@@ -369,7 +377,9 @@ class ConfigForm extends Component {
                     }
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_bs || !isAuthenticated || !isInitialised}
+                    isDisabled={
+                      configurations.auto_calculate_bs || !isAuthenticated || !isInitialised
+                    }
                     error={configurations.error.bs_temp}
                   />
                 </div>
@@ -386,7 +396,7 @@ class ConfigForm extends Component {
               <div className={styles.headerContainer}>
                 <h6>Martensite</h6>
                 <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="bottom">
-                  <InfoIcon className={styles.infoIcon} />
+                  <BrainIcon className={styles.infoIcon} />
                   <p>
                     Martensite transformation temperature (C)
                     <br />
@@ -412,7 +422,9 @@ class ConfigForm extends Component {
                     }
                     length="short"
                     suffix="°C"
-                    isDisabled={configurations.auto_calculate_ms || !isAuthenticated || !isInitialised}
+                    isDisabled={
+                      configurations.auto_calculate_ms || !isAuthenticated || !isInitialised
+                    }
                     error={configurations.error.ms_temp}
                   />
                 </div>
@@ -432,7 +444,9 @@ class ConfigForm extends Component {
                         : configurations.ms_rate_param
                     }
                     length="short"
-                    isDisabled={configurations.auto_calculate_ms || !isAuthenticated || !isInitialised}
+                    isDisabled={
+                      configurations.auto_calculate_ms || !isAuthenticated || !isInitialised
+                    }
                     error={configurations.error.ms_rate_param}
                   />
                 </div>
@@ -451,7 +465,7 @@ class ConfigForm extends Component {
           <div className={styles.headerContainer}>
             <h5>Nucleation parameters</h5>
             <Tooltip className={{ tooltip: styles.infoTip, container: styles.infoTipContainer }} position="right">
-              <InfoIcon className={styles.infoIcon} />
+              <BrainIcon className={styles.infoIcon} />
               <p>
                 Plots a sigmoidal function distribution on a separate sheet This is for
                 visualizing the various Sigmoidal distributions used:

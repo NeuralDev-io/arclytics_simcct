@@ -121,21 +121,20 @@ class ProfilePage extends Component {
 
   updateUser = () => {
     const {
-      firstName, lastName, question1, question2, question3, question4,
+      firstName, lastName, aimValue, highestEducationValue, sciTechExpValue, phaseTransformExpValue,
     } = this.state
     const { user, createUserProfileConnect, updateUserProfileConnect } = this.props
-
     if (!user.profile) {
-      if (!(question1 && question2 && question3 && question4)) {
+      if (!(aimValue && highestEducationValue && sciTechExpValue && phaseTransformExpValue)) {
         this.setState({
           updateError: 'Must answer all questions to save',
         })
-      } else if (question1 && question2 && question3 && question4) {
+      } else if (aimValue && highestEducationValue && sciTechExpValue && phaseTransformExpValue) {
         createUserProfileConnect({
-          aim: question1.value,
-          highest_education: question2.value,
-          sci_tech_exp: question3.value,
-          phase_transform_exp: question4.value,
+          aim: aimValue.value,
+          highest_education: highestEducationValue.value,
+          sci_tech_exp: sciTechExpValue.value,
+          phase_transform_exp: phaseTransformExpValue.value,
         })
         updateUserProfileConnect({
           first_name: firstName,
@@ -147,10 +146,10 @@ class ProfilePage extends Component {
       updateUserProfileConnect({
         first_name: firstName,
         last_name: lastName,
-        aim: question1 ? question1.value : null,
-        highest_education: question2 ? question2.value : null,
-        sci_tech_exp: question2 ? question3.value : null,
-        phase_transform_exp: question3 ? question4.value : null,
+        aim: aimValue ? aimValue.value : null,
+        highest_education: highestEducationValue ? highestEducationValue.value : null,
+        sci_tech_exp: sciTechExpValue ? sciTechExpValue.value : null,
+        phase_transform_exp: phaseTransformExpValue ? phaseTransformExpValue.value : null,
       })
       this.setState({ edit: false, updateError: null })
     }

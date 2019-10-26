@@ -45,8 +45,13 @@ class Mongo(object):
                 host=env.get('MONGO_HOST'), port=int(env.get('MONGO_PORT'))
             )
 
-    def find(self, db_name: str = 'arc_dev', collection: str = '',
-             query: dict = None, projections: dict = None,):
+    def find(
+        self,
+        db_name: str = 'arc_dev',
+        collection: str = '',
+        query: dict = None,
+        projections: dict = None,
+    ):
         if not collection:
             return None
 
@@ -57,8 +62,14 @@ class Mongo(object):
         return db[collection].find(query, projections)
 
     # noinspection PyShadowingBuiltins
-    def count(self, db_name: str = 'arc_dev', collection: str = '',
-              filter: dict = None, skip: int = 0, limit: int = 0):
+    def count(
+        self,
+        db_name: str = 'arc_dev',
+        collection: str = '',
+        filter: dict = None,
+        skip: int = 0,
+        limit: int = 0
+    ):
         if not collection:
             return None
 
@@ -75,10 +86,27 @@ class Mongo(object):
 
         return db[collection].count_documents(filter, skip=skip, limit=limit)
 
-    def find_one(self, db_name: str = 'arc_dev', collection: str = 'arc_dev',
-                 query_selector: dict = None, projections: dict = None):
+    def find_one(
+        self,
+        db_name: str = 'arc_dev',
+        collection: str = 'arc_dev',
+        query_selector: dict = None,
+        projections: dict = None
+    ):
         if query_selector is None:
             return None
         db = self.conn[db_name]
 
         return db[collection].find_one(query_selector, projections)
+
+    def aggregate(
+        self,
+        db_name: str = 'arc_dev',
+        collection: str = 'arc_dev',
+        pipeline: list = None,
+    ):
+        if pipeline is None:
+            return None
+        db = self.conn[db_name]
+
+        return db[collection].aggregate(pipeline, allowDiskUse=True)

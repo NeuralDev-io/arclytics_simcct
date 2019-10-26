@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -14,7 +12,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import AppBar from '../../moleisms/appbar'
-import Equilibrium from '../../moleisms/charts/Equilibrium'
+import { Equilibrium } from '../../moleisms/charts'
 import { loadPersistedSim, loadLastSim } from '../../../state/ducks/sim/actions'
 import { getLastSim } from '../../../state/ducks/self/actions'
 import { persistSim } from '../../../state/ducks/persist/actions'
@@ -65,7 +63,7 @@ class EquiPage extends React.Component {
       ceut,
       cf,
       isAdmin,
-      isAuthenticated
+      isAuthenticated,
     } = this.props
     return (
       <>

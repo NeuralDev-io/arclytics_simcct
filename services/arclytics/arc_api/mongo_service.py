@@ -8,8 +8,8 @@
 # -----------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
-__version__ = '0.1.0'
-__status__ = 'development'
+__version__ = '2.0.0'
+__status__ = 'production'
 __date__ = '2019.10.03'
 """mongo_service.py: 
 
@@ -51,6 +51,7 @@ class MongoService(object):
             collection: str = '',
             query: dict = None,
     ):
+        """Read from the database given a collection and return a cursor."""
         if query is None:
             return None
         db = self.conn[db_name]
@@ -64,7 +65,10 @@ class MongoService(object):
             query: dict = None,
             projections: dict = None,
     ) -> Union[pd.DataFrame, None]:
-        """Read from a database and collection with a simple query."""
+        """
+        Read from a database and collection with a simple query and return the
+        result as a `pandas.DataFrame`.
+        """
         if query is None:
             return None
 
@@ -81,7 +85,10 @@ class MongoService(object):
     def read_aggregation(
             self, db_name: str, collection: str, pipeline: list = None
     ) -> Union[pd.DataFrame, None]:
-        """Read from a database and collection with an aggregation pipeline."""
+        """
+        Read from a database and collection with an aggregation pipeline and
+        return the result as a `pandas.DataFrame`.
+        """
 
         if not pipeline:
             return None

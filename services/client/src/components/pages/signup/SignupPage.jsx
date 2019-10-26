@@ -104,7 +104,7 @@ class SignupPage extends Component {
                   // If response is unsuccessful
                   if (err === 'This user already exists.') {
                     setErrors({
-                      email: 'This email already exists',
+                      email: 'Invalid Email',
                     })
                   } else {
                     setErrors({

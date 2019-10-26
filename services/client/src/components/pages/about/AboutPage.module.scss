@@ -1,0 +1,12 @@
+.sidebar {
+  width: 15vw;
+  height: 100vh;
+  margin-left: 4rem;
+  position: fixed;
+}
+
+.main {
+  margin-left: calc(4rem + 15vw);
+  width: calc(100vw - calc(4rem + 15vw));
+  padding: 2.5rem 0;
+}

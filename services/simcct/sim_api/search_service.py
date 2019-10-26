@@ -14,7 +14,8 @@ __status__ = 'development'
 __date__ = '2019.10.17'
 """search_service.py: 
 
-{Description}
+This is a Service Access Layer where the application logic resides for 
+methods that access the data persistence layer for searching Users documents.
 """
 
 from os import environ as env
@@ -35,8 +36,13 @@ class SearchService(object):
         self.client = client
         self.db_name = env.get('MONGO_APP_DB')
 
-    def find(self, query: dict = None, projections: dict = None,
-             sort: list = None, limit: int = None):
+    def find(
+        self,
+        query: dict = None,
+        projections: dict = None,
+        sort: list = None,
+        limit: int = 0
+    ):
         """Do a `collections.find()` query with projections. Additionally,
         we can also sort or limit the results returned.
 
@@ -78,8 +84,23 @@ class SearchService(object):
 
         return [obj for obj in cursor]
 
-    def find_slice(self, query: dict = None, projections: dict = None,
-                   sort: list = None, limit: int = 0, skip: int = 0):
+    def find_one(self, query: dict = None, projections: dict = None):
+        """Simple find one user based on a query and projection."""
+        return self.client.find_one(
+            db_name=self.db_name,
+            collection='users',
+            query_selector=query,
+            projections=projections
+        )
+
+    def find_slice(
+        self,
+        query: dict = None,
+        projections: dict = None,
+        sort: list = None,
+        limit: int = 0,
+        skip: int = 0
+    ):
         """Do a `collections.find()` query with projections. Additionally we
         can do a slice on the results by providing the `skip` which will be
         the offset of the first returned result and a `limit` which is the

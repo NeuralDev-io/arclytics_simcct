@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable camelcase */
 /**
  * This source code is licensed under the MIT license found in the
@@ -10,6 +11,7 @@
  */
 
 import React, { Component } from 'react'
+// noinspection ES6CheckImport
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
@@ -32,6 +34,7 @@ import { persistSim } from '../../../state/ducks/persist/actions'
 import { logError } from '../../../api/LoggingHelper'
 
 import styles from './SimulationPage.module.scss'
+
 
 class SimulationPage extends Component {
   constructor(props) {
@@ -126,7 +129,7 @@ class SimulationPage extends Component {
                   displayConfig: !prevState.displayConfig,
                 }))}
                 IconComponent={(props) => {
-                  if (displayConfig) return <FontAwesomeIcon icon={faChevronUp}{...props} />
+                  if (displayConfig) return <FontAwesomeIcon icon={faChevronUp} {...props} />
                   return <FontAwesomeIcon icon={faChevronDown} {...props} />
                 }}
               >
@@ -154,14 +157,14 @@ class SimulationPage extends Component {
               {/* NOTE: TTT Child Component */}
               <div className={styles.line}>
                 <h5>TTT</h5>
-                <div>
+                <div id="ttt_chart">
                   <TTT />
                 </div>
               </div>
               <div className={styles.line}>
                 {/* NOTE: CCT Child Component */}
                 <h5>CCT</h5>
-                <div>
+                <div id="cct_chart">
                   <CCT />
                 </div>
               </div>
@@ -177,8 +180,8 @@ class SimulationPage extends Component {
                 }))}
                 IconComponent={props => (
                   displayProfile
-                    ? <FontAwesomeIcon icon={faChevronUp}{...props} />
-                    : <FontAwesomeIcon icon={faChevronDown}{...props} />
+                    ? <FontAwesomeIcon icon={faChevronUp} {...props} />
+                    : <FontAwesomeIcon icon={faChevronDown} {...props} />
                 )}
               >
                 {displayProfile ? 'Collapse' : 'Expand'}

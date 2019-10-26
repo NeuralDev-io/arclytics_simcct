@@ -104,14 +104,12 @@
 }
 
 .infoIcon {
-  width: .75rem;
-  height: .75rem;
-  color: var(--n900);
+  width: 1rem;
+  height: 1rem;
+  stroke: var(--arc500);
   cursor: pointer;
   position: absolute;
   top: 0;
-
-  &:hover { color: var(--arc500); }
 }
 
 .headerContainer {
@@ -132,8 +130,8 @@
 }
 
 .infoTipContainer {
-  width: .75rem;
-  height: .75rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 .methodTooltip {

@@ -1,6 +1,4 @@
 /**
- * Copyright 2019, NeuralDev.
- * All rights reserved.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this repository.
@@ -24,6 +22,8 @@ import { getGlobalAlloys, getUserAlloys } from '../../../state/ducks/alloys/acti
 import { updateAlloyOption, initSession, updateDilution } from '../../../state/ducks/sim/actions'
 
 import styles from './CompForm.module.scss'
+import { ReactComponent as BrainIcon } from '../../../assets/icons/brain.svg'
+import Tooltip from '../../elements/tooltip'
 
 // Some UI elements were commented out because the client no longer
 // wants a composition mix feature.
@@ -113,7 +113,16 @@ class CompForm extends Component {
         </div> */}
         <div className="input-col">
           <div className={styles.alloyHeader}>
-            <h6>Alloy</h6>
+            <div className={styles.titleContainer}>
+              <h6>Alloy</h6>
+              <Tooltip className={{ tooltip: `${styles.infoTip} ${styles.methodTooltip}`, container: styles.infoTipContainer }} position="right">
+                <BrainIcon className={styles.infoIcon} />
+                <p>
+                  Test
+                </p>
+              </Tooltip>
+            </div>
+
             <Button
               onClick={onSaveButtonClick}
               className={styles.saveButton}

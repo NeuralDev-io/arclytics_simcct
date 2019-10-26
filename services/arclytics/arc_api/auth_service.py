@@ -8,7 +8,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 __author__ = ['Andrew Che <@codeninja55>']
 __license__ = 'MIT'
-__version__ = '1.0.0'
+__version__ = '2.0.0'
 __status__ = 'production'
 __date__ = '2019.10.02'
 
@@ -74,7 +74,7 @@ class AuthService(object):
     @staticmethod
     def decode_auth_token(
             auth_token: Union[bytes, str]
-    ) -> Union[Tuple[ ObjectId, str], Tuple[str, None]]:
+    ) -> Union[Tuple[ObjectId, str], Tuple[str, None]]:
         """Decodes the JWT auth token.
 
         Args:

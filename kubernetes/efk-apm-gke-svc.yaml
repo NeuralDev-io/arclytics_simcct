@@ -88,6 +88,13 @@ spec:
             - name: http
               containerPort: 8200
               protocol: TCP
+          resources:
+            requests:
+              cpu: 200m
+              memory: 1Gi
+            limits:
+              cpu: 300m
+              memory: 2Gi
           env:
             - name: ELASTIC_APM_SECRET_TOKEN
               valueFrom:

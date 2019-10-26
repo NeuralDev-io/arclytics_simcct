@@ -6145,6 +6145,125 @@ paths:
                     errors: "Error."
                     message: "Assertion error building response data."
 
+  /v1/sim/user/rating:
+    post:
+      summary: "Create ratings."
+      tags:
+        - Rating
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "RequestBody needed to make rating."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rating'
+      responses:
+        201:
+          description: "The User's profile has been successfully saved."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: "success"
+                data:
+                  aim: "Grow up to be Iron Heart"
+                  highest_education: "Masters of Engineering, MIT"
+                  sci_tech_exp: "J.A.R.V.I.S. Taught me AI"
+                  phase_transform_exp: "I make Iron Masterpieces"
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    message: "Validation error."
+                    error: "Error..."
+        '401':
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+
 
 components:
   securitySchemes:
@@ -6157,6 +6276,11 @@ components:
         is_valid:
           type: boolean
           default: false
+    Rating:
+      properties:
+        rating:
+          type: integer
+          example: 5
     'User':
       description: "A document type as the complete User schema with all values."
       properties:

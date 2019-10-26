@@ -5783,7 +5783,177 @@ paths:
                     status: "fail"
                     error: "Invalid BS value"
                     message: "Calculating Bs error."
-  /configs/ae:
+  /v1/sim/configs/ae:
+    post:
+      summary: "Initiate calculation for Ae."
+      tags:
+        - Configurations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                method:
+                  type: string
+                  example: "Li"
+                alloy_store:
+                  $ref: '#/components/schemas/Alloy Store'
+      responses:
+        200:
+          description: "The auto calculate for Ae store has been updated and returned."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
+                data:
+                  ae1_temp: 700.9019
+                  ae3_temp: 845.8379
+        400:
+          description: "An invalid request has been made."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid Payload"
+                'No Alloy Store':
+                  value:
+                    status: "fail"
+                    message: "Alloy store required."
+                'No Method':
+                  value:
+                    status: "fail"
+                    message: "Method required."
+                'Selece One method':
+                  value:
+                    status: "fail"
+                    message: "Method must be one of [\"Li98\" | \"Kirkaldy83\"]."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Model schema validation error."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Invalid Element Weight':
+                  value:
+                    status: fail
+                    error: "Error .."
+                    message: "Invalid element weight error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'No Mix Option':
+                  value:
+                    status: "fail"
+                    message: "Mix option not allowed."
+                'No Alloy Composition':
+                  value:
+                    status: "fail"
+                    message: "No alloy composition."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+                'Configuration Errors':
+                  value:
+                    status: "fail"
+                    errors: "string"
+                    message: "Configuration error"
+                'Ae Error':
+                  value:
+                    status: "fail"
+                    error: "Invalid Ae value"
+                    message: "Calculating Ae1 and Ae3 error."
     get:
       summary: "Update the auto calculate for Ae1 and Ae3 and return the new values."
       tags:

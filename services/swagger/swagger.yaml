@@ -6764,3 +6764,5 @@ tags:
     description: Endpoints that manage simulation activities.
   - name: Ae3Equilibrium
     description: "Endpoints that manages Ae3Equilibrium simulation."
+  - name: Rating
+    description: "Endpoints that manages rating."

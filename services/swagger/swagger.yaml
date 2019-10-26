@@ -57,6 +57,7 @@ paths:
                   type: string
                   format: "Keep-Alive"
                   example: "timeout=0"
+
   /v1/sim/users:
     get:
       summary: "Returns all users"
@@ -619,6 +620,145 @@ paths:
                   value:
                     status: "fail"
                     message: "No JWT stored in Session."
+  /v1/sim/users/query:
+    get:
+      summary: "Return all users based on a query."
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Successfully returned user."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: string
+              example:
+                status: "success"
+                query:
+                sort:
+                limit:
+                page: 0
+                skip:
+                total_pages: 1
+                data:
+                n_results: 213
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Parameters':
+                  value:
+                    status: "fail"
+                    message: "Invalid parameters."
+                'Invalid Page Parameters':
+                  value:
+                    status: "fail"
+                    message: "Required page parameter."
+                'No Parameters':
+                  value:
+                    status: "fail"
+                    message: "No query parameters provided."
+                'Invalid Limit':
+                  value:
+                    status: "fail"
+                    message: "Invalid limit parameter."
+                'Limit Must Be Positive':
+                  value:
+                    status: "fail"
+                    message: "Limit must be a positive int."
+                'Invalid Page':
+                  value:
+                    status: "fail"
+                    message: "Invalid page parameter."
+                'Invlid Sort':
+                  value:
+                    status: "fail"
+                    message: "Sort value is invalid."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Not authorized':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'No Results':
+                  value:
+                    status: "fail"
+                    message: "No results found."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+
   /v1/sim/user/last/simulation:
     get:
       summary: "Returns the user's last Alloy and Configurations used, and CCT/TTT results (if any)"

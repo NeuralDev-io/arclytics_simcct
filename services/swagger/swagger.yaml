@@ -6990,3 +6990,5 @@ tags:
     description: "Endpoints that update the Session store of the user's configurations."
   - name: Simulation
     description: Endpoints that manage simulation activities.
+  - name: Ae3Equilibrium
+    description: "Endpoints that manages Ae3Equilibrium simulation."

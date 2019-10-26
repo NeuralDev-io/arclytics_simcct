@@ -765,7 +765,7 @@ paths:
                       last_configurations:
                         $ref: '#/components/schemas/Configurations'
                       last_alloy_store:
-                        $ref: '#/components/schemas/Alloy'
+                        $ref: '#/components/schemas/Alloy Store'
               examples:
                 'Valid':
                   value:
@@ -775,7 +775,7 @@ paths:
                       last_configurations:
                         $ref: '#/components/examples/configurationsExample'
                       last_alloy_store:
-                        $ref: '#/components/examples/Alloy Store'
+                        $ref: '#/components/schemas/Alloy Store'
                       last_simulation_results:
                         $ref: '#/components/schemas/Saved Simulation'
         400:

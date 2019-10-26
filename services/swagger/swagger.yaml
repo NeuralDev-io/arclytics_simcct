@@ -6515,7 +6515,7 @@ paths:
         - bearerAuth: []
       responses:
         200:
-          description: "The User rating has been successfully saved."
+          description: "Successfully returned feedback."
           content:
             application/json:
               schema:
@@ -6635,7 +6635,131 @@ paths:
                   value:
                     status: "fail"
                     message: "No JWT stored in Session."
-
+  /v1/sim/user/feedback/list/subscribe:
+    post:
+      summary: "Route for Admins to subscribe to the feedback mailing list."
+      tags:
+        - Rating
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Successfully subscribed."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: string
+              examples:
+                'Subscribed':
+                  value:
+                    status: "success"
+                    message: "User has been subscribed."
+                'Unsubscribed':
+                  value:
+                    status: "success"
+                    message: "User has been unsubscribed."
+        400:
+          description: "An invalid payload has been sent with the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Action':
+                  value:
+                    status: "fail"
+                    message: "No action provided."
+                'Already Subscribed':
+                  value:
+                    status: "fail"
+                    message: "User is already subscribed."
+                'Already Unsubscribed':
+                  value:
+                    status: "fail"
+                    message: "User is already unsubscribed."
+                'Invlid Action':
+                  value:
+                    status: "fail"
+                    message: "Invalid action."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Not authorized':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
 
 
 components:

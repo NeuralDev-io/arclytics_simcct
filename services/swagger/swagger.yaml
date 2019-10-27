@@ -11,7 +11,7 @@ servers:
 
 
 paths:
-  /ping:
+  /v1/sim/ping:
     get:
       summary: "Just a sanity check"
       tags:
@@ -30,10 +30,34 @@ paths:
                   message:
                     type: string
                     description: "The message response"
+                  container_id:
+                    type: string
+                    description: "Id of the container"
               example:
                 status: "success"
                 message: "pong!"
-  /users:
+  /v1/sim/healthy:
+    get:
+      summary: "Readiness probe for GCP Ingress."
+      tags:
+        - Users
+      requestBody:
+        description: "RequestBody for health status"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Connection:
+                  type: string
+                  format: "Connection"
+                  example: "Close"
+                Keep-Alive:
+                  type: string
+                  format: "Keep-Alive"
+                  example: "timeout=0"
+  /v1/sim/users:
     get:
       summary: "Returns all users"
       tags:
@@ -51,19 +75,28 @@ paths:
                   $ref: '#/components/schemas/User Profile'
                 example:
                   status: "success"
+                  sort_on:
+                  next_offset: 11
+                  prev_offset:
+                  limit: 10
+                  current_page: 1
+                  total_pages: 22
                   data:
-                  - _id: "5d2339db2d789ae1a9f15a9e"
-                    email: "iron_man@avengers.io"
+                  - email: "iron_man@avengers.io"
                     first_name: "Tony"
                     last_name: "Stark"
                     active: true
                     admin: true
+                    verified: true
                     created: '2019-07-08T12:40:55.948000+00:00'
                     last_updated: '2019-07-08T12:40:55.948000+00:00'
                     last_login: '2019-07-08T12:40:59.168000+00:00'
                     profile: None
-                  - _id: "5d2339db2d789ae1a9f15a9f"
-                    email: "captain_america@avengers.io"
+                    admin_profile:
+                      position: "Manager"
+                      mobile_number: "0432888524"
+                      verified: true
+                  - email: "captain_america@avengers.io"
                     first_name: "Steve"
                     last_name: "Rogers"
                     active: false
@@ -72,8 +105,7 @@ paths:
                     last_updated: '2019-07-08T12:40:55.948000+00:00'
                     last_login: None
                     profile: None
-                  - _id: "5d2339db2d789ae1a9f15aa0"
-                    email: "black_widow@avengers.io"
+                  - email: "black_widow@avengers.io"
                     first_name: "Natasha"
                     last_name: "Romanoff"
                     active: false
@@ -83,7 +115,42 @@ paths:
                     last_updated: '2019-07-08T12:40:55.948000+00:00'
                     last_login: None
                     profile: None
-        '401':
+        400:
+          description: "An invalid request body has been sent."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Invalid Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid Payload."
+                'Invalid Sort':
+                  value:
+                    status: "fail"
+                    message: "Sort value is invalid."
+                'Invalid Limit':
+                  value:
+                    status: "fail"
+                    message: "Limit value is invalid."
+                'Limit Should > 1':
+                  value:
+                    status: "fail"
+                    message: "Limit must be > 1."
+                'Invalid Offset Value':
+                  value:
+                    status: "fail"
+                    message: "Offset value is invalid."
+                'Offset Value Exceeds':
+                  value:
+                    status: "fail"
+                    message: "Offset value exceeds number of records."
+                'Offset Should > 1':
+                  value:
+                    status: "fail"
+                    message: "Offset must be > 1."
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -97,11 +164,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No token provided':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -110,7 +181,7 @@ paths:
                     status: "fail"
                     message: "Invalid token. Please log in again."
         403:
-          description: "Unauthorized access to endpoint."
+          description: "Unauthorized access."
           content:
             application/json:
               schema:
@@ -121,6 +192,10 @@ paths:
                   message:
                     type: string
               examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
                 'Non Admin User':
                   value:
                     status: "fail"
@@ -135,8 +210,20 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
-  /user:
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/user:
     get:
       summary: "Returns a user based on a single user ID"
       tags:
@@ -173,11 +260,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -185,7 +276,19 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
@@ -199,7 +302,19 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
     patch:
       summary: "Update the User's details."
       tags:
@@ -298,7 +413,7 @@ paths:
                   value:
                     status: "fail"
                     message: "User profile cannot be updated as there is no existing profile."
-        401:
+        '401':
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -312,11 +427,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -324,14 +443,26 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
-                  value:
-                    status: "fail"
-                    message: "This user account has been disabled."
                 'Not Admin':
                   value:
                     status: "fail"
                     message: "User is not verified as an admin."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
         404:
           description: "The user cannot be found."
           content:
@@ -342,6 +473,7 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
         418:
           description: "There has been some validation error saving to Mongo."
@@ -353,7 +485,18 @@ paths:
                 status: "fail"
                 message: "Validation error."
                 error: "ValidationError: ..."
-  /user/profile:
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                  status: "fail"
+                  message: "No JWT stored in Session."
+  /v1/sim/user/profile:
     post:
       summary: "Create the User's profile details the first time they complete it."
       tags:
@@ -406,8 +549,8 @@ paths:
                   value:
                     status: "fail"
                     message: "Validation error."
-                    error: "ValidationError: ..."
-        401:
+                    error: "Error..."
+        '401':
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -421,11 +564,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -433,7 +580,19 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
@@ -447,8 +606,20 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
-  /user/last/simulation:
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/user/last/simulation:
     get:
       summary: "Returns the user's last Alloy and Configurations used, and CCT/TTT results (if any)"
       tags:
@@ -469,12 +640,13 @@ paths:
                   data:
                     type: object
                     properties:
-                      last_alloy:
-                        $ref: '#/components/schemas/Alloy'
                       last_configurations:
                         $ref: '#/components/schemas/Configurations'
+                      is_valid:
+                        type: boolean
+                        default: false
                       last_alloy_store:
-                        $ref: '#/components/schemas/Alloy'
+                        $ref: '#/components/schemas/Alloy Store'
                       last_results:
                         type: object
                         nullable: true
@@ -494,11 +666,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -506,7 +682,19 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
@@ -520,15 +708,23 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
-                'No last configurations':
+                'No Last Configuration Or Alloy Store':
                   value:
                     status: "fail"
-                    message: "User does not have a last configurations."
-                'No last alloy':
+                    message: "User does not have a last configurations or alloy store."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "User does not have a last alloy stored."
+                    message: "No JWT stored in Session."
     post:
       summary: "Save user's last Alloy and Configurations used, and CCT/TTT results"
       tags:
@@ -543,10 +739,15 @@ paths:
             schema:
               type: object
               properties:
+                is_valid:
+                  type: boolean
+                  default: true
                 last_configurations:
                   $ref: '#/components/schemas/Configurations'
                 last_alloy_store:
-                  $ref: '#/components/schemas/Alloy'
+                  $ref: '#/components/schemas/Alloy Store'
+                simulation_results:
+                  $ref: '#/components/schemas/Saved Simulation'
       responses:
         201:
           description: "Successfully saved the configurations."
@@ -568,11 +769,15 @@ paths:
               examples:
                 'Valid':
                   value:
-                    status: success
+                    status: "success"
+                    message: "Saved Last Simulation Data."
                     data:
-                      last_alloy: '#/components/examples/alloyExample'
-                      last_configurations: '#/components/examples/configurationsExample'
-                      last_results: null
+                      last_configurations:
+                        $ref: '#/components/examples/configurationsExample'
+                      last_alloy_store:
+                        $ref: '#/components/examples/Alloy Store'
+                      last_simulation_results:
+                        $ref: '#/components/schemas/Saved Simulation'
         400:
           description: "An invalid payload has been sent in the request."
           content:
@@ -584,6 +789,10 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid payload."
+                'Validity Should Be Defined':
+                  value:
+                    status: "fail"
+                    message: "Validity must be defined."
                 'Missing Configurations':
                   value:
                     status: "fail"
@@ -607,6 +816,11 @@ paths:
                     status: "fail"
                     error: "string"
                     message: "Invalid element symbol error."
+                'Invalid Element Weight':
+                  value:
+                    status: fail
+                    error: "Error .."
+                    message: "Invalid element weight error."
                 'Element Invalid':
                   value:
                     status: "fail"
@@ -636,11 +850,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -648,7 +866,19 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
@@ -662,371 +892,24 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
-  /user/simulation:
-    get:
-      summary: "Retrieve the list of Configurations saved in the User's document."
-      tags:
-        - Users
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: "Successfully logged in"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                    format: bytes
-                  message:
-                    type: string
-                    format: string
-              example:
-                status: "success"
-                data:
-                  properties:
-                      configurations:
-                        $ref: '#/components/schemas/Configurations'
-                      alloy_store:
-                        $ref: '#/components/schemas/Alloy Store'
-                      created: '2019/08/05'
-        '401':
-          description: "The user is not authenticated to perform this request."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    format: string
-                  message:
-                    type: string
-                    format: string
-              examples:
-                'No Auth Header':
-                  value:
-                    status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
-                  value:
-                    status: "fail"
-                    message: "Signature expired. Please login again."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid token. Please log in again."
-                'Disabled User':
-                  value:
-                    status: "fail"
-                    message: "This user account has been disabled."
-        404:
-          description: "The user does not exist in the database or cannot be found."
+        500:
+          description: "An internal server error has occurred."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'User Does Not Exist':
+                'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "User does not exist."
-                'No Simulation':
+                    message: "No JWT stored in Session."
+                'Mongo Validation':
                   value:
                     status: "fail"
-                    message: "No saved simulations found"
-    post:
-          summary: "Save the list of Configuration."
-          tags:
-            - Users
-          security:
-            - bearerAuth: []
-          requestBody:
-            description: "List of configuration and alloy"
-            required: true
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    alloy_configurations:
-                      $ref: '#/components/schemas/Configurations'
-                    alloy_store:
-                      $ref: '#/components/schemas/Alloy'
-          responses:
-            201:
-              description: "Successfully saved."
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      token:
-                        type: string
-                        format: bytes
-                      message:
-                        type: string
-                        format: string
-                  example:
-                    status: "success"
-                    data:
-                      type: object
-                      properties:
-                        user:
-                          $ref: '#/components/schemas/User'
-                        configurations:
-                          $ref: '#/components/schemas/Configurations'
-                        alloy_store:
-                           $ref: '#/components/schemas/Alloy Store'
-            400:
-              description: "An invalid payload has been sent in the request."
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/Response'
-                  examples:
-                    'Empty payload':
-                      value:
-                        status: "fail"
-                        message: "Invalid payload."
-                    'Missing Configurations':
-                      value:
-                        status: "fail"
-                        message: "Missing Configurations in payload."
-                    'Missing Alloy':
-                      value:
-                        status: "fail"
-                        message: "Missing Alloy Store in payload."
-                    'Field Does Not Exist':
-                      value:
-                        status: "fail"
-                        error: "string"
-                        message: "Field does not exist error."
-                    'Element Symbol Invalid':
-                      value:
-                        status: "fail"
-                        error: "string"
-                        message: "Invalid element symbol error."
-                    'Element Invalid':
-                      value:
-                        status: "fail"
-                        error: "string"
-                        message: "Invalid element error."
-                    'Missing Element Error':
-                      value:
-                        status: "fail"
-                        error: "string"
-                        message: "Missing element error."
-                    'Validation Error':
-                      value:
-                        status: "fail"
-                        error: "string"
-                        message: "Model schema validation error."
-                    'Duplicate Element':
-                      value:
-                        status: "fail"
-                        error: "string"
-                        message: "Alloy contains a duplicate element."
-            '401':
-              description: "The user is not authenticated to perform this request."
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      status:
-                        type: string
-                        format: string
-                      message:
-                        type: string
-                        format: string
-                  examples:
-                    'No Auth Header':
-                      value:
-                        status: "fail"
-                        message: "Provide a valid JWT auth token."
-                    'Expired Token':
-                      value:
-                        status: "fail"
-                        message: "Signature expired. Please login again."
-                    'Invalid Token':
-                      value:
-                        status: "fail"
-                        message: "Invalid token. Please log in again."
-                    'Disabled User':
-                      value:
-                        status: "fail"
-                        message: "This user account has been disabled."
-            404:
-              description: "The user does not exist in the database or cannot be found."
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/Response'
-                  example:
-                    status: "fail"
-                    message: "User does not exist."
-  /user/simulation/{id}:
-    get:
-      summary: "Retrieve the list of Configurations saved in the User's document."
-      tags:
-        - Users
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: "Successfully retrieved simulation."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                    format: bytes
-                  message:
-                    type: string
-                    format: string
-              example:
-                status: "success"
-                data:
-                  properties:
-                    user:
-                      $ref: '#/components/schemas/User'
-                    configurations:
-                      $ref: '#/components/schemas/Configurations'
-                    alloy_store:
-                      $ref: '#/components/schemas/Alloy Store'
-                    created: '2019/08/05'
-        400:
-          description: "Invalid Object Id"
-          content:
-            application/json:
-              schema:
-                type: object
-              example:
-                status: "fail"
-                message: "Invalid Object Id."
-        '401':
-          description: "The user is not authenticated to perform this request."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    format: string
-                  message:
-                    type: string
-                    format: string
-              examples:
-                'No Auth Header':
-                  value:
-                    status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
-                  value:
-                    status: "fail"
-                    message: "Signature expired. Please login again."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid token. Please log in again."
-                'Disabled User':
-                  value:
-                    status: "fail"
-                    message: "This user account has been disabled."
-        404:
-          description: "The user does not exist in the database or cannot be found."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'User Does Not Exist':
-                  value:
-                    status: "fail"
-                    message: "User does not exist."
-                'Simulation Does Not Exist':
-                  value:
-                    status: "fail"
-                    message: "Does not exit."
-    delete:
-      summary: "Delete a saved simulation from saved_simulation."
-      tags:
-        - Users
-      security:
-        - bearerAuth: []
-      responses:
-        202:
-          description: "Delete saved simulation"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "success"
-        400:
-          description: "Invalid Object Id"
-          content:
-            application/json:
-              schema:
-                type: object
-              example:
-                status: "fail"
-                message: "Invalid Object Id."
-        '401':
-          description: "The user is not authenticated to perform this request."
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    format: string
-                  message:
-                    type: string
-                    format: string
-              examples:
-                'No Auth Header':
-                  value:
-                    status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
-                  value:
-                    status: "fail"
-                    message: "Signature expired. Please login again."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid token. Please log in again."
-                'Disabled User':
-                  value:
-                    status: "fail"
-                    message: "This user account has been disabled."
-        404:
-          description: "The user does not exist in the database or cannot be found."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'User Does Not Exist':
-                  value:
-                    status: "fail"
-                    message: "User does not exist."
-                'Simulation Does Not Exist':
-                  value:
-                    status: "fail"
-                    message: "Does not exit."
-  /user/share/simulation/link:
+                    message: "Mongoengine Validation error."
+  /v1/sim/user/share/simulation/link:
     post:
       summary: "Generate link that can be used to share configurations."
       tags:
@@ -1041,10 +924,18 @@ paths:
             schema:
               type: object
               properties:
+                email:
+                  type: email
+                  example: abc@mail.edu
+                created_date:
+                  type: date
+                  example: 11/11/2019
                 configuration:
                   $ref: '#/components/schemas/Configurations'
-                alloy:
-                  $ref: '#/components/schemas/Alloy'
+                alloy_store:
+                  $ref: '#/components/schemas/Alloy Store'
+                simulation_results:
+                  $ref: '#/components/schemas/Saved Simulation'
       responses:
         201:
           description: "Link successfully generated."
@@ -1062,6 +953,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
+                'Bad Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid Payload."
                 'Bad Request Body':
                   value:
                     status: "fail"
@@ -1091,7 +986,7 @@ paths:
                     status: "fail"
                     error: "string"
                     message: "Validation error."
-        '401':
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -1105,11 +1000,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No token provided':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -1117,14 +1016,22 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
-                'Bad Request Body':
-                  value:
-                    status: "fail"
-                    message: "Invalid payload."
         404:
           description: "The user cannot be found."
           content:
@@ -1135,8 +1042,25 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
-  /user/share/simulation/email:
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+                'Overflow Error':
+                  value:
+                    status: "fail"
+                    error: "error..."
+                    message: "Overflow error."
+  /v1/sim/user/share/simulation/email:
     post:
       summary: "Generate email that can be used to share configurations."
       tags:
@@ -1153,8 +1077,10 @@ paths:
               properties:
                 configuration:
                   $ref: '#/components/schemas/Configurations'
-                alloy:
-                  $ref: '#/components/schemas/Alloy'
+                alloy_store:
+                  $ref: '#/components/schemas/Alloy Store'
+                simulation_results:
+                  $ref: '#/components/schemas/Saved Simulation'
       responses:
         201:
           description: "Link successfully generated."
@@ -1173,6 +1099,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
+                'Bad Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
                 'No Email Provided':
                   value:
                     status: "fail"
@@ -1218,7 +1148,12 @@ paths:
                     status: "fail"
                     error: "string"
                     message: "Validation error."
-        '401':
+                'Overflow Error':
+                  value:
+                    status: "fail"
+                    error: "error..."
+                    message: "Overflow Error"
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -1232,11 +1167,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No token provided':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -1244,7 +1183,19 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
@@ -1258,9 +1209,577 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/user/share/simulation/view/<token>:
+    get:
+      summary: "Generate email that can be used to share configurations."
+      tags:
+        - Users
+      responses:
+        200:
+          description: "Successfull."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: email
+                    example: abc@mail.edu
+                  created_date:
+                    type: date
+                    example: 11/11/2019
+                  configuration:
+                    $ref: '#/components/schemas/Configurations'
+                  alloy_store:
+                    $ref: '#/components/schemas/Alloy Store'
+                  simulation_results:
+                    $ref: '#/components/schemas/Saved Simulation'
+        400:
+          description: "Invalid payload in request body."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Bad Payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'No Token':
+                  value:
+                    status: "fail"
+                    message: "Token not provided."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    error: "Error..."
+                    message: "Invalid Token"
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No Simulation':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "Simulation does not exist."
 
-  /auth/register:
+  /v1/sim/user/simulation:
+    get:
+      summary: "Retrieve the list of Configurations saved in the User's document."
+      tags:
+        - Save Simulation
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Successfully logged in"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    format: bytes
+                  message:
+                    type: string
+                    format: string
+              example:
+                status: "success"
+                data:
+                  properties:
+                      configurations:
+                        $ref: '#/components/schemas/Configurations'
+                      alloy_store:
+                        $ref: '#/components/schemas/Alloy Store'
+                      simulation_results:
+                        $ref: '#/components/schemas/Saved Simulation'
+                      created: '2019/08/05'
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'No Saved Simulation':
+                  value:
+                    status: "fail"
+                    message: "No saved simulations found"
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+    post:
+      summary: "Save the list of Configuration."
+      tags:
+        - Save Simulation
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "List of configuration and alloy"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                configurations:
+                  $ref: '#/components/schemas/Configurations'
+                alloy_store:
+                  $ref: '#/components/schemas/Alloy Store'
+                simulation_results:
+                  $ref: '#/components/schemas/Saved Simulation'
+      responses:
+        201:
+          description: "Successfully saved."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    format: bytes
+                  message:
+                    type: string
+                    format: string
+              example:
+                status: "success"
+                data:
+                  type: object
+                  properties:
+                    user:
+                      $ref: '#/components/schemas/User'
+                    configurations:
+                      $ref: '#/components/schemas/Configurations'
+                    alloy_store:
+                       $ref: '#/components/schemas/Alloy Store'
+                    simulation_results:
+                      $ref: '#/components/schemas/Saved Simulation'
+        400:
+          description: "An invalid payload has been sent in the request."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Empty payload':
+                  value:
+                    status: "fail"
+                    message: "Invalid payload."
+                'Missing Configurations':
+                  value:
+                    status: "fail"
+                    message: "Missing Configurations in payload."
+                'Missing Alloy':
+                  value:
+                    status: "fail"
+                    message: "Missing Alloy Store in payload."
+                'Field Does Not Exist':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Field does not exist error."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Model schema validation error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+                'Overflow Error':
+                  value:
+                    status: "fail"
+                    error: "Error ..."
+                    message: "Overflow error."
+  /v1/sim/user/simulation/{id}:
+    get:
+      summary: "Retrieve the list of Configurations saved in the User's document."
+      tags:
+        - Save Simulation
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: "Successfully retrieved simulation."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    format: bytes
+                  message:
+                    type: string
+                    format: string
+              example:
+                status: "success"
+                data:
+                  properties:
+                    user:
+                      $ref: '#/components/schemas/User'
+                    configurations:
+                      $ref: '#/components/schemas/Configurations'
+                    alloy_store:
+                      $ref: '#/components/schemas/Alloy Store'
+                    simulation_results:
+                      $ref: '#/components/schemas/Saved Simulation'
+                    created: '2019/08/05'
+        400:
+          description: "Invalid Object Id"
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: "fail"
+                message: "Invalid Object Id."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'Simulation Does Not Exist':
+                  value:
+                    status: "fail"
+                    message: "Does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+    delete:
+      summary: "Delete a saved simulation from saved_simulation."
+      tags:
+        - Save Simulation
+      security:
+        - bearerAuth: []
+      responses:
+        202:
+          description: "Delete saved simulation"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+        400:
+          description: "Invalid Object Id"
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                status: "fail"
+                message: "Invalid Object Id."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'Simulation Does Not Exist':
+                  value:
+                    status: "fail"
+                    message: "Does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+
+  /v1/sim/auth/register:
     post:
       summary: "Register and create a new user"
       tags:
@@ -1324,7 +1843,7 @@ paths:
                   first_name: "Peter"
                   last_name: "Parker"
       responses:
-        200:
+        201:
           description: "The user has been successfully created and you get an ID back."
           content:
             application/json:
@@ -1364,6 +1883,11 @@ paths:
                   value:
                     status: "fail"
                     message: "The password is invalid."
+                'Invalid Email':
+                  value:
+                    status: "fail"
+                    error: "abc@mail.edu"
+                    message: "Invalid email."
                 'Duplicate User':
                   value:
                     status: "fail"
@@ -1376,7 +1900,7 @@ paths:
                   value:
                     status: "fail"
                     message: "The user details already exists."
-  /auth/login:
+  /v1/sim/auth/login:
     post:
       summary: "Logs a user in"
       tags:
@@ -1466,33 +1990,23 @@ paths:
                   value:
                     status: "fail"
                     message: "Email or password combination incorrect."
-        401:
-          description: "Unauthorised access by user."
+        403:
+          description: "Unauthorized access."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
               examples:
-                'Disabled User':
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
-        404:
-          description: "The user does not exist."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No User':
-                  value:
-                    status: "fail"
-                    message: "User does not exist."
-                'Incorrect Password':
-                  value:
-                    status: "fail"
-                    message: "Email or password combination incorrect."
-  /auth/status:
+  /v1/sim/auth/status:
     get:
       summary: "Returns the logged in user's status"
       tags:
@@ -1510,21 +2024,19 @@ paths:
                   status:
                     type: string
                     example: "success"
-                  message:
-                    type: string
-                    example: "Token valid."
-        400:
-          description: "Bad request body provided with no JSON Web Token."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Auth Header':
-                  value:
-                    status: "fail"
-                    message: "Provide a valid JWT auth token."
-        '401':
+                  isProfile:
+                    type: boolean
+                    example: "True"
+                  verified:
+                    type: boolean
+                    example: "True"
+                  active:
+                    type: boolean
+                    example: "True"
+                  admin:
+                    type: boolean
+                    example: "False"
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -1538,19 +2050,62 @@ paths:
                     type: string
                     format: string
               examples:
-                'Expired Token':
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
-                'Non Active User':
-                  value:
-                    status: "fail"
-                    message: "This user does not exist."
                 'Invalid Token':
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-  /auth/logout:
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/auth/logout:
     get:
       summary: "Logs a user out"
       tags:
@@ -1567,18 +2122,7 @@ paths:
               example:
                 status: "success"
                 message: "Successfully logged out."
-        400:
-          description: "Bad request body provided with no JSON Web Token."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Auth Header':
-                  value:
-                    status: "fail"
-                    message: "Provide a valid JWT auth token."
-        '401':
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
@@ -1592,11 +2136,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'Non Active User':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "This user does not exist."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -1604,6 +2152,34 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
         500:
           description: "An internal server error has occurred."
           content:
@@ -1614,8 +2190,8 @@ paths:
                 'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "Unable to logout the user from the SimCCT server"
-  /reset/password:
+                    message: "No JWT stored in Session."
+  /v1/sim/reset/password:
     post:
       summary: "Request an email for a reset of the user's password with their confirmed email."
       tags:
@@ -1672,16 +2248,7 @@ paths:
               example:
                 status: "fail"
                 message: "The user must verify their email."
-        404:
-          description: "The user does not exist in the database or cannot be found."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "User does not exist."
-  /auth/password/reset:
+  /v1/sim/auth/password/reset:
     put:
       summary: "An endpoint for the client to send the new passwords to reset a user's account password."
       tags:
@@ -1752,22 +2319,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please get a new token."
-                'Disabled User':
-                  value:
-                    status: "fail"
-                    message: "This user account has been disabled."
-        404:
-          description: "The user cannot be found."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No User':
-                  value:
-                    status: "fail"
-                    message: "User does not exist."
-  /auth/password/check:
+  /v1/sim/auth/password/check:
     post:
       summary: "An endpoint for password check."
       tags:
@@ -1817,7 +2369,76 @@ paths:
                   value:
                     status: "fail"
                     message: "Password incorrect."
-  /auth/password/change:
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/auth/password/change:
     put:
       summary: "An endpoint for changing password."
       tags:
@@ -1891,7 +2512,7 @@ paths:
                   value:
                     status: "fail"
                     message: "Password is not correct."
-  /auth/email/change:
+  /v1/sim/auth/email/change:
     put:
       summary: "An endpoint for changing email."
       tags:
@@ -1940,7 +2561,76 @@ paths:
                     status: "fail"
                     error: "string"
                     message: "Invalid email."
-  /confirm/resend:
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/confirm/resend:
     get:
       summary: "An endpoint for sending confirmation email."
       tags:
@@ -1968,7 +2658,76 @@ paths:
                   value:
                     status: "fail"
                     message: "User is already verified."
-  /confirm/<token>:
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/confirm/<token>:
     get:
       summary: "Confirmation for URL link tokens sent for admin registration verification."
       tags:
@@ -1983,10 +2742,20 @@ paths:
               examples:
                 'Successfull Redirect':
                   value:
-                    redirect: 'http://{client_host}/signin'
-                'Token Expired':
+                    status: 'success'
+                    redirect: 'http://{redirect_url}/signin'
+                'URLTokenError':
                   value:
-                    redirect: 'http://{client_host}/confirm/tokenexpired'
+                    redirect: 'http://{redirect_url}/signin?tokenexpired=true'
+                'URLTokenExpired':
+                  value:
+                    redirect: 'http://{redirect_url}/signin?tokenexpired=true'
+                'Exception':
+                  value:
+                    redirect: 'http://{redirect_url}/signin?tokenexpired=true'
+                'Email not found':
+                  value:
+                    redirect: 'http://{redirect_url}/signin?tokenexpired=true'
         400:
           description: "An invalid payload has been sent with the request."
           content:
@@ -1998,7 +2767,42 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid payload."
-  /confirmadmin/<token>:
+  /v1/sim/confirm/register/resend:
+    put:
+      summary: "An endpoint for resending confirmation email."
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: "Request to resend email."
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: string
+                  example: "ironman@neuraldev.io"
+      responses:
+        200:
+          description: "Resend email"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'User Does Not Exist':
+                  value:
+                    status: "success"
+                'Users Is Already Verified':
+                  value:
+                    status: "success"
+                'Resent Email':
+                  value:
+                    status: "success"
+  /v1/sim/confirmadmin/<token>:
     get:
       summary: "Confirmation for URL link tokens sent for user registration verification."
       tags:
@@ -2012,31 +2816,22 @@ paths:
                 $ref: '#/components/schemas/Response'
               examples:
                 'Successfull Redirect':
+                    value:
+                      status: 'success'
+                      redirect: 'http://{redirect_url}/signin'
+                'URLTokenError':
                   value:
-                    status: "success"
-                    redirect: 'http://{client_host}:3000/signin'
-        400:
-          description: "An invalid payload has been sent with the request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Invalid Payload':
+                    redirect: 'http://{redirect_url}/signin?tokenexpired=true'
+                'URLTokenExpired':
                   value:
-                    status: "fail"
-                    message: "Invalid payload."
-                'URL Token Error':
+                    redirect: 'http://{redirect_url}/signin?tokenexpired=true'
+                'Exception':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid payload."
-                'URL Token Expired':
+                    redirect: 'http://{redirect_url}/signin?tokenexpired=true'
+                'Email not found':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid payload."
-  /reset/password/confirm/<token>:
+                    redirect: 'http://{redirect_url}/signin?tokenexpired=true'
+  /v1/sim/reset/password/confirm/<token>:
     get:
       summary: "Decode the token from the email to the confirm right person."
       tags:
@@ -2051,26 +2846,19 @@ paths:
               examples:
                 'Successfull Redirect':
                   value:
-                    redirect: 'http://localhost:3000/password/reset={jwt_token}'
-        400:
-          description: "An invalid payload has been sent with the request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'URL Token Error':
+                    status: 'success'
+                    redirect: 'http://{redirect_url}/password/reset={jwt_token}'
+                'URLTokenError':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid token."
+                    redirect: 'http://{redirect_url}/password/reset?tokenexpired=true'
                 'Exception':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid token."
+                    redirect: 'http://{redirect_url}/password/reset?tokenexpired=true'
+                'User not found':
+                  value:
+                    redirect: 'http://{redirect_url}/password/reset?tokenexpired=true'
 
-  /admin/create:
+  /v1/sim/admin/create:
     post:
       summary: "Create an admin account."
       security:
@@ -2129,18 +2917,29 @@ paths:
                   value:
                     status: "fail"
                     message: "User is already an Administrator"
-        '401':
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -2148,27 +2947,32 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
-                  value:
-                    status: "fail"
-                    message: "This user account has been disabled."
                 'Verify Email':
                   value:
                     status: "fail"
                     message: "The user must verify their email"
         403:
-          description: "The user is not authorised to perform this request."
+          description: "Unauthorized access."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
               examples:
-                'No Authorisation':
+                'Account Disabled':
                   value:
                     status: "fail"
-                    message: "Not authorized"
+                    message: "This user account has been disabled."
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
         404:
-          description: "We cannot find a valid user."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
@@ -2177,118 +2981,96 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
-  /admin/create/cancel/<token>:
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/admin/create/cancel/<token>:
     get:
       summary: "Allow an admin to cancel their promotion of another user"
       tags:
         - Admin
       responses:
         302:
-          description: "Successfully create Admin."
-          headers:
-            Location:
-              schema:
-                type: string
-                example: 'http://localhost:3000/signin'
-              description: "The URI location of the redirect"
-        400:
-          description: "An invalid payload has been sent with the request."
+          description: "Redirect."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'URL Token Error':
+                'Successfully Cancelled Promotion':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid token."
+                    status: 'success'
+                    redirect: 'http://{redirect_url}/signin'
+                'URLTokenError':
+                  value:
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
+                'URLTokenExpired':
+                  value:
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
                 'Exception':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid token."
-                'Not In List':
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
+                'Email List Not Returned':
                   value:
-                    status: "fail"
-                    message: "Invalid token."
-                'Admin Or User Not In List':
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
+                'Index Error':
                   value:
-                    status: "fail"
-                    message: "Invalid data in Token."
-                'Invalid List':
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
+                'No User':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid list from token."
-                'Missing Information':
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
+                'User Is Not Admin':
                   value:
-                    status: "fail"
-                    message: "Missing information in Token."
-                'Administrator does not exist':
-                  value:
-                    status: "fail"
-                    message: "Administrator does not exist."
-                'User does not exist':
-                  value:
-                    status: "fail"
-                    message: "Target User does not exist."
-        '401':
-          description: "The user is not authenticated to perform this request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'Not Authorised':
-                  value:
-                    status: "fail"
-                    message: "User is not authorised to promote other user."
-  /admin/create/verify/<token>:
+                    redirect: 'http://{redirect_url}/admin/create/cancel?tokenexpired=true'
+  /v1/sim/admin/create/verify/<token>:
     get:
       summary: "Allow a user to acknowledge their promotion and in doing so verify their status as an admin"
       tags:
         - Admin
       responses:
         302:
-          description: "Successfully sent link to verify the status of user as admin"
-          headers:
-            Location:
-              schema:
-                type: string
-                example: 'TODO David'
-                description: "Redirect"
-        400:
-          description: "An invalid payload has been sent with the request."
+          description: "Redirect."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'URL Token Error':
+                'Successfully Verified Promotion':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid token."
+                    status: 'success'
+                    redirect: 'http://{redirect_url}/signin'
+                'URLTokenExpired':
+                  value:
+                    redirect: 'http://{redirect_url}/admin/verify?tokenexpired=true'
+                'URLTokenError':
+                  value:
+                    redirect: 'http://{redirect_url}/admin/verify?tokenexpired=true'
                 'Exception':
                   value:
-                    status: "fail"
-                    error: "string"
-                    message: "Invalid token."
-                'User Does Not Exist':
+                    redirect: 'http://{redirect_url}/admin/verify?tokenexpired=true'
+                'Email List Not Returned':
                   value:
-                    status: "fail"
-                    message: "User does not exist."
-                'User Is Not Verified':
+                    redirect: 'http://{redirect_url}/admin/verify?tokenexpired=true'
+                'Index Error':
                   value:
-                    status: "fail"
-                    message: "User is not verified."
-                'User Is Not An Admin':
+                    redirect: 'http://{redirect_url}/admin/verify?tokenexpired=true'
+                'No User':
                   value:
-                    status: "fail"
-                    message: "User is not an Admin."
-  /disable/user:
+                    redirect: 'http://{redirect_url}/admin/verify?tokenexpired=true'
+                'User Is Not Admin':
+                  value:
+                    redirect: 'http://{redirect_url}/admin/verify?tokenexpired=true'
+  /v1/sim/disable/user:
     put:
       summary: "Disable a User's account if an Admin has requested."
       security:
@@ -2336,18 +3118,29 @@ paths:
                     status: "fail"
                     message: "Invalid email."
                     error: "The email address is not valid. It must have exactly one @-sign."
-        '401':
+        401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -2355,23 +3148,32 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+                'Verify Email':
                   value:
                     status: "fail"
-                    message: "This user account has been disabled."
+                    message: "The user must verify their email"
         403:
-          description: "The user is not authorised to perform this request."
+          description: "Unauthorized access."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
               examples:
-                'No Authorisation':
+                'Account Disabled':
                   value:
                     status: "fail"
-                    message: "Not authorized"
+                    message: "This user account has been disabled."
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
         404:
-          description: "We cannot find a valid user."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
@@ -2380,15 +3182,59 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
-  /disable/user/confirm/<token>:
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/disable/user/confirm/<token>:
     get:
       summary: "Send confirmation to disable user account if an Admin has requested."
       security:
         - bearerAuth: []
       tags:
         - Admin
+      responses:
+        302:
+          description: "Redirect."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Successfully Disable':
+                  value:
+                    status: 'success'
+                    redirect: 'http://{redirect_url}/'
+                'URLTokenExpired':
+                  value:
+                    redirect: 'http://{redirect_url}/disable/user/confirm?tokenexpired=true'
+                'URLTokenError':
+                  value:
+                    redirect: 'http://{redirect_url}/disable/user/confirm?tokenexpired=true'
+                'Exception':
+                  value:
+                    redirect: 'http://{redirect_url}/disable/user/confirm?tokenexpired=true'
+                'No User':
+                  value:
+                    redirect: 'http://{redirect_url}/disable/user/confirm?tokenexpired=true'
+  /v1/sim/enable/user:
+    put:
+      summary: "Disable a User's account if an Admin has requested."
+      security:
+        - bearerAuth: []
+      tags:
+        - Admin
       requestBody:
+        description: "User account to be enabled"
         required: true
         content:
           application/json:
@@ -2399,8 +3245,14 @@ paths:
                   type: string
                   format: email
       responses:
-        302:
-          description: "Link sent successfully."
+        200:
+          description: "The user has been successfully enabled."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              example:
+                status: "success"
         400:
           description: "An invalid payload has been sent with the request."
           content:
@@ -2408,29 +3260,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'URL Token Error':
+                'Bad Payload':
                   value:
                     status: "fail"
-                    error: "string"
-                    message: "Invalid token."
-                'Exception':
+                    message: "Invalid payload."
+                'No Email':
                   value:
                     status: "fail"
-                    error: "string"
-                    message: "Invalid token."
-                'User Does Not Exist':
+                    message: "No email provided."
+                'No Position Provided':
                   value:
                     status: "fail"
-                    message: "User does not exist."
-
-  /users/ping:
-    get:
-      summary: "Just a sanity check that simcct server can sanely connect to users."
-      tags:
-        - Sessions
-      responses:
-        200:
-          description: "You are not crazy."
+                    message: "No position provided"
+                'Invalid Email':
+                  value:
+                    status: "fail"
+                    message: "Invalid email."
+                    error: "The email address is not valid. It must have exactly one @-sign."
+                'Account Not Disabled':
+                  value:
+                    status: "fail"
+                    message: "Account is not disabled."
+        401:
+          description: "The user is not authenticated to perform this request."
           content:
             application/json:
               schema:
@@ -2438,15 +3290,76 @@ paths:
                 properties:
                   status:
                     type: string
-                    description: "The status of `success` or `fail`."
+                    format: string
                   message:
                     type: string
-                    description: "The message response"
-              example:
-                status: "success"
-                message: "pong!"
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+                'Verify Email':
+                  value:
+                    status: "fail"
+                    message: "The user must verify their email"
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
 
-  /global/alloys:
+  /v1/sim/global/alloys:
     post:
       summary: "Create a new alloy and store it in the Alloys database."
       tags:
@@ -2575,14 +3488,99 @@ paths:
                   value:
                     status: "fail"
                     message: "No alloy name was provided."
-                'Invalid Alloy payload schema':
+                'Element Symbol Invalid':
                   value:
                     status: "fail"
-                    message: "Invalid payload."
-                    errors:
-                      compositions:
-                        - "Missing data for required field."
-        '412':
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Invalid Element Wight':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element weight error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'Failed Schema':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Request data failed schema validation."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
+        404:
+          description: "The user cannot be found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+        412:
           description: "The name is not a unique value."
           content:
             application/json:
@@ -2591,6 +3589,17 @@ paths:
               example:
                 status: "fail"
                 message: "Alloy already exists."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
     get:
       summary: "The full list of Alloys from the database."
       tags:
@@ -2650,25 +3659,80 @@ paths:
                             weight: 0.0
                           - symbol: "P"
                             weight: 0.007
-        400:
-          description: "An invalid payload has been sent."
+        401:
+          description: "The user is not authenticated to perform this request."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "Invalid ObjectId"
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
         404:
-          description: "No content found in database."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "Empty."
-  /global/alloys/{id}:
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'Empty':
+                  value:
+                    status: "fail"
+                    message: "Empty."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/global/alloys/{id}:
     get:
       summary: "Get a single alloy from the Alloys database."
       tags:
@@ -2681,6 +3745,7 @@ paths:
           schema:
             type: string
             format: bytes
+            example: "5d2d81cff091de1cf091674b"
       responses:
         200:
           description: "The request has been successful."
@@ -2703,16 +3768,80 @@ paths:
               example:
                 status: "fail"
                 message: "Invalid ObjectId"
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
         404:
-          description: "Cannot find an existing alloy with that ID."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "Alloy not found."
-    patch:
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'Alloy Not Found':
+                  value:
+                    status: "fail"
+                    message: "Alloy not found."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+    put:
       summary: "Update a single existing Alloy."
       tags:
         - Alloys
@@ -2773,8 +3902,9 @@ paths:
           schema:
             type: string
             format: bytes
+            example: "5d2d81cff091de1cf091674b"
       responses:
-        202:
+        200:
           description: "The request was successful and the updated Alloy is returned."
           content:
             application/json:
@@ -2846,22 +3976,126 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid ObjectId."
-                'Not Valid Alloy JSON':
+                'No Alloy Name':
                   value:
                     status: "fail"
-                    message: "Invalid payload."
-                    errors:
-                      compositions:
-                        - "Missing data for required field."
+                    message: "Alloy name must be provided."
+                'Need All Alloy Composition':
+                  value:
+                    status: "fail"
+                    message: "Alloy compositions list must be provided."
+                'Missing Compositions':
+                  value:
+                    status: "fail"
+                    message: "Compositions must be provided as a list of valid
+                                              elements e.g. {\"symbol\": \"C\", \"weight\": 1.0}"
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Invalid Element Wight':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element weight error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'Failed Schema':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Request data failed schema validation."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
         404:
-          description: "Cannot find an existing alloy so no content returned."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "Alloy not found."
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'No Alloy':
+                  value:
+                    status: "fail"
+                    message: "Alloy not found."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
     delete:
       summary: "Delete a single alloy by ID."
       tags:
@@ -2874,6 +4108,7 @@ paths:
           schema:
             type: string
             format: bytes
+            example: "5d2d81cff091de1cf091674b"
       responses:
         202:
           description: "Your request was successfully completed."
@@ -2892,16 +4127,84 @@ paths:
               example:
                 status: "fail"
                 message: "Invalid ObjectId."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+                'Non Admin User':
+                  value:
+                    status: "fail"
+                    message: "Not authorized."
         404:
-          description: "No existing alloy to delete."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "Alloy not found."
-  /user/alloys:
+              examples:
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
+                'No Alloy Found':
+                  value:
+                    status: "fail"
+                    message: "Alloy not found."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/user/alloys:
     post:
       summary: "Save an alloy to the User's database."
       tags:
@@ -2957,6 +4260,35 @@ paths:
                     status: "fail"
                     message: 'Compositions must be provided as a list of valid
                                   elements e.g. {"symbol": "C", "weight": 1.0}'
+                'No Field':
+                  value:
+                    status: "fail"
+                    message: "Field does not exist error."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'Alloy Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy validation error."
         401:
           description: "The user is not authenticated to perform this request."
           content:
@@ -2971,11 +4303,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -2983,12 +4319,24 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
         404:
-          description: "There are no alloys saved to the user's document or user to find."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
@@ -2997,7 +4345,19 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
     get:
       summary: "We get the list of User's alloys stored in their document."
       tags:
@@ -3056,11 +4416,15 @@ paths:
                     type: string
                     format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -3068,12 +4432,24 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
         404:
-          description: "There are no alloys saved to the user's document or user to find."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
@@ -3082,12 +4458,24 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
                 'No alloys':
                   value:
                     status: "fail"
                     message: "No alloys found."
-  /user/alloys/{id}:
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+  /v1/sim/user/alloys/{id}:
     get:
       summary: "We get the requested alloy from the parameter's ObjectId."
       tags:
@@ -3149,18 +4537,40 @@ paths:
                           weight: 0.0
                         - symbol: "P"
                           weight: 0.012
-        401:
-          description: "The user is not authenticated to perform this request."
+        400:
+          description: "An invalid request body has been sent."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'No Auth Header':
+                'Inlvaid Request':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Invalid ObjectId."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -3168,21 +4578,24 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
-                  value:
-                    status: "fail"
-                    message: "This user account has been disabled."
-        400:
-          description: "The request has an invalid request parameter."
+        403:
+          description: "Unauthorized access."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "Invalid ObjectId."
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
         404:
-          description: "There are no alloys saved to the user's document or user to find."
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
@@ -3191,11 +4604,12 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
                 'No alloys':
                   value:
                     status: "fail"
-                    message: "No alloys found."
+                    message: "Alloy does not exist."
         418:
           description: "Multiple objects have been returned from the query."
           content:
@@ -3205,8 +4619,19 @@ paths:
               example:
                 status: "fail"
                 message: "Multiple objects returned."
-    patch:
-      summary: "Save an alloy to the User's database."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
+    put:
+      summary: "Update an alloy to the User's database."
       tags:
         - Alloys
       security:
@@ -3387,19 +4812,24 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid ObjectId."
-                'Invalid Keys':
+                'Must Provide Alloy':
                   value:
                     status: "fail"
-                    message: "Invalid keys in request payload (i.e. must be either \"name\" or \"compositions\")."
+                    message: "Alloy name must be provided."
+                'Must Provide Alloy List':
+                  value:
+                    status: "fail"
+                    message: "Alloy compositions list must be provided."
                 'Invalid Compositions':
                   value:
                     status: "fail"
                     message: "Compositions must be provided as a list of valid elements
                               e.g. {\"symbol\": \"C\", \"weight\": 1.0}"
-                'Additional Fields in Element':
+                "Empty Field":
                   value:
                     status: "fail"
-                    message: "Alloy validation error."
+                    error: "Error ..."
+                    message: "Field does not exist error."
                 'Bad Element Symbol':
                   value:
                     status: "fail"
@@ -3408,18 +4838,43 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid element error."
+                'Missing Element':
+                  value:
+                    status: "fail"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'Additional Fields in Element':
+                  value:
+                    status: "fail"
+                    message: "Alloy validation error."
+
         401:
           description: "The user is not authenticated to perform this request."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
               examples:
-                'No Auth Header':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
                   value:
                     status: "fail"
                     message: "Signature expired. Please login again."
@@ -3427,7 +4882,19 @@ paths:
                   value:
                     status: "fail"
                     message: "Invalid token. Please log in again."
-                'Disabled User':
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
                     message: "This user account has been disabled."
@@ -3438,27 +4905,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'No User':
-                  value:
-                    status: "fail"
-                    message: "User does not exist."
                 'No alloys':
                   value:
                     status: "fail"
                     message: "No alloys found."
+                'No User':
+                  value:
+                    status: "fail"
+                    error: "error"
+                    message: "User does not exist."
                 'Empty Alloys Store':
                   value:
                     status: "fail"
                     message: "Alloy does not exist."
-        418:
-          description: "Multiple objects have been returned from the query."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              example:
-                status: "fail"
-                message: "Multiple objects returned."
         500:
           description: "An internal server error has occurred."
           content:
@@ -3466,10 +4925,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
+                'Error':
+                  value:
+                    status: "fail"
+                    message: "Validation error on saving."
                 'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "Validation error on updating."
+                    message: "No JWT stored in Session."
+                'Failed To Update':
+                  value:
+                    status: "fail"
+                    message: "Failed to update alloy."
+
     delete:
       summary: "Delete an alloy from the user's database."
       tags:
@@ -3487,29 +4955,6 @@ paths:
                   status:
                     type: string
                     example: "success"
-        401:
-          description: "The user is not authenticated to perform this request."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Response'
-              examples:
-                'No Auth Header':
-                  value:
-                    status: "fail"
-                    message: "Provide a valid JWT auth token."
-                'Expired Token':
-                  value:
-                    status: "fail"
-                    message: "Signature expired. Please login again."
-                'Invalid Token':
-                  value:
-                    status: "fail"
-                    message: "Invalid token. Please log in again."
-                'Disabled User':
-                  value:
-                    status: "fail"
-                    message: "This user account has been disabled."
         400:
           description: "The request has an invalid request parameter."
           content:
@@ -3535,6 +4980,7 @@ paths:
                 'No User':
                   value:
                     status: "fail"
+                    error: "error"
                     message: "User does not exist."
                 'No alloys':
                   value:
@@ -3553,6 +4999,63 @@ paths:
               example:
                 status: "fail"
                 message: "Multiple objects returned."
+        401:
+          description: "The user is not authenticated to perform this request."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
+              examples:
+                'Invalid Session':
+                  value:
+                    status: "fail"
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
+                'Invalid Token':
+                  value:
+                    status: "fail"
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
+                  value:
+                    status: "fail"
+                    message: "This user account has been disabled."
+        500:
+          description: "An internal server error has occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+              examples:
+                'Internal Server Error':
+                  value:
+                    status: "fail"
+                    message: "No JWT stored in Session."
 
   /alloys/update:
     post:
@@ -4684,13 +6187,25 @@ paths:
                     errors: "string"
                     message: "Unable to save to session store."
 
-  /simulate:
-    get:
+  /v1/sim/simulate:
+    post:
       summary: "Run the simulation and get the results back."
       security:
         - bearerAuth: []
       tags:
         - Simulation
+      requestBody:
+        description: "Save user's last Alloy and Configuration."
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                last_alloy_store:
+                  $ref: '#/components/schemas/Alloy Store'
+                last_configurations:
+                  $ref: '#/components/schemas/Configurations'
       responses:
         200:
           description: "The CCT and TTT simulations have been completed and the Graphs result returned."
@@ -4705,14 +6220,55 @@ paths:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'Ae Errors':
+                'No Data':
                   value:
                     status: "fail"
-                    message: "Ae1 and Ae3 value cannot be less than 0.0."
-                'MS/BS Errors':
+                'No Alloy Store':
                   value:
                     status: "fail"
-                    message: "MS and BS value cannot be less than 0.0."
+                    message: "Alloy store required."
+                'One Alloy Option':
+                  value:
+                    status: "fail"
+                    message: "Alloy option must be one of [\"single\" | \"mix\"]"
+                'Configurations Required':
+                  value:
+                    status: "fail"
+                    message: "Configurations required."
+                'Validation Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Model schema validation error."
+                'Element Symbol Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element symbol error."
+                'Invalid Element Weight':
+                  value:
+                    status: fail
+                    error: "Error .."
+                    message: "Invalid element weight error."
+                'Element Invalid':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Invalid element error."
+                'Missing Element Error':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Missing element error."
+                'Duplicate Element':
+                  value:
+                    status: "fail"
+                    error: "string"
+                    message: "Alloy contains a duplicate element."
+                'No Mix Option':
+                  value:
+                    status: "fail"
+                    message: "Mix option not allowed."
                 'Configuration Errors':
                   value:
                     status: "fail"
@@ -4724,44 +6280,63 @@ paths:
                     errors: "string"
                     message: "Simulation Error"
         401:
-          description: "Unauthorized access to the endpoint."
+          description: "The user is not authenticated to perform this request."
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Response'
+                type: object
+                properties:
+                  status:
+                    type: string
+                    format: string
+                  message:
+                    type: string
+                    format: string
               examples:
-                'No Token':
+                'Invalid Session':
                   value:
                     status: "fail"
-                    message: "No valid Authorization in header."
+                    message: "Session is invalid."
+                'Session Token Invalid':
+                  value:
+                    status: "fail"
+                    message: "Session token is not valid."
+                'Signature Expired':
+                  value:
+                    status: "fail"
+                    message: "Signature expired. Please login again."
                 'Invalid Token':
                   value:
                     status: "fail"
-                    message: "Invalid JWT token in header."
-                'No Session Key':
+                    message: "Invalid token. Please log in again."
+        403:
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+              examples:
+                'Account Disabled':
                   value:
                     status: "fail"
-                    message: "No previous session initiated."
-                'Unable To Load Session':
-                  value:
-                    status: "fail"
-                    errors: "String (Session_store)"
-                    message: "Unable to load session from Redis."
+                    message: "This user account has been disabled."
         404:
-          description: "The configurations could not found"
+          description: "The user cannot be found."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
               examples:
-                'No last configurations':
+                'No User':
                   value:
                     status: "fail"
-                    message: "No previous session configurations was set."
-                'No last alloy':
-                  value:
-                    status: "fail"
-                    message: "No previous session alloy was set."
+                    error: "error"
+                    message: "User does not exist."
         500:
           description: "An internal server error has occurred."
           content:
@@ -4772,7 +6347,22 @@ paths:
                 'Internal Server Error':
                   value:
                     status: "fail"
-                    message: "Unable to retrieve data from Redis."
+                    message: "No JWT stored in Session."
+                'Value Error':
+                  value:
+                    status: "fail"
+                    errors: "Errors ..."
+                    message: "ValueError in preparing SimConfiguration instance."
+                'Initialisation Error':
+                  value:
+                    status: "fail"
+                    errors: "Errors ..."
+                    message: "SimConfiguration initialisation error."
+                'PhaseSimulation Initialisation Error':
+                  value:
+                    status: "fail"
+                    errors: "Errors ..."
+                    message: "PhaseSimulation initialisation error."
                 'Zero Division Error':
                   value:
                     status: "fail"
@@ -4783,31 +6373,6 @@ paths:
                     status: "fail"
                     errors: "Error."
                     message: "Assertion error building response data."
-                'Configuration Error':
-                  value:
-                    status: "fail"
-                    errors: "Error."
-                    message: "No Ae1 and Ae3 value has been provided."
-                'Configuration Error2':
-                  value:
-                    status: "fail"
-                    errors: "Error."
-                    message: "Start or Finish percent must be a fraction."
-                'Configuration Error3':
-                  value:
-                    status: "fail"
-                    errors: "Error."
-                    message: "XFE has to be below 1.0"
-                'Simulation Error':
-                  value:
-                    status: "fail"
-                    errors: "Error."
-                    message: "Need a configurations instance to run simulation."
-                'Simulation Error2':
-                  value:
-                    status: "fail"
-                    errors: "Error."
-                    message: "Don't be silly with negative Cooling Rate."
 
 components:
   securitySchemes:
@@ -4815,6 +6380,11 @@ components:
       type: http
       scheme: bearer
   schemas:
+    isValid:
+      properties:
+        is_valid:
+          type: boolean
+          default: false
     'User':
       description: "A document type as the complete User schema with all values."
       properties:
@@ -4889,11 +6459,6 @@ components:
       description: "The schema that represents a subset of the fields returned so it can be displayed
       as a User profile without the other additional settings."
       properties:
-        _id:
-          type: string
-          format: byte
-          readOnly: true
-          uniqueItems: true
         email:
           type: string
           format: email
@@ -4920,14 +6485,14 @@ components:
           default: true
         admin:
           type: boolean
-          default: false
-        created:
-          type: string
-          format: date-time
+          default: true
         verified:
           type: boolean
           default: false
         last_updated:
+          type: string
+          format: date-time
+        created:
           type: string
           format: date-time
         last_login:
@@ -4991,20 +6556,11 @@ components:
       to generate a CCT or TTT graph."
       type: object
       properties:
-        is_valid:
-          description: "Whether the configurations have been validated."
-          type: boolean
-          default: false
-          example: true
         method:
           description: "A string that is a choice of either of the following enums [Li98 | Kirkaldy83]"
           type: string
           format: string
           example: "Li98"
-        gran_size:
-          description: "The ASTM value for grain size always."
-          type: number
-          format: float
         nucleation_start:
           type: number
           format: float
@@ -5015,21 +6571,21 @@ components:
         auto_calculate_ms:
           type: boolean
           default: true
+        auto_calculate_bs:
+          type: boolean
+          default: true
+        auto_calculate_ae:
+          type: boolean
+          default: true
         ms_temp:
           type: number
           format: float
         ms_rate_param:
           type: number
           format: float
-        auto_calculate_bs:
-          type: boolean
-          default: true
         bs_temp:
           type: number
           format: float
-        auto_calculate_ae:
-          type: boolean
-          default: true
         ae1_temp:
           type: number
           format: float
@@ -5040,6 +6596,15 @@ components:
           type: integer
         cct_cooling_rate:
           type: integer
+        grain_size:
+          description: "The ASTM value for grain size always."
+          type: number
+          format: float
+        is_valid:
+          description: "Whether the configurations have been validated."
+          type: boolean
+          default: false
+          example: true
       required:
         - is_valid
         - method
@@ -5417,7 +6982,7 @@ tags:
     description: "Endpoints for Authentication and Authorization."
   - name: Admin
     description: Endpoints that are used by an Administrator.
-  - name: Sessions
+  - name: Save Simulation
     description: "Endpoints that manage sessions."
   - name: Alloys
     description: "Endpoints that expose the full CRUD interface for Alloys."
